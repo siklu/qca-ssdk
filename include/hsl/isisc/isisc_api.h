@@ -264,7 +264,6 @@ extern "C" {
     SW_API_DEF(SW_API_FDB_RESV_DEL, isisc_fdb_resv_del), \
     SW_API_DEF(SW_API_FDB_RESV_FIND, isisc_fdb_resv_find), \
     SW_API_DEF(SW_API_FDB_RESV_ITERATE, isisc_fdb_resv_iterate), \
-    SW_API_DEF(SW_API_FDB_EXTEND_FIRST, isisc_fdb_extend_first), \
     SW_API_DEF(SW_API_FDB_PT_LEARN_STATIC_SET,   isisc_fdb_port_learn_static_set), \
     SW_API_DEF(SW_API_FDB_PT_LEARN_STATIC_GET,   isisc_fdb_port_learn_static_get), \
     SW_API_DEF(SW_API_FDB_PORT_ADD,   isisc_fdb_port_add), \
@@ -299,7 +298,6 @@ extern "C" {
     SW_API_DESC(SW_API_FDB_RESV_DEL)  \
     SW_API_DESC(SW_API_FDB_RESV_FIND) \
     SW_API_DESC(SW_API_FDB_RESV_ITERATE) \
-    SW_API_DESC(SW_API_FDB_EXTEND_FIRST) \
     SW_API_DESC(SW_API_FDB_PT_LEARN_STATIC_SET) \
     SW_API_DESC(SW_API_FDB_PT_LEARN_STATIC_GET) \
     SW_API_DESC(SW_API_FDB_PORT_ADD)  \
@@ -775,11 +773,43 @@ extern "C" {
 #ifdef IN_SEC
 #define SEC_API \
     SW_API_DEF(SW_API_SEC_NORM_SET, isisc_sec_norm_item_set), \
-    SW_API_DEF(SW_API_SEC_NORM_GET, isisc_sec_norm_item_get),
+    SW_API_DEF(SW_API_SEC_NORM_GET, isisc_sec_norm_item_get), \
+    SW_API_DEF(SW_API_SEC_MAC_SET, isisc_sec_norm_item_set), \
+    SW_API_DEF(SW_API_SEC_MAC_GET, isisc_sec_norm_item_get), \
+    SW_API_DEF(SW_API_SEC_IP_SET, isisc_sec_norm_item_set), \
+    SW_API_DEF(SW_API_SEC_IP_GET, isisc_sec_norm_item_get), \
+    SW_API_DEF(SW_API_SEC_IP4_SET, isisc_sec_norm_item_set), \
+    SW_API_DEF(SW_API_SEC_IP4_GET, isisc_sec_norm_item_get), \
+    SW_API_DEF(SW_API_SEC_IP6_SET, isisc_sec_norm_item_set), \
+    SW_API_DEF(SW_API_SEC_IP6_GET, isisc_sec_norm_item_get), \
+    SW_API_DEF(SW_API_SEC_TCP_SET, isisc_sec_norm_item_set), \
+    SW_API_DEF(SW_API_SEC_TCP_GET, isisc_sec_norm_item_get), \
+    SW_API_DEF(SW_API_SEC_UDP_SET, isisc_sec_norm_item_set), \
+    SW_API_DEF(SW_API_SEC_UDP_GET, isisc_sec_norm_item_get), \
+    SW_API_DEF(SW_API_SEC_ICMP4_SET, isisc_sec_norm_item_set), \
+    SW_API_DEF(SW_API_SEC_ICMP4_GET, isisc_sec_norm_item_get), \
+    SW_API_DEF(SW_API_SEC_ICMP6_SET, isisc_sec_norm_item_set), \
+    SW_API_DEF(SW_API_SEC_ICMP6_GET, isisc_sec_norm_item_get),
 
 #define SEC_API_PARAM \
     SW_API_DESC(SW_API_SEC_NORM_SET) \
-    SW_API_DESC(SW_API_SEC_NORM_GET)
+    SW_API_DESC(SW_API_SEC_NORM_GET) \
+    SW_API_DESC(SW_API_SEC_MAC_SET) \
+    SW_API_DESC(SW_API_SEC_MAC_GET) \
+    SW_API_DESC(SW_API_SEC_IP_SET) \
+    SW_API_DESC(SW_API_SEC_IP_GET) \
+    SW_API_DESC(SW_API_SEC_IP4_SET) \
+    SW_API_DESC(SW_API_SEC_IP4_GET) \
+    SW_API_DESC(SW_API_SEC_IP6_SET) \
+    SW_API_DESC(SW_API_SEC_IP6_GET) \
+    SW_API_DESC(SW_API_SEC_TCP_SET) \
+    SW_API_DESC(SW_API_SEC_TCP_GET) \
+    SW_API_DESC(SW_API_SEC_UDP_SET) \
+    SW_API_DESC(SW_API_SEC_UDP_GET) \
+    SW_API_DESC(SW_API_SEC_ICMP4_SET) \
+    SW_API_DESC(SW_API_SEC_ICMP4_GET) \
+    SW_API_DESC(SW_API_SEC_ICMP6_SET) \
+    SW_API_DESC(SW_API_SEC_ICMP6_GET)
 #else
 #define SEC_API
 #define SEC_API_PARAM

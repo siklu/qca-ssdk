@@ -2,6 +2,10 @@ CPU=mips
 
 OS=linux
 
+OS_VER=3_4
+OS_SUB=31
+CHIP_TYPE=ISISC
+
 ifndef OS_VER
 OS_VER=2_6
 endif
@@ -64,7 +68,7 @@ KERNEL_MODE=FLASE
 endif
 
 #FAL=FALSE or not define FAL, FAL will not be included in SSDK
-FAL=FALSE
+FAL=TRUE
 
 #CHIP_TYPE can be defined as ATHENA, GARUDA, SHIVA, HORUS, ISIS, ISISC and ALL_CHIP(ALL_CHIP means GARUDA, SHIVA, HORUS and ISIS)
 CHIP_TYPE=ISISC

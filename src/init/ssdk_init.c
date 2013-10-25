@@ -217,17 +217,15 @@ regi_init(void)
     cfg.reg_mode = HSL_MDIO;
     cfg.nl_prot = 30;
 
-    #ifdef QCA_SWITCH_S17
-    cfg.chip_type = CHIP_ISIS;
-    #else
-    cfg.chip_type = CHIP_ISISC;
-    #endif
-
     cfg.chip_spec_cfg = &chip_spec_cfg;
     cfg.reg_func.mdio_set = qca_ar8216_phy_write;      //   parameters 
     cfg.reg_func.mdio_get = qca_ar8216_phy_read;
 
-	
+    if((qca_ar8216_mii_read(0)&0xff00)>>8 == 0x13)
+        cfg.chip_type = CHIP_ISISC;
+    else
+        cfg.chip_type = CHIP_ISIS;
+    
     rv = ssdk_init(0, &cfg);
     if (rv == 0)
         printk("qca-ssdk module init succeeded!\n");

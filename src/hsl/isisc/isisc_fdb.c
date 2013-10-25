@@ -2243,13 +2243,13 @@ isisc_fdb_init(a_uint32_t dev_id)
         p_api->fdb_del_all = isisc_fdb_del_all;
         p_api->fdb_del_by_port = isisc_fdb_del_by_port;
         p_api->fdb_del_by_mac = isisc_fdb_del_by_mac;
-        p_api->fdb_extend_first = isisc_fdb_extend_first;
-        p_api->fdb_extend_next = isisc_fdb_extend_next;
         p_api->fdb_find = isisc_fdb_find;
         p_api->port_learn_set = isisc_fdb_port_learn_set;
         p_api->port_learn_get = isisc_fdb_port_learn_get;
         p_api->age_ctrl_set = isisc_fdb_age_ctrl_set;
         p_api->age_ctrl_get = isisc_fdb_age_ctrl_get;
+        p_api->vlan_ivl_svl_set = isisc_fdb_vlan_ivl_svl_set;
+        p_api->vlan_ivl_svl_get = isisc_fdb_vlan_ivl_svl_get;
         p_api->age_time_set = isisc_fdb_age_time_set;
         p_api->age_time_get = isisc_fdb_age_time_get;
         p_api->fdb_extend_next  = isisc_fdb_extend_next;

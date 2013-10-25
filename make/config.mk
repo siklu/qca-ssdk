@@ -82,10 +82,10 @@ else
   RUNMODE=um
 endif
 
-BLD_DIR=$(PRJ_PATH)/build/$(OS)_$(CPU)
+BLD_DIR=$(PRJ_PATH)/build/$(OS)
 BIN_DIR=$(PRJ_PATH)/build/bin
 
-VER=1.1.3
+VER=1.2.0
 BUILD_NUMBER=$(shell cat $(PRJ_PATH)/make/.build_number)
 VERSION=$(VER).$(BUILD_NUMBER)
 BUILD_DATE=$(shell date -u  +%F-%T)

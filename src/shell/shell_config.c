@@ -372,6 +372,7 @@ struct cmd_des_t gcmd_des[] =
     {
         "rate", "config rate limit",
         {
+#ifndef ISISC
             {"qEgress", "set", "set egress rate limit of a queue", "<port_id> <queueid:0-3> <speed:(kbps)> <enable|disable>", SW_API_RATE_QU_EGRL_SET, NULL},
             {"qEgress", "get", "get egress rate limit of a queue", "<port_id> <queueid:0-3>", SW_API_RATE_QU_EGRL_GET, NULL},
             {"ptEgress", "set", "set egress rate limit of a port", "<port_id> <speed:(kbps)> <enable|disable>", SW_API_RATE_PT_EGRL_SET, NULL},
@@ -382,6 +383,7 @@ struct cmd_des_t gcmd_des[] =
             {"stormCtrl", "get", "get storm control status of a particular frame type", "<port_id> <unicast|multicast|broadcast>", SW_API_STORM_CTRL_FRAME_GET, NULL},
             {"stormCtrlRate", "set", "set storm ctrl rate", "<port_id> <rate:(packets/s)>", SW_API_STORM_CTRL_RATE_SET, NULL},
             {"stormCtrlRate", "get", "get storm ctrl rate", "<port_id>", SW_API_STORM_CTRL_RATE_GET, NULL},
+#endif
             {"portpolicer", "set", "set port policer", "<port_id>", SW_API_RATE_PORT_POLICER_SET, NULL},
             {"portpolicer", "get", "get port policer", "<port_id>", SW_API_RATE_PORT_POLICER_GET, NULL},
             {"portshaper", "set", "set port egress shaper", "<port_id> <enable|disable>", SW_API_RATE_PORT_SHAPER_SET, NULL},
@@ -400,11 +402,10 @@ struct cmd_des_t gcmd_des[] =
 #endif
 
 #ifdef IN_SEC
+#ifdef ISISC
     {
         "sec", "config security",
         {
-            {"normItem", "set", "normItem", "<item> <value>", SW_API_SEC_NORM_SET, NULL},
-            {"normItem", "get", "normItem", "<item>", SW_API_SEC_NORM_GET, NULL},
             {"mac", "set", "set MAC layer related security", "<resv_vid/invalid_src_addr> <value>", SW_API_SEC_MAC_SET, NULL},
             {"mac", "get", "get MAC layer related security", "<resv_vid/invalid_src_addr>", SW_API_SEC_MAC_GET, NULL},
             {"ip", "set", "set IP layer related security", "<invalid_ver/same_addr/ttl_change_status/ttl_val> <value>", SW_API_SEC_IP_SET, NULL},
@@ -424,6 +425,7 @@ struct cmd_des_t gcmd_des[] =
             {NULL, NULL, NULL, NULL, (int)NULL, NULL}/*end of desc*/
         },
     },
+#endif
 #endif
 
     /*stp*/
@@ -495,12 +497,16 @@ struct cmd_des_t gcmd_des[] =
     {
         "misc", "config miscellaneous",
         {
+#ifndef ISISC
             {"arp", "set", "set arp packets hardware identification status", "<enable|disable>", SW_API_ARP_STATUS_SET, NULL},
             {"arp", "get", "get arp packets hardware identification status", "", SW_API_ARP_STATUS_GET, NULL},
+#endif
             {"frameMaxSize", "set", "set the maximal received frame size of the device", "<size:byte>", SW_API_FRAME_MAX_SIZE_SET, NULL},
             {"frameMaxSize", "get", "get the maximal received frame size of the device", "", SW_API_FRAME_MAX_SIZE_GET, NULL},
+#ifndef ISISC
             {"ptUnkSaCmd", "set", "set forwarding command for frames with unknown source address", "<port_id> <forward|drop|cpycpu|rdtcpu>", SW_API_PT_UNK_SA_CMD_SET, NULL},
             {"ptUnkSaCmd", "get", "get forwarding command for frames with unknown source address", "<port_id>", SW_API_PT_UNK_SA_CMD_GET, NULL},
+#endif
             {"ptUnkUcFilter", "set", "set flooding status of unknown unicast frames", "<port_id> <enable|disable>", SW_API_PT_UNK_UC_FILTER_SET, NULL},
             {"ptUnkUcFilter", "get", "get flooding status of unknown unicast frames", "<port_id>", SW_API_PT_UNK_UC_FILTER_GET, NULL},
             {"ptUnkMcFilter", "set", "set flooding status of unknown multicast frames", "<port_id> <enable|disable>", SW_API_PT_UNK_MC_FILTER_SET, NULL},
@@ -509,21 +515,37 @@ struct cmd_des_t gcmd_des[] =
             {"ptBcFilter", "get", "get flooding status of broadcast frames", "<port_id>", SW_API_PT_BC_FILTER_GET, NULL},
             {"cpuPort", "set", "set cpu port status", "<enable|disable>", SW_API_CPU_PORT_STATUS_SET, NULL},
             {"cpuPort", "get", "get cpu port status", "", SW_API_CPU_PORT_STATUS_GET, NULL},
+#ifndef ISISC
             {"bctoCpu", "set", "set broadcast frames to Cpu port status", "<enable|disable>", SW_API_BC_TO_CPU_PORT_SET, NULL},
             {"bctoCpu", "get", "get broadcast frames to Cpu port status", "", SW_API_BC_TO_CPU_PORT_GET, NULL},
+#endif
+#ifdef ISISC
+            {"PppoeCmd", "set", "set pppoe frames forwarding command", "<forward|rdtcpu>", SW_API_PPPOE_CMD_SET, NULL},
+#else
             {"PppoeCmd", "set", "set pppoe frames forwarding command", "<forward|drop|cpycpu|rdtcpu>", SW_API_PPPOE_CMD_SET, NULL},
+#endif
             {"PppoeCmd", "get", "get pppoe frames forwarding command", "", SW_API_PPPOE_CMD_GET, NULL},
             {"Pppoe", "set", "set pppoe frames hardware identification status", "<enable|disable>", SW_API_PPPOE_STATUS_SET, NULL},
             {"Pppoe", "get", "get pppoe frames hardware identification status", "", SW_API_PPPOE_STATUS_GET, NULL},
             {"ptDhcp", "set", "set dhcp frames hardware identification status", "<port_id> <enable|disable>", SW_API_PT_DHCP_SET, NULL},
             {"ptDhcp", "get", "get dhcp frames hardware identification status", "<port_id>", SW_API_PT_DHCP_GET, NULL},
+#ifdef ISISC
+            {"arpcmd", "set", "set arp packets forwarding command", "<forward|cpycpu|rdtcpu>", SW_API_ARP_CMD_SET, NULL},
+#else
             {"arpcmd", "set", "set arp packets forwarding command", "<forward|drop|cpycpu|rdtcpu>", SW_API_ARP_CMD_SET, NULL},
+#endif
             {"arpcmd", "get", "get arp packets forwarding command", "", SW_API_ARP_CMD_GET, NULL},
+#ifdef ISISC
+            {"eapolcmd", "set", "set eapol packets forwarding command", "<cpycpu|rdtcpu>", SW_API_EAPOL_CMD_SET, NULL},
+#else
             {"eapolcmd", "set", "set eapol packets forwarding command", "<forward|drop|cpycpu|rdtcpu>", SW_API_EAPOL_CMD_SET, NULL},
+#endif
             {"eapolcmd", "get", "get eapol packets forwarding command", "", SW_API_EAPOL_CMD_GET, NULL},
+#ifndef ISISC
             {"pppoesession", "add", "add a pppoe session entry", "<session_id> <enable|disable>", SW_API_PPPOE_SESSION_ADD, NULL},
             {"pppoesession", "del", "del a pppoe session entry", "<session_id>", SW_API_PPPOE_SESSION_DEL, NULL},
             {"pppoesession", "get", "get a pppoe session entry", "<session_id>", SW_API_PPPOE_SESSION_GET, NULL},
+#endif
             {"eapolstatus", "set", "set eapol frames hardware identification status", "<port_id> <enable|disable>", SW_API_EAPOL_STATUS_SET, NULL},
             {"eapolstatus", "get", "get eapol frames hardware identification status", "<port_id>", SW_API_EAPOL_STATUS_GET, NULL},
             {"rip", "set", "set rip packets hardware identification status", "<enable|disable>", SW_API_RIPV1_STATUS_SET, NULL},
