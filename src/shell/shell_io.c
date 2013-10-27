@@ -228,6 +228,10 @@ cmd_data_check_uint32(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
         return SW_BAD_VALUE;
     }
 
+    if (strspn(cmd_str, "1234567890abcdefABCDEFXx") != strlen(cmd_str)){
+        return SW_BAD_VALUE;
+    }
+
     if (cmd_str[0] == '0' && (cmd_str[1] == 'x' || cmd_str[1] == 'X'))
         sscanf(cmd_str, "%x", arg_val);
     else
@@ -5061,7 +5065,7 @@ cmd_data_print_vlan_translation(a_uint8_t * param_name, a_uint32_t * buf, a_uint
     fal_vlan_trans_entry_t *entry;
 
     entry = (fal_vlan_trans_entry_t *) buf;
-    dprintf("[Ovid]:0x%x  [Svid]:0x%x  [Cvid]:0x%x  [BiDirect]:%s  [ForwardDirect]:%s  [ReverseDirect]:%s",
+    dprintf("[Ovid]:0x%x  [Svid]:0x%x  [Cvid]:0x%x  [BiDirect]:%s  [ForwardDirect]:%s  [ReverseDirect]:%s  ",
             entry->o_vid, entry->s_vid, entry->c_vid,
             entry->bi_dir?"ENABLE":"DISABLE",
             entry->forward_dir?"ENABLE":"DISABLE",

@@ -286,7 +286,7 @@ struct cmd_des_t gcmd_des[] =
             {"ptFSpriSts", "set", "set port force Stag priority status for received frames of a port", "<port_id> <enable|disable>", SW_API_QOS_PT_FORCE_SPRI_ST_SET, NULL},
             {"ptFSpriSts", "get", "get port force Stag priority status for received frames of a port", "<port_id>", SW_API_QOS_PT_FORCE_SPRI_ST_GET, NULL},
             {"ptFCpriSts", "set", "set port force Ctag priority status for received frames of a port", "<port_id> <enable|disable>", SW_API_QOS_PT_FORCE_CPRI_ST_SET, NULL},
-            {"ptFCpriSts", "get", "get port force Ctag priority status for received frames of a port", "<port_id>", SW_API_QOS_PT_FORCE_SPRI_ST_GET, NULL},
+            {"ptFCpriSts", "get", "get port force Ctag priority status for received frames of a port", "<port_id>", SW_API_QOS_PT_FORCE_CPRI_ST_GET, NULL},
             {"ptQuRemark", "set", "set egress queue based remark", "<port_id> <queue_id> <table_id> <enable|disable>", SW_API_QOS_QUEUE_REMARK_SET, NULL},
             {"ptQuRemark", "get", "get egress queue based remark", "<port_id> <queue_id>", SW_API_QOS_QUEUE_REMARK_GET, NULL},
             {NULL, NULL, NULL, NULL, (int)NULL, NULL}/*end of desc*/

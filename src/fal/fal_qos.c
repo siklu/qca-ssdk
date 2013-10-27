@@ -1275,7 +1275,7 @@ fal_qos_port_force_cpri_status_set(a_uint32_t dev_id, fal_port_t port_id,
     sw_error_t rv;
 
     FAL_API_LOCK;
-    rv = _fal_qos_port_force_spri_status_set(dev_id, port_id, enable);
+    rv = _fal_qos_port_force_cpri_status_set(dev_id, port_id, enable);
     FAL_API_UNLOCK;
     return rv;
 }
