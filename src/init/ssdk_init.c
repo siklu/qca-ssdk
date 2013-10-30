@@ -38,10 +38,10 @@
 #include <asm/mach-types.h>
 #include <linux/kconfig.h>
 #include <generated/autoconf.h>
-#include <net/switch.h>
-#include <linux/delay.h>
-#include <linux/phy.h>
 #include <linux/netdevice.h>
+#include <linux/phy.h>
+#include <linux/delay.h>
+#include <net/switch.h>
 #include <linux/ar8216_platform.h>
 #include "ssdk_plat.h"
 #include "ref_vlan.h"
