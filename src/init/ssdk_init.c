@@ -44,6 +44,11 @@
 #include <linux/netdevice.h>
 #include <linux/ar8216_platform.h>
 #include "ssdk_plat.h"
+#include "ref_vlan.h"
+#include "ref_fdb.h"
+#include "ref_mib.h"
+#include "ref_port_ctrl.h"
+#include "ref_misc.h"
 
 static void
 qca_phy_read_port_link(struct qca_phy_priv *priv, int port,
@@ -249,7 +254,7 @@ qca_ar8327_set_led_cfg(struct qca_phy_priv *priv,
 }
 
 static void
-ar8327_port_init(struct qca_phy_priv *priv, a_uint32_t port)
+qca_ar8327_port_init(struct qca_phy_priv *priv, a_uint32_t port)
 {
 	struct ar8327_platform_data *plat_data;
 	struct ar8327_port_cfg *port_cfg;
@@ -376,10 +381,155 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 	msleep(1000);
 
 	for (i = 0; i < AR8327_NUM_PORTS; i++) {
-		ar8327_port_init(priv, i);
+		qca_ar8327_port_init(priv, i);
     }
 
 	return 0;
+}
+
+static int
+qca_ar8327_sw_get_reg_val(struct switch_dev *dev,
+                                    int reg, int *val)
+{
+	return 0;
+}
+
+static int
+qca_ar8327_sw_set_reg_val(struct switch_dev *dev,
+                                    int reg, int val)
+{
+	return 0;
+}
+
+static struct switch_attr qca_ar8327_globals[] = {
+	{
+		.name = "enable_vlan",
+		.description = "Enable 8021q VLAN",
+		.type = SWITCH_TYPE_INT,
+		.set = qca_ar8327_sw_set_vlan,
+		.get = qca_ar8327_sw_get_vlan,
+		.max = 1
+	},{
+		.name = "max_frame_size",
+		.description = "Set Max frame Size Of Mac",
+		.type = SWITCH_TYPE_INT,
+		.set = qca_ar8327_sw_set_max_frame_size,
+		.get = qca_ar8327_sw_get_max_frame_size,
+		.max = 9018
+	},
+	{
+		.name = "reset_mibs",
+		.description = "Reset All MIB Counters",
+		.type = SWITCH_TYPE_NOVAL,
+		.set = qca_ar8327_sw_set_reset_mibs,
+	},
+	{
+		.name = "flush_arl",
+		.description = "Flush All ARL table",
+		.type = SWITCH_TYPE_NOVAL,
+		.set = qca_ar8327_sw_atu_flush,
+	},
+	{
+		.name = "dump_arl",
+		.description = "Dump All ARL table",
+		.type = SWITCH_TYPE_STRING,
+		.get = qca_ar8327_sw_atu_dump,
+	},
+};
+
+static struct switch_attr qca_ar8327_port[] = {
+	{
+		.name = "reset_mib",
+		.description = "Reset Mib Counters",
+		.type = SWITCH_TYPE_NOVAL,
+		.set = qca_ar8327_sw_set_port_reset_mib,
+	},
+	{
+		.name = "mib",
+		.description = "Get Mib Counters",
+		.type = SWITCH_TYPE_STRING,
+		.set = NULL,
+		.get = qca_ar8327_sw_get_port_mib,
+	},
+};
+
+static struct switch_attr qca_ar8327_vlan[] = {
+	{
+		.name = "vid",
+		.description = "Configure Vlan Id",
+		.type = SWITCH_TYPE_INT,
+		.set = qca_ar8327_sw_set_vid,
+		.get = qca_ar8327_sw_get_vid,
+		.max = 4094,
+	},
+};
+
+static const struct switch_dev_ops qca_ar8327_sw_ops = {
+	.attr_global = {
+		.attr = qca_ar8327_globals,
+		.n_attr = ARRAY_SIZE(qca_ar8327_globals),
+	},
+	.attr_port = {
+		.attr = qca_ar8327_port,
+		.n_attr = ARRAY_SIZE(qca_ar8327_port),
+	},
+	.attr_vlan = {
+		.attr = qca_ar8327_vlan,
+		.n_attr = ARRAY_SIZE(qca_ar8327_vlan),
+	},
+	.get_port_pvid = qca_ar8327_sw_get_pvid,
+	.set_port_pvid = qca_ar8327_sw_set_pvid,
+	.get_vlan_ports = qca_ar8327_sw_get_ports,
+	.set_vlan_ports = qca_ar8327_sw_set_ports,
+	.apply_config = qca_ar8327_sw_hw_apply,
+	.reset_switch = qca_ar8327_sw_reset_switch,
+	.get_port_link = qca_ar8327_sw_get_port_link,
+	.get_reg_val = qca_ar8327_sw_get_reg_val,
+	.set_reg_val = qca_ar8327_sw_set_reg_val,
+};
+
+static int
+qca_phy_mib_task(struct qca_phy_priv *priv)
+{
+	qca_ar8327_sw_mib_task(&priv->sw_dev);
+}
+
+static void
+qca_phy_mib_work_task(struct work_struct *work)
+{
+	struct qca_phy_priv *priv = container_of(work, struct qca_phy_priv,
+                                            mib_dwork.work);
+
+	mutex_lock(&priv->mib_lock);
+
+    qca_phy_mib_task(priv);
+
+	mutex_unlock(&priv->mib_lock);
+	schedule_delayed_work(&priv->mib_dwork,
+			      msecs_to_jiffies(QCA_PHY_MIB_WORK_DELAY));
+}
+
+static int
+qca_phy_mib_work_start(struct qca_phy_priv *priv)
+{
+	mutex_init(&priv->mib_lock);
+	priv->mib_counters = kzalloc(priv->sw_dev.ports * QCA_MIB_ITEM_NUMBER *
+	      sizeof(*priv->mib_counters), GFP_KERNEL);
+	if (!priv->mib_counters)
+		return -ENOMEM;
+
+	INIT_DELAYED_WORK(&priv->mib_dwork, qca_phy_mib_work_task);
+
+	schedule_delayed_work(&priv->mib_dwork,
+			               msecs_to_jiffies(QCA_PHY_MIB_WORK_DELAY));
+
+	return 0;
+}
+
+static void
+qca_phy_mib_work_stop(struct qca_phy_priv *priv)
+{
+	cancel_delayed_work_sync(&priv->mib_dwork);
 }
 
 static int
@@ -408,6 +558,7 @@ static int
 qca_phy_config_init(struct phy_device *pdev)
 {
 	struct qca_phy_priv *priv = pdev->priv;
+	struct switch_dev *sw_dev;
 	int ret;
 
 	if (pdev->addr != 0) {
@@ -440,11 +591,26 @@ qca_phy_config_init(struct phy_device *pdev)
 	pdev->supported |= SUPPORTED_1000baseT_Full;
 	pdev->advertising |= ADVERTISED_1000baseT_Full;
 
+	sw_dev = &priv->sw_dev;
+	sw_dev->ops = &qca_ar8327_sw_ops;
+	sw_dev->name = "QCA AR8327 AR8337";
+	sw_dev->vlans = AR8327_MAX_VLANS;
+	sw_dev->ports = AR8327_NUM_PORTS;
+
+	ret = register_switch(&priv->sw_dev, pdev->attached_dev);
+	if (ret != 0) {
+		kfree(priv);
+        return ret;
+    }
+
 	ret = qca_ar8327_hw_init(priv);
 	if (ret != 0) {
 		kfree(priv);
         return ret;
     }
+
+    qca_phy_mib_work_start(priv);
+    mutex_init(&priv->reg_mutex);
 
 	return ret;
 }
@@ -524,15 +690,21 @@ qca_phy_remove(struct phy_device *pdev)
 {
 	struct qca_phy_priv *priv = pdev->priv;
 
+	if ((pdev->addr == 0) && priv) {
+        qca_phy_mib_work_stop(priv);
+		kfree(priv->mib_counters);
+		unregister_switch(&priv->sw_dev);
+	}
+
 	if (priv) {
 		kfree(priv);
     }
 }
 
 static struct phy_driver qca_phy_driver = {
-    .name		= "QCA AR8327 AR8337",
+    .name		= "QCA AR8216 AR8236 AR8316 AR8327 AR8337",
 	.phy_id		= 0x004d0000,
-	.phy_id_mask= 0xffff0000,
+    .phy_id_mask= 0xffff0000,
 	.probe		= qca_phy_probe,
 	.remove		= qca_phy_remove,
 	.config_init= &qca_phy_config_init,
@@ -549,6 +721,12 @@ ssdk_plat_init(void)
 
     miibus_get();
 
+    if(driver_find(qca_phy_driver.name, &mdio_bus_type)){
+        printk("QCA PHY driver had been Registered\n");
+        return 0;
+    }
+
+    printk("Register QCA PHY driver\n");
 	return phy_driver_register(&qca_phy_driver);
 }
 
@@ -569,7 +747,6 @@ static struct mii_bus *miibus = NULL;
 sw_error_t
 ssdk_switch_init(a_uint32_t dev_id)
 {
-    sw_error_t rv;
     a_uint32_t nr = 0;
     a_uint32_t i;
     hsl_dev_t *p_dev = NULL;
@@ -656,7 +833,7 @@ ssdk_switch_init(a_uint32_t dev_id)
             fal_qos_queue_tx_buf_nr_set(dev_id, i, 0, &nr);
         }
     }
-
+    return SW_OK;
 }
 
 

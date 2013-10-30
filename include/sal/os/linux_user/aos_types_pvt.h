@@ -18,9 +18,6 @@
 #define _AOS_PVTTYPES_H
 
 #include <asm/types.h>
-#ifndef GCCV4
-#include <linux/compiler.h>
-#endif
 #include <stdio.h>
 /*
  * Private definitions of general data types

@@ -16,6 +16,7 @@
 
 
 #ifdef KVER32
+#include <linux/kconfig.h> 
 #include <generated/autoconf.h>
 #else
 #include <linux/autoconf.h>
@@ -38,7 +39,7 @@
 #include <linux/if_vlan.h>
 #endif
 #if defined (CONFIG_BRIDGE)
-#include <net/bridge/br_private.h>
+#include <../net/bridge/br_private.h>
 #endif
 #include <linux/ppp_defs.h>
 #include <linux/filter.h>
@@ -669,6 +670,7 @@ static sw_error_t setup_interface_entry(char *list_if, int is_wan)
 #ifdef ISISC
         if (0 == is_wan) /* Not WAN -> LAN */
         {
+#if NAT_TODO   
             /* Setup private and netmask as soon as possible */
             if (NULL != nat_dev->br_port) /* under bridge interface. */
             {
@@ -676,6 +678,18 @@ static sw_error_t setup_interface_entry(char *list_if, int is_wan)
                 in_device_lan = (struct in_device *) (br_port_get_rcu(nat_dev)->br->dev->ip_ptr);
 #else
                 in_device_lan = (struct in_device *) nat_dev->br_port->br->dev->ip_ptr;
+#endif
+#else
+#ifdef KVER32
+            if (NULL != br_port_get_rcu(nat_dev)) /* under bridge interface. */
+            {
+                in_device_lan = (struct in_device *) (br_port_get_rcu(nat_dev)->br->dev->ip_ptr);
+#else
+            /* Setup private and netmask as soon as possible */
+            if (NULL != nat_dev->br_port) /* under bridge interface. */
+            {
+                in_device_lan = (struct in_device *) nat_dev->br_port->br->dev->ip_ptr;
+#endif
 #endif
             }
             else
@@ -689,7 +703,9 @@ static sw_error_t setup_interface_entry(char *list_if, int is_wan)
             }
             nat_hw_prv_mask_set((a_uint32_t)(in_device_lan->ifa_list->ifa_mask));
             nat_hw_prv_base_set((a_uint32_t)(in_device_lan->ifa_list->ifa_address));
+#ifndef KVER32
             printk("Set private base 0x%08x for %s\n", (a_uint32_t)(in_device_lan->ifa_list->ifa_address), nat_dev->br_port->br->dev->name);
+#endif
             memcpy(&lanip, (void *)&(in_device_lan->ifa_list->ifa_address), 4); /* copy Lan port IP. */
 #ifndef ISISC
             redirect_internal_ip_packets_to_cpu_on_wan_add_acl_rules((a_uint32_t)(in_device_lan->ifa_list->ifa_address),
@@ -731,7 +747,9 @@ static int setup_all_interface_entry(void)
     {
         for (i=0; i<7; i++) /* For AR8327/AR8337, only 7 port */
         {
+#if NAT_TODO /* need to implement here */
             PORTVLAN_ROUTE_DEFV_SET(0, i);
+#endif
         }
         setup_default_vid = 1;
     }
@@ -1523,9 +1541,17 @@ static unsigned int ipv6_handle(unsigned   int   hooknum,
                 arp_hw_add(sport, vid, sip, sa, 1);
             }
 
+#if NAT_TODO /* should be ok */
             if ((NULL != in->ip6_ptr) && (NULL != ((struct inet6_dev *)in->ip6_ptr)->addr_list))
+#else
+            if (NULL != in->ip6_ptr)
+#endif
             {
-                in_device_addr = ((struct inet6_dev *)in->ip6_ptr)->addr_list;
+#if NAT_TODO  /* MUST be double check */
+                in_device_addr = ((struct inet6_dev *)(in->ip6_ptr))->addr_list;
+#else
+                list_for_each_entry(in_device_addr, &(in->ip6_ptr)->addr_list, if_list);
+#endif                
                 if (0 == dev_is_lan)
                 {
                     /* WAN ipv6 address*/

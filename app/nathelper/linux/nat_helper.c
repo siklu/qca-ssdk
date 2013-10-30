@@ -14,6 +14,12 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifdef KVER32
+#include <linux/kconfig.h> 
+#include <generated/autoconf.h>
+#else
+#include <linux/autoconf.h>
+#endif
 
 #include "nat_helper.h"
 

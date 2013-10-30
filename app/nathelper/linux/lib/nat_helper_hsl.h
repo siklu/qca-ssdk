@@ -18,6 +18,13 @@
 #ifndef _NAT_HELPER_HSL_H
 #define _NAT_HELPER_HSL_H
 
+#ifdef KVER32
+#include <linux/kconfig.h> 
+#include <generated/autoconf.h>
+#else
+#include <linux/autoconf.h>
+#endif
+
 #include <linux/if_ether.h>
 
 #define NAT_HW_NUM 32

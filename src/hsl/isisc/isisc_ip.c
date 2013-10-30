@@ -1412,7 +1412,7 @@ static sw_error_t
 _isisc_ip_route_status_get(a_uint32_t dev_id, a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t route_en = 0, l3_en = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1420,10 +1420,14 @@ _isisc_ip_route_status_get(a_uint32_t dev_id, a_bool_t * enable)
     SW_RTN_ON_ERROR(rv);
 
     HSL_REG_FIELD_GET(rv, dev_id, ROUTER_CTRL, 0, ROUTER_EN,
-                      (a_uint8_t *) (&data), sizeof (a_uint32_t));
+                      (a_uint8_t *) (&route_en), sizeof (a_uint32_t));
     SW_RTN_ON_ERROR(rv);
 
-    if (data)
+    HSL_REG_FIELD_GET(rv, dev_id, MOD_ENABLE, 0, L3_EN,
+                      (a_uint8_t *) (&l3_en), sizeof (a_uint32_t))
+    SW_RTN_ON_ERROR(rv);
+
+    if (route_en && l3_en)
     {
         *enable = A_TRUE;
     }

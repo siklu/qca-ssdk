@@ -16,6 +16,7 @@
 
 
 #ifdef KVER32
+#include <linux/kconfig.h>
 #include <generated/autoconf.h>
 #else
 #include <linux/autoconf.h>
@@ -637,7 +638,9 @@ napt_ct_check_add_one(a_uint32_t ct_addr, a_uint8_t *napt_ct_valid)
                 {
                     NAPT_CT_AGING_DISABLE(ct_addr);
                     napt_ct_buf_in_hw_set(napt_ct, hw_index);
+#if NAT_TODO
                     ct->in_hnat = 1; /* contrack in HNAT now. */
+#endif
                 }
             }
         }

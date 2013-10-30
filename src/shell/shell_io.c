@@ -6745,6 +6745,7 @@ cmd_data_check_intf_mac_entry(char *cmd_str, void * val, a_uint32_t size)
     do
     {
         cmd = get_sub_cmd("vid low", NULL);
+        SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
         {
@@ -6768,6 +6769,7 @@ cmd_data_check_intf_mac_entry(char *cmd_str, void * val, a_uint32_t size)
     do
     {
         cmd = get_sub_cmd("vid high", NULL);
+        SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
         {

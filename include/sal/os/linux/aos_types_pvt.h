@@ -17,12 +17,10 @@
 #ifndef _AOS_PVTTYPES_H
 #define _AOS_PVTTYPES_H
 
-#ifdef GCCV4
 #ifdef KVER32
 #include <generated/autoconf.h>
 #else
 #include <linux/autoconf.h>
-#endif
 #endif
 #include <asm/types.h>
 #include <linux/compiler.h>

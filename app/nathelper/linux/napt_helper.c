@@ -16,6 +16,7 @@
 
 
 #ifdef KVER32
+#include <linux/kconfig.h>  
 #include <generated/autoconf.h>
 #else
 #include <linux/autoconf.h>
@@ -100,9 +101,9 @@ napt_ct_aging_enable(uint32_t ct_addr)
             ct->timeout.expires = jiffies+(5*24*60*60*HZ);
         }
     }
-
+#if NAT_TODO
     ct->in_hnat = 0; /* once timmer is enabled, contrack not in HNAT anymore. */
-
+#endif
     HNAT_PRINTK("<aging> ct:[%x] add timeout again\n",  ct_addr);
     add_timer(&ct->timeout);
 }
@@ -172,8 +173,8 @@ napt_ct_pkts_get(uint32_t ct_addr)
 
     if(cct)
     {
-        return (cct[IP_CT_DIR_ORIGINAL].packets +
-                cct[IP_CT_DIR_REPLY].packets);
+        return (atomic64_read(&cct[IP_CT_DIR_ORIGINAL].packets) +
+                atomic64_read(&cct[IP_CT_DIR_REPLY].packets));
     }
     else
     {

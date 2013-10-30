@@ -433,8 +433,8 @@ struct cmd_des_t gcmd_des[] =
     {
         "stp", "config STP",
         {
-            {"portState", "set", "set STP state of a port", "st_id <port_id> <disable|block|listen|learn|forward>", SW_API_STP_PT_STATE_SET, NULL},
-            {"portState", "get", "get STP state of a port", "st_id <port_id>", SW_API_STP_PT_STATE_GET, NULL},
+            {"portState", "set", "set STP state of a port", "<st_id> <port_id> <disable|block|listen|learn|forward>", SW_API_STP_PT_STATE_SET, NULL},
+            {"portState", "get", "get STP state of a port", "<st_id> <port_id>", SW_API_STP_PT_STATE_GET, NULL},
             {NULL, NULL, NULL, NULL, (int)NULL, NULL}/*end of desc*/
         },
     },

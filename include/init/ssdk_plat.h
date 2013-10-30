@@ -104,7 +104,9 @@
 #define   AR8327_PAD_MAC_PWR_RGMII1_1_8V		BIT(18)
 
 #define AR8327_NUM_PHYS		5
+#define AR8327_PORT_CPU     0
 #define AR8327_NUM_PORTS	7
+#define AR8327_MAX_VLANS  128
 
 enum {
     AR8327_PORT_SPEED_10M = 0,
@@ -121,31 +123,56 @@ enum {
 	QCA_VER_AR8337 = 0x13
 };
 
+/*poll mib per 2secs*/
+#define QCA_PHY_MIB_WORK_DELAY	2000
+#define QCA_MIB_ITEM_NUMBER	41
+
 struct qca_phy_priv {
 	struct phy_device *phy;
+	struct switch_dev sw_dev;
     a_uint8_t version;
-	a_uint8_t revision;    
+	a_uint8_t revision;
 	a_uint32_t (*mii_read)(a_uint32_t reg);
 	void (*mii_write)(a_uint32_t reg, a_uint32_t val);
     void (*phy_dbg_write)(a_uint32_t dev_id, a_uint32_t phy_addr,
                         a_uint16_t dbg_addr, a_uint16_t dbg_data);
-    void (*phy_mmd_write)(a_uint32_t dev_id, a_uint32_t phy_addr, 
+    void (*phy_mmd_write)(a_uint32_t dev_id, a_uint32_t phy_addr,
                           a_uint16_t addr, a_uint16_t data);
-    void (*phy_write)(a_uint32_t dev_id, a_uint32_t phy_addr, 
+    void (*phy_write)(a_uint32_t dev_id, a_uint32_t phy_addr,
                             a_uint32_t reg, a_uint16_t data);
+
+	bool init;
+	struct mutex reg_mutex;
+	struct mutex mib_lock;
+	struct delayed_work mib_dwork;
+	u64 *mib_counters;
+	/* dump buf */
+	a_uint8_t  buf[2048];
+
+    /* VLAN database */
+    bool       vlan;  /* True: 1q vlan mode, False: port vlan mode */
+    a_uint16_t vlan_id[AR8327_MAX_VLANS];
+    a_uint8_t  vlan_table[AR8327_MAX_VLANS];
+    a_uint8_t  vlan_tagged;
+    a_uint16_t pvid[AR8327_NUM_PORTS];
+
 };
 
-static int 
+
+#define qca_phy_priv_get(_dev) \
+		container_of(_dev, struct qca_phy_priv, sw_dev)
+
+static int
 miibus_get(void);
-uint32_t 
+uint32_t
 qca_ar8216_mii_read(int reg);
-void 
+void
 qca_ar8216_mii_write(int reg, uint32_t val);
-static sw_error_t 
-qca_ar8327_phy_write(a_uint32_t dev_id, a_uint32_t phy_addr, 
+static sw_error_t
+qca_ar8327_phy_write(a_uint32_t dev_id, a_uint32_t phy_addr,
                             a_uint32_t reg, a_uint16_t data);
 static void
-qca_ar8327_mmd_write(a_uint32_t dev_id, a_uint32_t phy_addr, 
+qca_ar8327_mmd_write(a_uint32_t dev_id, a_uint32_t phy_addr,
                               a_uint16_t addr, a_uint16_t data);
 static void
 qca_ar8327_phy_dbg_write(a_uint32_t dev_id, a_uint32_t phy_addr,

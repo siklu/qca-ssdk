@@ -115,7 +115,7 @@ ifeq (TRUE, $(REG_ACCESS_SPEEDUP))
 endif
 
 ifeq (TRUE, $(DEBUG_ON))
-  MODULE_CFLAG += -g 
+  MODULE_CFLAG += -g
 endif
 
 MODULE_CFLAG += $(OPT_FLAG) -Wall -DVERSION=\"$(VERSION)\" -DBUILD_DATE=\"$(BUILD_DATE)\" -DCPU=\"$(CPU)\" -DOS=\"$(OS)\"
@@ -124,6 +124,7 @@ MODULE_INC += -I$(PRJ_PATH)/include \
                    -I$(PRJ_PATH)/include/common \
                    -I$(PRJ_PATH)/include/api \
                    -I$(PRJ_PATH)/include/fal \
+                   -I$(PRJ_PATH)/include/ref \
                    -I$(PRJ_PATH)/include/hsl \
                    -I$(PRJ_PATH)/include/hsl/phy \
                    -I$(PRJ_PATH)/include/sal/os \
@@ -213,10 +214,10 @@ ifeq (KSLIB, $(MODULE_TYPE))
 	      -I$(SYS_PATH)/include/generated \
 	      -I$(SYS_PATH)/usr/include
         endif
-	  
-	  
+
+
   endif
-  
+
   ifeq (2_6, $(OS_VER))
         MODULE_CFLAG += -DKVER26
         MODULE_CFLAG += -DLNX26_22
@@ -243,13 +244,13 @@ ifeq (KSLIB, $(MODULE_TYPE))
 	      -I$(SYS_PATH)/include/generated \
 	      -I$(SYS_PATH)/usr/include
         endif
-	  
-	  
+
+
   endif
 
   MODULE_CFLAG += -D__KERNEL__ -DKERNEL_MODULE $(CPU_CFLAG)
 
-  
+
 endif
 
 ifeq (SHELL, $(MODULE_TYPE))
@@ -260,7 +261,7 @@ ifeq (SHELL, $(MODULE_TYPE))
     else
    	  MODULE_CFLAG += -DKVER24
     endif
-  
+
     ifeq (TRUE, $(KERNEL_MODE))
       MODULE_CFLAG += -static
     else
