@@ -183,7 +183,7 @@ qca_ar8327_sw_get_port_mib(struct switch_dev *dev,
                             priv->mib_counters[pos++]);
     len += snprintf(buf + len, sizeof(priv->buf) - len,
                             "%-12s: %llu\n",
-                            "RxAllignErr",
+                            "RxAlignErr",
                             priv->mib_counters[pos++]);
     len += snprintf(buf + len, sizeof(priv->buf) - len,
                             "%-12s: %llu\n",
@@ -307,7 +307,7 @@ qca_ar8327_sw_get_port_mib(struct switch_dev *dev,
                             priv->mib_counters[pos++]);
     len += snprintf(buf + len, sizeof(priv->buf) - len,
                             "%-12s: %llu\n",
-                            "TxSingalCol",
+                            "TxSingleCol",
                             priv->mib_counters[pos++]);
     len += snprintf(buf + len, sizeof(priv->buf) - len,
                             "%-12s: %llu\n",
