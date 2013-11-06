@@ -110,7 +110,7 @@ qca_ar8327_sw_set_reset_mibs(struct switch_dev *dev,
     int len = 0;
     struct qca_phy_priv *priv = qca_phy_priv_get(dev);
     len = dev->ports * QCA_MIB_ITEM_NUMBER *
-	      sizeof(*priv->mib_counters);
+             sizeof(*priv->mib_counters);
 
     mutex_lock(&priv->mib_lock);
     memset(priv->mib_counters, '\0', len);
