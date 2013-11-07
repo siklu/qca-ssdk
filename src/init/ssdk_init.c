@@ -316,6 +316,10 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 	if (plat_data == NULL) {
 		return -EINVAL;
     }
+        /*First software reset S17 chip*/
+        value = priv->mii_read(AR8327_REG_CTRL);
+        value |= 0x80000000;
+        priv->mii_write(AR8327_REG_CTRL, value);
 
 	value = qca_ar8327_get_pad_cfg(plat_data->pad0_cfg);
 	priv->mii_write(AR8327_REG_PAD0_CTRL, value);
@@ -761,6 +765,7 @@ ssdk_switch_init(a_uint32_t dev_id)
     fal_frame_max_size_set(dev_id, 1518+8+2);
     /* Enable MIB counters */
     fal_mib_status_set(dev_id, A_TRUE);
+    fal_igmp_mld_rp_set(dev_id, 0);
 
     for (i = 0; i < p_dev->nr_ports; i++)
     {
@@ -768,6 +773,8 @@ ssdk_switch_init(a_uint32_t dev_id)
             fal_port_link_forcemode_set(dev_id, i, A_FALSE);
         fal_port_rxhdr_mode_set(dev_id, i, FAL_NO_HEADER_EN);
         fal_port_txhdr_mode_set(dev_id, i, FAL_NO_HEADER_EN);
+        fal_port_flowctrl_forcemode_set(dev_id, i, A_TRUE);
+        fal_port_flowctrl_set(dev_id, i, A_FALSE);
         fal_port_default_svid_set(dev_id, i, 0);
         fal_port_default_cvid_set(dev_id, i, 0);
         fal_port_1qmode_set(dev_id, i, FAL_1Q_DISABLE);

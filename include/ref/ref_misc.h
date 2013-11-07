@@ -22,6 +22,9 @@ qca_ar8327_sw_get_max_frame_size(struct switch_dev *dev,
 										const struct switch_attr *attr,
 		   								struct switch_val *val);
 
+int
+qca_ar8327_sw_reset_switch(struct switch_dev *dev);
+
 #ifdef __cplusplus
 }
 #endif                          /* __cplusplus */

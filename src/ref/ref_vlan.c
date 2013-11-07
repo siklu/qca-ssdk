@@ -269,31 +269,4 @@ qca_ar8327_sw_hw_apply(struct switch_dev *dev)
     return 0;
 }
 
-int
-qca_ar8327_sw_reset_switch(struct switch_dev *dev)
-{
-    struct qca_phy_priv *priv = qca_phy_priv_get(dev);
-    int i;
-
-    mutex_lock(&priv->reg_mutex);
-
-    priv->vlan = 0;
-    memset(priv->vlan_table, 0, sizeof(a_uint8_t) * AR8327_MAX_VLANS);
-    priv->vlan_tagged = 0;
-    memset(priv->pvid, 0, sizeof(a_uint16_t) * AR8327_NUM_PORTS);
-
-    for (i = 0; i < AR8327_MAX_VLANS; i++)
-        priv->vlan_id[i] = i;
-
-	/* Configure all ports
-	for (i = 0; i < dev->ports; i++)
-		priv->chip->init_port(priv, i);
-
-	priv->chip->init_globals(priv); */
-
-    mutex_unlock(&priv->reg_mutex);
-
-    return qca_ar8327_sw_hw_apply(dev);
-}
-
 

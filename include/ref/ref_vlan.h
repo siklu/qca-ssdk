@@ -47,9 +47,6 @@ qca_ar8327_sw_set_ports(struct switch_dev *dev, struct switch_val *val);
 int
 qca_ar8327_sw_hw_apply(struct switch_dev *dev);
 
-int
-qca_ar8327_sw_reset_switch(struct switch_dev *dev);
-
 #ifdef __cplusplus
 }
 #endif                          /* __cplusplus */

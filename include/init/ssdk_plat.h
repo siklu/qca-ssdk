@@ -124,7 +124,7 @@ enum {
 };
 
 /*poll mib per 2secs*/
-#define QCA_PHY_MIB_WORK_DELAY	2000
+#define QCA_PHY_MIB_WORK_DELAY	20000
 #define QCA_MIB_ITEM_NUMBER	41
 
 struct qca_phy_priv {
