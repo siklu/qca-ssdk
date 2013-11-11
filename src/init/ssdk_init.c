@@ -315,7 +315,7 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 	plat_data = priv->phy->dev.platform_data;
 	if (plat_data == NULL) {
 		return -EINVAL;
-    }
+        }
         /*First software reset S17 chip*/
         value = priv->mii_read(AR8327_REG_CTRL);
         value |= 0x80000000;
@@ -769,8 +769,9 @@ ssdk_switch_init(a_uint32_t dev_id)
 
     for (i = 0; i < p_dev->nr_ports; i++)
     {
-        if (i  != 0)
+        if (i  != 0) {
             fal_port_link_forcemode_set(dev_id, i, A_FALSE);
+        }
         fal_port_rxhdr_mode_set(dev_id, i, FAL_NO_HEADER_EN);
         fal_port_txhdr_mode_set(dev_id, i, FAL_NO_HEADER_EN);
         fal_port_flowctrl_forcemode_set(dev_id, i, A_TRUE);
@@ -782,9 +783,16 @@ ssdk_switch_init(a_uint32_t dev_id)
         fal_fdb_port_learn_set(dev_id, i, A_TRUE);
         fal_stp_port_state_set(dev_id, 0, i, FAL_STP_FARWARDING);
         fal_port_vlan_propagation_set(dev_id, i, FAL_VLAN_PROPAGATION_REPLACE);
-        fal_port_igmps_status_set(dev_id, i, A_TRUE);
-        fal_port_igmp_mld_join_set(dev_id, i, A_TRUE);
-        fal_port_igmp_mld_leave_set(dev_id, i, A_TRUE);
+
+        if ((i == 6) || (i == 0)) {
+            fal_port_igmps_status_set(dev_id, i, A_FALSE);
+            fal_port_igmp_mld_join_set(dev_id, i, A_FALSE);
+            fal_port_igmp_mld_leave_set(dev_id, i, A_FALSE);
+        } else {
+            fal_port_igmps_status_set(dev_id, i, A_TRUE);
+            fal_port_igmp_mld_join_set(dev_id, i, A_TRUE);
+            fal_port_igmp_mld_leave_set(dev_id, i, A_TRUE);
+        }
         fal_igmp_mld_entry_creat_set(dev_id, A_TRUE);
         fal_igmp_mld_entry_v3_set(dev_id, A_TRUE);
 

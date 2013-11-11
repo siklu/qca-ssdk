@@ -221,9 +221,6 @@ qca_ar8327_sw_hw_apply(struct switch_dev *dev)
 
     /* update the port destination mask registers and tag settings */
     for (i = 0; i < dev->ports; i++) {
-        /*
-        int egress, ingress;
-        */
         int pvid;
         fal_pt_1qmode_t ingressMode;
         fal_pt_1q_egmode_t egressMode;
@@ -231,33 +228,18 @@ qca_ar8327_sw_hw_apply(struct switch_dev *dev)
         if (priv->vlan) {
             pvid = priv->vlan_id[priv->pvid[i]];
             if (priv->vlan_tagged & (1 << i)) {
-                /*
-                egress = AR8216_OUT_ADD_VLAN;
-                */
                 egressMode = FAL_EG_TAGGED;
             } else {
-                /*
-                egress = AR8216_OUT_STRIP_VLAN;
-                */
                 egressMode = FAL_EG_UNTAGGED;
             }
 
-            /*
-            ingress = AR8216_IN_SECURE;
-            */
             ingressMode = FAL_1Q_SECURE;
         } else {
             pvid = i;
-            /*
-            egress = AR8216_OUT_KEEP;
-            ingress = AR8216_IN_PORT_ONLY;
-            */
             egressMode = FAL_EG_UNMODIFIED;
             ingressMode = FAL_1Q_DISABLE;
         }
-        /*
-        priv->chip->setup_port(priv, i, egress, ingress, portmask[i], pvid);
-        */
+
         fal_port_1qmode_set(0, i, ingressMode);
         fal_port_egvlanmode_set(0, i, egressMode);
         fal_port_default_cvid_set(0, i, pvid);
