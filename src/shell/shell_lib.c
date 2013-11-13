@@ -21,7 +21,7 @@
 
 #define printc(isPrint, fmt, args...) if(isPrint == 1) printf(fmt, ##args)
 
-static char *cmd_promptp = "dev0@atheros>";       /*command prompt pointer */
+static char *cmd_promptp = "dev0@qca>";       /*command prompt pointer */
 static struct termios term_save;    /* terminal setting saved */
 static int term_cursor;         /*terminal position */
 static int cmd_cursor;          /*command position */

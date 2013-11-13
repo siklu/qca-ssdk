@@ -236,7 +236,7 @@ qca_ar8327_sw_hw_apply(struct switch_dev *dev)
             ingressMode = FAL_1Q_SECURE;
         } else {
             pvid = i;
-            egressMode = FAL_EG_UNMODIFIED;
+            egressMode = FAL_EG_UNTOUCHED;
             ingressMode = FAL_1Q_DISABLE;
         }
 
