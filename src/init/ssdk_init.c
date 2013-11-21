@@ -765,7 +765,7 @@ ssdk_switch_init(a_uint32_t dev_id)
     fal_frame_max_size_set(dev_id, 1518+8+2);
     /* Enable MIB counters */
     fal_mib_status_set(dev_id, A_TRUE);
-    fal_igmp_mld_rp_set(dev_id, 0);
+    fal_igmp_mld_rp_set(dev_id, 0x40);
 
     for (i = 0; i < p_dev->nr_ports; i++)
     {
