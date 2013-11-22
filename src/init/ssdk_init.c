@@ -1099,5 +1099,5 @@ module_exit(regi_exit);
 
 MODULE_DESCRIPTION("QCA SSDK Driver");
 MODULE_AUTHOR("Qualcomm Atheros Inc");
-MODULE_LICENSE("Proprietary");
+MODULE_LICENSE("Dual BSD/GPL");
 
