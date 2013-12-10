@@ -1,8 +1,7 @@
 /*
  * Copyright (c) 2012 Qualcomm Atheros, Inc.
- * All rights reserved.
+ * All Rights Reserved.
  * Qualcomm Atheros Confidential and Proprietary.
- *
  */
 
 #ifndef _REF_FDB_H_
