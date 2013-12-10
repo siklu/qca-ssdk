@@ -755,7 +755,7 @@ ssdk_switch_init(a_uint32_t dev_id)
     fal_frame_max_size_set(dev_id, 1518+8+2);
     /* Enable MIB counters */
     fal_mib_status_set(dev_id, A_TRUE);
-    fal_igmp_mld_rp_set(dev_id, 0x40);
+    fal_igmp_mld_rp_set(dev_id, 0);
 
     for (i = 0; i < p_dev->nr_ports; i++)
     {
@@ -778,17 +778,11 @@ ssdk_switch_init(a_uint32_t dev_id)
         fal_stp_port_state_set(dev_id, 0, i, FAL_STP_FARWARDING);
         fal_port_vlan_propagation_set(dev_id, i, FAL_VLAN_PROPAGATION_REPLACE);
 
-        if ((i == 6) || (i == 0)) {
-            fal_port_igmps_status_set(dev_id, i, A_FALSE);
-            fal_port_igmp_mld_join_set(dev_id, i, A_FALSE);
-            fal_port_igmp_mld_leave_set(dev_id, i, A_FALSE);
-        } else {
-            fal_port_igmps_status_set(dev_id, i, A_TRUE);
-            fal_port_igmp_mld_join_set(dev_id, i, A_TRUE);
-            fal_port_igmp_mld_leave_set(dev_id, i, A_TRUE);
-        }
-        fal_igmp_mld_entry_creat_set(dev_id, A_TRUE);
-        fal_igmp_mld_entry_v3_set(dev_id, A_TRUE);
+        fal_port_igmps_status_set(dev_id, i, A_FALSE);
+        fal_port_igmp_mld_join_set(dev_id, i, A_FALSE);
+        fal_port_igmp_mld_leave_set(dev_id, i, A_FALSE);
+        fal_igmp_mld_entry_creat_set(dev_id, A_FALSE);
+        fal_igmp_mld_entry_v3_set(dev_id, A_FALSE);
 
         /*make sure cpu port can communicate with
         the other ports normally*/
