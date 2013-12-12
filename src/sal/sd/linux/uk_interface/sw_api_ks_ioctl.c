@@ -31,6 +31,7 @@
 #include <asm/uaccess.h>
 #include <linux/module.h>
 #endif
+#include <linux/mutex.h>
 
 static int
 switch_open(struct inode * inode,struct file * file);
@@ -49,7 +50,7 @@ switch_ioctl(struct inode *inode, struct file * file, unsigned int cmd, unsigned
 
 static a_uint32_t *cmd_buf = NULL;
 
-static aos_lock_t api_ioctl_lock;
+static struct mutex api_ioctl_lock;
 
 static struct file_operations switch_device_fops =
 {
@@ -212,9 +213,9 @@ switch_ioctl(struct inode *inode, struct file * file, unsigned int cmd, unsigned
         return SW_NO_RESOURCE;
     }
 
-    aos_lock(&api_ioctl_lock);
+    mutex_lock(&api_ioctl_lock);
     rv = sw_api_cmd(args);
-    aos_unlock(&api_ioctl_lock);
+    mutex_unlock(&api_ioctl_lock);
 
     /* return API result to user */
     rtn = (a_uint32_t) rv;
@@ -248,7 +249,7 @@ sw_uk_init(a_uint32_t nl_prot)
             return SW_INIT_ERROR;
         }
 
-        aos_lock_init(&api_ioctl_lock);
+        mutex_init(&api_ioctl_lock);
     }
 
     return SW_OK;
@@ -262,6 +263,7 @@ sw_uk_cleanup(void)
         aos_mem_free(cmd_buf);
         cmd_buf = NULL;
 
+        mutex_destroy(&api_ioctl_lock);
         misc_deregister(&switch_device);
     }
 
