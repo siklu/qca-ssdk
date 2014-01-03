@@ -108,6 +108,15 @@ _isisc_port_3az_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enabl
         reverse = 1;
     }
 
+    if (rev_id == 0)
+    {
+        reverse = 1;
+    }
+    else
+    {
+        reverse = 0;
+    }
+
     if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_PHY))
     {
         return SW_BAD_PARAM;
@@ -168,6 +177,15 @@ _isisc_port_3az_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * ena
     else
     {
         reverse = 1;
+    }
+
+    if (rev_id == 0)
+    {
+        reverse = 1;
+    }
+    else
+    {
+        reverse = 0;
     }
 
     if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_PHY))
