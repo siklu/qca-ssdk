@@ -1460,6 +1460,9 @@ extern "C" {
     typedef sw_error_t
     (*hsl_nat_unk_session_cmd_get)(a_uint32_t dev_id, fal_fwd_cmd_t * cmd);
 
+    typedef sw_error_t
+    (*hsl_nat_global_set)(a_uint32_t dev_id, a_bool_t enable);
+
 
     /* SEC */
 #define SEC_FUNC_PROTOTYPE_DEF
@@ -1996,6 +1999,7 @@ extern "C" {
         hsl_nat_pub_addr_next nat_pub_addr_next;
         hsl_nat_unk_session_cmd_set nat_unk_session_cmd_set;
         hsl_nat_unk_session_cmd_get nat_unk_session_cmd_get;
+        hsl_nat_global_set nat_global_set ;
 
         /* SEC */
         hsl_sec_norm_item_set   sec_norm_item_set;

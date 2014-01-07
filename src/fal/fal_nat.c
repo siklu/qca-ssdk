@@ -458,6 +458,21 @@ _fal_nat_unk_session_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd)
     return rv;
 }
 
+static sw_error_t
+_fal_nat_global_set(a_uint32_t dev_id, a_bool_t enable)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->nat_global_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->nat_global_set(dev_id, enable);
+    return rv;
+}
+
 /**
  * @brief Add one NAT entry to one particular device.
  *   @details Comments:
@@ -978,6 +993,22 @@ fal_nat_unk_session_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd)
 
     FAL_API_LOCK;
     rv = _fal_nat_unk_session_cmd_get(dev_id, cmd);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Set working status of NAPT engine on a particular device
+ * @param[in] dev_id device id
+ * @param[in] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+fal_nat_global_set(a_uint32_t dev_id, a_bool_t enable)
+{
+    sw_error_t rv;
+    
+    FAL_API_LOCK;
+    rv = _fal_nat_global_set(dev_id, enable);
     FAL_API_UNLOCK;
     return rv;
 }

@@ -134,6 +134,8 @@ a_int32_t
 nat_hw_pub_ip_add(a_uint32_t ip, a_uint32_t *index);
 void
 napt_hw_mode_init(void);
+void
+napt_hw_mode_cleanup(void);
 a_int32_t
 nat_hw_pub_ip_del(a_uint32_t index);
 a_int32_t

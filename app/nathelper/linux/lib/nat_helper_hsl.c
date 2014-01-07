@@ -450,6 +450,28 @@ napt_hw_mode_init(void)
 
     HSL_REG_ENTRY_SET(rv, 0, ROUTER_CTRL, 0,
                       (a_uint8_t *) (&entry), sizeof (a_uint32_t));
+    HSL_REG_ENTRY_GET(rv, 0, MOD_ENABLE, 0,
+                      (a_uint8_t *) (&entry), sizeof (a_uint32_t));
+    SW_SET_REG_BY_FIELD(MOD_ENABLE, L3_EN, 1, entry);
+    HSL_REG_ENTRY_SET(rv, 0, MOD_ENABLE, 0,
+                      (a_uint8_t *) (&entry), sizeof (a_uint32_t));
+
+    ACL_STATUS_SET(0, A_TRUE);
+}
+
+void
+napt_hw_mode_cleanup(void)
+{
+    sw_error_t rv;
+    a_uint32_t entry = 0;
+
+    HSL_REG_ENTRY_GET(rv, 0, MOD_ENABLE, 0,
+                      (a_uint8_t *) (&entry), sizeof (a_uint32_t));
+    SW_SET_REG_BY_FIELD(MOD_ENABLE, L3_EN, 0, entry);
+    HSL_REG_ENTRY_SET(rv, 0, MOD_ENABLE, 0,
+                      (a_uint8_t *) (&entry), sizeof (a_uint32_t));
+
+    ACL_STATUS_SET(0, A_FALSE);
 }
 
 a_int32_t

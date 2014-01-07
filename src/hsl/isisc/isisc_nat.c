@@ -16,6 +16,9 @@
 #include "hsl_port_prop.h"
 #include "isisc_nat.h"
 #include "isisc_reg.h"
+#if defined(IN_NAT_HELPER)
+#include "isisc_nat_helper.h"
+#endif
 
 #define ISISC_HOST_ENTRY_DATA0_ADDR              0x0e80
 #define ISISC_HOST_ENTRY_DATA1_ADDR              0x0e84
@@ -54,6 +57,7 @@
 #define ISISC_NAT_PORT_NUM                       255
 
 static a_uint32_t isisc_nat_snap[SW_MAX_NR_DEV] = { 0 };
+extern a_uint32_t isisc_nat_global_status;
 
 static sw_error_t
 _isisc_nat_feature_check(a_uint32_t dev_id)
@@ -2364,6 +2368,39 @@ isisc_nat_unk_session_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd)
     return rv;
 }
 
+/**
+ * @brief Set working status of NAT engine on a particular device
+ * @param[in] dev_id device id
+ * @param[in] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+isisc_nat_global_set(a_uint32_t dev_id, a_bool_t enable)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    printk("enable:%d\n", enable);
+    if(enable) {
+        if(isisc_nat_global_status == 0) {
+            isisc_nat_global_status = 1;
+#if defined(IN_NAT_HELPER)
+            ISISC_NAT_HELPER_INIT(rv, dev_id);
+#endif
+        }
+    } else {
+        if(isisc_nat_global_status == 1) {
+            isisc_nat_global_status = 0;
+#if defined(IN_NAT_HELPER)
+            ISISC_NAT_HELPER_CLEANUP(rv, dev_id);
+#endif
+        }
+    }
+    //rv = SW_OK;
+    HSL_API_UNLOCK;
+    return rv;
+}
+
 sw_error_t
 isisc_nat_init(a_uint32_t dev_id)
 {
@@ -2407,6 +2444,7 @@ isisc_nat_init(a_uint32_t dev_id)
         p_api->nat_prv_base_addr_get = isisc_nat_prv_base_addr_get;
         p_api->nat_prv_base_mask_set = isisc_nat_prv_base_mask_set;
         p_api->nat_prv_base_mask_get = isisc_nat_prv_base_mask_get;
+        p_api->nat_global_set = isisc_nat_global_set;
     }
 #endif
 

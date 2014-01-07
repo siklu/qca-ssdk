@@ -6,21 +6,68 @@
 
 
 #ifdef KVER32
+#include <linux/kconfig.h>
 #include <generated/autoconf.h>
 #else
 #include <linux/autoconf.h>
 #endif
 #include <linux/netfilter_ipv4/ip_tables.h>
-#include <linux/netfilter_ipv4/ipt_multiport.h>
 #include <net/netfilter/nf_nat.h>
+#include <linux/netfilter/nf_nat.h>
+#include <linux/netfilter/xt_multiport.h>
+#include <linux/netfilter/xt_tcpudp.h>
+#include <linux/netfilter/x_tables.h>
 #include "nat_helper.h"
 
 #include "lib/nat_helper_hsl.h"
 #include "lib/nat_helper_dt.h"
 
 
+#define nf_nat_ipv4_multi_range_compat  \
+                nf_nat_ipv4_multi_range_compat
+#define nf_nat_range        nf_nat_ipv4_range
+#define ipt_entry_target    xt_entry_target
+#define ipt_entry_match     xt_entry_match
+
+#define IPT_MATCH_ITERATE(e, fun, args...) \
+({								    \
+	unsigned int i;					\
+	int ret = 0;					\
+	struct xt_entry_match *m;	    \
+								    \
+	for (i = sizeof(struct ipt_entry);	\
+	     i < (e)->target_offset;		\
+	     i += m->u.match_size) {	\
+		m = (void *)e + i;			\
+		ret = fun(m , ##args);		\
+		if (ret != 0)					\
+			break;					    \
+	}							        \
+	ret;							\
+})
+
+#define IPT_ENTRY_ITERATE(entries, size, fun, args...) \
+({								        \
+	unsigned int k, j;					\
+	int ret = 0;						\
+	struct ipt_entry *e;			    \
+								        \
+	for (k = 0, j = 0; k < (size);		\
+	    k += (e)->next_offset, j++) { \
+		e = (void *)(entries) + k;	\
+		if (j < 0)					\
+			continue;				\
+								    \
+		ret = fun(e , ##args);	    \
+		if (ret != 0)				\
+			break;					\
+	}							    \
+	ret;						\
+})
+
+
 #define IPT_BUFFER_INIT_LEN 1000
-#define NF_NAT_INIT_ENTRIES_NUM 4  //nf_nat_rule.c
+#define NF_NAT_INIT_ENTRIES_NUM 5
 
 static int
 nat_ipt_set_ctl(struct sock *sk, int cmd, void __user * user, unsigned int len);
@@ -59,8 +106,8 @@ nat_ipt_del(struct ipt_replace ireplace)
     struct ipt_entry *sentry = NULL;
     struct xt_entry_target *gtarget = NULL;
     struct xt_entry_target *starget = NULL;
-    struct nf_nat_multi_range_compat *grange = NULL;
-    struct nf_nat_multi_range_compat *srange = NULL;
+    struct nf_nat_ipv4_multi_range_compat *grange = NULL;
+    struct nf_nat_ipv4_multi_range_compat *srange = NULL;
     uint8_t *gptr, *sptr;
     gptr = gbuffer;
     sptr = sbuffer;
@@ -68,17 +115,17 @@ nat_ipt_del(struct ipt_replace ireplace)
     unsigned int seq = 1;
 
     HNAT_PRINTK("into nat_ipt_del\n");
-    for (i = oldnum; i >= NF_NAT_INIT_ENTRIES_NUM; i--)
+    for (i = oldnum; i >= 0; i--)//NF_NAT_INIT_ENTRIES_NUM; i--)
     {
         gentry = (struct ipt_entry *)gptr;
         sentry = (struct ipt_entry *)sptr;
         gtarget = (struct xt_entry_target *)((uint8_t *) gentry + gentry->target_offset);
         starget = (struct xt_entry_target *)((uint8_t *) sentry + sentry->target_offset);
-        grange = (struct nf_nat_multi_range_compat *)((uint8_t *) gtarget + sizeof (*gtarget));
-        srange = (struct nf_nat_multi_range_compat *)((uint8_t *) starget + sizeof (*starget));
+        grange = (struct nf_nat_ipv4_multi_range_compat *)((uint8_t *) gtarget + sizeof (*gtarget));
+        srange = (struct nf_nat_ipv4_multi_range_compat *)((uint8_t *) starget + sizeof (*starget));
 
-        HNAT_PRINTK("(0)isis_nat_del name %s:%s#####(%x:%x %x)###\n",
-                    gtarget->u.user.name, starget->u.user.name,
+        HNAT_PRINTK("(%d)isis_nat_del name %s:%s#####(%x:%x %x)###\n",
+                    i, gtarget->u.user.name, starget->u.user.name,
                     gentry->ip.src.s_addr, gentry->ip.dst.s_addr,
                     grange->range[0].min.all);
 
@@ -164,14 +211,14 @@ nat_ipt_to_hw_entry(struct ipt_entry *e,
 #define P_TCP  6
 #define P_UDP  17
 
-    struct ipt_entry_target *t = ipt_get_target(e);
+    struct ipt_entry_target *t = (struct ipt_entry_target *)ipt_get_target(e);
 
-    const struct nf_nat_multi_range_compat *mr =
-        (struct nf_nat_multi_range_compat *)t->data;
+    const struct nf_nat_ipv4_multi_range_compat *mr =
+        (struct nf_nat_ipv4_multi_range_compat *)(t->data);
     const struct nf_nat_range *range = &mr->range[0];
 
-    uint32_t sip = e->ip.src.s_addr;
-    uint32_t pip = range->min_ip;
+    uint32_t sip = ntohl(e->ip.src.s_addr);
+    uint32_t pip = ntohl(range->min_ip);
     uint16_t proto = e->ip.proto;
 
     memset((void *) nat, 0, sizeof (nat_entry_t));
@@ -477,13 +524,6 @@ nat_ipt_data_init(void)
     /*set initial underflow: nf_nat_rule.c*/
     memset(&old_replace, 0, sizeof (old_replace));
 
-    old_replace.underflow[NF_INET_PRE_ROUTING] =
-        0;
-    old_replace.underflow[NF_INET_POST_ROUTING] =
-        sizeof(struct ipt_standard);
-    old_replace.underflow[NF_INET_LOCAL_OUT] =
-        sizeof(struct ipt_standard) * 2;
-
     /*record ipt rule(SNAT) sequence for hw nat*/
     memset(hw_nat_ipt_seq, 0, NAT_HW_NUM);
 
@@ -521,23 +561,29 @@ nat_ipt_hook_type_check(struct ipt_replace ireplace)
 {
     int ret = -1;
 
-    HNAT_PRINTK("------we only support SNAT------\n");
+    HNAT_PRINTK("------we only support SNAT-----\n");
 
-    if (old_replace.underflow[NF_INET_PRE_ROUTING] !=
-            ireplace.underflow[NF_INET_PRE_ROUTING])
-    {
-        HNAT_PRINTK("------this is PREROUTING(DNAT):no!------\n");
-
-    }
-    else if(old_replace.underflow[NF_INET_POST_ROUTING] !=
-            ireplace.underflow[NF_INET_POST_ROUTING])
+    if((old_replace.underflow[NF_INET_POST_ROUTING]-
+        old_replace.hook_entry[NF_INET_POST_ROUTING]) !=
+        (ireplace.underflow[NF_INET_POST_ROUTING]-
+        ireplace.hook_entry[NF_INET_POST_ROUTING]))
     {
         HNAT_PRINTK("------this is POSTROUTING(SNAT):yes!------\n");
         ret = 0;
 
     }
-    else if(old_replace.underflow[NF_INET_LOCAL_OUT] !=
-            ireplace.underflow[NF_INET_LOCAL_OUT])
+    else if ((old_replace.underflow[NF_INET_PRE_ROUTING]-
+        old_replace.hook_entry[NF_INET_PRE_ROUTING]) !=
+        (ireplace.underflow[NF_INET_PRE_ROUTING]-
+        ireplace.hook_entry[NF_INET_PRE_ROUTING]))
+    {
+        HNAT_PRINTK("------this is PREROUTING(DNAT):no!------\n");
+
+    }
+    else if((old_replace.underflow[NF_INET_LOCAL_OUT]-
+        old_replace.hook_entry[NF_INET_LOCAL_OUT]) !=
+        (ireplace.underflow[NF_INET_LOCAL_OUT]-
+        ireplace.hook_entry[NF_INET_LOCAL_OUT]))
     {
         HNAT_PRINTK("------this is OUTPUT:no!------\n");
 

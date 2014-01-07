@@ -591,7 +591,13 @@ ipv6_snooping_solicted_node_add_acl_rules ( void )
     rtnval = ACL_LIST_CREATE ( 0, S17_ACL_LIST_IPV6_SOLICITED_NODE, S17_ACL_LIST_PRIO_MID);
     if ( rtnval != SW_OK )
     {
-        aos_printk ( "%s: ACL_LIST_CREATE ERROR (%d)...\n", __func__, rtnval );
+        if(rtnval == SW_ALREADY_EXIST)
+        {
+            //aos_printk ( "ipv6_snooping_solicted rules acl list already exists.\n");
+
+        } else {
+            aos_printk ( "%s: ACL_LIST_CREATE ERROR (%d)...\n", __func__, rtnval );
+        }
         return;
     }
 
@@ -754,7 +760,12 @@ ipv6_snooping_sextuple0_group_add_acl_rules ( void )
     rtnval = ACL_LIST_CREATE ( 0, S17_ACL_LIST_IPV6_SEXTUPLE0_GROUP, S17_ACL_LIST_PRIO_MID);
     if ( rtnval != SW_OK )
     {
-        aos_printk ( "%s: ACL_LIST_CREATE ERROR (%d)...\n", __func__, rtnval );
+        if(rtnval == SW_ALREADY_EXIST)
+        {
+            //aos_printk ( "ipv6_snooping_sextuple0 rules acl list already exists.\n");
+        } else {
+            aos_printk ( "%s: ACL_LIST_CREATE ERROR (%d)...\n", __func__, rtnval );
+        }
         return;
     }
     rtnval = ACL_RULE_ADD ( 0, S17_ACL_LIST_IPV6_SEXTUPLE0_GROUP, 0, 1, &myacl );
@@ -832,7 +843,12 @@ ipv6_snooping_quintruple0_1_group_add_acl_rules ( void )
     rtnval = ACL_LIST_CREATE ( 0, S17_ACL_LIST_IPV6_QUINTRUPLE0_1_GROUP, S17_ACL_LIST_PRIO_MID);
     if ( rtnval != SW_OK )
     {
-        aos_printk ( "%s: ACL_LIST_CREATE ERROR (%d)...\n", __func__, rtnval );
+        if(rtnval == SW_ALREADY_EXIST)
+        {
+            //aos_printk ( "ipv6_snooping_quintruple0 rules acl list already exists.\n");
+        } else {
+            aos_printk ( "%s: ACL_LIST_CREATE ERROR (%d)...\n", __func__, rtnval );
+        }
         return;
     }
     rtnval = ACL_RULE_ADD ( 0, S17_ACL_LIST_IPV6_QUINTRUPLE0_1_GROUP, 0, 1, &myacl );
@@ -889,10 +905,8 @@ void upnp_ssdp_add_acl_rules(void)
     {
         if(rtnval == SW_ALREADY_EXIST)
         {
-            aos_printk ( "upnp_ssdp_acl_rules: rules acl list already exists !\n");
-        }
-        else
-        {
+            //aos_printk ( "upnp_ssdp rules acl list already exists.\n");
+        } else {
             aos_printk ( "upnp_ssdp_acl_rules: ACL_LIST_CREATE ERROR (%d)...\n",rtnval );
         }
         return ;
@@ -1471,10 +1485,8 @@ void dscp_remap_acl_rule(uint32_t ori_dscp, uint32_t dscp)
     {
         if(rtnval == SW_ALREADY_EXIST)
         {
-            aos_printk ( "%s: rules acl list already exists !\n", __FUNCTION__);
-        }
-        else
-        {
+            //aos_printk ( "%s: rules acl list already exists !\n", __FUNCTION__);
+        } else {
             aos_printk ( "%s: ACL_LIST_CREATE ERROR (%d)...\n", __FUNCTION__, rtnval );
         }
         return ;

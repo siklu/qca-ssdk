@@ -45,12 +45,14 @@
 #include "hsl_api.h"
 #include "fal_nat.h"
 #include "fal_ip.h"
+#include "fal_fdb.h"
 #include "hsl.h"
 #include "nat_helper.h"
 #include "napt_acl.h"
 #include "lib/nat_helper_hsl.h"
 #include "lib/nat_helper_dt.h"
 #include "hsl_shared_api.h"
+#include <net/addrconf.h>
 
 #ifdef ISISC
 #define CONFIG_IPV6_HWACCEL 1
@@ -68,6 +70,7 @@
 #include <linux/netfilter_ipv6.h>
 #endif
 
+//#define AP136_QCA_HEADER_EN 1
 #define MAC_LEN 6
 #define IP_LEN 4
 #define ARP_HEADER_LEN 8
@@ -81,8 +84,11 @@
 
 extern struct net init_net;
 
+//char *nat_lan_dev_list = "eth0.1";
+char *nat_lan_dev_list = "br-lan";
 char *nat_wan_dev_list = "eth0.2";
-char *nat_lan_dev_list = "eth0.1";
+#define NAT_LAN_DEV_VID 1
+#define NAT_WAN_DEV_VID 2
 
 static int wan_fid = 0xffff;
 static fal_pppoe_session_t pppoetbl = {0};
@@ -237,11 +243,12 @@ uint32_t napt_set_default_route(fal_ip4_addr_t dst_addr, fal_ip4_addr_t src_addr
     if (!(get_aclrulemask() & (1 << S17_ACL_LIST_DROUTE)))
     {
         if (multi_route_indev && \
-                (nf_athrs17_hnat_wan_type != NF_S17_WAN_TYPE_PPPOE) && (nf_athrs17_hnat_wan_type != NF_S17_WAN_TYPE_PPPOES0))
+                (nf_athrs17_hnat_wan_type != NF_S17_WAN_TYPE_PPPOE) &&
+                (nf_athrs17_hnat_wan_type != NF_S17_WAN_TYPE_PPPOES0))
         {
             uint32_t next_hop = get_next_hop(dst_addr, src_addr);
 
-            aos_printk("Next hop: %08x\n", next_hop);
+            HNAT_PRINTK("Next hop: %08x\n", next_hop);
             if (next_hop != 0)
             {
                 fal_host_entry_t arp_entry;
@@ -266,7 +273,7 @@ uint32_t napt_set_default_route(fal_ip4_addr_t dst_addr, fal_ip4_addr_t src_addr
             }
             else
             {
-                aos_printk("no need to set the default route... \n");
+                HNAT_PRINTK("no need to set the default route... \n");
                 // set_aclrulemask (S17_ACL_LIST_DROUTE);
             }
         }
@@ -597,6 +604,7 @@ static sw_error_t setup_interface_entry(char *list_if, int is_wan)
     uint32_t vid = 0;
     sw_error_t setup_error;
     uint32_t ipv6 = 0;
+    static int setup_lan_if = 0;
 
     memcpy(temp, list_if, strlen(list_if)+1);
     list_all = temp;
@@ -660,37 +668,18 @@ static sw_error_t setup_interface_entry(char *list_if, int is_wan)
 #ifdef ISISC
         if (0 == is_wan) /* Not WAN -> LAN */
         {
-#if NAT_TODO   
             /* Setup private and netmask as soon as possible */
-            if (NULL != nat_dev->br_port) /* under bridge interface. */
-            {
-#ifdef KVER32
-                in_device_lan = (struct in_device *) (br_port_get_rcu(nat_dev)->br->dev->ip_ptr);
-#else
-                in_device_lan = (struct in_device *) nat_dev->br_port->br->dev->ip_ptr;
-#endif
-#else
-#ifdef KVER32
-            if (NULL != br_port_get_rcu(nat_dev)) /* under bridge interface. */
+            if (br_port_get_rcu(nat_dev)) /* under bridge interface. */
             {
                 in_device_lan = (struct in_device *) (br_port_get_rcu(nat_dev)->br->dev->ip_ptr);
-#else
-            /* Setup private and netmask as soon as possible */
-            if (NULL != nat_dev->br_port) /* under bridge interface. */
-            {
-                in_device_lan = (struct in_device *) nat_dev->br_port->br->dev->ip_ptr;
-#endif
-#endif
             }
             else
             {
                 in_device_lan = (struct in_device *) nat_dev->ip_ptr;
             }
-            if ((NULL == in_device_lan)||(NULL == in_device_lan->ifa_list))
+
+            if ((in_device_lan) && (in_device_lan->ifa_list))
             {
-                setup_error = SW_FAIL;
-                continue;
-            }
             nat_hw_prv_mask_set((a_uint32_t)(in_device_lan->ifa_list->ifa_mask));
             nat_hw_prv_base_set((a_uint32_t)(in_device_lan->ifa_list->ifa_address));
 #ifndef KVER32
@@ -701,6 +690,14 @@ static sw_error_t setup_interface_entry(char *list_if, int is_wan)
             redirect_internal_ip_packets_to_cpu_on_wan_add_acl_rules((a_uint32_t)(in_device_lan->ifa_list->ifa_address),
                                                                         (a_uint32_t)(in_device_lan->ifa_list->ifa_mask));
 #endif
+            }
+
+            if(setup_lan_if) {
+                return SW_OK;
+            } else {
+                setup_lan_if = 1;
+                printk("Setup LAN interface entry!\n");
+            }
         }
 #endif
         memcpy(if_mac_addr, devmac, MAC_LEN);
@@ -729,7 +726,7 @@ static sw_error_t setup_interface_entry(char *list_if, int is_wan)
 static int setup_all_interface_entry(void)
 {
     static int setup_wan_if = 0;
-    static int setup_lan_if=0;
+    //static int setup_lan_if=0;
     static int setup_default_vid = 0;
     int i = 0;
 
@@ -744,16 +741,18 @@ static int setup_all_interface_entry(void)
         setup_default_vid = 1;
     }
 
-    if (0 == setup_lan_if)
+    //if (0 == setup_lan_if)
     {
 #ifdef ISISC
-        MISC_ARP_CMD_SET(0, FAL_MAC_FRWRD); /* Should be put in init function. */
+        //MISC_ARP_CMD_SET(0, FAL_MAC_FRWRD);
+#if 0
         MISC_ARP_SP_NOT_FOUND_SET(0, FAL_MAC_RDT_TO_CPU);
+#endif
 #endif
         if (SW_OK == setup_interface_entry(nat_lan_dev_list, 0))
         {
-            setup_lan_if = 1; /* setup LAN interface entry success */
-            printk("Setup LAN interface entry done!\n");
+            //setup_lan_if = 1; /* setup LAN interface entry success */
+            //printk("Setup LAN interface entry done!\n");
         }
     }
 
@@ -1125,12 +1124,38 @@ arp_in(unsigned int hook,
     {
         return NF_ACCEPT;
     }
-
+#ifdef AP136_QCA_HEADER_EN
     if(arp_if_info_get((void *)(skb->head), &sport, &vid) != 0)
     {
         printk("Cannot get header info!!\n");
         return NF_ACCEPT;
     }
+#else
+    if(dev_is_lan) {
+         vid = NAT_LAN_DEV_VID;
+    } else {
+         vid = NAT_WAN_DEV_VID;
+    }
+
+    fal_fdb_entry_t entry = {0};
+
+    entry.fid = vid;
+    smac  = skb->mac_header + MAC_LEN;
+    aos_mem_copy(&(entry.addr), smac, sizeof(fal_mac_addr_t));
+
+    if(fal_fdb_find(0, &entry) == SW_OK) {
+        vid  = entry.fid;
+        sport = 0;
+        while (sport < 32) {
+            if(entry.port.map & (1 << sport)) {
+                break;
+            }
+            sport++;
+        }
+    } else {
+        printk("not find the FDB entry\n");
+    }
+#endif
 
     arp = arp_hdr(skb);
     smac = ((uint8_t *) arp) + ARP_HEADER_LEN;
@@ -1158,9 +1183,10 @@ arp_in(unsigned int hook,
         nat_hw_flush();
         nat_hw_prv_base_update_disable();
 #ifdef MULTIROUTE_WR
-        multi_route_indev = in;
+        //multi_route_indev = in;
 #endif
     }
+    multi_route_indev = in;
 
     if ((nf_athrs17_hnat_wan_type == NF_S17_WAN_TYPE_PPPOE) ||
             (nf_athrs17_hnat_wan_type == NF_S17_WAN_TYPE_PPPOEV6))
@@ -1466,6 +1492,7 @@ static unsigned int ipv6_handle(unsigned   int   hooknum,
     uint32_t sport = 0, vid = 0;
     struct inet6_ifaddr *in_device_addr = NULL;
     uint8_t dev_is_lan = 0;
+    uint8_t *smac;
 
     /* do not write out host table if HNAT is disabled */
     if (!nf_athrs17_hnat)
@@ -1494,6 +1521,7 @@ static unsigned int ipv6_handle(unsigned   int   hooknum,
             if (__ipv6_addr_type((struct in6_addr*)sip) & IPV6_ADDR_LINKLOCAL)
                 return NF_ACCEPT;
 
+#ifdef AP136_QCA_HEADER_EN
             if(arp_if_info_get((void *)(skb->head), &sport, &vid) != 0)
             {
                 return NF_ACCEPT;
@@ -1504,7 +1532,32 @@ static unsigned int ipv6_handle(unsigned   int   hooknum,
                 printk("Error: Null sport or vid!!\n");
                 return NF_ACCEPT;
             }
+#else
+            if(dev_is_lan) {
+                 vid = NAT_LAN_DEV_VID;
+            } else {
+                 vid = NAT_WAN_DEV_VID;
+            }
 
+            fal_fdb_entry_t entry = {0};
+
+            entry.fid = vid;
+            smac  = skb->mac_header + MAC_LEN;
+            aos_mem_copy(&(entry.addr), smac, sizeof(fal_mac_addr_t));
+
+            if(fal_fdb_find(0, &entry) == SW_OK) {
+                vid  = entry.fid;
+                sport = 0;
+                while (sport < 32) {
+                    if(entry.port.map & (1 << sport)) {
+                        break;
+                    }
+                    sport++;
+                }
+            } else {
+                printk("not find the FDB entry\n");
+            }
+#endif
             if ((0 == dev_is_lan) && (S17_WAN_PORT != sport))
             {
                 printk("Error: WAN port %d\n", sport);
@@ -1537,11 +1590,15 @@ static unsigned int ipv6_handle(unsigned   int   hooknum,
             if (NULL != in->ip6_ptr)
 #endif
             {
-#if NAT_TODO  /* MUST be double check */
-                in_device_addr = ((struct inet6_dev *)(in->ip6_ptr))->addr_list;
-#else
-                list_for_each_entry(in_device_addr, &(in->ip6_ptr)->addr_list, if_list);
-#endif                
+                //list_for_each_entry(in_device_addr, &(in->ip6_ptr)->addr_list, if_list);
+                struct inet6_dev *idev = __in6_dev_get(in);
+                list_for_each_entry(in_device_addr, &idev->addr_list, if_list) {
+            		if (in_device_addr->scope == 0 &&
+            		    !(in_device_addr->flags & IFA_F_TENTATIVE)) {
+            			break;
+            		}
+        	    }
+
                 if (0 == dev_is_lan)
                 {
                     /* WAN ipv6 address*/
@@ -1584,7 +1641,8 @@ void host_helper_init(void)
     HEADER_TYPE_SET(0, A_TRUE, 0xaaaa);
 #ifdef ISISC
     /* For S17c (ISISC), it is not necessary to make all frame with header */
-    PORT_TXHDR_MODE_SET(0, 0, FAL_ONLY_MANAGE_FRAME_EN);
+    printk("host_helper_init start\n");
+    //PORT_TXHDR_MODE_SET(0, 0, FAL_ONLY_MANAGE_FRAME_EN);
     /* Fix tag disappear problem, set TO_CPU_VID_CHG_EN, 0xc00 bit1 */
     CPU_VID_EN_SET(0, A_TRUE);
     /* set RM_RTD_PPPOE_EN, 0xc00 bit0 */
@@ -1596,8 +1654,10 @@ void host_helper_init(void)
     }
     MISC_ARP_CMD_SET(0, FAL_MAC_FRWRD);
     /* Avoid ARP response storm for HUB, now this fix only apply on PORT5 */
+#if 0
     MISC_ARP_SP_NOT_FOUND_SET(0, FAL_MAC_RDT_TO_CPU);
     MISC_ARP_GUARD_SET(0, S17_WAN_PORT, FAL_MAC_IP_PORT_GUARD);
+#endif
     /* set VLAN_TRANS_TEST register bit, to block packets from WAN port has private dip */
     NETISOLATE_SET(0, A_TRUE);
 #else

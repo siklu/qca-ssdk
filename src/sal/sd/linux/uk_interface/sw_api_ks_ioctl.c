@@ -20,7 +20,9 @@
 #include <linux/fs.h>
 #include <linux/export.h>
 #else
-#include <net/sock.h>
+#include <linux/fs.h>
+#include <linux/export.h>
+//#include <net/sock.h>
 #endif
 
 #include <linux/skbuff.h>

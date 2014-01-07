@@ -643,6 +643,7 @@ struct cmd_des_t gcmd_des[] =
             {"natunksess", "get", "get nat unkown session command", "", SW_API_NAT_UNK_SESSION_CMD_GET, NULL},
             {"prvbasemask", "set", "set nat prv base mask", "<ip4 mask>", SW_API_PRV_BASE_MASK_SET, NULL},
             {"prvbasemask", "get", "get nat prv base mask", "", SW_API_PRV_BASE_MASK_GET, NULL},
+            {"global", "set", "set global nat function", "<enable|disable>", SW_API_NAT_GLOBAL_SET, NULL},
             {NULL, NULL, NULL, NULL, (int)NULL, NULL}/*end of desc*/
         },
     },

@@ -482,6 +482,7 @@ extern "C" {
 #define SW_API_NAT_UNK_SESSION_CMD_GET (26  + SW_API_NAT_OFFSET)
 #define SW_API_PRV_BASE_MASK_SET       (27  + SW_API_NAT_OFFSET)
 #define SW_API_PRV_BASE_MASK_GET       (28  + SW_API_NAT_OFFSET)
+#define SW_API_NAT_GLOBAL_SET          (29  + SW_API_NAT_OFFSET)
 
     /* trunk */
 #define SW_API_TRUNK_OFFSET            1800

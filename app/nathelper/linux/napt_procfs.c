@@ -45,7 +45,7 @@
 #define NF_ATHRS17_HNAT_PPP_PEER_MAC2_NAME    "nf_athrs17_hnat_ppp_peer_mac2"
 
 /* for PPPoE */
-int nf_athrs17_hnat = 0;
+int nf_athrs17_hnat = 1;
 int nf_athrs17_hnat_wan_type = 0;
 int nf_athrs17_hnat_ppp_id = 0;
 int nf_athrs17_hnat_udp_thresh = 0;
@@ -369,6 +369,8 @@ void napt_procfs_exit(void)
     remove_proc_entry(NF_ATHRS17_HNAT_PPP_PEER_IP_NAME, qca_switch_dir);
     remove_proc_entry(NF_ATHRS17_HNAT_PPP_PEER_MAC_NAME, qca_switch_dir);
     remove_proc_entry(NF_ATHRS17_HNAT_WAN_MAC_NAME, qca_switch_dir);
+    remove_proc_entry(NF_ATHRS17_HNAT_PPP_ID2_NAME, qca_switch_dir);
+    remove_proc_entry(NF_ATHRS17_HNAT_PPP_PEER_MAC2_NAME, qca_switch_dir);
     remove_proc_entry(NF_PROCFS_DIR, NULL);
     printk(KERN_INFO "/proc/%s/%s removed\n", NF_PROCFS_DIR, NF_ATHRS17_HNAT_NAME);
 }

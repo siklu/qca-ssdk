@@ -580,7 +580,7 @@ napt_ct_frag_hw_yield(struct napt_ct *napt_ct, a_uint16_t hw_index)
                 napt_ct_del(napt_ct, &napt);
             }
 
-            printk("<napt_ct_frag_hw_yield> deny:%d\n", deny);
+            //printk("<napt_ct_frag_hw_yield> deny:%d\n", deny);
         }
     }
 }
@@ -617,8 +617,7 @@ napt_ct_check_add_one(a_uint32_t ct_addr, a_uint8_t *napt_ct_valid)
         {
             if(napt_ct_buf_in_hw_get(napt_ct, &hw_index))
             {
-                printk("<napt_ct_scan> ct:%x* is exist\n",
-                       ct_addr);
+                //printk("<napt_ct_scan> ct:%x* is exist\n", ct_addr);
                 napt_ct_frag_hw_yield(napt_ct, hw_index);
 
             }
@@ -915,6 +914,8 @@ napt_ct_init(void)
 static a_int32_t
 napt_ct_exit(void)
 {
+    napt_hw_mode_cleanup();
+
     napt_ct_hw_exit();
     napt_ct_buf_exit();
 

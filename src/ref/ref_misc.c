@@ -23,7 +23,7 @@
 #include <linux/phy.h>
 #include <linux/platform_device.h>
 #include <linux/types.h>
-#include <asm/mach-types.h>
+//#include <asm/mach-types.h>
 #include <linux/kconfig.h>
 #include <generated/autoconf.h>
 #include <net/switch.h>

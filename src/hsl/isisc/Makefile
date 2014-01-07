@@ -80,7 +80,7 @@ endif
 ifeq (TRUE, $(IN_NAT_HELPER))
   SRC_LIST += nat_helper_dt.c
   SRC_LIST += nat_helper_hsl.c
-#  SRC_LIST += nat_ipt_helper.c
+  SRC_LIST += nat_ipt_helper.c
   SRC_LIST += napt_helper.c
   SRC_LIST += host_helper.c
   SRC_LIST += nat_helper.c

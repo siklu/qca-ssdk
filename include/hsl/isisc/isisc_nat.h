@@ -134,6 +134,9 @@ extern "C" {
     HSL_LOCAL sw_error_t
     isisc_nat_psr_prv_base_addr_get(a_uint32_t dev_id, fal_ip4_addr_t * addr);
 
+    HSL_LOCAL sw_error_t
+    isisc_nat_global_set(a_uint32_t dev_id, a_bool_t enable);
+
 #endif
 
 #ifdef __cplusplus

@@ -25,7 +25,7 @@
 #include <linux/phy.h>
 #include <linux/platform_device.h>
 #include <linux/types.h>
-#include <asm/mach-types.h>
+//#include <asm/mach-types.h>
 #include <linux/kconfig.h>
 #include <generated/autoconf.h>
 #include <linux/netdevice.h>
@@ -181,6 +181,7 @@ qca_ar8327_get_pad_cfg(struct ar8327_pad_cfg *pad_cfg)
 	return value;
 }
 
+#ifndef BOARD_AR71XX
 static a_uint32_t
 qca_ar8327_get_pwr_sel(struct qca_phy_priv *priv,
                                 struct ar8327_platform_data *plat_data)
@@ -195,6 +196,7 @@ qca_ar8327_get_pwr_sel(struct qca_phy_priv *priv,
 	value = priv->mii_read(AR8327_REG_PAD_MAC_PWR_SEL);
 
 	cfg = plat_data->pad0_cfg;
+
 	if (cfg && (cfg->mode == AR8327_PAD_MAC_RGMII) &&
                 cfg->rgmii_1_8v) {
 		value |= AR8327_PAD_MAC_PWR_RGMII0_1_8V;
@@ -214,7 +216,7 @@ qca_ar8327_get_pwr_sel(struct qca_phy_priv *priv,
 
 	return value;
 }
-
+#endif
 
 static a_uint32_t
 qca_ar8327_set_led_cfg(struct qca_phy_priv *priv,
@@ -320,13 +322,16 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 	value = qca_ar8327_get_pad_cfg(plat_data->pad6_cfg);
 	priv->mii_write(AR8327_REG_PAD6_CTRL, value);
 
+#ifndef BOARD_AR71XX
 	value = qca_ar8327_get_pwr_sel(priv, plat_data);
 	priv->mii_write(AR8327_REG_PAD_MAC_PWR_SEL, value);
+#endif
 
 	pos = priv->mii_read(AR8327_REG_POS);
 
     new_pos = qca_ar8327_set_led_cfg(priv, plat_data, pos);
 
+#ifndef BOARD_AR71XX
 	/*configure the SGMII*/
 	if (plat_data->sgmii_cfg) {
 		value = priv->mii_read(AR8327_REG_PAD_SGMII_CTRL);
@@ -353,6 +358,7 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 			new_pos |= AR8327_POS_SERDES_AEN;
 		}
 	}
+#endif
 
 	priv->mii_write(AR8327_REG_POS, new_pos);
 
@@ -478,8 +484,10 @@ static const struct switch_dev_ops qca_ar8327_sw_ops = {
 	.apply_config = qca_ar8327_sw_hw_apply,
 	.reset_switch = qca_ar8327_sw_reset_switch,
 	.get_port_link = qca_ar8327_sw_get_port_link,
+#ifndef BOARD_AR71XX
 	.get_reg_val = qca_ar8327_sw_get_reg_val,
 	.set_reg_val = qca_ar8327_sw_set_reg_val,
+#endif
 };
 
 static int
@@ -728,13 +736,26 @@ void
 ssdk_plat_exit(void)
 {
     printk("ssdk_plat_exit\n");
-
+#ifndef BOARD_AR71XX
     phy_driver_unregister(&qca_phy_driver);
+#endif
 }
 
+#ifdef BOARD_IPQ806X
 #define IPQ806X_MDIO_BUS_NAME			"mdio-gpio"
+#endif
+
+#ifdef BOARD_AR71XX
+#define IPQ806X_MDIO_BUS_NAME			"ag71xx-mdio"
+#endif
 #define IPQ806X_MDIO_BUS_NUM			0
 #define IPQ806X_MDIO_BUS_MAX			1
+
+struct ag71xx_mdio {
+	struct mii_bus		*mii_bus;
+	int			mii_irq[PHY_MAX_ADDR];
+	void __iomem		*mdio_base;
+};
 
 static struct mii_bus *miibus = NULL;
 
@@ -759,6 +780,11 @@ ssdk_switch_init(a_uint32_t dev_id)
 
     for (i = 0; i < p_dev->nr_ports; i++)
     {
+#ifdef BOARD_AR71XX
+        if(i >= 6) {
+            break;
+        }
+#endif
         if (i  != 0) {
             fal_port_link_forcemode_set(dev_id, i, A_FALSE);
         }
@@ -767,6 +793,7 @@ ssdk_switch_init(a_uint32_t dev_id)
         fal_port_3az_status_set(dev_id, i, A_FALSE);
         fal_port_flowctrl_forcemode_set(dev_id, i, A_TRUE);
         fal_port_flowctrl_set(dev_id, i, A_FALSE);
+
         if (i != 0 && i != 6) {
             fal_port_flowctrl_set(dev_id, i, A_TRUE);
             fal_port_flowctrl_forcemode_set(dev_id, i, A_FALSE);
@@ -775,6 +802,7 @@ ssdk_switch_init(a_uint32_t dev_id)
         fal_port_default_cvid_set(dev_id, i, 0);
         fal_port_1qmode_set(dev_id, i, FAL_1Q_DISABLE);
         fal_port_egvlanmode_set(dev_id, i, FAL_EG_UNMODIFIED);
+
         fal_fdb_port_learn_set(dev_id, i, A_TRUE);
         fal_stp_port_state_set(dev_id, 0, i, FAL_STP_FARWARDING);
         fal_port_vlan_propagation_set(dev_id, i, FAL_VLAN_PROPAGATION_REPLACE);
@@ -926,17 +954,30 @@ qca_ar8216_mii_read(int reg)
 	struct mii_bus *bus = miibus;
 	uint16_t r1, r2, page;
 	uint16_t lo, hi;
+    static uint16_t irq_preepmt = 0;
 
 	split_addr((uint32_t) reg, &r1, &r2, &page);
-
-	mutex_lock(&bus->mdio_lock);
+retry:
+    irq_preepmt = 0;
+    if(!in_interrupt()) {
+	    mutex_lock(&bus->mdio_lock);
+    } else {
+        if(mutex_trylock(&bus->mdio_lock) == 0) {
+            irq_preepmt = 1;
+        }
+    }
 
 	bus->write(bus, 0x18, 0, page);
-	usleep_range(1000, 2000); /* wait for the page switch to propagate */
+	udelay(100);
 	lo = bus->read(bus, 0x10 | r2, r1);
 	hi = bus->read(bus, 0x10 | r2, r1 + 1);
 
 	mutex_unlock(&bus->mdio_lock);
+    if(!in_interrupt()) {
+        if(irq_preepmt) {
+            goto retry;
+        }
+    }
 
 	return (hi << 16) | lo;
 }
@@ -947,19 +988,33 @@ qca_ar8216_mii_write(int reg, uint32_t val)
 	struct mii_bus *bus = miibus;
 	uint16_t r1, r2, r3;
 	uint16_t lo, hi;
+    static uint16_t irq_preepmt = 0;
 
 	split_addr((a_uint32_t) reg, &r1, &r2, &r3);
 	lo = val & 0xffff;
 	hi = (a_uint16_t) (val >> 16);
 
-	mutex_lock(&bus->mdio_lock);
+retry:
+    irq_preepmt = 0;
+    if(!in_interrupt()) {
+	    mutex_lock(&bus->mdio_lock);
+    } else {
+        if(mutex_trylock(&bus->mdio_lock) == 0) {
+            irq_preepmt = 1;
+        }
+    }
 
 	bus->write(bus, 0x18, 0, r3);
-	usleep_range(1000, 2000); /* wait for the page switch to propagate */
+    udelay(100);
 	bus->write(bus, 0x10 | r2, r1, lo);
 	bus->write(bus, 0x10 | r2, r1 + 1, hi);
 
 	mutex_unlock(&bus->mdio_lock);
+    if(!in_interrupt()) {
+        if(irq_preepmt) {
+            goto retry;
+        }
+    }
 }
 
 static sw_error_t
@@ -967,10 +1022,26 @@ qca_ar8327_phy_read(a_uint32_t dev_id, a_uint32_t phy_addr,
                            a_uint32_t reg, a_uint16_t* data)
 {
     struct mii_bus *bus = miibus;
+    static uint16_t irq_preepmt = 0;
 
-    mutex_lock(&bus->mdio_lock);
+retry:
+    irq_preepmt = 0;
+    if(!in_interrupt()) {
+        mutex_lock(&bus->mdio_lock);
+    } else {
+        if(mutex_trylock(&bus->mdio_lock) == 0) {
+            irq_preepmt = 1;
+        }
+    }
+
     *data = bus->read(bus, phy_addr, reg);
-    mutex_unlock(&bus->mdio_lock);
+
+	mutex_unlock(&bus->mdio_lock);
+    if(!in_interrupt()) {
+        if(irq_preepmt) {
+            goto retry;
+        }
+    }
 
     return 0;
 }
@@ -980,10 +1051,26 @@ qca_ar8327_phy_write(a_uint32_t dev_id, a_uint32_t phy_addr,
                             a_uint32_t reg, a_uint16_t data)
 {
     struct mii_bus *bus = miibus;
+    static uint16_t irq_preepmt = 0;
 
-    mutex_lock(&bus->mdio_lock);
+retry:
+    irq_preepmt = 0;
+    if(!in_interrupt()) {
+        mutex_lock(&bus->mdio_lock);
+    } else {
+        if(mutex_trylock(&bus->mdio_lock) == 0) {
+            irq_preepmt = 1;
+        }
+    }
+
     bus->write(bus, phy_addr, reg, data);
-    mutex_unlock(&bus->mdio_lock);
+
+	mutex_unlock(&bus->mdio_lock);
+    if(!in_interrupt()) {
+        if(irq_preepmt) {
+            goto retry;
+        }
+    }
 
     return 0;
 }
@@ -993,11 +1080,28 @@ qca_ar8327_phy_dbg_write(a_uint32_t dev_id, a_uint32_t phy_addr,
 		                a_uint16_t dbg_addr, a_uint16_t dbg_data)
 {
 	struct mii_bus *bus = miibus;
+    static uint16_t irq_preepmt = 0;
 
-	mutex_lock(&bus->mdio_lock);
+retry:
+    irq_preepmt = 0;
+    if(!in_interrupt()) {
+        mutex_lock(&bus->mdio_lock);
+    } else {
+        if(mutex_trylock(&bus->mdio_lock) == 0) {
+            irq_preepmt = 1;
+        }
+    }
+
 	bus->write(bus, phy_addr, QCA_MII_DBG_ADDR, dbg_addr);
 	bus->write(bus, phy_addr, QCA_MII_DBG_DATA, dbg_data);
+
 	mutex_unlock(&bus->mdio_lock);
+    if(!in_interrupt()) {
+        if(irq_preepmt) {
+            goto retry;
+        }
+    }
+
 }
 
 static void
@@ -1005,18 +1109,38 @@ qca_ar8327_mmd_write(a_uint32_t dev_id, a_uint32_t phy_addr,
                           a_uint16_t addr, a_uint16_t data)
 {
 	struct mii_bus *bus = miibus;
+    static uint16_t irq_preepmt = 0;
 
-	mutex_lock(&bus->mdio_lock);
+retry:
+    irq_preepmt = 0;
+    if(!in_interrupt()) {
+        mutex_lock(&bus->mdio_lock);
+    } else {
+        if(mutex_trylock(&bus->mdio_lock) == 0) {
+            irq_preepmt = 1;
+        }
+    }
+
 	bus->write(bus, phy_addr, QCA_MII_MMD_ADDR, addr);
 	bus->write(bus, phy_addr, QCA_MII_MMD_DATA, data);
+
 	mutex_unlock(&bus->mdio_lock);
+    if(!in_interrupt()) {
+        if(irq_preepmt) {
+            goto retry;
+        }
+    }
+
 }
 
 static int miibus_get()
 {
     struct device *miidev;
+#ifdef BOARD_AR71XX
+    struct ag71xx_mdio *am;
+#endif
     uint8_t busid[MII_BUS_ID_SIZE];
-	snprintf(busid, MII_BUS_ID_SIZE, "%s.%d",
+    snprintf(busid, MII_BUS_ID_SIZE, "%s.%d",
              IPQ806X_MDIO_BUS_NAME, IPQ806X_MDIO_BUS_NUM);
 
 	miidev = bus_find_device_by_name(&platform_bus_type, NULL, busid);
@@ -1025,7 +1149,13 @@ static int miibus_get()
 		return 1;
 	}
 
-	miibus = dev_get_drvdata(miidev);
+#ifdef BOARD_AR71XX
+	am = dev_get_drvdata(miidev);
+    miibus = am->mii_bus;
+#else
+    miibus = dev_get_drvdata(miidev);
+#endif
+
 	if(!miidev){
 	    printk("mdio bus '%s' get FAIL\n", busid);
 	    return 1;

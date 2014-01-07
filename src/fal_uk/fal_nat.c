@@ -275,3 +275,11 @@ fal_nat_unk_session_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd)
     return rv;
 }
 
+sw_error_t
+fal_nat_global_set(a_uint32_t dev_id, a_bool_t enable)
+{
+    sw_error_t rv;
+
+    rv = sw_uk_exec(SW_API_NAT_GLOBAL_SET, dev_id, (a_uint32_t) enable);
+    return rv;
+}

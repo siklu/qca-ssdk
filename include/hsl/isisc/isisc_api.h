@@ -897,7 +897,8 @@ extern "C" {
     SW_API_DEF(SW_API_NAT_UNK_SESSION_CMD_SET, isisc_nat_unk_session_cmd_set), \
     SW_API_DEF(SW_API_NAT_UNK_SESSION_CMD_GET, isisc_nat_unk_session_cmd_get), \
     SW_API_DEF(SW_API_PRV_BASE_MASK_SET, isisc_nat_prv_base_mask_set), \
-    SW_API_DEF(SW_API_PRV_BASE_MASK_GET, isisc_nat_prv_base_mask_get),
+    SW_API_DEF(SW_API_PRV_BASE_MASK_GET, isisc_nat_prv_base_mask_get), \
+    SW_API_DEF(SW_API_NAT_GLOBAL_SET, isisc_nat_global_set),
 
 #define NAT_API_PARAM \
     SW_API_DESC(SW_API_NAT_ADD) \
@@ -926,7 +927,8 @@ extern "C" {
     SW_API_DESC(SW_API_NAT_UNK_SESSION_CMD_SET) \
     SW_API_DESC(SW_API_NAT_UNK_SESSION_CMD_GET) \
     SW_API_DESC(SW_API_PRV_BASE_MASK_SET) \
-    SW_API_DESC(SW_API_PRV_BASE_MASK_GET)
+    SW_API_DESC(SW_API_PRV_BASE_MASK_GET) \
+    SW_API_DESC(SW_API_NAT_GLOBAL_SET)
 #else
 #define NAT_API
 #define NAT_API_PARAM

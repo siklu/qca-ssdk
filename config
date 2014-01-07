@@ -1,8 +1,31 @@
-CPU=mips
+#CPU=mips
 
 OS=linux
 
+ifeq ($(KVER), 3.4.0)
 OS_VER=3_4
+endif
+
+ifeq ($(KVER), 3.3.8)
+OS_VER=3_2
+endif
+
+ifeq ($(ARCH), arm)
+BOARD=ipq806x
+endif
+
+ifeq ($(ARCH), mips)
+BOARD=ar71xx
+endif
+
+ifeq ($(BOARD), ar71xx)
+BOARD_NAME=BOARD_AR71XX
+endif
+
+ifeq ($(BOARD), ipq806x)
+BOARD_NAME=BOARD_IPQ806X
+endif
+
 OS_SUB=31
 CHIP_TYPE=ISISC
 
@@ -28,7 +51,7 @@ ifndef SYS_PATH
 SYS_PATH=/disk/ap81fus/sw/linux/kernels/mips-linux-2.6.15
 endif
 ifeq ($(ARCH), mips)
-  CPU_CFLAG=-Wstrict-prototypes -fomit-frame-pointer -G 0 -mno-abicalls -fno-strict-aliasing -O2 -fno-pic -pipe -mabi=32 -march=mips32r2 -DMODULE -mlong-calls -DEXPORT_SYMTAB
+  CPU_CFLAG=-Wstrict-prototypes -fomit-frame-pointer -G 0 -mno-abicalls -fno-strict-aliasing -O2 -fno-pic -pipe -mabi=32 -march=mips32r2 -DMODULE -mlong-calls -DEXPORT_SYMTAB -D$(BOARD_NAME)
 endif
 
 
@@ -42,7 +65,7 @@ CPU_CFLAG=-Wstrict-prototypes -fomit-frame-pointer -G 0 -mno-abicalls -fno-stric
 endif
 
 ifeq ($(ARCH), arm)
-  CPU_CFLAG=-D__LINUX_ARM_ARCH__=7  -DMODULE -fno-common -DCONFIG_MMU
+  CPU_CFLAG=-D__LINUX_ARM_ARCH__=7  -DMODULE -fno-common -DCONFIG_MMU -D$(BOARD_NAME)
 endif
 
 ifeq ($(BOARD_TYPE), ap136)
@@ -109,6 +132,10 @@ IN_IP=TRUE
 IN_NAT=TRUE
 IN_TRUNK=TRUE
 IN_SEC=TRUE
+ifeq ($(HNAT_FEATURE), enable)
+IN_NAT_HELPER=TRUE
+else
 IN_NAT_HELPER=FALSE
+endif
 IN_INTERFACECONTROL=TRUE
 IN_MACBLOCK=FALSE
