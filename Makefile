@@ -12,7 +12,7 @@ include ./make/$(OS)_opt.mk
 SUB_DIR=$(patsubst %/, %, $(dir $(wildcard src/*/Makefile)))
 SUB_LIB=$(subst src/, , $(SUB_DIR))
 
-all: $(BIN_DIR) kslib
+all: $(BIN_DIR) kslib uslib shell
 	mkdir -p ./temp/;cd ./temp;cp ../build/bin/ssdk_ks_km.a ./;ar -x ssdk_ks_km.a; cp ../ko_Makefile ./Makefile;
 	make -C $(SYS_PATH) M=$(PRJ_PATH)/temp/ CROSS_COMPILE=$(TOOLPREFIX) modules
 	cp temp/*.ko build/bin;
