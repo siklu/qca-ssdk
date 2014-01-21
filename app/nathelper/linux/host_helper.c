@@ -1,7 +1,15 @@
 /*
  * Copyright (c) 2012 Qualcomm Atheros, Inc.
- * All Rights Reserved.
- * Qualcomm Atheros Confidential and Proprietary.
+ * Permission to use, copy, modify, and/or distribute this software for
+ * any purpose with or without fee is hereby granted, provided that the
+ * above copyright notice and this permission notice appear in all copies.
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
+ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
 
@@ -303,7 +311,7 @@ static void qcaswitch_hostentry_flush(void)
             IP_HOST_DEL(0, FAL_IP_ENTRY_IPADDR_EN, &hostentry);
         }
     }while (SW_OK == ret);
-    
+
     return;
 }
 
@@ -604,7 +612,7 @@ static sw_error_t setup_interface_entry(char *list_if, int is_wan)
     uint32_t vid = 0;
     sw_error_t setup_error;
     uint32_t ipv6 = 0;
-    static int setup_lan_if = 0;
+    static int setup_lan_if=0;
 
     memcpy(temp, list_if, strlen(list_if)+1);
     list_all = temp;
@@ -680,15 +688,15 @@ static sw_error_t setup_interface_entry(char *list_if, int is_wan)
 
             if ((in_device_lan) && (in_device_lan->ifa_list))
             {
-            nat_hw_prv_mask_set((a_uint32_t)(in_device_lan->ifa_list->ifa_mask));
-            nat_hw_prv_base_set((a_uint32_t)(in_device_lan->ifa_list->ifa_address));
+                nat_hw_prv_mask_set((a_uint32_t)(in_device_lan->ifa_list->ifa_mask));
+                nat_hw_prv_base_set((a_uint32_t)(in_device_lan->ifa_list->ifa_address));
 #ifndef KVER32
-            printk("Set private base 0x%08x for %s\n", (a_uint32_t)(in_device_lan->ifa_list->ifa_address), nat_dev->br_port->br->dev->name);
+                printk("Set private base 0x%08x for %s\n", (a_uint32_t)(in_device_lan->ifa_list->ifa_address), nat_dev->br_port->br->dev->name);
 #endif
-            memcpy(&lanip, (void *)&(in_device_lan->ifa_list->ifa_address), 4); /* copy Lan port IP. */
+                memcpy(&lanip, (void *)&(in_device_lan->ifa_list->ifa_address), 4); /* copy Lan port IP. */
 #ifndef ISISC
-            redirect_internal_ip_packets_to_cpu_on_wan_add_acl_rules((a_uint32_t)(in_device_lan->ifa_list->ifa_address),
-                                                                        (a_uint32_t)(in_device_lan->ifa_list->ifa_mask));
+                redirect_internal_ip_packets_to_cpu_on_wan_add_acl_rules((a_uint32_t)(in_device_lan->ifa_list->ifa_address),
+                                                                            (a_uint32_t)(in_device_lan->ifa_list->ifa_mask));
 #endif
             }
 
@@ -744,7 +752,7 @@ static int setup_all_interface_entry(void)
     //if (0 == setup_lan_if)
     {
 #ifdef ISISC
-        //MISC_ARP_CMD_SET(0, FAL_MAC_FRWRD);
+        //MISC_ARP_CMD_SET(0, FAL_MAC_FRWRD); /* Should be put in init function. */
 #if 0
         MISC_ARP_SP_NOT_FOUND_SET(0, FAL_MAC_RDT_TO_CPU);
 #endif
@@ -1333,7 +1341,7 @@ static int qcaswitch_pppoe_ip_event(struct notifier_block *this,
             connection_count--;
             local_irq_save(flags);
             if (ifa->ifa_local == nf_athrs17_hnat_wan_ip)
-            {   
+            {
                 /* PPPoE Interface really down */
                 ipv6_droute_del_acl_rules();
                 del_pppoetbl.session_id = nf_athrs17_hnat_ppp_id;

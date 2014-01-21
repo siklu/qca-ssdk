@@ -1,7 +1,15 @@
 /*
  * Copyright (c) 2012 Qualcomm Atheros, Inc.
- * All Rights Reserved.
- * Qualcomm Atheros Confidential and Proprietary.
+ * Permission to use, copy, modify, and/or distribute this software for
+ * any purpose with or without fee is hereby granted, provided that the
+ * above copyright notice and this permission notice appear in all copies.
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
+ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
 
@@ -883,7 +891,6 @@ ssdk_init(a_uint32_t dev_id, ssdk_init_cfg * cfg)
     rv = fal_init(dev_id, cfg);
 #endif
 #endif
-
     rv =  ssdk_switch_init(dev_id);
 
     return rv;
@@ -968,6 +975,7 @@ retry:
     }
 
 	bus->write(bus, 0x18, 0, page);
+	//usleep_range(1000, 2000); /* wait for the page switch to propagate */
 	udelay(100);
 	lo = bus->read(bus, 0x10 | r2, r1);
 	hi = bus->read(bus, 0x10 | r2, r1 + 1);
@@ -1006,6 +1014,7 @@ retry:
 
 	bus->write(bus, 0x18, 0, r3);
     udelay(100);
+	//usleep_range(1000, 2000); /* wait for the page switch to propagate */
 	bus->write(bus, 0x10 | r2, r1, lo);
 	bus->write(bus, 0x10 | r2, r1 + 1, hi);
 
@@ -1035,7 +1044,7 @@ retry:
     }
 
     *data = bus->read(bus, phy_addr, reg);
-
+    
 	mutex_unlock(&bus->mdio_lock);
     if(!in_interrupt()) {
         if(irq_preepmt) {
@@ -1081,7 +1090,7 @@ qca_ar8327_phy_dbg_write(a_uint32_t dev_id, a_uint32_t phy_addr,
 {
 	struct mii_bus *bus = miibus;
     static uint16_t irq_preepmt = 0;
-
+    
 retry:
     irq_preepmt = 0;
     if(!in_interrupt()) {
@@ -1094,14 +1103,14 @@ retry:
 
 	bus->write(bus, phy_addr, QCA_MII_DBG_ADDR, dbg_addr);
 	bus->write(bus, phy_addr, QCA_MII_DBG_DATA, dbg_data);
-
+    
 	mutex_unlock(&bus->mdio_lock);
     if(!in_interrupt()) {
         if(irq_preepmt) {
             goto retry;
         }
     }
-
+    
 }
 
 static void
@@ -1110,7 +1119,7 @@ qca_ar8327_mmd_write(a_uint32_t dev_id, a_uint32_t phy_addr,
 {
 	struct mii_bus *bus = miibus;
     static uint16_t irq_preepmt = 0;
-
+    
 retry:
     irq_preepmt = 0;
     if(!in_interrupt()) {
@@ -1123,7 +1132,7 @@ retry:
 
 	bus->write(bus, phy_addr, QCA_MII_MMD_ADDR, addr);
 	bus->write(bus, phy_addr, QCA_MII_MMD_DATA, data);
-
+    
 	mutex_unlock(&bus->mdio_lock);
     if(!in_interrupt()) {
         if(irq_preepmt) {
