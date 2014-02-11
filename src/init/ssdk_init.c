@@ -315,11 +315,34 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 	plat_data = priv->phy->dev.platform_data;
 	if (plat_data == NULL) {
 		return -EINVAL;
-        }
-        /*First software reset S17 chip*/
-        value = priv->mii_read(AR8327_REG_CTRL);
-        value |= 0x80000000;
-        priv->mii_write(AR8327_REG_CTRL, value);
+	}
+	/*First software reset S17 chip*/
+	value = priv->mii_read(AR8327_REG_CTRL);
+	value |= 0x80000000;
+	priv->mii_write(AR8327_REG_CTRL, value);
+
+	value = priv->mii_read(AR8327_REG_PORT_LOOKUP(1));
+	value &= ~0x20;
+	priv->mii_write(AR8327_REG_PORT_LOOKUP(1), value);
+
+	value = priv->mii_read(AR8327_REG_PORT_LOOKUP(2));
+	value &= ~0x20;
+	priv->mii_write(AR8327_REG_PORT_LOOKUP(2), value);
+
+	value = priv->mii_read(AR8327_REG_PORT_LOOKUP(3));
+	value &= ~0x20;
+	priv->mii_write(AR8327_REG_PORT_LOOKUP(3), value);
+
+	value = priv->mii_read(AR8327_REG_PORT_LOOKUP(4));
+	value &= ~0x20;
+	priv->mii_write(AR8327_REG_PORT_LOOKUP(4), value);
+
+	value = 0x1;
+	priv->mii_write(AR8327_REG_PORT_LOOKUP(5), value);
+
+	value = priv->mii_read(AR8327_REG_PORT_LOOKUP(6));
+	value &= ~0x20;
+	priv->mii_write(AR8327_REG_PORT_LOOKUP(6), value);
 
 	value = qca_ar8327_get_pad_cfg(plat_data->pad0_cfg);
 	priv->mii_write(AR8327_REG_PAD0_CTRL, value);
