@@ -23,6 +23,7 @@
 #include "fal_stp.h"
 #include "fal_igmp.h"
 #include "fal_qos.h"
+#include "fal_acl.h"
 #include "hsl.h"
 #include "hsl_dev.h"
 #include "ssdk_init.h"
@@ -41,6 +42,65 @@
 #include <linux/ar8216_platform.h>
 #include "ssdk_plat.h"
 #include "ref_vlan.h"
+
+
+int
+qca_ar8327_sw_enable_vlan0(a_bool_t enable, a_uint8_t portmap)
+{
+    fal_vlan_t entry;
+    fal_acl_rule_t rule;
+    int i = 0;
+
+    memset(&entry, 0, sizeof(fal_vlan_t));
+    memset(&rule, 0, sizeof(fal_acl_rule_t));
+    for (i = 0; i < AR8327_NUM_PORTS; i ++) {
+        fal_port_tls_set(0, i, A_FALSE);
+        fal_port_vlan_propagation_set(0, i, FAL_VLAN_PROPAGATION_REPLACE);
+    }
+
+    if (enable) {
+        entry.fid = 0;
+        entry.mem_ports = portmap;
+        entry.unmodify_ports = portmap;
+        entry.vid = 0;
+        fal_vlan_entry_append(0, &entry);
+        for (i = 0; i < AR8327_NUM_PORTS; i++) {
+            if (portmap & (0x1 << i)) {
+                fal_port_egvlanmode_set(0, i, FAL_EG_UNTOUCHED);
+                fal_port_tls_set(0, i, A_TRUE);
+                fal_port_vlan_propagation_set(0, i, FAL_VLAN_PROPAGATION_DISABLE);
+                fal_acl_port_udf_profile_set(0, i, FAL_ACL_UDF_TYPE_L2, 12, 4);
+            }
+        }
+
+        fal_acl_list_creat(0, 0, 0);
+        rule.rule_type = FAL_ACL_RULE_UDF;
+        rule.udf_len = 4;
+        rule.udf_val[0] = 0x81;
+        rule.udf_val[1] = 0;
+        rule.udf_val[2] = 0;
+        rule.udf_val[3] = 0;
+        rule.udf_mask[0] = 0xff;
+        rule.udf_mask[1] = 0xff;
+        rule.udf_mask[2] = 0xf;
+        rule.udf_mask[3] = 0xff;
+        FAL_FIELD_FLG_SET(rule.field_flg, FAL_ACL_FIELD_UDF);
+        FAL_ACTION_FLG_SET(rule.action_flg, FAL_ACL_ACTION_REMARK_LOOKUP_VID);
+        fal_acl_rule_add(0, 0, 0, 1, &rule);
+        for (i = 0; i < AR8327_NUM_PORTS; i ++) {
+            fal_acl_list_unbind(0, 0, 0, 0, i);
+            if (portmap & (0x1 << i)) {
+                fal_acl_list_bind(0, 0, 0, 0, i);
+            }
+        }
+        fal_acl_status_set(0, A_TRUE);
+    }
+    else {
+        fal_acl_rule_delete(0, 0, 0, 1);
+    }
+
+    return 0;
+}
 
 int
 qca_ar8327_sw_set_vlan(struct switch_dev *dev,
@@ -134,6 +194,10 @@ qca_ar8327_sw_get_ports(struct switch_dev *dev, struct switch_val *val)
             p->flags = (1 << SWITCH_PORT_FLAG_TAGGED);
         else
             p->flags = 0;
+
+        /*Handle for VLAN 0*/
+        if (val->port_vlan == 0)
+            p->flags = (1 << SWITCH_PORT_FLAG_TAGGED);
     }
 
     return 0;
@@ -145,6 +209,16 @@ qca_ar8327_sw_set_ports(struct switch_dev *dev, struct switch_val *val)
     struct qca_phy_priv *priv = qca_phy_priv_get(dev);
     a_uint8_t *vt = &priv->vlan_table[val->port_vlan];
     int i, j;
+
+    /*Handle for VLAN 0*/
+    if (val->port_vlan == 0) {
+        priv->vlan_table[0] = 0;
+        for (i = 0; i < val->len; i++) {
+            struct switch_port *p = &val->value.ports[i];
+            priv->vlan_table[0] |= (1 << p->id);
+        }
+        return 0;
+    }
 
     *vt = 0;
     for (i = 0; i < val->len; i++) {
@@ -158,7 +232,7 @@ qca_ar8327_sw_set_ports(struct switch_dev *dev, struct switch_val *val)
 
             /* make sure that an untagged port does not
              * appear in other vlans */
-            for (j = 0; j < AR8327_MAX_VLANS; j++) {
+            for (j = 1; j < AR8327_MAX_VLANS; j++) {
                 if (j == val->port_vlan)
                     continue;
                 priv->vlan_table[j] &= ~(1 << p->id);
@@ -185,6 +259,11 @@ qca_ar8327_sw_hw_apply(struct switch_dev *dev)
 
     memset(portmask, 0, sizeof(portmask));
     if (!priv->init) {
+        /*Handle VLAN 0 entry*/
+        if (priv->vlan_id[0] == 0 && priv->vlan_table[0] == 0) {
+            qca_ar8327_sw_enable_vlan0(A_FALSE, 0);
+        }
+
         /* calculate the port destination masks and load vlans
          * into the vlan translation unit */
         for (j = 0; j < AR8327_MAX_VLANS; j++) {
@@ -205,6 +284,12 @@ qca_ar8327_sw_hw_apply(struct switch_dev *dev)
             }
 
         }
+
+        /*Hanlde VLAN 0 entry*/
+        if (priv->vlan_id[0] == 0 && priv->vlan_table[0]) {
+            qca_ar8327_sw_enable_vlan0(A_TRUE, priv->vlan_table[0]);
+        }
+
     } else {
         /* vlan disabled:
          * isolate all ports, but connect them to the cpu port */
@@ -236,6 +321,15 @@ qca_ar8327_sw_hw_apply(struct switch_dev *dev)
             pvid = i;
             egressMode = FAL_EG_UNTOUCHED;
             ingressMode = FAL_1Q_DISABLE;
+        }
+
+        /*If VLAN 0 existes, change member port
+           *egress mode as UNTOUCHED*/
+        if (priv->vlan_id[0] == 0 &&
+              priv->vlan_table[0] &&
+              ((0x1 << i) & priv->vlan_table[0]) &&
+              priv->vlan) {
+            egressMode = FAL_EG_UNTOUCHED;
         }
 
         fal_port_1qmode_set(0, i, ingressMode);
