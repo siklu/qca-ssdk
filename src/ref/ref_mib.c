@@ -338,14 +338,16 @@ qca_ar8327_sw_get_port_mib(struct switch_dev *dev,
 void
 qca_ar8327_sw_mib_task(struct switch_dev *dev)
 {
-    int i = 0;
+	int i = 0;
+	static int port = 0;
 
-    for (i = 0; i < dev->ports; i++)
-    {
-        _qca_ar8327_sw_capture_port_counter(dev, i);
-    }
+	_qca_ar8327_sw_capture_port_counter(dev, port);
 
-    return;
+	if(++port == dev->ports) {
+		port = 0;
+	}
+
+	return;
 }
 
 
