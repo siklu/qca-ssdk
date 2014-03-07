@@ -32,12 +32,8 @@ extern "C" {
 #define SW_PARAM_PTR           0x4
 
 #define SW_API_DEF(ioctl, name) {ioctl, name}
-#if (!defined(KERNEL_MODULE))
-#define SW_PARAM_DEF(ioctl, data, size, type, name) \
-    {ioctl, size, data, type, name}
-#else
+
 #define SW_PARAM_DEF(ioctl, data, size, type, name) {ioctl, size, data, type}
-#endif
 
     typedef enum
     {
@@ -123,9 +119,7 @@ extern "C" {
         a_uint16_t data_size;
         a_uint8_t  data_type;
         a_uint8_t  param_type;
-#if (!defined(KERNEL_MODULE))
         a_uint8_t param_name[20];
-#endif
     } sw_api_param_t;
 
     typedef struct

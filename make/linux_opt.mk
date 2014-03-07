@@ -172,6 +172,8 @@ endif
 
 ifeq (KSLIB, $(MODULE_TYPE))
 
+  MODULE_INC += -I$(PRJ_PATH)/include/shell_lib
+
   ifeq (3_4, $(OS_VER))
 		MODULE_CFLAG += -DKVER34
 		MODULE_CFLAG += -DKVER32

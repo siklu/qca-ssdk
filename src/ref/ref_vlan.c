@@ -219,7 +219,8 @@ qca_ar8327_sw_set_ports(struct switch_dev *dev, struct switch_val *val)
         }
         return 0;
     }
-
+	if (priv->vlan_id[val->port_vlan] == 0)
+		priv->vlan_id[val->port_vlan] = val->port_vlan;
     *vt = 0;
     for (i = 0; i < val->len; i++) {
         struct switch_port *p = &val->value.ports[i];
@@ -254,9 +255,6 @@ qca_ar8327_sw_hw_apply(struct switch_dev *dev)
 
     mutex_lock(&priv->reg_mutex);
 
-    /* flush all vlan translation unit entries */
-    fal_vlan_flush(0);
-
     memset(portmask, 0, sizeof(portmask));
     if (!priv->init) {
         /*Handle VLAN 0 entry*/
@@ -272,6 +270,7 @@ qca_ar8327_sw_hw_apply(struct switch_dev *dev)
             if (!vp)
             continue;
 
+            fal_vlan_delete(0, priv->vlan_id[j]);
             fal_vlan_create(0, priv->vlan_id[j]);
 
             for (i = 0; i < dev->ports; i++) {

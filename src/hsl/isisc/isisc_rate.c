@@ -1248,6 +1248,8 @@ _isisc_rate_acl_policer_get(a_uint32_t dev_id, a_uint32_t policer_id,
         _isisc_ingress_bs_byte_hw_to_sw(ebs, &(policer->ebs));
     }
 
+    SW_GET_FIELD_BY_REG(ACL_POLICER1, ACL_BORROW, policer->deficit_en,
+                        data[1]);
     SW_GET_FIELD_BY_REG(ACL_POLICER1, ACL_CF, policer->couple_flag, data[1]);
     SW_GET_FIELD_BY_REG(ACL_POLICER1, ACL_CM, policer->color_mode, data[1]);
 

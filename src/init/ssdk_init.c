@@ -39,6 +39,7 @@
 #include <linux/netdevice.h>
 #include <linux/phy.h>
 #include <linux/delay.h>
+#include <linux/string.h>
 #include <net/switch.h>
 #include <linux/ar8216_platform.h>
 #include "ssdk_plat.h"
@@ -47,6 +48,8 @@
 #include "ref_mib.h"
 #include "ref_port_ctrl.h"
 #include "ref_misc.h"
+#include "ref_uci.h"
+#include "shell.h"
 
 static void
 qca_phy_read_port_link(struct qca_phy_priv *priv, int port,
@@ -465,6 +468,12 @@ static struct switch_attr qca_ar8327_globals[] = {
 		.description = "Dump All ARL table",
 		.type = SWITCH_TYPE_STRING,
 		.get = qca_ar8327_sw_atu_dump,
+	},
+	{
+		.name = "switch_ext",
+		.description = "Switch extended configuration",
+		.type = SWITCH_TYPE_EXT,
+		.set = qca_ar8327_sw_switch_ext,
 	},
 };
 

@@ -2,7 +2,7 @@
 ifeq (linux, $(OS))
   ifeq (KSLIB, $(MODULE_TYPE))
     ifeq (TRUE, $(KERNEL_MODE))
-      COMPONENTS = HSL SAL INIT UTIL REF
+      COMPONENTS = HSL SAL INIT UTIL REF SHELIB
       ifeq (TRUE, $(FAL))
         COMPONENTS += FAL
       endif

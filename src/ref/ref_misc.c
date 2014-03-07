@@ -88,14 +88,17 @@ qca_ar8327_sw_reset_switch(struct switch_dev *dev)
 
     mutex_lock(&priv->reg_mutex);
 
+    /* flush all vlan translation unit entries */
+    fal_vlan_flush(0);
+
     /* reset VLAN shadow */
     priv->vlan = 0;
     memset(priv->vlan_table, 0, sizeof(a_uint8_t) * AR8327_MAX_VLANS);
     priv->vlan_tagged = 0;
     memset(priv->pvid, 0, sizeof(a_uint16_t) * AR8327_NUM_PORTS);
 
-    for (i = 0; i < AR8327_MAX_VLANS; i++)
-        priv->vlan_id[i] = i;
+    /*for (i = 0; i < AR8327_MAX_VLANS; i++)*/
+    /*    priv->vlan_id[i] = i;*/
 
     /* init switch */
     rv += ssdk_switch_init(0);
