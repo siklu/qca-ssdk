@@ -148,6 +148,9 @@ extern "C" {
     sw_error_t
     fal_igmp_sg_entry_show(a_uint32_t dev_id);
 
+    sw_error_t
+    fal_igmp_sg_entry_query(a_uint32_t dev_id, fal_igmp_sg_info_t * info);
+
 #ifdef __cplusplus
 }
 #endif                          /* __cplusplus */

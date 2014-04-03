@@ -63,5 +63,10 @@ typedef struct
     fal_igmp_sg_entry_t entry; //Stores the specific ACL rule info
 } multi_acl_info_t;
 
+typedef struct
+{
+    a_uint8_t cnt; //MAX is 32
+    multi_acl_info_t acl_info[FAL_IGMP_SG_ENTRY_MAX]; //Stores the all ACL rule info
+} fal_igmp_sg_info_t;
 
 #endif

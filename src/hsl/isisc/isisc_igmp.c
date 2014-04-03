@@ -39,6 +39,9 @@ isisc_igmp_sg_entry_clear(a_uint32_t dev_id, fal_igmp_sg_entry_t * entry);
 extern sw_error_t
 isisc_igmp_sg_entry_show(a_uint32_t dev_id);
 
+extern sw_error_t
+isisc_igmp_sg_entry_query(a_uint32_t dev_id, fal_igmp_sg_info_t * info);
+
 static sw_error_t
 _isisc_port_igmp_property_set(a_uint32_t dev_id, fal_port_t port_id,
                              a_bool_t enable, a_uint32_t item)
@@ -1131,6 +1134,7 @@ isisc_igmp_init(a_uint32_t dev_id)
         p_api->igmp_sg_entry_set = isisc_igmp_sg_entry_set;
         p_api->igmp_sg_entry_clear = isisc_igmp_sg_entry_clear;
         p_api->igmp_sg_entry_show = isisc_igmp_sg_entry_show;
+        p_api->igmp_sg_entry_query = isisc_igmp_sg_entry_query;
     }
 #endif
 

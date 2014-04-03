@@ -24,7 +24,7 @@ extern "C" {
 #include "sw.h"
 #include "sw_ioctl.h"
 
-#define SW_MAX_API_BUF         1024
+#define SW_MAX_API_BUF         2048
 #define SW_MAX_API_PARAM       12 /* cmd type + return value + ten parameters */
 #define SW_MAX_PAYLOAD         (SW_MAX_API_PARAM << 2)  /* maximum payload size for netlink msg*/
 #define SW_PARAM_IN            0x1
@@ -105,6 +105,7 @@ extern "C" {
         SW_SEC_ICMP4,
         SW_SEC_ICMP6,
         SW_REMARKENTRY,
+        SW_SGINFOENTRY,
     } sw_data_type_e;
 
     typedef struct

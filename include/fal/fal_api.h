@@ -476,7 +476,8 @@ extern "C" {
     SW_API_DEF(SW_API_PT_IGMP_LEARN_EXCEED_CMD_GET,    fal_port_igmp_mld_learn_exceed_cmd_get), \
     SW_API_DEF(SW_API_IGMP_SG_ENTRY_SET,    fal_igmp_sg_entry_set),  \
     SW_API_DEF(SW_API_IGMP_SG_ENTRY_CLEAR,    fal_igmp_sg_entry_clear),  \
-    SW_API_DEF(SW_API_IGMP_SG_ENTRY_SHOW,    fal_igmp_sg_entry_show),
+    SW_API_DEF(SW_API_IGMP_SG_ENTRY_SHOW,    fal_igmp_sg_entry_show),  \
+    SW_API_DEF(SW_API_IGMP_SG_ENTRY_QUERY,    fal_igmp_sg_entry_query),
 
 #define IGMP_API_PARAM \
     SW_API_DESC(SW_API_PT_IGMPS_MODE_SET) \
@@ -505,7 +506,8 @@ extern "C" {
     SW_API_DESC(SW_API_PT_IGMP_LEARN_EXCEED_CMD_GET) \
     SW_API_DESC(SW_API_IGMP_SG_ENTRY_SET) \
     SW_API_DESC(SW_API_IGMP_SG_ENTRY_CLEAR) \
-    SW_API_DESC(SW_API_IGMP_SG_ENTRY_SHOW)
+    SW_API_DESC(SW_API_IGMP_SG_ENTRY_SHOW) \
+    SW_API_DESC(SW_API_IGMP_SG_ENTRY_QUERY)
 #else
 #define IGMP_API
 #define IGMP_API_PARAM

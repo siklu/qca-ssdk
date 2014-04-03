@@ -439,6 +439,20 @@ _fal_igmp_sg_entry_show(a_uint32_t dev_id)
     rv = p_api->igmp_sg_entry_show(dev_id);
     return rv;
 }
+static sw_error_t
+_fal_igmp_sg_entry_query(a_uint32_t dev_id, fal_igmp_sg_info_t * info)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->igmp_sg_entry_query)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->igmp_sg_entry_query(dev_id, info);
+    return rv;
+}
 /**
  * @brief Set igmp/mld packets snooping status on a particular port.
  * @details    Comments:
@@ -930,6 +944,17 @@ fal_igmp_sg_entry_show(a_uint32_t dev_id)
     FAL_API_UNLOCK;
     return rv;
 }
+sw_error_t
+fal_igmp_sg_entry_query(a_uint32_t dev_id, fal_igmp_sg_info_t * info)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_igmp_sg_entry_query(dev_id, info);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
 /**
  * @}
  */

@@ -27,7 +27,7 @@ extern "C" {
 #include "ssdk_init.h"
 
 
-#define IOCTL_BUF_SIZE 1024
+#define IOCTL_BUF_SIZE 2048
 #define CMDSTR_BUF_SIZE 1024
 #define CMDSTR_ARGS_MAX 128
 #define dprintf cmd_print

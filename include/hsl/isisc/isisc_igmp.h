@@ -150,6 +150,9 @@ extern "C" {
     HSL_LOCAL sw_error_t
     isisc_igmp_sg_entry_show(a_uint32_t dev_id);
 
+    HSL_LOCAL sw_error_t
+    isisc_igmp_sg_entry_query(a_uint32_t dev_id, fal_igmp_sg_info_t * info);
+
 #endif
 
 #ifdef __cplusplus

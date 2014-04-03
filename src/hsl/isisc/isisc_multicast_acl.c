@@ -1011,3 +1011,24 @@ isisc_multicast_init(a_uint32_t dev_id)
 
 }
 
+sw_error_t isisc_igmp_sg_entry_query(a_uint32_t dev_id, fal_igmp_sg_info_t *info)
+{
+    HSL_API_LOCK;
+    a_uint32_t number;
+    int i;
+
+    isisc_multicast_init(0);
+    aos_mem_zero(multi_acl_info, FAL_IGMP_SG_ENTRY_MAX * sizeof (multi_acl_info_t));
+    /*number is the total multicast ACL rules amount, stores in multi_acl_info[];*/
+    number = isisc_multicast_acl_query();
+    info->cnt = number;
+
+    for(i=0; i<number; i++)
+    {
+        aos_mem_copy(&(info->acl_info[i]), &(multi_acl_info[i]), sizeof(multi_acl_info_t));
+    }
+    HSL_API_UNLOCK;
+
+    return SW_OK;
+}
+

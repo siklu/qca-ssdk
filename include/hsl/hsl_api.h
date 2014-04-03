@@ -1058,6 +1058,9 @@ extern "C" {
     typedef sw_error_t
     (*hsl_igmp_sg_entry_show)(a_uint32_t dev_id);
 
+    typedef sw_error_t
+    (*hsl_igmp_sg_entry_query)(a_uint32_t dev_id, fal_igmp_sg_info_t * info);
+
     /* Leaky */
 #define LEAKY_FUNC_PROTOTYPE_DEF
     typedef sw_error_t
@@ -1885,6 +1888,7 @@ extern "C" {
         hsl_igmp_sg_entry_set   igmp_sg_entry_set;
         hsl_igmp_sg_entry_clear   igmp_sg_entry_clear;
         hsl_igmp_sg_entry_show   igmp_sg_entry_show;
+        hsl_igmp_sg_entry_query   igmp_sg_entry_query;
 
         /* Leaky */
         hsl_uc_leaky_mode_set uc_leaky_mode_set;
