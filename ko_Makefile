@@ -1,9 +1,3 @@
 obj-m :=  qca-ssdk.o
-OBJ_LIST:=$(wildcard ./*.o)
-QCA_SSDK_BASE_OBJ := api_access.o hsl_port_prop.o isisc_igmp.o isisc_led.o isisc_sec.o  isisc_nat.o isisc_reg_access.o sd.o f1_phy.o isisc_acl.o isisc_init.o isisc_mib.o isisc_port_ctrl.o isisc_stp.o ssdk_init.o hsl_acl.o isisc_acl_parse.o isisc_interface_ctrl.o isisc_mirror.o isisc_portvlan.o isisc_trunk.o hsl_api.o isisc_cosmap.o isisc_ip.o isisc_misc.o isisc_qos.o isisc_vlan.o sw_api_ks_ioctl.o hsl_dev.o isisc_fdb.o isisc_leaky.o isisc_multicast_acl.o isisc_rate.o util.o fal_acl.o fal_interface_ctrl.o fal_mirror.o fal_qos.o fal_trunk.o fal_cosmap.o fal_ip.o fal_misc.o fal_rate.o fal_vlan.o fal_fdb.o fal_leaky.o fal_nat.o fal_reg_access.o fal_igmp.o fal_led.o fal_port_ctrl.o fal_sec.o fal_init.o fal_mib.o fal_portvlan.o fal_stp.o ref_vlan.o ref_fdb.o ref_mib.o ref_port_ctrl.o ref_misc.o ref_uci.o \
-                 shell.o shell_sw.o shell_config.o shell_io.o
-ifeq ($(HNAT_FEATURE), enable)
-HNAT_OBJ := host_helper.o nat_helper_hsl.o napt_helper.o nat_helper.o nat_helper_dt.o  nat_ipt_helper.o napt_acl.o napt_procfs.o
-endif
-
-qca-ssdk-objs := $(QCA_SSDK_BASE_OBJ) $(HNAT_OBJ)
+OBJ_LIST:=$(notdir $(wildcard $(PRJ_PATH)/temp/*.o))
+qca-ssdk-objs := $(OBJ_LIST)

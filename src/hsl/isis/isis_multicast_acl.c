@@ -102,6 +102,9 @@ typedef struct
     fal_igmp_sg_entry_t entry; //Stores the specific ACL rule info
 } multi_acl_info_t;
 #endif
+
+static a_uint32_t rule_nr=1;
+
 void
 isis_multicast_init(a_uint32_t dev_id);
 

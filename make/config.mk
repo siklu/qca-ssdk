@@ -55,7 +55,7 @@ else
      ifneq (TRUE, $(FAL))
          $(error FAL must be TRUE when CHIP_TYPE is defined as ALL_CHIP!)
      endif
-     SUPPORT_CHIP = GARUDA SHIVA HORUS ISIS ISISC
+     SUPPORT_CHIP = ISIS ISISC
   endif
 
   ifndef SUPPORT_CHIP

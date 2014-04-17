@@ -27,7 +27,6 @@ BOARD_NAME=BOARD_IPQ806X
 endif
 
 OS_SUB=31
-CHIP_TYPE=ISISC
 
 ifndef OS_VER
 OS_VER=2_6
@@ -51,7 +50,7 @@ ifndef SYS_PATH
 SYS_PATH=/disk/ap81fus/sw/linux/kernels/mips-linux-2.6.15
 endif
 ifeq ($(ARCH), mips)
-  CPU_CFLAG=-Wstrict-prototypes -fomit-frame-pointer -G 0 -mno-abicalls -fno-strict-aliasing -O2 -fno-pic -pipe -mabi=32 -march=mips32r2 -DMODULE -mlong-calls -DEXPORT_SYMTAB -D$(BOARD_NAME)
+  CPU_CFLAG=-Wstrict-prototypes -fomit-frame-pointer -G 0 -mno-abicalls -fno-common -fno-strict-aliasing -O2 -fno-pic -pipe -mabi=32 -march=mips32r2 -DMODULE -mlong-calls -DEXPORT_SYMTAB -D$(BOARD_NAME)
 endif
 
 
@@ -94,7 +93,7 @@ endif
 FAL=TRUE
 
 #CHIP_TYPE can be defined as ATHENA, GARUDA, SHIVA, HORUS, ISIS, ISISC and ALL_CHIP(ALL_CHIP means GARUDA, SHIVA, HORUS and ISIS)
-CHIP_TYPE=ISISC
+CHIP_TYPE=ALL_CHIP
 
 #UK_IF=FALSE or not define UK_IF, UK_IF will not be included in SSDK
 #when UK_IF=TRUE one of UK_NETLINK,UK_IOCTL must be defined as TRUE

@@ -426,7 +426,7 @@ _isis_sec_norm_item_get(a_uint32_t dev_id, fal_norm_item_t item, void *value)
 
         case FAL_NROM_IP4_INVALID_HL_CMD:
             addr = NORM_CTRL0_ADDR;
-            offset = 2;
+            offset = 3;
             break;
 
         case FAL_NROM_IP4_HDR_OPTIONS_CMD:
