@@ -340,12 +340,17 @@ qca_ar8327_sw_mib_task(struct switch_dev *dev)
 {
 	int i = 0;
 	static int port = 0;
+	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
+
+	mutex_lock(&priv->reg_mutex);
 
 	_qca_ar8327_sw_capture_port_counter(dev, port);
 
 	if(++port == dev->ports) {
 		port = 0;
 	}
+
+	mutex_unlock(&priv->reg_mutex);
 
 	return;
 }
