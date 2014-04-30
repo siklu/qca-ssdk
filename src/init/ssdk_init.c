@@ -521,6 +521,8 @@ static const struct switch_dev_ops qca_ar8327_sw_ops = {
 #endif
 };
 
+#define SSDK_MIB_CHANGE_WQ
+
 static int
 qca_phy_mib_task(struct qca_phy_priv *priv)
 {
@@ -538,8 +540,13 @@ qca_phy_mib_work_task(struct work_struct *work)
     qca_phy_mib_task(priv);
 
 	mutex_unlock(&priv->mib_lock);
+#ifndef SSDK_MIB_CHANGE_WQ
 	schedule_delayed_work(&priv->mib_dwork,
 			      msecs_to_jiffies(QCA_PHY_MIB_WORK_DELAY));
+#else
+	queue_delayed_work_on(0, system_long_wq, &priv->mib_dwork,
+					msecs_to_jiffies(QCA_PHY_MIB_WORK_DELAY));
+#endif
 }
 
 static int
@@ -552,9 +559,13 @@ qca_phy_mib_work_start(struct qca_phy_priv *priv)
 		return -ENOMEM;
 
 	INIT_DELAYED_WORK(&priv->mib_dwork, qca_phy_mib_work_task);
-
+#ifndef SSDK_MIB_CHANGE_WQ
 	schedule_delayed_work(&priv->mib_dwork,
 			               msecs_to_jiffies(QCA_PHY_MIB_WORK_DELAY));
+#else
+	queue_delayed_work_on(0, system_long_wq, &priv->mib_dwork,
+					msecs_to_jiffies(QCA_PHY_MIB_WORK_DELAY));
+#endif
 
 	return 0;
 }
