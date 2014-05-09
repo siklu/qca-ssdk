@@ -99,6 +99,21 @@ typedef struct
     SW_FIELD_GET_BY_REG_U32(hw->vlu[reg], val, reg##_##field##_BOFFSET, \
                             reg##_##field##_BLEN)
 
+#define FIELD_SET_MASK(reg, field, val) \
+    SW_REG_SET_BY_FIELD_U32(hw->msk[reg-5], val, reg##_##field##_BOFFSET, \
+                            reg##_##field##_BLEN)
+
+#define FIELD_GET_MASK(reg, field, val) \
+    SW_FIELD_GET_BY_REG_U32(hw->msk[reg-5], val, reg##_##field##_BOFFSET, \
+                            reg##_##field##_BLEN)
+
+#define FIELD_SET_ACTION(reg, field, val) \
+    SW_REG_SET_BY_FIELD_U32(hw->act[reg-10], val, reg##_##field##_BOFFSET, \
+                            reg##_##field##_BLEN)
+
+#define FIELD_GET_ACTION(reg, field, val) \
+    SW_FIELD_GET_BY_REG_U32(hw->act[reg-10], val, reg##_##field##_BOFFSET, \
+                            reg##_##field##_BLEN)
 
 sw_error_t
 _isis_acl_rule_sw_to_hw(a_uint32_t dev_id, fal_acl_rule_t * sw, isis_acl_rule_t * hw_filter_snap, a_uint32_t * idx);

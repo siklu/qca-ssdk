@@ -89,7 +89,7 @@ _isis_acl_rule_bmac_parse(fal_acl_rule_t * sw,
     aos_mem_zero(&(hw->vlu[0]), sizeof (hw->vlu));
     aos_mem_zero(&(hw->msk[0]), sizeof (hw->msk));
 
-    FIELD_SET(MAC_RUL_M4, RULE_TYP, ISIS_MAC_FILTER);
+    FIELD_SET_MASK(MAC_RUL_M4, RULE_TYP, ISIS_MAC_FILTER);
 
     if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_MAC_DA))
     {
@@ -110,12 +110,12 @@ _isis_acl_rule_bmac_parse(fal_acl_rule_t * sw,
         FIELD_SET(MAC_RUL_V1, DAV_BYTE0, sw->dest_mac_val.uc[0]);
         FIELD_SET(MAC_RUL_V1, DAV_BYTE1, sw->dest_mac_val.uc[1]);
 
-        FIELD_SET(MAC_RUL_M0, DAM_BYTE2, sw->dest_mac_mask.uc[2]);
-        FIELD_SET(MAC_RUL_M0, DAM_BYTE3, sw->dest_mac_mask.uc[3]);
-        FIELD_SET(MAC_RUL_M0, DAM_BYTE4, sw->dest_mac_mask.uc[4]);
-        FIELD_SET(MAC_RUL_M0, DAM_BYTE5, sw->dest_mac_mask.uc[5]);
-        FIELD_SET(MAC_RUL_M1, DAM_BYTE0, sw->dest_mac_mask.uc[0]);
-        FIELD_SET(MAC_RUL_M1, DAM_BYTE1, sw->dest_mac_mask.uc[1]);
+        FIELD_SET_MASK(MAC_RUL_M0, DAM_BYTE2, sw->dest_mac_mask.uc[2]);
+        FIELD_SET_MASK(MAC_RUL_M0, DAM_BYTE3, sw->dest_mac_mask.uc[3]);
+        FIELD_SET_MASK(MAC_RUL_M0, DAM_BYTE4, sw->dest_mac_mask.uc[4]);
+        FIELD_SET_MASK(MAC_RUL_M0, DAM_BYTE5, sw->dest_mac_mask.uc[5]);
+        FIELD_SET_MASK(MAC_RUL_M1, DAM_BYTE0, sw->dest_mac_mask.uc[0]);
+        FIELD_SET_MASK(MAC_RUL_M1, DAM_BYTE1, sw->dest_mac_mask.uc[1]);
     }
 
     if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_MAC_SA))
@@ -137,12 +137,12 @@ _isis_acl_rule_bmac_parse(fal_acl_rule_t * sw,
         FIELD_SET(MAC_RUL_V2, SAV_BYTE2, sw->src_mac_val.uc[2]);
         FIELD_SET(MAC_RUL_V2, SAV_BYTE3, sw->src_mac_val.uc[3]);
 
-        FIELD_SET(MAC_RUL_M1, SAM_BYTE4, sw->src_mac_mask.uc[4]);
-        FIELD_SET(MAC_RUL_M1, SAM_BYTE5, sw->src_mac_mask.uc[5]);
-        FIELD_SET(MAC_RUL_M2, SAM_BYTE0, sw->src_mac_mask.uc[0]);
-        FIELD_SET(MAC_RUL_M2, SAM_BYTE1, sw->src_mac_mask.uc[1]);
-        FIELD_SET(MAC_RUL_M2, SAM_BYTE2, sw->src_mac_mask.uc[2]);
-        FIELD_SET(MAC_RUL_M2, SAM_BYTE3, sw->src_mac_mask.uc[3]);
+        FIELD_SET_MASK(MAC_RUL_M1, SAM_BYTE4, sw->src_mac_mask.uc[4]);
+        FIELD_SET_MASK(MAC_RUL_M1, SAM_BYTE5, sw->src_mac_mask.uc[5]);
+        FIELD_SET_MASK(MAC_RUL_M2, SAM_BYTE0, sw->src_mac_mask.uc[0]);
+        FIELD_SET_MASK(MAC_RUL_M2, SAM_BYTE1, sw->src_mac_mask.uc[1]);
+        FIELD_SET_MASK(MAC_RUL_M2, SAM_BYTE2, sw->src_mac_mask.uc[2]);
+        FIELD_SET_MASK(MAC_RUL_M2, SAM_BYTE3, sw->src_mac_mask.uc[3]);
     }
 
     if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_MAC_ETHTYPE))
@@ -154,7 +154,7 @@ _isis_acl_rule_bmac_parse(fal_acl_rule_t * sw,
 
         sw->ethtype_val &= sw->ethtype_mask;
         FIELD_SET(MAC_RUL_V3, ETHTYPV, sw->ethtype_val);
-        FIELD_SET(MAC_RUL_M3, ETHTYPM, sw->ethtype_mask);
+        FIELD_SET_MASK(MAC_RUL_M3, ETHTYPM, sw->ethtype_mask);
     }
 
     if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_MAC_TAGGED))
@@ -165,8 +165,8 @@ _isis_acl_rule_bmac_parse(fal_acl_rule_t * sw,
         }
 
         sw->tagged_val &= sw->tagged_mask;
-        FIELD_SET(MAC_RUL_M4, TAGGEDV, sw->tagged_val);
-        FIELD_SET(MAC_RUL_M4, TAGGEDM, sw->tagged_mask);
+        FIELD_SET_MASK(MAC_RUL_M4, TAGGEDV, sw->tagged_val);
+        FIELD_SET_MASK(MAC_RUL_M4, TAGGEDM, sw->tagged_mask);
     }
 
     if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_MAC_UP))
@@ -178,10 +178,10 @@ _isis_acl_rule_bmac_parse(fal_acl_rule_t * sw,
 
         sw->up_val &= sw->up_mask;
         FIELD_SET(MAC_RUL_V3, VLANPRIV, sw->up_val);
-        FIELD_SET(MAC_RUL_M3, VLANPRIM, sw->up_mask);
+        FIELD_SET_MASK(MAC_RUL_M3, VLANPRIM, sw->up_mask);
     }
 
-    FIELD_SET(MAC_RUL_M4, VIDMSK, 1);
+    FIELD_SET_MASK(MAC_RUL_M4, VIDMSK, 1);
     if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_MAC_VID))
     {
         if ((FAL_ACL_FIELD_MASK != sw->vid_op)
@@ -199,28 +199,28 @@ _isis_acl_rule_bmac_parse(fal_acl_rule_t * sw,
             *b_care = A_TRUE;
         }
 
-        FIELD_SET(MAC_RUL_M4, VIDMSK, 0);
+        FIELD_SET_MASK(MAC_RUL_M4, VIDMSK, 0);
         if (FAL_ACL_FIELD_MASK == sw->vid_op)
         {
             sw->vid_val &= sw->vid_mask;
             FIELD_SET(MAC_RUL_V3, VLANIDV, sw->vid_val);
-            FIELD_SET(MAC_RUL_M3, VLANIDM, sw->vid_mask);
-            FIELD_SET(MAC_RUL_M4, VIDMSK, 1);
+            FIELD_SET_MASK(MAC_RUL_M3, VLANIDM, sw->vid_mask);
+            FIELD_SET_MASK(MAC_RUL_M4, VIDMSK, 1);
         }
         else if (FAL_ACL_FIELD_RANGE == sw->vid_op)
         {
             FIELD_SET(MAC_RUL_V3, VLANIDV, sw->vid_val);
-            FIELD_SET(MAC_RUL_M3, VLANIDM, sw->vid_mask);
+            FIELD_SET_MASK(MAC_RUL_M3, VLANIDM, sw->vid_mask);
         }
         else if (FAL_ACL_FIELD_LE == sw->vid_op)
         {
             FIELD_SET(MAC_RUL_V3, VLANIDV, 0);
-            FIELD_SET(MAC_RUL_M3, VLANIDM, sw->vid_val);
+            FIELD_SET_MASK(MAC_RUL_M3, VLANIDM, sw->vid_val);
         }
         else
         {
             FIELD_SET(MAC_RUL_V3, VLANIDV, sw->vid_val);
-            FIELD_SET(MAC_RUL_M3, VLANIDM, 0xfff);
+            FIELD_SET_MASK(MAC_RUL_M3, VLANIDM, 0xfff);
         }
     }
 
@@ -233,7 +233,7 @@ _isis_acl_rule_bmac_parse(fal_acl_rule_t * sw,
 
         sw->cfi_val &= sw->cfi_mask;
         FIELD_SET(MAC_RUL_V3, VLANCFIV, sw->cfi_val);
-        FIELD_SET(MAC_RUL_M3, VLANCFIM, sw->cfi_mask);
+        FIELD_SET_MASK(MAC_RUL_M3, VLANCFIM, sw->cfi_mask);
     }
 
     if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_INVERSE_ALL))
@@ -255,7 +255,7 @@ _isis_acl_rule_ehmac_parse(fal_acl_rule_t * sw,
     aos_mem_zero(&(hw->vlu[0]), sizeof (hw->vlu));
     aos_mem_zero(&(hw->msk[0]), sizeof (hw->msk));
 
-    FIELD_SET(MAC_RUL_M4, RULE_TYP, ISIS_EHMAC_FILTER);
+    FIELD_SET_MASK(MAC_RUL_M4, RULE_TYP, ISIS_EHMAC_FILTER);
 
     if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_MAC_DA))
     {
@@ -309,12 +309,12 @@ _isis_acl_rule_ehmac_parse(fal_acl_rule_t * sw,
         FIELD_SET(EHMAC_RUL_V1, DAV_BYTE0, sw->dest_mac_val.uc[0]);
         FIELD_SET(EHMAC_RUL_V1, DAV_BYTE1, sw->dest_mac_val.uc[1]);
 
-        FIELD_SET(EHMAC_RUL_M0, DAM_BYTE2, sw->dest_mac_mask.uc[2]);
-        FIELD_SET(EHMAC_RUL_M0, DAM_BYTE3, sw->dest_mac_mask.uc[3]);
-        FIELD_SET(EHMAC_RUL_M0, DAM_BYTE4, sw->dest_mac_mask.uc[4]);
-        FIELD_SET(EHMAC_RUL_M0, DAM_BYTE5, sw->dest_mac_mask.uc[5]);
-        FIELD_SET(EHMAC_RUL_M1, DAM_BYTE0, sw->dest_mac_mask.uc[0]);
-        FIELD_SET(EHMAC_RUL_M1, DAM_BYTE1, sw->dest_mac_mask.uc[1]);
+        FIELD_SET_MASK(EHMAC_RUL_M0, DAM_BYTE2, sw->dest_mac_mask.uc[2]);
+        FIELD_SET_MASK(EHMAC_RUL_M0, DAM_BYTE3, sw->dest_mac_mask.uc[3]);
+        FIELD_SET_MASK(EHMAC_RUL_M0, DAM_BYTE4, sw->dest_mac_mask.uc[4]);
+        FIELD_SET_MASK(EHMAC_RUL_M0, DAM_BYTE5, sw->dest_mac_mask.uc[5]);
+        FIELD_SET_MASK(EHMAC_RUL_M1, DAM_BYTE0, sw->dest_mac_mask.uc[0]);
+        FIELD_SET_MASK(EHMAC_RUL_M1, DAM_BYTE1, sw->dest_mac_mask.uc[1]);
 
         if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_MAC_SA))
         {
@@ -332,9 +332,9 @@ _isis_acl_rule_ehmac_parse(fal_acl_rule_t * sw,
             FIELD_SET(EHMAC_RUL_V1, SAV_BYTE4, sw->src_mac_val.uc[4]);
             FIELD_SET(EHMAC_RUL_V1, SAV_BYTE5, sw->src_mac_val.uc[5]);
 
-            FIELD_SET(EHMAC_RUL_M2, SAM_BYTE3, sw->src_mac_mask.uc[3]);
-            FIELD_SET(EHMAC_RUL_M1, SAM_BYTE4, sw->src_mac_mask.uc[4]);
-            FIELD_SET(EHMAC_RUL_M1, SAM_BYTE5, sw->src_mac_mask.uc[5]);
+            FIELD_SET_MASK(EHMAC_RUL_M2, SAM_BYTE3, sw->src_mac_mask.uc[3]);
+            FIELD_SET_MASK(EHMAC_RUL_M1, SAM_BYTE4, sw->src_mac_mask.uc[4]);
+            FIELD_SET_MASK(EHMAC_RUL_M1, SAM_BYTE5, sw->src_mac_mask.uc[5]);
         }
     }
 
@@ -357,12 +357,12 @@ _isis_acl_rule_ehmac_parse(fal_acl_rule_t * sw,
         FIELD_SET(EHMAC_RUL_V1, DAV_BYTE0, sw->src_mac_val.uc[0]);
         FIELD_SET(EHMAC_RUL_V1, DAV_BYTE1, sw->src_mac_val.uc[1]);
 
-        FIELD_SET(EHMAC_RUL_M0, DAM_BYTE2, sw->src_mac_mask.uc[2]);
-        FIELD_SET(EHMAC_RUL_M0, DAM_BYTE3, sw->src_mac_mask.uc[3]);
-        FIELD_SET(EHMAC_RUL_M0, DAM_BYTE4, sw->src_mac_mask.uc[4]);
-        FIELD_SET(EHMAC_RUL_M0, DAM_BYTE5, sw->src_mac_mask.uc[5]);
-        FIELD_SET(EHMAC_RUL_M1, DAM_BYTE0, sw->src_mac_mask.uc[0]);
-        FIELD_SET(EHMAC_RUL_M1, DAM_BYTE1, sw->src_mac_mask.uc[1]);
+        FIELD_SET_MASK(EHMAC_RUL_M0, DAM_BYTE2, sw->src_mac_mask.uc[2]);
+        FIELD_SET_MASK(EHMAC_RUL_M0, DAM_BYTE3, sw->src_mac_mask.uc[3]);
+        FIELD_SET_MASK(EHMAC_RUL_M0, DAM_BYTE4, sw->src_mac_mask.uc[4]);
+        FIELD_SET_MASK(EHMAC_RUL_M0, DAM_BYTE5, sw->src_mac_mask.uc[5]);
+        FIELD_SET_MASK(EHMAC_RUL_M1, DAM_BYTE0, sw->src_mac_mask.uc[0]);
+        FIELD_SET_MASK(EHMAC_RUL_M1, DAM_BYTE1, sw->src_mac_mask.uc[1]);
 
         if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_MAC_DA))
         {
@@ -380,9 +380,9 @@ _isis_acl_rule_ehmac_parse(fal_acl_rule_t * sw,
             FIELD_SET(EHMAC_RUL_V1, SAV_BYTE4, sw->dest_mac_val.uc[4]);
             FIELD_SET(EHMAC_RUL_V1, SAV_BYTE5, sw->dest_mac_val.uc[5]);
 
-            FIELD_SET(EHMAC_RUL_M2, SAM_BYTE3, sw->dest_mac_mask.uc[3]);
-            FIELD_SET(EHMAC_RUL_M1, SAM_BYTE4, sw->dest_mac_mask.uc[4]);
-            FIELD_SET(EHMAC_RUL_M1, SAM_BYTE5, sw->dest_mac_mask.uc[5]);
+            FIELD_SET_MASK(EHMAC_RUL_M2, SAM_BYTE3, sw->dest_mac_mask.uc[3]);
+            FIELD_SET_MASK(EHMAC_RUL_M1, SAM_BYTE4, sw->dest_mac_mask.uc[4]);
+            FIELD_SET_MASK(EHMAC_RUL_M1, SAM_BYTE5, sw->dest_mac_mask.uc[5]);
         }
     }
 
@@ -395,7 +395,7 @@ _isis_acl_rule_ehmac_parse(fal_acl_rule_t * sw,
 
         sw->ethtype_val &= sw->ethtype_mask;
         FIELD_SET(EHMAC_RUL_V3, ETHTYPV, sw->ethtype_val);
-        FIELD_SET(EHMAC_RUL_M3, ETHTYPM, sw->ethtype_mask);
+        FIELD_SET_MASK(EHMAC_RUL_M3, ETHTYPM, sw->ethtype_mask);
     }
 
     /* Process Stag Fields */
@@ -434,26 +434,26 @@ _isis_acl_rule_ehmac_parse(fal_acl_rule_t * sw,
         {
             sw->stag_vid_val &= sw->stag_vid_mask;
             FIELD_SET(EHMAC_RUL_V2, STAG_VIDV, sw->stag_vid_val);
-            FIELD_SET(EHMAC_RUL_M2, STAG_VIDM, sw->stag_vid_mask);
+            FIELD_SET_MASK(EHMAC_RUL_M2, STAG_VIDM, sw->stag_vid_mask);
             FIELD_SET(EHMAC_RUL_V3, SVIDMSK, 1);
 
         }
         else if (FAL_ACL_FIELD_RANGE == sw->stag_vid_op)
         {
             FIELD_SET(EHMAC_RUL_V2, STAG_VIDV, sw->stag_vid_val);
-            FIELD_SET(EHMAC_RUL_M2, STAG_VIDM, sw->stag_vid_mask);
+            FIELD_SET_MASK(EHMAC_RUL_M2, STAG_VIDM, sw->stag_vid_mask);
 
         }
         else if (FAL_ACL_FIELD_LE == sw->stag_vid_op)
         {
             FIELD_SET(EHMAC_RUL_V2, STAG_VIDV, 0);
-            FIELD_SET(EHMAC_RUL_M2, STAG_VIDM, sw->stag_vid_val);
+            FIELD_SET_MASK(EHMAC_RUL_M2, STAG_VIDM, sw->stag_vid_val);
 
         }
         else
         {
             FIELD_SET(EHMAC_RUL_V2, STAG_VIDV, sw->stag_vid_val);
-            FIELD_SET(EHMAC_RUL_M2, STAG_VIDM, 0xfff);
+            FIELD_SET_MASK(EHMAC_RUL_M2, STAG_VIDM, 0xfff);
         }
     }
 
@@ -466,7 +466,7 @@ _isis_acl_rule_ehmac_parse(fal_acl_rule_t * sw,
 
         sw->stag_pri_val &= sw->stag_pri_mask;
         FIELD_SET(EHMAC_RUL_V2, STAG_PRIV, sw->stag_pri_val);
-        FIELD_SET(EHMAC_RUL_M2, STAG_PRIM, sw->stag_pri_mask);
+        FIELD_SET_MASK(EHMAC_RUL_M2, STAG_PRIM, sw->stag_pri_mask);
     }
 
     if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_MAC_STAG_DEI))
@@ -478,7 +478,7 @@ _isis_acl_rule_ehmac_parse(fal_acl_rule_t * sw,
 
         sw->stag_dei_val &= sw->stag_dei_mask;
         FIELD_SET(EHMAC_RUL_V2, STAG_DEIV, sw->stag_dei_val);
-        FIELD_SET(EHMAC_RUL_M2, STAG_DEIM, sw->stag_dei_mask);
+        FIELD_SET_MASK(EHMAC_RUL_M2, STAG_DEIM, sw->stag_dei_mask);
     }
 
     /* Process Ctag Fields */
@@ -490,11 +490,11 @@ _isis_acl_rule_ehmac_parse(fal_acl_rule_t * sw,
         }
 
         sw->ctagged_val &= sw->ctagged_mask;
-        FIELD_SET(EHMAC_RUL_M4, CTAGGEDV, sw->ctagged_val);
-        FIELD_SET(EHMAC_RUL_M4, CTAGGEDM, sw->ctagged_mask);
+        FIELD_SET_MASK(EHMAC_RUL_M4, CTAGGEDV, sw->ctagged_val);
+        FIELD_SET_MASK(EHMAC_RUL_M4, CTAGGEDM, sw->ctagged_mask);
     }
 
-    FIELD_SET(EHMAC_RUL_M4, CVIDMSK, 1);
+    FIELD_SET_MASK(EHMAC_RUL_M4, CVIDMSK, 1);
     if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_MAC_CTAG_VID))
     {
         if ((FAL_ACL_FIELD_MASK != sw->ctag_vid_op)
@@ -512,39 +512,39 @@ _isis_acl_rule_ehmac_parse(fal_acl_rule_t * sw,
             *b_care = A_TRUE;
         }
 
-        FIELD_SET(EHMAC_RUL_M4, CVIDMSK, 0);
+        FIELD_SET_MASK(EHMAC_RUL_M4, CVIDMSK, 0);
         if (FAL_ACL_FIELD_MASK == sw->ctag_vid_op)
         {
             sw->ctag_vid_val &= sw->ctag_vid_mask;
             FIELD_SET(EHMAC_RUL_V2, CTAG_VIDLV, sw->ctag_vid_val);
             FIELD_SET(EHMAC_RUL_V3, CTAG_VIDHV, (sw->ctag_vid_val >> 8));
-            FIELD_SET(EHMAC_RUL_M2, CTAG_VIDLM, sw->ctag_vid_mask);
-            FIELD_SET(EHMAC_RUL_M3, CTAG_VIDHM, (sw->ctag_vid_mask >> 8));
-            FIELD_SET(EHMAC_RUL_M4, CVIDMSK, 1);
+            FIELD_SET_MASK(EHMAC_RUL_M2, CTAG_VIDLM, sw->ctag_vid_mask);
+            FIELD_SET_MASK(EHMAC_RUL_M3, CTAG_VIDHM, (sw->ctag_vid_mask >> 8));
+            FIELD_SET_MASK(EHMAC_RUL_M4, CVIDMSK, 1);
 
         }
         else if (FAL_ACL_FIELD_RANGE == sw->ctag_vid_op)
         {
             FIELD_SET(EHMAC_RUL_V2, CTAG_VIDLV, sw->ctag_vid_val);
             FIELD_SET(EHMAC_RUL_V3, CTAG_VIDHV, (sw->ctag_vid_val >> 8));
-            FIELD_SET(EHMAC_RUL_M2, CTAG_VIDLM, sw->ctag_vid_mask);
-            FIELD_SET(EHMAC_RUL_M3, CTAG_VIDHM, (sw->ctag_vid_mask >> 8));
+            FIELD_SET_MASK(EHMAC_RUL_M2, CTAG_VIDLM, sw->ctag_vid_mask);
+            FIELD_SET_MASK(EHMAC_RUL_M3, CTAG_VIDHM, (sw->ctag_vid_mask >> 8));
 
         }
         else if (FAL_ACL_FIELD_LE == sw->ctag_vid_op)
         {
             FIELD_SET(EHMAC_RUL_V2, CTAG_VIDLV, 0);
             FIELD_SET(EHMAC_RUL_V3, CTAG_VIDHV, 0);
-            FIELD_SET(EHMAC_RUL_M2, CTAG_VIDLM, sw->ctag_vid_val);
-            FIELD_SET(EHMAC_RUL_M3, CTAG_VIDHM, (sw->ctag_vid_val >> 8));
+            FIELD_SET_MASK(EHMAC_RUL_M2, CTAG_VIDLM, sw->ctag_vid_val);
+            FIELD_SET_MASK(EHMAC_RUL_M3, CTAG_VIDHM, (sw->ctag_vid_val >> 8));
 
         }
         else
         {
             FIELD_SET(EHMAC_RUL_V2, CTAG_VIDLV, sw->ctag_vid_val);
             FIELD_SET(EHMAC_RUL_V3, CTAG_VIDHV, (sw->ctag_vid_val >> 8));
-            FIELD_SET(EHMAC_RUL_M2, CTAG_VIDLM, 0xff);
-            FIELD_SET(EHMAC_RUL_M3, CTAG_VIDHM, 0xf);
+            FIELD_SET_MASK(EHMAC_RUL_M2, CTAG_VIDLM, 0xff);
+            FIELD_SET_MASK(EHMAC_RUL_M3, CTAG_VIDHM, 0xf);
         }
     }
 
@@ -557,7 +557,7 @@ _isis_acl_rule_ehmac_parse(fal_acl_rule_t * sw,
 
         sw->ctag_pri_val &= sw->ctag_pri_mask;
         FIELD_SET(EHMAC_RUL_V3, CTAG_PRIV, sw->ctag_pri_val);
-        FIELD_SET(EHMAC_RUL_M3, CTAG_PRIM, sw->ctag_pri_mask);
+        FIELD_SET_MASK(EHMAC_RUL_M3, CTAG_PRIM, sw->ctag_pri_mask);
     }
 
     if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_MAC_CTAG_CFI))
@@ -569,7 +569,7 @@ _isis_acl_rule_ehmac_parse(fal_acl_rule_t * sw,
 
         sw->ctag_cfi_val &= sw->ctag_cfi_mask;
         FIELD_SET(EHMAC_RUL_V3, CTAG_CFIV, sw->ctag_cfi_val);
-        FIELD_SET(EHMAC_RUL_M3, CTAG_CFIM, sw->ctag_cfi_mask);
+        FIELD_SET_MASK(EHMAC_RUL_M3, CTAG_CFIM, sw->ctag_cfi_mask);
     }
 
     if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_INVERSE_ALL))
@@ -712,7 +712,7 @@ _isis_acl_rule_ip4_parse(fal_acl_rule_t * sw,
     aos_mem_zero(&(hw->vlu[0]), sizeof (hw->vlu));
     aos_mem_zero(&(hw->msk[0]), sizeof (hw->msk));
 
-    FIELD_SET(MAC_RUL_M4, RULE_TYP, ISIS_IP4_FILTER);
+    FIELD_SET_MASK(MAC_RUL_M4, RULE_TYP, ISIS_IP4_FILTER);
 
     if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_IP_DSCP))
     {
@@ -723,7 +723,7 @@ _isis_acl_rule_ip4_parse(fal_acl_rule_t * sw,
 
         sw->ip_dscp_val &= sw->ip_dscp_mask;
         FIELD_SET(IP4_RUL_V2, IP4DSCPV, sw->ip_dscp_val);
-        FIELD_SET(IP4_RUL_M2, IP4DSCPM, sw->ip_dscp_mask);
+        FIELD_SET_MASK(IP4_RUL_M2, IP4DSCPM, sw->ip_dscp_mask);
     }
 
     if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_IP_PROTO))
@@ -735,7 +735,7 @@ _isis_acl_rule_ip4_parse(fal_acl_rule_t * sw,
 
         sw->ip_proto_val &= sw->ip_proto_mask;
         FIELD_SET(IP4_RUL_V2, IP4PROTV, sw->ip_proto_val);
-        FIELD_SET(IP4_RUL_M2, IP4PROTM, sw->ip_proto_mask);
+        FIELD_SET_MASK(IP4_RUL_M2, IP4PROTM, sw->ip_proto_mask);
     }
 
     if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_IP4_SIP))
@@ -767,7 +767,7 @@ _isis_acl_rule_ip4_parse(fal_acl_rule_t * sw,
         return SW_BAD_PARAM;
     }
 
-    FIELD_SET(IP4_RUL_M3, IP4SPORTM_EN, 1);
+    FIELD_SET_MASK(IP4_RUL_M3, IP4SPORTM_EN, 1);
     if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_L4_SPORT))
     {
         if ((FAL_ACL_FIELD_MASK != sw->src_l4port_op)
@@ -791,32 +791,32 @@ _isis_acl_rule_ip4_parse(fal_acl_rule_t * sw,
         }
         *b_care = A_TRUE;
 
-        FIELD_SET(IP4_RUL_M3, IP4SPORTM_EN, 0);
+        FIELD_SET_MASK(IP4_RUL_M3, IP4SPORTM_EN, 0);
         if (FAL_ACL_FIELD_MASK == sw->src_l4port_op)
         {
             sw->src_l4port_val &= sw->src_l4port_mask;
             FIELD_SET(IP4_RUL_V3, IP4SPORTV, sw->src_l4port_val);
-            FIELD_SET(IP4_RUL_M3, IP4SPORTM, sw->src_l4port_mask);
-            FIELD_SET(IP4_RUL_M3, IP4SPORTM_EN, 1);
+            FIELD_SET_MASK(IP4_RUL_M3, IP4SPORTM, sw->src_l4port_mask);
+            FIELD_SET_MASK(IP4_RUL_M3, IP4SPORTM_EN, 1);
         }
         else if (FAL_ACL_FIELD_RANGE == sw->src_l4port_op)
         {
             FIELD_SET(IP4_RUL_V3, IP4SPORTV, sw->src_l4port_val);
-            FIELD_SET(IP4_RUL_M3, IP4SPORTM, sw->src_l4port_mask);
+            FIELD_SET_MASK(IP4_RUL_M3, IP4SPORTM, sw->src_l4port_mask);
         }
         else if (FAL_ACL_FIELD_LE == sw->src_l4port_op)
         {
             FIELD_SET(IP4_RUL_V3, IP4SPORTV, 0);
-            FIELD_SET(IP4_RUL_M3, IP4SPORTM, sw->src_l4port_val);
+            FIELD_SET_MASK(IP4_RUL_M3, IP4SPORTM, sw->src_l4port_val);
         }
         else
         {
             FIELD_SET(IP4_RUL_V3, IP4SPORTV, sw->src_l4port_val);
-            FIELD_SET(IP4_RUL_M3, IP4SPORTM, 0xffff);
+            FIELD_SET_MASK(IP4_RUL_M3, IP4SPORTM, 0xffff);
         }
     }
 
-    FIELD_SET(IP4_RUL_M3, IP4DPORTM_EN, 1);
+    FIELD_SET_MASK(IP4_RUL_M3, IP4DPORTM_EN, 1);
     if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_L4_DPORT))
     {
         if ((FAL_ACL_FIELD_MASK != sw->dest_l4port_op)
@@ -840,28 +840,28 @@ _isis_acl_rule_ip4_parse(fal_acl_rule_t * sw,
         }
         *b_care = A_TRUE;
 
-        FIELD_SET(IP4_RUL_M3, IP4DPORTM_EN, 0);
+        FIELD_SET_MASK(IP4_RUL_M3, IP4DPORTM_EN, 0);
         if (FAL_ACL_FIELD_MASK == sw->dest_l4port_op)
         {
             sw->dest_l4port_val &= sw->dest_l4port_mask;
             FIELD_SET(IP4_RUL_V2, IP4DPORTV, sw->dest_l4port_val);
-            FIELD_SET(IP4_RUL_M2, IP4DPORTM, sw->dest_l4port_mask);
-            FIELD_SET(IP4_RUL_M3, IP4DPORTM_EN, 1);
+            FIELD_SET_MASK(IP4_RUL_M2, IP4DPORTM, sw->dest_l4port_mask);
+            FIELD_SET_MASK(IP4_RUL_M3, IP4DPORTM_EN, 1);
         }
         else if (FAL_ACL_FIELD_RANGE == sw->dest_l4port_op)
         {
             FIELD_SET(IP4_RUL_V2, IP4DPORTV, sw->dest_l4port_val);
-            FIELD_SET(IP4_RUL_M2, IP4DPORTM, sw->dest_l4port_mask);
+            FIELD_SET_MASK(IP4_RUL_M2, IP4DPORTM, sw->dest_l4port_mask);
         }
         else if (FAL_ACL_FIELD_LE == sw->dest_l4port_op)
         {
             FIELD_SET(IP4_RUL_V2, IP4DPORTV, 0);
-            FIELD_SET(IP4_RUL_M2, IP4DPORTM, sw->dest_l4port_val);
+            FIELD_SET_MASK(IP4_RUL_M2, IP4DPORTM, sw->dest_l4port_val);
         }
         else
         {
             FIELD_SET(IP4_RUL_V2, IP4DPORTV, sw->dest_l4port_val);
-            FIELD_SET(IP4_RUL_M2, IP4DPORTM, 0xffff);
+            FIELD_SET_MASK(IP4_RUL_M2, IP4DPORTM, 0xffff);
         }
     }
 
@@ -875,7 +875,7 @@ _isis_acl_rule_ip4_parse(fal_acl_rule_t * sw,
 
         sw->icmp_type_val &= sw->icmp_type_mask;
         FIELD_SET(IP4_RUL_V3, IP4ICMPTYPV, sw->icmp_type_val);
-        FIELD_SET(IP4_RUL_M3, IP4ICMPTYPM, sw->icmp_type_mask);
+        FIELD_SET_MASK(IP4_RUL_M3, IP4ICMPTYPM, sw->icmp_type_mask);
     }
 
     if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_ICMP_CODE))
@@ -888,7 +888,7 @@ _isis_acl_rule_ip4_parse(fal_acl_rule_t * sw,
 
         sw->icmp_code_val &= sw->icmp_code_mask;
         FIELD_SET(IP4_RUL_V3, IP4ICMPCODEV, sw->icmp_code_val);
-        FIELD_SET(IP4_RUL_M3, IP4ICMPCODEM, sw->icmp_code_mask);
+        FIELD_SET_MASK(IP4_RUL_M3, IP4ICMPCODEM, sw->icmp_code_mask);
     }
 
     if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_TCP_FLAG))
@@ -900,7 +900,7 @@ _isis_acl_rule_ip4_parse(fal_acl_rule_t * sw,
 
         sw->tcp_flag_val &= sw->tcp_flag_mask;
         FIELD_SET(IP4_RUL_V3, IP4TCPFLAGV, sw->tcp_flag_val);
-        FIELD_SET(IP4_RUL_M3, IP4TCPFLAGM, sw->tcp_flag_mask);
+        FIELD_SET_MASK(IP4_RUL_M3, IP4TCPFLAGM, sw->tcp_flag_mask);
     }
 
     if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_RIPV1))
@@ -912,7 +912,7 @@ _isis_acl_rule_ip4_parse(fal_acl_rule_t * sw,
 
         sw->ripv1_val &= sw->ripv1_mask;
         FIELD_SET(IP4_RUL_V3, IP4RIPV, sw->ripv1_val);
-        FIELD_SET(IP4_RUL_M3, IP4RIPM, sw->ripv1_mask);
+        FIELD_SET_MASK(IP4_RUL_M3, IP4RIPM, sw->ripv1_mask);
     }
 
     if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_DHCPV4))
@@ -924,7 +924,7 @@ _isis_acl_rule_ip4_parse(fal_acl_rule_t * sw,
 
         sw->dhcpv4_val &= sw->dhcpv4_mask;
         FIELD_SET(IP4_RUL_V3, IP4DHCPV, sw->dhcpv4_val);
-        FIELD_SET(IP4_RUL_M3, IP4DHCPM, sw->dhcpv4_mask);
+        FIELD_SET_MASK(IP4_RUL_M3, IP4DHCPM, sw->dhcpv4_mask);
     }
 
     if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_INVERSE_ALL))
@@ -945,7 +945,7 @@ _isis_acl_rule_ip6r1_parse(fal_acl_rule_t * sw,
     aos_mem_zero(&(hw->vlu[0]), sizeof (hw->vlu));
     aos_mem_zero(&(hw->msk[0]), sizeof (hw->msk));
 
-    FIELD_SET(MAC_RUL_M4, RULE_TYP, ISIS_IP6R1_FILTER);
+    FIELD_SET_MASK(MAC_RUL_M4, RULE_TYP, ISIS_IP6R1_FILTER);
 
     if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_IP6_DIP))
     {
@@ -980,7 +980,7 @@ _isis_acl_rule_ip6r2_parse(fal_acl_rule_t * sw,
     aos_mem_zero(&(hw->vlu[0]), sizeof (hw->vlu));
     aos_mem_zero(&(hw->msk[0]), sizeof (hw->msk));
 
-    FIELD_SET(MAC_RUL_M4, RULE_TYP, ISIS_IP6R2_FILTER);
+    FIELD_SET_MASK(MAC_RUL_M4, RULE_TYP, ISIS_IP6R2_FILTER);
 
     if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_IP6_SIP))
     {
@@ -1013,7 +1013,7 @@ _isis_acl_rule_ip6r3_parse(fal_acl_rule_t * sw,
     aos_mem_zero(&(hw->vlu[0]), sizeof (hw->vlu));
     aos_mem_zero(&(hw->msk[0]), sizeof (hw->msk));
 
-    FIELD_SET(MAC_RUL_M4, RULE_TYP, ISIS_IP6R3_FILTER);
+    FIELD_SET_MASK(MAC_RUL_M4, RULE_TYP, ISIS_IP6R3_FILTER);
 
     if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_IP6_LABEL))
     {
@@ -1024,10 +1024,10 @@ _isis_acl_rule_ip6r3_parse(fal_acl_rule_t * sw,
 
         sw->ip6_lable_val &= sw->ip6_lable_mask;
         FIELD_SET(IP6_RUL3_V1, IP6LABEL1V, sw->ip6_lable_val);
-        FIELD_SET(IP6_RUL3_M1, IP6LABEL1M, sw->ip6_lable_mask);
+        FIELD_SET_MASK(IP6_RUL3_M1, IP6LABEL1M, sw->ip6_lable_mask);
 
         FIELD_SET(IP6_RUL3_V2, IP6LABEL2V, (sw->ip6_lable_val >> 16));
-        FIELD_SET(IP6_RUL3_M2, IP6LABEL2M, (sw->ip6_lable_mask >> 16));
+        FIELD_SET_MASK(IP6_RUL3_M2, IP6LABEL2M, (sw->ip6_lable_mask >> 16));
     }
 
     if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_IP_PROTO))
@@ -1039,7 +1039,7 @@ _isis_acl_rule_ip6r3_parse(fal_acl_rule_t * sw,
 
         sw->ip_proto_val &= sw->ip_proto_mask;
         FIELD_SET(IP6_RUL3_V0, IP6PROTV, sw->ip_proto_val);
-        FIELD_SET(IP6_RUL3_M0, IP6PROTM, sw->ip_proto_mask);
+        FIELD_SET_MASK(IP6_RUL3_M0, IP6PROTM, sw->ip_proto_mask);
     }
 
     if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_IP_DSCP))
@@ -1051,7 +1051,7 @@ _isis_acl_rule_ip6r3_parse(fal_acl_rule_t * sw,
 
         sw->ip_dscp_val &= sw->ip_dscp_mask;
         FIELD_SET(IP6_RUL3_V0, IP6DSCPV, sw->ip_dscp_val);
-        FIELD_SET(IP6_RUL3_M0, IP6DSCPM, sw->ip_dscp_mask);
+        FIELD_SET_MASK(IP6_RUL3_M0, IP6DSCPM, sw->ip_dscp_mask);
     }
 
     if ((FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_L4_SPORT))
@@ -1061,7 +1061,7 @@ _isis_acl_rule_ip6r3_parse(fal_acl_rule_t * sw,
         return SW_BAD_PARAM;
     }
 
-    FIELD_SET(IP6_RUL3_M3, IP6SPORTM_EN, 1);
+    FIELD_SET_MASK(IP6_RUL3_M3, IP6SPORTM_EN, 1);
     if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_L4_SPORT))
     {
         if ((FAL_ACL_FIELD_MASK != sw->src_l4port_op)
@@ -1085,35 +1085,35 @@ _isis_acl_rule_ip6r3_parse(fal_acl_rule_t * sw,
         }
         *b_care = A_TRUE;
 
-        FIELD_SET(IP6_RUL3_M3, IP6SPORTM_EN, 0);
+        FIELD_SET_MASK(IP6_RUL3_M3, IP6SPORTM_EN, 0);
         if (FAL_ACL_FIELD_MASK == sw->src_l4port_op)
         {
             sw->src_l4port_val &= sw->src_l4port_mask;
             FIELD_SET(IP6_RUL3_V3, IP6SPORTV, sw->src_l4port_val);
-            FIELD_SET(IP6_RUL3_M3, IP6SPORTM, sw->src_l4port_mask);
-            FIELD_SET(IP6_RUL3_M3, IP6SPORTM_EN, 1);
+            FIELD_SET_MASK(IP6_RUL3_M3, IP6SPORTM, sw->src_l4port_mask);
+            FIELD_SET_MASK(IP6_RUL3_M3, IP6SPORTM_EN, 1);
 
         }
         else if (FAL_ACL_FIELD_RANGE == sw->src_l4port_op)
         {
             FIELD_SET(IP6_RUL3_V3, IP6SPORTV, sw->src_l4port_val);
-            FIELD_SET(IP6_RUL3_M3, IP6SPORTM, sw->src_l4port_mask);
+            FIELD_SET_MASK(IP6_RUL3_M3, IP6SPORTM, sw->src_l4port_mask);
 
         }
         else if (FAL_ACL_FIELD_LE == sw->src_l4port_op)
         {
             FIELD_SET(IP6_RUL3_V3, IP6SPORTV, 0);
-            FIELD_SET(IP6_RUL3_M3, IP6SPORTM, sw->src_l4port_val);
+            FIELD_SET_MASK(IP6_RUL3_M3, IP6SPORTM, sw->src_l4port_val);
 
         }
         else
         {
             FIELD_SET(IP6_RUL3_V3, IP6SPORTV, sw->src_l4port_val);
-            FIELD_SET(IP6_RUL3_M3, IP6SPORTM, 0xffff);
+            FIELD_SET_MASK(IP6_RUL3_M3, IP6SPORTM, 0xffff);
         }
     }
 
-    FIELD_SET(IP6_RUL3_M3, IP6DPORTM_EN, 1);
+    FIELD_SET_MASK(IP6_RUL3_M3, IP6DPORTM_EN, 1);
     if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_L4_DPORT))
     {
         if ((FAL_ACL_FIELD_MASK != sw->dest_l4port_op)
@@ -1137,28 +1137,28 @@ _isis_acl_rule_ip6r3_parse(fal_acl_rule_t * sw,
         }
         *b_care = A_TRUE;
 
-        FIELD_SET(IP6_RUL3_M3, IP6DPORTM_EN, 0);
+        FIELD_SET_MASK(IP6_RUL3_M3, IP6DPORTM_EN, 0);
         if (FAL_ACL_FIELD_MASK == sw->dest_l4port_op)
         {
             sw->dest_l4port_val &= sw->dest_l4port_mask;
             FIELD_SET(IP6_RUL3_V2, IP6DPORTV, sw->dest_l4port_val);
-            FIELD_SET(IP6_RUL3_M2, IP6DPORTM, sw->dest_l4port_mask);
-            FIELD_SET(IP6_RUL3_M3, IP6DPORTM_EN, 1);
+            FIELD_SET_MASK(IP6_RUL3_M2, IP6DPORTM, sw->dest_l4port_mask);
+            FIELD_SET_MASK(IP6_RUL3_M3, IP6DPORTM_EN, 1);
         }
         else if (FAL_ACL_FIELD_RANGE == sw->dest_l4port_op)
         {
             FIELD_SET(IP6_RUL3_V2, IP6DPORTV, sw->dest_l4port_val);
-            FIELD_SET(IP6_RUL3_M2, IP6DPORTM, sw->dest_l4port_mask);
+            FIELD_SET_MASK(IP6_RUL3_M2, IP6DPORTM, sw->dest_l4port_mask);
         }
         else if (FAL_ACL_FIELD_LE == sw->dest_l4port_op)
         {
             FIELD_SET(IP6_RUL3_V2, IP6DPORTV, 0);
-            FIELD_SET(IP6_RUL3_M2, IP6DPORTM, sw->dest_l4port_val);
+            FIELD_SET_MASK(IP6_RUL3_M2, IP6DPORTM, sw->dest_l4port_val);
         }
         else
         {
             FIELD_SET(IP6_RUL3_V2, IP6DPORTV, sw->dest_l4port_val);
-            FIELD_SET(IP6_RUL3_M2, IP6DPORTM, 0xffff);
+            FIELD_SET_MASK(IP6_RUL3_M2, IP6DPORTM, 0xffff);
         }
     }
 
@@ -1172,7 +1172,7 @@ _isis_acl_rule_ip6r3_parse(fal_acl_rule_t * sw,
 
         sw->icmp_type_val &= sw->icmp_type_mask;
         FIELD_SET(IP6_RUL3_V3, IP6ICMPTYPV, sw->icmp_type_val);
-        FIELD_SET(IP6_RUL3_M3, IP6ICMPTYPM, sw->icmp_type_mask);
+        FIELD_SET_MASK(IP6_RUL3_M3, IP6ICMPTYPM, sw->icmp_type_mask);
     }
 
     if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_ICMP_CODE))
@@ -1185,7 +1185,7 @@ _isis_acl_rule_ip6r3_parse(fal_acl_rule_t * sw,
 
         sw->icmp_code_val &= sw->icmp_code_mask;
         FIELD_SET(IP6_RUL3_V3, IP6ICMPCODEV, sw->icmp_code_val);
-        FIELD_SET(IP6_RUL3_M3, IP6ICMPCODEM, sw->icmp_code_mask);
+        FIELD_SET_MASK(IP6_RUL3_M3, IP6ICMPCODEM, sw->icmp_code_mask);
     }
 
     if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_TCP_FLAG))
@@ -1197,7 +1197,7 @@ _isis_acl_rule_ip6r3_parse(fal_acl_rule_t * sw,
 
         sw->tcp_flag_val &= sw->tcp_flag_mask;
         FIELD_SET(IP6_RUL3_V3, IP6TCPFLAGV, sw->tcp_flag_val);
-        FIELD_SET(IP6_RUL3_M3, IP6TCPFLAGM, sw->tcp_flag_mask);
+        FIELD_SET_MASK(IP6_RUL3_M3, IP6TCPFLAGM, sw->tcp_flag_mask);
     }
 
     if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_DHCPV6))
@@ -1209,7 +1209,7 @@ _isis_acl_rule_ip6r3_parse(fal_acl_rule_t * sw,
 
         sw->dhcpv6_val &= sw->dhcpv6_mask;
         FIELD_SET(IP6_RUL3_V3, IP6DHCPV, sw->dhcpv6_val);
-        FIELD_SET(IP6_RUL3_M3, IP6DHCPM, sw->dhcpv6_mask);
+        FIELD_SET_MASK(IP6_RUL3_M3, IP6DHCPM, sw->dhcpv6_mask);
     }
 
     if (FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_INVERSE_ALL))
@@ -1230,7 +1230,7 @@ _isis_acl_rule_udf_parse(fal_acl_rule_t * sw,
     aos_mem_zero(&(hw->vlu[0]), sizeof (hw->vlu));
     aos_mem_zero(&(hw->msk[0]), sizeof (hw->msk));
 
-    FIELD_SET(MAC_RUL_M4, RULE_TYP, ISIS_UDF_FILTER);
+    FIELD_SET_MASK(MAC_RUL_M4, RULE_TYP, ISIS_UDF_FILTER);
 
     if (!FAL_FIELD_FLG_TST(sw->field_flg, FAL_ACL_FIELD_UDF))
     {
@@ -1279,7 +1279,7 @@ _isis_acl_action_parse(a_uint32_t dev_id, const fal_acl_rule_t * sw,
     /* we should ignore any other action flags when DENY bit is settd. */
     if (FAL_ACTION_FLG_TST(sw->action_flg, FAL_ACL_ACTION_DENY))
     {
-        FIELD_SET(ACL_RSLT2, FWD_CMD, 0x7);
+        FIELD_SET_ACTION(ACL_RSLT2, FWD_CMD, 0x7);
         return SW_OK;
     }
 
@@ -1291,28 +1291,28 @@ _isis_acl_action_parse(a_uint32_t dev_id, const fal_acl_rule_t * sw,
 
     if (FAL_ACTION_FLG_TST(sw->action_flg, FAL_ACL_ACTION_RDTCPU))
     {
-        FIELD_SET(ACL_RSLT2, FWD_CMD, 0x3);
+        FIELD_SET_ACTION(ACL_RSLT2, FWD_CMD, 0x3);
     }
 
     if (FAL_ACTION_FLG_TST(sw->action_flg, FAL_ACL_ACTION_CPYCPU))
     {
-        FIELD_SET(ACL_RSLT2, FWD_CMD, 0x1);
+        FIELD_SET_ACTION(ACL_RSLT2, FWD_CMD, 0x1);
     }
 
     if (FAL_ACTION_FLG_TST(sw->action_flg, FAL_ACL_ACTION_MIRROR))
     {
-        FIELD_SET(ACL_RSLT2, MIRR_EN, 1);
+        FIELD_SET_ACTION(ACL_RSLT2, MIRR_EN, 1);
     }
 
     if (FAL_ACTION_FLG_TST(sw->action_flg, FAL_ACL_ACTION_REDPT))
     {
-        FIELD_SET(ACL_RSLT2, DES_PORT_EN, 1);
+        FIELD_SET_ACTION(ACL_RSLT2, DES_PORT_EN, 1);
 
         des_pts = (sw->ports >> 3) & 0xf;
-        FIELD_SET(ACL_RSLT2, DES_PORT1, des_pts);
+        FIELD_SET_ACTION(ACL_RSLT2, DES_PORT1, des_pts);
 
         des_pts = sw->ports & 0x7;
-        FIELD_SET(ACL_RSLT1, DES_PORT0, des_pts);
+        FIELD_SET_ACTION(ACL_RSLT1, DES_PORT0, des_pts);
     }
 
     if (FAL_ACTION_FLG_TST(sw->action_flg, FAL_ACL_ACTION_REMARK_UP))
@@ -1322,8 +1322,8 @@ _isis_acl_action_parse(a_uint32_t dev_id, const fal_acl_rule_t * sw,
 
     if (FAL_ACTION_FLG_TST(sw->action_flg, FAL_ACL_ACTION_REMARK_QUEUE))
     {
-        FIELD_SET(ACL_RSLT1, PRI_QU_EN, 1);
-        FIELD_SET(ACL_RSLT1, PRI_QU, sw->queue);
+        FIELD_SET_ACTION(ACL_RSLT1, PRI_QU_EN, 1);
+        FIELD_SET_ACTION(ACL_RSLT1, PRI_QU, sw->queue);
     }
 
     if ((FAL_ACTION_FLG_TST(sw->action_flg, FAL_ACL_ACTION_MODIFY_VLAN))
@@ -1334,55 +1334,55 @@ _isis_acl_action_parse(a_uint32_t dev_id, const fal_acl_rule_t * sw,
 
     if (FAL_ACTION_FLG_TST(sw->action_flg, FAL_ACL_ACTION_REMARK_DSCP))
     {
-        FIELD_SET(ACL_RSLT1, DSCPV, sw->dscp);
-        FIELD_SET(ACL_RSLT1, DSCP_REMAP, 1);
+        FIELD_SET_ACTION(ACL_RSLT1, DSCPV, sw->dscp);
+        FIELD_SET_ACTION(ACL_RSLT1, DSCP_REMAP, 1);
     }
 
-    FIELD_SET(ACL_RSLT0, STAGVID, sw->stag_vid);
+    FIELD_SET_ACTION(ACL_RSLT0, STAGVID, sw->stag_vid);
     if (FAL_ACTION_FLG_TST(sw->action_flg, FAL_ACL_ACTION_REMARK_STAG_VID))
     {
-        FIELD_SET(ACL_RSLT1, TRANS_SVID_CHG, 1);
+        FIELD_SET_ACTION(ACL_RSLT1, TRANS_SVID_CHG, 1);
     }
 
     if (FAL_ACTION_FLG_TST(sw->action_flg, FAL_ACL_ACTION_REMARK_STAG_PRI))
     {
-        FIELD_SET(ACL_RSLT0, STAGPRI, sw->stag_pri);
-        FIELD_SET(ACL_RSLT1, STAG_PRI_REMAP, 1);
+        FIELD_SET_ACTION(ACL_RSLT0, STAGPRI, sw->stag_pri);
+        FIELD_SET_ACTION(ACL_RSLT1, STAG_PRI_REMAP, 1);
     }
 
     if (FAL_ACTION_FLG_TST(sw->action_flg, FAL_ACL_ACTION_REMARK_STAG_DEI))
     {
-        FIELD_SET(ACL_RSLT0, STAGDEI, sw->stag_dei);
-        FIELD_SET(ACL_RSLT1, STAG_DEI_CHG, 1);
+        FIELD_SET_ACTION(ACL_RSLT0, STAGDEI, sw->stag_dei);
+        FIELD_SET_ACTION(ACL_RSLT1, STAG_DEI_CHG, 1);
     }
 
-    FIELD_SET(ACL_RSLT0, CTAGVID, sw->ctag_vid);
+    FIELD_SET_ACTION(ACL_RSLT0, CTAGVID, sw->ctag_vid);
     if (FAL_ACTION_FLG_TST(sw->action_flg, FAL_ACL_ACTION_REMARK_CTAG_VID))
     {
-        FIELD_SET(ACL_RSLT1, TRANS_CVID_CHG, 1);
+        FIELD_SET_ACTION(ACL_RSLT1, TRANS_CVID_CHG, 1);
     }
 
     if (FAL_ACTION_FLG_TST(sw->action_flg, FAL_ACL_ACTION_REMARK_CTAG_PRI))
     {
-        FIELD_SET(ACL_RSLT0, CTAGPRI, sw->ctag_pri);
-        FIELD_SET(ACL_RSLT1, CTAG_PRI_REMAP, 1);
+        FIELD_SET_ACTION(ACL_RSLT0, CTAGPRI, sw->ctag_pri);
+        FIELD_SET_ACTION(ACL_RSLT1, CTAG_PRI_REMAP, 1);
     }
 
     if (FAL_ACTION_FLG_TST(sw->action_flg, FAL_ACL_ACTION_REMARK_CTAG_CFI))
     {
-        FIELD_SET(ACL_RSLT0, CTAGCFI, sw->ctag_cfi);
-        FIELD_SET(ACL_RSLT1, CTAG_CFI_CHG, 1);
+        FIELD_SET_ACTION(ACL_RSLT0, CTAGCFI, sw->ctag_cfi);
+        FIELD_SET_ACTION(ACL_RSLT1, CTAG_CFI_CHG, 1);
     }
 
     if (FAL_ACTION_FLG_TST(sw->action_flg, FAL_ACL_ACTION_REMARK_LOOKUP_VID))
     {
-        FIELD_SET(ACL_RSLT1, LOOK_VID_CHG, 1);
+        FIELD_SET_ACTION(ACL_RSLT1, LOOK_VID_CHG, 1);
     }
 
     if (FAL_ACTION_FLG_TST(sw->action_flg, FAL_ACL_ACTION_POLICER_EN))
     {
-        FIELD_SET(ACL_RSLT2, POLICER_PTR, sw->policer_ptr);
-        FIELD_SET(ACL_RSLT2, POLICER_EN, 1);
+        FIELD_SET_ACTION(ACL_RSLT2, POLICER_PTR, sw->policer_ptr);
+        FIELD_SET_ACTION(ACL_RSLT2, POLICER_EN, 1);
     }
 
     if ((FAL_ACTION_FLG_TST(sw->action_flg, FAL_ACL_ACTION_ARP_EN))
@@ -1393,18 +1393,18 @@ _isis_acl_action_parse(a_uint32_t dev_id, const fal_acl_rule_t * sw,
 
     if (FAL_ACTION_FLG_TST(sw->action_flg, FAL_ACL_ACTION_ARP_EN))
     {
-        FIELD_SET(ACL_RSLT1, ARP_PTR, sw->arp_ptr);
-        FIELD_SET(ACL_RSLT1, ARP_PTR_EN, 1);
+        FIELD_SET_ACTION(ACL_RSLT1, ARP_PTR, sw->arp_ptr);
+        FIELD_SET_ACTION(ACL_RSLT1, ARP_PTR_EN, 1);
     }
 
     if (FAL_ACTION_FLG_TST(sw->action_flg, FAL_ACL_ACTION_WCMP_EN))
     {
-        FIELD_SET(ACL_RSLT1, ARP_PTR, sw->wcmp_ptr);
-        FIELD_SET(ACL_RSLT1, WCMP_EN, 1);
-        FIELD_SET(ACL_RSLT1, ARP_PTR_EN, 1);
+        FIELD_SET_ACTION(ACL_RSLT1, ARP_PTR, sw->wcmp_ptr);
+        FIELD_SET_ACTION(ACL_RSLT1, WCMP_EN, 1);
+        FIELD_SET_ACTION(ACL_RSLT1, ARP_PTR_EN, 1);
     }
 
-    FIELD_SET(ACL_RSLT1, FORCE_L3_MODE, 0x0);
+    FIELD_SET_ACTION(ACL_RSLT1, FORCE_L3_MODE, 0x0);
     if (FAL_ACTION_FLG_TST(sw->action_flg, FAL_ACL_ACTION_POLICY_FORWARD_EN))
     {
         if (FAL_ACL_POLICY_ROUTE == sw->policy_fwd)
@@ -1413,15 +1413,15 @@ _isis_acl_action_parse(a_uint32_t dev_id, const fal_acl_rule_t * sw,
         }
         else if (FAL_ACL_POLICY_SNAT == sw->policy_fwd)
         {
-            FIELD_SET(ACL_RSLT1, FORCE_L3_MODE, 0x1);
+            FIELD_SET_ACTION(ACL_RSLT1, FORCE_L3_MODE, 0x1);
         }
         else if (FAL_ACL_POLICY_DNAT == sw->policy_fwd)
         {
-            FIELD_SET(ACL_RSLT1, FORCE_L3_MODE, 0x2);
+            FIELD_SET_ACTION(ACL_RSLT1, FORCE_L3_MODE, 0x2);
         }
         else if (FAL_ACL_POLICY_RESERVE == sw->policy_fwd)
         {
-            FIELD_SET(ACL_RSLT1, FORCE_L3_MODE, 0x3);
+            FIELD_SET_ACTION(ACL_RSLT1, FORCE_L3_MODE, 0x3);
         }
         else
         {
@@ -1431,12 +1431,12 @@ _isis_acl_action_parse(a_uint32_t dev_id, const fal_acl_rule_t * sw,
 
     if (FAL_ACTION_FLG_TST(sw->action_flg, FAL_ACL_ACTION_BYPASS_EGRESS_TRANS))
     {
-        FIELD_SET(ACL_RSLT2, EG_BYPASS, 1);
+        FIELD_SET_ACTION(ACL_RSLT2, EG_BYPASS, 1);
     }
 
     if (FAL_ACTION_FLG_TST(sw->action_flg, FAL_ACL_ACTION_MATCH_TRIGGER_INTR))
     {
-        FIELD_SET(ACL_RSLT2, TRIGGER_INTR, 1);
+        FIELD_SET_ACTION(ACL_RSLT2, TRIGGER_INTR, 1);
     }
 
     return SW_OK;
@@ -1455,12 +1455,12 @@ _isis_acl_rule_bmac_reparse(fal_acl_rule_t * sw, const hw_filter_t * hw)
     FIELD_GET(MAC_RUL_V1, DAV_BYTE0, sw->dest_mac_val.uc[0]);
     FIELD_GET(MAC_RUL_V1, DAV_BYTE1, sw->dest_mac_val.uc[1]);
 
-    FIELD_GET(MAC_RUL_M0, DAM_BYTE2, sw->dest_mac_mask.uc[2]);
-    FIELD_GET(MAC_RUL_M0, DAM_BYTE3, sw->dest_mac_mask.uc[3]);
-    FIELD_GET(MAC_RUL_M0, DAM_BYTE4, sw->dest_mac_mask.uc[4]);
-    FIELD_GET(MAC_RUL_M0, DAM_BYTE5, sw->dest_mac_mask.uc[5]);
-    FIELD_GET(MAC_RUL_M1, DAM_BYTE0, sw->dest_mac_mask.uc[0]);
-    FIELD_GET(MAC_RUL_M1, DAM_BYTE1, sw->dest_mac_mask.uc[1]);
+    FIELD_GET_MASK(MAC_RUL_M0, DAM_BYTE2, sw->dest_mac_mask.uc[2]);
+    FIELD_GET_MASK(MAC_RUL_M0, DAM_BYTE3, sw->dest_mac_mask.uc[3]);
+    FIELD_GET_MASK(MAC_RUL_M0, DAM_BYTE4, sw->dest_mac_mask.uc[4]);
+    FIELD_GET_MASK(MAC_RUL_M0, DAM_BYTE5, sw->dest_mac_mask.uc[5]);
+    FIELD_GET_MASK(MAC_RUL_M1, DAM_BYTE0, sw->dest_mac_mask.uc[0]);
+    FIELD_GET_MASK(MAC_RUL_M1, DAM_BYTE1, sw->dest_mac_mask.uc[1]);
     if (A_FALSE == _isis_acl_zero_addr(sw->dest_mac_mask))
     {
         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_MAC_DA);
@@ -1474,12 +1474,12 @@ _isis_acl_rule_bmac_reparse(fal_acl_rule_t * sw, const hw_filter_t * hw)
     FIELD_GET(MAC_RUL_V1, SAV_BYTE4, sw->src_mac_val.uc[4]);
     FIELD_GET(MAC_RUL_V1, SAV_BYTE5, sw->src_mac_val.uc[5]);
 
-    FIELD_GET(MAC_RUL_M2, SAM_BYTE0, sw->src_mac_mask.uc[0]);
-    FIELD_GET(MAC_RUL_M2, SAM_BYTE1, sw->src_mac_mask.uc[1]);
-    FIELD_GET(MAC_RUL_M2, SAM_BYTE2, sw->src_mac_mask.uc[2]);
-    FIELD_GET(MAC_RUL_M2, SAM_BYTE3, sw->src_mac_mask.uc[3]);
-    FIELD_GET(MAC_RUL_M1, SAM_BYTE4, sw->src_mac_mask.uc[4]);
-    FIELD_GET(MAC_RUL_M1, SAM_BYTE5, sw->src_mac_mask.uc[5]);
+    FIELD_GET_MASK(MAC_RUL_M2, SAM_BYTE0, sw->src_mac_mask.uc[0]);
+    FIELD_GET_MASK(MAC_RUL_M2, SAM_BYTE1, sw->src_mac_mask.uc[1]);
+    FIELD_GET_MASK(MAC_RUL_M2, SAM_BYTE2, sw->src_mac_mask.uc[2]);
+    FIELD_GET_MASK(MAC_RUL_M2, SAM_BYTE3, sw->src_mac_mask.uc[3]);
+    FIELD_GET_MASK(MAC_RUL_M1, SAM_BYTE4, sw->src_mac_mask.uc[4]);
+    FIELD_GET_MASK(MAC_RUL_M1, SAM_BYTE5, sw->src_mac_mask.uc[5]);
     if (A_FALSE == _isis_acl_zero_addr(sw->src_mac_mask))
     {
         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_MAC_SA);
@@ -1487,15 +1487,15 @@ _isis_acl_rule_bmac_reparse(fal_acl_rule_t * sw, const hw_filter_t * hw)
 
     /* ethernet type */
     FIELD_GET(MAC_RUL_V3, ETHTYPV, sw->ethtype_val);
-    FIELD_GET(MAC_RUL_M3, ETHTYPM, sw->ethtype_mask);
+    FIELD_GET_MASK(MAC_RUL_M3, ETHTYPM, sw->ethtype_mask);
     if (0x0 != sw->ethtype_mask)
     {
         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_MAC_ETHTYPE);
     }
 
     /* packet tagged */
-    FIELD_GET(MAC_RUL_M4, TAGGEDV, sw->tagged_val);
-    FIELD_GET(MAC_RUL_M4, TAGGEDM, sw->tagged_mask);
+    FIELD_GET_MASK(MAC_RUL_M4, TAGGEDV, sw->tagged_val);
+    FIELD_GET_MASK(MAC_RUL_M4, TAGGEDM, sw->tagged_mask);
     if (0x0 != sw->tagged_mask)
     {
         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_MAC_TAGGED);
@@ -1503,7 +1503,7 @@ _isis_acl_rule_bmac_reparse(fal_acl_rule_t * sw, const hw_filter_t * hw)
 
     /* vlan priority */
     FIELD_GET(MAC_RUL_V3, VLANPRIV, sw->up_val);
-    FIELD_GET(MAC_RUL_M3, VLANPRIM, sw->up_mask);
+    FIELD_GET_MASK(MAC_RUL_M3, VLANPRIM, sw->up_mask);
     if (0x0 != sw->up_mask)
     {
         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_MAC_UP);
@@ -1511,8 +1511,8 @@ _isis_acl_rule_bmac_reparse(fal_acl_rule_t * sw, const hw_filter_t * hw)
 
     /* vlanid */
     FIELD_GET(MAC_RUL_V3, VLANIDV, sw->vid_val);
-    FIELD_GET(MAC_RUL_M3, VLANIDM, sw->vid_mask);
-    FIELD_GET(MAC_RUL_M4, VIDMSK, mask_en);
+    FIELD_GET_MASK(MAC_RUL_M3, VLANIDM, sw->vid_mask);
+    FIELD_GET_MASK(MAC_RUL_M4, VIDMSK, mask_en);
     if (mask_en)
     {
         sw->vid_op = FAL_ACL_FIELD_MASK;
@@ -1531,7 +1531,7 @@ _isis_acl_rule_bmac_reparse(fal_acl_rule_t * sw, const hw_filter_t * hw)
 
     /* vlan cfi */
     FIELD_GET(MAC_RUL_V3, VLANCFIV, sw->cfi_val);
-    FIELD_GET(MAC_RUL_M3, VLANCFIM, sw->cfi_mask);
+    FIELD_GET_MASK(MAC_RUL_M3, VLANCFIM, sw->cfi_mask);
     if (0x0 != sw->cfi_mask)
     {
         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_MAC_CFI);
@@ -1575,9 +1575,9 @@ _isis_acl_rule_ehmac_reparse(fal_acl_rule_t * sw, const hw_filter_t * hw)
         FIELD_GET(EHMAC_RUL_V1, SAV_BYTE4, sw->src_mac_val.uc[4]);
         FIELD_GET(EHMAC_RUL_V1, SAV_BYTE5, sw->src_mac_val.uc[5]);
 
-        FIELD_GET(EHMAC_RUL_M2, SAM_BYTE3, sw->src_mac_mask.uc[3]);
-        FIELD_GET(EHMAC_RUL_M1, SAM_BYTE4, sw->src_mac_mask.uc[4]);
-        FIELD_GET(EHMAC_RUL_M1, SAM_BYTE5, sw->src_mac_mask.uc[5]);
+        FIELD_GET_MASK(EHMAC_RUL_M2, SAM_BYTE3, sw->src_mac_mask.uc[3]);
+        FIELD_GET_MASK(EHMAC_RUL_M1, SAM_BYTE4, sw->src_mac_mask.uc[4]);
+        FIELD_GET_MASK(EHMAC_RUL_M1, SAM_BYTE5, sw->src_mac_mask.uc[5]);
 
         if (A_FALSE == _isis_acl_zero_addr(sw->src_mac_mask))
         {
@@ -1607,9 +1607,9 @@ _isis_acl_rule_ehmac_reparse(fal_acl_rule_t * sw, const hw_filter_t * hw)
         FIELD_GET(EHMAC_RUL_V1, SAV_BYTE4, sw->dest_mac_val.uc[4]);
         FIELD_GET(EHMAC_RUL_V1, SAV_BYTE5, sw->dest_mac_val.uc[5]);
 
-        FIELD_GET(EHMAC_RUL_M2, SAM_BYTE3, sw->dest_mac_mask.uc[3]);
-        FIELD_GET(EHMAC_RUL_M1, SAM_BYTE4, sw->dest_mac_mask.uc[4]);
-        FIELD_GET(EHMAC_RUL_M1, SAM_BYTE5, sw->dest_mac_mask.uc[5]);
+        FIELD_GET_MASK(EHMAC_RUL_M2, SAM_BYTE3, sw->dest_mac_mask.uc[3]);
+        FIELD_GET_MASK(EHMAC_RUL_M1, SAM_BYTE4, sw->dest_mac_mask.uc[4]);
+        FIELD_GET_MASK(EHMAC_RUL_M1, SAM_BYTE5, sw->dest_mac_mask.uc[5]);
         if (A_FALSE == _isis_acl_zero_addr(sw->dest_mac_mask))
         {
             FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_MAC_DA);
@@ -1618,7 +1618,7 @@ _isis_acl_rule_ehmac_reparse(fal_acl_rule_t * sw, const hw_filter_t * hw)
 
     /* ethernet type */
     FIELD_GET(EHMAC_RUL_V3, ETHTYPV, sw->ethtype_val);
-    FIELD_GET(EHMAC_RUL_M3, ETHTYPM, sw->ethtype_mask);
+    FIELD_GET_MASK(EHMAC_RUL_M3, ETHTYPM, sw->ethtype_mask);
     if (0x0 != sw->ethtype_mask)
     {
         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_MAC_ETHTYPE);
@@ -1634,7 +1634,7 @@ _isis_acl_rule_ehmac_reparse(fal_acl_rule_t * sw, const hw_filter_t * hw)
 
     /* stag vid */
     FIELD_GET(EHMAC_RUL_V2, STAG_VIDV, sw->stag_vid_val);
-    FIELD_GET(EHMAC_RUL_M2, STAG_VIDM, sw->stag_vid_mask);
+    FIELD_GET_MASK(EHMAC_RUL_M2, STAG_VIDM, sw->stag_vid_mask);
     FIELD_GET(EHMAC_RUL_V3, SVIDMSK, mask_en);
     if (mask_en)
     {
@@ -1654,7 +1654,7 @@ _isis_acl_rule_ehmac_reparse(fal_acl_rule_t * sw, const hw_filter_t * hw)
 
     /* stag priority */
     FIELD_GET(EHMAC_RUL_V2, STAG_PRIV, sw->stag_pri_val);
-    FIELD_GET(EHMAC_RUL_M2, STAG_PRIM, sw->stag_pri_mask);
+    FIELD_GET_MASK(EHMAC_RUL_M2, STAG_PRIM, sw->stag_pri_mask);
     if (0x0 != sw->stag_pri_mask)
     {
         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_MAC_STAG_PRI);
@@ -1662,15 +1662,15 @@ _isis_acl_rule_ehmac_reparse(fal_acl_rule_t * sw, const hw_filter_t * hw)
 
     /* stag dei */
     FIELD_GET(EHMAC_RUL_V2, STAG_DEIV, sw->stag_dei_val);
-    FIELD_GET(EHMAC_RUL_M2, STAG_DEIM, sw->stag_dei_mask);
+    FIELD_GET_MASK(EHMAC_RUL_M2, STAG_DEIM, sw->stag_dei_mask);
     if (0x0 != sw->stag_dei_mask)
     {
         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_MAC_STAG_DEI);
     }
 
     /* packet ctagged */
-    FIELD_GET(EHMAC_RUL_M4, CTAGGEDV, sw->ctagged_val);
-    FIELD_GET(EHMAC_RUL_M4, CTAGGEDM, sw->ctagged_mask);
+    FIELD_GET_MASK(EHMAC_RUL_M4, CTAGGEDV, sw->ctagged_val);
+    FIELD_GET_MASK(EHMAC_RUL_M4, CTAGGEDM, sw->ctagged_mask);
     if (0x0 != sw->ctagged_mask)
     {
         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_MAC_CTAGGED);
@@ -1680,11 +1680,11 @@ _isis_acl_rule_ehmac_reparse(fal_acl_rule_t * sw, const hw_filter_t * hw)
     FIELD_GET(EHMAC_RUL_V2, CTAG_VIDLV, sw->ctag_vid_val);
     FIELD_GET(EHMAC_RUL_V3, CTAG_VIDHV, data);
     sw->ctag_vid_val |= (data << 8);
-    FIELD_GET(EHMAC_RUL_M2, CTAG_VIDLM, sw->ctag_vid_mask);
-    FIELD_GET(EHMAC_RUL_M3, CTAG_VIDHM, data);
+    FIELD_GET_MASK(EHMAC_RUL_M2, CTAG_VIDLM, sw->ctag_vid_mask);
+    FIELD_GET_MASK(EHMAC_RUL_M3, CTAG_VIDHM, data);
     sw->ctag_vid_mask |= (data << 8);
 
-    FIELD_GET(EHMAC_RUL_M4, CVIDMSK, mask_en);
+    FIELD_GET_MASK(EHMAC_RUL_M4, CVIDMSK, mask_en);
     if (mask_en)
     {
         sw->ctag_vid_op = FAL_ACL_FIELD_MASK;
@@ -1703,7 +1703,7 @@ _isis_acl_rule_ehmac_reparse(fal_acl_rule_t * sw, const hw_filter_t * hw)
 
     /* ctag priority */
     FIELD_GET(EHMAC_RUL_V3, CTAG_PRIV, sw->ctag_pri_val);
-    FIELD_GET(EHMAC_RUL_M3, CTAG_PRIM, sw->ctag_pri_mask);
+    FIELD_GET_MASK(EHMAC_RUL_M3, CTAG_PRIM, sw->ctag_pri_mask);
     if (0x0 != sw->ctag_pri_mask)
     {
         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_MAC_CTAG_PRI);
@@ -1711,7 +1711,7 @@ _isis_acl_rule_ehmac_reparse(fal_acl_rule_t * sw, const hw_filter_t * hw)
 
     /* ctag dei */
     FIELD_GET(EHMAC_RUL_V3, CTAG_CFIV, sw->ctag_cfi_val);
-    FIELD_GET(EHMAC_RUL_M3, CTAG_CFIM, sw->ctag_cfi_mask);
+    FIELD_GET_MASK(EHMAC_RUL_M3, CTAG_CFIM, sw->ctag_cfi_mask);
     if (0x0 != sw->ctag_cfi_mask)
     {
         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_MAC_CTAG_CFI);
@@ -1746,22 +1746,22 @@ _isis_acl_rule_ip4_reparse(fal_acl_rule_t * sw, const hw_filter_t * hw)
     }
 
     FIELD_GET(IP4_RUL_V2, IP4PROTV, sw->ip_proto_val);
-    FIELD_GET(IP4_RUL_M2, IP4PROTM, sw->ip_proto_mask);
+    FIELD_GET_MASK(IP4_RUL_M2, IP4PROTM, sw->ip_proto_mask);
     if (0x0 != sw->ip_proto_mask)
     {
         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_IP_PROTO);
     }
 
     FIELD_GET(IP4_RUL_V2, IP4DSCPV, sw->ip_dscp_val);
-    FIELD_GET(IP4_RUL_M2, IP4DSCPM, sw->ip_dscp_mask);
+    FIELD_GET_MASK(IP4_RUL_M2, IP4DSCPM, sw->ip_dscp_mask);
     if (0x0 != sw->ip_dscp_mask)
     {
         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_IP_DSCP);
     }
 
     FIELD_GET(IP4_RUL_V2, IP4DPORTV, sw->dest_l4port_val);
-    FIELD_GET(IP4_RUL_M2, IP4DPORTM, sw->dest_l4port_mask);
-    FIELD_GET(IP4_RUL_M3, IP4DPORTM_EN, mask_en);
+    FIELD_GET_MASK(IP4_RUL_M2, IP4DPORTM, sw->dest_l4port_mask);
+    FIELD_GET_MASK(IP4_RUL_M3, IP4DPORTM_EN, mask_en);
     if (mask_en)
     {
         sw->dest_l4port_op = FAL_ACL_FIELD_MASK;
@@ -1787,14 +1787,14 @@ _isis_acl_rule_ip4_reparse(fal_acl_rule_t * sw, const hw_filter_t * hw)
     if (icmp_en)
     {
         FIELD_GET(IP4_RUL_V3, IP4ICMPTYPV, sw->icmp_type_val);
-        FIELD_GET(IP4_RUL_M3, IP4ICMPTYPM, sw->icmp_type_mask);
+        FIELD_GET_MASK(IP4_RUL_M3, IP4ICMPTYPM, sw->icmp_type_mask);
         if (0x0 != sw->icmp_type_mask)
         {
             FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_ICMP_TYPE);
         }
 
         FIELD_GET(IP4_RUL_V3, IP4ICMPCODEV, sw->icmp_code_val);
-        FIELD_GET(IP4_RUL_M3, IP4ICMPCODEM, sw->icmp_code_mask);
+        FIELD_GET_MASK(IP4_RUL_M3, IP4ICMPCODEM, sw->icmp_code_mask);
         if (0x0 != sw->icmp_code_mask)
         {
             FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_ICMP_CODE);
@@ -1803,8 +1803,8 @@ _isis_acl_rule_ip4_reparse(fal_acl_rule_t * sw, const hw_filter_t * hw)
     else
     {
         FIELD_GET(IP4_RUL_V3, IP4SPORTV, sw->src_l4port_val);
-        FIELD_GET(IP4_RUL_M3, IP4SPORTM, sw->src_l4port_mask);
-        FIELD_GET(IP4_RUL_M3, IP4SPORTM_EN, mask_en);
+        FIELD_GET_MASK(IP4_RUL_M3, IP4SPORTM, sw->src_l4port_mask);
+        FIELD_GET_MASK(IP4_RUL_M3, IP4SPORTM_EN, mask_en);
         if (mask_en)
         {
             sw->src_l4port_op = FAL_ACL_FIELD_MASK;
@@ -1828,21 +1828,21 @@ _isis_acl_rule_ip4_reparse(fal_acl_rule_t * sw, const hw_filter_t * hw)
     }
 
     FIELD_GET(IP4_RUL_V3, IP4TCPFLAGV, sw->tcp_flag_val);
-    FIELD_GET(IP4_RUL_M3, IP4TCPFLAGM, sw->tcp_flag_mask);
+    FIELD_GET_MASK(IP4_RUL_M3, IP4TCPFLAGM, sw->tcp_flag_mask);
     if (0x0 != sw->tcp_flag_mask)
     {
         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_TCP_FLAG);
     }
 
     FIELD_GET(IP4_RUL_V3, IP4RIPV, sw->ripv1_val);
-    FIELD_GET(IP4_RUL_M3, IP4RIPM, sw->ripv1_mask);
+    FIELD_GET_MASK(IP4_RUL_M3, IP4RIPM, sw->ripv1_mask);
     if (0x0 != sw->ripv1_mask)
     {
         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_RIPV1);
     }
 
     FIELD_GET(IP4_RUL_V3, IP4DHCPV, sw->dhcpv4_val);
-    FIELD_GET(IP4_RUL_M3, IP4DHCPM, sw->dhcpv4_mask);
+    FIELD_GET_MASK(IP4_RUL_M3, IP4DHCPM, sw->dhcpv4_mask);
     if (0x0 != sw->dhcpv4_mask)
     {
         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_DHCPV4);
@@ -1911,22 +1911,22 @@ _isis_acl_rule_ip6r3_reparse(fal_acl_rule_t * sw, const hw_filter_t * hw)
     a_uint32_t mask_en, icmp6_en, tmp;
 
     FIELD_GET(IP6_RUL3_V0, IP6PROTV, sw->ip_proto_val);
-    FIELD_GET(IP6_RUL3_M0, IP6PROTM, sw->ip_proto_mask);
+    FIELD_GET_MASK(IP6_RUL3_M0, IP6PROTM, sw->ip_proto_mask);
     if (0x0 != sw->ip_proto_mask)
     {
         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_IP_PROTO);
     }
 
     FIELD_GET(IP6_RUL3_V0, IP6DSCPV, sw->ip_dscp_val);
-    FIELD_GET(IP6_RUL3_M0, IP6DSCPM, sw->ip_dscp_mask);
+    FIELD_GET_MASK(IP6_RUL3_M0, IP6DSCPM, sw->ip_dscp_mask);
     if (0x0 != sw->ip_dscp_mask)
     {
         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_IP_DSCP);
     }
 
     FIELD_GET(IP6_RUL3_V2, IP6DPORTV, sw->dest_l4port_val);
-    FIELD_GET(IP6_RUL3_M2, IP6DPORTM, sw->dest_l4port_mask);
-    FIELD_GET(IP6_RUL3_M3, IP6DPORTM_EN, mask_en);
+    FIELD_GET_MASK(IP6_RUL3_M2, IP6DPORTM, sw->dest_l4port_mask);
+    FIELD_GET_MASK(IP6_RUL3_M3, IP6DPORTM_EN, mask_en);
     if (mask_en)
     {
         sw->dest_l4port_op = FAL_ACL_FIELD_MASK;
@@ -1952,14 +1952,14 @@ _isis_acl_rule_ip6r3_reparse(fal_acl_rule_t * sw, const hw_filter_t * hw)
     if (icmp6_en)
     {
         FIELD_GET(IP6_RUL3_V3, IP6ICMPTYPV, sw->icmp_type_val);
-        FIELD_GET(IP6_RUL3_M3, IP6ICMPTYPM, sw->icmp_type_mask);
+        FIELD_GET_MASK(IP6_RUL3_M3, IP6ICMPTYPM, sw->icmp_type_mask);
         if (0x0 != sw->icmp_type_mask)
         {
             FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_ICMP_TYPE);
         }
 
         FIELD_GET(IP6_RUL3_V3, IP6ICMPCODEV, sw->icmp_code_val);
-        FIELD_GET(IP6_RUL3_M3, IP6ICMPCODEM, sw->icmp_code_mask);
+        FIELD_GET_MASK(IP6_RUL3_M3, IP6ICMPCODEM, sw->icmp_code_mask);
         if (0x0 != sw->icmp_code_mask)
         {
             FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_ICMP_CODE);
@@ -1968,8 +1968,8 @@ _isis_acl_rule_ip6r3_reparse(fal_acl_rule_t * sw, const hw_filter_t * hw)
     else
     {
         FIELD_GET(IP6_RUL3_V3, IP6SPORTV, sw->src_l4port_val);
-        FIELD_GET(IP6_RUL3_M3, IP6SPORTM, sw->src_l4port_mask);
-        FIELD_GET(IP6_RUL3_M3, IP6SPORTM_EN, mask_en);
+        FIELD_GET_MASK(IP6_RUL3_M3, IP6SPORTM, sw->src_l4port_mask);
+        FIELD_GET_MASK(IP6_RUL3_M3, IP6SPORTM_EN, mask_en);
         if (mask_en)
         {
             sw->src_l4port_op = FAL_ACL_FIELD_MASK;
@@ -1993,11 +1993,11 @@ _isis_acl_rule_ip6r3_reparse(fal_acl_rule_t * sw, const hw_filter_t * hw)
     }
 
     FIELD_GET(IP6_RUL3_V1, IP6LABEL1V, sw->ip6_lable_val);
-    FIELD_GET(IP6_RUL3_M1, IP6LABEL1M, sw->ip6_lable_mask);
+    FIELD_GET_MASK(IP6_RUL3_M1, IP6LABEL1M, sw->ip6_lable_mask);
 
     FIELD_GET(IP6_RUL3_V2, IP6LABEL2V, tmp);
     sw->ip6_lable_val |= (tmp << 16);
-    FIELD_GET(IP6_RUL3_M2, IP6LABEL2M, tmp);
+    FIELD_GET_MASK(IP6_RUL3_M2, IP6LABEL2M, tmp);
     sw->ip6_lable_mask |= (tmp << 16);
 
     if (0x0 != sw->ip6_lable_mask)
@@ -2006,14 +2006,14 @@ _isis_acl_rule_ip6r3_reparse(fal_acl_rule_t * sw, const hw_filter_t * hw)
     }
 
     FIELD_GET(IP6_RUL3_V3, IP6TCPFLAGV, sw->tcp_flag_val);
-    FIELD_GET(IP6_RUL3_M3, IP6TCPFLAGM, sw->tcp_flag_mask);
+    FIELD_GET_MASK(IP6_RUL3_M3, IP6TCPFLAGM, sw->tcp_flag_mask);
     if (0x0 != sw->tcp_flag_mask)
     {
         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_TCP_FLAG);
     }
 
     FIELD_GET(IP6_RUL3_V3, IP6DHCPV, sw->dhcpv6_val);
-    FIELD_GET(IP6_RUL3_M3, IP6DHCPM, sw->dhcpv6_mask);
+    FIELD_GET_MASK(IP6_RUL3_M3, IP6DHCPM, sw->dhcpv6_mask);
     if (0x0 != sw->dhcpv6_mask)
     {
         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_DHCPV6);
@@ -2062,16 +2062,16 @@ _isis_acl_rule_action_reparse(fal_acl_rule_t * sw, const hw_filter_t * hw)
 
     sw->action_flg = 0;
 
-    FIELD_GET(ACL_RSLT2, DES_PORT_EN, data);
+    FIELD_GET_ACTION(ACL_RSLT2, DES_PORT_EN, data);
     if (1 == data)
     {
         FAL_ACTION_FLG_SET(sw->action_flg, FAL_ACL_ACTION_REDPT);
-        FIELD_GET(ACL_RSLT1, DES_PORT0, sw->ports);
-        FIELD_GET(ACL_RSLT2, DES_PORT1, data);
+        FIELD_GET_ACTION(ACL_RSLT1, DES_PORT0, sw->ports);
+        FIELD_GET_ACTION(ACL_RSLT2, DES_PORT1, data);
         sw->ports |= (data << 3);
     }
 
-    FIELD_GET(ACL_RSLT2, FWD_CMD, data);
+    FIELD_GET_ACTION(ACL_RSLT2, FWD_CMD, data);
     if (0x7 == data)
     {
         FAL_ACTION_FLG_SET(sw->action_flg, FAL_ACL_ACTION_DENY);
@@ -2089,100 +2089,100 @@ _isis_acl_rule_action_reparse(fal_acl_rule_t * sw, const hw_filter_t * hw)
         /* need't set permit action */
     }
 
-    FIELD_GET(ACL_RSLT2, MIRR_EN, data);
+    FIELD_GET_ACTION(ACL_RSLT2, MIRR_EN, data);
     if (1 == data)
     {
         FAL_ACTION_FLG_SET(sw->action_flg, FAL_ACL_ACTION_MIRROR);
     }
 
-    FIELD_GET(ACL_RSLT1, PRI_QU_EN, data);
+    FIELD_GET_ACTION(ACL_RSLT1, PRI_QU_EN, data);
     if (1 == data)
     {
         FAL_ACTION_FLG_SET(sw->action_flg, FAL_ACL_ACTION_REMARK_QUEUE);
-        FIELD_GET(ACL_RSLT1, PRI_QU, sw->queue);
+        FIELD_GET_ACTION(ACL_RSLT1, PRI_QU, sw->queue);
     }
 
-    FIELD_GET(ACL_RSLT1, DSCP_REMAP, data);
+    FIELD_GET_ACTION(ACL_RSLT1, DSCP_REMAP, data);
     if (data)
     {
         FAL_ACTION_FLG_SET(sw->action_flg, FAL_ACL_ACTION_REMARK_DSCP);
-        FIELD_GET(ACL_RSLT1, DSCPV, sw->dscp);
+        FIELD_GET_ACTION(ACL_RSLT1, DSCPV, sw->dscp);
     }
 
-    FIELD_GET(ACL_RSLT0, STAGVID, sw->stag_vid);
+    FIELD_GET_ACTION(ACL_RSLT0, STAGVID, sw->stag_vid);
 
-    FIELD_GET(ACL_RSLT1, TRANS_SVID_CHG, data);
+    FIELD_GET_ACTION(ACL_RSLT1, TRANS_SVID_CHG, data);
     if (data)
     {
         FAL_ACTION_FLG_SET(sw->action_flg, FAL_ACL_ACTION_REMARK_STAG_VID);
     }
 
-    FIELD_GET(ACL_RSLT1, STAG_PRI_REMAP, data);
+    FIELD_GET_ACTION(ACL_RSLT1, STAG_PRI_REMAP, data);
     if (data)
     {
         FAL_ACTION_FLG_SET(sw->action_flg, FAL_ACL_ACTION_REMARK_STAG_PRI);
-        FIELD_GET(ACL_RSLT0, STAGPRI, sw->stag_pri);
+        FIELD_GET_ACTION(ACL_RSLT0, STAGPRI, sw->stag_pri);
     }
 
-    FIELD_GET(ACL_RSLT1, STAG_DEI_CHG, data);
+    FIELD_GET_ACTION(ACL_RSLT1, STAG_DEI_CHG, data);
     if (data)
     {
         FAL_ACTION_FLG_SET(sw->action_flg, FAL_ACL_ACTION_REMARK_STAG_DEI);
-        FIELD_GET(ACL_RSLT0, STAGDEI, sw->stag_dei);
+        FIELD_GET_ACTION(ACL_RSLT0, STAGDEI, sw->stag_dei);
     }
 
-    FIELD_GET(ACL_RSLT0, CTAGVID, sw->ctag_vid);
+    FIELD_GET_ACTION(ACL_RSLT0, CTAGVID, sw->ctag_vid);
 
-    FIELD_GET(ACL_RSLT1, TRANS_CVID_CHG, data);
+    FIELD_GET_ACTION(ACL_RSLT1, TRANS_CVID_CHG, data);
     if (data)
     {
         FAL_ACTION_FLG_SET(sw->action_flg, FAL_ACL_ACTION_REMARK_CTAG_VID);
     }
 
-    FIELD_GET(ACL_RSLT1, CTAG_PRI_REMAP, data);
+    FIELD_GET_ACTION(ACL_RSLT1, CTAG_PRI_REMAP, data);
     if (data)
     {
         FAL_ACTION_FLG_SET(sw->action_flg, FAL_ACL_ACTION_REMARK_CTAG_PRI);
-        FIELD_GET(ACL_RSLT0, CTAGPRI, sw->ctag_pri);
+        FIELD_GET_ACTION(ACL_RSLT0, CTAGPRI, sw->ctag_pri);
     }
 
-    FIELD_GET(ACL_RSLT1, CTAG_CFI_CHG, data);
+    FIELD_GET_ACTION(ACL_RSLT1, CTAG_CFI_CHG, data);
     if (data)
     {
         FAL_ACTION_FLG_SET(sw->action_flg, FAL_ACL_ACTION_REMARK_CTAG_CFI);
-        FIELD_GET(ACL_RSLT0, CTAGCFI, sw->ctag_cfi);
+        FIELD_GET_ACTION(ACL_RSLT0, CTAGCFI, sw->ctag_cfi);
     }
 
-    FIELD_GET(ACL_RSLT1, LOOK_VID_CHG, data);
+    FIELD_GET_ACTION(ACL_RSLT1, LOOK_VID_CHG, data);
     if (data)
     {
         FAL_ACTION_FLG_SET(sw->action_flg, FAL_ACL_ACTION_REMARK_LOOKUP_VID);
     }
 
-    FIELD_GET(ACL_RSLT2, POLICER_EN, data);
+    FIELD_GET_ACTION(ACL_RSLT2, POLICER_EN, data);
     if (data)
     {
         FAL_ACTION_FLG_SET(sw->action_flg, FAL_ACL_ACTION_POLICER_EN);
-        FIELD_GET(ACL_RSLT2, POLICER_PTR, sw->policer_ptr);
+        FIELD_GET_ACTION(ACL_RSLT2, POLICER_PTR, sw->policer_ptr);
     }
 
-    FIELD_GET(ACL_RSLT1, ARP_PTR_EN, data);
+    FIELD_GET_ACTION(ACL_RSLT1, ARP_PTR_EN, data);
     if (data)
     {
-        FIELD_GET(ACL_RSLT1, WCMP_EN, data);
+        FIELD_GET_ACTION(ACL_RSLT1, WCMP_EN, data);
         if (data)
         {
             FAL_ACTION_FLG_SET(sw->action_flg, FAL_ACL_ACTION_WCMP_EN);
-            FIELD_GET(ACL_RSLT1, ARP_PTR, sw->wcmp_ptr);
+            FIELD_GET_ACTION(ACL_RSLT1, ARP_PTR, sw->wcmp_ptr);
         }
         else
         {
             FAL_ACTION_FLG_SET(sw->action_flg, FAL_ACL_ACTION_ARP_EN);
-            FIELD_GET(ACL_RSLT1, ARP_PTR, sw->arp_ptr);
+            FIELD_GET_ACTION(ACL_RSLT1, ARP_PTR, sw->arp_ptr);
         }
     }
 
-    FIELD_GET(ACL_RSLT1, FORCE_L3_MODE, data);
+    FIELD_GET_ACTION(ACL_RSLT1, FORCE_L3_MODE, data);
     if ((0 != data) && (3 != data))
     {
         FAL_ACTION_FLG_SET(sw->action_flg, FAL_ACL_ACTION_POLICY_FORWARD_EN);
@@ -2196,13 +2196,13 @@ _isis_acl_rule_action_reparse(fal_acl_rule_t * sw, const hw_filter_t * hw)
         }
     }
 
-    FIELD_GET(ACL_RSLT2, EG_BYPASS, data);
+    FIELD_GET_ACTION(ACL_RSLT2, EG_BYPASS, data);
     if (data)
     {
         FAL_ACTION_FLG_SET(sw->action_flg, FAL_ACL_ACTION_BYPASS_EGRESS_TRANS);
     }
 
-    FIELD_GET(ACL_RSLT2, TRIGGER_INTR, data);
+    FIELD_GET_ACTION(ACL_RSLT2, TRIGGER_INTR, data);
     if (data)
     {
         FAL_ACTION_FLG_SET(sw->action_flg, FAL_ACL_ACTION_MATCH_TRIGGER_INTR);
@@ -2381,7 +2381,7 @@ _isis_acl_rule_hw_to_sw(a_uint32_t dev_id, fal_acl_rule_t * sw,
     for (i = 0; i < ent_nr; i++)
     {
         hw = &(hw_rule_snap[idx + i].filter);
-        FIELD_GET(MAC_RUL_M4, RULE_TYP, flt_typ);
+        FIELD_GET_MASK(MAC_RUL_M4, RULE_TYP, flt_typ);
 
         if (ISIS_UDF_FILTER == flt_typ)
         {

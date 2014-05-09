@@ -158,7 +158,10 @@ HSL_LOCAL int iterate_multicast_acl_rule(int list_id, int start_n)
 
         if (ret==SW_NOT_FOUND )
             break;//NOT found in ACL rule
-
+        if((rule_id+start_n)>=FAL_IGMP_SG_ENTRY_MAX)
+        {
+            return -1;
+        }
         multi_acl_info[rule_id+start_n].index = rule_id; // consider here... index is NOT related start_n
         //MULTI_DEBUG("normal query1: rule dest_ip4_val=%x, src ip4=%x, dst_ip6=%x, ports=%x\n",
         //rule.dest_ip4_val, rule.src_ip4_val, rule.dest_ip6_val.ul[0], rule.ports);
