@@ -1009,11 +1009,8 @@ retry:
     }
 
 	bus->write(bus, 0x18, 0, page);
-	if(!in_interrupt()) {
-		usleep_range(400, 500);
-	} else {
-		udelay(100);
-	}
+	//usleep_range(1000, 2000); /* wait for the page switch to propagate */
+	udelay(100);
 	lo = bus->read(bus, 0x10 | r2, r1);
 	hi = bus->read(bus, 0x10 | r2, r1 + 1);
 
@@ -1050,11 +1047,7 @@ retry:
     }
 
 	bus->write(bus, 0x18, 0, r3);
-	if(!in_interrupt()) {
-		usleep_range(400, 500);
-	} else {
-		udelay(100);
-	}
+    udelay(100);
 	//usleep_range(1000, 2000); /* wait for the page switch to propagate */
 	bus->write(bus, 0x10 | r2, r1, lo);
 	bus->write(bus, 0x10 | r2, r1 + 1, hi);
