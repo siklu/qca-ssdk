@@ -82,6 +82,13 @@ extern "C" {
     fal_get_mib_info(a_uint32_t dev_id, fal_port_t port_id,
                      fal_mib_info_t * mib_info );
 
+    sw_error_t
+    fal_get_rx_mib_info(a_uint32_t dev_id, fal_port_t port_id,
+                     fal_mib_info_t * mib_info );
+
+    sw_error_t
+    fal_get_tx_mib_info(a_uint32_t dev_id, fal_port_t port_id,
+                     fal_mib_info_t * mib_info );
 
 
     sw_error_t
