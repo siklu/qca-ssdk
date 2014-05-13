@@ -48,6 +48,8 @@
 #include "ref_port_ctrl.h"
 #include "ref_misc.h"
 
+struct mutex g_ssdk_reg_mutex;
+
 static void
 qca_phy_read_port_link(struct qca_phy_priv *priv, int port,
 		      struct switch_port_link *port_link)
@@ -654,7 +656,7 @@ qca_phy_config_init(struct phy_device *pdev)
     }
 
     qca_phy_mib_work_start(priv);
-    mutex_init(&priv->reg_mutex);
+  //  mutex_init(&priv->reg_mutex);
 
 	return ret;
 }
@@ -667,7 +669,10 @@ qca_phy_read_status(struct phy_device *pdev)
 	int ret;
 
 	if (pdev->addr != 0) {
-		return genphy_read_status(pdev);
+		mutex_lock(&g_ssdk_reg_mutex);
+		ret = genphy_read_status(pdev);
+		mutex_unlock(&g_ssdk_reg_mutex);
+		return ret;
     }
 
 	qca_phy_read_port_link(priv, pdev->addr, &port_link);
@@ -714,6 +719,7 @@ qca_phy_probe(struct phy_device *pdev)
 	struct qca_phy_priv *priv;
 	int ret;
 
+	mutex_init(&g_ssdk_reg_mutex);
 	priv = kzalloc(sizeof(struct qca_phy_priv), GFP_KERNEL);
 	if (priv == NULL) {
 		return -ENOMEM;

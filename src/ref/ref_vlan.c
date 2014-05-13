@@ -42,6 +42,8 @@
 #include "ssdk_plat.h"
 #include "ref_vlan.h"
 
+extern struct mutex g_ssdk_reg_mutex;
+
 int
 qca_ar8327_sw_set_vlan(struct switch_dev *dev,
                        const struct switch_attr *attr,
@@ -178,7 +180,7 @@ qca_ar8327_sw_hw_apply(struct switch_dev *dev)
     fal_pbmp_t portmask[AR8327_NUM_PORTS];
     int i, j;
 
-    mutex_lock(&priv->reg_mutex);
+    mutex_lock(&g_ssdk_reg_mutex);
 
     /* flush all vlan translation unit entries */
     fal_vlan_flush(0);
@@ -244,7 +246,7 @@ qca_ar8327_sw_hw_apply(struct switch_dev *dev)
         fal_portvlan_member_update(0, i, portmask[i]);
     }
 
-    mutex_unlock(&priv->reg_mutex);
+    mutex_unlock(&g_ssdk_reg_mutex);
 
     return 0;
 }

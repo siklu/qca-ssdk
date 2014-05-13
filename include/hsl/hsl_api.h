@@ -1107,6 +1107,14 @@ extern "C" {
                          fal_mib_info_t * mib_info);
 
     typedef sw_error_t
+    (*hsl_get_rx_mib_info) (a_uint32_t dev_id, fal_port_t port_id,
+                         fal_mib_info_t * mib_info);
+
+    typedef sw_error_t
+    (*hsl_get_tx_mib_info) (a_uint32_t dev_id, fal_port_t port_id,
+                         fal_mib_info_t * mib_info);
+
+    typedef sw_error_t
     (*hsl_mib_status_set) (a_uint32_t dev_id, a_bool_t enable);
 
     typedef sw_error_t
@@ -1900,6 +1908,8 @@ extern "C" {
 
         /* MIB API */
         hsl_get_mib_info get_mib_info;
+        hsl_get_rx_mib_info get_rx_mib_info;
+        hsl_get_tx_mib_info get_tx_mib_info;
         hsl_mib_status_set mib_status_set;
         hsl_mib_status_get mib_status_get;
         hsl_mib_port_flush_counters mib_port_flush_counters;
