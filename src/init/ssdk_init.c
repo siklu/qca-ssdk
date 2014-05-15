@@ -28,6 +28,7 @@
 #include "hsl.h"
 #include "hsl_dev.h"
 #include "ssdk_init.h"
+#include <linux/version.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/phy.h>
@@ -40,8 +41,13 @@
 #include <linux/phy.h>
 #include <linux/delay.h>
 #include <linux/string.h>
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+#include <linux/switch.h>
+#include <linux/of.h>
+#else
 #include <net/switch.h>
 #include <linux/ar8216_platform.h>
+#endif
 #include "ssdk_plat.h"
 #include "ref_vlan.h"
 #include "ref_fdb.h"
@@ -115,6 +121,78 @@ qca_ar8327_phy_fixup(struct qca_phy_priv *priv, int phy)
 	}
 }
 
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+static int
+qca_ar8327_hw_init(struct qca_phy_priv *priv)
+{
+	struct ar8327_platform_data *plat_data;
+	struct device_node *np = NULL;
+	const __be32 *paddr;
+	a_uint32_t reg, value, i;
+	a_int32_t len;
+
+	np = priv->phy->dev.of_node;
+	if(!np)
+		return -EINVAL;
+
+	/*First software reset S17 chip*/
+	value = priv->mii_read(AR8327_REG_CTRL);
+	value |= 0x80000000;
+	priv->mii_write(AR8327_REG_CTRL, value);
+
+	/* Configure switch register from DT information */
+	paddr = of_get_property(np, "qca,ar8327-initvals", &len);
+	if (!paddr || len < (2 * sizeof(*paddr))) {
+		printk("len:%d < 2 * sizeof(*paddr):%d\n", len, 2 * sizeof(*paddr));
+		return -EINVAL;
+	}
+
+	len /= sizeof(*paddr);
+
+	for (i = 0; i < len - 1; i += 2) {
+		reg = be32_to_cpup(paddr + i);
+		value = be32_to_cpup(paddr + i + 1);
+		priv->mii_write(reg, value);
+	}
+
+	value = priv->mii_read(AR8327_REG_PORT_LOOKUP(1));
+	value &= ~0x20;
+	priv->mii_write(AR8327_REG_PORT_LOOKUP(1), value);
+
+	value = priv->mii_read(AR8327_REG_PORT_LOOKUP(2));
+	value &= ~0x20;
+	priv->mii_write(AR8327_REG_PORT_LOOKUP(2), value);
+
+	value = priv->mii_read(AR8327_REG_PORT_LOOKUP(3));
+	value &= ~0x20;
+	priv->mii_write(AR8327_REG_PORT_LOOKUP(3), value);
+
+	value = priv->mii_read(AR8327_REG_PORT_LOOKUP(4));
+	value &= ~0x20;
+	priv->mii_write(AR8327_REG_PORT_LOOKUP(4), value);
+
+	value = 0x1;
+	priv->mii_write(AR8327_REG_PORT_LOOKUP(5), value);
+
+	value = priv->mii_read(AR8327_REG_PORT_LOOKUP(6));
+	value &= ~0x20;
+	priv->mii_write(AR8327_REG_PORT_LOOKUP(6), value);
+
+	for (i = 0; i < AR8327_NUM_PHYS; i++) {
+		qca_ar8327_phy_fixup(priv, i);
+
+		/* start autoneg*/
+		priv->phy_write(0, i, MII_ADVERTISE, ADVERTISE_ALL |
+						     ADVERTISE_PAUSE_CAP | ADVERTISE_PAUSE_ASYM);
+		priv->phy_write(0, i, MII_CTRL1000, ADVERTISE_1000FULL);
+		priv->phy_write(0, i, MII_BMCR, BMCR_RESET | BMCR_ANENABLE);
+	}
+
+	msleep(1000);
+
+	return 0;
+}
+#else
 static a_uint32_t
 qca_ar8327_get_pad_cfg(struct ar8327_pad_cfg *pad_cfg)
 {
@@ -422,6 +500,7 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 
 	return 0;
 }
+#endif
 
 static int
 qca_ar8327_sw_get_reg_val(struct switch_dev *dev,
@@ -1205,6 +1284,31 @@ static int miibus_get()
     struct ag71xx_mdio *am;
 #endif
     uint8_t busid[MII_BUS_ID_SIZE];
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+	const __be32 *prop = NULL;
+	struct device_node *mdio_node = NULL;
+	struct platform_device *mdio_plat = NULL;
+
+	mdio_node = of_find_compatible_node(NULL, NULL, "virtual,mdio-gpio");
+	if (!mdio_node) {
+		printk("getting virtual,mdio-gpio failed\n");
+		return 1;
+	}
+
+
+	mdio_plat = of_find_device_by_node(mdio_node);
+	if (!mdio_plat) {
+		printk("cannot find platform device from mdio node\n");
+		return 1;
+	}
+
+	miibus = dev_get_drvdata(&mdio_plat->dev);
+	if (!miibus) {
+		printk("cannot get mii bus reference from device data\n");
+		return 1;
+	}
+
+#else
     snprintf(busid, MII_BUS_ID_SIZE, "%s.%d",
              IPQ806X_MDIO_BUS_NAME, IPQ806X_MDIO_BUS_NUM);
 
@@ -1225,6 +1329,7 @@ static int miibus_get()
 	    printk("mdio bus '%s' get FAIL\n", busid);
 	    return 1;
 	}
+#endif
 
 	return 0;
 

@@ -30,6 +30,7 @@
 #include "hsl_dev.h"
 #include "ssdk_init.h"
 #include "shell_io.h"
+#include <linux/version.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/phy.h>
@@ -37,11 +38,15 @@
 #include <linux/types.h>
 #include <linux/kconfig.h>
 #include <generated/autoconf.h>
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+#include <linux/switch.h>
+#else
 #include <net/switch.h>
+#include <linux/ar8216_platform.h>
+#endif
 #include <linux/delay.h>
 #include <linux/phy.h>
 #include <linux/netdevice.h>
-#include <linux/ar8216_platform.h>
 #include "ssdk_plat.h"
 #include <linux/string.h>
 #include "ref_uci.h"
