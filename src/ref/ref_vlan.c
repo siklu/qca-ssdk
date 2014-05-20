@@ -107,8 +107,6 @@ qca_ar8327_sw_enable_vlan0(a_bool_t enable, a_uint8_t portmap)
     return 0;
 }
 
-extern struct mutex g_ssdk_reg_mutex;
-
 int
 qca_ar8327_sw_set_vlan(struct switch_dev *dev,
                        const struct switch_attr *attr,
@@ -260,7 +258,7 @@ qca_ar8327_sw_hw_apply(struct switch_dev *dev)
     fal_pbmp_t portmask[AR8327_NUM_PORTS];
     int i, j;
 
-    mutex_lock(&g_ssdk_reg_mutex);
+    mutex_lock(&priv->reg_mutex);
 
     memset(portmask, 0, sizeof(portmask));
     if (!priv->init) {
@@ -344,7 +342,7 @@ qca_ar8327_sw_hw_apply(struct switch_dev *dev)
         fal_portvlan_member_update(0, i, portmask[i]);
     }
 
-    mutex_unlock(&g_ssdk_reg_mutex);
+    mutex_unlock(&priv->reg_mutex);
 
     return 0;
 }

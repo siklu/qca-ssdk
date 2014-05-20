@@ -47,8 +47,6 @@
 #include "ssdk_plat.h"
 #include "ref_vlan.h"
 
-extern struct mutex g_ssdk_reg_mutex;
-
 int
 qca_ar8327_sw_set_max_frame_size(struct switch_dev *dev,
 										const struct switch_attr *attr,
@@ -93,7 +91,7 @@ qca_ar8327_sw_reset_switch(struct switch_dev *dev)
     int i;
     int rv = 0;
 
-    mutex_lock(&g_ssdk_reg_mutex);
+    mutex_lock(&priv->reg_mutex);
 
     /* flush all vlan translation unit entries */
     fal_vlan_flush(0);
@@ -110,7 +108,7 @@ qca_ar8327_sw_reset_switch(struct switch_dev *dev)
     /* init switch */
     rv += ssdk_switch_init(0);
 
-    mutex_unlock(&g_ssdk_reg_mutex);
+    mutex_unlock(&priv->reg_mutex);
 
     priv->init = true;
     rv += qca_ar8327_sw_hw_apply(dev);

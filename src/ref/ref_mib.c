@@ -47,8 +47,6 @@
 #include "ssdk_plat.h"
 #include "ref_vlan.h"
 
-extern struct mutex g_ssdk_reg_mutex;
-
 int
 _qca_ar8327_sw_capture_port_counter(struct switch_dev *dev, int port)
 {
@@ -426,7 +424,7 @@ qca_ar8327_sw_mib_task(struct switch_dev *dev)
 	static int loop = 0;
 	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 
-	mutex_lock(&g_ssdk_reg_mutex);
+	mutex_lock(&priv->reg_mutex);
 	if ((loop % 2) == 0)
 		_qca_ar8327_sw_capture_port_rx_counter(dev, loop/2);
 	else
@@ -436,7 +434,7 @@ qca_ar8327_sw_mib_task(struct switch_dev *dev)
 		loop = 0;
 	}
 
-	mutex_unlock(&g_ssdk_reg_mutex);
+	mutex_unlock(&priv->reg_mutex);
 
 	return;
 }

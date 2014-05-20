@@ -13,7 +13,6 @@
  */
 
 
-
 #include "sw.h"
 #include "ssdk_init.h"
 #include "fal_init.h"
@@ -56,8 +55,6 @@
 #include "ref_misc.h"
 #include "ref_uci.h"
 #include "shell.h"
-
-struct mutex g_ssdk_reg_mutex;
 
 static void
 qca_phy_read_port_link(struct qca_phy_priv *priv, int port,
@@ -701,27 +698,22 @@ qca_phy_config_init(struct phy_device *pdev)
 		return 0;
 	}
 
-	if (priv == NULL) {
-		priv = kzalloc(sizeof(struct qca_phy_priv), GFP_KERNEL);
-		if (priv == NULL) {
-			return -ENOMEM;
-        }
-	}
+	if (priv == NULL)
+		return -ENOMEM;
 
 	priv->phy = pdev;
 	ret = qca_phy_id_chip(priv);
 	if (ret != 0) {
-        kfree(priv);
-        return ret;
-    }
+	        return ret;
+	}
 
 	priv->mii_read = qca_ar8216_mii_read;
 	priv->mii_write = qca_ar8216_mii_write;
-    priv->phy_write = qca_ar8327_phy_write;
+	priv->phy_write = qca_ar8327_phy_write;
 	priv->phy_dbg_write = qca_ar8327_phy_dbg_write;
 	priv->phy_mmd_write = qca_ar8327_mmd_write;
 
-    pdev->priv = priv;
+	pdev->priv = priv;
 	pdev->supported |= SUPPORTED_1000baseT_Full;
 	pdev->advertising |= ADVERTISED_1000baseT_Full;
 
@@ -733,18 +725,15 @@ qca_phy_config_init(struct phy_device *pdev)
 
 	ret = register_switch(&priv->sw_dev, pdev->attached_dev);
 	if (ret != 0) {
-		kfree(priv);
-        return ret;
-    }
+	        return ret;
+	}
 
 	ret = qca_ar8327_hw_init(priv);
 	if (ret != 0) {
-		kfree(priv);
-        return ret;
-    }
+	        return ret;
+	}
 
-    qca_phy_mib_work_start(priv);
-  //  mutex_init(&priv->reg_mutex);
+	qca_phy_mib_work_start(priv);
 
 	return ret;
 }
@@ -757,11 +746,11 @@ qca_phy_read_status(struct phy_device *pdev)
 	int ret;
 
 	if (pdev->addr != 0) {
-		mutex_lock(&g_ssdk_reg_mutex);
+		mutex_lock(&priv->reg_mutex);
 		ret = genphy_read_status(pdev);
-		mutex_unlock(&g_ssdk_reg_mutex);
+		mutex_unlock(&priv->reg_mutex);
 		return ret;
-    }
+	}
 
 	qca_phy_read_port_link(priv, pdev->addr, &port_link);
 	pdev->link = !!port_link.link;
@@ -796,7 +785,7 @@ qca_phy_config_aneg(struct phy_device *pdev)
 {
 	if (pdev->addr != 0) {
 		return genphy_config_aneg(pdev);
-    }
+	}
 
 	return 0;
 }
@@ -807,19 +796,16 @@ qca_phy_probe(struct phy_device *pdev)
 	struct qca_phy_priv *priv;
 	int ret;
 
-	mutex_init(&g_ssdk_reg_mutex);
 	priv = kzalloc(sizeof(struct qca_phy_priv), GFP_KERNEL);
 	if (priv == NULL) {
 		return -ENOMEM;
-    }
+	}
 
+	pdev->priv = priv;
 	priv->phy = pdev;
+	mutex_init(&priv->reg_mutex);
+
 	ret = qca_phy_id_chip(priv);
-
-    if(priv) {
-	    kfree(priv);
-    }
-
 	return ret;
 }
 
