@@ -843,7 +843,8 @@ ssdk_plat_init(void)
 {
     printk("ssdk_plat_init start\n");
 
-    miibus_get();
+    if(miibus_get())
+	return -ENODEV;
 
     if(driver_find(qca_phy_driver.name, &mdio_bus_type)){
         printk("QCA PHY driver had been Registered\n");
@@ -1265,11 +1266,11 @@ retry:
 
 static int miibus_get()
 {
-    struct device *miidev;
+	struct device *miidev;
 #ifdef BOARD_AR71XX
-    struct ag71xx_mdio *am;
+	struct ag71xx_mdio *am;
 #endif
-    uint8_t busid[MII_BUS_ID_SIZE];
+	uint8_t busid[MII_BUS_ID_SIZE];
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 	const __be32 *prop = NULL;
 	struct device_node *mdio_node = NULL;
@@ -1280,7 +1281,6 @@ static int miibus_get()
 		printk("getting virtual,mdio-gpio failed\n");
 		return 1;
 	}
-
 
 	mdio_plat = of_find_device_by_node(mdio_node);
 	if (!mdio_plat) {
@@ -1295,8 +1295,8 @@ static int miibus_get()
 	}
 
 #else
-    snprintf(busid, MII_BUS_ID_SIZE, "%s.%d",
-             IPQ806X_MDIO_BUS_NAME, IPQ806X_MDIO_BUS_NUM);
+	snprintf(busid, MII_BUS_ID_SIZE, "%s.%d",
+		IPQ806X_MDIO_BUS_NAME, IPQ806X_MDIO_BUS_NUM);
 
 	miidev = bus_find_device_by_name(&platform_bus_type, NULL, busid);
 	if (!miidev) {
@@ -1306,54 +1306,56 @@ static int miibus_get()
 
 #ifdef BOARD_AR71XX
 	am = dev_get_drvdata(miidev);
-    miibus = am->mii_bus;
+	miibus = am->mii_bus;
 #else
-    miibus = dev_get_drvdata(miidev);
+	miibus = dev_get_drvdata(miidev);
 #endif
 
 	if(!miidev){
-	    printk("mdio bus '%s' get FAIL\n", busid);
-	    return 1;
+		printk("mdio bus '%s' get FAIL\n", busid);
+		return 1;
 	}
 #endif
 
 	return 0;
-
 }
 
 static int __init
 regi_init(void)
 {
-    ssdk_init_cfg cfg;
-    int rv = 0;
-    garuda_init_spec_cfg chip_spec_cfg;
+	ssdk_init_cfg cfg;
+	int rv = 0;
+	garuda_init_spec_cfg chip_spec_cfg;
 
-    ssdk_plat_init();
+	rv = ssdk_plat_init();
+	if(rv)
+		goto out;
 
-    memset(&cfg, 0, sizeof(ssdk_init_cfg));
-    memset(&chip_spec_cfg, 0, sizeof(garuda_init_spec_cfg));
+	memset(&cfg, 0, sizeof(ssdk_init_cfg));
+	memset(&chip_spec_cfg, 0, sizeof(garuda_init_spec_cfg));
 
-    cfg.cpu_mode = HSL_CPU_1;
-    cfg.reg_mode = HSL_MDIO;
-    cfg.nl_prot = 30;
+	cfg.cpu_mode = HSL_CPU_1;
+	cfg.reg_mode = HSL_MDIO;
+	cfg.nl_prot = 30;
 
-    cfg.chip_spec_cfg = &chip_spec_cfg;
-    cfg.reg_func.mdio_set = qca_ar8327_phy_write;
-    cfg.reg_func.mdio_get = qca_ar8327_phy_read;
+	cfg.chip_spec_cfg = &chip_spec_cfg;
+	cfg.reg_func.mdio_set = qca_ar8327_phy_write;
+	cfg.reg_func.mdio_get = qca_ar8327_phy_read;
 
-    if((qca_ar8216_mii_read(0)&0xff00)>>8 == 0x13)
-        cfg.chip_type = CHIP_ISISC;
-    else
-        cfg.chip_type = CHIP_ISIS;
+	if((qca_ar8216_mii_read(0)&0xff00)>>8 == 0x13)
+		cfg.chip_type = CHIP_ISISC;
+	else
+		cfg.chip_type = CHIP_ISIS;
 
-    rv = ssdk_init(0, &cfg);
-    if (rv == 0)
-        printk("qca-ssdk module init succeeded!\n");
-    else
-        printk("qca-ssdk module init failed! (code: %d)\n", rv);
+	rv = ssdk_init(0, &cfg);
+
+out:
+	if (rv == 0)
+		printk("qca-ssdk module init succeeded!\n");
+	else
+		printk("qca-ssdk module init failed! (code: %d)\n", rv);
 
 	return rv;
-
 }
 
 static void __exit
