@@ -882,6 +882,7 @@ struct ag71xx_mdio {
 
 static struct mii_bus *miibus = NULL;
 
+extern ssdk_chip_type SSDK_CURRENT_CHIP_TYPE;
 sw_error_t
 ssdk_switch_init(a_uint32_t dev_id)
 {
@@ -958,7 +959,10 @@ ssdk_switch_init(a_uint32_t dev_id)
             nr = 48; /*6*8*/
             fal_qos_port_rx_buf_nr_set(dev_id, i, &nr);
             fal_qos_port_red_en_set(dev_id, i, A_TRUE);
+            if (SSDK_CURRENT_CHIP_TYPE == CHIP_ISISC)
             nr = 64; /*8*8*/
+            else if (SSDK_CURRENT_CHIP_TYPE == CHIP_ISIS)
+            nr = 60;
             fal_qos_queue_tx_buf_nr_set(dev_id, i, 5, &nr);
             nr = 48; /*6*8*/
             fal_qos_queue_tx_buf_nr_set(dev_id, i, 4, &nr);
@@ -978,7 +982,10 @@ ssdk_switch_init(a_uint32_t dev_id)
             nr = 48; /*6*8*/
             fal_qos_port_rx_buf_nr_set(dev_id, i, &nr);
             fal_qos_port_red_en_set(dev_id, i, A_TRUE);
+            if (SSDK_CURRENT_CHIP_TYPE == CHIP_ISISC)
             nr = 64; /*8*8*/
+            else if (SSDK_CURRENT_CHIP_TYPE == CHIP_ISIS)
+            nr = 60;
             fal_qos_queue_tx_buf_nr_set(dev_id, i, 3, &nr);
             nr = 48; /*6*8*/
             fal_qos_queue_tx_buf_nr_set(dev_id, i, 2, &nr);

@@ -123,8 +123,8 @@ enum {
 	QCA_VER_AR8337 = 0x13
 };
 
-/*poll mib per 2secs*/
-#define QCA_PHY_MIB_WORK_DELAY	20000
+/*poll mib per 120secs*/
+#define QCA_PHY_MIB_WORK_DELAY	120000
 #define QCA_MIB_ITEM_NUMBER	41
 
 struct qca_phy_priv {

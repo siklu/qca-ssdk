@@ -272,9 +272,10 @@ qca_ar8327_sw_hw_apply(struct switch_dev *dev)
         for (j = 0; j < AR8327_MAX_VLANS; j++) {
             u8 vp = priv->vlan_table[j];
 
-            if (!vp)
-            continue;
-
+            if (!vp) {
+                fal_vlan_delete(0, priv->vlan_id[j]);
+                continue;
+            }
             fal_vlan_delete(0, priv->vlan_id[j]);
             fal_vlan_create(0, priv->vlan_id[j]);
 
