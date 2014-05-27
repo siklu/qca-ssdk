@@ -348,7 +348,7 @@ hsl_ssdk_cfg(a_uint32_t dev_id, ssdk_cfg_t *ssdk_cfg)
 #elif defined KVER24
     aos_mem_copy(ssdk_cfg->os_info+sizeof(OS)-1, " version 2.4", sizeof(" version 2.4"));
 #else
-    aos_mem_copy(ssdk_cfg->os_info+sizeof(OS)-1, " version unknown", sizeof(" version unknown"));
+    aos_mem_copy(ssdk_cfg->os_info+sizeof(OS)-1, " unknown", sizeof(" unknown"));
 #endif
 #endif
 
