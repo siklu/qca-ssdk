@@ -53,6 +53,10 @@ cmd_input_parser(a_uint32_t *arg_val, a_uint32_t arg_index, sw_api_param_t *pp)
             pbuf += (pptmp->data_size + 3) / 4;
         }
     }
+
+    if (pptmp == NULL)
+        return SW_BAD_PTR;
+
     if ((pbuf - ioctl_buf + (pptmp->data_size + 3) / 4) > (IOCTL_BUF_SIZE/4))
     {
         return SW_NO_RESOURCE;
