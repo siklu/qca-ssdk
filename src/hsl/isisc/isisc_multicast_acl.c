@@ -366,7 +366,7 @@ HSL_LOCAL int multi_acl_bind()
         return 0;
     old_bind_p = bind_p;
 
-    for(i=0; i<6; i++)
+    for(i=0; i<7; i++)
     {
         ACL_LIST_UNBIND(0, FAL_ACL_LIST_MULTICAST, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, i);
         ACL_LIST_UNBIND(0, FAL_ACL_LIST_MULTICAST+1, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, i);
@@ -374,7 +374,7 @@ HSL_LOCAL int multi_acl_bind()
 
     if(bind_p==0)
     {
-        for(i=0; i<6; i++)
+        for(i=0; i<7; i++)
         {
             ACL_LIST_BIND(0, FAL_ACL_LIST_MULTICAST, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, i);
             ACL_LIST_BIND(0, FAL_ACL_LIST_MULTICAST+1, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, i);
@@ -382,7 +382,7 @@ HSL_LOCAL int multi_acl_bind()
     }
     else
     {
-        for(i=0; i<6; i++)
+        for(i=0; i<7; i++)
             if((bind_p>>i) &0x1)
             {
                 ACL_LIST_BIND(0, FAL_ACL_LIST_MULTICAST, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, i);
