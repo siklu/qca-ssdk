@@ -287,9 +287,7 @@ isis_reg_get(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t value[],
     MDIO_LOCKER_LOCK;
     if (HSL_MDIO == reg_mode)
     {
-        aos_irq_save(flags);
         rv = _isis_mdio_reg_get(dev_id, reg_addr, value, value_len);
-        aos_irq_restore(flags);
     }
     else
     {
@@ -310,9 +308,7 @@ isis_reg_set(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t value[],
     MDIO_LOCKER_LOCK;
     if (HSL_MDIO == reg_mode)
     {
-        aos_irq_save(flags);
         rv = _isis_mdio_reg_set(dev_id, reg_addr, value, value_len);
-        aos_irq_restore(flags);
     }
     else
     {
