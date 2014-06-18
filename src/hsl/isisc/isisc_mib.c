@@ -842,7 +842,7 @@ isisc_mib_init(a_uint32_t dev_id)
 
     p_api->get_mib_info   = isisc_get_mib_info;
     p_api->get_rx_mib_info   = isisc_get_rx_mib_info;
-    p_api->get_rx_mib_info   = isisc_get_tx_mib_info;
+    p_api->get_tx_mib_info   = isisc_get_tx_mib_info;
     p_api->mib_status_set = isisc_mib_status_set;
     p_api->mib_status_get = isisc_mib_status_get;
     p_api->mib_port_flush_counters = isisc_mib_port_flush_counters;
