@@ -1237,6 +1237,13 @@ cmd_data_check_multi(char *info, void *val, a_uint32_t size)
     if (rv)
         return rv;
 
+    rv = __cmd_data_check_complex("vlanid", "0xffff",
+                        "usage: the range is 0 -- 4095 or 65535\n",
+                        cmd_data_check_uint32, &(entry.vlan_id),
+                        sizeof (a_uint32_t));
+    if (rv)
+        return rv;
+
     *(fal_igmp_sg_entry_t *)val = entry;
 
     return SW_OK;
