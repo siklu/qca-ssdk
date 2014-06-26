@@ -195,7 +195,7 @@ qca_ar8327_sw_get_ports(struct switch_dev *dev, struct switch_val *val)
 
         p = &val->value.ports[val->len++];
         p->id = i;
-        if (priv->vlan_tagged & (1 << i))
+        if (priv->vlan_tagged[val->port_vlan] & (1 << i))
             p->flags = (1 << SWITCH_PORT_FLAG_TAGGED);
         else
             p->flags = 0;
@@ -231,18 +231,10 @@ qca_ar8327_sw_set_ports(struct switch_dev *dev, struct switch_val *val)
         struct switch_port *p = &val->value.ports[i];
 
         if (p->flags & (1 << SWITCH_PORT_FLAG_TAGGED)) {
-            priv->vlan_tagged |= (1 << p->id);
+            priv->vlan_tagged[val->port_vlan] |= (1 << p->id);
         } else {
-            priv->vlan_tagged &= ~(1 << p->id);
+            priv->vlan_tagged[val->port_vlan] &= ~(1 << p->id);
             priv->pvid[p->id] = val->port_vlan;
-
-            /* make sure that an untagged port does not
-             * appear in other vlans */
-            for (j = 1; j < AR8327_MAX_VLANS; j++) {
-                if (j == val->port_vlan)
-                    continue;
-                priv->vlan_table[j] &= ~(1 << p->id);
-            }
         }
 
         *vt |= 1 << p->id;
@@ -283,7 +275,7 @@ qca_ar8327_sw_hw_apply(struct switch_dev *dev)
                 u8 mask = (1 << i);
                 if (vp & mask) {
                     fal_vlan_member_add(0, priv->vlan_id[j], i,
-                           (mask & priv->vlan_tagged)? FAL_EG_TAGGED : FAL_EG_UNTAGGED);
+                           (mask & priv->vlan_tagged[j])? FAL_EG_TAGGED : FAL_EG_UNTAGGED);
                     portmask[i] |= vp & ~mask;
                 }
             }
@@ -315,7 +307,7 @@ qca_ar8327_sw_hw_apply(struct switch_dev *dev)
 
         if (priv->vlan) {
             pvid = priv->vlan_id[priv->pvid[i]];
-            if (priv->vlan_tagged & (1 << i)) {
+            if (priv->vlan_tagged[priv->pvid[i]] & (1 << i)) {
                 egressMode = FAL_EG_TAGGED;
             } else {
                 egressMode = FAL_EG_UNTAGGED;

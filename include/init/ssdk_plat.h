@@ -153,7 +153,7 @@ struct qca_phy_priv {
     bool       vlan;  /* True: 1q vlan mode, False: port vlan mode */
     a_uint16_t vlan_id[AR8327_MAX_VLANS];
     a_uint8_t  vlan_table[AR8327_MAX_VLANS];
-    a_uint8_t  vlan_tagged;
+    a_uint8_t  vlan_tagged[AR8327_MAX_VLANS];
     a_uint16_t pvid[AR8327_NUM_PORTS];
 
 };
