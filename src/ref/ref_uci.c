@@ -2727,6 +2727,8 @@ parse_igmp_multi(struct switch_val *val)
 			val_ptr[3] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "portmap")) {
 			val_ptr[4] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "vlanid")) {
+			val_ptr[5] = ext_value_p->option_value;
 		}  else {
 			rv = -1;
 			break;

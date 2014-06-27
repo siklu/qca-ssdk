@@ -184,6 +184,14 @@ HSL_LOCAL int iterate_multicast_acl_rule(int list_id, int start_n)
             memcpy(&(multi_acl_info[rule_id+start_n].entry.source.u.ip6_addr), &(rule.src_ip6_val), sizeof(rule.src_ip6_val));
             multi_acl_info[rule_id+start_n].entry.port_map= rule.ports;
         }
+        if (FAL_FIELD_FLG_TST(rule.field_flg, FAL_ACL_FIELD_MAC_VID))
+        {
+            multi_acl_info[rule_id+start_n].entry.vlan_id = rule.vid_val;
+        }
+        else
+        {
+            multi_acl_info[rule_id+start_n].entry.vlan_id = 0xffff;
+        }
     }
 
     return rule_id+start_n;
@@ -547,6 +555,14 @@ HSL_LOCAL sw_error_t isisc_multicast_acl_add(int list_id, fal_igmp_sg_entry_t * 
             FAL_ACTION_FLG_SET(acl.action_flg, FAL_ACL_ACTION_REDPT);
             acl.ports = entry->port_map;
         }
+    }
+
+    if (entry->vlan_id < 4096)
+    {
+        FAL_FIELD_FLG_SET(acl.field_flg, FAL_ACL_FIELD_MAC_VID);
+        acl.vid_val = entry->vlan_id;
+        acl.vid_op = FAL_ACL_FIELD_MASK;
+        acl.vid_mask = 0xfff;
     }
 
     pos = isisc_multicast_acl_total_n(list_id);
@@ -981,14 +997,16 @@ sw_error_t isisc_igmp_sg_entry_show(a_uint32_t dev_id)
             aos_printk("\n[%d]:", i);
             print_ip4addr(" [Group IPv4 addr]:", (a_uint32_t *)&(multi_acl_info[i].entry.group.u.ip4_addr), sizeof (fal_ip4_addr_t));
             print_ip4addr(" [Source IPv4 addr]:", (a_uint32_t *)&(multi_acl_info[i].entry.source.u.ip4_addr), sizeof (fal_ip4_addr_t));
-            aos_printk(" [Portmap]: 0x%x ", multi_acl_info[i].entry.port_map);
+            aos_printk("\n     [Portmap]: 0x%x ", multi_acl_info[i].entry.port_map);
+            aos_printk(" [Vlanid]: %d ", multi_acl_info[i].entry.vlan_id);
         }
         else if(1 == multi_acl_info[i].entry.group.type)  //ipv6
         {
             aos_printk("\n[%d]:", i);
             print_ip6addr(" [Group IPv6 addr]: ", (a_uint32_t *)&(multi_acl_info[i].entry.group.u.ip6_addr), sizeof (fal_ip6_addr_t));
             print_ip6addr(" [Source IPv6 addr]: ", (a_uint32_t *)&(multi_acl_info[i].entry.source.u.ip6_addr), sizeof (fal_ip6_addr_t));
-            aos_printk(" [Portmap]: 0x%x ", multi_acl_info[i].entry.port_map);
+            aos_printk("\n     [Portmap]: 0x%x ", multi_acl_info[i].entry.port_map);
+            aos_printk(" [Vlanid]: %d ", multi_acl_info[i].entry.vlan_id);
         }
 
     }
