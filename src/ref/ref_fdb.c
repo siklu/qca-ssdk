@@ -26,13 +26,13 @@
 #include "hsl.h"
 #include "hsl_dev.h"
 #include "ssdk_init.h"
+#include <linux/kconfig.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/phy.h>
 #include <linux/platform_device.h>
 #include <linux/types.h>
 //#include <asm/mach-types.h>
-#include <linux/kconfig.h>
 #include <generated/autoconf.h>
 #include <net/switch.h>
 #include <linux/delay.h>

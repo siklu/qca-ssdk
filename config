@@ -6,6 +6,10 @@ ifeq ($(KVER), 3.4.0)
 OS_VER=3_4
 endif
 
+ifeq ($(KVER), 3.4.69)
+OS_VER=3_4
+endif
+
 ifeq ($(KVER), 3.3.8)
 OS_VER=3_2
 endif
