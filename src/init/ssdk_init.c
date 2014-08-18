@@ -152,28 +152,54 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 		priv->mii_write(reg, value);
 	}
 
+	value = priv->mii_read(AR8327_REG_PORT_LOOKUP(0));
+	value &= ~0x5e;
+	priv->mii_write(AR8327_REG_PORT_LOOKUP(0), value);
+
 	value = priv->mii_read(AR8327_REG_PORT_LOOKUP(1));
-	value &= ~0x20;
+	value &= ~0x21;
 	priv->mii_write(AR8327_REG_PORT_LOOKUP(1), value);
 
 	value = priv->mii_read(AR8327_REG_PORT_LOOKUP(2));
-	value &= ~0x20;
+	value &= ~0x21;
 	priv->mii_write(AR8327_REG_PORT_LOOKUP(2), value);
 
 	value = priv->mii_read(AR8327_REG_PORT_LOOKUP(3));
-	value &= ~0x20;
+	value &= ~0x21;
 	priv->mii_write(AR8327_REG_PORT_LOOKUP(3), value);
 
 	value = priv->mii_read(AR8327_REG_PORT_LOOKUP(4));
-	value &= ~0x20;
+	value &= ~0x21;
 	priv->mii_write(AR8327_REG_PORT_LOOKUP(4), value);
 
-	value = 0x1;
+	value = priv->mii_read(AR8327_REG_PORT_LOOKUP(5));
+	value &= ~0x5e;
 	priv->mii_write(AR8327_REG_PORT_LOOKUP(5), value);
 
 	value = priv->mii_read(AR8327_REG_PORT_LOOKUP(6));
-	value &= ~0x20;
+	value &= ~0x21;
 	priv->mii_write(AR8327_REG_PORT_LOOKUP(6), value);
+
+	value = 0x20001;
+	priv->mii_write(AR8327_REG_PORT_VLAN0(0), value);
+
+	value = 0x10001;
+	priv->mii_write(AR8327_REG_PORT_VLAN0(1), value);
+
+	value = 0x10001;
+	priv->mii_write(AR8327_REG_PORT_VLAN0(2), value);
+
+	value = 0x10001;
+	priv->mii_write(AR8327_REG_PORT_VLAN0(3), value);
+
+	value = 0x10001;
+	priv->mii_write(AR8327_REG_PORT_VLAN0(4), value);
+
+	value = 0x20001;
+	priv->mii_write(AR8327_REG_PORT_VLAN0(5), value);
+
+	value = 0x10001;
+	priv->mii_write(AR8327_REG_PORT_VLAN0(6), value);
 
 	for (i = 0; i < AR8327_NUM_PHYS; i++) {
 		qca_ar8327_phy_fixup(priv, i);
@@ -401,28 +427,54 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 	value |= 0x80000000;
 	priv->mii_write(AR8327_REG_CTRL, value);
 
+	value = priv->mii_read(AR8327_REG_PORT_LOOKUP(0));
+	value &= ~0x5e;
+	priv->mii_write(AR8327_REG_PORT_LOOKUP(0), value);
+
 	value = priv->mii_read(AR8327_REG_PORT_LOOKUP(1));
-	value &= ~0x20;
+	value &= ~0x21;
 	priv->mii_write(AR8327_REG_PORT_LOOKUP(1), value);
 
 	value = priv->mii_read(AR8327_REG_PORT_LOOKUP(2));
-	value &= ~0x20;
+	value &= ~0x21;
 	priv->mii_write(AR8327_REG_PORT_LOOKUP(2), value);
 
 	value = priv->mii_read(AR8327_REG_PORT_LOOKUP(3));
-	value &= ~0x20;
+	value &= ~0x21;
 	priv->mii_write(AR8327_REG_PORT_LOOKUP(3), value);
 
 	value = priv->mii_read(AR8327_REG_PORT_LOOKUP(4));
-	value &= ~0x20;
+	value &= ~0x21;
 	priv->mii_write(AR8327_REG_PORT_LOOKUP(4), value);
 
-	value = 0x1;
+	value = priv->mii_read(AR8327_REG_PORT_LOOKUP(5));
+	value &= ~0x5e;
 	priv->mii_write(AR8327_REG_PORT_LOOKUP(5), value);
 
 	value = priv->mii_read(AR8327_REG_PORT_LOOKUP(6));
-	value &= ~0x20;
+	value &= ~0x21;
 	priv->mii_write(AR8327_REG_PORT_LOOKUP(6), value);
+
+	value = 0x20001;
+	priv->mii_write(AR8327_REG_PORT_VLAN0(0), value);
+
+	value = 0x10001;
+	priv->mii_write(AR8327_REG_PORT_VLAN0(1), value);
+
+	value = 0x10001;
+	priv->mii_write(AR8327_REG_PORT_VLAN0(2), value);
+
+	value = 0x10001;
+	priv->mii_write(AR8327_REG_PORT_VLAN0(3), value);
+
+	value = 0x10001;
+	priv->mii_write(AR8327_REG_PORT_VLAN0(4), value);
+
+	value = 0x20001;
+	priv->mii_write(AR8327_REG_PORT_VLAN0(5), value);
+
+	value = 0x10001;
+	priv->mii_write(AR8327_REG_PORT_VLAN0(6), value);
 
 	value = qca_ar8327_get_pad_cfg(plat_data->pad0_cfg);
 	priv->mii_write(AR8327_REG_PAD0_CTRL, value);

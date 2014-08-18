@@ -102,6 +102,7 @@
 #define   AR8327_PAD_MAC_PWR_RGMII1_1_8V		BIT(18)
 
 #define AR8327_REG_PORT_LOOKUP(_i) (0x660 + (_i) * 0xc)
+#define AR8327_REG_PORT_VLAN0(_i) (0x420 + (_i) * 0x8)
 
 #define AR8327_NUM_PHYS		5
 #define AR8327_PORT_CPU     0
