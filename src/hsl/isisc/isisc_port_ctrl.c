@@ -1329,6 +1329,46 @@ _isisc_port_link_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * st
 }
 
 static sw_error_t
+_isisc_ports_link_status_get(a_uint32_t dev_id, a_uint32_t * status)
+{
+    sw_error_t rv;
+    a_uint32_t port_id;
+    a_uint32_t phy_id;
+    hsl_dev_t *pdev = NULL;
+
+    HSL_DEV_ID_CHECK(dev_id);
+
+    pdev = hsl_dev_ptr_get(dev_id);
+    if (pdev == NULL)
+        return SW_NOT_INITIALIZED;
+
+    *status = 0x0;
+    for (port_id = 0; port_id < pdev->nr_ports; port_id++)
+    {
+        /* for those ports without PHY device supposed always link up */
+        if (A_FALSE == _isisc_port_phy_connected(dev_id, port_id))
+        {
+            *status |= (0x1 << port_id);
+        }
+        else
+        {
+            rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
+            SW_RTN_ON_ERROR(rv);
+
+            if (A_TRUE == f1_phy_get_link_status(dev_id, phy_id))
+            {
+                *status |= (0x1 << port_id);
+            }
+            else
+            {
+                *status &= ~(0x1 << port_id);
+            }
+        }
+    }
+    return SW_OK;
+}
+
+static sw_error_t
 _isisc_port_mac_loopback_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
     sw_error_t rv;
@@ -2067,6 +2107,23 @@ isisc_port_link_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * sta
 }
 
 /**
+ * @brief Get link status on all ports.
+ * @param[in] dev_id device id
+ * @param[out] status link status bitmap and bit 0 for port 0, bi 1 for port 1, ..., etc.
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+isisc_ports_link_status_get(a_uint32_t dev_id, a_uint32_t * status)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _isisc_ports_link_status_get(dev_id, status);
+    HSL_API_UNLOCK;
+    return rv;
+}
+
+/**
  * @brief Set mac loop back on a particular port.
  * @param[in] dev_id device id
  * @param[in] port_id port id
@@ -2149,6 +2206,7 @@ isisc_port_ctrl_init(a_uint32_t dev_id)
         p_api->port_link_forcemode_set = isisc_port_link_forcemode_set;
         p_api->port_link_forcemode_get = isisc_port_link_forcemode_get;
         p_api->port_link_status_get = isisc_port_link_status_get;
+        p_api->ports_link_status_get = isisc_ports_link_status_get;
         p_api->port_mac_loopback_set=isisc_port_mac_loopback_set;
         p_api->port_mac_loopback_get=isisc_port_mac_loopback_get;
     }

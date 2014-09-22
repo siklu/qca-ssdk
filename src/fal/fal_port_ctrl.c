@@ -642,6 +642,21 @@ _fal_port_link_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * stat
 }
 
 static sw_error_t
+_fal_ports_link_status_get(a_uint32_t dev_id, a_uint32_t * status)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->ports_link_status_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->ports_link_status_get(dev_id, status);
+    return rv;
+}
+
+static sw_error_t
 _fal_port_mac_loopback_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
     sw_error_t rv;
@@ -1391,6 +1406,22 @@ fal_port_link_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * statu
     return rv;
 }
 
+/**
+ * @brief Get link status on all ports.
+ * @param[in] dev_id device id
+ * @param[out] status link status bitmap and bit 0 for port 0, bit 1 for port 1, ...etc.
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_ports_link_status_get(a_uint32_t dev_id, a_uint32_t * status)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_ports_link_status_get(dev_id, status);
+    FAL_API_UNLOCK;
+    return rv;
+}
 
 
 /**

@@ -349,6 +349,9 @@ extern "C" {
     (*hsl_port_link_status_get)(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * status);
 
     typedef sw_error_t
+    (*hsl_ports_link_status_get)(a_uint32_t dev_id, a_uint32_t * status);
+
+    typedef sw_error_t
     (*hsl_port_mac_loopback_set)(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable);
 
     typedef sw_error_t
@@ -1694,6 +1697,7 @@ extern "C" {
         hsl_port_link_forcemode_set port_link_forcemode_set;
         hsl_port_link_forcemode_get port_link_forcemode_get;
         hsl_port_link_status_get port_link_status_get;
+        hsl_ports_link_status_get ports_link_status_get;
         hsl_port_mac_loopback_set port_mac_loopback_set;
         hsl_port_mac_loopback_get port_mac_loopback_get;
 
