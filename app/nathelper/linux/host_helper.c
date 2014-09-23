@@ -127,6 +127,99 @@ struct wan_next_hop
 static struct net_device *multi_route_indev = NULL;
 static struct wan_next_hop wan_nh_ent[MAX_HOST] = {{0}};
 
+#define NAT_BACKGROUND_TASK
+
+#ifdef NAT_BACKGROUND_TASK
+#define NAT_HELPER_MSG_MAX 512
+
+struct bg_ring_buf_cb {
+	unsigned int read_idx;
+	unsigned int write_idx;
+	unsigned int num;
+	unsigned int full_flag;
+	struct nat_helper_bg_msg *buf;
+};
+
+struct bg_task_cb {
+	/*struct semaphore bg_sem;  */   /*trigger thread work*/
+	spinlock_t bg_lock;           /*ring buf access protect*/
+	/*struct task_struct *bg_task;*/
+	struct workqueue_struct *nat_wq;
+	struct bg_ring_buf_cb ring;
+};
+
+enum{
+	NAT_HELPER_ARP_IN_MSG = 0,
+	NAT_HELPER_IPV6_MSG
+};
+
+struct arp_in_msg {
+	struct sk_buff *skb;
+	struct net_device *in;
+};
+
+struct ipv6_msg {
+	struct sk_buff *skb;
+	struct net_device *in;
+};
+
+
+struct nat_helper_bg_msg {
+	struct work_struct work;
+	uint32_t msg_type;
+	uint16_t sub_type;
+	uint16_t reservd;
+	union {
+		struct arp_in_msg arp_in;
+		struct ipv6_msg   ipv6;
+	};
+};
+
+
+struct bg_task_cb task_cb;
+
+int bg_ring_buf_write(struct nat_helper_bg_msg msg)
+{
+	struct bg_ring_buf_cb ring = task_cb.ring;
+	unsigned int idx = 0;
+
+	spin_lock_bh(&task_cb.bg_lock);
+	
+	if(ring.full_flag && (ring.read_idx == ring.write_idx)) {
+		HNAT_PRINTK("ring buf is full!\n");
+		spin_unlock_bh(&task_cb.bg_lock);
+		return -1;
+	}
+	msg.work = ring.buf[ring.write_idx].work;
+	ring.buf[ring.write_idx] = msg;
+	idx = ring.write_idx;
+
+	ring.write_idx = (ring.write_idx+1)%NAT_HELPER_MSG_MAX;
+	if(ring.read_idx == ring.write_idx)
+		ring.full_flag = 1;
+
+	spin_unlock_bh(&task_cb.bg_lock);
+	queue_work(task_cb.nat_wq, &ring.buf[idx].work);
+
+	return 0;
+}
+
+int bg_ring_buf_read(struct nat_helper_bg_msg *msg)
+{
+	struct bg_ring_buf_cb ring = task_cb.ring;
+
+	spin_lock_bh(&task_cb.bg_lock);
+	ring.read_idx = (ring.read_idx+1)%NAT_HELPER_MSG_MAX;
+	ring.full_flag = 0;
+	spin_unlock_bh(&task_cb.bg_lock);
+
+	return 0;
+}
+
+
+
+#endif
+
 static int wan_nh_get(u_int32_t host_ip)
 {
     int i;
@@ -1095,6 +1188,31 @@ arp_in(unsigned int hook,
        const struct net_device *out,
        int (*okfn) (struct sk_buff *))
 {
+	struct sk_buff *new_skb;
+	struct nat_helper_bg_msg msg;
+	/*unsigned long flags = 0;*/
+
+	new_skb = skb_clone(skb, GFP_ATOMIC);
+	memset(&msg, 0, sizeof(msg));
+	msg.msg_type = NAT_HELPER_ARP_IN_MSG;
+	msg.arp_in.skb = new_skb;
+	msg.arp_in.in = in;
+
+	/*send msg to background task*/
+	/*spin_lock_irqsave(&task_cb.bg_lock, flags);*/
+	bg_ring_buf_write(msg);
+	/*spin_unlock_irqrestore(&task_cb.bg_lock, flags);*/
+	/*up(&task_cb.bg_sem);*/
+	
+	return NF_ACCEPT;
+	
+}
+
+
+#ifdef NAT_BACKGROUND_TASK
+static unsigned int
+arp_in_bg_handle(struct nat_helper_bg_msg *msg)
+{
     struct arphdr *arp = NULL;
     uint8_t *sip, *dip, *smac, *dmac;
     uint8_t dev_is_lan = 0;
@@ -1104,13 +1222,16 @@ arp_in(unsigned int hook,
     a_bool_t prvbasemode = 1;
 #endif
     a_int32_t arp_entry_id = -1;
+	struct net_device *in = msg->arp_in.in;
+	struct sk_buff *skb = msg->arp_in.skb;
+
 
     /* check for PPPoE redial here, to reduce overheads */
     isis_pppoe_check_for_redial();
 
     /* do not write out host table if HNAT is disabled */
     if (!nf_athrs17_hnat)
-        return NF_ACCEPT;
+        return 0;
 
     setup_all_interface_entry();
 
@@ -1125,18 +1246,18 @@ arp_in(unsigned int hook,
     else
     {
         HNAT_PRINTK("Not Support device: %s\n",  (char *)in->name);
-        return NF_ACCEPT;
+        return 0;
     }
 
     if(!arp_is_reply(skb))
     {
-        return NF_ACCEPT;
+        return 0;
     }
 #ifdef AP136_QCA_HEADER_EN
     if(arp_if_info_get((void *)(skb->head), &sport, &vid) != 0)
     {
         printk("Cannot get header info!!\n");
-        return NF_ACCEPT;
+        return 0;
     }
 #else
     if(dev_is_lan) {
@@ -1175,7 +1296,7 @@ arp_in(unsigned int hook,
     if(arp_entry_id < 0)
     {
         printk("ARP entry error!!\n");
-        return NF_ACCEPT;
+        return 0;
     }
 
     if (0 == dev_is_lan)
@@ -1218,7 +1339,7 @@ arp_in(unsigned int hook,
                 if ((lanip[2] & 0xf0) == (wanip[2] & 0xf0))
                 {
                     if (get_aclrulemask()& (1 << S17_ACL_LIST_IPCONF))
-                        return NF_ACCEPT;
+                        return 0;
 
                     aos_printk("LAN IP and WAN IP conflict... \n");
                     /* set h/w acl to filter out this case */
@@ -1227,7 +1348,7 @@ arp_in(unsigned int hook,
                     if ( (wan_nh_ent[0].host_ip != 0))
                         ip_conflict_add_acl_rules(*(uint32_t *)&wanip, *(uint32_t *)&lanip, wan_nh_ent[0].entry_id);
 #endif
-                    return NF_ACCEPT;
+                    return 0;
                 }
             }
         }
@@ -1238,8 +1359,10 @@ arp_in(unsigned int hook,
     }
 #endif /* ifdef ISIS */
 
-    return NF_ACCEPT;
+    return 1;
 }
+#endif
+
 
 static struct
         nf_hook_ops arpinhook =
@@ -1491,6 +1614,36 @@ static unsigned int ipv6_handle(unsigned   int   hooknum,
                                 const   struct   net_device   *out,
                                 int   (*okfn)(struct   sk_buff   *))
 {
+	struct sk_buff *new_skb;
+	struct nat_helper_bg_msg msg;
+	/*unsigned long flags = 0;*/
+
+	if (!nf_athrs17_hnat)
+        return NF_ACCEPT;
+
+	new_skb = skb_clone(skb, GFP_ATOMIC);
+	memset(&msg, 0, sizeof(msg));
+	msg.msg_type = NAT_HELPER_IPV6_MSG;
+	msg.ipv6.skb = new_skb;
+	msg.ipv6.in = in;
+
+	/*send msgto background task*/
+	/*spin_lock_irqsave(&task_cb.bg_lock, flags);*/
+	bg_ring_buf_write(msg);
+	/*spin_unlock_irqrestore(&task_cb.bg_lock, flags);*/
+	
+	return NF_ACCEPT;
+	
+}
+
+
+#ifdef NAT_BACKGROUND_TASK
+
+static unsigned int ipv6_bg_handle(struct nat_helper_bg_msg *msg)
+{
+	struct net_device *in = msg->arp_in.in;
+	struct sk_buff *skb = msg->arp_in.skb;
+	
     struct ipv6hdr *iph6 = ipv6_hdr(skb);
     struct icmp6hdr *icmp6 = icmp6_hdr(skb);
     __u8 *sip = ((__u8 *)icmp6)+sizeof(struct icmp6hdr);
@@ -1501,10 +1654,11 @@ static unsigned int ipv6_handle(unsigned   int   hooknum,
     struct inet6_ifaddr *in_device_addr = NULL;
     uint8_t dev_is_lan = 0;
     uint8_t *smac;
+	
 
     /* do not write out host table if HNAT is disabled */
     if (!nf_athrs17_hnat)
-        return NF_ACCEPT;
+        return 0;
 
     setup_all_interface_entry();
 
@@ -1519,7 +1673,7 @@ static unsigned int ipv6_handle(unsigned   int   hooknum,
     else
     {
         HNAT_PRINTK("Not Support device: %s\n",  (char *)in->name);
-        return NF_ACCEPT;
+        return 0;
     }
 
     if(PROTO_ICMPV6 == iph6->nexthdr)
@@ -1527,18 +1681,18 @@ static unsigned int ipv6_handle(unsigned   int   hooknum,
         if(NEIGHBOUR_AD == icmp6->icmp6_type)
         {
             if (__ipv6_addr_type((struct in6_addr*)sip) & IPV6_ADDR_LINKLOCAL)
-                return NF_ACCEPT;
+                return 0;
 
 #ifdef AP136_QCA_HEADER_EN
             if(arp_if_info_get((void *)(skb->head), &sport, &vid) != 0)
             {
-                return NF_ACCEPT;
+                return 0;
             }
 
             if ((0 == vid)||(0 == sport))
             {
                 printk("Error: Null sport or vid!!\n");
-                return NF_ACCEPT;
+                return 0;
             }
 #else
             if(dev_is_lan) {
@@ -1569,7 +1723,7 @@ static unsigned int ipv6_handle(unsigned   int   hooknum,
             if ((0 == dev_is_lan) && (S17_WAN_PORT != sport))
             {
                 printk("Error: WAN port %d\n", sport);
-                return NF_ACCEPT;
+                return 0;
             }
 
             HNAT_PRINTK("ND Reply %x %x\n",icmpv6_opt->type,icmpv6_opt->len);
@@ -1623,8 +1777,9 @@ static unsigned int ipv6_handle(unsigned   int   hooknum,
         }
     }
 
-    return NF_ACCEPT;
+    return 1;
 }
+#endif
 
 static struct nf_hook_ops ipv6_inhook =
 {
@@ -1635,6 +1790,83 @@ static struct nf_hook_ops ipv6_inhook =
     .priority = NF_IP6_PRI_CONNTRACK,
 };
 #endif /* CONFIG_IPV6_HWACCEL */
+
+#ifdef NAT_BACKGROUND_TASK
+
+static void nat_task_entry(struct work_struct *wq)
+{
+	struct nat_helper_bg_msg msg;
+	/*unsigned long flags = 0;*/
+	unsigned int result = 0;
+
+	msg = *(struct nat_helper_bg_msg *)wq;
+
+	/*spin_lock_irqsave(&task_cb.bg_lock, flags);*/
+	bg_ring_buf_read(NULL);
+	/*spin_unlock_irqrestore(&task_cb.bg_lock, flags);*/
+
+	HNAT_PRINTK("handle msg: %d\n", msg.msg_type);
+	
+	if(msg.msg_type == NAT_HELPER_ARP_IN_MSG) {
+		result =  arp_in_bg_handle(&msg);
+		kfree_skb(msg.arp_in.skb);
+	} 
+	#ifdef CONFIG_IPV6_HWACCEL
+	else if(msg.msg_type == NAT_HELPER_IPV6_MSG) {
+		result = ipv6_bg_handle(&msg);
+		kfree_skb(msg.ipv6.skb);
+	}
+	#endif
+	
+}
+
+void nat_helper_bg_task_init()
+{
+	unsigned int i = 0;
+	struct nat_helper_bg_msg *msg;
+	/*create the thread and alloc ring buffer*/
+
+	memset(&task_cb, 0, sizeof(task_cb));
+
+	task_cb.nat_wq = create_singlethread_workqueue("nat_wq");
+
+    if(!task_cb.nat_wq)
+    {
+        aos_printk("create nat workqueuefail\n");
+        return;
+    }
+
+	/*init lock and alloc the ring buffer*/
+	
+	/*sema_init(&task_cb.bg_sem, 0);*/
+	spin_lock_init(&task_cb.bg_lock);
+	
+	task_cb.ring.num = NAT_HELPER_MSG_MAX;
+	task_cb.ring.buf = kzalloc(NAT_HELPER_MSG_MAX * sizeof(struct nat_helper_bg_msg), GFP_ATOMIC);
+	if(!task_cb.ring.buf) {
+		aos_printk("ring buf alloc fail!\n");
+		return;
+	}
+	msg = (struct nat_helper_bg_msg*)task_cb.ring.buf;
+	for(i = 0; i < task_cb.ring.num; i++) 
+	{
+		INIT_WORK(&msg[i].work, nat_task_entry);
+	}
+
+	aos_printk("bg task init successfull!\n");
+	
+}
+
+void nat_helper_bg_task_exit()
+{
+	/*stop the workqueue and release the ring buffer*/
+	if(task_cb.nat_wq)
+		destroy_workqueue(task_cb.nat_wq);
+	if(task_cb.ring.buf)
+		kfree(task_cb.ring.buf);
+}
+#endif
+
 
 extern int napt_procfs_init(void);
 extern void napt_procfs_exit(void);

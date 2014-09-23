@@ -27,6 +27,10 @@ void napt_helper_exit(void);
 void nat_ipt_helper_init(void);
 void nat_ipt_helper_exit(void);
 
+void nat_helper_bg_task_init();
+void nat_helper_bg_task_exit();
+
+
 //#define HNAT_DEBUG 1
 
 #ifdef HNAT_DEBUG

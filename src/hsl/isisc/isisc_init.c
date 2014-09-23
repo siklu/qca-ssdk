@@ -213,8 +213,10 @@ isisc_cleanup(a_uint32_t dev_id)
     {
 #if defined(IN_NAT_HELPER)
         sw_error_t rv;
-        if(isisc_nat_global_status)
+        if(isisc_nat_global_status) {
             ISISC_NAT_HELPER_CLEANUP(rv, dev_id);
+			isisc_nat_global_status = 0;
+        }
 #endif
 
         aos_mem_free(isisc_cfg[dev_id]);
@@ -310,9 +312,11 @@ isisc_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 
         SW_RTN_ON_ERROR(isisc_hw_init(dev_id, cfg));
 #if defined(IN_NAT_HELPER)
-#if TODO
-        ISISC_NAT_HELPER_INIT(rv, dev_id);
-#endif
+		if(!isisc_nat_global_status) {
+        	ISISC_NAT_HELPER_INIT(rv, dev_id);
+			isisc_nat_global_status = 1;
+		}
+
 #endif
     }
 #endif
