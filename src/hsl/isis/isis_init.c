@@ -50,6 +50,7 @@
 #include "f1_phy.h"
 
 static ssdk_init_cfg * isis_cfg[SW_MAX_NR_DEV] = { 0 };
+a_uint32_t isis_nat_global_status = 0;
 
 #if !(defined(KERNEL_MODULE) && defined(USER_MODE))
 /* For isis there are five internal PHY devices and seven MAC devices.
@@ -212,7 +213,10 @@ isis_cleanup(a_uint32_t dev_id)
     {
 #if defined(IN_NAT_HELPER)
         sw_error_t rv;
-        ISIS_NAT_HELPER_CLEANUP(rv, dev_id);
+		if(isis_nat_global_status) {
+        	ISIS_NAT_HELPER_CLEANUP(rv, dev_id);
+			isis_nat_global_status = 0;
+		}
 #endif
 
         aos_mem_free(isis_cfg[dev_id]);
@@ -308,7 +312,10 @@ isis_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 
         SW_RTN_ON_ERROR(isis_hw_init(dev_id, cfg));
 #if defined(IN_NAT_HELPER)
-        ISIS_NAT_HELPER_INIT(rv, dev_id);
+		if(!isis_nat_global_status) {
+        	ISIS_NAT_HELPER_INIT(rv, dev_id);
+			isis_nat_global_status = 1;
+		}
 #endif
 
 #if defined(IN_MACBLOCK)
