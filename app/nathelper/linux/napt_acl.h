@@ -61,8 +61,8 @@
 #define S17_LAN_PORT2   3
 #define S17_LAN_PORT3   4
 
-extern void athrs17_reg_write(unsigned int reg_addr, unsigned int reg_val);
-extern unsigned int athrs17_reg_read(unsigned int reg_addr);
+
+
 
 uint32_t get_aclrulemask(void);
 void set_aclrulemask(uint32_t acl_list);

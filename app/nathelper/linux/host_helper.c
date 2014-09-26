@@ -939,6 +939,8 @@ static void pppoev6_mac6_loop_dev(void)
 {
 #define PPPOEV6_SESSION_ID  0xfffe
     fal_pppoe_session_t ptbl;
+	sw_error_t rv;
+	a_uint32_t entry;
 
     memset(&ptbl, 0, sizeof(fal_pppoe_session_t));
 
@@ -961,16 +963,22 @@ static void pppoev6_mac6_loop_dev(void)
     }
 
     /* PPPoE entry 0 */
-    athrs17_reg_write(0x2200, PPPOEV6_SESSION_ID);
+	entry = PPPOEV6_SESSION_ID;
+	HSL_REG_ENTRY_SET(rv, 0, PPPOE_EDIT, 0, (a_uint8_t *) (&entry), sizeof (a_uint32_t));
 
     aos_printk("%s: end of function... \n", __func__);
 }
 
 static void pppoev6_remove_parser(uint32_t entry_id)
 {
+	sw_error_t rv;
+	a_uint32_t entry;
+	
     aos_printk("%s: clear entry id: %d\n", __func__, entry_id);
     /* clear the session id in the PPPoE parser engine */
-    athrs17_reg_write(PPPOE_SESSION_OFFSET + PPPOE_SESSION_E_OFFSET * entry_id, 0);
+	entry = 0;
+	HSL_REG_ENTRY_SET(rv, 0, PPPOE_SESSION,
+					entry_id, (a_uint8_t *) (&entry), sizeof (a_uint32_t));
 }
 
 static void pppoev6_mac6_stop_learning(void)
@@ -978,6 +986,8 @@ static void pppoev6_mac6_stop_learning(void)
     /* do not disable this port if some other registers are already filled in
        to prevent setting conflict */
     int val = S17_P6PAD_MODE_REG_VALUE;
+	sw_error_t rv;
+	a_uint32_t entry;
 
     if ( val != (1<<24))
     {
@@ -987,11 +997,15 @@ static void pppoev6_mac6_stop_learning(void)
 
 
     /* clear the MAC6 learning bit */
-    athrs17_reg_write(0x6a8, athrs17_reg_read(0x6a8) & ~(1<<20));
+	HSL_REG_ENTRY_GET(rv, 0, PORT_LOOKUP_CTL, 6, (a_uint8_t *) (&entry), sizeof (a_uint32_t));
+	entry = entry & ~(1<<20);
+	HSL_REG_ENTRY_SET(rv, 0, PORT_LOOKUP_CTL, 6, (a_uint8_t *) (&entry), sizeof (a_uint32_t));
 
     /* force loopback mode */
-    athrs17_reg_write(0x94, 0x7e);
-    athrs17_reg_write(0xb4, 0x10);
+	entry = 0x7e;
+	HSL_REG_ENTRY_SET(rv, 0, PORT_STATUS, 6, (a_uint8_t *) (&entry), sizeof (a_uint32_t));
+	entry = 0x10;
+	HSL_REG_ENTRY_SET(rv, 0, PORT_HDR_CTL, 6, (a_uint8_t *) (&entry), sizeof (a_uint32_t));
 }
 #endif // ifdef ISIS
 
