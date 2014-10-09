@@ -139,7 +139,7 @@ shiva_vlan_commit(a_uint32_t dev_id, a_uint32_t op)
         SW_RTN_ON_ERROR(rv);
         if (VLAN_LOAD_ENTRY == op)
         {
-            return SW_FULL;
+            return SW_OK;
         }
         else if (VLAN_PURGE_ENTRY == op)
         {

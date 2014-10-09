@@ -776,6 +776,11 @@ _shiva_qos_port_sch_mode_get(a_uint32_t dev_id, a_uint32_t port_id,
         *mode = FAL_SCH_WRR_MODE;
     }
 
+    for (i = 0; i < 6; i++)
+    {
+        weight[i] = 0;
+    }
+
     for (i = 0; i < 4; i++)
     {
         weight[i] = w[i];
