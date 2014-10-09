@@ -440,6 +440,11 @@ _shiva_storm_ctrl_frame_set(a_uint32_t dev_id, fal_port_t port_id,
         return SW_BAD_PARAM;
     }
 
+    data = 2;
+    HSL_REG_FIELD_SET(rv, dev_id, STORM_CTL, port_id, UNIT,
+                      (a_uint8_t *) (&data), sizeof (a_uint32_t));
+    SW_RTN_ON_ERROR(rv);
+
     if (A_TRUE == enable)
     {
         data = 1;
@@ -817,6 +822,8 @@ shiva_storm_ctrl_rate_get(a_uint32_t dev_id, fal_port_t port_id,
 sw_error_t
 shiva_rate_init(a_uint32_t dev_id)
 {
+    sw_error_t rv;
+
     HSL_DEV_ID_CHECK(dev_id);
 
 #ifndef HSL_STANDALONG

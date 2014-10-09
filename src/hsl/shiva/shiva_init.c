@@ -380,7 +380,7 @@ shiva_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
     {
         a_uint32_t i, entry;
         sw_error_t rv;
-
+/*
         if(HSL_MDIO == cfg->reg_mode)
         {
             SW_RTN_ON_ERROR(shiva_bist_test(dev_id));
@@ -406,6 +406,7 @@ shiva_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
                 return SW_INIT_ERROR;
             }
         }
+*/
         SW_RTN_ON_ERROR(hsl_port_prop_init());
         SW_RTN_ON_ERROR(hsl_port_prop_init_by_dev(dev_id));
         SW_RTN_ON_ERROR(shiva_portproperty_init(dev_id, cfg->cpu_mode));
@@ -433,7 +434,7 @@ shiva_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
             p_api->dev_clean   = shiva_cleanup;
         }
 
-        SW_RTN_ON_ERROR(shiva_hw_init(dev_id, cfg));
+        /*SW_RTN_ON_ERROR(shiva_hw_init(dev_id, cfg));*/
     }
 #endif
 
