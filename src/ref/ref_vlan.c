@@ -48,6 +48,17 @@
 #include "ssdk_plat.h"
 #include "ref_vlan.h"
 
+extern ssdk_chip_type SSDK_CURRENT_CHIP_TYPE;
+
+#define UCI_TAKEOVER
+#ifdef UCI_TAKEOVER
+#ifdef BOARD_AR71XX
+extern void ssdk_uci_vlan_enable_set(char enable);
+extern void ssdk_uci_vlan_ports_set(a_uint16_t *vlan_id, a_uint8_t tag,
+			a_uint16_t *pvid, a_uint8_t *vlan_table);
+extern void ssdk_uci_vlan_table_set(a_uint8_t vlan, a_uint16_t index);
+#endif
+#endif
 
 int
 qca_ar8327_sw_enable_vlan0(a_bool_t enable, a_uint8_t portmap)
@@ -115,6 +126,14 @@ qca_ar8327_sw_set_vlan(struct switch_dev *dev,
     struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 
     priv->vlan = !!val->value.i;
+
+    #ifdef UCI_TAKEOVER
+    #ifdef BOARD_AR71XX
+    if(SSDK_CURRENT_CHIP_TYPE == CHIP_SHIVA) {
+		ssdk_uci_vlan_enable_set(priv->vlan);
+    }
+    #endif
+    #endif
 
     return 0;
 }
@@ -222,6 +241,13 @@ qca_ar8327_sw_set_ports(struct switch_dev *dev, struct switch_val *val)
             struct switch_port *p = &val->value.ports[i];
             priv->vlan_table[0] |= (1 << p->id);
         }
+		#ifdef UCI_TAKEOVER
+		#ifdef BOARD_AR71XX
+		if(SSDK_CURRENT_CHIP_TYPE == CHIP_SHIVA) {
+			ssdk_uci_vlan_table_set(priv->vlan_table[0],0);
+		}
+		#endif
+		#endif
         return 0;
     }
 	if (priv->vlan_id[val->port_vlan] == 0)
@@ -239,6 +265,16 @@ qca_ar8327_sw_set_ports(struct switch_dev *dev, struct switch_val *val)
 
         *vt |= 1 << p->id;
     }
+
+    #ifdef UCI_TAKEOVER
+    #ifdef BOARD_AR71XX
+    if(SSDK_CURRENT_CHIP_TYPE == CHIP_SHIVA) {
+		a_uint8_t tag = priv->vlan_tagged[1] | priv->vlan_tagged[2];
+        ssdk_uci_vlan_ports_set(priv->vlan_id, tag,
+                 priv->pvid, priv->vlan_table);
+    }
+    #endif
+    #endif
 
     return 0;
 }
@@ -279,7 +315,8 @@ qca_ar8327_sw_hw_apply(struct switch_dev *dev)
                     portmask[i] |= vp & ~mask;
                 }
             }
-
+	    	if (SSDK_CURRENT_CHIP_TYPE == CHIP_SHIVA)
+				fal_vlan_member_update(0,priv->vlan_id[j],vp,0);
         }
 
         /*Hanlde VLAN 0 entry*/
