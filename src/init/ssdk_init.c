@@ -56,6 +56,19 @@
 #include "ref_uci.h"
 #include "shell.h"
 
+
+
+#define ISIS_CHIP_ID 0x18
+#define ISIS_CHIP_REG 0
+#define SHIVA_CHIP_ID 0x1f
+#define SHIVA_CHIP_REG 0x10
+
+/*
+ * Using ISIS's address as default
+  */
+static int switch_chip_id = ISIS_CHIP_ID;
+static int switch_chip_reg = ISIS_CHIP_REG;
+
 static void
 qca_phy_read_port_link(struct qca_phy_priv *priv, int port,
 		      struct switch_port_link *port_link)
@@ -728,7 +741,8 @@ qca_phy_id_chip(struct qca_phy_priv *priv)
 	priv->revision = (version & AR8327_CTRL_REVISION);
 
     if((priv->version == QCA_VER_AR8327) ||
-       (priv->version == QCA_VER_AR8337)) {
+       (priv->version == QCA_VER_AR8337) ||
+       (priv->version == QCA_VER_AR8227)) {
 		return 0;
 
     } else {
@@ -923,8 +937,10 @@ ssdk_plat_exit(void)
 #ifdef BOARD_AR71XX
 #define IPQ806X_MDIO_BUS_NAME			"ag71xx-mdio"
 #endif
-#define IPQ806X_MDIO_BUS_NUM			0
-#define IPQ806X_MDIO_BUS_MAX			1
+#define MDIO_BUS_0						0
+#define MDIO_BUS_1						1
+#define IPQ806X_MDIO_BUS_NUM			MDIO_BUS_0
+
 
 struct ag71xx_mdio {
 	struct mii_bus		*mii_bus;
@@ -1001,7 +1017,7 @@ ssdk_switch_init(a_uint32_t dev_id)
         fal_port_unk_uc_filter_set(dev_id, i, A_FALSE);
         fal_port_unk_mc_filter_set(dev_id, i, A_FALSE);
         fal_port_bc_filter_set(dev_id, i, A_FALSE);
-
+        if ((SSDK_CURRENT_CHIP_TYPE == CHIP_SHIVA))  continue;
         /* Updating HOL registers and RGMII delay settings
 	    with the values suggested by QCA switch team */
         if (i == 0 || i == 5 || i == 6)
@@ -1148,7 +1164,7 @@ retry:
         }
     }
 
-	bus->write(bus, 0x18, 0, page);
+	bus->write(bus, switch_chip_id, switch_chip_reg, page);
 	lo = bus->read(bus, 0x10 | r2, r1);
 	hi = bus->read(bus, 0x10 | r2, r1 + 1);
 
@@ -1184,16 +1200,35 @@ retry:
         }
     }
 
-	bus->write(bus, 0x18, 0, r3);
-	bus->write(bus, 0x10 | r2, r1, lo);
-	bus->write(bus, 0x10 | r2, r1 + 1, hi);
-
+	bus->write(bus, switch_chip_id, switch_chip_reg, r3);
+	if(SSDK_CURRENT_CHIP_TYPE != CHIP_SHIVA) {
+	    bus->write(bus, 0x10 | r2, r1, lo);
+	    bus->write(bus, 0x10 | r2, r1 + 1, hi);
+	} else {
+	    bus->write(bus, 0x10 | r2, r1 + 1, hi);
+	    bus->write(bus, 0x10 | r2, r1, lo);
+	}
 	mutex_unlock(&bus->mdio_lock);
     if(!in_interrupt()) {
         if(irq_preepmt) {
             goto retry;
         }
     }
+}
+
+static uint32_t switch_chip_id_adjuest()
+{
+	uint32_t chip_version = 0;
+	chip_version = (qca_ar8216_mii_read(0)&0xff00)>>8;
+	if((chip_version !=0) && (chip_version !=0xff))
+		return 0;
+
+	switch_chip_id = SHIVA_CHIP_ID;
+	switch_chip_reg = SHIVA_CHIP_REG;
+
+	chip_version = (qca_ar8216_mii_read(0)&0xff00)>>8;
+	printk("chip_version:0x%x\n", chip_version);
+	return 1;
 }
 
 static sw_error_t
@@ -1359,6 +1394,24 @@ static int miibus_get()
 	miibus = dev_get_drvdata(miidev);
 #endif
 
+#ifdef BOARD_AR71XX
+	if(switch_chip_id_adjuest()) {
+
+		snprintf(busid, MII_BUS_ID_SIZE, "%s.%d",
+		IPQ806X_MDIO_BUS_NAME, MDIO_BUS_1);
+
+		miidev = bus_find_device_by_name(&platform_bus_type, NULL, busid);
+		if (!miidev) {
+			printk("cannot get mii bus\n");
+			return 1;
+		}
+
+		am = dev_get_drvdata(miidev);
+		miibus = am->mii_bus;
+		printk("chip_version:0x%x\n", (qca_ar8216_mii_read(0)&0xff00)>>8);
+	}
+#endif
+
 	if(!miidev){
 		printk("mdio bus '%s' get FAIL\n", busid);
 		return 1;
@@ -1390,10 +1443,17 @@ regi_init(void)
 	cfg.reg_func.mdio_set = qca_ar8327_phy_write;
 	cfg.reg_func.mdio_get = qca_ar8327_phy_read;
 
-	if((qca_ar8216_mii_read(0)&0xff00)>>8 == 0x13)
-		cfg.chip_type = CHIP_ISISC;
-	else
-		cfg.chip_type = CHIP_ISIS;
+    if((qca_ar8216_mii_read(0)&0xff00)>>8 == 0x02)
+        cfg.chip_type = CHIP_SHIVA;
+    else if((qca_ar8216_mii_read(0)&0xff00)>>8 == 0x13)
+        cfg.chip_type = CHIP_ISISC;
+    else if((qca_ar8216_mii_read(0)&0xff00)>>8 == 0x12)
+        cfg.chip_type = CHIP_ISIS;
+    else
+	rv = 100;
+
+    if(rv)
+		goto out;
 
 	rv = ssdk_init(0, &cfg);
 

@@ -1023,6 +1023,7 @@ _shiva_port_vlan_trans_iterate(a_uint32_t dev_id, fal_port_t port_id,
         return SW_BAD_PARAM;
     }
 
+    aos_mem_set(&entry_t, 0, sizeof(fal_vlan_trans_entry_t));
     for (index = *iterator; index < SHIVA_MAX_VLAN_TRANS; index++)
     {
         rv = _shiva_vlan_trans_read(dev_id, index, &pbmp_t, &entry_t);
