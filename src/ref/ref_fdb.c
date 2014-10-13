@@ -66,7 +66,7 @@ qca_ar8327_sw_atu_dump(struct switch_dev *dev,
 	a_uint32_t rv;
 	char *buf;
 	a_uint32_t len = 0;
-	int i;
+	a_uint32_t i = 0;
 	fal_fdb_op_t option;
 	fal_fdb_entry_t entry;
 
@@ -75,7 +75,10 @@ qca_ar8327_sw_atu_dump(struct switch_dev *dev,
 	memset(&option, 0, sizeof(fal_fdb_op_t));
 	memset(&entry, 0, sizeof(fal_fdb_entry_t));
 
-	rv = fal_fdb_extend_first(0, &option, &entry);
+	if (priv->version == QCA_VER_AR8227)
+		rv = fal_fdb_first(0, &entry);
+	else
+		rv = fal_fdb_extend_first(0, &option, &entry);
 	while (!rv)
     {
 		len += snprintf(buf+len, 2048-len, "MAC: %02x:%02x:%02x:%02x:%02x:%02x PORTMAP: 0x%02x VID: 0x%x STATUS: 0x%x\n",
@@ -88,8 +91,10 @@ qca_ar8327_sw_atu_dump(struct switch_dev *dev,
 //			snprintf(buf+len, 2048-len, "Buffer not enough!\n");
 			break;
 		}
-
-		rv = fal_fdb_extend_next(0, &option, &entry);
+		if (priv->version == QCA_VER_AR8227)
+			rv = fal_fdb_iterate(0, &i, &entry);
+		else
+			rv = fal_fdb_extend_next(0, &option, &entry);
     }
 
 	val->value.s = priv->buf;

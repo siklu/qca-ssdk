@@ -189,6 +189,7 @@ qca_ar8327_sw_set_reset_mibs(struct switch_dev *dev,
     int i = 0;
     int len = 0;
     struct qca_phy_priv *priv = qca_phy_priv_get(dev);
+    fal_mib_info_t mib_Info;
     len = dev->ports * QCA_MIB_ITEM_NUMBER *
              sizeof(*priv->mib_counters);
 
@@ -196,6 +197,7 @@ qca_ar8327_sw_set_reset_mibs(struct switch_dev *dev,
     memset(priv->mib_counters, '\0', len);
     for (i = 0; i < dev->ports; i++)
     {
+        fal_get_mib_info(0, i, &mib_Info);
         fal_mib_port_flush_counters(0, i);
     }
     mutex_unlock(&priv->mib_lock);
@@ -210,12 +212,14 @@ qca_ar8327_sw_set_port_reset_mib(struct switch_dev *dev,
 {
     int len = 0;
     struct qca_phy_priv *priv = qca_phy_priv_get(dev);
+    fal_mib_info_t mib_Info;
     len = QCA_MIB_ITEM_NUMBER * sizeof(*priv->mib_counters);
 
     mutex_lock(&priv->mib_lock);
 
     memset(priv->mib_counters + (val->port_vlan * QCA_MIB_ITEM_NUMBER), '\0', len);
 
+    fal_get_mib_info(0, val->port_vlan, &mib_Info);
     fal_mib_port_flush_counters(0, val->port_vlan);
     mutex_unlock(&priv->mib_lock);
 
