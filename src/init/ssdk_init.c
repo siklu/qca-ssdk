@@ -904,9 +904,172 @@ static struct phy_driver qca_phy_driver = {
 	.driver		= { .owner = THIS_MODULE },
 };
 
+static struct mii_bus *miibus = NULL;
+extern ssdk_chip_type SSDK_CURRENT_CHIP_TYPE;
+
+#define UCI_TAKEOVER
+#ifdef UCI_TAKEOVER
+#ifdef BOARD_AR71XX
+#define SSDK_MAX_PHY  5
+struct ssdk_phy_8216prv {
+	struct switch_dev dev;
+	struct phy_device *phy;
+};
+
+struct ssdk_phy_7240prv {
+	struct mii_bus	*mii_bus;
+	char *swdata;
+	struct switch_dev swdev;
+	int member1_1;
+	int member1_2;
+	char member2;
+	bool vlan;
+	a_uint16_t vlan_id[16];
+	a_uint8_t  vlan_table[16];
+	a_uint8_t vlan_tagged;
+	a_uint16_t pvid[6];
+};
+
+struct ssdk_ag_member1 {
+	char *member1[2];
+	int member2;
+	char *member3;
+	int member4;
+	char *member5;
+	dma_addr_t member6;
+	char *member7;
+};
+
+struct ssdk_ag {
+	struct ssdk_ag_member1 member1_1 ____cacheline_aligned;
+	struct ssdk_ag_member1 member1_2 ____cacheline_aligned;
+	void *member2[5];
+	int member3[2];
+	struct net_device	*dev;
+	char *member4;
+	struct napi_struct	ssdk_napi;
+	spinlock_t		ssdk_lock;
+	int member5;
+	char *member6[2];
+	int member7;
+	char *member8;
+	dma_addr_t member9;
+	bool member10;
+	char *member11[2];
+	void  *phy_priv;
+};
+
+struct switch_dev *old_sw_dev = NULL;
+struct net_device    *sw_attach_dev = NULL;
+struct qca_phy_priv qca_priv;
+struct ssdk_phy_7240prv *ssdk_7240_prv = NULL;
+
+void ssdk_uci_vlan_enable_set(char enable)
+{
+	ssdk_7240_prv->vlan = enable;
+}
+
+void ssdk_uci_vlan_ports_set(a_uint16_t *vlan_id, a_uint8_t tag,
+			a_uint16_t *pvid, a_uint8_t *vlan_table)
+{
+	memcpy(ssdk_7240_prv->vlan_id, vlan_id, sizeof(ssdk_7240_prv->vlan_id));
+	memcpy(ssdk_7240_prv->pvid, pvid, sizeof(ssdk_7240_prv->pvid));
+	memcpy(ssdk_7240_prv->vlan_table, vlan_table, sizeof(ssdk_7240_prv->vlan_table));
+	ssdk_7240_prv->vlan_tagged = tag;
+}
+
+void ssdk_uci_vlan_table_set(a_uint8_t vlan, a_uint16_t index)
+{
+	if(index < 16)
+		ssdk_7240_prv->vlan_table[index] = vlan;
+}
+
+int ssdk_uci_takeover()
+{
+	int phy_addr = 0;
+	struct ssdk_phy_8216prv *phy_8216prv = NULL;
+	struct phy_device *phydev = NULL;
+	struct qca_phy_priv *priv = &qca_priv;
+
+	if((qca_ar8216_mii_read(0)&0xff00)>>8 != 0x02)
+		return 0;
+
+	memset(&qca_priv, 0, sizeof(qca_priv));
+	mutex_init(&priv->reg_mutex);
+	qca_phy_id_chip(priv);
+	priv->mii_read = qca_ar8216_mii_read;
+	priv->mii_write = qca_ar8216_mii_write;
+	priv->phy_write = qca_ar8327_phy_write;
+	priv->phy_dbg_write = qca_ar8327_phy_dbg_write;
+	priv->phy_mmd_write = qca_ar8327_mmd_write;
+
+	priv->sw_dev.ops = &qca_ar8327_sw_ops;
+	priv->sw_dev.name = "QCA AR8327 AR8337";
+	priv->sw_dev.vlans = AR8327_MAX_VLANS;
+	priv->sw_dev.ports = AR8327_NUM_PORTS;
+
+	/*try to get mii_bus phy_map*/
+	for (phy_addr = 0; phy_addr < SSDK_MAX_PHY; phy_addr++) {
+		if(miibus->phy_map[phy_addr]) {
+			phydev = miibus->phy_map[phy_addr];
+			phy_8216prv  = phydev->priv;
+			if(!phy_8216prv)
+				continue;
+			if(phy_8216prv->dev.ports > 0) {
+				/*got it*/
+
+				old_sw_dev = &phy_8216prv->dev;
+				sw_attach_dev = phydev->attached_dev;
+
+				unregister_switch(old_sw_dev);
+				printk("register switch!\n");
+				if(register_switch(&priv->sw_dev, sw_attach_dev) < 0)
+					printk("ssdk register switch fail!\n");
+
+				break;
+			}
+		}
+	}
+
+	if(phy_addr >= SSDK_MAX_PHY) {
+		/*not found it, try to get from ag71xx from eth1*/
+		struct net_device *ag_dev = NULL;
+		ag_dev = dev_get_by_name(&init_net, "eth1");
+		if(ag_dev) {
+			struct ssdk_ag *ag = NULL;
+
+			ag = netdev_priv(ag_dev);
+			if(ag) {
+				//struct ssdk_phy_7240prv *prv = NULL;
+				sw_attach_dev = ag->dev;
+				ssdk_7240_prv = ag->phy_priv;
+				if(ssdk_7240_prv) {
+					old_sw_dev = &ssdk_7240_prv->swdev;
+					unregister_switch(old_sw_dev);
+					printk("register switch!!\n");
+					if(register_switch(&priv->sw_dev, sw_attach_dev) < 0)
+						printk("ssdk register switch fail!!\n");
+					}
+			}
+		}
+	}
+
+	if(sw_attach_dev) {
+		qca_phy_mib_work_start(&qca_priv);
+	}
+
+	return 0;
+}
+#endif
+#endif
+
+
 int
 ssdk_plat_init(void)
 {
+	#ifdef UCI_TAKEOVER
+	int rv = 0;
+	#endif
     printk("ssdk_plat_init start\n");
 
     if(miibus_get())
@@ -918,7 +1081,16 @@ ssdk_plat_init(void)
     }
 
     printk("Register QCA PHY driver\n");
+	#ifndef UCI_TAKEOVER
 	return phy_driver_register(&qca_phy_driver);
+	#else
+	rv = phy_driver_register(&qca_phy_driver);
+	#ifdef BOARD_AR71XX
+	ssdk_uci_takeover();
+	#endif
+	return rv;
+	#endif
+
 }
 
 void
@@ -928,6 +1100,18 @@ ssdk_plat_exit(void)
 #ifndef BOARD_AR71XX
     phy_driver_unregister(&qca_phy_driver);
 #endif
+
+#ifdef UCI_TAKEOVER
+	#ifdef BOARD_AR71XX
+	if(sw_attach_dev && old_sw_dev) {
+		unregister_switch(&qca_priv.sw_dev);
+		register_switch(old_sw_dev, sw_attach_dev);
+		qca_phy_mib_work_stop(&qca_priv);
+		kfree(qca_priv.mib_counters);
+	}
+	#endif
+#endif
+
 }
 
 #ifdef BOARD_IPQ806X
@@ -948,9 +1132,9 @@ struct ag71xx_mdio {
 	void __iomem		*mdio_base;
 };
 
-static struct mii_bus *miibus = NULL;
 
-extern ssdk_chip_type SSDK_CURRENT_CHIP_TYPE;
+
+
 sw_error_t
 ssdk_switch_init(a_uint32_t dev_id)
 {
