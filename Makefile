@@ -16,7 +16,7 @@ all: $(BIN_DIR) kslib
 	mkdir -p ./temp/;cd ./temp;cp ../build/bin/ssdk_ks_km.a ./;ar -x ssdk_ks_km.a; cp ../ko_Makefile ./Makefile;
 	make -C $(SYS_PATH) M=$(PRJ_PATH)/temp/ CROSS_COMPILE=$(TOOLPREFIX) modules
 	cp temp/*.ko build/bin;
-	rm -Rf ./temp
+	rm -Rf ./temp/*.o ./temp/*.ko ./temp/*.a
 	@echo "---Build [SSDK-$(VERSION)] at $(BUILD_DATE) finished."
 
 kslib:kslib_o
