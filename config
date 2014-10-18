@@ -10,6 +10,10 @@ ifeq ($(KVER), 3.4.0)
 OS_VER=3_4
 endif
 
+ifeq ($(KVER), 3.4.103)
+OS_VER=3_4
+endif
+
 ifeq ($(KVER), 3.3.8)
 OS_VER=3_2
 endif
@@ -69,6 +73,9 @@ endif
 
 ifeq ($(ARCH), arm)
 ifeq ($(KVER), 3.4.0)
+  CPU_CFLAG=-D__LINUX_ARM_ARCH__=7  -DMODULE -fno-common -DCONFIG_MMU -D$(BOARD_NAME)
+endif
+ifeq ($(KVER), 3.4.103)
   CPU_CFLAG=-D__LINUX_ARM_ARCH__=7  -DMODULE -fno-common -DCONFIG_MMU -D$(BOARD_NAME)
 endif
 ifeq ($(KVER), 3.14)

@@ -30,13 +30,13 @@
 #include "hsl_dev.h"
 #include "ssdk_init.h"
 #include "shell_io.h"
+#include <linux/kconfig.h>
 #include <linux/version.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/phy.h>
 #include <linux/platform_device.h>
 #include <linux/types.h>
-#include <linux/kconfig.h>
 #include <generated/autoconf.h>
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 #include <linux/switch.h>
