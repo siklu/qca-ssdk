@@ -83,7 +83,8 @@ static int
 nat_ipt_get_ctl(struct sock *sk, int cmd, void __user * user, int *len);
 
 /*those initial value will be overwrited by orignal iptables sockopts*/
-static struct nf_sockopt_ops orgi_ipt_sockopts =
+static struct nf_sockopt_ops orgi_ipt_sockopts;
+static struct nf_sockopt_ops tmp_ipt_sockopts =
 {
     /*pls check linux/in.h*/
 #define IPT_TEMP_BASE_CTL       60
@@ -705,15 +706,15 @@ static void
 nat_ipt_sockopts_replace(void)
 {
     /*register an temp sockopts to find ipt_sockopts*/
-    nf_register_sockopt(&orgi_ipt_sockopts);
-    list_for_each_entry(ipt_sockopts, orgi_ipt_sockopts.list.next, list)
+    nf_register_sockopt(&tmp_ipt_sockopts);
+    list_for_each_entry(ipt_sockopts, tmp_ipt_sockopts.list.next, list)
     {
         if (ipt_sockopts->set_optmin == IPT_BASE_CTL)
         {
             break;
         }
     }
-    nf_unregister_sockopt(&orgi_ipt_sockopts);
+    nf_unregister_sockopt(&tmp_ipt_sockopts);
 
     /*save orginal ipt_sockopts*/
     orgi_ipt_sockopts = *ipt_sockopts;
