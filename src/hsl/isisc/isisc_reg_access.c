@@ -215,6 +215,7 @@ isisc_reg_set(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t value[],
              a_uint32_t value_len)
 {
     sw_error_t rv;
+#if 0
     unsigned long flags;
 
     struct file *filp;
@@ -227,7 +228,7 @@ isisc_reg_set(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t value[],
     /*get MODULE_EN reg rsv */
     SW_RTN_ON_ERROR(isisc_reg_get(dev_id, 0x30,(void *)&rt_value,4));
     write_flag = (rt_value>>15) & 0x1;
-
+#endif
     MDIO_LOCKER_LOCK;
     if (HSL_MDIO == reg_mode)
     {
