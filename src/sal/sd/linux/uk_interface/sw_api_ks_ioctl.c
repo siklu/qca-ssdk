@@ -33,6 +33,7 @@
 //#include <net/sock.h>
 #endif
 
+#include <linux/kconfig.h>
 #include <linux/skbuff.h>
 #include <linux/miscdevice.h>
 #include "api_access.h"
