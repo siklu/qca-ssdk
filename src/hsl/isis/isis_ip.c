@@ -608,7 +608,7 @@ _isis_ip_host_del(a_uint32_t dev_id, a_uint32_t del_mode,
 
     if (FAL_IP_ENTRY_INTF_EN & del_mode)
     {
-        rv = _isis_ip_intf_sw_to_hw(dev_id, entry->intf_id, &data);
+        rv = _isis_ip_intf_sw_to_hw(dev_id, entry/*was:->intf_id*/, &data);
         SW_RTN_ON_ERROR(rv);
 
         SW_SET_REG_BY_FIELD(HOST_ENTRY4, SPEC_VID, 1, reg[4]);
@@ -720,7 +720,7 @@ _isis_ip_host_next(a_uint32_t dev_id, a_uint32_t next_mode,
 
     if (FAL_IP_ENTRY_INTF_EN & next_mode)
     {
-        rv = _isis_ip_intf_sw_to_hw(dev_id, entry->intf_id, &data);
+        rv = _isis_ip_intf_sw_to_hw(dev_id, entry/*was:->intf_id*/, &data);
         SW_RTN_ON_ERROR(rv);
 
         SW_SET_REG_BY_FIELD(HOST_ENTRY4, SPEC_VID, 1, reg[4]);
