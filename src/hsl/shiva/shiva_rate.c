@@ -822,8 +822,6 @@ shiva_storm_ctrl_rate_get(a_uint32_t dev_id, fal_port_t port_id,
 sw_error_t
 shiva_rate_init(a_uint32_t dev_id)
 {
-    sw_error_t rv;
-
     HSL_DEV_ID_CHECK(dev_id);
 
 #ifndef HSL_STANDALONG
