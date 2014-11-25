@@ -338,7 +338,7 @@ _isisc_rate_port_policer_set(a_uint32_t dev_id, fal_port_t port_id,
             _isisc_ingress_bs_frame_hw_to_sw(cbs, &(policer->cbs));
         }
 
-        if (A_TRUE == policer->c_enable)
+        if (A_TRUE == policer->e_enable)
         {
             eir = (policer->eir * 2) / 125;
             policer->eir = eir / 2 * 125 + eir % 2 * 63;
