@@ -60,6 +60,7 @@ qca_ar8327_sw_get_port_link(struct switch_dev *dev, int port,
 	a_bool_t rx_fc;
 	a_uint32_t ret;
 
+	mutex_lock(&priv->reg_mutex);
 	ret = fal_port_link_status_get(0, port, &status);
 	if (ret){
 		return -1;
@@ -84,6 +85,7 @@ qca_ar8327_sw_get_port_link(struct switch_dev *dev, int port,
 	if (ret){
 		return -1;
 	}
+	mutex_unlock(&priv->reg_mutex);
 
 	link->link = status;
 	if (speed == FAL_SPEED_10){
