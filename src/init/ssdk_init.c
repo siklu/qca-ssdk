@@ -820,7 +820,10 @@ qca_phy_read_status(struct phy_device *pdev)
 		return ret;
 	}
 
+	mutex_lock(&priv->reg_mutex);
 	qca_phy_read_port_link(priv, pdev->addr, &port_link);
+	mutex_unlock(&priv->reg_mutex);
+
 	pdev->link = !!port_link.link;
 	if (pdev->link == 0)
 		return 0;
