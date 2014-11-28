@@ -108,7 +108,7 @@ endif
 #FAL=FALSE or not define FAL, FAL will not be included in SSDK
 FAL=TRUE
 
-#CHIP_TYPE can be defined as ATHENA, GARUDA, SHIVA, HORUS, ISIS, ISISC and ALL_CHIP(ALL_CHIP means GARUDA, SHIVA, HORUS and ISIS)
+#CHIP_TYPE can be defined as ATHENA, GARUDA, SHIVA, HORUS, ISIS, ISISC, DESS and ALL_CHIP(ALL_CHIP means GARUDA, SHIVA, HORUS, ISIS, ISISC and DESS)
 CHIP_TYPE=ALL_CHIP
 
 #UK_IF=FALSE or not define UK_IF, UK_IF will not be included in SSDK
