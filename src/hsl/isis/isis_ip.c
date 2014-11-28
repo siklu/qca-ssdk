@@ -920,11 +920,11 @@ _isis_ip_pt_arp_learn_set(a_uint32_t dev_id, fal_port_t port_id,
 
     if (FAL_ARP_LEARN_ACK & flags)
     {
-        data |= (0x1 << (8 + port_id));
+        data |= (0x1 << (ROUTER_PTCTRL2_ARP_LEARN_ACK_BOFFSET + port_id));
     }
     else
     {
-        data &= (~(0x1 << (8 + port_id)));
+        data &= (~(0x1 << (ROUTER_PTCTRL2_ARP_LEARN_ACK_BOFFSET + port_id)));
     }
 
     HSL_REG_ENTRY_SET(rv, dev_id, ROUTER_PTCTRL2, 0,
@@ -955,7 +955,7 @@ _isis_ip_pt_arp_learn_get(a_uint32_t dev_id, fal_port_t port_id,
         *flags |= FAL_ARP_LEARN_REQ;
     }
 
-    if (data & (8 + (0x1 << port_id)))
+    if (data & (0x1 << (ROUTER_PTCTRL2_ARP_LEARN_ACK_BOFFSET + port_id)))
     {
         *flags |= FAL_ARP_LEARN_ACK;
     }
