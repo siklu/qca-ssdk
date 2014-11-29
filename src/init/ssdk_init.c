@@ -68,6 +68,8 @@
   */
 static int switch_chip_id = ISIS_CHIP_ID;
 static int switch_chip_reg = ISIS_CHIP_REG;
+ssdk_dt_cfg ssdk_dt_global = {0};
+u8  __iomem      *hw_addr = NULL;
 
 static void
 qca_phy_read_port_link(struct qca_phy_priv *priv, int port,
@@ -1072,24 +1074,42 @@ ssdk_plat_init(void)
 	#endif
     printk("ssdk_plat_init start\n");
 
-    if(miibus_get())
-	return -ENODEV;
+	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
+		if (!request_mem_region(ssdk_dt_global.switchreg_base_addr,
+				ssdk_dt_global.switchreg_size, "switch_mem")) {
+                printk("%s Unable to request resource.", __func__);
+                return -1;
+        }
 
-    if(driver_find(qca_phy_driver.name, &mdio_bus_type)){
-        printk("QCA PHY driver had been Registered\n");
-        return 0;
-    }
+		hw_addr = ioremap_nocache(ssdk_dt_global.switchreg_base_addr,
+				ssdk_dt_global.switchreg_size);
+		if (!hw_addr) {
+                printk("%s ioremap fail.", __func__);
+                return -1;
+        }
+	}
 
-    printk("Register QCA PHY driver\n");
-	#ifndef UCI_TAKEOVER
-	return phy_driver_register(&qca_phy_driver);
-	#else
-	rv = phy_driver_register(&qca_phy_driver);
-	#ifdef BOARD_AR71XX
-	ssdk_uci_takeover();
-	#endif
-	return rv;
-	#endif
+	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_MDIO) {
+		if(miibus_get())
+			return -ENODEV;
+
+		if(driver_find(qca_phy_driver.name, &mdio_bus_type)){
+			printk("QCA PHY driver had been Registered\n");
+			return 0;
+		}
+
+		printk("Register QCA PHY driver\n");
+		#ifndef UCI_TAKEOVER
+		return phy_driver_register(&qca_phy_driver);
+		#else
+		rv = phy_driver_register(&qca_phy_driver);
+		#ifdef BOARD_AR71XX
+		ssdk_uci_takeover();
+		#endif
+		return rv;
+		#endif
+	} else
+		return 0;
 
 }
 
@@ -1097,20 +1117,23 @@ void
 ssdk_plat_exit(void)
 {
     printk("ssdk_plat_exit\n");
+
+	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_MDIO) {
 #ifndef BOARD_AR71XX
-    phy_driver_unregister(&qca_phy_driver);
+		phy_driver_unregister(&qca_phy_driver);
 #endif
 
 #ifdef UCI_TAKEOVER
 	#ifdef BOARD_AR71XX
-	if(sw_attach_dev && old_sw_dev) {
-		unregister_switch(&qca_priv.sw_dev);
-		register_switch(old_sw_dev, sw_attach_dev);
-		qca_phy_mib_work_stop(&qca_priv);
-		kfree(qca_priv.mib_counters);
-	}
+		if(sw_attach_dev && old_sw_dev) {
+			unregister_switch(&qca_priv.sw_dev);
+			register_switch(old_sw_dev, sw_attach_dev);
+			qca_phy_mib_work_stop(&qca_priv);
+			kfree(qca_priv.mib_counters);
+		}
 	#endif
 #endif
+	}
 
 }
 
@@ -1605,12 +1628,92 @@ static int miibus_get()
 	return 0;
 }
 
+uint32_t
+qca_switch_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
+{
+	uint32_t reg_val = 0;
+
+	if (len != sizeof (a_uint32_t))
+        return SW_BAD_LEN;
+
+	reg_val = readl(hw_addr + reg_addr);
+/*linchen:for dess, change deviceid = 0x14 */
+        if(reg_addr == 0)
+                reg_val=(reg_val&0xffff00ff)|0x1400;
+	aos_mem_copy(reg_data, &reg_val, sizeof (a_uint32_t));
+	return 0;
+}
+
+uint32_t
+qca_switch_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
+{
+	uint32_t reg_val = 0;
+	if (len != sizeof (a_uint32_t))
+        return SW_BAD_LEN;
+
+	aos_mem_copy(&reg_val, reg_data, sizeof (a_uint32_t));
+	writel(reg_val, hw_addr + reg_addr);
+	return 0;
+}
+
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+static void ssdk_dt_parse(void)
+{
+	struct device_node *switch_node = NULL;
+
+	/*
+	 * Get reference to ESS SWITCH device node
+	 */
+	switch_node = of_find_node_by_name(NULL, "ess-switch");
+	if (!switch_node) {
+		printk("cannot find ess-switch node\n");
+		return -1;
+	}
+	printk("ess-switch DT exist!\n");
+	if (of_property_read_u32(switch_node, "dakota,ess_base_addr", &ssdk_dt_global.switchreg_base_addr)
+	    || of_property_read_u32(switch_node, "dakota,ess_reg_size", &ssdk_dt_global.switchreg_size)
+	    || of_property_read_string(switch_node, "dakota,ess_reg_mode", &ssdk_dt_global.reg_access_mode)) {
+		printk("%s: error reading device node properties\n", switch_node->name);
+		return -1;
+	}
+
+	printk("dakota,ess_base_addr: 0x%x\n", ssdk_dt_global.switchreg_base_addr);
+	printk("dakota,ess_reg_size: 0x%x\n", ssdk_dt_global.switchreg_size);
+	printk("dakota,ess_reg_mode: %s\n", ssdk_dt_global.reg_access_mode);
+	if(!strcmp(ssdk_dt_global.reg_access_mode, "local bus"))
+		ssdk_dt_global.switch_reg_access_mode = HSL_REG_LOCAL_BUS;
+	else if(!strcmp(ssdk_dt_global.reg_access_mode, "mdio"))
+		ssdk_dt_global.switch_reg_access_mode = HSL_REG_MDIO;
+	else
+		ssdk_dt_global.switch_reg_access_mode = HSL_REG_MDIO;
+}
+#endif
+
+static a_uint8_t chip_ver_get()
+{
+	a_uint8_t chip_ver = 0;
+	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_MDIO)
+		chip_ver = (qca_ar8216_mii_read(0)&0xff00)>>8;
+	else {
+		a_uint32_t reg_val;
+		qca_switch_reg_read(0,0,(a_uint8_t *)&reg_val, 4);
+		chip_ver = (reg_val&0xff00)>>8;
+	}
+	return chip_ver;
+}
+
 static int __init
 regi_init(void)
 {
 	ssdk_init_cfg cfg;
 	int rv = 0;
 	garuda_init_spec_cfg chip_spec_cfg;
+	ssdk_dt_global.switch_reg_access_mode = HSL_REG_MDIO;
+	a_uint8_t chip_version = 0;
+
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+		ssdk_dt_parse();
+#endif
 
 	rv = ssdk_plat_init();
 	if(rv)
@@ -1620,21 +1723,33 @@ regi_init(void)
 	memset(&chip_spec_cfg, 0, sizeof(garuda_init_spec_cfg));
 
 	cfg.cpu_mode = HSL_CPU_1;
-	cfg.reg_mode = HSL_MDIO;
+
+	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_MDIO)
+		cfg.reg_mode = HSL_MDIO;
+	else if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS)
+		cfg.reg_mode = HSL_HEADER;
+	else
+		cfg.reg_mode = HSL_MDIO;
+
 	cfg.nl_prot = 30;
 
 	cfg.chip_spec_cfg = &chip_spec_cfg;
 	cfg.reg_func.mdio_set = qca_ar8327_phy_write;
 	cfg.reg_func.mdio_get = qca_ar8327_phy_read;
+	cfg.reg_func.header_reg_set = qca_switch_reg_write;
+	cfg.reg_func.header_reg_get = qca_switch_reg_read;
 
-    if((qca_ar8216_mii_read(0)&0xff00)>>8 == 0x02)
+	chip_version = chip_ver_get();
+    if(chip_version == 0x02)
         cfg.chip_type = CHIP_SHIVA;
-    else if((qca_ar8216_mii_read(0)&0xff00)>>8 == 0x13)
+    else if(chip_version == 0x13)
         cfg.chip_type = CHIP_ISISC;
-    else if((qca_ar8216_mii_read(0)&0xff00)>>8 == 0x12)
+    else if(chip_version == 0x12)
         cfg.chip_type = CHIP_ISIS;
+	else if(chip_version == 0x14)
+		cfg.chip_type = CHIP_DESS;
     else
-	rv = 100;
+		rv = 100;
 
     if(rv)
 		goto out;
