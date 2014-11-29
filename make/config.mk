@@ -51,11 +51,15 @@ else
      SUPPORT_CHIP = ISISC
   endif
 
+  ifeq (DESS, $(CHIP_TYPE))
+     SUPPORT_CHIP = DESS
+  endif
+
   ifeq (ALL_CHIP, $(CHIP_TYPE))
      ifneq (TRUE, $(FAL))
          $(error FAL must be TRUE when CHIP_TYPE is defined as ALL_CHIP!)
      endif
-     SUPPORT_CHIP = ISIS ISISC SHIVA
+     SUPPORT_CHIP = ISIS ISISC SHIVA DESS
   endif
 
   ifndef SUPPORT_CHIP

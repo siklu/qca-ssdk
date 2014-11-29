@@ -38,6 +38,9 @@
 #if defined ISISC
 #include "isisc_init.h"
 #endif
+#if defined DESS
+#include "dess_init.h"
+#endif
 #include "sw_api.h"
 #ifdef KERNEL_MODULE
 #include "sw_api_ks.h"
@@ -69,6 +72,8 @@ static sw_error_t hsl_set_current_chip_type(ssdk_chip_type chip_type)
         SSDK_CURRENT_CHIP_TYPE = CHIP_ISIS;
 #elif defined ISISC
         SSDK_CURRENT_CHIP_TYPE = CHIP_ISISC;
+#elif defined DESS
+        SSDK_CURRENT_CHIP_TYPE = CHIP_DESS;
 #else
         rv = SW_FAIL;
 #endif
@@ -153,6 +158,11 @@ hsl_dev_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
         case CHIP_ISISC:
 #if defined ISISC
             rv = isisc_init(dev_id, cfg);
+#endif
+            break;
+        case CHIP_DESS:
+#if defined DESS
+            rv = dess_init(dev_id, cfg);
 #endif
             break;
 
