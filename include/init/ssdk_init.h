@@ -37,6 +37,12 @@ extern "C" {
         HSL_CPU_1_PLUS,
     } hsl_init_mode;
 
+    typedef enum
+    {
+        HSL_REG_MDIO = 0,
+        HSL_REG_LOCAL_BUS,
+    } hsl_reg_mode;
+
     typedef sw_error_t
     (*mdio_reg_set) (a_uint32_t dev_id, a_uint32_t phy_addr, a_uint32_t reg,
                      a_uint16_t data);
@@ -82,6 +88,7 @@ extern "C" {
         CHIP_HORUS,
         CHIP_ISIS,
         CHIP_ISISC,
+        CHIP_DESS,
     } ssdk_chip_type;
 
     typedef struct
@@ -101,6 +108,14 @@ extern "C" {
         /* chip specific parameter */
         void *          chip_spec_cfg;
     } ssdk_init_cfg;
+
+	typedef struct
+	{
+		a_uint32_t switchreg_base_addr;
+		a_uint32_t switchreg_size;
+		a_uint8_t *reg_access_mode;
+		hsl_reg_mode switch_reg_access_mode;
+	} ssdk_dt_cfg;
 
 #if defined ATHENA
 #define def_init_cfg  {.reg_mode = HSL_MDIO, .cpu_mode = HSL_CPU_2};

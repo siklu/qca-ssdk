@@ -165,6 +165,11 @@ ifneq (,$(findstring ISISC, $(SUPPORT_CHIP)))
   MODULE_CFLAG += -DISISC
 endif
 
+ifneq (,$(findstring DESS, $(SUPPORT_CHIP)))
+  MODULE_INC   += -I$(PRJ_PATH)/include/hsl/dess
+  MODULE_CFLAG += -DDESS
+endif
+
 # check for GCC version
 ifeq (4, $(GCC_VER))
   MODULE_CFLAG += -DGCCV4
