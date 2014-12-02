@@ -1660,9 +1660,12 @@ qca_switch_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_dat
 }
 
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-static void ssdk_dt_parse(void)
+static int ssdk_dt_parse(void)
 {
 	struct device_node *switch_node = NULL;
+	a_uint32_t len = 0;
+	const __be32 *reg_cfg;
+
 
 	/*
 	 * Get reference to ESS SWITCH device node
@@ -1670,25 +1673,35 @@ static void ssdk_dt_parse(void)
 	switch_node = of_find_node_by_name(NULL, "ess-switch");
 	if (!switch_node) {
 		printk("cannot find ess-switch node\n");
-		return -1;
+		return SW_BAD_PARAM;
 	}
 	printk("ess-switch DT exist!\n");
-	if (of_property_read_u32(switch_node, "dakota,ess_base_addr", &ssdk_dt_global.switchreg_base_addr)
-	    || of_property_read_u32(switch_node, "dakota,ess_reg_size", &ssdk_dt_global.switchreg_size)
-	    || of_property_read_string(switch_node, "dakota,ess_reg_mode", &ssdk_dt_global.reg_access_mode)) {
-		printk("%s: error reading device node properties\n", switch_node->name);
-		return -1;
+
+	reg_cfg = of_get_property(switch_node, "reg", &len);
+	if(!reg_cfg) {
+		printk("%s: error reading device node properties for reg\n", switch_node->name);
+		return SW_BAD_PARAM;
 	}
 
-	printk("dakota,ess_base_addr: 0x%x\n", ssdk_dt_global.switchreg_base_addr);
-	printk("dakota,ess_reg_size: 0x%x\n", ssdk_dt_global.switchreg_size);
-	printk("dakota,ess_reg_mode: %s\n", ssdk_dt_global.reg_access_mode);
+	ssdk_dt_global.switchreg_base_addr = be32_to_cpup(reg_cfg);
+	ssdk_dt_global.switchreg_size = be32_to_cpup(reg_cfg + 1);
+
+	if (of_property_read_string(switch_node, "switch_access_mode", &ssdk_dt_global.reg_access_mode)) {
+		printk("%s: error reading device node properties for switch_access_mode\n", switch_node->name);
+		return SW_BAD_PARAM;
+	}
+
+	printk("switchreg_base_addr: 0x%x\n", ssdk_dt_global.switchreg_base_addr);
+	printk("switchreg_size: 0x%x\n", ssdk_dt_global.switchreg_size);
+	printk("switch_access_mode: %s\n", ssdk_dt_global.reg_access_mode);
 	if(!strcmp(ssdk_dt_global.reg_access_mode, "local bus"))
 		ssdk_dt_global.switch_reg_access_mode = HSL_REG_LOCAL_BUS;
 	else if(!strcmp(ssdk_dt_global.reg_access_mode, "mdio"))
 		ssdk_dt_global.switch_reg_access_mode = HSL_REG_MDIO;
 	else
 		ssdk_dt_global.switch_reg_access_mode = HSL_REG_MDIO;
+
+	return SW_OK;
 }
 #endif
 
