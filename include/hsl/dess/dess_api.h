@@ -146,6 +146,120 @@ extern "C" {
 #endif
 
 
+#ifdef IN_ACL
+#define ACL_API \
+    SW_API_DEF(SW_API_ACL_LIST_CREAT, dess_acl_list_creat), \
+    SW_API_DEF(SW_API_ACL_LIST_DESTROY, dess_acl_list_destroy), \
+    SW_API_DEF(SW_API_ACL_RULE_ADD, dess_acl_rule_add), \
+    SW_API_DEF(SW_API_ACL_RULE_DELETE, dess_acl_rule_delete), \
+    SW_API_DEF(SW_API_ACL_RULE_QUERY, dess_acl_rule_query), \
+    SW_API_DEF(SW_API_ACL_LIST_BIND, dess_acl_list_bind), \
+    SW_API_DEF(SW_API_ACL_LIST_UNBIND, dess_acl_list_unbind), \
+    SW_API_DEF(SW_API_ACL_STATUS_SET, dess_acl_status_set), \
+    SW_API_DEF(SW_API_ACL_STATUS_GET, dess_acl_status_get), \
+    SW_API_DEF(SW_API_ACL_LIST_DUMP, dess_acl_list_dump), \
+    SW_API_DEF(SW_API_ACL_RULE_DUMP, dess_acl_rule_dump), \
+    SW_API_DEF(SW_API_ACL_PT_UDF_PROFILE_SET, dessort_udf_profile_set), \
+    SW_API_DEF(SW_API_ACL_PT_UDF_PROFILE_GET, dess_acl_port_udf_profile_get), \
+    SW_API_DEF(SW_API_ACL_RULE_ACTIVE, dess_acl_rule_active), \
+    SW_API_DEF(SW_API_ACL_RULE_DEACTIVE, dess_acl_rule_deactive),\
+    SW_API_DEF(SW_API_ACL_RULE_SRC_FILTER_STS_SET, dess_acl_rule_src_filter_sts_set),\
+    SW_API_DEF(SW_API_ACL_RULE_SRC_FILTER_STS_GET, dess_acl_rule_src_filter_sts_get), \
+    SW_API_DEF(SW_API_ACL_RULE_GET_OFFSET, dess_acl_rule_get_offset),
+
+#define ACL_API_PARAM \
+    SW_API_DESC(SW_API_ACL_LIST_CREAT)   \
+    SW_API_DESC(SW_API_ACL_LIST_DESTROY) \
+    SW_API_DESC(SW_API_ACL_RULE_ADD)     \
+    SW_API_DESC(SW_API_ACL_RULE_DELETE)  \
+    SW_API_DESC(SW_API_ACL_RULE_QUERY)   \
+    SW_API_DESC(SW_API_ACL_LIST_BIND)    \
+    SW_API_DESC(SW_API_ACL_LIST_UNBIND)  \
+    SW_API_DESC(SW_API_ACL_STATUS_SET)   \
+    SW_API_DESC(SW_API_ACL_STATUS_GET)   \
+    SW_API_DESC(SW_API_ACL_LIST_DUMP)    \
+    SW_API_DESC(SW_API_ACL_RULE_DUMP)    \
+    SW_API_DESC(SW_API_ACL_PT_UDF_PROFILE_SET)    \
+    SW_API_DESC(SW_API_ACL_PT_UDF_PROFILE_GET)    \
+    SW_API_DESC(SW_API_ACL_RULE_ACTIVE)    \
+    SW_API_DESC(SW_API_ACL_RULE_DEACTIVE) \
+    SW_API_DESC(SW_API_ACL_RULE_SRC_FILTER_STS_SET) \
+    SW_API_DESC(SW_API_ACL_RULE_SRC_FILTER_STS_GET)
+#else
+#define ACL_API
+#define ACL_API_PARAM
+#endif
+
+
+#ifdef IN_QOS
+#define QOS_API \
+    SW_API_DEF(SW_API_QOS_QU_TX_BUF_ST_SET, dess_qos_queue_tx_buf_status_set), \
+    SW_API_DEF(SW_API_QOS_QU_TX_BUF_ST_GET, dess_qos_queue_tx_buf_status_get), \
+    SW_API_DEF(SW_API_QOS_QU_TX_BUF_NR_SET, dess_qos_queue_tx_buf_nr_set), \
+    SW_API_DEF(SW_API_QOS_QU_TX_BUF_NR_GET, dess_qos_queue_tx_buf_nr_get), \
+    SW_API_DEF(SW_API_QOS_PT_TX_BUF_ST_SET, dess_qos_port_tx_buf_status_set), \
+    SW_API_DEF(SW_API_QOS_PT_TX_BUF_ST_GET, dess_qos_port_tx_buf_status_get), \
+    SW_API_DEF(SW_API_QOS_PT_RED_EN_SET, dess_qos_port_red_en_set),\
+    SW_API_DEF(SW_API_QOS_PT_RED_EN_GET, dess_qos_port_red_en_get),\
+    SW_API_DEF(SW_API_QOS_PT_TX_BUF_NR_SET, dess_qos_port_tx_buf_nr_set), \
+    SW_API_DEF(SW_API_QOS_PT_TX_BUF_NR_GET, dess_qos_port_tx_buf_nr_get), \
+    SW_API_DEF(SW_API_QOS_PT_RX_BUF_NR_SET, dess_qos_port_rx_buf_nr_set), \
+    SW_API_DEF(SW_API_QOS_PT_RX_BUF_NR_GET, dess_qos_port_rx_buf_nr_get), \
+    SW_API_DEF(SW_API_QOS_PT_MODE_SET, dess_qos_port_mode_set), \
+    SW_API_DEF(SW_API_QOS_PT_MODE_GET, dess_qos_port_mode_get), \
+    SW_API_DEF(SW_API_QOS_PT_MODE_PRI_SET, dess_qos_port_mode_pri_set), \
+    SW_API_DEF(SW_API_QOS_PT_MODE_PRI_GET, dess_qos_port_mode_pri_get), \
+    SW_API_DEF(SW_API_QOS_PORT_SCH_MODE_SET, dess_qos_port_sch_mode_set), \
+    SW_API_DEF(SW_API_QOS_PORT_SCH_MODE_GET, dess_qos_port_sch_mode_get), \
+    SW_API_DEF(SW_API_QOS_PT_DEF_SPRI_SET, dess_qos_port_default_spri_set), \
+    SW_API_DEF(SW_API_QOS_PT_DEF_SPRI_GET, dess_qos_port_default_spri_get), \
+    SW_API_DEF(SW_API_QOS_PT_DEF_CPRI_SET, dess_qos_port_default_cpri_set), \
+    SW_API_DEF(SW_API_QOS_PT_DEF_CPRI_GET, dess_qos_port_default_cpri_get), \
+    SW_API_DEF(SW_API_QOS_PT_FORCE_SPRI_ST_SET, dess_qos_port_force_spri_status_set), \
+    SW_API_DEF(SW_API_QOS_PT_FORCE_SPRI_ST_GET, dess_qos_port_force_spri_status_get), \
+    SW_API_DEF(SW_API_QOS_PT_FORCE_CPRI_ST_SET, dess_qos_port_force_cpri_status_set), \
+    SW_API_DEF(SW_API_QOS_PT_FORCE_CPRI_ST_GET, dess_qos_port_force_cpri_status_get), \
+    SW_API_DEF(SW_API_QOS_QUEUE_REMARK_SET, dess_qos_queue_remark_table_set), \
+    SW_API_DEF(SW_API_QOS_QUEUE_REMARK_GET, dess_qos_queue_remark_table_get),
+
+
+#define QOS_API_PARAM \
+    SW_API_DESC(SW_API_QOS_QU_TX_BUF_ST_SET) \
+    SW_API_DESC(SW_API_QOS_QU_TX_BUF_ST_GET) \
+    SW_API_DESC(SW_API_QOS_QU_TX_BUF_NR_SET) \
+    SW_API_DESC(SW_API_QOS_QU_TX_BUF_NR_GET) \
+    SW_API_DESC(SW_API_QOS_PT_TX_BUF_ST_SET) \
+    SW_API_DESC(SW_API_QOS_PT_TX_BUF_ST_GET) \
+    SW_API_DESC(SW_API_QOS_PT_RED_EN_SET) \
+    SW_API_DESC(SW_API_QOS_PT_RED_EN_GET) \
+    SW_API_DESC(SW_API_QOS_PT_TX_BUF_NR_SET) \
+    SW_API_DESC(SW_API_QOS_PT_TX_BUF_NR_GET) \
+    SW_API_DESC(SW_API_QOS_PT_RX_BUF_NR_SET) \
+    SW_API_DESC(SW_API_QOS_PT_RX_BUF_NR_GET) \
+    SW_API_DESC(SW_API_QOS_PT_MODE_SET) \
+    SW_API_DESC(SW_API_QOS_PT_MODE_GET) \
+    SW_API_DESC(SW_API_QOS_PT_MODE_PRI_SET) \
+    SW_API_DESC(SW_API_QOS_PT_MODE_PRI_GET) \
+    SW_API_DESC(SW_API_QOS_PORT_DEF_UP_SET) \
+    SW_API_DESC(SW_API_QOS_PORT_DEF_UP_GET) \
+    SW_API_DESC(SW_API_QOS_PORT_SCH_MODE_SET) \
+    SW_API_DESC(SW_API_QOS_PORT_SCH_MODE_GET) \
+    SW_API_DESC(SW_API_QOS_PT_DEF_SPRI_SET)  \
+    SW_API_DESC(SW_API_QOS_PT_DEF_SPRI_GET)  \
+    SW_API_DESC(SW_API_QOS_PT_DEF_CPRI_SET)  \
+    SW_API_DESC(SW_API_QOS_PT_DEF_CPRI_GET)  \
+    SW_API_DESC(SW_API_QOS_PT_FORCE_SPRI_ST_SET)  \
+    SW_API_DESC(SW_API_QOS_PT_FORCE_SPRI_ST_GET)  \
+    SW_API_DESC(SW_API_QOS_PT_FORCE_CPRI_ST_SET)  \
+    SW_API_DESC(SW_API_QOS_PT_FORCE_CPRI_ST_GET)  \
+    SW_API_DESC(SW_API_QOS_QUEUE_REMARK_SET) \
+    SW_API_DESC(SW_API_QOS_QUEUE_REMARK_GET)
+#else
+#define QOS_API
+#define QOS_API_PARAM
+#endif
+
+
 #ifdef IN_MIB
 #define MIB_API \
     SW_API_DEF(SW_API_PT_MIB_GET, dess_get_mib_info), \
@@ -166,6 +280,89 @@ extern "C" {
 #else
 #define MIB_API
 #define MIB_API_PARAM
+#endif
+
+
+#ifdef IN_COSMAP
+#define COSMAP_API \
+    SW_API_DEF(SW_API_COSMAP_DSCP_TO_PRI_SET, dess_cosmap_dscp_to_pri_set), \
+    SW_API_DEF(SW_API_COSMAP_DSCP_TO_PRI_GET, dess_cosmap_dscp_to_pri_get), \
+    SW_API_DEF(SW_API_COSMAP_DSCP_TO_DP_SET, dess_cosmap_dscp_to_dp_set), \
+    SW_API_DEF(SW_API_COSMAP_DSCP_TO_DP_GET, dess_cosmap_dscp_to_dp_get), \
+    SW_API_DEF(SW_API_COSMAP_UP_TO_PRI_SET, dess_cosmap_up_to_pri_set), \
+    SW_API_DEF(SW_API_COSMAP_UP_TO_PRI_GET, dess_cosmap_up_to_pri_get), \
+    SW_API_DEF(SW_API_COSMAP_UP_TO_DP_SET, dess_cosmap_up_to_dp_set), \
+    SW_API_DEF(SW_API_COSMAP_UP_TO_DP_GET, dess_cosmap_up_to_dp_get), \
+    SW_API_DEF(SW_API_COSMAP_PRI_TO_QU_SET, dess_cosmap_pri_to_queue_set), \
+    SW_API_DEF(SW_API_COSMAP_PRI_TO_QU_GET, dess_cosmap_pri_to_queue_get), \
+    SW_API_DEF(SW_API_COSMAP_PRI_TO_EHQU_SET, dess_cosmap_pri_to_ehqueue_set), \
+    SW_API_DEF(SW_API_COSMAP_PRI_TO_EHQU_GET, dess_cosmap_pri_to_ehqueue_get), \
+    SW_API_DEF(SW_API_COSMAP_EG_REMARK_SET, dess_cosmap_egress_remark_set), \
+    SW_API_DEF(SW_API_COSMAP_EG_REMARK_GET, dess_cosmap_egress_remark_get),
+
+#define COSMAP_API_PARAM \
+    SW_API_DESC(SW_API_COSMAP_DSCP_TO_PRI_SET)  \
+    SW_API_DESC(SW_API_COSMAP_DSCP_TO_PRI_GET)  \
+    SW_API_DESC(SW_API_COSMAP_DSCP_TO_DP_SET)  \
+    SW_API_DESC(SW_API_COSMAP_DSCP_TO_DP_GET)  \
+    SW_API_DESC(SW_API_COSMAP_UP_TO_PRI_SET)  \
+    SW_API_DESC(SW_API_COSMAP_UP_TO_PRI_GET)  \
+    SW_API_DESC(SW_API_COSMAP_UP_TO_DP_SET)  \
+    SW_API_DESC(SW_API_COSMAP_UP_TO_DP_GET)  \
+    SW_API_DESC(SW_API_COSMAP_PRI_TO_QU_SET)  \
+    SW_API_DESC(SW_API_COSMAP_PRI_TO_QU_GET)  \
+    SW_API_DESC(SW_API_COSMAP_PRI_TO_EHQU_SET) \
+    SW_API_DESC(SW_API_COSMAP_PRI_TO_EHQU_GET) \
+    SW_API_DESC(SW_API_COSMAP_EG_REMARK_SET) \
+    SW_API_DESC(SW_API_COSMAP_EG_REMARK_GET)
+#else
+#define COSMAP_API
+#define COSMAP_API_PARAM
+#endif
+
+#ifdef IN_SEC
+#define SEC_API \
+    SW_API_DEF(SW_API_SEC_NORM_SET, dess_sec_norm_item_set), \
+    SW_API_DEF(SW_API_SEC_NORM_GET, dess_sec_norm_item_get), \
+    SW_API_DEF(SW_API_SEC_MAC_SET, dess_sec_norm_item_set), \
+    SW_API_DEF(SW_API_SEC_MAC_GET, dess_sec_norm_item_get), \
+    SW_API_DEF(SW_API_SEC_IP_SET, dess_sec_norm_item_set), \
+    SW_API_DEF(SW_API_SEC_IP_GET, dess_sec_norm_item_get), \
+    SW_API_DEF(SW_API_SEC_IP4_SET, dess_sec_norm_item_set), \
+    SW_API_DEF(SW_API_SEC_IP4_GET, dess_sec_norm_item_get), \
+    SW_API_DEF(SW_API_SEC_IP6_SET, dess_sec_norm_item_set), \
+    SW_API_DEF(SW_API_SEC_IP6_GET, dess_sec_norm_item_get), \
+    SW_API_DEF(SW_API_SEC_TCP_SET, dess_sec_norm_item_set), \
+    SW_API_DEF(SW_API_SEC_TCP_GET, dess_sec_norm_item_get), \
+    SW_API_DEF(SW_API_SEC_UDP_SET, dess_sec_norm_item_set), \
+    SW_API_DEF(SW_API_SEC_UDP_GET, dess_sec_norm_item_get), \
+    SW_API_DEF(SW_API_SEC_ICMP4_SET, dess_sec_norm_item_set), \
+    SW_API_DEF(SW_API_SEC_ICMP4_GET, dess_sec_norm_item_get), \
+    SW_API_DEF(SW_API_SEC_ICMP6_SET, dess_sec_norm_item_set), \
+    SW_API_DEF(SW_API_SEC_ICMP6_GET, dess_sec_norm_item_get),
+
+#define SEC_API_PARAM \
+    SW_API_DESC(SW_API_SEC_NORM_SET) \
+    SW_API_DESC(SW_API_SEC_NORM_GET) \
+    SW_API_DESC(SW_API_SEC_MAC_SET) \
+    SW_API_DESC(SW_API_SEC_MAC_GET) \
+    SW_API_DESC(SW_API_SEC_IP_SET) \
+    SW_API_DESC(SW_API_SEC_IP_GET) \
+    SW_API_DESC(SW_API_SEC_IP4_SET) \
+    SW_API_DESC(SW_API_SEC_IP4_GET) \
+    SW_API_DESC(SW_API_SEC_IP6_SET) \
+    SW_API_DESC(SW_API_SEC_IP6_GET) \
+    SW_API_DESC(SW_API_SEC_TCP_SET) \
+    SW_API_DESC(SW_API_SEC_TCP_GET) \
+    SW_API_DESC(SW_API_SEC_UDP_SET) \
+    SW_API_DESC(SW_API_SEC_UDP_GET) \
+    SW_API_DESC(SW_API_SEC_ICMP4_SET) \
+    SW_API_DESC(SW_API_SEC_ICMP4_GET) \
+    SW_API_DESC(SW_API_SEC_ICMP6_SET) \
+    SW_API_DESC(SW_API_SEC_ICMP6_GET)
+#else
+#define SEC_API
+#define SEC_API_PARAM
 #endif
 
 #define REG_API \
@@ -190,7 +387,11 @@ extern "C" {
     VLAN_API \
     PORTVLAN_API \
     FDB_API    \
+    ACL_API    \
+    QOS_API    \
     MIB_API  \
+    COSMAP_API \
+    SEC_API  \
     REG_API  \
     SW_API_DEF(SW_API_MAX, NULL),
 #define SSDK_PARAM  \
@@ -201,6 +402,10 @@ extern "C" {
     PORTVLAN_API_PARAM    \
     VLAN_API_PARAM \
     FDB_API_PARAM  \
+    QOS_API_PARAM  \
+    ACL_API_PARAM  \
+    COSMAP_API_PARAM \
+    SEC_API_PARAM  \
     REG_API_PARAM  \
     SW_PARAM_DEF(SW_API_MAX, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"),
 
