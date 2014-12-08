@@ -24,7 +24,11 @@
 #include "dess_mib.h"
 #include "dess_portvlan.h"
 #include "dess_vlan.h"
+#include "dess_qos.h"
+#include "dess_acl.h"
+#include "dess_cosmap.h"
 
+#include "dess_sec.h"
 #include "dess_reg_access.h"
 #include "dess_reg.h"
 #include "dess_init.h"
@@ -236,6 +240,7 @@ _dess_reset(a_uint32_t dev_id)
                       (a_uint8_t *) (&val), sizeof (a_uint32_t));
     SW_RTN_ON_ERROR(rv);
 
+    DESS_ACL_RESET(rv, dev_id);
 #endif
 
     return SW_OK;
@@ -317,6 +322,10 @@ dess_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
         DESS_MIB_INIT(rv, dev_id);
         DESS_PORTVLAN_INIT(rv, dev_id);
         DESS_VLAN_INIT(rv, dev_id);
+        DESS_QOS_INIT(rv, dev_id);
+        DESS_ACL_INIT(rv, dev_id);
+        DESS_COSMAP_INIT(rv, dev_id);
+        DESS_SEC_INIT(rv, dev_id);
 
         {
             hsl_api_t *p_api;

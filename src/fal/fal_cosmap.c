@@ -144,6 +144,127 @@ _fal_cosmap_up_to_dp_get(a_uint32_t dev_id, a_uint32_t up, a_uint32_t * dp)
 }
 
 static sw_error_t
+_fal_cosmap_dscp_to_ehpri_set(a_uint32_t dev_id, a_uint32_t dscp, a_uint32_t pri)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->cosmap_dscp_to_ehpri_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->cosmap_dscp_to_ehpri_set(dev_id, dscp, pri);
+    return rv;
+}
+
+static sw_error_t
+_fal_cosmap_dscp_to_ehpri_get(a_uint32_t dev_id, a_uint32_t dscp,
+                            a_uint32_t * pri)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->cosmap_dscp_to_ehpri_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->cosmap_dscp_to_ehpri_get(dev_id, dscp, pri);
+    return rv;
+}
+
+static sw_error_t
+_fal_cosmap_dscp_to_ehdp_set(a_uint32_t dev_id, a_uint32_t dscp, a_uint32_t dp)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->cosmap_dscp_to_ehdp_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->cosmap_dscp_to_ehdp_set(dev_id, dscp, dp);
+    return rv;
+}
+
+static sw_error_t
+_fal_cosmap_dscp_to_ehdp_get(a_uint32_t dev_id, a_uint32_t dscp, a_uint32_t * dp)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->cosmap_dscp_to_ehdp_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->cosmap_dscp_to_ehdp_get(dev_id, dscp, dp);
+    return rv;
+}
+
+static sw_error_t
+_fal_cosmap_up_to_ehpri_set(a_uint32_t dev_id, a_uint32_t up, a_uint32_t pri)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->cosmap_up_to_ehpri_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->cosmap_up_to_ehpri_set(dev_id, up, pri);
+    return rv;
+}
+
+static sw_error_t
+_fal_cosmap_up_to_ehpri_get(a_uint32_t dev_id, a_uint32_t up, a_uint32_t * pri)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->cosmap_up_to_ehpri_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->cosmap_up_to_ehpri_get(dev_id, up, pri);
+    return rv;
+}
+
+static sw_error_t
+_fal_cosmap_up_to_ehdp_set(a_uint32_t dev_id, a_uint32_t up, a_uint32_t dp)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->cosmap_up_to_ehdp_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->cosmap_up_to_ehdp_set(dev_id, up, dp);
+    return rv;
+}
+
+static sw_error_t
+_fal_cosmap_up_to_ehdp_get(a_uint32_t dev_id, a_uint32_t up, a_uint32_t * dp)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->cosmap_up_to_ehdp_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->cosmap_up_to_ehdp_get(dev_id, up, dp);
+    return rv;
+}
+
+static sw_error_t
 _fal_cosmap_pri_to_queue_set(a_uint32_t dev_id, a_uint32_t pri,
                              a_uint32_t queue)
 {
@@ -380,6 +501,151 @@ fal_cosmap_up_to_dp_get(a_uint32_t dev_id, a_uint32_t up, a_uint32_t * dp)
 
     FAL_API_LOCK;
     rv = _fal_cosmap_up_to_dp_get(dev_id, up, dp);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Set dscp to internal priority mapping on one particular device for WAN port.
+ * @param[in] dev_id device id
+ * @param[in] dscp dscp
+ * @param[in] pri internal priority
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_cosmap_dscp_to_ehpri_set(a_uint32_t dev_id, a_uint32_t dscp, a_uint32_t pri)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_cosmap_dscp_to_ehpri_set(dev_id, dscp, pri);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Get dscp to internal priority mapping on one particular device for WAN port.
+ * @param[in] dev_id device id
+ * @param[in] dscp dscp
+ * @param[out] pri internal priority
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_cosmap_dscp_to_ehpri_get(a_uint32_t dev_id, a_uint32_t dscp,
+                           a_uint32_t * pri)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_cosmap_dscp_to_ehpri_get(dev_id, dscp, pri);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Set dscp to internal drop precedence mapping on one particular device for WAN port.
+ * @param[in] dev_id device id
+ * @param[in] dscp dscp
+ * @param[in] dp internal drop precedence
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_cosmap_dscp_to_ehdp_set(a_uint32_t dev_id, a_uint32_t dscp, a_uint32_t dp)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_cosmap_dscp_to_ehdp_set(dev_id, dscp, dp);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Get dscp to internal drop precedence mapping on one particular device for WAN port.
+ * @param[in] dev_id device id
+ * @param[in] dscp dscp
+ * @param[out] dp internal drop precedence
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_cosmap_dscp_to_ehdp_get(a_uint32_t dev_id, a_uint32_t dscp, a_uint32_t * dp)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_cosmap_dscp_to_ehdp_get(dev_id, dscp, dp);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Set dot1p to internal priority mapping on one particular device for WAN port.
+ * @param[in] dev_id device id
+ * @param[in] up dot1p
+ * @param[in] pri internal priority
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_cosmap_up_to_ehpri_set(a_uint32_t dev_id, a_uint32_t up, a_uint32_t pri)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_cosmap_up_to_ehpri_set(dev_id, up, pri);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Get dot1p to internal priority mapping on one particular device for WAN port.
+ * @param[in] dev_id device id
+ * @param[in] up dot1p
+ * @param[out] pri internal priority
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_cosmap_up_to_ehpri_get(a_uint32_t dev_id, a_uint32_t up, a_uint32_t * pri)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_cosmap_up_to_ehpri_get(dev_id, up, pri);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Set dot1p to internal drop precedence mapping on one particular device for WAN port.
+ * @param[in] dev_id device id
+ * @param[in] up dot1p
+ * @param[in] dp internal drop precedence
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_cosmap_up_to_ehdp_set(a_uint32_t dev_id, a_uint32_t up, a_uint32_t dp)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_cosmap_up_to_ehdp_set(dev_id, up, dp);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Get dot1p to internal drop precedence mapping on one particular device for WAN port.
+ * @param[in] dev_id device id
+ * @param[in] up dot1p
+ * @param[in] dp internal drop precedence
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_cosmap_up_to_ehdp_get(a_uint32_t dev_id, a_uint32_t up, a_uint32_t * dp)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_cosmap_up_to_ehdp_get(dev_id, up, dp);
     FAL_API_UNLOCK;
     return rv;
 }

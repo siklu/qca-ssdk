@@ -1263,6 +1263,37 @@ extern "C" {
                                a_uint32_t * dp);
 
     typedef sw_error_t
+    (*hsl_cosmap_dscp_to_ehpri_set)(a_uint32_t dev_id, a_uint32_t dscp, a_uint32_t pri);
+
+    typedef sw_error_t
+    (*hsl_cosmap_dscp_to_ehpri_get)(a_uint32_t dev_id, a_uint32_t dscp,
+                                  a_uint32_t * pri);
+
+    typedef sw_error_t
+    (*hsl_cosmap_dscp_to_ehdp_set)(a_uint32_t dev_id, a_uint32_t dscp,
+                                 a_uint32_t dp);
+
+    typedef sw_error_t
+    (*hsl_cosmap_dscp_to_ehdp_get)(a_uint32_t dev_id, a_uint32_t dscp,
+                                 a_uint32_t * dp);
+
+    typedef sw_error_t
+    (*hsl_cosmap_up_to_ehpri_set)(a_uint32_t dev_id, a_uint32_t up,
+                                a_uint32_t pri);
+
+    typedef sw_error_t
+    (*hsl_cosmap_up_to_ehpri_get)(a_uint32_t dev_id, a_uint32_t up,
+                                a_uint32_t * pri);
+
+    typedef sw_error_t
+    (*hsl_cosmap_up_to_ehdp_set)(a_uint32_t dev_id, a_uint32_t up,
+                               a_uint32_t dp);
+
+    typedef sw_error_t
+    (*hsl_cosmap_up_to_ehdp_get)(a_uint32_t dev_id, a_uint32_t up,
+                               a_uint32_t * dp);
+
+    typedef sw_error_t
     (*hsl_cosmap_pri_to_queue_set)(a_uint32_t dev_id, a_uint32_t pri,
                                    a_uint32_t queue);
 
@@ -1959,6 +1990,14 @@ extern "C" {
         hsl_cosmap_up_to_pri_get cosmap_up_to_pri_get;
         hsl_cosmap_up_to_dp_set cosmap_up_to_dp_set;
         hsl_cosmap_up_to_dp_get cosmap_up_to_dp_get;
+        hsl_cosmap_dscp_to_ehpri_set cosmap_dscp_to_ehpri_set;
+        hsl_cosmap_dscp_to_ehpri_get cosmap_dscp_to_ehpri_get;
+        hsl_cosmap_dscp_to_ehdp_set cosmap_dscp_to_ehdp_set;
+        hsl_cosmap_dscp_to_ehdp_get cosmap_dscp_to_ehdp_get;
+        hsl_cosmap_up_to_ehpri_set cosmap_up_to_ehpri_set;
+        hsl_cosmap_up_to_ehpri_get cosmap_up_to_ehpri_get;
+        hsl_cosmap_up_to_ehdp_set cosmap_up_to_ehdp_set;
+        hsl_cosmap_up_to_ehdp_get cosmap_up_to_ehdp_get;
         hsl_cosmap_pri_to_queue_set cosmap_pri_to_queue_set;
         hsl_cosmap_pri_to_queue_get cosmap_pri_to_queue_get;
         hsl_cosmap_pri_to_ehqueue_set cosmap_pri_to_ehqueue_set;
