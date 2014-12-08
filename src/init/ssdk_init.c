@@ -806,6 +806,54 @@ qca_phy_config_init(struct phy_device *pdev)
 	return ret;
 }
 
+struct qca_phy_priv *qca_phy_priv_global;
+
+static int ssdk_switch_register()
+{
+	struct switch_dev *sw_dev;
+	struct qca_phy_priv *priv;
+	int ret = 0;
+
+	priv = kzalloc(sizeof(struct qca_phy_priv), GFP_KERNEL);
+	if (priv == NULL) {
+		return -ENOMEM;
+	}
+	qca_phy_priv_global = priv;
+
+	mutex_init(&priv->reg_mutex);
+
+	sw_dev = &priv->sw_dev;
+
+	sw_dev->ops = &qca_ar8327_sw_ops;
+	sw_dev->name = "QCA AR8327 AR8337";
+	sw_dev->alias = "QCA AR8327 AR8337";
+	sw_dev->vlans = AR8327_MAX_VLANS;
+	sw_dev->ports = AR8327_NUM_PORTS;
+
+	ret = register_switch(sw_dev, NULL);
+	if (ret != 0) {
+			printk("register_switch failed for %s\n", sw_dev->name);
+			return ret;
+	}
+
+	ret = qca_phy_mib_work_start(priv);
+	if (ret != 0) {
+			printk("qca_phy_mib_work_start failed for %s\n", sw_dev->name);
+			return ret;
+	}
+
+	return 0;
+
+}
+
+static int ssdk_switch_unregister()
+{
+	qca_phy_mib_work_stop(qca_phy_priv_global);
+	unregister_switch(&qca_phy_priv_global->sw_dev);
+	kfree(qca_phy_priv_global);
+	return 0;
+}
+
 static int
 qca_phy_read_status(struct phy_device *pdev)
 {
@@ -1659,6 +1707,20 @@ qca_switch_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_dat
 	return 0;
 }
 
+void switch_port_enable()
+{
+	a_uint32_t value = 0x4e;
+	a_uint8_t reg_value[] = {0};
+
+	aos_mem_copy(reg_value, &value, sizeof(a_uint32_t));
+	qca_switch_reg_write(0, 0x7c, &reg_value, 4 );
+	qca_switch_reg_write(0, 0x80, &reg_value, 4 );
+	qca_switch_reg_write(0, 0x84, &reg_value, 4 );
+	qca_switch_reg_write(0, 0x88, &reg_value, 4 );
+	qca_switch_reg_write(0, 0x8c, (a_uint8_t *)&reg_value, 4 );
+	qca_switch_reg_write(0, 0x90, (a_uint8_t *)&reg_value, 4 );
+}
+
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 static int ssdk_dt_parse(void)
 {
@@ -1772,6 +1834,13 @@ regi_init(void)
 
 	rv = ssdk_init(0, &cfg);
 
+	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
+		rv = ssdk_switch_register();
+
+		/* Enable port temprarily, will remove the code when phy board is ok. */
+		switch_port_enable();
+	}
+
 out:
 	if (rv == 0)
 		printk("qca-ssdk module init succeeded!\n");
@@ -1790,6 +1859,9 @@ regi_exit(void)
     	printk("qca-ssdk module exit  done!\n");
     else
         printk("qca-ssdk module exit failed! (code: %d)\n", rv);
+
+	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS)
+		ssdk_switch_unregister();
 
     ssdk_plat_exit();
 }
