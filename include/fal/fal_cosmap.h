@@ -31,10 +31,13 @@ extern "C" {
     {
         a_bool_t remark_dscp;
         a_bool_t remark_up;
+        a_bool_t remark_dei;
         a_uint8_t g_dscp;
         a_uint8_t y_dscp;
         a_uint8_t g_up;
         a_uint8_t y_up;
+        a_uint8_t g_dei;
+        a_uint8_t y_dei;
     } fal_egress_remark_table_t;
 
     sw_error_t
@@ -67,6 +70,38 @@ extern "C" {
 
     sw_error_t
     fal_cosmap_up_to_dp_get(a_uint32_t dev_id, a_uint32_t up,
+                            a_uint32_t * dp);
+
+    sw_error_t
+    fal_cosmap_dscp_to_ehpri_set(a_uint32_t dev_id, a_uint32_t dscp,
+                               a_uint32_t pri);
+
+    sw_error_t
+    fal_cosmap_dscp_to_ehpri_get(a_uint32_t dev_id, a_uint32_t dscp,
+                               a_uint32_t * pri);
+
+    sw_error_t
+    fal_cosmap_dscp_to_ehdp_set(a_uint32_t dev_id, a_uint32_t dscp,
+                              a_uint32_t dp);
+
+    sw_error_t
+    fal_cosmap_dscp_to_ehdp_get(a_uint32_t dev_id, a_uint32_t dscp,
+                              a_uint32_t * dp);
+
+    sw_error_t
+    fal_cosmap_up_to_ehpri_set(a_uint32_t dev_id, a_uint32_t up,
+                             a_uint32_t pri);
+
+    sw_error_t
+    fal_cosmap_up_to_ehpri_get(a_uint32_t dev_id, a_uint32_t up,
+                             a_uint32_t * pri);
+
+    sw_error_t
+    fal_cosmap_up_to_ehdp_set(a_uint32_t dev_id, a_uint32_t up,
+                            a_uint32_t dp);
+
+    sw_error_t
+    fal_cosmap_up_to_ehdp_get(a_uint32_t dev_id, a_uint32_t up,
                             a_uint32_t * dp);
 
     sw_error_t
