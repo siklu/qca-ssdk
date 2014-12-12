@@ -63,26 +63,31 @@ qca_ar8327_sw_get_port_link(struct switch_dev *dev, int port,
 	mutex_lock(&priv->reg_mutex);
 	ret = fal_port_link_status_get(0, port, &status);
 	if (ret){
+		mutex_unlock(&priv->reg_mutex);
 		return -1;
 	}
 
 	ret = fal_port_speed_get(0, port, &speed);
 	if (ret){
+		mutex_unlock(&priv->reg_mutex);
 		return -1;
 	}
 
 	ret = fal_port_duplex_get(0, port, &duplex);
 	if (ret){
+		mutex_unlock(&priv->reg_mutex);
 		return -1;
 	}
 
 	ret = fal_port_rxfc_status_get(0, port, &rx_fc);
 	if (ret){
+		mutex_unlock(&priv->reg_mutex);
 		return -1;
 	}
 
 	ret = fal_port_txfc_status_get(0, port, &tx_fc);
 	if (ret){
+		mutex_unlock(&priv->reg_mutex);
 		return -1;
 	}
 	mutex_unlock(&priv->reg_mutex);
