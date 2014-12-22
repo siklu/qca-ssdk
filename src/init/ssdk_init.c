@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2014, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -55,13 +55,15 @@
 #include "ref_misc.h"
 #include "ref_uci.h"
 #include "shell.h"
-
-
+#ifdef BOARD_AR71XX
+#include "ssdk_uci.h"
+#endif
 
 #define ISIS_CHIP_ID 0x18
 #define ISIS_CHIP_REG 0
 #define SHIVA_CHIP_ID 0x1f
 #define SHIVA_CHIP_REG 0x10
+
 
 /*
  * Using ISIS's address as default
@@ -70,6 +72,7 @@ static int switch_chip_id = ISIS_CHIP_ID;
 static int switch_chip_reg = ISIS_CHIP_REG;
 ssdk_dt_cfg ssdk_dt_global = {0};
 u8  __iomem      *hw_addr = NULL;
+
 
 static void
 qca_phy_read_port_link(struct qca_phy_priv *priv, int port,
@@ -649,7 +652,7 @@ static struct switch_attr qca_ar8327_vlan[] = {
 	},
 };
 
-static const struct switch_dev_ops qca_ar8327_sw_ops = {
+const struct switch_dev_ops qca_ar8327_sw_ops = {
 	.attr_global = {
 		.attr = qca_ar8327_globals,
 		.n_attr = ARRAY_SIZE(qca_ar8327_globals),
@@ -681,6 +684,7 @@ static int
 qca_phy_mib_task(struct qca_phy_priv *priv)
 {
 	qca_ar8327_sw_mib_task(&priv->sw_dev);
+	return 0;
 }
 
 static void
@@ -703,7 +707,7 @@ qca_phy_mib_work_task(struct work_struct *work)
 #endif
 }
 
-static int
+int
 qca_phy_mib_work_start(struct qca_phy_priv *priv)
 {
 	mutex_init(&priv->mib_lock);
@@ -724,13 +728,13 @@ qca_phy_mib_work_start(struct qca_phy_priv *priv)
 	return 0;
 }
 
-static void
+void
 qca_phy_mib_work_stop(struct qca_phy_priv *priv)
 {
 	cancel_delayed_work_sync(&priv->mib_dwork);
 }
 
-static int
+int
 qca_phy_id_chip(struct qca_phy_priv *priv)
 {
 	a_uint32_t value, version;
@@ -957,170 +961,204 @@ static struct phy_driver qca_phy_driver = {
 	.driver		= { .owner = THIS_MODULE },
 };
 
+struct ag71xx_mdio {
+	struct mii_bus		*mii_bus;
+	int			mii_irq[PHY_MAX_ADDR];
+	void __iomem		*mdio_base;
+};
+
 static struct mii_bus *miibus = NULL;
 extern ssdk_chip_type SSDK_CURRENT_CHIP_TYPE;
 
-#define UCI_TAKEOVER
-#ifdef UCI_TAKEOVER
+#ifdef BOARD_IPQ806X
+#define IPQ806X_MDIO_BUS_NAME			"mdio-gpio"
+#endif
+
 #ifdef BOARD_AR71XX
-#define SSDK_MAX_PHY  5
-struct ssdk_phy_8216prv {
-	struct switch_dev dev;
-	struct phy_device *phy;
-};
+#define IPQ806X_MDIO_BUS_NAME			"ag71xx-mdio"
+#endif
+#define MDIO_BUS_0						0
+#define MDIO_BUS_1						1
+#define IPQ806X_MDIO_BUS_NUM			MDIO_BUS_0
 
-struct ssdk_phy_7240prv {
-	struct mii_bus	*mii_bus;
-	char *swdata;
-	struct switch_dev swdev;
-	int member1_1;
-	int member1_2;
-	char member2;
-	bool vlan;
-	a_uint16_t vlan_id[16];
-	a_uint8_t  vlan_table[16];
-	a_uint8_t vlan_tagged;
-	a_uint16_t pvid[6];
-};
-
-struct ssdk_ag_member1 {
-	char *member1[2];
-	int member2;
-	char *member3;
-	int member4;
-	char *member5;
-	dma_addr_t member6;
-	char *member7;
-};
-
-struct ssdk_ag {
-	struct ssdk_ag_member1 member1_1 ____cacheline_aligned;
-	struct ssdk_ag_member1 member1_2 ____cacheline_aligned;
-	void *member2[5];
-	int member3[2];
-	struct net_device	*dev;
-	char *member4;
-	struct napi_struct	ssdk_napi;
-	spinlock_t		ssdk_lock;
-	int member5;
-	char *member6[2];
-	int member7;
-	char *member8;
-	dma_addr_t member9;
-	bool member10;
-	char *member11[2];
-	void  *phy_priv;
-};
-
-struct switch_dev *old_sw_dev = NULL;
-struct net_device    *sw_attach_dev = NULL;
-struct qca_phy_priv qca_priv;
-struct ssdk_phy_7240prv *ssdk_7240_prv = NULL;
-
-void ssdk_uci_vlan_enable_set(char enable)
+static inline void
+split_addr(uint32_t regaddr, uint16_t *r1, uint16_t *r2, uint16_t *page)
 {
-	ssdk_7240_prv->vlan = enable;
+	regaddr >>= 1;
+	*r1 = regaddr & 0x1e;
+
+	regaddr >>= 5;
+	*r2 = regaddr & 0x7;
+
+	regaddr >>= 3;
+	*page = regaddr & 0x3ff;
 }
 
-void ssdk_uci_vlan_ports_set(a_uint16_t *vlan_id, a_uint8_t tag,
-			a_uint16_t *pvid, a_uint8_t *vlan_table)
+uint32_t
+qca_ar8216_mii_read(int reg)
 {
-	memcpy(ssdk_7240_prv->vlan_id, vlan_id, sizeof(ssdk_7240_prv->vlan_id));
-	memcpy(ssdk_7240_prv->pvid, pvid, sizeof(ssdk_7240_prv->pvid));
-	memcpy(ssdk_7240_prv->vlan_table, vlan_table, sizeof(ssdk_7240_prv->vlan_table));
-	ssdk_7240_prv->vlan_tagged = tag;
+	struct mii_bus *bus = miibus;
+	uint16_t r1, r2, page;
+	uint16_t lo, hi;
+    static uint16_t irq_preepmt = 0;
+
+	split_addr((uint32_t) reg, &r1, &r2, &page);
+retry:
+    irq_preepmt = 0;
+    if(!in_interrupt()) {
+	    mutex_lock(&bus->mdio_lock);
+    } else {
+        if(mutex_trylock(&bus->mdio_lock) == 0) {
+            irq_preepmt = 1;
+        }
+    }
+
+	bus->write(bus, switch_chip_id, switch_chip_reg, page);
+	lo = bus->read(bus, 0x10 | r2, r1);
+	hi = bus->read(bus, 0x10 | r2, r1 + 1);
+
+	mutex_unlock(&bus->mdio_lock);
+    if(!in_interrupt()) {
+        if(irq_preepmt) {
+            goto retry;
+        }
+    }
+
+	return (hi << 16) | lo;
 }
 
-void ssdk_uci_vlan_table_set(a_uint8_t vlan, a_uint16_t index)
+void
+qca_ar8216_mii_write(int reg, uint32_t val)
 {
-	if(index < 16)
-		ssdk_7240_prv->vlan_table[index] = vlan;
+	struct mii_bus *bus = miibus;
+	uint16_t r1, r2, r3;
+	uint16_t lo, hi;
+    static uint16_t irq_preepmt = 0;
+
+	split_addr((a_uint32_t) reg, &r1, &r2, &r3);
+	lo = val & 0xffff;
+	hi = (a_uint16_t) (val >> 16);
+
+retry:
+    irq_preepmt = 0;
+    if(!in_interrupt()) {
+	    mutex_lock(&bus->mdio_lock);
+    } else {
+        if(mutex_trylock(&bus->mdio_lock) == 0) {
+            irq_preepmt = 1;
+        }
+    }
+
+	bus->write(bus, switch_chip_id, switch_chip_reg, r3);
+	if(SSDK_CURRENT_CHIP_TYPE != CHIP_SHIVA) {
+	    bus->write(bus, 0x10 | r2, r1, lo);
+	    bus->write(bus, 0x10 | r2, r1 + 1, hi);
+	} else {
+	    bus->write(bus, 0x10 | r2, r1 + 1, hi);
+	    bus->write(bus, 0x10 | r2, r1, lo);
+	}
+	mutex_unlock(&bus->mdio_lock);
+    if(!in_interrupt()) {
+        if(irq_preepmt) {
+            goto retry;
+        }
+    }
 }
 
-int ssdk_uci_takeover()
+static uint32_t switch_chip_id_adjuest()
 {
-	int phy_addr = 0;
-	struct ssdk_phy_8216prv *phy_8216prv = NULL;
-	struct phy_device *phydev = NULL;
-	struct qca_phy_priv *priv = &qca_priv;
-
-	if((qca_ar8216_mii_read(0)&0xff00)>>8 != 0x02)
+	uint32_t chip_version = 0;
+	chip_version = (qca_ar8216_mii_read(0)&0xff00)>>8;
+	if((chip_version !=0) && (chip_version !=0xff))
 		return 0;
 
-	memset(&qca_priv, 0, sizeof(qca_priv));
-	mutex_init(&priv->reg_mutex);
-	qca_phy_id_chip(priv);
-	priv->mii_read = qca_ar8216_mii_read;
-	priv->mii_write = qca_ar8216_mii_write;
-	priv->phy_write = qca_ar8327_phy_write;
-	priv->phy_dbg_write = qca_ar8327_phy_dbg_write;
-	priv->phy_mmd_write = qca_ar8327_mmd_write;
+	switch_chip_id = SHIVA_CHIP_ID;
+	switch_chip_reg = SHIVA_CHIP_REG;
 
-	priv->sw_dev.ops = &qca_ar8327_sw_ops;
-	priv->sw_dev.name = "QCA AR8327 AR8337";
-	priv->sw_dev.vlans = AR8327_MAX_VLANS;
-	priv->sw_dev.ports = AR8327_NUM_PORTS;
+	chip_version = (qca_ar8216_mii_read(0)&0xff00)>>8;
+	printk("chip_version:0x%x\n", chip_version);
+	return 1;
+}
 
-	/*try to get mii_bus phy_map*/
-	for (phy_addr = 0; phy_addr < SSDK_MAX_PHY; phy_addr++) {
-		if(miibus->phy_map[phy_addr]) {
-			phydev = miibus->phy_map[phy_addr];
-			phy_8216prv  = phydev->priv;
-			if(!phy_8216prv)
-				continue;
-			if(phy_8216prv->dev.ports > 0) {
-				/*got it*/
+static int miibus_get()
+{
+	struct device *miidev;
+#ifdef BOARD_AR71XX
+	struct ag71xx_mdio *am;
+#endif
+	uint8_t busid[MII_BUS_ID_SIZE];
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+	const __be32 *prop = NULL;
+	struct device_node *mdio_node = NULL;
+	struct platform_device *mdio_plat = NULL;
 
-				old_sw_dev = &phy_8216prv->dev;
-				sw_attach_dev = phydev->attached_dev;
+	mdio_node = of_find_compatible_node(NULL, NULL, "virtual,mdio-gpio");
+	if (!mdio_node) {
+		printk("getting virtual,mdio-gpio failed\n");
+		return 1;
+	}
 
-				unregister_switch(old_sw_dev);
-				printk("register switch!\n");
-				if(register_switch(&priv->sw_dev, sw_attach_dev) < 0)
-					printk("ssdk register switch fail!\n");
+	mdio_plat = of_find_device_by_node(mdio_node);
+	if (!mdio_plat) {
+		printk("cannot find platform device from mdio node\n");
+		return 1;
+	}
 
-				break;
-			}
+	miibus = dev_get_drvdata(&mdio_plat->dev);
+	if (!miibus) {
+		printk("cannot get mii bus reference from device data\n");
+		return 1;
+	}
+
+#else
+	snprintf(busid, MII_BUS_ID_SIZE, "%s.%d",
+		IPQ806X_MDIO_BUS_NAME, IPQ806X_MDIO_BUS_NUM);
+
+	miidev = bus_find_device_by_name(&platform_bus_type, NULL, busid);
+	if (!miidev) {
+		printk("cannot get mii bus\n");
+		return 1;
+	}
+
+#ifdef BOARD_AR71XX
+	am = dev_get_drvdata(miidev);
+	miibus = am->mii_bus;
+#else
+	miibus = dev_get_drvdata(miidev);
+#endif
+
+#ifdef BOARD_AR71XX
+	if(switch_chip_id_adjuest()) {
+
+		snprintf(busid, MII_BUS_ID_SIZE, "%s.%d",
+		IPQ806X_MDIO_BUS_NAME, MDIO_BUS_1);
+
+		miidev = bus_find_device_by_name(&platform_bus_type, NULL, busid);
+		if (!miidev) {
+			printk("cannot get mii bus\n");
+			return 1;
 		}
-	}
 
-	if(phy_addr >= SSDK_MAX_PHY) {
-		/*not found it, try to get from ag71xx from eth1*/
-		struct net_device *ag_dev = NULL;
-		ag_dev = dev_get_by_name(&init_net, "eth1");
-		if(ag_dev) {
-			struct ssdk_ag *ag = NULL;
-
-			ag = netdev_priv(ag_dev);
-			if(ag) {
-				//struct ssdk_phy_7240prv *prv = NULL;
-				sw_attach_dev = ag->dev;
-				ssdk_7240_prv = ag->phy_priv;
-				if(ssdk_7240_prv) {
-					old_sw_dev = &ssdk_7240_prv->swdev;
-					unregister_switch(old_sw_dev);
-					printk("register switch!!\n");
-					if(register_switch(&priv->sw_dev, sw_attach_dev) < 0)
-						printk("ssdk register switch fail!!\n");
-					}
-			}
-		}
+		am = dev_get_drvdata(miidev);
+		miibus = am->mii_bus;
+		printk("chip_version:0x%x\n", (qca_ar8216_mii_read(0)&0xff00)>>8);
 	}
+#endif
 
-	if(sw_attach_dev) {
-		qca_phy_mib_work_start(&qca_priv);
+	if(!miidev){
+		printk("mdio bus '%s' get FAIL\n", busid);
+		return 1;
 	}
+#endif
 
 	return 0;
 }
-#endif
-#endif
 
 
 int
 ssdk_plat_init(void)
 {
-	#ifdef UCI_TAKEOVER
+	#ifdef BOARD_AR71XX
 	int rv = 0;
 	#endif
     printk("ssdk_plat_init start\n");
@@ -1150,13 +1188,11 @@ ssdk_plat_init(void)
 		}
 
 		printk("Register QCA PHY driver\n");
-		#ifndef UCI_TAKEOVER
+		#ifndef BOARD_AR71XX
 		return phy_driver_register(&qca_phy_driver);
 		#else
 		rv = phy_driver_register(&qca_phy_driver);
-		#ifdef BOARD_AR71XX
-		ssdk_uci_takeover();
-		#endif
+		ssdk_uci_takeover_init();
 		return rv;
 		#endif
 	} else
@@ -1174,38 +1210,12 @@ ssdk_plat_exit(void)
 		phy_driver_unregister(&qca_phy_driver);
 #endif
 
-#ifdef UCI_TAKEOVER
 	#ifdef BOARD_AR71XX
-		if(sw_attach_dev && old_sw_dev) {
-			unregister_switch(&qca_priv.sw_dev);
-			register_switch(old_sw_dev, sw_attach_dev);
-			qca_phy_mib_work_stop(&qca_priv);
-			kfree(qca_priv.mib_counters);
-		}
+		ssdk_uci_takeover_exit();
 	#endif
-#endif
 	}
 
 }
-
-#ifdef BOARD_IPQ806X
-#define IPQ806X_MDIO_BUS_NAME			"mdio-gpio"
-#endif
-
-#ifdef BOARD_AR71XX
-#define IPQ806X_MDIO_BUS_NAME			"ag71xx-mdio"
-#endif
-#define MDIO_BUS_0						0
-#define MDIO_BUS_1						1
-#define IPQ806X_MDIO_BUS_NUM			MDIO_BUS_0
-
-
-struct ag71xx_mdio {
-	struct mii_bus		*mii_bus;
-	int			mii_irq[PHY_MAX_ADDR];
-	void __iomem		*mdio_base;
-};
-
 
 
 
@@ -1390,104 +1400,6 @@ ssdk_hsl_access_mode_set(a_uint32_t dev_id, hsl_access_mode reg_mode)
     return rv;
 }
 
-static inline void
-split_addr(uint32_t regaddr, uint16_t *r1, uint16_t *r2, uint16_t *page)
-{
-	regaddr >>= 1;
-	*r1 = regaddr & 0x1e;
-
-	regaddr >>= 5;
-	*r2 = regaddr & 0x7;
-
-	regaddr >>= 3;
-	*page = regaddr & 0x3ff;
-}
-
-uint32_t
-qca_ar8216_mii_read(int reg)
-{
-	struct mii_bus *bus = miibus;
-	uint16_t r1, r2, page;
-	uint16_t lo, hi;
-    static uint16_t irq_preepmt = 0;
-
-	split_addr((uint32_t) reg, &r1, &r2, &page);
-retry:
-    irq_preepmt = 0;
-    if(!in_interrupt()) {
-	    mutex_lock(&bus->mdio_lock);
-    } else {
-        if(mutex_trylock(&bus->mdio_lock) == 0) {
-            irq_preepmt = 1;
-        }
-    }
-
-	bus->write(bus, switch_chip_id, switch_chip_reg, page);
-	lo = bus->read(bus, 0x10 | r2, r1);
-	hi = bus->read(bus, 0x10 | r2, r1 + 1);
-
-	mutex_unlock(&bus->mdio_lock);
-    if(!in_interrupt()) {
-        if(irq_preepmt) {
-            goto retry;
-        }
-    }
-
-	return (hi << 16) | lo;
-}
-
-void
-qca_ar8216_mii_write(int reg, uint32_t val)
-{
-	struct mii_bus *bus = miibus;
-	uint16_t r1, r2, r3;
-	uint16_t lo, hi;
-    static uint16_t irq_preepmt = 0;
-
-	split_addr((a_uint32_t) reg, &r1, &r2, &r3);
-	lo = val & 0xffff;
-	hi = (a_uint16_t) (val >> 16);
-
-retry:
-    irq_preepmt = 0;
-    if(!in_interrupt()) {
-	    mutex_lock(&bus->mdio_lock);
-    } else {
-        if(mutex_trylock(&bus->mdio_lock) == 0) {
-            irq_preepmt = 1;
-        }
-    }
-
-	bus->write(bus, switch_chip_id, switch_chip_reg, r3);
-	if(SSDK_CURRENT_CHIP_TYPE != CHIP_SHIVA) {
-	    bus->write(bus, 0x10 | r2, r1, lo);
-	    bus->write(bus, 0x10 | r2, r1 + 1, hi);
-	} else {
-	    bus->write(bus, 0x10 | r2, r1 + 1, hi);
-	    bus->write(bus, 0x10 | r2, r1, lo);
-	}
-	mutex_unlock(&bus->mdio_lock);
-    if(!in_interrupt()) {
-        if(irq_preepmt) {
-            goto retry;
-        }
-    }
-}
-
-static uint32_t switch_chip_id_adjuest()
-{
-	uint32_t chip_version = 0;
-	chip_version = (qca_ar8216_mii_read(0)&0xff00)>>8;
-	if((chip_version !=0) && (chip_version !=0xff))
-		return 0;
-
-	switch_chip_id = SHIVA_CHIP_ID;
-	switch_chip_reg = SHIVA_CHIP_REG;
-
-	chip_version = (qca_ar8216_mii_read(0)&0xff00)>>8;
-	printk("chip_version:0x%x\n", chip_version);
-	return 1;
-}
 
 static sw_error_t
 qca_ar8327_phy_read(a_uint32_t dev_id, a_uint32_t phy_addr,
@@ -1518,7 +1430,7 @@ retry:
     return 0;
 }
 
-static sw_error_t
+sw_error_t
 qca_ar8327_phy_write(a_uint32_t dev_id, a_uint32_t phy_addr,
                             a_uint32_t reg, a_uint16_t data)
 {
@@ -1547,7 +1459,7 @@ retry:
     return 0;
 }
 
-static void
+void
 qca_ar8327_phy_dbg_write(a_uint32_t dev_id, a_uint32_t phy_addr,
 		                a_uint16_t dbg_addr, a_uint16_t dbg_data)
 {
@@ -1576,7 +1488,7 @@ retry:
     
 }
 
-static void
+void
 qca_ar8327_mmd_write(a_uint32_t dev_id, a_uint32_t phy_addr,
                           a_uint16_t addr, a_uint16_t data)
 {
@@ -1605,79 +1517,6 @@ retry:
 
 }
 
-static int miibus_get()
-{
-	struct device *miidev;
-#ifdef BOARD_AR71XX
-	struct ag71xx_mdio *am;
-#endif
-	uint8_t busid[MII_BUS_ID_SIZE];
-#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-	const __be32 *prop = NULL;
-	struct device_node *mdio_node = NULL;
-	struct platform_device *mdio_plat = NULL;
-
-	mdio_node = of_find_compatible_node(NULL, NULL, "virtual,mdio-gpio");
-	if (!mdio_node) {
-		printk("getting virtual,mdio-gpio failed\n");
-		return 1;
-	}
-
-	mdio_plat = of_find_device_by_node(mdio_node);
-	if (!mdio_plat) {
-		printk("cannot find platform device from mdio node\n");
-		return 1;
-	}
-
-	miibus = dev_get_drvdata(&mdio_plat->dev);
-	if (!miibus) {
-		printk("cannot get mii bus reference from device data\n");
-		return 1;
-	}
-
-#else
-	snprintf(busid, MII_BUS_ID_SIZE, "%s.%d",
-		IPQ806X_MDIO_BUS_NAME, IPQ806X_MDIO_BUS_NUM);
-
-	miidev = bus_find_device_by_name(&platform_bus_type, NULL, busid);
-	if (!miidev) {
-		printk("cannot get mii bus\n");
-		return 1;
-	}
-
-#ifdef BOARD_AR71XX
-	am = dev_get_drvdata(miidev);
-	miibus = am->mii_bus;
-#else
-	miibus = dev_get_drvdata(miidev);
-#endif
-
-#ifdef BOARD_AR71XX
-	if(switch_chip_id_adjuest()) {
-
-		snprintf(busid, MII_BUS_ID_SIZE, "%s.%d",
-		IPQ806X_MDIO_BUS_NAME, MDIO_BUS_1);
-
-		miidev = bus_find_device_by_name(&platform_bus_type, NULL, busid);
-		if (!miidev) {
-			printk("cannot get mii bus\n");
-			return 1;
-		}
-
-		am = dev_get_drvdata(miidev);
-		miibus = am->mii_bus;
-		printk("chip_version:0x%x\n", (qca_ar8216_mii_read(0)&0xff00)>>8);
-	}
-#endif
-
-	if(!miidev){
-		printk("mdio bus '%s' get FAIL\n", busid);
-		return 1;
-	}
-#endif
-
-	return 0;
-}
 
 uint32_t
 qca_switch_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
