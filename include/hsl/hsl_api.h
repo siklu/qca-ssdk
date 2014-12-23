@@ -207,6 +207,24 @@ extern "C" {
     typedef sw_error_t
     (*hsl_rtd_pppoe_en_get) (a_uint32_t dev_id, a_bool_t *enable);
 
+	typedef sw_error_t
+    (*hsl_global_macaddr_set)(a_uint32_t dev_id, fal_mac_addr_t * addr);
+
+    typedef sw_error_t
+    (*hsl_global_macaddr_get)(a_uint32_t dev_id, fal_mac_addr_t * addr);
+
+	typedef sw_error_t
+    (*hsl_lldp_status_set) (a_uint32_t dev_id, a_bool_t enable);
+
+    typedef sw_error_t
+    (*hsl_lldp_status_get) (a_uint32_t dev_id, a_bool_t * enable);
+
+	typedef sw_error_t
+    (*hsl_frame_crc_reserve_set) (a_uint32_t dev_id, a_bool_t enable);
+
+    typedef sw_error_t
+    (*hsl_frame_crc_reserve_get) (a_uint32_t dev_id, a_bool_t *enable);
+
     /* Port Control */
 #define PORT_CONTROL_FUNC_PROTOTYPE_DEF
     typedef sw_error_t
@@ -1685,6 +1703,12 @@ extern "C" {
         hsl_rtd_pppoe_en_set rtd_pppoe_en_set;
         hsl_rtd_pppoe_en_get rtd_pppoe_en_get;
         hsl_intr_status_mac_linkchg_clear intr_status_mac_linkchg_clear;
+		hsl_global_macaddr_set global_macaddr_set;
+		hsl_global_macaddr_get global_macaddr_get;
+		hsl_lldp_status_set lldp_status_set;
+        hsl_lldp_status_get lldp_status_get;
+		hsl_frame_crc_reserve_set frame_crc_reserve_set;
+        hsl_frame_crc_reserve_get frame_crc_reserve_get;
 
 
         /* Port control */
@@ -2045,6 +2069,11 @@ extern "C" {
         hsl_napt_get napt_get;
         hsl_napt_next napt_next;
         hsl_napt_counter_bind napt_counter_bind;
+		hsl_napt_add flow_add;
+        hsl_napt_del flow_del;
+        hsl_napt_get flow_get;
+        hsl_napt_next flow_next;
+        hsl_napt_counter_bind flow_counter_bind;
         hsl_nat_status_set nat_status_set;
         hsl_nat_status_get nat_status_get;
         hsl_nat_hash_mode_set nat_hash_mode_set;

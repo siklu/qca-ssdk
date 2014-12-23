@@ -327,6 +327,10 @@ hsl_ssdk_cfg(a_uint32_t dev_id, ssdk_cfg_t *ssdk_cfg)
             aos_mem_copy(ssdk_cfg->chip_type, "isisc", sizeof("isisc"));
             break;
 
+        case CHIP_DESS:
+            aos_mem_copy(ssdk_cfg->chip_type, "dess", sizeof("dess"));
+            break;
+
         case CHIP_UNSPECIFIED:
 #if defined ATHENA
             aos_mem_copy(ssdk_cfg->chip_type, "athena", sizeof("athena"));
