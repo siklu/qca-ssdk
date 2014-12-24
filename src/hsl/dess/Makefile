@@ -9,8 +9,16 @@ ifeq (TRUE, $(IN_ACL))
   SRC_LIST += dess_acl.c dess_acl_parse.c
 endif
 
+ifeq (TRUE, $(IN_FDB))
+  SRC_LIST += dess_fdb.c
+endif
+
 ifeq (TRUE, $(IN_MIB))
   SRC_LIST += dess_mib.c
+endif
+
+ifeq (TRUE, $(IN_MISC))
+  SRC_LIST += dess_misc.c
 endif
 
 ifeq (TRUE, $(IN_PORTVLAN))
@@ -28,6 +36,10 @@ ifeq (TRUE, $(IN_COSMAP))
   SRC_LIST += dess_cosmap.c
 endif
 
+
+ifeq (TRUE, $(IN_NAT))
+  SRC_LIST += dess_nat.c
+endif
 ifeq (TRUE, $(IN_SEC))
   SRC_LIST += dess_sec.c
 endif

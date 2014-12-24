@@ -145,6 +145,80 @@ extern "C" {
 #define PORTVLAN_API_PARAM
 #endif
 
+#ifdef IN_FDB
+#define FDB_API \
+    SW_API_DEF(SW_API_FDB_ADD, dess_fdb_add), \
+    SW_API_DEF(SW_API_FDB_DELALL, dess_fdb_del_all), \
+    SW_API_DEF(SW_API_FDB_DELPORT,dess_fdb_del_by_port), \
+    SW_API_DEF(SW_API_FDB_DELMAC, dess_fdb_del_by_mac), \
+    SW_API_DEF(SW_API_FDB_FIND,   dess_fdb_find), \
+    SW_API_DEF(SW_API_FDB_EXTEND_NEXT,    dess_fdb_extend_next),  \
+    SW_API_DEF(SW_API_FDB_EXTEND_FIRST,   dess_fdb_extend_first),  \
+    SW_API_DEF(SW_API_FDB_TRANSFER,       dess_fdb_transfer),  \
+    SW_API_DEF(SW_API_FDB_PT_LEARN_SET,   dess_fdb_port_learn_set), \
+    SW_API_DEF(SW_API_FDB_PT_LEARN_GET,   dess_fdb_port_learn_get), \
+    SW_API_DEF(SW_API_FDB_AGE_CTRL_SET,   dess_fdb_age_ctrl_set), \
+    SW_API_DEF(SW_API_FDB_AGE_CTRL_GET,   dess_fdb_age_ctrl_get), \
+    SW_API_DEF(SW_API_FDB_VLAN_IVL_SVL_SET, dess_fdb_vlan_ivl_svl_set),\
+    SW_API_DEF(SW_API_FDB_VLAN_IVL_SVL_GET, dess_fdb_vlan_ivl_svl_get),\
+    SW_API_DEF(SW_API_FDB_AGE_TIME_SET,   dess_fdb_age_time_set), \
+    SW_API_DEF(SW_API_FDB_AGE_TIME_GET,   dess_fdb_age_time_get), \
+    SW_API_DEF(SW_API_PT_FDB_LEARN_LIMIT_SET,    dess_port_fdb_learn_limit_set),  \
+    SW_API_DEF(SW_API_PT_FDB_LEARN_LIMIT_GET,    dess_port_fdb_learn_limit_get),  \
+    SW_API_DEF(SW_API_PT_FDB_LEARN_EXCEED_CMD_SET,    dess_port_fdb_learn_exceed_cmd_set),  \
+    SW_API_DEF(SW_API_PT_FDB_LEARN_EXCEED_CMD_GET,    dess_port_fdb_learn_exceed_cmd_get), \
+    SW_API_DEF(SW_API_FDB_LEARN_LIMIT_SET,    dess_fdb_learn_limit_set),  \
+    SW_API_DEF(SW_API_FDB_LEARN_LIMIT_GET,    dess_fdb_learn_limit_get),  \
+    SW_API_DEF(SW_API_FDB_LEARN_EXCEED_CMD_SET,    dess_fdb_learn_exceed_cmd_set),  \
+    SW_API_DEF(SW_API_FDB_LEARN_EXCEED_CMD_GET,    dess_fdb_learn_exceed_cmd_get),  \
+    SW_API_DEF(SW_API_FDB_RESV_ADD, dess_fdb_resv_add), \
+    SW_API_DEF(SW_API_FDB_RESV_DEL, dess_fdb_resv_del), \
+    SW_API_DEF(SW_API_FDB_RESV_FIND, dess_fdb_resv_find), \
+    SW_API_DEF(SW_API_FDB_RESV_ITERATE, dess_fdb_resv_iterate), \
+    SW_API_DEF(SW_API_FDB_PT_LEARN_STATIC_SET,   dess_fdb_port_learn_static_set), \
+    SW_API_DEF(SW_API_FDB_PT_LEARN_STATIC_GET,   dess_fdb_port_learn_static_get), \
+    SW_API_DEF(SW_API_FDB_PORT_ADD,   dess_fdb_port_add), \
+    SW_API_DEF(SW_API_FDB_PORT_DEL,   dess_fdb_port_del),
+
+#define FDB_API_PARAM \
+    SW_API_DESC(SW_API_FDB_ADD) \
+    SW_API_DESC(SW_API_FDB_DELALL)  \
+    SW_API_DESC(SW_API_FDB_DELPORT) \
+    SW_API_DESC(SW_API_FDB_DELMAC) \
+    SW_API_DESC(SW_API_FDB_FIND) \
+    SW_API_DESC(SW_API_FDB_EXTEND_NEXT)  \
+    SW_API_DESC(SW_API_FDB_EXTEND_FIRST) \
+    SW_API_DESC(SW_API_FDB_TRANSFER) \
+    SW_API_DESC(SW_API_FDB_PT_LEARN_SET) \
+    SW_API_DESC(SW_API_FDB_PT_LEARN_GET) \
+    SW_API_DESC(SW_API_FDB_AGE_CTRL_SET) \
+    SW_API_DESC(SW_API_FDB_AGE_CTRL_GET) \
+    SW_API_DESC(SW_API_FDB_VLAN_IVL_SVL_SET) \
+    SW_API_DESC(SW_API_FDB_VLAN_IVL_SVL_GET) \
+    SW_API_DESC(SW_API_FDB_AGE_TIME_SET) \
+    SW_API_DESC(SW_API_FDB_AGE_TIME_GET) \
+    SW_API_DESC(SW_API_PT_FDB_LEARN_LIMIT_SET)  \
+    SW_API_DESC(SW_API_PT_FDB_LEARN_LIMIT_GET)  \
+    SW_API_DESC(SW_API_PT_FDB_LEARN_EXCEED_CMD_SET)  \
+    SW_API_DESC(SW_API_PT_FDB_LEARN_EXCEED_CMD_GET)  \
+    SW_API_DESC(SW_API_FDB_LEARN_LIMIT_SET)  \
+    SW_API_DESC(SW_API_FDB_LEARN_LIMIT_GET)  \
+    SW_API_DESC(SW_API_FDB_LEARN_EXCEED_CMD_SET)  \
+    SW_API_DESC(SW_API_FDB_LEARN_EXCEED_CMD_GET)  \
+    SW_API_DESC(SW_API_FDB_RESV_ADD)  \
+    SW_API_DESC(SW_API_FDB_RESV_DEL)  \
+    SW_API_DESC(SW_API_FDB_RESV_FIND) \
+    SW_API_DESC(SW_API_FDB_RESV_ITERATE) \
+    SW_API_DESC(SW_API_FDB_PT_LEARN_STATIC_SET) \
+    SW_API_DESC(SW_API_FDB_PT_LEARN_STATIC_GET) \
+    SW_API_DESC(SW_API_FDB_PORT_ADD)  \
+    SW_API_DESC(SW_API_FDB_PORT_DEL)
+
+#else
+#define FDB_API
+#define FDB_API_PARAM
+#endif
+
 
 #ifdef IN_ACL
 #define ACL_API \
@@ -283,6 +357,128 @@ extern "C" {
 #endif
 
 
+#ifdef IN_MISC
+#define MISC_API \
+    SW_API_DEF(SW_API_FRAME_MAX_SIZE_SET, dess_frame_max_size_set), \
+    SW_API_DEF(SW_API_FRAME_MAX_SIZE_GET, dess_frame_max_size_get), \
+    SW_API_DEF(SW_API_PT_UNK_UC_FILTER_SET, dess_port_unk_uc_filter_set), \
+    SW_API_DEF(SW_API_PT_UNK_UC_FILTER_GET, dess_port_unk_uc_filter_get), \
+    SW_API_DEF(SW_API_PT_UNK_MC_FILTER_SET, dess_port_unk_mc_filter_set), \
+    SW_API_DEF(SW_API_PT_UNK_MC_FILTER_GET, dess_port_unk_mc_filter_get), \
+    SW_API_DEF(SW_API_PT_BC_FILTER_SET, dess_port_bc_filter_set), \
+    SW_API_DEF(SW_API_PT_BC_FILTER_GET, dess_port_bc_filter_get), \
+    SW_API_DEF(SW_API_CPU_PORT_STATUS_SET, dess_cpu_port_status_set), \
+    SW_API_DEF(SW_API_CPU_PORT_STATUS_GET, dess_cpu_port_status_get), \
+    SW_API_DEF(SW_API_PPPOE_CMD_SET, dess_pppoe_cmd_set), \
+    SW_API_DEF(SW_API_PPPOE_CMD_GET, dess_pppoe_cmd_get), \
+    SW_API_DEF(SW_API_PPPOE_STATUS_SET, dess_pppoe_status_set), \
+    SW_API_DEF(SW_API_PPPOE_STATUS_GET, dess_pppoe_status_get), \
+    SW_API_DEF(SW_API_PT_DHCP_SET, dess_port_dhcp_set), \
+    SW_API_DEF(SW_API_PT_DHCP_GET, dess_port_dhcp_get), \
+    SW_API_DEF(SW_API_ARP_CMD_SET, dess_arp_cmd_set), \
+    SW_API_DEF(SW_API_ARP_CMD_GET, dess_arp_cmd_get), \
+    SW_API_DEF(SW_API_EAPOL_CMD_SET, dess_eapol_cmd_set), \
+    SW_API_DEF(SW_API_EAPOL_CMD_GET, dess_eapol_cmd_get), \
+    SW_API_DEF(SW_API_EAPOL_STATUS_SET, dess_eapol_status_set), \
+    SW_API_DEF(SW_API_EAPOL_STATUS_GET, dess_eapol_status_get), \
+    SW_API_DEF(SW_API_RIPV1_STATUS_SET, dess_ripv1_status_set), \
+    SW_API_DEF(SW_API_RIPV1_STATUS_GET, dess_ripv1_status_get), \
+    SW_API_DEF(SW_API_PT_ARP_REQ_STATUS_SET, dess_port_arp_req_status_set), \
+    SW_API_DEF(SW_API_PT_ARP_REQ_STATUS_GET, dess_port_arp_req_status_get), \
+    SW_API_DEF(SW_API_PT_ARP_ACK_STATUS_SET, dess_port_arp_ack_status_set), \
+    SW_API_DEF(SW_API_PT_ARP_ACK_STATUS_GET, dess_port_arp_ack_status_get), \
+    SW_API_DEF(SW_API_PPPOE_SESSION_TABLE_ADD, dess_pppoe_session_table_add), \
+    SW_API_DEF(SW_API_PPPOE_SESSION_TABLE_DEL, dess_pppoe_session_table_del), \
+    SW_API_DEF(SW_API_PPPOE_SESSION_TABLE_GET, dess_pppoe_session_table_get), \
+    SW_API_DEF(SW_API_PPPOE_SESSION_ID_SET, dess_pppoe_session_id_set), \
+    SW_API_DEF(SW_API_PPPOE_SESSION_ID_GET, dess_pppoe_session_id_get), \
+    SW_API_DEF(SW_API_INTR_MASK_SET, dess_intr_mask_set), \
+    SW_API_DEF(SW_API_INTR_MASK_GET, dess_intr_mask_get), \
+    SW_API_DEF(SW_API_INTR_STATUS_GET, dess_intr_status_get),   \
+    SW_API_DEF(SW_API_INTR_STATUS_CLEAR, dess_intr_status_clear), \
+    SW_API_DEF(SW_API_INTR_PORT_LINK_MASK_SET, dess_intr_port_link_mask_set), \
+    SW_API_DEF(SW_API_INTR_PORT_LINK_MASK_GET, dess_intr_port_link_mask_get), \
+    SW_API_DEF(SW_API_INTR_PORT_LINK_STATUS_GET, dess_intr_port_link_status_get),\
+    SW_API_DEF(SW_API_INTR_MASK_MAC_LINKCHG_SET, dess_intr_mask_mac_linkchg_set), \
+    SW_API_DEF(SW_API_INTR_MASK_MAC_LINKCHG_GET, dess_intr_mask_mac_linkchg_get), \
+    SW_API_DEF(SW_API_INTR_STATUS_MAC_LINKCHG_GET, dess_intr_status_mac_linkchg_get), \
+        SW_API_DEF(SW_API_INTR_STATUS_MAC_LINKCHG_CLEAR, dess_intr_status_mac_linkchg_clear), \
+    SW_API_DEF(SW_API_CPU_VID_EN_SET, dess_cpu_vid_en_set), \
+    SW_API_DEF(SW_API_CPU_VID_EN_GET, dess_cpu_vid_en_get), \
+    SW_API_DEF(SW_API_RTD_PPPOE_EN_SET, dess_rtd_pppoe_en_set), \
+    SW_API_DEF(SW_API_RTD_PPPOE_EN_GET, dess_rtd_pppoe_en_get), \
+	SW_API_DEF(SW_API_GLOBAL_MACADDR_SET, dess_global_macaddr_set), \
+    SW_API_DEF(SW_API_GLOBAL_MACADDR_GET, dess_global_macaddr_get), \
+    SW_API_DEF(SW_API_LLDP_STATUS_SET, dess_lldp_status_set), \
+    SW_API_DEF(SW_API_LLDP_STATUS_GET, dess_lldp_status_get), \
+    SW_API_DEF(SW_API_FRAME_CRC_RESERVE_SET, dess_frame_crc_reserve_set), \
+    SW_API_DEF(SW_API_FRAME_CRC_RESERVE_GET, dess_frame_crc_reserve_get),
+
+#define MISC_API_PARAM \
+    SW_API_DESC(SW_API_FRAME_MAX_SIZE_SET)  \
+    SW_API_DESC(SW_API_FRAME_MAX_SIZE_GET)  \
+    SW_API_DESC(SW_API_PT_UNK_UC_FILTER_SET)  \
+    SW_API_DESC(SW_API_PT_UNK_UC_FILTER_GET)  \
+    SW_API_DESC(SW_API_PT_UNK_MC_FILTER_SET)  \
+    SW_API_DESC(SW_API_PT_UNK_MC_FILTER_GET)  \
+    SW_API_DESC(SW_API_PT_BC_FILTER_SET)  \
+    SW_API_DESC(SW_API_PT_BC_FILTER_GET)  \
+    SW_API_DESC(SW_API_CPU_PORT_STATUS_SET)  \
+    SW_API_DESC(SW_API_CPU_PORT_STATUS_GET)  \
+    SW_API_DESC(SW_API_PPPOE_CMD_SET)  \
+    SW_API_DESC(SW_API_PPPOE_CMD_GET)  \
+    SW_API_DESC(SW_API_PPPOE_STATUS_SET)  \
+    SW_API_DESC(SW_API_PPPOE_STATUS_GET)  \
+    SW_API_DESC(SW_API_PT_DHCP_SET)  \
+    SW_API_DESC(SW_API_PT_DHCP_GET)  \
+    SW_API_DESC(SW_API_ARP_CMD_SET)  \
+    SW_API_DESC(SW_API_ARP_CMD_GET)  \
+    SW_API_DESC(SW_API_EAPOL_CMD_SET) \
+    SW_API_DESC(SW_API_EAPOL_CMD_GET) \
+    SW_API_DESC(SW_API_PPPOE_SESSION_ADD)  \
+    SW_API_DESC(SW_API_PPPOE_SESSION_DEL)  \
+    SW_API_DESC(SW_API_PPPOE_SESSION_GET)  \
+    SW_API_DESC(SW_API_EAPOL_STATUS_SET)  \
+    SW_API_DESC(SW_API_EAPOL_STATUS_GET)  \
+    SW_API_DESC(SW_API_RIPV1_STATUS_SET)  \
+    SW_API_DESC(SW_API_RIPV1_STATUS_GET) \
+    SW_API_DESC(SW_API_PT_ARP_REQ_STATUS_SET) \
+    SW_API_DESC(SW_API_PT_ARP_REQ_STATUS_GET) \
+    SW_API_DESC(SW_API_PT_ARP_ACK_STATUS_SET) \
+    SW_API_DESC(SW_API_PT_ARP_ACK_STATUS_GET) \
+    SW_API_DESC(SW_API_PPPOE_SESSION_TABLE_ADD) \
+    SW_API_DESC(SW_API_PPPOE_SESSION_TABLE_DEL) \
+    SW_API_DESC(SW_API_PPPOE_SESSION_TABLE_GET) \
+    SW_API_DESC(SW_API_PPPOE_SESSION_ID_SET) \
+    SW_API_DESC(SW_API_PPPOE_SESSION_ID_GET) \
+    SW_API_DESC(SW_API_INTR_MASK_SET) \
+    SW_API_DESC(SW_API_INTR_MASK_GET) \
+    SW_API_DESC(SW_API_INTR_STATUS_GET)   \
+    SW_API_DESC(SW_API_INTR_STATUS_CLEAR) \
+    SW_API_DESC(SW_API_INTR_PORT_LINK_MASK_SET) \
+    SW_API_DESC(SW_API_INTR_PORT_LINK_MASK_GET) \
+    SW_API_DESC(SW_API_INTR_PORT_LINK_STATUS_GET) \
+     SW_API_DESC(SW_API_INTR_MASK_MAC_LINKCHG_SET) \
+    SW_API_DESC(SW_API_INTR_MASK_MAC_LINKCHG_GET) \
+    SW_API_DESC(SW_API_INTR_STATUS_MAC_LINKCHG_GET) \
+    SW_API_DESC(SW_API_INTR_STATUS_MAC_LINKCHG_CLEAR) \
+    SW_API_DESC(SW_API_CPU_VID_EN_SET)  \
+    SW_API_DESC(SW_API_CPU_VID_EN_GET)  \
+    SW_API_DESC(SW_API_RTD_PPPOE_EN_SET)  \
+    SW_API_DESC(SW_API_RTD_PPPOE_EN_GET) \
+    SW_API_DESC(SW_API_GLOBAL_MACADDR_SET)  \
+    SW_API_DESC(SW_API_GLOBAL_MACADDR_GET) \
+    SW_API_DESC(SW_API_LLDP_STATUS_SET)  \
+    SW_API_DESC(SW_API_LLDP_STATUS_GET)  \
+    SW_API_DESC(SW_API_FRAME_CRC_RESERVE_SET)  \
+    SW_API_DESC(SW_API_FRAME_CRC_RESERVE_GET)
+
+#else
+#define MISC_API
+#define MISC_API_PARAM
+#endif
+
+
 #ifdef IN_COSMAP
 #define COSMAP_API \
     SW_API_DEF(SW_API_COSMAP_DSCP_TO_PRI_SET, dess_cosmap_dscp_to_pri_set), \
@@ -365,6 +561,82 @@ extern "C" {
 #define SEC_API_PARAM
 #endif
 
+
+#ifdef IN_NAT
+#define NAT_API \
+    SW_API_DEF(SW_API_NAT_ADD, dess_nat_add), \
+    SW_API_DEF(SW_API_NAT_DEL, dess_nat_del), \
+    SW_API_DEF(SW_API_NAT_GET, dess_nat_get), \
+    SW_API_DEF(SW_API_NAT_NEXT, dess_nat_next), \
+    SW_API_DEF(SW_API_NAT_COUNTER_BIND, dess_nat_counter_bind), \
+    SW_API_DEF(SW_API_NAPT_ADD, dess_napt_add), \
+    SW_API_DEF(SW_API_NAPT_DEL, dess_napt_del), \
+    SW_API_DEF(SW_API_NAPT_GET, dess_napt_get), \
+    SW_API_DEF(SW_API_NAPT_NEXT, dess_napt_next), \
+    SW_API_DEF(SW_API_NAPT_COUNTER_BIND, dess_napt_counter_bind), \
+    SW_API_DEF(SW_API_FLOW_ADD, dess_flow_add), \
+    SW_API_DEF(SW_API_FLOW_DEL, dess_flow_del), \
+    SW_API_DEF(SW_API_FLOW_GET, dess_flow_get), \
+    SW_API_DEF(SW_API_FLOW_NEXT, dess_flow_next), \
+    SW_API_DEF(SW_API_FLOW_COUNTER_BIND, dess_flow_counter_bind), \
+    SW_API_DEF(SW_API_NAT_STATUS_SET, dess_nat_status_set), \
+    SW_API_DEF(SW_API_NAT_STATUS_GET, dess_nat_status_get), \
+    SW_API_DEF(SW_API_NAT_HASH_MODE_SET, dess_nat_hash_mode_set), \
+    SW_API_DEF(SW_API_NAT_HASH_MODE_GET, dess_nat_hash_mode_get), \
+    SW_API_DEF(SW_API_NAPT_STATUS_SET, dess_napt_status_set), \
+    SW_API_DEF(SW_API_NAPT_STATUS_GET, dess_napt_status_get), \
+    SW_API_DEF(SW_API_NAPT_MODE_SET, dess_napt_mode_set), \
+    SW_API_DEF(SW_API_NAPT_MODE_GET, dess_napt_mode_get), \
+    SW_API_DEF(SW_API_PRV_BASE_ADDR_SET, dess_nat_prv_base_addr_set), \
+    SW_API_DEF(SW_API_PRV_BASE_ADDR_GET, dess_nat_prv_base_addr_get), \
+    SW_API_DEF(SW_API_PUB_ADDR_ENTRY_ADD, dess_nat_pub_addr_add), \
+    SW_API_DEF(SW_API_PUB_ADDR_ENTRY_DEL, dess_nat_pub_addr_del), \
+    SW_API_DEF(SW_API_PUB_ADDR_ENTRY_NEXT, dess_nat_pub_addr_next), \
+    SW_API_DEF(SW_API_NAT_UNK_SESSION_CMD_SET, dess_nat_unk_session_cmd_set), \
+    SW_API_DEF(SW_API_NAT_UNK_SESSION_CMD_GET, dess_nat_unk_session_cmd_get), \
+    SW_API_DEF(SW_API_PRV_BASE_MASK_SET, dess_nat_prv_base_mask_set), \
+    SW_API_DEF(SW_API_PRV_BASE_MASK_GET, dess_nat_prv_base_mask_get), \
+    SW_API_DEF(SW_API_NAT_GLOBAL_SET, dess_nat_global_set),
+
+#define NAT_API_PARAM \
+    SW_API_DESC(SW_API_NAT_ADD) \
+    SW_API_DESC(SW_API_NAT_DEL) \
+    SW_API_DESC(SW_API_NAT_GET) \
+    SW_API_DESC(SW_API_NAT_NEXT) \
+    SW_API_DESC(SW_API_NAT_COUNTER_BIND) \
+    SW_API_DESC(SW_API_NAPT_ADD) \
+    SW_API_DESC(SW_API_NAPT_DEL) \
+    SW_API_DESC(SW_API_NAPT_GET) \
+    SW_API_DESC(SW_API_NAPT_NEXT) \
+    SW_API_DESC(SW_API_NAPT_COUNTER_BIND) \
+    SW_API_DESC(SW_API_FLOW_ADD) \
+    SW_API_DESC(SW_API_FLOW_DEL) \
+    SW_API_DESC(SW_API_FLOW_GET) \
+    SW_API_DESC(SW_API_FLOW_NEXT) \
+    SW_API_DESC(SW_API_FLOW_COUNTER_BIND) \
+    SW_API_DESC(SW_API_NAT_STATUS_SET) \
+    SW_API_DESC(SW_API_NAT_STATUS_GET) \
+    SW_API_DESC(SW_API_NAT_HASH_MODE_SET) \
+    SW_API_DESC(SW_API_NAT_HASH_MODE_GET) \
+    SW_API_DESC(SW_API_NAPT_STATUS_SET) \
+    SW_API_DESC(SW_API_NAPT_STATUS_GET) \
+    SW_API_DESC(SW_API_NAPT_MODE_SET) \
+    SW_API_DESC(SW_API_NAPT_MODE_GET) \
+    SW_API_DESC(SW_API_PRV_BASE_ADDR_SET) \
+    SW_API_DESC(SW_API_PRV_BASE_ADDR_GET) \
+    SW_API_DESC(SW_API_PUB_ADDR_ENTRY_ADD) \
+    SW_API_DESC(SW_API_PUB_ADDR_ENTRY_DEL) \
+    SW_API_DESC(SW_API_PUB_ADDR_ENTRY_NEXT) \
+    SW_API_DESC(SW_API_NAT_UNK_SESSION_CMD_SET) \
+    SW_API_DESC(SW_API_NAT_UNK_SESSION_CMD_GET) \
+    SW_API_DESC(SW_API_PRV_BASE_MASK_SET) \
+    SW_API_DESC(SW_API_PRV_BASE_MASK_GET) \
+    SW_API_DESC(SW_API_NAT_GLOBAL_SET)
+#else
+#define NAT_API
+#define NAT_API_PARAM
+#endif
+
 #define REG_API \
     SW_API_DEF(SW_API_PHY_GET, dess_phy_get), \
     SW_API_DEF(SW_API_PHY_SET, dess_phy_set), \
@@ -390,8 +662,10 @@ extern "C" {
     ACL_API    \
     QOS_API    \
     MIB_API  \
+    MISC_API \
     COSMAP_API \
     SEC_API  \
+    NAT_API \
     REG_API  \
     SW_API_DEF(SW_API_MAX, NULL),
 #define SSDK_PARAM  \
@@ -399,6 +673,7 @@ extern "C" {
     SW_PARAM_DEF(SW_API_SSDK_CFG, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"), \
     SW_PARAM_DEF(SW_API_SSDK_CFG, SW_SSDK_CFG, sizeof(ssdk_cfg_t), SW_PARAM_PTR|SW_PARAM_OUT, "ssdk configuration"), \
     MIB_API_PARAM    \
+    MISC_API_PARAM   \
     PORTVLAN_API_PARAM    \
     VLAN_API_PARAM \
     FDB_API_PARAM  \
@@ -406,6 +681,7 @@ extern "C" {
     ACL_API_PARAM  \
     COSMAP_API_PARAM \
     SEC_API_PARAM  \
+    NAT_API_PARAM \
     REG_API_PARAM  \
     SW_PARAM_DEF(SW_API_MAX, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"),
 

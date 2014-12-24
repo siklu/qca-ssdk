@@ -24,9 +24,12 @@
 #include "dess_mib.h"
 #include "dess_portvlan.h"
 #include "dess_vlan.h"
+#include "dess_fdb.h"
 #include "dess_qos.h"
+#include "dess_misc.h"
 #include "dess_acl.h"
 #include "dess_cosmap.h"
+#include "dess_nat.h"
 
 #include "dess_sec.h"
 #include "dess_reg_access.h"
@@ -322,9 +325,12 @@ dess_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
         DESS_MIB_INIT(rv, dev_id);
         DESS_PORTVLAN_INIT(rv, dev_id);
         DESS_VLAN_INIT(rv, dev_id);
+        DESS_FDB_INIT(rv, dev_id);
         DESS_QOS_INIT(rv, dev_id);
+        DESS_MISC_INIT(rv, dev_id);
         DESS_ACL_INIT(rv, dev_id);
         DESS_COSMAP_INIT(rv, dev_id);
+        DESS_NAT_INIT(rv, dev_id);
         DESS_SEC_INIT(rv, dev_id);
 
         {

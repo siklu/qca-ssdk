@@ -919,6 +919,98 @@ _fal_intr_status_mac_linkchg_clear(a_uint32_t dev_id)
     return rv;
 }
 
+
+static sw_error_t
+_fal_global_macaddr_set(a_uint32_t dev_id, fal_mac_addr_t * addr)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->global_macaddr_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->global_macaddr_set(dev_id, addr);
+    return rv;
+}
+
+static sw_error_t
+_fal_global_macaddr_get(a_uint32_t dev_id, fal_mac_addr_t * addr)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->global_macaddr_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->global_macaddr_get(dev_id, addr);
+    return rv;
+}
+
+static sw_error_t
+_fal_lldp_status_set(a_uint32_t dev_id, a_bool_t enable)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->lldp_status_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->lldp_status_set(dev_id, enable);
+    return rv;
+}
+
+static sw_error_t
+_fal_lldp_status_get(a_uint32_t dev_id, a_bool_t * enable)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->lldp_status_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->lldp_status_get(dev_id, enable);
+    return rv;
+}
+
+static sw_error_t
+_fal_frame_crc_reserve_set(a_uint32_t dev_id, a_bool_t enable)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->frame_crc_reserve_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->frame_crc_reserve_set(dev_id, enable);
+    return rv;
+}
+
+static sw_error_t
+_fal_frame_crc_reserve_get(a_uint32_t dev_id, a_bool_t * enable)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->frame_crc_reserve_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->frame_crc_reserve_get(dev_id, enable);
+    return rv;
+}
+
+
 /**
  * @brief Set arp packets hardware acknowledgement status on a particular device.
  * @param[in] dev_id device id
@@ -1957,6 +2049,117 @@ fal_intr_status_mac_linkchg_clear(a_uint32_t dev_id)
     FAL_API_UNLOCK;
     return rv;
 }
+
+/**
+ * @brief Set global macaddr on particular device.
+ * @param[in] dev_id device id
+ * @param[in] addr   addr
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_global_macaddr_set(a_uint32_t dev_id, fal_mac_addr_t * addr)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_global_macaddr_set(dev_id, addr);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Get global macaddr on particular device.
+ * @param[in]  dev_id device id
+ * @param[out] addr   addr
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_global_macaddr_get(a_uint32_t dev_id, fal_mac_addr_t * addr)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_global_macaddr_get(dev_id, addr);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Set lldp packets hardware acknowledgement status on particular device.
+ * @details     comments:
+ *   Particular device may only support parts of pppoe packets.
+ * @param[in] dev_id device id
+ * @param[in] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_lldp_status_set(a_uint32_t dev_id, a_bool_t enable)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_lldp_status_set(dev_id, enable);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Get lldp packets hardware acknowledgement status on a particular device.
+ * @param[in] dev_id device id
+ * @param[out] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_lldp_status_get(a_uint32_t dev_id, a_bool_t * enable)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_lldp_status_get(dev_id, enable);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Set frame crc reserve enable on particular device.
+ * @details     comments:
+ *   CRC reseve enable.
+ * @param[in] dev_id device id
+ * @param[in] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_frame_crc_reserve_set(a_uint32_t dev_id, a_bool_t enable)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_frame_crc_reserve_set(dev_id, enable);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Get frame crc reserve enable on particular device.
+ * @details     comments:
+ *   CRC reseve enable.
+ * @param[in] dev_id device id
+ * @param[in] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_frame_crc_reserve_get(a_uint32_t dev_id, a_bool_t * enable)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_frame_crc_reserve_get(dev_id, enable);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+
+
 
 /**
  * @}
