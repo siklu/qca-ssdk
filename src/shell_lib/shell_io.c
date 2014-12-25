@@ -1004,6 +1004,23 @@ cmd_data_check_fdbentry(char *info, void *val, a_uint32_t size)
     if (rv)
         return rv;
 
+    rv = __cmd_data_check_boolean("load_balance_en", "no",
+                        "usage: <yes/no/y/n>\n",
+                        cmd_data_check_confirm, A_FALSE, &entry.load_balance_en,
+                        sizeof (a_bool_t));
+    if (rv)
+        return rv;
+
+    if (A_TRUE == entry.load_balance_en)
+    {
+        rv = __cmd_data_check_complex("load_balance", NULL,
+                            "usage: input number such as <0/1/2/3>\n",
+                            cmd_data_check_uint32, &tmp, sizeof (a_uint32_t));
+        if (rv)
+            return rv;
+        entry.load_balance = tmp;
+    }
+
     *(fal_fdb_entry_t *) val = entry;
 
     return SW_OK;

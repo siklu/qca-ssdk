@@ -721,6 +721,37 @@ _fal_eg_trans_filter_bypass_en_get(a_uint32_t dev_id, a_uint32_t* enable)
     return rv;
 }
 
+static sw_error_t
+_fal_port_vrf_id_set(a_uint32_t dev_id, fal_port_t port_id,
+                           a_uint32_t vrf_id)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->port_vrf_id_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->port_vrf_id_set(dev_id, port_id, vrf_id);
+    return rv;
+}
+
+static sw_error_t
+_fal_port_vrf_id_get(a_uint32_t dev_id, fal_port_t port_id,
+                           a_uint32_t * vrf_id)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->port_vrf_id_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->port_vrf_id_get(dev_id, port_id, vrf_id);
+    return rv;
+}
 
 /**
  * @brief Set 802.1q work mode on a particular port.
@@ -1537,6 +1568,43 @@ fal_eg_trans_filter_bypass_en_get(a_uint32_t dev_id, a_bool_t* enable)
     return rv;
 }
 
+/**
+ * @brief Set VRF id on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[in] vrf_id VRF id
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_vrf_id_set(a_uint32_t dev_id, fal_port_t port_id,
+                          a_uint32_t vrf_id)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_port_vrf_id_set(dev_id, port_id, vrf_id);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Get VRF id on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] vrf_id VRF id
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_vrf_id_get(a_uint32_t dev_id, fal_port_t port_id,
+                          a_uint32_t * vrf_id)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_port_vrf_id_set(dev_id, port_id, vrf_id);
+    FAL_API_UNLOCK;
+    return rv;
+}
 
 
 /**

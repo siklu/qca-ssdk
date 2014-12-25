@@ -1417,6 +1417,50 @@ _dess_eg_trans_filter_bypass_en_get(a_uint32_t dev_id, a_uint32_t * enable)
     return SW_OK;
 }
 
+static sw_error_t
+_dess_port_vrf_id_set(a_uint32_t dev_id, fal_port_t port_id,
+                          a_uint32_t vrf_id)
+{
+    sw_error_t rv;
+
+    HSL_DEV_ID_CHECK(dev_id);
+
+    if (A_FALSE == hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
+    {
+        return SW_BAD_PARAM;
+    }
+
+    HSL_REG_FIELD_SET(rv, dev_id, PORT_VLAN1, port_id,
+                      VRF_ID, (a_uint8_t *) (&vrf_id),
+                      sizeof (a_uint32_t));
+
+    SW_RTN_ON_ERROR(rv);
+
+    return rv;
+}
+
+static sw_error_t
+_dess_port_vrf_id_get(a_uint32_t dev_id, fal_port_t port_id,
+                          a_uint32_t * vrf_id)
+{
+    sw_error_t rv;
+
+    HSL_DEV_ID_CHECK(dev_id);
+
+    if (A_FALSE == hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
+    {
+        return SW_BAD_PARAM;
+    }
+
+    HSL_REG_FIELD_GET(rv, dev_id, PORT_VLAN1, port_id,
+                      VRF_ID, (a_uint8_t *) (vrf_id),
+                      sizeof (a_uint32_t));
+
+    SW_RTN_ON_ERROR(rv);
+
+    return rv;
+}
+
 
 /**
  * @brief Set 802.1q work mode on a particular port.
@@ -2174,6 +2218,43 @@ dess_eg_trans_filter_bypass_en_get(a_uint32_t dev_id, a_bool_t* enable)
     return rv;
 }
 
+/**
+ * @brief Set VRF id on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[in] vrf_id VRF id
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_port_vrf_id_set(a_uint32_t dev_id, fal_port_t port_id,
+                           a_uint32_t vrf_id)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _dess_port_vrf_id_set(dev_id, port_id, vrf_id);
+    HSL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Get VRF id on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] vrf_id VRF id
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_port_vrf_id_get(a_uint32_t dev_id, fal_port_t port_id,
+                           a_uint32_t * vrf_id)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _dess_port_vrf_id_get(dev_id, port_id, vrf_id);
+    HSL_API_UNLOCK;
+    return rv;
+}
 
 sw_error_t
 dess_portvlan_init(a_uint32_t dev_id)
@@ -2237,7 +2318,8 @@ dess_portvlan_init(a_uint32_t dev_id)
     p_api->netisolate_get = dess_netisolate_get;
     p_api->eg_trans_filter_bypass_en_set = dess_eg_trans_filter_bypass_en_set;
     p_api->eg_trans_filter_bypass_en_get = dess_eg_trans_filter_bypass_en_get;
-
+    p_api->port_vrf_id_set = dess_port_vrf_id_set;
+    p_api->port_vrf_id_get = dess_port_vrf_id_get;
 #endif
 
     return SW_OK;
