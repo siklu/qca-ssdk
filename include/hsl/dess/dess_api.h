@@ -21,6 +21,101 @@
 extern "C" {
 #endif                          /* __cplusplus */
 
+#ifdef IN_PORTCONTROL
+#define PORTCONTROL_API \
+    SW_API_DEF(SW_API_PT_DUPLEX_GET, dess_port_duplex_get), \
+    SW_API_DEF(SW_API_PT_DUPLEX_SET, dess_port_duplex_set), \
+    SW_API_DEF(SW_API_PT_SPEED_GET, dess_port_speed_get), \
+    SW_API_DEF(SW_API_PT_SPEED_SET, dess_port_speed_set), \
+    SW_API_DEF(SW_API_PT_AN_GET, dess_port_autoneg_status_get), \
+    SW_API_DEF(SW_API_PT_AN_ENABLE, dess_port_autoneg_enable), \
+    SW_API_DEF(SW_API_PT_AN_RESTART, dess_port_autoneg_restart), \
+    SW_API_DEF(SW_API_PT_AN_ADV_GET, dess_port_autoneg_adv_get), \
+    SW_API_DEF(SW_API_PT_AN_ADV_SET, dess_port_autoneg_adv_set), \
+    SW_API_DEF(SW_API_PT_FLOWCTRL_SET, dess_port_flowctrl_set), \
+    SW_API_DEF(SW_API_PT_FLOWCTRL_GET, dess_port_flowctrl_get), \
+    SW_API_DEF(SW_API_PT_FLOWCTRL_MODE_SET, dess_port_flowctrl_forcemode_set), \
+    SW_API_DEF(SW_API_PT_FLOWCTRL_MODE_GET, dess_port_flowctrl_forcemode_get), \
+    SW_API_DEF(SW_API_PT_POWERSAVE_SET, dess_port_powersave_set), \
+    SW_API_DEF(SW_API_PT_POWERSAVE_GET, dess_port_powersave_get), \
+    SW_API_DEF(SW_API_PT_HIBERNATE_SET, dess_port_hibernate_set), \
+    SW_API_DEF(SW_API_PT_HIBERNATE_GET, dess_port_hibernate_get), \
+    SW_API_DEF(SW_API_PT_CDT, dess_port_cdt), \
+    SW_API_DEF(SW_API_PT_TXHDR_SET, dess_port_txhdr_mode_set), \
+    SW_API_DEF(SW_API_PT_TXHDR_GET, dess_port_txhdr_mode_get), \
+    SW_API_DEF(SW_API_PT_RXHDR_SET, dess_port_rxhdr_mode_set), \
+    SW_API_DEF(SW_API_PT_RXHDR_GET, dess_port_rxhdr_mode_get), \
+    SW_API_DEF(SW_API_HEADER_TYPE_SET, dess_header_type_set),  \
+    SW_API_DEF(SW_API_HEADER_TYPE_GET, dess_header_type_get), \
+    SW_API_DEF(SW_API_TXMAC_STATUS_SET, dess_port_txmac_status_set), \
+    SW_API_DEF(SW_API_TXMAC_STATUS_GET, dess_port_txmac_status_get), \
+    SW_API_DEF(SW_API_RXMAC_STATUS_SET, dess_port_rxmac_status_set), \
+    SW_API_DEF(SW_API_RXMAC_STATUS_GET, dess_port_rxmac_status_get), \
+    SW_API_DEF(SW_API_TXFC_STATUS_SET, dess_port_txfc_status_set),   \
+    SW_API_DEF(SW_API_TXFC_STATUS_GET, dess_port_txfc_status_get),   \
+    SW_API_DEF(SW_API_RXFC_STATUS_SET, dess_port_rxfc_status_set),   \
+    SW_API_DEF(SW_API_RXFC_STATUS_GET, dess_port_rxfc_status_get),   \
+    SW_API_DEF(SW_API_BP_STATUS_SET, dess_port_bp_status_set),   \
+    SW_API_DEF(SW_API_BP_STATUS_GET, dess_port_bp_status_get),   \
+    SW_API_DEF(SW_API_PT_LINK_MODE_SET, dess_port_link_forcemode_set),   \
+    SW_API_DEF(SW_API_PT_LINK_MODE_GET, dess_port_link_forcemode_get), \
+    SW_API_DEF(SW_API_PT_LINK_STATUS_GET, dess_port_link_status_get), \
+    SW_API_DEF(SW_API_PT_MAC_LOOPBACK_SET, dess_port_mac_loopback_set), \
+    SW_API_DEF(SW_API_PT_MAC_LOOPBACK_GET, dess_port_mac_loopback_get), \
+    SW_API_DEF(SW_API_PT_CONGESTION_DROP_SET, dess_port_congestion_drop_set), \
+    SW_API_DEF(SW_API_PT_CONGESTION_DROP_GET, dess_port_congestion_drop_get), \
+    SW_API_DEF(SW_API_PT_RING_FLOW_CTRL_THRES_SET, dess_ring_flow_ctrl_thres_set), \
+	SW_API_DEF(SW_API_PT_RING_FLOW_CTRL_THRES_GET, dess_ring_flow_ctrl_thres_get),
+
+#define PORTCONTROL_API_PARAM \
+    SW_API_DESC(SW_API_PT_DUPLEX_GET) \
+    SW_API_DESC(SW_API_PT_DUPLEX_SET) \
+    SW_API_DESC(SW_API_PT_SPEED_GET)  \
+    SW_API_DESC(SW_API_PT_SPEED_SET)  \
+    SW_API_DESC(SW_API_PT_AN_GET)  \
+    SW_API_DESC(SW_API_PT_AN_ENABLE)   \
+    SW_API_DESC(SW_API_PT_AN_RESTART)  \
+    SW_API_DESC(SW_API_PT_AN_ADV_GET)  \
+    SW_API_DESC(SW_API_PT_AN_ADV_SET)  \
+    SW_API_DESC(SW_API_PT_FLOWCTRL_SET)  \
+    SW_API_DESC(SW_API_PT_FLOWCTRL_GET)  \
+    SW_API_DESC(SW_API_PT_FLOWCTRL_MODE_SET)  \
+    SW_API_DESC(SW_API_PT_FLOWCTRL_MODE_GET) \
+    SW_API_DESC(SW_API_PT_POWERSAVE_SET) \
+    SW_API_DESC(SW_API_PT_POWERSAVE_GET) \
+    SW_API_DESC(SW_API_PT_HIBERNATE_SET) \
+    SW_API_DESC(SW_API_PT_HIBERNATE_GET) \
+    SW_API_DESC(SW_API_PT_CDT) \
+    SW_API_DESC(SW_API_PT_TXHDR_SET) \
+    SW_API_DESC(SW_API_PT_TXHDR_GET) \
+    SW_API_DESC(SW_API_PT_RXHDR_SET) \
+    SW_API_DESC(SW_API_PT_RXHDR_GET) \
+    SW_API_DESC(SW_API_HEADER_TYPE_SET) \
+    SW_API_DESC(SW_API_HEADER_TYPE_GET) \
+    SW_API_DESC(SW_API_TXMAC_STATUS_SET) \
+    SW_API_DESC(SW_API_TXMAC_STATUS_GET) \
+    SW_API_DESC(SW_API_RXMAC_STATUS_SET) \
+    SW_API_DESC(SW_API_RXMAC_STATUS_GET) \
+    SW_API_DESC(SW_API_TXFC_STATUS_SET) \
+    SW_API_DESC(SW_API_TXFC_STATUS_GET) \
+    SW_API_DESC(SW_API_RXFC_STATUS_SET) \
+    SW_API_DESC(SW_API_RXFC_STATUS_GET) \
+    SW_API_DESC(SW_API_BP_STATUS_SET) \
+    SW_API_DESC(SW_API_BP_STATUS_GET) \
+    SW_API_DESC(SW_API_PT_LINK_MODE_SET) \
+    SW_API_DESC(SW_API_PT_LINK_MODE_GET) \
+    SW_API_DESC(SW_API_PT_LINK_STATUS_GET) \
+    SW_API_DESC(SW_API_PT_MAC_LOOPBACK_SET) \
+    SW_API_DESC(SW_API_PT_MAC_LOOPBACK_GET) \
+    SW_API_DESC(SW_API_PT_CONGESTION_DROP_SET) \
+    SW_API_DESC(SW_API_PT_CONGESTION_DROP_GET) \
+    SW_API_DESC(SW_API_PT_RING_FLOW_CTRL_THRES_SET) \
+	SW_API_DESC(SW_API_PT_RING_FLOW_CTRL_THRES_GET)
+#else
+#define PORTCONTROL_API
+#define PORTCONTROL_API_PARAM
+#endif
+
 #ifdef IN_VLAN
 #define VLAN_API \
     SW_API_DEF(SW_API_VLAN_ADD, dess_vlan_create), \
@@ -334,6 +429,170 @@ extern "C" {
 #endif
 
 
+#ifdef IN_IGMP
+#define IGMP_API \
+    SW_API_DEF(SW_API_PT_IGMPS_MODE_SET, dess_port_igmps_status_set), \
+    SW_API_DEF(SW_API_PT_IGMPS_MODE_GET, dess_port_igmps_status_get), \
+    SW_API_DEF(SW_API_IGMP_MLD_CMD_SET, dess_igmp_mld_cmd_set), \
+    SW_API_DEF(SW_API_IGMP_MLD_CMD_GET, dess_igmp_mld_cmd_get), \
+    SW_API_DEF(SW_API_IGMP_PT_JOIN_SET, dess_port_igmp_mld_join_set), \
+    SW_API_DEF(SW_API_IGMP_PT_JOIN_GET, dess_port_igmp_mld_join_get), \
+    SW_API_DEF(SW_API_IGMP_PT_LEAVE_SET, dess_port_igmp_mld_leave_set), \
+    SW_API_DEF(SW_API_IGMP_PT_LEAVE_GET, dess_port_igmp_mld_leave_get), \
+    SW_API_DEF(SW_API_IGMP_RP_SET, dess_igmp_mld_rp_set), \
+    SW_API_DEF(SW_API_IGMP_RP_GET, dess_igmp_mld_rp_get), \
+    SW_API_DEF(SW_API_IGMP_ENTRY_CREAT_SET, dess_igmp_mld_entry_creat_set), \
+    SW_API_DEF(SW_API_IGMP_ENTRY_CREAT_GET, dess_igmp_mld_entry_creat_get), \
+    SW_API_DEF(SW_API_IGMP_ENTRY_STATIC_SET, dess_igmp_mld_entry_static_set), \
+    SW_API_DEF(SW_API_IGMP_ENTRY_STATIC_GET, dess_igmp_mld_entry_static_get), \
+    SW_API_DEF(SW_API_IGMP_ENTRY_LEAKY_SET, dess_igmp_mld_entry_leaky_set), \
+    SW_API_DEF(SW_API_IGMP_ENTRY_LEAKY_GET, dess_igmp_mld_entry_leaky_get), \
+    SW_API_DEF(SW_API_IGMP_ENTRY_V3_SET, dess_igmp_mld_entry_v3_set), \
+    SW_API_DEF(SW_API_IGMP_ENTRY_V3_GET, dess_igmp_mld_entry_v3_get), \
+    SW_API_DEF(SW_API_IGMP_ENTRY_QUEUE_SET, dess_igmp_mld_entry_queue_set), \
+    SW_API_DEF(SW_API_IGMP_ENTRY_QUEUE_GET, dess_igmp_mld_entry_queue_get), \
+    SW_API_DEF(SW_API_PT_IGMP_LEARN_LIMIT_SET,    dess_port_igmp_mld_learn_limit_set),  \
+    SW_API_DEF(SW_API_PT_IGMP_LEARN_LIMIT_GET,    dess_port_igmp_mld_learn_limit_get),  \
+    SW_API_DEF(SW_API_PT_IGMP_LEARN_EXCEED_CMD_SET,    dess_port_igmp_mld_learn_exceed_cmd_set),  \
+    SW_API_DEF(SW_API_PT_IGMP_LEARN_EXCEED_CMD_GET,    dess_port_igmp_mld_learn_exceed_cmd_get), \
+    SW_API_DEF(SW_API_IGMP_SG_ENTRY_SET,    dess_igmp_sg_entry_set),  \
+    SW_API_DEF(SW_API_IGMP_SG_ENTRY_CLEAR,    dess_igmp_sg_entry_clear),  \
+    SW_API_DEF(SW_API_IGMP_SG_ENTRY_SHOW,    dess_igmp_sg_entry_show),
+
+#define IGMP_API_PARAM \
+    SW_API_DESC(SW_API_PT_IGMPS_MODE_SET) \
+    SW_API_DESC(SW_API_PT_IGMPS_MODE_GET) \
+    SW_API_DESC(SW_API_IGMP_MLD_CMD_SET)  \
+    SW_API_DESC(SW_API_IGMP_MLD_CMD_GET)  \
+    SW_API_DESC(SW_API_IGMP_PT_JOIN_SET)  \
+    SW_API_DESC(SW_API_IGMP_PT_JOIN_GET)  \
+    SW_API_DESC(SW_API_IGMP_PT_LEAVE_SET) \
+    SW_API_DESC(SW_API_IGMP_PT_LEAVE_GET) \
+    SW_API_DESC(SW_API_IGMP_RP_SET)  \
+    SW_API_DESC(SW_API_IGMP_RP_GET)  \
+    SW_API_DESC(SW_API_IGMP_ENTRY_CREAT_SET)  \
+    SW_API_DESC(SW_API_IGMP_ENTRY_CREAT_GET)  \
+    SW_API_DESC(SW_API_IGMP_ENTRY_STATIC_SET) \
+    SW_API_DESC(SW_API_IGMP_ENTRY_STATIC_GET) \
+    SW_API_DESC(SW_API_IGMP_ENTRY_LEAKY_SET)  \
+    SW_API_DESC(SW_API_IGMP_ENTRY_LEAKY_GET)  \
+    SW_API_DESC(SW_API_IGMP_ENTRY_V3_SET)  \
+    SW_API_DESC(SW_API_IGMP_ENTRY_V3_GET)  \
+    SW_API_DESC(SW_API_IGMP_ENTRY_QUEUE_SET)  \
+    SW_API_DESC(SW_API_IGMP_ENTRY_QUEUE_GET) \
+    SW_API_DESC(SW_API_PT_IGMP_LEARN_LIMIT_SET) \
+    SW_API_DESC(SW_API_PT_IGMP_LEARN_LIMIT_GET) \
+    SW_API_DESC(SW_API_PT_IGMP_LEARN_EXCEED_CMD_SET) \
+    SW_API_DESC(SW_API_PT_IGMP_LEARN_EXCEED_CMD_GET) \
+    SW_API_DESC(SW_API_IGMP_SG_ENTRY_SET) \
+    SW_API_DESC(SW_API_IGMP_SG_ENTRY_CLEAR) \
+    SW_API_DESC(SW_API_IGMP_SG_ENTRY_SHOW)
+#else
+#define IGMP_API
+#define IGMP_API_PARAM
+#endif
+
+
+#ifdef IN_LEAKY
+#define LEAKY_API \
+    SW_API_DEF(SW_API_UC_LEAKY_MODE_SET, dess_uc_leaky_mode_set), \
+    SW_API_DEF(SW_API_UC_LEAKY_MODE_GET, dess_uc_leaky_mode_get), \
+    SW_API_DEF(SW_API_MC_LEAKY_MODE_SET, dess_mc_leaky_mode_set), \
+    SW_API_DEF(SW_API_MC_LEAKY_MODE_GET, dess_mc_leaky_mode_get), \
+    SW_API_DEF(SW_API_ARP_LEAKY_MODE_SET, dess_port_arp_leaky_set), \
+    SW_API_DEF(SW_API_ARP_LEAKY_MODE_GET, dess_port_arp_leaky_get), \
+    SW_API_DEF(SW_API_PT_UC_LEAKY_MODE_SET, dess_port_uc_leaky_set), \
+    SW_API_DEF(SW_API_PT_UC_LEAKY_MODE_GET, dess_port_uc_leaky_get), \
+    SW_API_DEF(SW_API_PT_MC_LEAKY_MODE_SET, dess_port_mc_leaky_set), \
+    SW_API_DEF(SW_API_PT_MC_LEAKY_MODE_GET, dess_port_mc_leaky_get),
+
+#define LEAKY_API_PARAM \
+    SW_API_DESC(SW_API_UC_LEAKY_MODE_SET)  \
+    SW_API_DESC(SW_API_UC_LEAKY_MODE_GET)  \
+    SW_API_DESC(SW_API_MC_LEAKY_MODE_SET)  \
+    SW_API_DESC(SW_API_MC_LEAKY_MODE_GET)  \
+    SW_API_DESC(SW_API_ARP_LEAKY_MODE_SET) \
+    SW_API_DESC(SW_API_ARP_LEAKY_MODE_GET) \
+    SW_API_DESC(SW_API_PT_UC_LEAKY_MODE_SET)  \
+    SW_API_DESC(SW_API_PT_UC_LEAKY_MODE_GET)  \
+    SW_API_DESC(SW_API_PT_MC_LEAKY_MODE_SET)  \
+    SW_API_DESC(SW_API_PT_MC_LEAKY_MODE_GET)
+#else
+#define LEAKY_API
+#define LEAKY_API_PARAM
+#endif
+
+
+#ifdef IN_MIRROR
+#define MIRROR_API \
+    SW_API_DEF(SW_API_MIRROR_ANALY_PT_SET, dess_mirr_analysis_port_set), \
+    SW_API_DEF(SW_API_MIRROR_ANALY_PT_GET, dess_mirr_analysis_port_get), \
+    SW_API_DEF(SW_API_MIRROR_IN_PT_SET, dess_mirr_port_in_set), \
+    SW_API_DEF(SW_API_MIRROR_IN_PT_GET, dess_mirr_port_in_get), \
+    SW_API_DEF(SW_API_MIRROR_EG_PT_SET, dess_mirr_port_eg_set), \
+    SW_API_DEF(SW_API_MIRROR_EG_PT_GET, dess_mirr_port_eg_get),
+
+#define MIRROR_API_PARAM \
+    SW_API_DESC(SW_API_MIRROR_ANALY_PT_SET)  \
+    SW_API_DESC(SW_API_MIRROR_ANALY_PT_GET)  \
+    SW_API_DESC(SW_API_MIRROR_IN_PT_SET)  \
+    SW_API_DESC(SW_API_MIRROR_IN_PT_GET)  \
+    SW_API_DESC(SW_API_MIRROR_EG_PT_SET)  \
+    SW_API_DESC(SW_API_MIRROR_EG_PT_GET)
+#else
+#define MIRROR_API
+#define MIRROR_API_PARAM
+#endif
+
+
+#ifdef IN_RATE
+#define RATE_API \
+    SW_API_DEF(SW_API_RATE_PORT_POLICER_SET, dess_rate_port_policer_set), \
+    SW_API_DEF(SW_API_RATE_PORT_POLICER_GET, dess_rate_port_policer_get), \
+    SW_API_DEF(SW_API_RATE_PORT_SHAPER_SET, dess_rate_port_shaper_set), \
+    SW_API_DEF(SW_API_RATE_PORT_SHAPER_GET, dess_rate_port_shaper_get), \
+    SW_API_DEF(SW_API_RATE_QUEUE_SHAPER_SET, dess_rate_queue_shaper_set), \
+    SW_API_DEF(SW_API_RATE_QUEUE_SHAPER_GET, dess_rate_queue_shaper_get), \
+    SW_API_DEF(SW_API_RATE_ACL_POLICER_SET, dess_rate_acl_policer_set), \
+    SW_API_DEF(SW_API_RATE_ACL_POLICER_GET, dess_rate_acl_policer_get), \
+    SW_API_DEF(SW_API_RATE_PT_ADDRATEBYTE_SET, dess_rate_port_add_rate_byte_set), \
+    SW_API_DEF(SW_API_RATE_PT_ADDRATEBYTE_GET, dess_rate_port_add_rate_byte_get), \
+    SW_API_DEF(SW_API_RATE_PT_GOL_FLOW_EN_SET, dess_rate_port_gol_flow_en_set), \
+    SW_API_DEF(SW_API_RATE_PT_GOL_FLOW_EN_GET, dess_rate_port_gol_flow_en_get),
+
+#define RATE_API_PARAM \
+    SW_API_DESC(SW_API_RATE_PORT_POLICER_SET) \
+    SW_API_DESC(SW_API_RATE_PORT_POLICER_GET) \
+    SW_API_DESC(SW_API_RATE_PORT_SHAPER_SET) \
+    SW_API_DESC(SW_API_RATE_PORT_SHAPER_GET) \
+    SW_API_DESC(SW_API_RATE_QUEUE_SHAPER_SET) \
+    SW_API_DESC(SW_API_RATE_QUEUE_SHAPER_GET) \
+    SW_API_DESC(SW_API_RATE_ACL_POLICER_SET) \
+    SW_API_DESC(SW_API_RATE_ACL_POLICER_GET) \
+    SW_API_DESC(SW_API_RATE_PT_ADDRATEBYTE_SET) \
+    SW_API_DESC(SW_API_RATE_PT_ADDRATEBYTE_GET) \
+    SW_API_DESC(SW_API_RATE_PT_GOL_FLOW_EN_SET) \
+    SW_API_DESC(SW_API_RATE_PT_GOL_FLOW_EN_GET)
+#else
+#define RATE_API
+#define RATE_API_PARAM
+#endif
+
+
+#ifdef IN_STP
+#define STP_API \
+    SW_API_DEF(SW_API_STP_PT_STATE_SET, dess_stp_port_state_set), \
+    SW_API_DEF(SW_API_STP_PT_STATE_GET, dess_stp_port_state_get),
+
+#define STP_API_PARAM \
+    SW_API_DESC(SW_API_STP_PT_STATE_SET) \
+    SW_API_DESC(SW_API_STP_PT_STATE_GET)
+#else
+#define STP_API
+#define STP_API_PARAM
+#endif
+
+
 #ifdef IN_MIB
 #define MIB_API \
     SW_API_DEF(SW_API_PT_MIB_GET, dess_get_mib_info), \
@@ -479,6 +738,19 @@ extern "C" {
 #endif
 
 
+#ifdef IN_LED
+#define LED_API \
+    SW_API_DEF(SW_API_LED_PATTERN_SET, dess_led_ctrl_pattern_set), \
+    SW_API_DEF(SW_API_LED_PATTERN_GET, dess_led_ctrl_pattern_get),
+
+#define LED_API_PARAM \
+    SW_API_DESC(SW_API_LED_PATTERN_SET) \
+    SW_API_DESC(SW_API_LED_PATTERN_GET)
+#else
+#define LED_API
+#define LED_API_PARAM
+#endif
+
 #ifdef IN_COSMAP
 #define COSMAP_API \
     SW_API_DEF(SW_API_COSMAP_DSCP_TO_PRI_SET, dess_cosmap_dscp_to_pri_set), \
@@ -561,6 +833,69 @@ extern "C" {
 #define SEC_API_PARAM
 #endif
 
+#ifdef IN_IP
+#define IP_API \
+    SW_API_DEF(SW_API_IP_HOST_ADD, dess_ip_host_add), \
+    SW_API_DEF(SW_API_IP_HOST_DEL, dess_ip_host_del), \
+    SW_API_DEF(SW_API_IP_HOST_GET, dess_ip_host_get), \
+    SW_API_DEF(SW_API_IP_HOST_NEXT, dess_ip_host_next), \
+    SW_API_DEF(SW_API_IP_HOST_COUNTER_BIND, dess_ip_host_counter_bind), \
+    SW_API_DEF(SW_API_IP_HOST_PPPOE_BIND, dess_ip_host_pppoe_bind), \
+    SW_API_DEF(SW_API_IP_PT_ARP_LEARN_SET, dess_ip_pt_arp_learn_set), \
+    SW_API_DEF(SW_API_IP_PT_ARP_LEARN_GET, dess_ip_pt_arp_learn_get), \
+    SW_API_DEF(SW_API_IP_ARP_LEARN_SET, dess_ip_arp_learn_set), \
+    SW_API_DEF(SW_API_IP_ARP_LEARN_GET, dess_ip_arp_learn_get), \
+    SW_API_DEF(SW_API_IP_SOURCE_GUARD_SET, dess_ip_source_guard_set), \
+    SW_API_DEF(SW_API_IP_SOURCE_GUARD_GET, dess_ip_source_guard_get), \
+    SW_API_DEF(SW_API_IP_ARP_GUARD_SET, dess_ip_arp_guard_set), \
+    SW_API_DEF(SW_API_IP_ARP_GUARD_GET, dess_ip_arp_guard_get), \
+    SW_API_DEF(SW_API_IP_ROUTE_STATUS_SET, dess_ip_route_status_set), \
+    SW_API_DEF(SW_API_IP_ROUTE_STATUS_GET, dess_ip_route_status_get), \
+    SW_API_DEF(SW_API_IP_INTF_ENTRY_ADD, dess_ip_intf_entry_add), \
+    SW_API_DEF(SW_API_IP_INTF_ENTRY_DEL, dess_ip_intf_entry_del), \
+    SW_API_DEF(SW_API_IP_INTF_ENTRY_NEXT, dess_ip_intf_entry_next), \
+    SW_API_DEF(SW_API_IP_UNK_SOURCE_CMD_SET, dess_ip_unk_source_cmd_set),  \
+    SW_API_DEF(SW_API_IP_UNK_SOURCE_CMD_GET, dess_ip_unk_source_cmd_get), \
+    SW_API_DEF(SW_API_ARP_UNK_SOURCE_CMD_SET, dess_arp_unk_source_cmd_set), \
+    SW_API_DEF(SW_API_ARP_UNK_SOURCE_CMD_GET, dess_arp_unk_source_cmd_get), \
+    SW_API_DEF(SW_API_IP_AGE_TIME_SET, dess_ip_age_time_set), \
+    SW_API_DEF(SW_API_IP_AGE_TIME_GET, dess_ip_age_time_get), \
+    SW_API_DEF(SW_API_WCMP_HASH_MODE_SET, dess_ip_wcmp_hash_mode_set), \
+    SW_API_DEF(SW_API_WCMP_HASH_MODE_GET, dess_ip_wcmp_hash_mode_get),
+
+#define IP_API_PARAM \
+    SW_API_DESC(SW_API_IP_HOST_ADD) \
+    SW_API_DESC(SW_API_IP_HOST_DEL) \
+    SW_API_DESC(SW_API_IP_HOST_GET) \
+    SW_API_DESC(SW_API_IP_HOST_NEXT) \
+    SW_API_DESC(SW_API_IP_HOST_COUNTER_BIND) \
+    SW_API_DESC(SW_API_IP_HOST_PPPOE_BIND) \
+    SW_API_DESC(SW_API_IP_PT_ARP_LEARN_SET) \
+    SW_API_DESC(SW_API_IP_PT_ARP_LEARN_GET) \
+    SW_API_DESC(SW_API_IP_ARP_LEARN_SET) \
+    SW_API_DESC(SW_API_IP_ARP_LEARN_GET) \
+    SW_API_DESC(SW_API_IP_SOURCE_GUARD_SET) \
+    SW_API_DESC(SW_API_IP_SOURCE_GUARD_GET) \
+    SW_API_DESC(SW_API_IP_ARP_GUARD_SET) \
+    SW_API_DESC(SW_API_IP_ARP_GUARD_GET) \
+    SW_API_DESC(SW_API_IP_ROUTE_STATUS_SET) \
+    SW_API_DESC(SW_API_IP_ROUTE_STATUS_GET) \
+    SW_API_DESC(SW_API_IP_INTF_ENTRY_ADD)  \
+    SW_API_DESC(SW_API_IP_INTF_ENTRY_DEL)  \
+    SW_API_DESC(SW_API_IP_INTF_ENTRY_NEXT) \
+    SW_API_DESC(SW_API_IP_UNK_SOURCE_CMD_SET)  \
+    SW_API_DESC(SW_API_IP_UNK_SOURCE_CMD_GET)  \
+    SW_API_DESC(SW_API_ARP_UNK_SOURCE_CMD_SET) \
+    SW_API_DESC(SW_API_ARP_UNK_SOURCE_CMD_GET) \
+    SW_API_DESC(SW_API_IP_AGE_TIME_SET) \
+    SW_API_DESC(SW_API_IP_AGE_TIME_GET) \
+    SW_API_DESC(SW_API_WCMP_HASH_MODE_SET) \
+    SW_API_DESC(SW_API_WCMP_HASH_MODE_GET)
+
+#else
+#define IP_API
+#define IP_API_PARAM
+#endif
 
 #ifdef IN_NAT
 #define NAT_API \
@@ -637,6 +972,59 @@ extern "C" {
 #define NAT_API_PARAM
 #endif
 
+#ifdef IN_TRUNK
+#define TRUNK_API \
+    SW_API_DEF(SW_API_TRUNK_GROUP_SET, dess_trunk_group_set), \
+    SW_API_DEF(SW_API_TRUNK_GROUP_GET, dess_trunk_group_get), \
+    SW_API_DEF(SW_API_TRUNK_HASH_SET, dess_trunk_hash_mode_set), \
+    SW_API_DEF(SW_API_TRUNK_HASH_GET, dess_trunk_hash_mode_get), \
+    SW_API_DEF(SW_API_TRUNK_MAN_SA_SET, dess_trunk_manipulate_sa_set), \
+    SW_API_DEF(SW_API_TRUNK_MAN_SA_GET, dess_trunk_manipulate_sa_get),
+
+#define TRUNK_API_PARAM \
+    SW_API_DESC(SW_API_TRUNK_GROUP_SET) \
+    SW_API_DESC(SW_API_TRUNK_GROUP_GET) \
+    SW_API_DESC(SW_API_TRUNK_HASH_SET)  \
+    SW_API_DESC(SW_API_TRUNK_HASH_GET)  \
+    SW_API_DESC(SW_API_TRUNK_MAN_SA_SET)\
+    SW_API_DESC(SW_API_TRUNK_MAN_SA_GET)
+#else
+#define TRUNK_API
+#define TRUNK_API_PARAM
+#endif
+
+#ifdef IN_INTERFACECONTROL
+#define INTERFACECTRL_API \
+    SW_API_DEF(SW_API_MAC_MODE_SET, dess_interface_mac_mode_set), \
+    SW_API_DEF(SW_API_MAC_MODE_GET, dess_interface_mac_mode_get), \
+    SW_API_DEF(SW_API_PORT_3AZ_STATUS_SET, dess_port_3az_status_set), \
+    SW_API_DEF(SW_API_PORT_3AZ_STATUS_GET, dess_port_3az_status_get), \
+    SW_API_DEF(SW_API_PHY_MODE_SET, dess_interface_phy_mode_set), \
+    SW_API_DEF(SW_API_PHY_MODE_GET, dess_interface_phy_mode_get), \
+    SW_API_DEF(SW_API_FX100_CTRL_SET, dess_interface_fx100_ctrl_set), \
+    SW_API_DEF(SW_API_FX100_CTRL_GET, dess_interface_fx100_ctrl_get), \
+    SW_API_DEF(SW_API_FX100_STATUS_GET, dess_interface_fx100_status_get), \
+    SW_API_DEF(SW_API_MAC06_EXCH_SET, dess_interface_mac06_exch_set), \
+    SW_API_DEF(SW_API_MAC06_EXCH_GET, dess_interface_mac06_exch_get),
+
+#define INTERFACECTRL_API_PARAM \
+    SW_API_DESC(SW_API_MAC_MODE_SET)  \
+    SW_API_DESC(SW_API_MAC_MODE_GET)  \
+    SW_API_DESC(SW_API_PORT_3AZ_STATUS_SET)  \
+    SW_API_DESC(SW_API_PORT_3AZ_STATUS_GET)  \
+    SW_API_DESC(SW_API_PHY_MODE_SET)  \
+    SW_API_DESC(SW_API_PHY_MODE_GET)  \
+    SW_API_DESC(SW_API_FX100_CTRL_SET)  \
+    SW_API_DESC(SW_API_FX100_CTRL_GET)  \
+    SW_API_DESC(SW_API_FX100_STATUS_GET) \
+    SW_API_DESC(SW_API_MAC06_EXCH_SET) \
+    SW_API_DESC(SW_API_MAC06_EXCH_GET)
+
+#else
+#define INTERFACECTRL_API
+#define INTERFACECTRL_API_PARAM
+#endif
+
 #define REG_API \
     SW_API_DEF(SW_API_PHY_GET, dess_phy_get), \
     SW_API_DEF(SW_API_PHY_SET, dess_phy_set), \
@@ -656,32 +1044,54 @@ extern "C" {
 #define SSDK_API \
     SW_API_DEF(SW_API_SWITCH_RESET, dess_reset), \
     SW_API_DEF(SW_API_SSDK_CFG, hsl_ssdk_cfg), \
+    PORTCONTROL_API \
     VLAN_API \
     PORTVLAN_API \
     FDB_API    \
     ACL_API    \
     QOS_API    \
+    IGMP_API   \
+    LEAKY_API  \
+    MIRROR_API \
+    RATE_API \
+    STP_API  \
     MIB_API  \
     MISC_API \
+    LED_API  \
     COSMAP_API \
     SEC_API  \
+    IP_API \
     NAT_API \
+    TRUNK_API \
+    INTERFACECTRL_API \
     REG_API  \
     SW_API_DEF(SW_API_MAX, NULL),
+
+
 #define SSDK_PARAM  \
     SW_PARAM_DEF(SW_API_SWITCH_RESET, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"), \
     SW_PARAM_DEF(SW_API_SSDK_CFG, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"), \
     SW_PARAM_DEF(SW_API_SSDK_CFG, SW_SSDK_CFG, sizeof(ssdk_cfg_t), SW_PARAM_PTR|SW_PARAM_OUT, "ssdk configuration"), \
     MIB_API_PARAM    \
+    LEAKY_API_PARAM  \
     MISC_API_PARAM   \
+    IGMP_API_PARAM   \
+    MIRROR_API_PARAM \
+    PORTCONTROL_API_PARAM \
     PORTVLAN_API_PARAM    \
     VLAN_API_PARAM \
     FDB_API_PARAM  \
     QOS_API_PARAM  \
+    RATE_API_PARAM \
+    STP_API_PARAM  \
     ACL_API_PARAM  \
+    LED_API_PARAM  \
     COSMAP_API_PARAM \
     SEC_API_PARAM  \
+    IP_API_PARAM \
     NAT_API_PARAM \
+    TRUNK_API_PARAM \
+    INTERFACECTRL_API_PARAM \
     REG_API_PARAM  \
     SW_PARAM_DEF(SW_API_MAX, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"),
 

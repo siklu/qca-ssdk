@@ -162,7 +162,7 @@ static sw_error_t
 _dess_host_entry_commit(a_uint32_t dev_id, a_uint32_t entry_type, a_uint32_t op)
 {
     a_uint32_t busy = 1, i = 0x500, entry, j, try_num;
-    a_uint32_t learn_status = 0;
+    a_uint32_t learn_status = 0, data = 0;
     sw_error_t rv;
 
     while (busy && --i)
@@ -172,7 +172,7 @@ _dess_host_entry_commit(a_uint32_t dev_id, a_uint32_t entry_type, a_uint32_t op)
         SW_RTN_ON_ERROR(rv);
         //printk("IP first entry is 0x%x\r\n", entry);
         SW_GET_FIELD_BY_REG(HOST_ENTRY7, TBL_BUSY, busy, entry);
-	aos_mdelay(5);
+	aos_mdelay(8);
     }
 
     if (i == 0)
@@ -180,17 +180,28 @@ _dess_host_entry_commit(a_uint32_t dev_id, a_uint32_t entry_type, a_uint32_t op)
         return SW_BUSY;
     }
 
+
+    /* hardware requirements, we should disable ARP learn at first */
+    /* and maybe we should try several times... */
+    _dess_ip_pt_learn_save(dev_id, &learn_status);
+
+    //printk("data0=0x%x\n", data);
+    if(learn_status) {
+        aos_mdelay(800);
+        HSL_REG_ENTRY_GET(rv, dev_id, ROUTER_PTCTRL2, 0,
+                          (a_uint8_t *) (&data), sizeof (a_uint32_t));
+    }
+        //printk("data1=0x%x\n", data);
+
+
     SW_SET_REG_BY_FIELD(HOST_ENTRY7, TBL_BUSY, 1, entry);
     SW_SET_REG_BY_FIELD(HOST_ENTRY7, TBL_SEL, entry_type, entry);
     SW_SET_REG_BY_FIELD(HOST_ENTRY7, ENTRY_FUNC, op, entry);
 
     HSL_REG_ENTRY_SET(rv, dev_id, HOST_ENTRY7, 0, (a_uint8_t *) (&entry),
-                      sizeof (a_uint32_t));
+			sizeof (a_uint32_t));
     SW_RTN_ON_ERROR(rv);
 
-    /* hardware requirements, we should disable ARP learn at first */
-    /* and maybe we should try several times... */
-    _dess_ip_pt_learn_save(dev_id, &learn_status);
     if (learn_status)
     {
         try_num = 300;
@@ -203,7 +214,7 @@ _dess_host_entry_commit(a_uint32_t dev_id, a_uint32_t entry_type, a_uint32_t op)
     for (j = 0; j < try_num; j++)
     {
         busy = 1;
-        i = 0x1000;
+        i = 0x3000;
         while (busy && --i)
         {
             HSL_REG_ENTRY_GET(rv, dev_id, HOST_ENTRY7, 0, (a_uint8_t *) (&entry),

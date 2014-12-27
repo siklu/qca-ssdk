@@ -162,17 +162,16 @@ _dess_nat_counter_get(a_uint32_t dev_id, a_uint32_t cnt_id,
 static sw_error_t
 _dess_nat_entry_commit(a_uint32_t dev_id, a_uint32_t entry_type, a_uint32_t op)
 {
-    a_uint32_t busy = 1, i = 0x100, entry;
+    a_uint32_t busy = 1, i = 0x500, entry;
     sw_error_t rv;
 
     while (busy && --i)
     {
         HSL_REG_ENTRY_GET(rv, dev_id, HOST_ENTRY7, 0, (a_uint8_t *) (&entry),
                           sizeof (a_uint32_t));
-        printk("nat first entry is 0x%x\r\n", entry);
         SW_RTN_ON_ERROR(rv);
         SW_GET_FIELD_BY_REG(HOST_ENTRY7, TBL_BUSY, busy, entry);
-	aos_mdelay(5);
+	aos_mdelay(8);
     }
 
     if (i == 0)
@@ -189,12 +188,11 @@ _dess_nat_entry_commit(a_uint32_t dev_id, a_uint32_t entry_type, a_uint32_t op)
     SW_RTN_ON_ERROR(rv);
 
     busy = 1;
-    i = 0x1000;
+    i = 0x3000;
     while (busy && --i)
     {
         HSL_REG_ENTRY_GET(rv, dev_id, HOST_ENTRY7, 0, (a_uint8_t *) (&entry),
                           sizeof (a_uint32_t));
-        printk("nat second entry is 0x%x\r\n", entry);
         SW_RTN_ON_ERROR(rv);
         SW_GET_FIELD_BY_REG(HOST_ENTRY7, TBL_BUSY, busy, entry);
 	aos_mdelay(5);
@@ -209,7 +207,8 @@ _dess_nat_entry_commit(a_uint32_t dev_id, a_uint32_t entry_type, a_uint32_t op)
     }
 
     /* hardware requirement, we should delay... */
-    if ((DESS_NAT_ENTRY_FLUSH == op) && (DESS_ENTRY_NAPT == entry_type))
+    if ((DESS_NAT_ENTRY_FLUSH == op) && ((DESS_ENTRY_NAPT == entry_type) ||
+		(DESS_ENTRY_FLOW == entry_type)))
     {
         aos_mdelay(10);
     }
@@ -440,10 +439,6 @@ _dess_napt_sw_to_hw(a_uint32_t dev_id, fal_napt_entry_t * entry,
     SW_SET_REG_BY_FIELD(NAPT_ENTRY2, SRC_IPADDR0, (data & 0xfff), reg[2]);
     SW_SET_REG_BY_FIELD(NAPT_ENTRY3, SRC_IPADDR1, (data >> 12), reg[3]);
 
-    if (!(FAL_NAT_ENTRY_TRANS_IPADDR_INDEX & entry->flags))
-    {
-        return SW_BAD_PARAM;
-    }
     SW_SET_REG_BY_FIELD(NAPT_ENTRY2, TRANS_IPADDR, entry->trans_addr, reg[2]);
 
     if (FAL_MAC_FRWRD == entry->action)
@@ -479,7 +474,7 @@ _dess_napt_sw_to_hw(a_uint32_t dev_id, fal_napt_entry_t * entry,
 	if (A_TRUE == entry->priority_en)
     {
         SW_SET_REG_BY_FIELD(NAPT_ENTRY3, PRIORITY_EN, 1, reg[3]);
-        SW_SET_REG_BY_FIELD(NAPT_ENTRY3, PRIORITY_VAL, entry->counter_id, reg[3]);
+        SW_SET_REG_BY_FIELD(NAPT_ENTRY3, PRIORITY_VAL, entry->priority_val, reg[3]);
     }
 
     data = 2;
@@ -1376,7 +1371,7 @@ _dess_flow_next(a_uint32_t dev_id, a_uint32_t next_mode,
     rv = _dess_nat_down_to_hw(dev_id, reg);
     SW_RTN_ON_ERROR(rv);
 
-    rv = _dess_nat_entry_commit(dev_id, DESS_ENTRY_NAPT, DESS_NAT_ENTRY_NEXT);
+    rv = _dess_nat_entry_commit(dev_id, DESS_ENTRY_FLOW, DESS_NAT_ENTRY_NEXT);
     SW_RTN_ON_ERROR(rv);
 
     rv = _dess_nat_up_to_sw(dev_id, reg);
@@ -2123,6 +2118,9 @@ dess_nat_reset(a_uint32_t dev_id)
     SW_RTN_ON_ERROR(rv);
 
     rv = _dess_nat_entry_commit(dev_id, DESS_ENTRY_NAPT, DESS_NAT_ENTRY_FLUSH);
+    SW_RTN_ON_ERROR(rv);
+
+	rv = _dess_nat_entry_commit(dev_id, DESS_ENTRY_FLOW, DESS_NAT_ENTRY_FLUSH);
     SW_RTN_ON_ERROR(rv);
 
     for (index = 0; index < DESS_PUB_ADDR_NUM; index++)

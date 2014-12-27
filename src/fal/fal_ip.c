@@ -438,6 +438,167 @@ _fal_ip_wcmp_hash_mode_get(a_uint32_t dev_id, a_uint32_t * hash_mode)
     return rv;
 }
 
+static sw_error_t
+_fal_ip_vrf_base_addr_set(a_uint32_t dev_id,
+					a_uint32_t vrf_id, fal_ip4_addr_t addr)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->ip_vrf_base_addr_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->ip_vrf_base_addr_set(dev_id, vrf_id, addr);
+    return rv;
+}
+
+static sw_error_t
+_fal_ip_vrf_base_addr_get(a_uint32_t dev_id,
+					a_uint32_t vrf_id, fal_ip4_addr_t * addr)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->ip_vrf_base_addr_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->ip_vrf_base_addr_get(dev_id, vrf_id, addr);
+    return rv;
+}
+
+static sw_error_t
+_fal_ip_vrf_base_mask_set(a_uint32_t dev_id,
+					a_uint32_t vrf_id, fal_ip4_addr_t addr)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->ip_vrf_base_mask_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->ip_vrf_base_mask_set(dev_id, vrf_id, addr);
+    return rv;
+}
+
+static sw_error_t
+_fal_ip_vrf_base_mask_get(a_uint32_t dev_id,
+					a_uint32_t vrf_id, fal_ip4_addr_t * addr)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->ip_vrf_base_mask_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->ip_vrf_base_mask_get(dev_id, vrf_id, addr);
+    return rv;
+}
+
+static sw_error_t
+_fal_ip_default_route_set(a_uint32_t dev_id,
+					a_uint32_t droute_id, fal_default_route_t * entry)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->ip_default_route_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->ip_default_route_set(dev_id, droute_id, entry);
+    return rv;
+}
+
+static sw_error_t
+_fal_ip_default_route_get(a_uint32_t dev_id,
+					a_uint32_t droute_id, fal_default_route_t * entry)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->ip_default_route_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->ip_default_route_get(dev_id, droute_id, entry);
+    return rv;
+}
+
+static sw_error_t
+_fal_ip_host_route_set(a_uint32_t dev_id,
+					a_uint32_t hroute_id, fal_host_route_t * entry)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->ip_host_route_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->ip_host_route_set(dev_id, hroute_id, entry);
+    return rv;
+}
+
+static sw_error_t
+_fal_ip_host_route_get(a_uint32_t dev_id,
+					a_uint32_t hroute_id, fal_host_route_t * entry)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->ip_host_route_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->ip_host_route_get(dev_id, hroute_id, entry);
+    return rv;
+}
+
+static sw_error_t
+_fal_ip_wcmp_entry_set(a_uint32_t dev_id,
+					a_uint32_t wcmp_id, fal_ip_wcmp_t * wcmp)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->ip_wcmp_entry_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->ip_wcmp_entry_set(dev_id, wcmp_id, wcmp);
+    return rv;
+}
+
+static sw_error_t
+_fal_ip_wcmp_entry_get(a_uint32_t dev_id,
+					a_uint32_t wcmp_id, fal_ip_wcmp_t * wcmp)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->ip_wcmp_entry_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->ip_wcmp_entry_get(dev_id, wcmp_id, wcmp);
+    return rv;
+}
+
+
 /**
  * @brief Add one host entry to one particular device.
  *   @details Comments:
@@ -953,6 +1114,127 @@ fal_ip_wcmp_hash_mode_get(a_uint32_t dev_id, a_uint32_t * hash_mode)
     FAL_API_UNLOCK;
     return rv;
 }
+
+sw_error_t
+fal_ip_vrf_base_addr_set(a_uint32_t dev_id,
+                             a_uint32_t vrf_id, fal_ip4_addr_t addr)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_ip_vrf_base_addr_set(dev_id, vrf_id, addr);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_ip_vrf_base_addr_get(a_uint32_t dev_id,
+                             a_uint32_t vrf_id, fal_ip4_addr_t * addr)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_ip_vrf_base_addr_get(dev_id, vrf_id, addr);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_ip_vrf_base_mask_set(a_uint32_t dev_id,
+                             a_uint32_t vrf_id, fal_ip4_addr_t addr)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_ip_vrf_base_mask_set(dev_id, vrf_id, addr);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_ip_vrf_base_mask_get(a_uint32_t dev_id,
+                             a_uint32_t vrf_id, fal_ip4_addr_t * addr)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_ip_vrf_base_mask_get(dev_id, vrf_id, addr);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_ip_default_route_set(a_uint32_t dev_id,
+			a_uint32_t droute_id, fal_default_route_t * entry)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_ip_default_route_set(dev_id, droute_id, entry);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_ip_default_route_get(a_uint32_t dev_id,
+                             a_uint32_t droute_id, fal_default_route_t * entry)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_ip_default_route_get(dev_id, droute_id, entry);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_ip_host_route_set(a_uint32_t dev_id,
+                             a_uint32_t hroute_id, fal_host_route_t * entry)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_ip_host_route_set(dev_id, hroute_id, entry);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_ip_host_route_get(a_uint32_t dev_id,
+                             a_uint32_t hroute_id, fal_host_route_t * entry)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_ip_host_route_get(dev_id, hroute_id, entry);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_ip_wcmp_entry_set(a_uint32_t dev_id, a_uint32_t wcmp_id,
+    							fal_ip_wcmp_t * wcmp)
+{
+	sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_ip_wcmp_entry_set(dev_id, wcmp_id, wcmp);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_ip_wcmp_entry_get(a_uint32_t dev_id, a_uint32_t wcmp_id,
+    							fal_ip_wcmp_t * wcmp)
+{
+	sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_ip_wcmp_entry_get(dev_id, wcmp_id, wcmp);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
 
 /**
  * @}
