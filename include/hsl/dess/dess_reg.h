@@ -21,9 +21,6 @@
 extern "C" {
 #endif                          /* __cplusplus */
 
-#define S16E_DEVICE_ID  0x11
-#define S17C_DEVICE_ID   0x13 /* TBD */
-#define S17_REVISION_A  0x01
 #define DESS_DEVICE_ID   0x14 /* TBD */
 
 #define MAX_ENTRY_LEN   128
@@ -40,16 +37,6 @@ extern "C" {
 #define MASK_CTL_E_OFFSET         0
 #define MASK_CTL_NR_E             1
 
-#define SOFT_RST
-#define MASK_CTL_SOFT_RST_BOFFSET             31
-#define MASK_CTL_SOFT_RST_BLEN                1
-#define MASK_CTL_SOFT_RST_FLAG                HSL_RW
-
-#define LOAD_EEPROM
-#define MASK_CTL_LOAD_EEPROM_BOFFSET          16
-#define MASK_CTL_LOAD_EEPROM_BLEN             1
-#define MASK_CTL_LOAD_EEPROM_FLAG             HSL_RW
-
 #define DEVICE_ID
 #define MASK_CTL_DEVICE_ID_BOFFSET            8
 #define MASK_CTL_DEVICE_ID_BLEN               8
@@ -61,8 +48,7 @@ extern "C" {
 #define MASK_CTL_REV_ID_FLAG                  HSL_RO
 
 
-
-	/* RGMII Control Register */
+/* RGMII Control Register */
 #define RGMII_CTRL
 #define RGMII_CTRL_ID                                          0
 #define RGMII_CTRL_OFFSET                                      0x0004
@@ -81,23 +67,7 @@ extern "C" {
 #define RGMII_CTRL_RMII0_MASTER_EN_FLAG                               HSL_RW
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    /* Global Interrupt Status Register1 */
+/* Global Interrupt Status Register1 */
 #define GBL_INT_STATUS1
 #define GBL_INT_STATUS1_ID             1
 #define GBL_INT_STATUS1_OFFSET         0x0024
@@ -114,8 +84,6 @@ extern "C" {
 #define GBL_INT_STATUS1_PHY_INT_S_BOFFSET         15
 #define GBL_INT_STATUS1_PHY_INT_S_BLEN            1
 #define GBL_INT_STATUS1_PHY_INT_S_FLAG            HSL_RO
-
-
 
 
     /* Global Interrupt Mask Register1 */
@@ -1577,131 +1545,6 @@ extern "C" {
 #define ROUTER_EG_NR_E       1
 
 
-
-
-    /* Mdio control Register */
-#define MDIO_CTRL               "mctrl"
-#define MDIO_CTRL_ID            24
-#define MDIO_CTRL_OFFSET        0x0098
-#define MDIO_CTRL_E_LENGTH      4
-#define MDIO_CTRL_E_OFFSET      0
-#define MDIO_CTRL_NR_E          1
-
-#define MSTER_EN                        "mctrl_msteren"
-#define MDIO_CTRL_MSTER_EN_BOFFSET      30
-#define MDIO_CTRL_MSTER_EN_BLEN         1
-#define MDIO_CTRL_MSTER_EN_FLAG         HSL_RW
-
-#define MSTER_EN                        "mctrl_msteren"
-#define MDIO_CTRL_MSTER_EN_BOFFSET      30
-#define MDIO_CTRL_MSTER_EN_BLEN         1
-#define MDIO_CTRL_MSTER_EN_FLAG         HSL_RW
-
-#define CMD                             "mctrl_cmd"
-#define MDIO_CTRL_CMD_BOFFSET           27
-#define MDIO_CTRL_CMD_BLEN              1
-#define MDIO_CTRL_CMD_FLAG              HSL_RW
-
-#define SUP_PRE                         "mctrl_spre"
-#define MDIO_CTRL_SUP_PRE_BOFFSET       26
-#define MDIO_CTRL_SUP_PRE_BLEN          1
-#define MDIO_CTRL_SUP_PRE_FLAG          HSL_RW
-
-#define PHY_ADDR                        "mctrl_phyaddr"
-#define MDIO_CTRL_PHY_ADDR_BOFFSET      21
-#define MDIO_CTRL_PHY_ADDR_BLEN         5
-#define MDIO_CTRL_PHY_ADDR_FLAG         HSL_RW
-
-#define REG_ADDR                        "mctrl_regaddr"
-#define MDIO_CTRL_REG_ADDR_BOFFSET      16
-#define MDIO_CTRL_REG_ADDR_BLEN         5
-#define MDIO_CTRL_REG_ADDR_FLAG         HSL_RW
-
-#define DATA                            "mctrl_data"
-#define MDIO_CTRL_DATA_BOFFSET          0
-#define MDIO_CTRL_DATA_BLEN             16
-#define MDIO_CTRL_DATA_FLAG             HSL_RW
-
-
-
-
-    /* BIST control Register */
-#define BIST_CTRL               "bctrl"
-#define BIST_CTRL_ID            24
-#define BIST_CTRL_OFFSET        0x00a0
-#define BIST_CTRL_E_LENGTH      4
-#define BIST_CTRL_E_OFFSET      0
-#define BIST_CTRL_NR_E          1
-
-#define BIST_BUSY                        "bctrl_bb"
-#define BIST_CTRL_BIST_BUSY_BOFFSET      31
-#define BIST_CTRL_BIST_BUSY_BLEN         1
-#define BIST_CTRL_BIST_BUSY_FLAG         HSL_RW
-
-#define ONE_ERR                          "bctrl_oe"
-#define BIST_CTRL_ONE_ERR_BOFFSET        30
-#define BIST_CTRL_ONE_ERR_BLEN           1
-#define BIST_CTRL_ONE_ERR_FLAG           HSL_RO
-
-#define ERR_MEM                          "bctrl_em"
-#define BIST_CTRL_ERR_MEM_BOFFSET        24
-#define BIST_CTRL_ERR_MEM_BLEN           4
-#define BIST_CTRL_ERR_MEM_FLAG           HSL_RO
-
-#define PTN_EN2                          "bctrl_pe2"
-#define BIST_CTRL_PTN_EN2_BOFFSET        22
-#define BIST_CTRL_PTN_EN2_BLEN           1
-#define BIST_CTRL_PTN_EN2_FLAG           HSL_RW
-
-#define PTN_EN1                          "bctrl_pe1"
-#define BIST_CTRL_PTN_EN1_BOFFSET        21
-#define BIST_CTRL_PTN_EN1_BLEN           1
-#define BIST_CTRL_PTN_EN1_FLAG           HSL_RW
-
-#define PTN_EN0                          "bctrl_pe0"
-#define BIST_CTRL_PTN_EN0_BOFFSET        20
-#define BIST_CTRL_PTN_EN0_BLEN           1
-#define BIST_CTRL_PTN_EN0_FLAG           HSL_RW
-
-#define ERR_PTN                          "bctrl_ep"
-#define BIST_CTRL_ERR_PTN_BOFFSET        16
-#define BIST_CTRL_ERR_PTN_BLEN           2
-#define BIST_CTRL_ERR_PTN_FLAG           HSL_RO
-
-#define ERR_CNT                          "bctrl_ec"
-#define BIST_CTRL_ERR_CNT_BOFFSET        13
-#define BIST_CTRL_ERR_CNT_BLEN           2
-#define BIST_CTRL_ERR_CNT_FLAG           HSL_RO
-
-#define ERR_ADDR                         "bctrl_ea"
-#define BIST_CTRL_ERR_ADDR_BOFFSET       0
-#define BIST_CTRL_ERR_ADDR_BLEN          12
-#define BIST_CTRL_ERR_ADDR_FLAG          HSL_RO
-
-
-
-
-    /* BIST recover Register */
-#define BIST_RCV               "brcv"
-#define BIST_RCV_ID            24
-#define BIST_RCV_OFFSET        0x00a4
-#define BIST_RCV_E_LENGTH      4
-#define BIST_RCV_E_OFFSET      0
-#define BIST_RCV_NR_E          1
-
-#define RCV_EN                           "brcv_en"
-#define BIST_RCV_RCV_EN_BOFFSET          31
-#define BIST_RCV_RCV_EN_BLEN             1
-#define BIST_RCV_RCV_EN_FLAG             HSL_RW
-
-#define RCV_ADDR                         "brcv_addr"
-#define BIST_RCV_RCV_ADDR_BOFFSET        0
-#define BIST_RCV_RCV_ADDR_BLEN           12
-#define BIST_RCV_RCV_ADDR_FLAG           HSL_RW
-
-
-
-
     /* LED control Register */
 #define LED_CTRL               "ledctrl"
 #define LED_CTRL_ID            25
@@ -1955,105 +1798,6 @@ extern "C" {
 #define PORT_HOL_CTL1_PORT_IN_DESC_EN_BOFFSET        0
 #define PORT_HOL_CTL1_PORT_IN_DESC_EN_BLEN           4
 #define PORT_HOL_CTL1_PORT_IN_DESC_EN_FLAG           HSL_RW
-
-    /* FX100 CTRL  Register */
-#define FX100_CTRL
-#define FX100_CTRL_OFFSET          0x00fc
-#define FX100_CTRL_E_LENGTH        4
-#define FX100_CTRL_E_OFFSET        0X0004
-#define FX100_CTRL_NR_E            1
-
-#define FX100_STATUS
-#define FX100_CTRL_FX100_STATUS_BOFFSET  24
-#define FX100_CTRL_FX100_STATUS_BLEN     8
-#define FX100_CTRL_FX100_STATUS_FLAG     HSL_RO
-
-#define FX100_LOOP_EN
-#define FX100_CTRL_FX100_LOOP_EN_BOFFSET    23
-#define FX100_CTRL_FX100_LOOP_EN_BLEN       1
-#define FX100_CTRL_FX100_LOOP_EN_FLAG       HSL_Rw
-
-#define SGMII_FIBER
-#define FX100_CTRL_SGMII_FIBER_BOFFSET    15
-#define FX100_CTRL_SGMII_FIBER_BLEN       2
-#define FX100_CTRL_SGMII_FIBER_FLAG       HSL_Rw
-
-#define CRS_COL_100_CTRL
-#define FX100_CTRL_CRS_COL_100_CTRL_BOFFSET    14
-#define FX100_CTRL_CRS_COL_100_CTRL_BLEN       1
-#define FX100_CTRL_CRS_COL_100_CTRL_FLAG       HSL_Rw
-
-#define LOOPBACK_TEST
-#define FX100_CTRL_LOOPBACK_TEST_BOFFSET    13
-#define FX100_CTRL_LOOPBACK_TEST_BLEN       1
-#define FX100_CTRL_LOOPBACK_TEST_FLAG       HSL_Rw
-
-#define CRS_CTRL
-#define FX100_CTRL_CRS_CTRL_BOFFSET    12
-#define FX100_CTRL_CRS_CTRL_BLEN       1
-#define FX100_CTRL_CRS_CTRL_FLAG       HSL_Rw
-
-#define COL_TEST
-#define FX100_CTRL_COL_TEST_BOFFSET    11
-#define FX100_CTRL_COL_TEST_BLEN       1
-#define FX100_CTRL_COL_TEST_FLAG       HSL_Rw
-
-#define FD_MODE
-#define FX100_CTRL_FD_MODE_BOFFSET    10
-#define FX100_CTRL_FD_MODE_BLEN       1
-#define FX100_CTRL_FD_MODE_FLAG       HSL_Rw
-
-#define LINK_CTRL
-#define FX100_CTRL_LINK_CTRL_BOFFSET    8
-#define FX100_CTRL_LINK_CTRL_BLEN       2
-#define FX100_CTRL_LINK_CTRL_FLAG       HSL_Rw
-
-#define OVERSHOOT_MODE
-#define FX100_CTRL_OVERSHOOT_MODE_BOFFSET    6
-#define FX100_CTRL_OVERSHOOT_MODE_BLEN       1
-#define FX100_CTRL_OVERSHOOT_MODE_FLAG       HSL_Rw
-
-#define LOOPBACK_MODE
-#define FX100_CTRL_LOOPBACK_MODE_BOFFSET    3
-#define FX100_CTRL_LOOPBACK_MODE_BLEN       1
-#define FX100_CTRL_LOOPBACK_MODE_FLAG       HSL_Rw
-
-
-
-    /* Port Rate Limit0 Register */
-#define RATE_LIMIT0                "rlmt0"
-#define RATE_LIMIT0_ID             32
-#define RATE_LIMIT0_OFFSET         0x0110
-#define RATE_LIMIT0_E_LENGTH       4
-#define RATE_LIMIT0_E_OFFSET       0x0100
-#define RATE_LIMIT0_NR_E           7
-
-
-#define EG_RATE_EN                             "rlmt_egen"
-#define RATE_LIMIT0_EG_RATE_EN_BOFFSET         23
-#define RATE_LIMIT0_EG_RATE_EN_BLEN            1
-#define RATE_LIMIT0_EG_RATE_EN_FLAG            HSL_RW
-
-#define EG_MNG_RATE_EN                         "rlmt_egmngen"
-#define RATE_LIMIT0_EG_MNG_RATE_EN_BOFFSET     22
-#define RATE_LIMIT0_EG_MNG_RATE_EN_BLEN        1
-#define RATE_LIMIT0_EG_MNG_RATE_EN_FLAG        HSL_RW
-
-#define IN_MNG_RATE_EN                         "rlmt_inmngen"
-#define RATE_LIMIT0_IN_MNG_RATE_EN_BOFFSET     21
-#define RATE_LIMIT0_IN_MNG_RATE_EN_BLEN        1
-#define RATE_LIMIT0_IN_MNG_RATE_EN_FLAG        HSL_RW
-
-#define IN_MUL_RATE_EN                         "rlmt_inmulen"
-#define RATE_LIMIT0_IN_MUL_RATE_EN_BOFFSET     20
-#define RATE_LIMIT0_IN_MUL_RATE_EN_BLEN        1
-#define RATE_LIMIT0_IN_MUL_RATE_EN_FLAG        HSL_RW
-
-#define ING_RATE                               "rlmt_ingrate"
-#define RATE_LIMIT0_ING_RATE_BOFFSET           0
-#define RATE_LIMIT0_ING_RATE_BLEN              15
-#define RATE_LIMIT0_ING_RATE_FLAG              HSL_RW
-
 
 
     /* PKT edit control register */

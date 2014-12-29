@@ -240,27 +240,6 @@ dess_dev_init(a_uint32_t dev_id, hsl_init_mode cpu_mode)
     return SW_OK;
 }
 
-
-static sw_error_t
-_dess_reset(a_uint32_t dev_id)
-{
-#if !(defined(KERNEL_MODULE) && defined(USER_MODE))
-    sw_error_t rv;
-    a_uint32_t val;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    val = 0x1;
-    HSL_REG_FIELD_SET(rv, dev_id, MASK_CTL, 0, SOFT_RST,
-                      (a_uint8_t *) (&val), sizeof (a_uint32_t));
-    SW_RTN_ON_ERROR(rv);
-
-    DESS_ACL_RESET(rv, dev_id);
-#endif
-
-    return SW_OK;
-}
-
 sw_error_t
 dess_cleanup(a_uint32_t dev_id)
 {
@@ -277,24 +256,6 @@ dess_cleanup(a_uint32_t dev_id)
     }
 
     return SW_OK;
-}
-
-/**
- * @brief reset hsl layer.
- * @details Comments:
- *   This operation will reset hsl layer
- * @param[in] dev_id device id
- * @return SW_OK or error code
- */
-HSL_LOCAL sw_error_t
-dess_reset(a_uint32_t dev_id)
-{
-    sw_error_t rv;
-
-    HSL_API_LOCK;
-    rv = _dess_reset(dev_id);
-    HSL_API_UNLOCK;
-    return rv;
 }
 
 /**
@@ -359,7 +320,6 @@ dess_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
             hsl_api_t *p_api;
 
             SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
-            p_api->dev_reset   = dess_reset;
             p_api->dev_clean   = dess_cleanup;
         }
 
