@@ -98,6 +98,7 @@ qca_ar8327_sw_reset_switch(struct switch_dev *dev)
 
     /* reset VLAN shadow */
     priv->vlan = 0;
+    memset(priv->vlan_id, 0, sizeof(a_uint16_t) * AR8327_MAX_VLANS);
     memset(priv->vlan_table, 0, sizeof(a_uint8_t) * AR8327_MAX_VLANS);
     memset(priv->vlan_tagged, 0, sizeof(a_uint8_t) * AR8327_MAX_VLANS);
     memset(priv->pvid, 0, sizeof(a_uint16_t) * AR8327_NUM_PORTS);
