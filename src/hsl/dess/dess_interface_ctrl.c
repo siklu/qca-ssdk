@@ -49,7 +49,7 @@ _dess_port_3az_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable
     }
 
     SW_GET_FIELD_BY_REG(MASK_CTL, REV_ID, rev_id, reg);
-    if (S17_REVISION_A == rev_id)
+    if (DESS_DEVICE_ID == rev_id)
     {
         reverse = 0;
     }
@@ -120,7 +120,7 @@ _dess_port_3az_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enab
     }
 
     SW_GET_FIELD_BY_REG(MASK_CTL, REV_ID, rev_id, reg);
-    if (S17_REVISION_A == rev_id)
+    if (DESS_DEVICE_ID == rev_id)
     {
         reverse = 0;
     }
