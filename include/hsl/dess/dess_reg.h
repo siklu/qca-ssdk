@@ -247,8 +247,8 @@ extern "C" {
 #define MAX_SIZE_NR_E          1
 
 #define CRC_RESERVE
-#define MAX_SIZE_CRC_RESERVE_BOFFSET     0
-#define MAX_SIZE_CRC_RESERVE_BLEN        16
+#define MAX_SIZE_CRC_RESERVE_BOFFSET     16
+#define MAX_SIZE_CRC_RESERVE_BLEN        1
 #define MAX_SIZE_CRC_RESERVE_FLAG        HSL_RW
 
 #define MAX_FRAME_SIZE
