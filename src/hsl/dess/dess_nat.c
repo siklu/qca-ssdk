@@ -1155,7 +1155,6 @@ _dess_napt_counter_bind(a_uint32_t dev_id, a_uint32_t entry_id,
     rv = _dess_nat_entry_commit(dev_id, DESS_ENTRY_NAPT, DESS_NAT_ENTRY_DEL);
     SW_RTN_ON_ERROR(rv);
 
-    reg[4] = 0x0;
     rv = _dess_nat_down_to_hw(dev_id, reg);
     SW_RTN_ON_ERROR(rv);
 
@@ -1450,7 +1449,6 @@ _dess_flow_counter_bind(a_uint32_t dev_id, a_uint32_t entry_id,
     rv = _dess_nat_entry_commit(dev_id, DESS_ENTRY_FLOW, DESS_NAT_ENTRY_DEL);
     SW_RTN_ON_ERROR(rv);
 
-    reg[4] = 0x0;
     rv = _dess_nat_down_to_hw(dev_id, reg);
     SW_RTN_ON_ERROR(rv);
 
