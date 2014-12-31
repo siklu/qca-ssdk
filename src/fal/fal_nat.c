@@ -180,6 +180,85 @@ _fal_napt_counter_bind(a_uint32_t dev_id, a_uint32_t entry_id,
 }
 
 static sw_error_t
+_fal_flow_add(a_uint32_t dev_id, fal_napt_entry_t * napt_entry)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->flow_add)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->flow_add(dev_id, napt_entry);
+    return rv;
+}
+
+static sw_error_t
+_fal_flow_del(a_uint32_t dev_id, a_uint32_t del_mode,
+              fal_napt_entry_t * napt_entry)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->flow_del)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->flow_del(dev_id, del_mode, napt_entry);
+    return rv;
+}
+
+static sw_error_t
+_fal_flow_get(a_uint32_t dev_id, a_uint32_t get_mode,
+              fal_napt_entry_t * napt_entry)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->flow_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->flow_get(dev_id, get_mode, napt_entry);
+    return rv;
+}
+
+static sw_error_t
+_fal_flow_next(a_uint32_t dev_id, a_uint32_t next_mode,
+               fal_napt_entry_t * napt_entry)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->flow_next)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->flow_next(dev_id, next_mode, napt_entry);
+    return rv;
+}
+
+static sw_error_t
+_fal_flow_counter_bind(a_uint32_t dev_id, a_uint32_t entry_id,
+                       a_uint32_t cnt_id, a_bool_t enable)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->flow_counter_bind)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->flow_counter_bind(dev_id, entry_id, cnt_id, enable);
+    return rv;
+}
+
+static sw_error_t
 _fal_nat_status_set(a_uint32_t dev_id, a_bool_t enable)
 {
     sw_error_t rv;
@@ -679,6 +758,107 @@ fal_napt_counter_bind(a_uint32_t dev_id, a_uint32_t entry_id,
 
     FAL_API_LOCK;
     rv = _fal_napt_counter_bind(dev_id, entry_id, cnt_id, enable);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Add one FLOW entry to one particular device.
+ *   @details Comments:
+       Before FLOW entry added related ip4 private base address must be set
+       at first.
+       In parameter napt_entry related entry flags must be set
+       Hardware entry id will be returned.
+ * @param[in] dev_id device id
+ * @param[in] napt_entry FLOW entry parameter
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_flow_add(a_uint32_t dev_id, fal_napt_entry_t * napt_entry)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_flow_add(dev_id, napt_entry);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Del FLOW entries from one particular device.
+ * @param[in] dev_id device id
+ * @param[in] del_mode NAPT entry delete operation mode
+ * @param[in] napt_entry NAPT entry parameter
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_flow_del(a_uint32_t dev_id, a_uint32_t del_mode,
+             fal_napt_entry_t * napt_entry)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_flow_del(dev_id, del_mode, napt_entry);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Get one FLOW entry from one particular device.
+ * @param[in] dev_id device id
+ * @param[in] get_mode FLOW entry get operation mode
+ * @param[in] nat_entry FLOW entry parameter
+ * @param[out] nat_entry FLOW entry parameter
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_flow_get(a_uint32_t dev_id, a_uint32_t get_mode,
+             fal_napt_entry_t * napt_entry)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_flow_get(dev_id, get_mode, napt_entry);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Next FLOW entries from one particular device.
+ * @param[in] dev_id device id
+ * @param[in] next_mode FLOW entry next operation mode
+ * @param[in] napt_entry FLOW entry parameter
+ * @param[out] napt_entry FLOW entry parameter
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_flow_next(a_uint32_t dev_id, a_uint32_t next_mode,
+              fal_napt_entry_t * napt_entry)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_flow_next(dev_id, next_mode, napt_entry);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Bind one counter entry to one FLOW entry to one particular device.
+ * @param[in] dev_id device id
+ * @param[in] entry_id FLOW entry id
+ * @param[in] cnt_id counter entry id
+ * @param[in] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_flow_counter_bind(a_uint32_t dev_id, a_uint32_t entry_id,
+                      a_uint32_t cnt_id, a_bool_t enable)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_flow_counter_bind(dev_id, entry_id, cnt_id, enable);
     FAL_API_UNLOCK;
     return rv;
 }

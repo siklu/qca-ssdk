@@ -22,13 +22,28 @@
 #include "hsl_dev.h"
 #include "hsl_port_prop.h"
 #include "dess_mib.h"
+#include "dess_port_ctrl.h"
 #include "dess_portvlan.h"
 #include "dess_vlan.h"
+#include "dess_fdb.h"
 #include "dess_qos.h"
+#include "dess_mirror.h"
+#include "dess_stp.h"
+#include "dess_rate.h"
+#include "dess_misc.h"
+#include "dess_leaky.h"
+#include "dess_igmp.h"
 #include "dess_acl.h"
+#include "dess_led.h"
 #include "dess_cosmap.h"
-
+#include "dess_ip.h"
+#include "dess_nat.h"
+#if defined(IN_NAT_HELPER)
+#include "dess_nat_helper.h"
+#endif
 #include "dess_sec.h"
+#include "dess_trunk.h"
+#include "dess_interface_ctrl.h"
 #include "dess_reg_access.h"
 #include "dess_reg.h"
 #include "dess_init.h"
@@ -225,27 +240,6 @@ dess_dev_init(a_uint32_t dev_id, hsl_init_mode cpu_mode)
     return SW_OK;
 }
 
-
-static sw_error_t
-_dess_reset(a_uint32_t dev_id)
-{
-#if !(defined(KERNEL_MODULE) && defined(USER_MODE))
-    sw_error_t rv;
-    a_uint32_t val;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    val = 0x1;
-    HSL_REG_FIELD_SET(rv, dev_id, MASK_CTL, 0, SOFT_RST,
-                      (a_uint8_t *) (&val), sizeof (a_uint32_t));
-    SW_RTN_ON_ERROR(rv);
-
-    DESS_ACL_RESET(rv, dev_id);
-#endif
-
-    return SW_OK;
-}
-
 sw_error_t
 dess_cleanup(a_uint32_t dev_id)
 {
@@ -262,24 +256,6 @@ dess_cleanup(a_uint32_t dev_id)
     }
 
     return SW_OK;
-}
-
-/**
- * @brief reset hsl layer.
- * @details Comments:
- *   This operation will reset hsl layer
- * @param[in] dev_id device id
- * @return SW_OK or error code
- */
-HSL_LOCAL sw_error_t
-dess_reset(a_uint32_t dev_id)
-{
-    sw_error_t rv;
-
-    HSL_API_LOCK;
-    rv = _dess_reset(dev_id);
-    HSL_API_UNLOCK;
-    return rv;
 }
 
 /**
@@ -320,18 +296,30 @@ dess_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
         SW_RTN_ON_ERROR(dess_portproperty_init(dev_id, cfg->cpu_mode));
 
         DESS_MIB_INIT(rv, dev_id);
+        DESS_PORT_CTRL_INIT(rv, dev_id);
         DESS_PORTVLAN_INIT(rv, dev_id);
         DESS_VLAN_INIT(rv, dev_id);
+        DESS_FDB_INIT(rv, dev_id);
         DESS_QOS_INIT(rv, dev_id);
+        DESS_STP_INIT(rv, dev_id);
+        DESS_MIRR_INIT(rv, dev_id);
+        DESS_RATE_INIT(rv, dev_id);
+        DESS_MISC_INIT(rv, dev_id);
+        DESS_LEAKY_INIT(rv, dev_id);
+        DESS_IGMP_INIT(rv, dev_id);
         DESS_ACL_INIT(rv, dev_id);
+        DESS_LED_INIT(rv, dev_id);
         DESS_COSMAP_INIT(rv, dev_id);
+        DESS_IP_INIT(rv, dev_id);
+        DESS_NAT_INIT(rv, dev_id);
+        DESS_TRUNK_INIT(rv, dev_id);
         DESS_SEC_INIT(rv, dev_id);
+        DESS_INTERFACE_CTRL_INIT(rv, dev_id);
 
         {
             hsl_api_t *p_api;
 
             SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
-            p_api->dev_reset   = dess_reset;
             p_api->dev_clean   = dess_cleanup;
         }
 

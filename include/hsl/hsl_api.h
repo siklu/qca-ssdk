@@ -207,6 +207,24 @@ extern "C" {
     typedef sw_error_t
     (*hsl_rtd_pppoe_en_get) (a_uint32_t dev_id, a_bool_t *enable);
 
+	typedef sw_error_t
+    (*hsl_global_macaddr_set)(a_uint32_t dev_id, fal_mac_addr_t * addr);
+
+    typedef sw_error_t
+    (*hsl_global_macaddr_get)(a_uint32_t dev_id, fal_mac_addr_t * addr);
+
+	typedef sw_error_t
+    (*hsl_lldp_status_set) (a_uint32_t dev_id, a_bool_t enable);
+
+    typedef sw_error_t
+    (*hsl_lldp_status_get) (a_uint32_t dev_id, a_bool_t * enable);
+
+	typedef sw_error_t
+    (*hsl_frame_crc_reserve_set) (a_uint32_t dev_id, a_bool_t enable);
+
+    typedef sw_error_t
+    (*hsl_frame_crc_reserve_get) (a_uint32_t dev_id, a_bool_t *enable);
+
     /* Port Control */
 #define PORT_CONTROL_FUNC_PROTOTYPE_DEF
     typedef sw_error_t
@@ -356,6 +374,19 @@ extern "C" {
 
     typedef sw_error_t
     (*hsl_port_mac_loopback_get)(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable);
+
+	typedef sw_error_t
+    (*hsl_port_congestion_drop_set)(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t queue_id, a_bool_t enable);
+
+    typedef sw_error_t
+    (*hsl_port_congestion_drop_get)(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t queue_id, a_bool_t * enable);
+
+	typedef sw_error_t
+    (*hsl_ring_flow_ctrl_thres_set)(a_uint32_t dev_id, a_uint32_t ring_id, a_uint8_t on_thres, a_uint8_t off_thres);
+
+    typedef sw_error_t
+    (*hsl_ring_flow_ctrl_thres_get)(a_uint32_t dev_id, a_uint32_t ring_id, a_uint8_t *on_thres, a_uint8_t *off_thres);
+
 
     /* VLAN */
 #define VLAN_FUNC_PROTOTYPE_DEF
@@ -571,6 +602,13 @@ extern "C" {
     typedef sw_error_t
     (*hsl_eg_trans_filter_bypass_en_get) (a_uint32_t dev_id, a_uint32_t *enable);
 
+    typedef sw_error_t
+    (*hsl_port_vrf_id_set) (a_uint32_t dev_id, fal_port_t port_id,
+                                  a_uint32_t vrf_id);
+
+    typedef sw_error_t
+    (*hsl_port_vrf_id_get) (a_uint32_t dev_id, fal_port_t port_id,
+                                  a_uint32_t * vrf_id);
 
     /* FDB */
 #define FDB_FUNC_PROTOTYPE_DEF
@@ -1414,6 +1452,46 @@ extern "C" {
     typedef sw_error_t
     (*hsl_ip_wcmp_hash_mode_get)(a_uint32_t dev_id, a_uint32_t * hash_mode);
 
+    typedef sw_error_t
+    (*hsl_ip_vrf_base_addr_set)(a_uint32_t dev_id,
+					a_uint32_t vrf_id, fal_ip4_addr_t addr);
+
+    typedef sw_error_t
+    (*hsl_ip_vrf_base_addr_get)(a_uint32_t dev_id,
+					a_uint32_t vrf_id, fal_ip4_addr_t * addr);
+
+    typedef sw_error_t
+    (*hsl_ip_vrf_base_mask_set)(a_uint32_t dev_id,
+					a_uint32_t vrf_id, fal_ip4_addr_t addr);
+
+    typedef sw_error_t
+    (*hsl_ip_vrf_base_mask_get)(a_uint32_t dev_id,
+					a_uint32_t vrf_id, fal_ip4_addr_t * addr);
+
+    typedef sw_error_t
+    (*hsl_ip_default_route_set)(a_uint32_t dev_id,
+					a_uint32_t droute_id, fal_default_route_t * entry);
+
+    typedef sw_error_t
+    (*hsl_ip_default_route_get)(a_uint32_t dev_id,
+					a_uint32_t droute_id, fal_default_route_t * entry);
+
+    typedef sw_error_t
+    (*hsl_ip_host_route_set)(a_uint32_t dev_id,
+					a_uint32_t hroute_id, fal_host_route_t * entry);
+
+    typedef sw_error_t
+    (*hsl_ip_host_route_get)(a_uint32_t dev_id,
+					a_uint32_t hroute_id, fal_host_route_t * entry);
+
+	typedef sw_error_t
+    (*hsl_ip_wcmp_entry_set)(a_uint32_t dev_id,
+					a_uint32_t wcmp_id, fal_ip_wcmp_t * wcmp);
+
+	typedef sw_error_t
+    (*hsl_ip_wcmp_entry_get)(a_uint32_t dev_id,
+					a_uint32_t wcmp_id, fal_ip_wcmp_t * wcmp);
+
     /* NAT */
 #define NAT_FUNC_PROTOTYPE_DEF
     typedef sw_error_t
@@ -1685,6 +1763,12 @@ extern "C" {
         hsl_rtd_pppoe_en_set rtd_pppoe_en_set;
         hsl_rtd_pppoe_en_get rtd_pppoe_en_get;
         hsl_intr_status_mac_linkchg_clear intr_status_mac_linkchg_clear;
+		hsl_global_macaddr_set global_macaddr_set;
+		hsl_global_macaddr_get global_macaddr_get;
+		hsl_lldp_status_set lldp_status_set;
+        hsl_lldp_status_get lldp_status_get;
+		hsl_frame_crc_reserve_set frame_crc_reserve_set;
+        hsl_frame_crc_reserve_get frame_crc_reserve_get;
 
 
         /* Port control */
@@ -1731,6 +1815,10 @@ extern "C" {
         hsl_ports_link_status_get ports_link_status_get;
         hsl_port_mac_loopback_set port_mac_loopback_set;
         hsl_port_mac_loopback_get port_mac_loopback_get;
+		hsl_port_congestion_drop_set port_congestion_drop_set;
+        hsl_port_congestion_drop_get port_congestion_drop_get;
+		hsl_ring_flow_ctrl_thres_set ring_flow_ctrl_thres_set;
+        hsl_ring_flow_ctrl_thres_get ring_flow_ctrl_thres_get;
 
         /* VLAN */
         hsl_vlan_entry_append vlan_entry_append;
@@ -1790,6 +1878,8 @@ extern "C" {
         hsl_netisolate_get netisolate_get;
         hsl_eg_trans_filter_bypass_en_set eg_trans_filter_bypass_en_set;
         hsl_eg_trans_filter_bypass_en_get eg_trans_filter_bypass_en_get;
+        hsl_port_vrf_id_set port_vrf_id_set;
+        hsl_port_vrf_id_get port_vrf_id_get;
 
         /* FDB */
         hsl_fdb_add fdb_add;
@@ -2033,6 +2123,16 @@ extern "C" {
         hsl_ip_age_time_get ip_age_time_get;
         hsl_ip_wcmp_hash_mode_set ip_wcmp_hash_mode_set;
         hsl_ip_wcmp_hash_mode_get ip_wcmp_hash_mode_get;
+        hsl_ip_vrf_base_addr_set ip_vrf_base_addr_set;
+        hsl_ip_vrf_base_addr_get ip_vrf_base_addr_get;
+        hsl_ip_vrf_base_mask_set ip_vrf_base_mask_set;
+        hsl_ip_vrf_base_mask_get ip_vrf_base_mask_get;
+        hsl_ip_default_route_set ip_default_route_set;
+        hsl_ip_default_route_get ip_default_route_get;
+        hsl_ip_host_route_set ip_host_route_set;
+        hsl_ip_host_route_get ip_host_route_get;
+		hsl_ip_wcmp_entry_set ip_wcmp_entry_set;
+		hsl_ip_wcmp_entry_get ip_wcmp_entry_get;
 
         /* NAT */
         hsl_nat_add nat_add;
@@ -2045,6 +2145,11 @@ extern "C" {
         hsl_napt_get napt_get;
         hsl_napt_next napt_next;
         hsl_napt_counter_bind napt_counter_bind;
+		hsl_napt_add flow_add;
+        hsl_napt_del flow_del;
+        hsl_napt_get flow_get;
+        hsl_napt_next flow_next;
+        hsl_napt_counter_bind flow_counter_bind;
         hsl_nat_status_set nat_status_set;
         hsl_nat_status_get nat_status_get;
         hsl_nat_hash_mode_set nat_hash_mode_set;

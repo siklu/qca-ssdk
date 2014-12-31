@@ -49,6 +49,8 @@ struct cmd_des_t gcmd_des[] =
             {"bpstatus", "set", "set back pressure status of a port", "<port_id> <enable|disable>", SW_API_BP_STATUS_SET, NULL},
             {"linkforcemode", "set", "set link force mode of a port", "<port_id> <enable|disable>", SW_API_PT_LINK_MODE_SET, NULL},
             {"macLoopback", "set", "set mac level loop back mode of port", "<port_id> <enable|disable>", SW_API_PT_MAC_LOOPBACK_SET, NULL},
+			{"congedrop", "set", "set congestion drop of port queue", "<port_id> <queue_id> <enable|disable>", SW_API_PT_CONGESTION_DROP_SET, NULL},
+			{"ringfcthres", "set", "set flwo ctrl thres of ring", "<port_id> <ring_id> <on_thres> <off_thres>", SW_API_PT_RING_FLOW_CTRL_THRES_SET, NULL},
             {NULL, NULL, NULL, NULL, (int)NULL, NULL},/*end of desc*/
         },
     },
@@ -412,7 +414,7 @@ struct cmd_des_t gcmd_des[] =
             {"pppoesession", "del", "del a pppoe session entry", "<session_id>", SW_API_PPPOE_SESSION_DEL, NULL},
 #endif
             {"eapolstatus", "set", "set eapol frames hardware identification status", "<port_id> <enable|disable>", SW_API_EAPOL_STATUS_SET, NULL},
-            {"rip", "set", "set rip packets hardware identification status", "<enable|disable>", SW_API_RIPV1_STATUS_SET, NULL},
+            {"rip", "set", "set rip packets copy to cpu status", "<enable|disable>", SW_API_RIPV1_STATUS_SET, NULL},
             {"ptarpreq", "set", "set arp request packets hardware identification status", "<port_id> <enable|disable>", SW_API_PT_ARP_REQ_STATUS_SET, NULL},
             {"ptarpack", "set", "set arp ack packets hardware identification status", "<port_id> <enable|disable>", SW_API_PT_ARP_ACK_STATUS_SET, NULL},
             {"extendpppoe", "set", "add a pppoe session entry", "", SW_API_PPPOE_SESSION_TABLE_ADD, NULL},
@@ -426,6 +428,9 @@ struct cmd_des_t gcmd_des[] =
             {"intrstatusmaclinkchg", "clear", "clear switch interrupt status for mac link change", "", SW_API_INTR_STATUS_MAC_LINKCHG_CLEAR, NULL},
             {"cpuVid", "set", "set to_cpu vid status", "<enable|disable>", SW_API_CPU_VID_EN_SET, NULL},
             {"rtdPppoe", "set", "set RM_RTD_PPPOE_EN status", "<enable|disable>", SW_API_RTD_PPPOE_EN_SET, NULL},
+			{"glomacaddr", "set", "set global macaddr", "<macaddr>", SW_API_GLOBAL_MACADDR_SET, NULL},
+			{"lldp", "set", "set lldp frames hardware identification status", "<enable|disable>", SW_API_LLDP_STATUS_SET, NULL},
+			{"framecrc", "set", "set frame crc reserve enable", "<enable|disable>", SW_API_FRAME_CRC_RESERVE_SET, NULL},
             {NULL, NULL, NULL, NULL, (int)NULL, NULL}/*end of desc*/
         },
     },

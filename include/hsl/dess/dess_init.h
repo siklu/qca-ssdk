@@ -34,13 +34,6 @@ extern "C" {
     sw_error_t
     dess_cleanup(a_uint32_t dev_id);
 
-#ifdef HSL_STANDALONG
-
-    HSL_LOCAL sw_error_t
-    dess_reset(a_uint32_t dev_id);
-
-#endif
-
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
