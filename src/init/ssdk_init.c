@@ -1581,6 +1581,7 @@ static int __init
 regi_init(void)
 {
 	ssdk_init_cfg cfg;
+	struct device dev;
 	int rv = 0;
 	garuda_init_spec_cfg chip_spec_cfg;
 	ssdk_dt_global.switch_reg_access_mode = HSL_REG_MDIO;
@@ -1598,6 +1599,13 @@ regi_init(void)
 
 	memset(&chip_spec_cfg, 0, sizeof(garuda_init_spec_cfg));
 
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
+		dev.of_node=of_find_node_by_name(NULL, "ess-switch");
+		if(device_reset(&dev))
+			printk("device_reset failed for ess-switch!\n");
+	}
+#endif
 
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_MDIO)
 		cfg.reg_mode = HSL_MDIO;
