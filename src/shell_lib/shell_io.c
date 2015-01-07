@@ -613,6 +613,10 @@ cmd_data_check_qos_pt(char *cmdstr, fal_qos_mode_t * val, a_uint32_t size)
     {
         *val = FAL_QOS_PORT_MODE;
     }
+    else if (!strcasecmp(cmdstr, "flow"))
+    {
+        *val = FAL_QOS_FLOW_MODE;
+    }
     else
     {
         return SW_BAD_VALUE;
@@ -3120,6 +3124,14 @@ cmd_data_check_remark_entry(char *info, void *val, a_uint32_t size)
     if (rv)
         return rv;
 
+    /* get remark_dei */
+    rv = __cmd_data_check_complex("remark dei", "enable",
+                        "usage: <enable/disable>\n",
+                        cmd_data_check_enable, &(pEntry->remark_dei),
+                        sizeof(a_bool_t));
+    if (rv)
+        return rv;
+
     /* get g_dscp */
     rv = __cmd_data_check_range("green dscp", NULL,
                         "usage: the range is 0 -- 63\n",
@@ -3139,7 +3151,7 @@ cmd_data_check_remark_entry(char *info, void *val, a_uint32_t size)
     /* get g_up */
     rv = __cmd_data_check_range("green up", NULL,
                         "usage: the range is 0 -- 63\n",
-                        cmd_data_check_integer, &tmp, 63, 0);
+                        cmd_data_check_integer, &tmp, 7, 0);
     if (rv)
         return rv;
     pEntry->g_up = tmp;
@@ -3147,10 +3159,26 @@ cmd_data_check_remark_entry(char *info, void *val, a_uint32_t size)
     /* get y_up */
     rv = __cmd_data_check_range("yellow up", NULL,
                         "usage: the range is 0 -- 63\n",
-                        cmd_data_check_integer, &tmp, 63, 0);
+                        cmd_data_check_integer, &tmp, 7, 0);
     if (rv)
         return rv;
     pEntry->y_up = tmp;
+
+    /* get g_dei */
+    rv = __cmd_data_check_range("green dei", NULL,
+                        "usage: the range is 0 -- 1\n",
+                        cmd_data_check_integer, &tmp, 1, 0);
+    if (rv)
+        return rv;
+    pEntry->g_dei = tmp;
+
+    /* get y_dei */
+    rv = __cmd_data_check_range("yellow dei", NULL,
+                        "usage: the range is 0 -- 1\n",
+                        cmd_data_check_integer, &tmp, 1, 0);
+    if (rv)
+        return rv;
+    pEntry->y_dei = tmp;
 
 /*
     dprintf("remark_dscp=%d, remark_up=%d, g_dscp=%d, y_dscp=%d\n",
