@@ -1274,6 +1274,11 @@ _isis_acl_action_parse(a_uint32_t dev_id, const fal_acl_rule_t * sw,
 
     aos_mem_zero(&(hw->act[0]), sizeof (hw->act));
 
+    if (FAL_ACTION_FLG_TST(sw->action_flg, FAL_ACL_ACTION_MATCH_TRIGGER_INTR))
+    {
+        FIELD_SET_ACTION(ACL_RSLT2, TRIGGER_INTR, 1);
+    }
+
     /* FAL_ACL_ACTION_PERMIT need't process */
 
     /* we should ignore any other action flags when DENY bit is settd. */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2014, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -164,19 +164,18 @@ struct qca_phy_priv {
 #define qca_phy_priv_get(_dev) \
 		container_of(_dev, struct qca_phy_priv, sw_dev)
 
-static int
-miibus_get(void);
+
 uint32_t
 qca_ar8216_mii_read(int reg);
 void
 qca_ar8216_mii_write(int reg, uint32_t val);
-static sw_error_t
+sw_error_t
 qca_ar8327_phy_write(a_uint32_t dev_id, a_uint32_t phy_addr,
                             a_uint32_t reg, a_uint16_t data);
-static void
+void
 qca_ar8327_mmd_write(a_uint32_t dev_id, a_uint32_t phy_addr,
                               a_uint16_t addr, a_uint16_t data);
-static void
+void
 qca_ar8327_phy_dbg_write(a_uint32_t dev_id, a_uint32_t phy_addr,
 		                          a_uint16_t dbg_addr, a_uint16_t dbg_data);
 #endif
