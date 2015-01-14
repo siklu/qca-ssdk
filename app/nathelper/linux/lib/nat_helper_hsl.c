@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -34,6 +34,10 @@
 #include "../nat_helper.h"
 #include "nat_helper_hsl.h"
 #include "../napt_acl.h"
+
+int nat_chip_ver = 0;
+
+#define DESS_CHIP(ver) ((((ver)&0xffff)>>8) == 0x14)
 
 static a_uint8_t
 hw_debug_counter_get(void)
@@ -136,10 +140,17 @@ nat_hw_prv_base_set(a_uint32_t ip)
     private_ip_base = ip & nat_hw_prv_mask_get();
 #endif
 
-    if (NAT_PRV_BASE_ADDR_SET(0, (fal_ip4_addr_t)ip) != 0)
-    {
-        return -1;
-    }
+	if(DESS_CHIP(nat_chip_ver)) {
+		if (IP_PRV_BASE_ADDR_SET(0, 0, (fal_ip4_addr_t)ip) != 0)
+	    {
+	        return -1;
+	    }
+	} else {
+	    if (NAT_PRV_BASE_ADDR_SET(0, (fal_ip4_addr_t)ip) != 0)
+	    {
+	        return -1;
+	    }
+	}
 
     HNAT_PRINTK("%s: private_ip_base:%x private_ip_can_update:%d\n",
                 __func__, private_ip_base, private_ip_can_update);
@@ -159,10 +170,17 @@ nat_hw_prv_mask_set(a_uint32_t ipmask)
 {
     ipmask = ntohl(ipmask);
 
-    if (NAT_PRV_BASE_MASK_SET(0, (fal_ip4_addr_t)ipmask) != 0)
-    {
-        return -1;
-    }
+	if(DESS_CHIP(nat_chip_ver)) {
+		if (IP_PRV_BASE_MASK_SET(0, 0, (fal_ip4_addr_t)ipmask) != 0)
+	    {
+	        return -1;
+	    }
+	} else {
+	    if (NAT_PRV_BASE_MASK_SET(0, (fal_ip4_addr_t)ipmask) != 0)
+	    {
+	        return -1;
+	    }
+	}
     private_net_mask = ipmask;
 
     HNAT_PRINTK("%s: 0x%08x\n", __FUNCTION__, private_net_mask);
@@ -273,13 +291,128 @@ if_mac_add(a_uint8_t *mac, a_uint8_t vid, uint32_t ipv6)
 static a_int32_t
 _arp_hw_add(fal_host_entry_t *arp_entry)
 {
+	printk("_arp_hw_add!\n");
     return IP_HOST_ADD(0, arp_entry);
 }
+
+struct host_route_ip4 {
+	char valid;
+	fal_ip4_addr_t ip;
+	unsigned int ref;
+};
+struct host_route_ip6 {
+	char valid;
+	fal_ip6_addr_t ip;
+	unsigned int ref;
+};
+
+#define HOST_ROUTE_NUM   16
+struct host_route_ip4 host_route_ip4_table[HOST_ROUTE_NUM];
+struct host_route_ip6 host_route_ip6_table[HOST_ROUTE_NUM];
+
+static a_int32_t
+_arp_host_route_ip4_hw_add(fal_host_entry_t *arp_entry)
+{
+	char exist = 0, idx = HOST_ROUTE_NUM+1, i = 0;
+	fal_ip4_addr_t ip = arp_entry->ip4_addr;
+
+	ip = ip & 0xffff0000;
+	for(i = 0; i < HOST_ROUTE_NUM; i++) {
+		if(host_route_ip4_table[i].valid) {
+			if(host_route_ip4_table[i].ip == ip) {
+				exist = 1;
+				idx = i;
+				break;
+			}
+		} else {
+			idx = i;
+		}
+	}
+	if(!exist) {
+		fal_host_route_t entry;
+		if(idx >= HOST_ROUTE_NUM) {
+			HNAT_PRINTK("ino valid ip4 host route entry!\n");
+			return -1;
+		}
+
+		host_route_ip4_table[idx].valid = 1;
+		host_route_ip4_table[idx].ip = ip;
+		memset(&entry, 0, sizeof(entry));
+		entry.valid = 1;
+		entry.ip_version = 0;
+		entry.route_addr.ip4_addr = ip;
+		entry.prefix_length = 15;
+		IP_HOST_ROUTE_ADD(0, idx, &entry);
+	} else {
+		host_route_ip4_table[idx].ref++;
+	}
+
+	return 0;
+}
+
+static a_int32_t
+_arp_host_route_ip6_hw_add(fal_host_entry_t *arp_entry)
+{
+	char exist = 0, idx = HOST_ROUTE_NUM+1, i = 0;
+	fal_ip6_addr_t ip = arp_entry->ip6_addr;
+
+	ip.ul[1] = 0;
+	ip.ul[2] = 0;
+	ip.ul[3] = 0;
+	for(i = 0; i < HOST_ROUTE_NUM; i++) {
+		if(host_route_ip6_table[i].valid) {
+			if(host_route_ip6_table[i].ip.ul[0] == ip.ul[0]) {
+				exist = 1;
+				idx = i;
+				break;
+			}
+		} else {
+			idx = i;
+		}
+	}
+	if(!exist) {
+		fal_host_route_t entry;
+		if(idx >= HOST_ROUTE_NUM) {
+			HNAT_PRINTK("ino valid ip4 host route entry!\n");
+			return -1;
+		}
+		host_route_ip6_table[idx].valid = 1;
+		host_route_ip6_table[idx].ip.ul[0]  = ip.ul[0];
+		memset(&entry, 0, sizeof(entry));
+		entry.valid = 1;
+		entry.ip_version = 1;
+		entry.route_addr.ip6_addr.ul[0] = ip.ul[0];
+		entry.prefix_length = 31;
+		IP_HOST_ROUTE_ADD(0, idx, &entry);
+	} else {
+		host_route_ip6_table[idx].ref++;
+	}
+
+	return 0;
+}
+
+
+static a_int32_t
+_arp_host_route_hw_add(fal_host_entry_t *arp_entry)
+{
+	fal_host_route_t entry;
+	char exist = 0, idx = 0, i = 0;
+
+	if(arp_entry->flags == FAL_IP_IP4_ADDR) {
+		return _arp_host_route_ip4_hw_add(arp_entry);
+	} else {
+		return _arp_host_route_ip6_hw_add(arp_entry);
+	}
+
+}
+
 
 a_int32_t
 arp_hw_add(a_uint32_t port, a_uint32_t intf_id, a_uint8_t *ip, a_uint8_t *mac, int is_ipv6_entry)
 {
     fal_host_entry_t arp_entry;
+
+	printk("arp_hw_add enter!\n");
 
 #ifdef ISIS /* Only for AR8337(S17) */
     if (NF_S17_WAN_TYPE_PPPOEV6 == nf_athrs17_hnat_wan_type)
@@ -343,6 +476,14 @@ arp_hw_add(a_uint32_t port, a_uint32_t intf_id, a_uint8_t *ip, a_uint8_t *mac, i
         printk("%s: fail\n", __func__);
         return -1;
     }
+
+	if(DESS_CHIP(nat_chip_ver)) {
+		if(_arp_host_route_hw_add(&arp_entry) != 0)
+	    {
+	        printk("%s: fail\n", __func__);
+	        return -1;
+	    }
+	}
 
     if (0 == is_ipv6_entry)
     {
@@ -696,4 +837,11 @@ sw_error_t napt_l3_status_get(a_uint32_t dev_id, a_bool_t * enable)
 
     return SW_OK;
 }
+
+sw_error_t napt_helper_hsl_init()
+{
+	memset(host_route_ip4_table, 0, sizeof(host_route_ip4_table));
+	memset(host_route_ip6_table, 0, sizeof(host_route_ip6_table));
+}
+
 

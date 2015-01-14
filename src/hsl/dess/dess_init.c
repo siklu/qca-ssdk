@@ -322,10 +322,12 @@ dess_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
             SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
             p_api->dev_clean   = dess_cleanup;
         }
-
+#if 0
 #if defined(IN_NAT_HELPER)
-#if TODO/*linchen ,why initailiza NAT HELPER here?*/
-        DESS_NAT_HELPER_INIT(rv, dev_id);
+		if(!dess_nat_global_status) {
+        	DESS_NAT_HELPER_INIT(rv, dev_id);
+			dess_nat_global_status = 1;
+		}
 #endif
 #endif
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -81,6 +81,8 @@ static int
 nat_ipt_set_ctl(struct sock *sk, int cmd, void __user * user, unsigned int len);
 static int
 nat_ipt_get_ctl(struct sock *sk, int cmd, void __user * user, int *len);
+
+int nat_sockopts_init = 0;
 
 /*those initial value will be overwrited by orignal iptables sockopts*/
 static struct nf_sockopt_ops orgi_ipt_sockopts;
@@ -702,19 +704,26 @@ nat_ipt_get_ctl(struct sock *sk, int cmd, void __user * user, int *len)
     return k;
 }
 
-static void
+
+void
 nat_ipt_sockopts_replace(void)
 {
+	int ret = 0;
     /*register an temp sockopts to find ipt_sockopts*/
-    nf_register_sockopt(&tmp_ipt_sockopts);
+    if((ret = nf_register_sockopt(&tmp_ipt_sockopts)) < 0) {
+		return;
+    }
     list_for_each_entry(ipt_sockopts, tmp_ipt_sockopts.list.next, list)
     {
         if (ipt_sockopts->set_optmin == IPT_BASE_CTL)
         {
+			nat_sockopts_init = 1;
             break;
         }
     }
     nf_unregister_sockopt(&tmp_ipt_sockopts);
+	if(!nat_sockopts_init)
+		return;
 
     /*save orginal ipt_sockopts*/
     orgi_ipt_sockopts = *ipt_sockopts;
