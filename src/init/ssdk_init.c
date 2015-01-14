@@ -408,9 +408,21 @@ qca_ar8327_port_init(struct qca_phy_priv *priv, a_uint32_t port)
 	}
 
 	if (port_cfg->force_link == 0) {
-		priv->mii_write(AR8327_REG_PORT_STATUS(port),
+		if(port == 6) {
+			printk("phy[%d], port[6]: link[%d], duplex[%d]\n",
+				priv->phy->addr,
+				plat_data->port6_cfg.force_link,
+				plat_data->port6_cfg.duplex);
+			printk("phy[%d], port[0]: link[%d], duplex[%d]\n",
+                        	priv->phy->addr,
+                        	plat_data->cpuport_cfg.force_link,
+                        	plat_data->cpuport_cfg.duplex);
+		}
+		if(port_cfg->duplex == 0 && port_cfg->speed == 0) {
+			priv->mii_write(AR8327_REG_PORT_STATUS(port),
 			            AR8327_PORT_STATUS_LINK_AUTO);
-		return;
+			return;
+		}
 	}
 
 	value = AR8327_PORT_STATUS_TXMAC | AR8327_PORT_STATUS_RXMAC;
@@ -423,6 +435,8 @@ qca_ar8327_port_init(struct qca_phy_priv *priv, a_uint32_t port)
     } else if(port_cfg->speed == AR8327_PORT_SPEED_100) {
         value |= AR8327_PORT_SPEED_100M;
     } else if(port_cfg->speed == AR8327_PORT_SPEED_1000) {
+        value |= AR8327_PORT_SPEED_1000M;
+    } else {
         value |= AR8327_PORT_SPEED_1000M;
     }
 
