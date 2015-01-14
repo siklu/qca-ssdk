@@ -24,6 +24,7 @@
 #include <linux/autoconf.h>
 #include <linux/kernel.h>
 #endif
+#include <linux/kconfig.h>
 #include <linux/proc_fs.h>
 #include <linux/sysfs.h>
 #include <linux/if_ether.h>
