@@ -311,11 +311,13 @@ isis_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
         }
 
         SW_RTN_ON_ERROR(isis_hw_init(dev_id, cfg));
+#if 0
 #if defined(IN_NAT_HELPER)
 		if(!isis_nat_global_status) {
         	ISIS_NAT_HELPER_INIT(rv, dev_id);
 			isis_nat_global_status = 1;
 		}
+#endif
 #endif
 
 #if defined(IN_MACBLOCK)
