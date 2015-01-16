@@ -1191,15 +1191,15 @@ extern "C" {
 #define TRUNK_HASH_MODE_E_OFFSET             0x4
 #define TRUNK_HASH_MODE_NR_E                 1
 
-#define DIP_EN
-#define TRUNK_HASH_MODE_DIP_EN_BOFFSET       3
-#define TRUNK_HASH_MODE_DIP_EN_BLEN          1
-#define TRUNK_HASH_MODE_DIP_EN_FLAG          HSL_RW
-
 #define SIP_EN
-#define TRUNK_HASH_MODE_SIP_EN_BOFFSET       2
+#define TRUNK_HASH_MODE_SIP_EN_BOFFSET       3
 #define TRUNK_HASH_MODE_SIP_EN_BLEN          1
 #define TRUNK_HASH_MODE_SIP_EN_FLAG          HSL_RW
+
+#define DIP_EN
+#define TRUNK_HASH_MODE_DIP_EN_BOFFSET       2
+#define TRUNK_HASH_MODE_DIP_EN_BLEN          1
+#define TRUNK_HASH_MODE_DIP_EN_FLAG          HSL_RW
 
 #define SA_EN
 #define TRUNK_HASH_MODE_SA_EN_BOFFSET        1

@@ -17,13 +17,16 @@
  *  napt_procfs.c -  create files in /proc
  *
  */
+#include <linux/version.h>
 #ifdef KVER32
 #include <generated/autoconf.h>
 #else
 #include <linux/autoconf.h>
 #include <linux/kernel.h>
 #endif
+#include <linux/kconfig.h>
 #include <linux/proc_fs.h>
+#include <linux/sysfs.h>
 #include <linux/if_ether.h>
 #include <asm/uaccess.h>    /* for copy_from_user */
 #include "aos_types.h"
@@ -65,6 +68,22 @@ unsigned char nf_athrs17_hnat_wan_mac[ETH_ALEN] = {0};
 /* for IPv6 over PPPoE (only for S17c)*/
 int nf_athrs17_hnat_ppp_id2 = 0;
 unsigned char nf_athrs17_hnat_ppp_peer_mac2[ETH_ALEN] = {0};
+
+static void setup_proc_entry(void)
+{
+    nf_athrs17_hnat = 1;
+    nf_athrs17_hnat_wan_type = 0;
+    nf_athrs17_hnat_ppp_id = 0;
+    memset(&nf_athrs17_hnat_ppp_peer_mac, 0, ETH_ALEN);
+    memset(&nf_athrs17_hnat_wan_mac, 0, ETH_ALEN);
+    nf_athrs17_hnat_ppp_peer_ip = 0;
+    nf_athrs17_hnat_wan_ip = 0;
+
+    nf_athrs17_hnat_ppp_id2 = 0;
+    memset(&nf_athrs17_hnat_ppp_peer_mac2, 0, ETH_ALEN);
+}
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3,14,0)
 
 /**
  * This structure hold information about the /proc file
@@ -206,19 +225,6 @@ static int procfile_write_mac(struct file *file, const char *buffer, unsigned lo
 }
 #endif // ifdef AUTO_UPDATE_PPPOE_INFO
 
-static void setup_proc_entry(void)
-{
-    nf_athrs17_hnat = 1;
-    nf_athrs17_hnat_wan_type = 0;
-    nf_athrs17_hnat_ppp_id = 0;
-    memset(&nf_athrs17_hnat_ppp_peer_mac, 0, ETH_ALEN);
-    memset(&nf_athrs17_hnat_wan_mac, 0, ETH_ALEN);
-    nf_athrs17_hnat_ppp_peer_ip = 0;
-    nf_athrs17_hnat_wan_ip = 0;
-
-    nf_athrs17_hnat_ppp_id2 = 0;
-    memset(&nf_athrs17_hnat_ppp_peer_mac2, 0, ETH_ALEN);
-}
 
 int napt_procfs_init(void)
 {
@@ -382,5 +388,471 @@ void napt_procfs_exit(void)
     remove_proc_entry(NF_PROCFS_DIR, NULL);
     printk(KERN_INFO "/proc/%s/%s removed\n", NF_PROCFS_DIR, NF_ATHRS17_HNAT_NAME);
 }
+#else
+static ssize_t napt_hnat_get(struct device *dev,
+		  struct device_attribute *attr,
+		  char *buf)
+{
+	ssize_t count;
+	a_uint32_t num;
 
+	num = (a_uint32_t)nf_athrs17_hnat;
+
+	count = snprintf(buf, (ssize_t)PAGE_SIZE, "%u", num);
+	return count;
+}
+
+static ssize_t napt_hnat_set(struct device *dev,
+		  struct device_attribute *attr,
+		  const char *buf, size_t count)
+{
+	char num_buf[12];
+	a_uint32_t num;
+
+
+	if (count >= sizeof(num_buf)) return 0;
+	memcpy(num_buf, buf, count);
+	num_buf[count] = '\0';
+	sscanf(num_buf, "%u", &num);
+
+	nf_athrs17_hnat = num;
+
+	return count;
+}
+
+static ssize_t napt_wan_type_get(struct device *dev,
+		  struct device_attribute *attr,
+		  char *buf)
+{
+	ssize_t count;
+	a_uint32_t num;
+
+	num = (a_uint32_t)nf_athrs17_hnat_wan_type;
+
+	count = snprintf(buf, (ssize_t)PAGE_SIZE, "%u", num);
+	return count;
+}
+
+static ssize_t napt_wan_type_set(struct device *dev,
+		  struct device_attribute *attr,
+		  const char *buf, size_t count)
+{
+	char num_buf[12];
+	a_uint32_t num;
+
+
+	if (count >= sizeof(num_buf)) return 0;
+	memcpy(num_buf, buf, count);
+	num_buf[count] = '\0';
+	sscanf(num_buf, "%u", &num);
+
+	nf_athrs17_hnat_wan_type = num;
+
+	return count;
+}
+
+static ssize_t napt_ppp_id_get(struct device *dev,
+		  struct device_attribute *attr,
+		  char *buf)
+{
+	ssize_t count;
+	a_uint32_t num;
+
+	num = (a_uint32_t)nf_athrs17_hnat_ppp_id;
+
+	count = snprintf(buf, (ssize_t)PAGE_SIZE, "%u", num);
+	return count;
+}
+
+static ssize_t napt_ppp_id_set(struct device *dev,
+		  struct device_attribute *attr,
+		  const char *buf, size_t count)
+{
+	char num_buf[12];
+	a_uint32_t num;
+
+
+	if (count >= sizeof(num_buf)) return 0;
+	memcpy(num_buf, buf, count);
+	num_buf[count] = '\0';
+	sscanf(num_buf, "%u", &num);
+
+	nf_athrs17_hnat_ppp_id = num;
+
+	return count;
+}
+
+static ssize_t napt_udp_thresh_get(struct device *dev,
+		  struct device_attribute *attr,
+		  char *buf)
+{
+	ssize_t count;
+	a_uint32_t num;
+
+	num = (a_uint32_t)nf_athrs17_hnat_udp_thresh;
+
+	count = snprintf(buf, (ssize_t)PAGE_SIZE, "%u", num);
+	return count;
+}
+
+static ssize_t napt_udp_thresh_set(struct device *dev,
+		  struct device_attribute *attr,
+		  const char *buf, size_t count)
+{
+	char num_buf[12];
+	a_uint32_t num;
+
+
+	if (count >= sizeof(num_buf)) return 0;
+	memcpy(num_buf, buf, count);
+	num_buf[count] = '\0';
+	sscanf(num_buf, "%u", &num);
+
+	nf_athrs17_hnat_udp_thresh = num;
+
+	return count;
+}
+
+static ssize_t napt_wan_ip_get(struct device *dev,
+		  struct device_attribute *attr,
+		  char *buf)
+{
+	ssize_t count;
+	unsigned char* data;
+
+	data = (unsigned char*)&nf_athrs17_hnat_wan_ip;
+
+	count = snprintf(buf, (ssize_t)PAGE_SIZE, "%d.%d.%d.%d",
+					data[0], data[1], data[2], data[3]);
+	return count;
+}
+
+static ssize_t napt_wan_ip_set(struct device *dev,
+		  struct device_attribute *attr,
+		  const char *buf, size_t count)
+{
+	char num_buf[12];
+	a_uint32_t num;
+
+
+	if (count >= sizeof(num_buf)) return 0;
+	memcpy(num_buf, buf, count);
+	num_buf[count] = '\0';
+	sscanf(num_buf, "%u", &num);
+
+	nf_athrs17_hnat_wan_ip = num;
+
+	return count;
+}
+
+static ssize_t napt_ppp_peer_ip_get(struct device *dev,
+		  struct device_attribute *attr,
+		  char *buf)
+{
+	ssize_t count;
+	unsigned char* data;
+
+	data = (unsigned char*)&nf_athrs17_hnat_ppp_peer_ip;
+
+	count = snprintf(buf, (ssize_t)PAGE_SIZE, "%d.%d.%d.%d",
+					data[0], data[1], data[2], data[3]);
+	return count;
+}
+
+static ssize_t napt_ppp_peer_ip_set(struct device *dev,
+		  struct device_attribute *attr,
+		  const char *buf, size_t count)
+{
+	char num_buf[12];
+	a_uint32_t num;
+
+
+	if (count >= sizeof(num_buf)) return 0;
+	memcpy(num_buf, buf, count);
+	num_buf[count] = '\0';
+	sscanf(num_buf, "%u", &num);
+
+	nf_athrs17_hnat_ppp_peer_ip = num;
+
+	return count;
+}
+
+static ssize_t napt_peer_mac_get(struct device *dev,
+		  struct device_attribute *attr,
+		  char *buf)
+{
+	ssize_t count;
+	unsigned char* data;
+
+	data = (unsigned char*)&nf_athrs17_hnat_ppp_peer_mac;
+
+	count = snprintf(buf, (ssize_t)PAGE_SIZE, "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
+					data[0], data[1], data[2], data[3], data[4], data[5]);
+	return count;
+}
+
+static ssize_t napt_peer_mac_set(struct device *dev,
+		  struct device_attribute *attr,
+		  const char *buf, size_t count)
+{
+	char num_buf[32];
+	unsigned long long prv_data;
+	unsigned char *ptr_char;
+
+	if (count >= sizeof(num_buf)) return 0;
+	memcpy(num_buf, buf, count);
+	num_buf[count] = '\0';
+	prv_data = simple_strtoull((const char *)num_buf, NULL, 16);
+	prv_data = cpu_to_be64p(&prv_data);
+	ptr_char = (unsigned char *)&prv_data;
+	nf_athrs17_hnat_ppp_peer_mac[0] = ptr_char[2];
+    nf_athrs17_hnat_ppp_peer_mac[1] = ptr_char[3];
+    nf_athrs17_hnat_ppp_peer_mac[2] = ptr_char[4];
+    nf_athrs17_hnat_ppp_peer_mac[3] = ptr_char[5];
+    nf_athrs17_hnat_ppp_peer_mac[4] = ptr_char[6];
+    nf_athrs17_hnat_ppp_peer_mac[5] = ptr_char[7];
+
+	return count;
+}
+
+static ssize_t napt_wan_mac_get(struct device *dev,
+		  struct device_attribute *attr,
+		  char *buf)
+{
+	ssize_t count;
+	unsigned char* data;
+
+	data = (unsigned char*)&nf_athrs17_hnat_wan_mac;
+
+	count = snprintf(buf, (ssize_t)PAGE_SIZE, "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
+					data[0], data[1], data[2], data[3], data[4], data[5]);
+	return count;
+}
+
+static ssize_t napt_wan_mac_set(struct device *dev,
+		  struct device_attribute *attr,
+		  const char *buf, size_t count)
+{
+	char num_buf[32];
+	unsigned long long prv_data;
+	unsigned char *ptr_char;
+
+	if (count >= sizeof(num_buf)) return 0;
+	memcpy(num_buf, buf, count);
+	num_buf[count] = '\0';
+	prv_data = simple_strtoull((const char *)num_buf, NULL, 16);
+	prv_data = cpu_to_be64p(&prv_data);
+	ptr_char = (unsigned char *)&prv_data;
+	nf_athrs17_hnat_wan_mac[0] = ptr_char[2];
+    nf_athrs17_hnat_wan_mac[1] = ptr_char[3];
+    nf_athrs17_hnat_wan_mac[2] = ptr_char[4];
+    nf_athrs17_hnat_wan_mac[3] = ptr_char[5];
+    nf_athrs17_hnat_wan_mac[4] = ptr_char[6];
+    nf_athrs17_hnat_wan_mac[5] = ptr_char[7];
+
+	return count;
+}
+
+static ssize_t napt_peer_mac2_get(struct device *dev,
+		  struct device_attribute *attr,
+		  char *buf)
+{
+	ssize_t count;
+	unsigned char* data;
+
+	data = (unsigned char*)&nf_athrs17_hnat_ppp_peer_mac2;
+
+	count = snprintf(buf, (ssize_t)PAGE_SIZE, "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
+					data[0], data[1], data[2], data[3], data[4], data[5]);
+	return count;
+}
+
+static ssize_t napt_peer_mac2_set(struct device *dev,
+		  struct device_attribute *attr,
+		  const char *buf, size_t count)
+{
+	char num_buf[32];
+	unsigned long long prv_data;
+	unsigned char *ptr_char;
+
+	if (count >= sizeof(num_buf)) return 0;
+	memcpy(num_buf, buf, count);
+	num_buf[count] = '\0';
+	prv_data = simple_strtoull((const char *)num_buf, NULL, 16);
+	prv_data = cpu_to_be64p(&prv_data);
+	ptr_char = (unsigned char *)&prv_data;
+	nf_athrs17_hnat_ppp_peer_mac2[0] = ptr_char[2];
+    nf_athrs17_hnat_ppp_peer_mac2[1] = ptr_char[3];
+    nf_athrs17_hnat_ppp_peer_mac2[2] = ptr_char[4];
+    nf_athrs17_hnat_ppp_peer_mac2[3] = ptr_char[5];
+    nf_athrs17_hnat_ppp_peer_mac2[4] = ptr_char[6];
+    nf_athrs17_hnat_ppp_peer_mac2[5] = ptr_char[7];
+
+	return count;
+}
+
+static ssize_t napt_ppp_id2_get(struct device *dev,
+		  struct device_attribute *attr,
+		  char *buf)
+{
+	ssize_t count;
+	a_uint32_t num;
+
+	num = (a_uint32_t)nf_athrs17_hnat_ppp_id2;
+
+	count = snprintf(buf, (ssize_t)PAGE_SIZE, "%u", num);
+	return count;
+}
+
+static ssize_t napt_ppp_id2_set(struct device *dev,
+		  struct device_attribute *attr,
+		  const char *buf, size_t count)
+{
+	char num_buf[12];
+	a_uint32_t num;
+
+
+	if (count >= sizeof(num_buf)) return 0;
+	memcpy(num_buf, buf, count);
+	num_buf[count] = '\0';
+	sscanf(num_buf, "%u", &num);
+
+	nf_athrs17_hnat_ppp_id2 = num;
+
+	return count;
+}
+
+
+struct kobject *napt_sys = NULL;
+static const struct device_attribute napt_hnat_attr =
+	__ATTR(hnat, S_IWUGO | S_IRUGO, napt_hnat_get, napt_hnat_set);
+static const struct device_attribute napt_wan_type_attr =
+	__ATTR(wan_type, S_IWUGO | S_IRUGO, napt_wan_type_get, napt_wan_type_set);
+static const struct device_attribute napt_ppp_id_attr =
+	__ATTR(ppp_id, S_IWUGO | S_IRUGO, napt_ppp_id_get, napt_ppp_id_set);
+static const struct device_attribute napt_udp_thresh_attr =
+	__ATTR(udp_thresh, S_IWUGO | S_IRUGO, napt_udp_thresh_get, napt_udp_thresh_set);
+static const struct device_attribute napt_wan_ip_attr =
+	__ATTR(wan_ip, S_IWUGO | S_IRUGO, napt_wan_ip_get, napt_wan_ip_set);
+static const struct device_attribute napt_ppp_peer_ip_attr =
+	__ATTR(peer_ip, S_IWUGO | S_IRUGO, napt_ppp_peer_ip_get, napt_ppp_peer_ip_set);
+static const struct device_attribute napt_ppp_peer_mac_attr =
+	__ATTR(peer_mac, S_IWUGO | S_IRUGO, napt_peer_mac_get, napt_peer_mac_set);
+static const struct device_attribute napt_wan_mac_attr =
+	__ATTR(wan_mac, S_IWUGO | S_IRUGO, napt_wan_mac_get, napt_wan_mac_set);
+static const struct device_attribute napt_ppp_id2_attr =
+	__ATTR(ppp_id2, S_IWUGO | S_IRUGO, napt_ppp_id2_get, napt_ppp_id2_set);
+static const struct device_attribute napt_ppp_peer_mac2_attr =
+	__ATTR(peer_mac2, S_IWUGO | S_IRUGO, napt_peer_mac2_get, napt_peer_mac2_set);
+
+
+
+int napt_procfs_init(void)
+{
+	int ret = 0;
+
+	napt_sys = kobject_create_and_add("ssdk_napt", NULL);
+	if (!napt_sys) {
+		printk("napt failed to register sysfs\n ");
+		return ret;
+	}
+
+
+
+	ret = sysfs_create_file(napt_sys, &napt_hnat_attr.attr);
+	if (ret) {
+		printk("Failed to register hnat SysFS file\n");
+		goto CLEANUP_1;
+	}
+	ret = sysfs_create_file(napt_sys, &napt_wan_type_attr.attr);
+	if (ret) {
+		printk("Failed to register wan type SysFS file\n");
+		goto CLEANUP_2;
+	}
+	ret = sysfs_create_file(napt_sys, &napt_ppp_id_attr.attr);
+	if (ret) {
+		printk("Failed to register ppp id SysFS file\n");
+		goto CLEANUP_3;
+	}
+	ret = sysfs_create_file(napt_sys, &napt_udp_thresh_attr.attr);
+	if (ret) {
+		printk("Failed to register udp thresh SysFS file\n");
+		goto CLEANUP_4;
+	}
+	ret = sysfs_create_file(napt_sys, &napt_wan_ip_attr.attr);
+	if (ret) {
+		printk("Failed to register wan ip SysFS file\n");
+		goto CLEANUP_5;
+	}
+	ret = sysfs_create_file(napt_sys, &napt_ppp_peer_ip_attr.attr);
+	if (ret) {
+		printk("Failed to register ppp peer ip SysFS file\n");
+		goto CLEANUP_6;
+	}
+	ret = sysfs_create_file(napt_sys, &napt_ppp_peer_mac_attr.attr);
+	if (ret) {
+		printk("Failed to register ppp peer mac SysFS file\n");
+		goto CLEANUP_7;
+	}
+	ret = sysfs_create_file(napt_sys, &napt_wan_mac_attr.attr);
+	if (ret) {
+		printk("Failed to register wan mac SysFS file\n");
+		goto CLEANUP_8;
+	}
+	ret = sysfs_create_file(napt_sys, &napt_ppp_id2_attr.attr);
+	if (ret) {
+		printk("Failed to register ppp id2 SysFS file\n");
+		goto CLEANUP_9;
+	}
+	ret = sysfs_create_file(napt_sys, &napt_ppp_peer_mac2_attr.attr);
+	if (ret) {
+		printk("Failed to register ppp peer mac2 SysFS file\n");
+		goto CLEANUP_10;
+	}
+	return 0;
+
+CLEANUP_10:
+	sysfs_remove_file(napt_sys, &napt_ppp_id2_attr.attr);
+CLEANUP_9:
+	sysfs_remove_file(napt_sys, &napt_wan_mac_attr.attr);
+CLEANUP_8:
+	sysfs_remove_file(napt_sys, &napt_ppp_peer_mac_attr.attr);
+CLEANUP_7:
+	sysfs_remove_file(napt_sys, &napt_ppp_peer_ip_attr.attr);
+CLEANUP_6:
+	sysfs_remove_file(napt_sys, &napt_wan_ip_attr.attr);
+CLEANUP_5:
+	sysfs_remove_file(napt_sys, &napt_udp_thresh_attr.attr);
+CLEANUP_4:
+	sysfs_remove_file(napt_sys, &napt_ppp_id_attr.attr);
+CLEANUP_3:
+	sysfs_remove_file(napt_sys, &napt_wan_type_attr.attr);
+CLEANUP_2:
+	sysfs_remove_file(napt_sys, &napt_hnat_attr.attr);
+CLEANUP_1:
+	kobject_put(napt_sys);
+
+	return ret;
+}
+
+void napt_procfs_exit(void)
+{
+	printk("napt procfs exit\n");
+
+	sysfs_remove_file(napt_sys, &napt_ppp_peer_mac2_attr.attr);
+	sysfs_remove_file(napt_sys, &napt_ppp_id2_attr.attr);
+	sysfs_remove_file(napt_sys, &napt_wan_mac_attr.attr);
+	sysfs_remove_file(napt_sys, &napt_ppp_peer_mac_attr.attr);
+	sysfs_remove_file(napt_sys, &napt_ppp_peer_ip_attr.attr);
+	sysfs_remove_file(napt_sys, &napt_wan_ip_attr.attr);
+	sysfs_remove_file(napt_sys, &napt_udp_thresh_attr.attr);
+	sysfs_remove_file(napt_sys, &napt_ppp_id_attr.attr);
+	sysfs_remove_file(napt_sys, &napt_wan_type_attr.attr);
+	sysfs_remove_file(napt_sys, &napt_hnat_attr.attr);
+
+	kobject_put(napt_sys);
+}
+
+
+#endif
 

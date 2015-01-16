@@ -73,6 +73,16 @@ ifeq (TRUE, $(IN_NAT))
   SRC_LIST += dess_nat.c
 endif
 
+ifeq (TRUE, $(IN_NAT_HELPER))
+  SRC_LIST += nat_helper_dt.c
+  SRC_LIST += nat_helper_hsl.c
+  SRC_LIST += nat_ipt_helper.c
+  SRC_LIST += napt_helper.c
+  SRC_LIST += host_helper.c
+  SRC_LIST += nat_helper.c
+  SRC_LIST += napt_acl.c
+endif
+
 ifeq (TRUE, $(IN_TRUNK))
   SRC_LIST += dess_trunk.c
 endif

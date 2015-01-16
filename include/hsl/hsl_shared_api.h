@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -43,6 +43,11 @@ extern ssdk_chip_type SSDK_CURRENT_CHIP_TYPE;  /*running chip type*/
 #define IP_INTF_ENTRY_DEL hsl_api_ptr_get(0)->ip_intf_entry_del
 #define IP_HOST_PPPOE_BIND hsl_api_ptr_get(0)->ip_host_pppoe_bind
 #define IP_ROUTE_STATUS_SET hsl_api_ptr_get(0)->ip_route_status_set
+#define IP_HOST_ROUTE_ADD hsl_api_ptr_get(0)->ip_host_route_set
+#define IP_PRV_BASE_ADDR_SET hsl_api_ptr_get(0)->ip_vrf_base_addr_set
+#define IP_PRV_BASE_MASK_SET hsl_api_ptr_get(0)->ip_vrf_base_mask_set
+
+
 
 /*MISC API*/
 #define PPPOE_STATUS_GET hsl_api_ptr_get(0)->pppoe_status_get
@@ -79,6 +84,8 @@ extern ssdk_chip_type SSDK_CURRENT_CHIP_TYPE;  /*running chip type*/
 #define VLAN_DEL hsl_api_ptr_get(0)->vlan_delete
 #define VLAN_FIND hsl_api_ptr_get(0)->vlan_find
 #define VLAN_MEMBER_ADD hsl_api_ptr_get(0)->vlan_member_add
+#define VLAN_NEXT hsl_api_ptr_get(0)->vlan_next
+
 
 /*RATE API*/
 #define RATE_ACL_POLICER_SET hsl_api_ptr_get(0)->rate_acl_policer_set
@@ -95,6 +102,10 @@ extern ssdk_chip_type SSDK_CURRENT_CHIP_TYPE;  /*running chip type*/
 #define HEADER_TYPE_SET hsl_api_ptr_get(0)->header_type_set
 #define PORT_TXHDR_MODE_SET hsl_api_ptr_get(0)->port_txhdr_mode_set
 #define PORT_TXMAC_STATUS_SET hsl_api_ptr_get(0)->port_txmac_status_set
+
+/* REG ACCESS API */
+#define REG_GET hsl_api_ptr_get(0)->reg_get
+
 
 #elif defined(ISISC)
 /* NAT API*/

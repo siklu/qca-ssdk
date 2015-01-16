@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2014, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -47,18 +47,13 @@
 #include <linux/netdevice.h>
 #include "ssdk_plat.h"
 #include "ref_vlan.h"
+#ifdef BOARD_AR71XX
+#include "ssdk_uci.h"
+#endif
+
 
 extern ssdk_chip_type SSDK_CURRENT_CHIP_TYPE;
 
-#define UCI_TAKEOVER
-#ifdef UCI_TAKEOVER
-#ifdef BOARD_AR71XX
-extern void ssdk_uci_vlan_enable_set(char enable);
-extern void ssdk_uci_vlan_ports_set(a_uint16_t *vlan_id, a_uint8_t tag,
-			a_uint16_t *pvid, a_uint8_t *vlan_table);
-extern void ssdk_uci_vlan_table_set(a_uint8_t vlan, a_uint16_t index);
-#endif
-#endif
 
 int
 qca_ar8327_sw_enable_vlan0(a_bool_t enable, a_uint8_t portmap)
@@ -127,12 +122,10 @@ qca_ar8327_sw_set_vlan(struct switch_dev *dev,
 
     priv->vlan = !!val->value.i;
 
-    #ifdef UCI_TAKEOVER
     #ifdef BOARD_AR71XX
     if(SSDK_CURRENT_CHIP_TYPE == CHIP_SHIVA) {
-		ssdk_uci_vlan_enable_set(priv->vlan);
+		ssdk_uci_sw_set_vlan(attr, val);
     }
-    #endif
     #endif
 
     return 0;
@@ -158,6 +151,12 @@ qca_ar8327_sw_set_vid(struct switch_dev *dev,
     struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 
     priv->vlan_id[val->port_vlan] = val->value.i;
+
+#ifdef BOARD_AR71XX
+    if(SSDK_CURRENT_CHIP_TYPE == CHIP_SHIVA) {
+		ssdk_uci_sw_set_vid(attr, val);
+    }
+#endif
 
     return 0;
 }
@@ -194,6 +193,12 @@ qca_ar8327_sw_set_pvid(struct switch_dev *dev, int port, int vlan)
         return -1;
 
     priv->pvid[port] = vlan;
+
+#ifdef BOARD_AR71XX
+		if(SSDK_CURRENT_CHIP_TYPE == CHIP_SHIVA) {
+			ssdk_uci_sw_set_pvid(port, vlan);
+		}
+#endif
 
     return 0;
 }
@@ -234,6 +239,12 @@ qca_ar8327_sw_set_ports(struct switch_dev *dev, struct switch_val *val)
     a_uint8_t *vt = &priv->vlan_table[val->port_vlan];
     int i, j;
 
+#ifdef BOARD_AR71XX
+	if(SSDK_CURRENT_CHIP_TYPE == CHIP_SHIVA) {
+		ssdk_uci_sw_set_ports(val);
+	}
+#endif
+
     /*Handle for VLAN 0*/
     if (val->port_vlan == 0) {
         priv->vlan_table[0] = 0;
@@ -241,13 +252,7 @@ qca_ar8327_sw_set_ports(struct switch_dev *dev, struct switch_val *val)
             struct switch_port *p = &val->value.ports[i];
             priv->vlan_table[0] |= (1 << p->id);
         }
-		#ifdef UCI_TAKEOVER
-		#ifdef BOARD_AR71XX
-		if(SSDK_CURRENT_CHIP_TYPE == CHIP_SHIVA) {
-			ssdk_uci_vlan_table_set(priv->vlan_table[0],0);
-		}
-		#endif
-		#endif
+
         return 0;
     }
 	if (priv->vlan_id[val->port_vlan] == 0)
@@ -265,16 +270,6 @@ qca_ar8327_sw_set_ports(struct switch_dev *dev, struct switch_val *val)
 
         *vt |= 1 << p->id;
     }
-
-    #ifdef UCI_TAKEOVER
-    #ifdef BOARD_AR71XX
-    if(SSDK_CURRENT_CHIP_TYPE == CHIP_SHIVA) {
-		a_uint8_t tag = priv->vlan_tagged[1] | priv->vlan_tagged[2];
-        ssdk_uci_vlan_ports_set(priv->vlan_id, tag,
-                 priv->pvid, priv->vlan_table);
-    }
-    #endif
-    #endif
 
     return 0;
 }
