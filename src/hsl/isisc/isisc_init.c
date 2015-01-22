@@ -311,12 +311,14 @@ isisc_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
         }
 
         SW_RTN_ON_ERROR(isisc_hw_init(dev_id, cfg));
+#if 0
 #if defined(IN_NAT_HELPER)
 		if(!isisc_nat_global_status) {
         	ISISC_NAT_HELPER_INIT(rv, dev_id);
 			isisc_nat_global_status = 1;
 		}
 
+#endif
 #endif
     }
 #endif

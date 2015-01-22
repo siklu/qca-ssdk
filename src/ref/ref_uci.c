@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2013, 2015, The Linux Foundation. All rights reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -4250,6 +4250,33 @@ parse_nat_prvbasemask(struct switch_val *val)
 }
 
 static int
+parse_nat_global(struct switch_val *val)
+{
+	struct switch_ext *switch_ext_p, *switch_ext_tmp, *ext_value_p;
+	int rv = 0;
+	switch_ext_p = val->value.ext_val;
+	while(switch_ext_p) {
+		ext_value_p = switch_ext_p;
+
+		if(!strcmp(ext_value_p->option_name, "name")) {
+			switch_ext_p = switch_ext_p->next;
+			continue;
+		} else if(!strcmp(ext_value_p->option_name, "status")) {
+			val_ptr[0] = ext_value_p->option_value;
+		}  else {
+			rv = -1;
+			break;
+		}
+
+		parameter_length++;
+		switch_ext_p = switch_ext_p->next;
+	}
+
+	return rv;
+}
+
+
+static int
 parse_stp_portstate(struct switch_val *val)
 {
 	struct switch_ext *switch_ext_p, *switch_ext_tmp, *ext_value_p;
@@ -5272,7 +5299,9 @@ parse_nat(const char *command_name, struct switch_val *val)
 		rv = parse_nat_natunksess(val);
 	} else if(!strcmp(command_name, "Prvbasemask")) {
 		rv = parse_nat_prvbasemask(val);
-	} 
+	} else if(!strcmp(command_name, "Global")) {
+		rv = parse_nat_global(val);
+	}
 
 	return rv;
 }

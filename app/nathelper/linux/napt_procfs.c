@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -24,6 +24,7 @@
 #include <linux/autoconf.h>
 #include <linux/kernel.h>
 #endif
+#include <linux/kconfig.h>
 #include <linux/proc_fs.h>
 #include <linux/sysfs.h>
 #include <linux/if_ether.h>

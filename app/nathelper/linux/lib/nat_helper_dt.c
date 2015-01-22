@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -32,8 +32,10 @@
 #include "fal_type.h"
 #include "fal_nat.h"
 
+extern int nat_sockopts_init;
 extern uint32_t napt_set_default_route(fal_ip4_addr_t dst_addr, fal_ip4_addr_t src_addr);
 extern uint32_t napt_set_ipv6_default_route(void);
+extern void nat_ipt_sockopts_replace(void);
 
 #define NAPT_BUFFER_HASH_SIZE        (NAPT_TABLE_SIZE)
 #define NAPT_BUFFER_SIZE             ((NAPT_BUFFER_HASH_SIZE)*8)
@@ -949,6 +951,9 @@ napt_ct_scan_thread(void *param)
 
     while(1)
     {
+		if(!nat_sockopts_init) {
+			nat_ipt_sockopts_replace();
+		}
         napt_ct_scan();
 
         if((--times) == 0)

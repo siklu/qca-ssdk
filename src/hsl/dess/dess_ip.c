@@ -1967,7 +1967,7 @@ _dess_ip_vrf_base_addr_set(a_uint32_t dev_id, a_uint32_t vrf_id, fal_ip4_addr_t 
         return SW_BAD_PARAM;
     }
 
-    reg_addr = DESS_VRF_ENTRY_TBL_ADDR + (vrf_id << 4);
+    reg_addr = DESS_VRF_ENTRY_TBL_ADDR + (vrf_id << 3);
     HSL_REG_ENTRY_GEN_SET(rv, dev_id, reg_addr, sizeof (a_uint32_t),
                           (a_uint8_t *) (&addr), sizeof (a_uint32_t));
     SW_RTN_ON_ERROR(rv);
@@ -1991,7 +1991,7 @@ _dess_ip_vrf_base_addr_get(a_uint32_t dev_id, a_uint32_t vrf_id, fal_ip4_addr_t 
         return SW_BAD_PARAM;
     }
 
-    reg_addr = DESS_VRF_ENTRY_TBL_ADDR + (vrf_id << 2);
+    reg_addr = DESS_VRF_ENTRY_TBL_ADDR + (vrf_id << 3);
     HSL_REG_ENTRY_GEN_GET(rv, dev_id, reg_addr, sizeof (a_uint32_t),
                           (a_uint8_t *) (addr), sizeof (a_uint32_t));
     SW_RTN_ON_ERROR(rv);
@@ -2015,7 +2015,7 @@ _dess_ip_vrf_base_mask_set(a_uint32_t dev_id, a_uint32_t vrf_id, fal_ip4_addr_t 
         return SW_BAD_PARAM;
     }
 
-    reg_addr = DESS_VRF_ENTRY_MASK_ADDR + (vrf_id << 2);
+    reg_addr = DESS_VRF_ENTRY_MASK_ADDR + (vrf_id << 3);
     HSL_REG_ENTRY_GEN_SET(rv, dev_id, reg_addr, sizeof (a_uint32_t),
                           (a_uint8_t *) (&addr), sizeof (a_uint32_t));
     SW_RTN_ON_ERROR(rv);
@@ -2039,7 +2039,7 @@ _dess_ip_vrf_base_mask_get(a_uint32_t dev_id, a_uint32_t vrf_id, fal_ip4_addr_t 
         return SW_BAD_PARAM;
     }
 
-    reg_addr = DESS_VRF_ENTRY_MASK_ADDR + (vrf_id << 2);
+    reg_addr = DESS_VRF_ENTRY_MASK_ADDR + (vrf_id << 3);
     HSL_REG_ENTRY_GEN_GET(rv, dev_id, reg_addr, sizeof (a_uint32_t),
                           (a_uint8_t *) (addr), sizeof (a_uint32_t));
     SW_RTN_ON_ERROR(rv);

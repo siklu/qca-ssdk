@@ -325,7 +325,7 @@ _dess_nat_sw_to_hw(a_uint32_t dev_id, fal_nat_entry_t * entry, a_uint32_t reg[])
     }
 
     SW_SET_REG_BY_FIELD(NAT_ENTRY3, PRO_TYP, data, reg[3]);
-	SW_SET_REG_BY_FIELD(NAT_ENTRY3, VRF_ID, data, reg[3]);
+	SW_SET_REG_BY_FIELD(NAT_ENTRY3, VRF_ID, entry->vrf_id, reg[3]);
 
     SW_SET_REG_BY_FIELD(NAT_ENTRY2, HASH_KEY, entry->slct_idx, reg[2]);
 
@@ -395,7 +395,7 @@ _dess_nat_hw_to_sw(a_uint32_t dev_id, a_uint32_t reg[], fal_nat_entry_t * entry)
     }
 
     SW_GET_FIELD_BY_REG(NAT_ENTRY3, PRO_TYP, data, reg[3]);
-	SW_GET_FIELD_BY_REG(NAT_ENTRY3, VRF_ID, data, reg[3]);
+
     if (3 == data)
     {
         entry->flags |= FAL_NAT_ENTRY_PROTOCOL_ANY;
@@ -413,6 +413,9 @@ _dess_nat_hw_to_sw(a_uint32_t dev_id, a_uint32_t reg[], fal_nat_entry_t * entry)
     {
         entry->flags |= FAL_NAT_ENTRY_PROTOCOL_TCP;
     }
+
+	SW_GET_FIELD_BY_REG(NAT_ENTRY3, VRF_ID, data, reg[3]);
+	entry->vrf_id = data;
 
     SW_GET_FIELD_BY_REG(NAT_ENTRY2, HASH_KEY, data, reg[2]);
     entry->slct_idx = data;

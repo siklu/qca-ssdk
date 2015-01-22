@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -93,18 +93,26 @@
 extern struct net init_net;
 
 //char *nat_lan_dev_list = "eth0.1";
-char *nat_lan_dev_list = "br-lan";
-char *nat_wan_dev_list = "eth0.2";
+char nat_lan_dev_list[IFNAMSIZ*4] = "br-lan eth0.1";
+char nat_wan_dev_list[IFNAMSIZ*4] = "eth0.2";
+
 #define NAT_LAN_DEV_VID 1
 #define NAT_WAN_DEV_VID 2
+
+char nat_lan_vid  = NAT_LAN_DEV_VID;
+char nat_wan_vid = NAT_WAN_DEV_VID;
+
 
 static int wan_fid = 0xffff;
 static fal_pppoe_session_t pppoetbl = {0};
 static uint32_t pppoe_gwid = 0;
-static char nat_bridge_dev[IFNAMSIZ*4];
+static char nat_bridge_dev[IFNAMSIZ*4] = "br-lan";
 static uint8_t lanip[4] = {0}, wanip[4] = {0};
 static struct in6_addr wan6ip = IN6ADDR_ANY_INIT;
 static struct in6_addr lan6ip = IN6ADDR_ANY_INIT;
+
+extern int nat_chip_ver;
+
 
 #ifdef ISISC
 struct ipv6_default_route_binding
@@ -180,37 +188,35 @@ struct bg_task_cb task_cb;
 
 int bg_ring_buf_write(struct nat_helper_bg_msg msg)
 {
-	struct bg_ring_buf_cb ring = task_cb.ring;
 	unsigned int idx = 0;
 
 	spin_lock_bh(&task_cb.bg_lock);
 	
-	if(ring.full_flag && (ring.read_idx == ring.write_idx)) {
+	if((task_cb.ring).full_flag &&
+		((task_cb.ring).read_idx == (task_cb.ring).write_idx)) {
 		HNAT_PRINTK("ring buf is full!\n");
 		spin_unlock_bh(&task_cb.bg_lock);
 		return -1;
 	}
-	msg.work = ring.buf[ring.write_idx].work;
-	ring.buf[ring.write_idx] = msg;
-	idx = ring.write_idx;
+	msg.work = (task_cb.ring).buf[(task_cb.ring).write_idx].work;
+	(task_cb.ring).buf[(task_cb.ring).write_idx] = msg;
+	idx = (task_cb.ring).write_idx;
 
-	ring.write_idx = (ring.write_idx+1)%NAT_HELPER_MSG_MAX;
-	if(ring.read_idx == ring.write_idx)
-		ring.full_flag = 1;
+	(task_cb.ring).write_idx = ((task_cb.ring).write_idx+1)%NAT_HELPER_MSG_MAX;
+	if(task_cb.ring.read_idx == task_cb.ring.write_idx)
+		task_cb.ring.full_flag = 1;
 
 	spin_unlock_bh(&task_cb.bg_lock);
-	queue_work(task_cb.nat_wq, &ring.buf[idx].work);
+	queue_work(task_cb.nat_wq, &(task_cb.ring).buf[idx].work);
 
 	return 0;
 }
 
 int bg_ring_buf_read(struct nat_helper_bg_msg *msg)
 {
-	struct bg_ring_buf_cb ring = task_cb.ring;
-
 	spin_lock_bh(&task_cb.bg_lock);
-	ring.read_idx = (ring.read_idx+1)%NAT_HELPER_MSG_MAX;
-	ring.full_flag = 0;
+	task_cb.ring.read_idx = (task_cb.ring.read_idx+1)%NAT_HELPER_MSG_MAX;
+	task_cb.ring.full_flag = 0;
 	spin_unlock_bh(&task_cb.bg_lock);
 
 	return 0;
@@ -726,7 +732,9 @@ static sw_error_t setup_interface_entry(char *list_if, int is_wan)
         {
             /* Get bridge interface name */
             br_name = (char *)(br_port_get_rcu(nat_dev)->br->dev->name);
-            memcpy (nat_bridge_dev, br_name, sizeof(br_name));
+            //memcpy (nat_bridge_dev, br_name, sizeof(br_name));
+            strcat (nat_lan_dev_list, " ");
+            strcat (nat_lan_dev_list, br_name);
             /* Get dmac */
             devmac = (uint8_t *)(br_port_get_rcu(nat_dev)->br->dev->dev_addr);
         }
@@ -735,7 +743,9 @@ static sw_error_t setup_interface_entry(char *list_if, int is_wan)
         {
             /* Get bridge interface name */
             br_name = (char *)nat_dev->br_port->br->dev->name;
-            memcpy (nat_bridge_dev, br_name, sizeof(br_name));
+            //memcpy (nat_bridge_dev, br_name, sizeof(br_name));
+            strcat (nat_lan_dev_list, " ");
+            strcat (nat_lan_dev_list, br_name);
             /* Get dmac */
             devmac = (uint8_t *)nat_dev->br_port->br->dev->dev_addr;
         }
@@ -824,12 +834,40 @@ static sw_error_t setup_interface_entry(char *list_if, int is_wan)
     return setup_error;
 }
 
+static void setup_dev_list(void)
+{
+	fal_vlan_t entry;
+	uint32_t tmp_vid = 0xffffffff;
+
+	/*get the vlan entry*/
+	while(1) {
+		if(SW_OK != VLAN_NEXT(0, tmp_vid, &entry))
+			break;
+		tmp_vid = entry.vid;
+		if(tmp_vid != 0) {
+			if(entry.mem_ports & 0x20) {
+				/*wan port*/
+				HNAT_PRINTK("wan port vid:%d\n", tmp_vid);
+				nat_wan_vid = tmp_vid;
+				snprintf(nat_wan_dev_list, IFNAMSIZ, "eth0.%d", tmp_vid);
+			} else {
+				/*lan port*/
+				HNAT_PRINTK("lan port vid:%d\n", tmp_vid);
+				nat_lan_vid = tmp_vid;
+				snprintf(nat_lan_dev_list, IFNAMSIZ, "eth0.%d", tmp_vid);
+			}
+		}
+	}
+}
+
 static int setup_all_interface_entry(void)
 {
     static int setup_wan_if = 0;
     //static int setup_lan_if=0;
     static int setup_default_vid = 0;
     int i = 0;
+
+	setup_dev_list();
 
     if (0 == setup_default_vid)
     {
@@ -1141,7 +1179,6 @@ arp_is_reply(struct sk_buff *skb)
     {
         return 0;
     }
-
     return 1;
 }
 
@@ -1202,21 +1239,25 @@ arp_in(unsigned int hook,
        const struct net_device *out,
        int (*okfn) (struct sk_buff *))
 {
-	struct sk_buff *new_skb;
+	struct sk_buff *new_skb = NULL;
 	struct nat_helper_bg_msg msg;
 	/*unsigned long flags = 0;*/
 
 	new_skb = skb_clone(skb, GFP_ATOMIC);
-	memset(&msg, 0, sizeof(msg));
-	msg.msg_type = NAT_HELPER_ARP_IN_MSG;
-	msg.arp_in.skb = new_skb;
-	msg.arp_in.in = in;
+	if(new_skb) {
+		memset(&msg, 0, sizeof(msg));
+		msg.msg_type = NAT_HELPER_ARP_IN_MSG;
+		printk("arp in!\n");
+		msg.arp_in.skb = new_skb;
+		msg.arp_in.in = in;
 
-	/*send msg to background task*/
-	/*spin_lock_irqsave(&task_cb.bg_lock, flags);*/
-	bg_ring_buf_write(msg);
-	/*spin_unlock_irqrestore(&task_cb.bg_lock, flags);*/
-	/*up(&task_cb.bg_sem);*/
+		/*send msg to background task*/
+		/*spin_lock_irqsave(&task_cb.bg_lock, flags);*/
+		if(bg_ring_buf_write(msg))
+			kfree_skb(new_skb);
+		/*spin_unlock_irqrestore(&task_cb.bg_lock, flags);*/
+		/*up(&task_cb.bg_sem);*/
+	}
 	
 	return NF_ACCEPT;
 	
@@ -1253,7 +1294,7 @@ arp_in_bg_handle(struct nat_helper_bg_msg *msg)
     {
 
     }
-    else if (dev_check((char *)in->name, (char *)nat_bridge_dev))
+    else if (dev_check((char *)in->name, (char *)nat_lan_dev_list))
     {
         dev_is_lan = 1;
     }
@@ -1265,6 +1306,7 @@ arp_in_bg_handle(struct nat_helper_bg_msg *msg)
 
     if(!arp_is_reply(skb))
     {
+		printk("arp is not reply!\n");
         return 0;
     }
 #ifdef AP136_QCA_HEADER_EN
@@ -1275,17 +1317,17 @@ arp_in_bg_handle(struct nat_helper_bg_msg *msg)
     }
 #else
     if(dev_is_lan) {
-         vid = NAT_LAN_DEV_VID;
+         vid = nat_lan_vid;
     } else {
-         vid = NAT_WAN_DEV_VID;
+         vid = nat_wan_vid;
     }
 
     fal_fdb_entry_t entry = {0};
 
     entry.fid = vid;
-    smac  = skb->mac_header + MAC_LEN;
-    aos_mem_copy(&(entry.addr), smac, sizeof(fal_mac_addr_t));
 
+	smac = skb_mac_header(skb) + MAC_LEN;
+    aos_mem_copy(&(entry.addr), smac, sizeof(fal_mac_addr_t));
     if(fal_fdb_find(0, &entry) == SW_OK) {
         vid  = entry.fid;
         sport = 0;
@@ -1341,6 +1383,9 @@ arp_in_bg_handle(struct nat_helper_bg_msg *msg)
     /* check for SIP and DIP range */
     if ((lanip[0] != 0) && (wanip[0] != 0))
     {
+		if(!NAT_PRV_ADDR_MODE_GET)
+			return 1;
+
         if (NAT_PRV_ADDR_MODE_GET(0, &prvbasemode) != SW_OK)
         {
             aos_printk("Private IP base mode check failed: %d\n", prvbasemode);
@@ -1628,7 +1673,7 @@ static unsigned int ipv6_handle(unsigned   int   hooknum,
                                 const   struct   net_device   *out,
                                 int   (*okfn)(struct   sk_buff   *))
 {
-	struct sk_buff *new_skb;
+	struct sk_buff *new_skb = NULL;
 	struct nat_helper_bg_msg msg;
 	/*unsigned long flags = 0;*/
 
@@ -1636,15 +1681,19 @@ static unsigned int ipv6_handle(unsigned   int   hooknum,
         return NF_ACCEPT;
 
 	new_skb = skb_clone(skb, GFP_ATOMIC);
-	memset(&msg, 0, sizeof(msg));
-	msg.msg_type = NAT_HELPER_IPV6_MSG;
-	msg.ipv6.skb = new_skb;
-	msg.ipv6.in = in;
+	if(new_skb) {
+		memset(&msg, 0, sizeof(msg));
+		printk("ipv6_handle!\n");
+		msg.msg_type = NAT_HELPER_IPV6_MSG;
+		msg.ipv6.skb = new_skb;
+		msg.ipv6.in = in;
 
-	/*send msgto background task*/
-	/*spin_lock_irqsave(&task_cb.bg_lock, flags);*/
-	bg_ring_buf_write(msg);
-	/*spin_unlock_irqrestore(&task_cb.bg_lock, flags);*/
+		/*send msgto background task*/
+		/*spin_lock_irqsave(&task_cb.bg_lock, flags);*/
+		if(bg_ring_buf_write(msg))
+			kfree_skb(new_skb);
+		/*spin_unlock_irqrestore(&task_cb.bg_lock, flags);*/
+	}
 	
 	return NF_ACCEPT;
 	
@@ -1680,7 +1729,7 @@ static unsigned int ipv6_bg_handle(struct nat_helper_bg_msg *msg)
     {
         dev_is_lan = 0;
     }
-    else if (dev_check((char *)in->name, (char *)nat_bridge_dev))
+    else if (dev_check((char *)in->name, (char *)nat_lan_dev_list))
     {
         dev_is_lan = 1;
     }
@@ -1718,7 +1767,7 @@ static unsigned int ipv6_bg_handle(struct nat_helper_bg_msg *msg)
             fal_fdb_entry_t entry = {0};
 
             entry.fid = vid;
-            smac  = skb->mac_header + MAC_LEN;
+            smac = skb_mac_header(skb) + MAC_LEN;
             aos_mem_copy(&(entry.addr), smac, sizeof(fal_mac_addr_t));
 
             if(fal_fdb_find(0, &entry) == SW_OK) {
@@ -1822,8 +1871,11 @@ static void nat_task_entry(struct work_struct *wq)
 	HNAT_PRINTK("handle msg: %d\n", msg.msg_type);
 	
 	if(msg.msg_type == NAT_HELPER_ARP_IN_MSG) {
+		printk("arp_in_bg_handle before!\n");
 		result =  arp_in_bg_handle(&msg);
+		printk("arp_in_bg_handle end!\n");
 		kfree_skb(msg.arp_in.skb);
+		printk("kfree skb end!\n");
 	} 
 	#ifdef CONFIG_IPV6_HWACCEL
 	else if(msg.msg_type == NAT_HELPER_IPV6_MSG) {
@@ -1942,6 +1994,9 @@ void host_helper_init(void)
     ipv6_snooping_solicted_node_add_acl_rules();
     ipv6_snooping_sextuple0_group_add_acl_rules();
     ipv6_snooping_quintruple0_1_group_add_acl_rules();
+
+	REG_GET(0, 0, &nat_chip_ver, 4);
+	napt_helper_hsl_init();
 }
 
 void host_helper_exit(void)
