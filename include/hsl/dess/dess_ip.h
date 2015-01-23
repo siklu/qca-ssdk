@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2014-2015, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -138,6 +138,18 @@ extern "C" {
 
     HSL_LOCAL sw_error_t
     dess_ip_wcmp_entry_get(a_uint32_t dev_id, a_uint32_t wcmp_id, fal_ip_wcmp_t * wcmp);
+
+	HSL_LOCAL sw_error_t
+    dess_ip_rfs_ip4_set(a_uint32_t dev_id, fal_ip4_rfs_t * rfs);
+
+	HSL_LOCAL sw_error_t
+    dess_ip_rfs_ip6_set(a_uint32_t dev_id, fal_ip6_rfs_t * rfs);
+
+	HSL_LOCAL sw_error_t
+    dess_ip_rfs_ip4_del(a_uint32_t dev_id, fal_ip4_rfs_t * rfs);
+
+	HSL_LOCAL sw_error_t
+    dess_ip_rfs_ip6_del(a_uint32_t dev_id, fal_ip6_rfs_t * rfs);
 
     HSL_LOCAL sw_error_t
     dess_ip_wcmp_hash_mode_set(a_uint32_t dev_id, a_uint32_t hash_mode);
