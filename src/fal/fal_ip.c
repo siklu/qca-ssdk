@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -20,6 +20,11 @@
 #include "sw.h"
 #include "fal_ip.h"
 #include "hsl_api.h"
+
+#include <linux/kernel.h>
+#include <linux/module.h>
+
+#include "fal_rfs.h"
 
 static sw_error_t
 _fal_ip_host_add(a_uint32_t dev_id, fal_host_entry_t * host_entry)
@@ -595,6 +600,66 @@ _fal_ip_wcmp_entry_get(a_uint32_t dev_id,
         return SW_NOT_SUPPORTED;
 
     rv = p_api->ip_wcmp_entry_get(dev_id, wcmp_id, wcmp);
+    return rv;
+}
+
+static sw_error_t
+_fal_ip_rfs_ip4_rule_set(a_uint32_t dev_id, fal_ip4_rfs_t * rfs)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->ip_rfs_ip4_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->ip_rfs_ip4_set(dev_id, rfs);
+    return rv;
+}
+
+static sw_error_t
+_fal_ip_rfs_ip6_rule_set(a_uint32_t dev_id, fal_ip6_rfs_t * rfs)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->ip_rfs_ip6_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->ip_rfs_ip6_set(dev_id, rfs);
+    return rv;
+}
+
+static sw_error_t
+_fal_ip_rfs_ip4_rule_del(a_uint32_t dev_id, fal_ip4_rfs_t * rfs)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->ip_rfs_ip4_del)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->ip_rfs_ip4_del(dev_id, rfs);
+    return rv;
+}
+
+static sw_error_t
+_fal_ip_rfs_ip6_rule_del(a_uint32_t dev_id, fal_ip6_rfs_t * rfs)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->ip_rfs_ip6_del)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->ip_rfs_ip6_del(dev_id, rfs);
     return rv;
 }
 
@@ -1235,6 +1300,100 @@ fal_ip_wcmp_entry_get(a_uint32_t dev_id, a_uint32_t wcmp_id,
     return rv;
 }
 
+sw_error_t
+fal_ip_rfs_ip4_rule_set(a_uint32_t dev_id, fal_ip4_rfs_t * rfs)
+{
+	sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_ip_rfs_ip4_rule_set(dev_id, rfs);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_ip_rfs_ip6_rule_set(a_uint32_t dev_id, fal_ip6_rfs_t * rfs)
+{
+	sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_ip_rfs_ip6_rule_set(dev_id, rfs);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_ip_rfs_ip4_rule_del(a_uint32_t dev_id, fal_ip4_rfs_t * rfs)
+{
+	sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_ip_rfs_ip4_rule_del(dev_id, rfs);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_ip_rfs_ip6_rule_del(a_uint32_t dev_id, fal_ip6_rfs_t * rfs)
+{
+	sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_ip_rfs_ip6_rule_del(dev_id, rfs);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+int
+ssdk_ip_rfs_ip4_rule_set(ssdk_ip4_rfs_t * rfs)
+{
+	fal_ip4_rfs_t entry;
+	memcpy(&entry.mac_addr, rfs->mac_addr, 6);
+	entry.ip4_addr = rfs->ip4_addr;
+	entry.load_balance = rfs->load_balance;
+	entry.vid = rfs->vid;
+	return fal_ip_rfs_ip4_rule_set(0, &entry);
+}
+
+int
+ssdk_ip_rfs_ip4_rule_del(ssdk_ip4_rfs_t * rfs)
+{
+	fal_ip4_rfs_t entry;
+	memcpy(&entry.mac_addr, rfs->mac_addr, 6);
+	entry.ip4_addr = rfs->ip4_addr;
+	entry.load_balance = rfs->load_balance;
+	entry.vid = rfs->vid;
+	return fal_ip_rfs_ip4_rule_del(0, &entry);
+}
+
+int
+ssdk_ip_rfs_ip6_rule_set(ssdk_ip6_rfs_t * rfs)
+{
+	fal_ip6_rfs_t entry;
+	memcpy(&entry.mac_addr, rfs->mac_addr, 6);
+	memcpy(&entry.ip6_addr, rfs->ip6_addr, sizeof(rfs->ip6_addr));
+	entry.load_balance = rfs->load_balance;
+	entry.vid = rfs->vid;
+	return fal_ip_rfs_ip6_rule_set(0, &entry);
+}
+
+int
+ssdk_ip_rfs_ip6_rule_del(ssdk_ip6_rfs_t * rfs)
+{
+	fal_ip6_rfs_t entry;
+	memcpy(&entry.mac_addr, rfs->mac_addr, 6);
+	memcpy(&entry.ip6_addr, rfs->ip6_addr, sizeof(rfs->ip6_addr));
+	entry.load_balance = rfs->load_balance;
+	entry.vid = rfs->vid;
+	return fal_ip_rfs_ip6_rule_del(0, &entry);
+}
+
+
+
+EXPORT_SYMBOL(ssdk_ip_rfs_ip4_rule_set);
+EXPORT_SYMBOL(ssdk_ip_rfs_ip4_rule_del);
+EXPORT_SYMBOL(ssdk_ip_rfs_ip6_rule_set);
+EXPORT_SYMBOL(ssdk_ip_rfs_ip6_rule_del);
 
 /**
  * @}

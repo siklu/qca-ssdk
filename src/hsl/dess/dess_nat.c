@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2014-2015, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -2094,6 +2094,72 @@ _dess_nat_unk_session_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd)
     return SW_OK;
 }
 
+static sw_error_t
+_dess_flow_cookie_set(a_uint32_t dev_id, fal_flow_cookie_t * flow_cookie)
+{
+	fal_napt_entry_t entry;
+	sw_error_t ret;
+
+	memset(&entry, 0, sizeof(entry));
+	entry.flags = flow_cookie->proto;
+	entry.src_addr = flow_cookie->src_addr;
+	entry.dst_addr = flow_cookie->dst_addr;
+	entry.src_port = flow_cookie->src_port;
+	entry.dst_port = flow_cookie->dst_port;
+    ret = _dess_flow_get(0, 0, &entry);
+	if(SW_OK != ret && flow_cookie->flow_cookie == 0)
+		return ret;
+	if(flow_cookie->flow_cookie == 0) {
+		/*del*/
+		_dess_flow_del(0, FAL_NAT_ENTRY_KEY_EN, &entry);
+		entry.status = 0xe;
+		entry.flow_cookie = 0;
+		return _dess_flow_add(0, &entry);
+	} else {
+		/*add*/
+		if(ret == SW_OK)
+			_dess_flow_del(0, 0, &entry);
+		entry.status = 0xf;
+		entry.flow_cookie = flow_cookie->flow_cookie;
+		return _dess_flow_add(0, &entry);
+	}
+    return SW_OK;
+}
+
+static sw_error_t
+_dess_flow_rfs_set(a_uint32_t dev_id, a_uint8_t action, fal_flow_rfs_t * rfs)
+{
+	fal_napt_entry_t entry;
+	sw_error_t ret;
+
+	memset(&entry, 0, sizeof(entry));
+	entry.flags = rfs->proto;
+	entry.src_addr = rfs->src_addr;
+	entry.dst_addr = rfs->dst_addr;
+	entry.src_port = rfs->src_port;
+	entry.dst_port = rfs->dst_port;
+	ret = _dess_flow_get(0, 0, &entry);
+	if(SW_OK != ret && action == 0)
+		return ret;
+	if(action == 0) {
+		/*del*/
+		_dess_flow_del(0, FAL_NAT_ENTRY_KEY_EN, &entry);
+		entry.status = 0xe;
+		entry.load_balance = 0;
+		return _dess_flow_add(0, &entry);
+	} else {
+		/*add*/
+		if(ret == SW_OK)
+			_dess_flow_del(0, 0, &entry);
+		entry.status = 0xf;
+		entry.load_balance = rfs->load_balance | 0x4;
+		return _dess_flow_add(0, &entry);
+	}
+	return SW_OK;
+}
+
+
+
 sw_error_t
 dess_nat_reset(a_uint32_t dev_id)
 {
@@ -2842,6 +2908,52 @@ dess_nat_global_set(a_uint32_t dev_id, a_bool_t enable)
     return rv;
 }
 
+/**
+ * @brief Add/del one FLOW cookie entry to one particular device.
+ *   @details Comments:
+       Before FLOW entry added related ip4 private base address must be set
+       at first.
+       In parameter napt_entry related entry flags must be set
+       Hardware entry id will be returned.
+ * @param[in] dev_id device id
+ * @param[in]  FLOW cookie entry parameter
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_flow_cookie_set(a_uint32_t dev_id, fal_flow_cookie_t * flow_cookie)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _dess_flow_cookie_set(dev_id, flow_cookie);
+    HSL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Add/del one FLOW rfs entry to one particular device.
+ *   @details Comments:
+       Before FLOW entry added related ip4 private base address must be set
+       at first.
+       In parameter napt_entry related entry flags must be set
+       Hardware entry id will be returned.
+ * @param[in] dev_id device id
+ * @param[in]  FLOW cookie entry parameter
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_flow_rfs_set(a_uint32_t dev_id, a_uint8_t action, fal_flow_rfs_t * rfs)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _dess_flow_rfs_set(dev_id, action, rfs);
+    HSL_API_UNLOCK;
+    return rv;
+}
+
+
+
 sw_error_t
 dess_nat_init(a_uint32_t dev_id)
 {
@@ -2891,6 +3003,8 @@ dess_nat_init(a_uint32_t dev_id)
         p_api->nat_prv_base_mask_set = dess_nat_prv_base_mask_set;
         p_api->nat_prv_base_mask_get = dess_nat_prv_base_mask_get;
         p_api->nat_global_set = dess_nat_global_set;
+		p_api->flow_cookie_set = dess_flow_cookie_set;
+		p_api->flow_rfs_set = dess_flow_rfs_set;
     }
 #endif
 

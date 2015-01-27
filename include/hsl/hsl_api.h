@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -614,6 +614,12 @@ extern "C" {
 #define FDB_FUNC_PROTOTYPE_DEF
     typedef sw_error_t
     (*hsl_fdb_add) (a_uint32_t dev_id, const fal_fdb_entry_t * entry);
+
+	typedef sw_error_t
+    (*hsl_fdb_rfs_set) (a_uint32_t dev_id, const fal_fdb_rfs_t * entry);
+
+	typedef sw_error_t
+    (*hsl_fdb_rfs_del) (a_uint32_t dev_id, const fal_fdb_rfs_t * entry);
 
     typedef sw_error_t
     (*hsl_fdb_del_all) (a_uint32_t dev_id, a_uint32_t flag);
@@ -1491,6 +1497,20 @@ extern "C" {
 	typedef sw_error_t
     (*hsl_ip_wcmp_entry_get)(a_uint32_t dev_id,
 					a_uint32_t wcmp_id, fal_ip_wcmp_t * wcmp);
+	typedef sw_error_t
+    (*hsl_ip_rfs_ip4_set)(a_uint32_t dev_id,
+					fal_ip4_rfs_t * rfs);
+
+	typedef sw_error_t
+    (*hsl_ip_rfs_ip6_set)(a_uint32_t dev_id,
+					fal_ip6_rfs_t * rfs);
+	typedef sw_error_t
+    (*hsl_ip_rfs_ip4_del)(a_uint32_t dev_id,
+					fal_ip4_rfs_t * rfs);
+
+	typedef sw_error_t
+    (*hsl_ip_rfs_ip6_del)(a_uint32_t dev_id,
+					fal_ip6_rfs_t * rfs);
 
     /* NAT */
 #define NAT_FUNC_PROTOTYPE_DEF
@@ -1594,6 +1614,11 @@ extern "C" {
     typedef sw_error_t
     (*hsl_nat_global_set)(a_uint32_t dev_id, a_bool_t enable);
 
+	typedef sw_error_t
+    (*hsl_flow_cookie_set)(a_uint32_t dev_id, fal_flow_cookie_t *flow_cookie);
+
+	typedef sw_error_t
+    (*hsl_flow_rfs_set)(a_uint32_t dev_id, a_uint8_t action, fal_flow_rfs_t *rfs);
 
     /* SEC */
 #define SEC_FUNC_PROTOTYPE_DEF
@@ -1917,6 +1942,8 @@ extern "C" {
         hsl_fdb_port_learn_static_get fdb_port_learn_static_get;
         hsl_fdb_port_add fdb_port_add;
         hsl_fdb_port_del fdb_port_del;
+		hsl_fdb_rfs_set fdb_rfs_set;
+		hsl_fdb_rfs_del fdb_rfs_del;
 
         /* QOS */
         hsl_qos_sch_mode_set qos_sch_mode_set;
@@ -2133,6 +2160,10 @@ extern "C" {
         hsl_ip_host_route_get ip_host_route_get;
 		hsl_ip_wcmp_entry_set ip_wcmp_entry_set;
 		hsl_ip_wcmp_entry_get ip_wcmp_entry_get;
+		hsl_ip_rfs_ip4_set ip_rfs_ip4_set;
+		hsl_ip_rfs_ip6_set ip_rfs_ip6_set;
+		hsl_ip_rfs_ip4_del ip_rfs_ip4_del;
+		hsl_ip_rfs_ip6_del ip_rfs_ip6_del;
 
         /* NAT */
         hsl_nat_add nat_add;
@@ -2170,6 +2201,8 @@ extern "C" {
         hsl_nat_unk_session_cmd_set nat_unk_session_cmd_set;
         hsl_nat_unk_session_cmd_get nat_unk_session_cmd_get;
         hsl_nat_global_set nat_global_set ;
+		hsl_flow_cookie_set flow_cookie_set ;
+		hsl_flow_rfs_set flow_rfs_set ;
 
         /* SEC */
         hsl_sec_norm_item_set   sec_norm_item_set;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2014, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2014-2015, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -1689,7 +1689,8 @@ regi_init(void)
 
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
 		rv = ssdk_switch_register();
-
+		fal_port_rxhdr_mode_set(0, 0, FAL_ALL_TYPE_FRAME_EN);
+		fal_ip_route_status_set(0, 1);
 		/* Enable port temprarily, will remove the code when phy board is ok. */
 		switch_port_enable();
 	}

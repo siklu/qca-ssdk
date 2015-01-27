@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2014, 2015, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -1629,6 +1629,68 @@ _dess_fdb_port_update(a_uint32_t dev_id, a_uint32_t fid, fal_mac_addr_t * addr, 
     rv = _dess_fdb_commit(dev_id, ARL_LOAD_ENTRY);
     return rv;
 }
+#define FDB_RFS_ADD  1
+#define FDB_RFS_DEL  2
+static sw_error_t
+_dess_fdb_rfs_update(fal_fdb_rfs_t *rfs, fal_fdb_entry_t *entry, char op)
+{
+	_dess_fdb_del_by_mac(0, entry);
+	if(FDB_RFS_ADD == op) {
+		entry->static_en = 1;
+		entry->load_balance_en = 1;
+		entry->load_balance = rfs->load_balance;
+	} else {
+		entry->static_en = 0;
+		entry->load_balance_en = 0;
+	}
+	return _dess_fdb_add(0, entry);
+}
+
+
+static sw_error_t
+_dess_fdb_rfs_set(a_uint32_t dev_id, fal_fdb_rfs_t *rfs)
+{
+
+	fal_fdb_entry_t entry;
+	sw_error_t ret;
+
+	memset(&entry, 0, sizeof(entry));
+
+	entry.addr = rfs->addr;
+	entry.fid = rfs->fid;
+	ret = _dess_fdb_find(0, &entry);
+	if(!ret) {
+		return _dess_fdb_rfs_update(rfs, &entry, FDB_RFS_ADD);
+	} else {
+		entry.addr = rfs->addr;
+		entry.fid = rfs->fid;
+		entry.load_balance_en = 1;
+		entry.load_balance = rfs->load_balance;
+		entry.static_en = 1;
+		entry.port.id = 0;
+		return _dess_fdb_add(0, &entry);
+	}
+}
+
+static sw_error_t
+_dess_fdb_rfs_del(a_uint32_t dev_id, fal_fdb_rfs_t *rfs)
+{
+
+	fal_fdb_entry_t entry;
+	sw_error_t ret;
+
+	memset(&entry, 0, sizeof(entry));
+	entry.addr = rfs->addr;
+	entry.fid = rfs->fid;
+	ret = _dess_fdb_find(0, &entry);
+	if(!ret) {
+		return _dess_fdb_rfs_update(rfs, &entry, FDB_RFS_DEL);
+	} else {
+		return ret;
+	}
+}
+
+
 
 sw_error_t
 inter_dess_fdb_flush(a_uint32_t dev_id, a_uint32_t flag)
@@ -2247,6 +2309,41 @@ dess_fdb_port_del(a_uint32_t dev_id, a_uint32_t fid, fal_mac_addr_t * addr, fal_
     return rv;
 }
 
+/**
+ * @brief set a fdb rfs entry
+ * @param[in] dev_id device id
+ * @param[in] rfs entry
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_fdb_rfs_set(a_uint32_t dev_id, fal_fdb_rfs_t *rfs)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _dess_fdb_rfs_set(dev_id, rfs);
+    HSL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief del a fdb rfs entry
+ * @param[in] dev_id device id
+ * @param[in] rfs entry
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_fdb_rfs_del(a_uint32_t dev_id, fal_fdb_rfs_t *rfs)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _dess_fdb_rfs_del(dev_id, rfs);
+    HSL_API_UNLOCK;
+    return rv;
+}
+
+
 sw_error_t
 dess_fdb_init(a_uint32_t dev_id)
 {
@@ -2290,6 +2387,8 @@ dess_fdb_init(a_uint32_t dev_id)
         p_api->fdb_port_learn_static_get = dess_fdb_port_learn_static_get;
         p_api->fdb_port_add = dess_fdb_port_add;
         p_api->fdb_port_del = dess_fdb_port_del;
+		p_api->fdb_rfs_set = dess_fdb_rfs_set;
+		p_api->fdb_rfs_del = dess_fdb_rfs_del;
     }
 #endif
 

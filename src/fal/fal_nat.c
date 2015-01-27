@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -17,9 +17,14 @@
  * @defgroup fal_nat FAL_NAT
  * @{
  */
+
 #include "sw.h"
 #include "fal_nat.h"
 #include "hsl_api.h"
+
+#include <linux/kernel.h>
+#include <linux/module.h>
+
 
 static sw_error_t
 _fal_nat_add(a_uint32_t dev_id, fal_nat_entry_t * nat_entry)
@@ -193,6 +198,40 @@ _fal_flow_add(a_uint32_t dev_id, fal_napt_entry_t * napt_entry)
     rv = p_api->flow_add(dev_id, napt_entry);
     return rv;
 }
+
+static sw_error_t
+
+_fal_flow_cookie_set(a_uint32_t dev_id, fal_flow_cookie_t * flow_cookie)
+{
+	sw_error_t rv;
+	hsl_api_t *p_api;
+
+	SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+	if (NULL == p_api->flow_cookie_set)
+		return SW_NOT_SUPPORTED;
+
+	rv = p_api->flow_cookie_set(dev_id, flow_cookie);
+	return rv;
+}
+
+static sw_error_t
+
+_fal_flow_rfs_set(a_uint32_t dev_id, a_uint8_t action, fal_flow_rfs_t * rfs)
+{
+	sw_error_t rv;
+	hsl_api_t *p_api;
+
+	SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+	if (NULL == p_api->flow_rfs_set)
+		return SW_NOT_SUPPORTED;
+
+	rv = p_api->flow_rfs_set(dev_id, action, rfs);
+	return rv;
+}
+
+
 
 static sw_error_t
 _fal_flow_del(a_uint32_t dev_id, a_uint32_t del_mode,
@@ -1200,6 +1239,95 @@ fal_nat_global_set(a_uint32_t dev_id, a_bool_t enable)
     FAL_API_UNLOCK;
     return rv;
 }
+
+/**
+ * @brief Add/del one FLOW cookie entry to one particular device.
+ *   @details Comments:
+       Before FLOW entry added related ip4 private base address must be set
+       at first.
+       In parameter napt_entry related entry flags must be set
+       Hardware entry id will be returned.
+ * @param[in] dev_id device id
+ * @param[in] napt_entry FLOW entry parameter
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_flow_cookie_set(a_uint32_t dev_id, fal_flow_cookie_t * flow_cookie)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_flow_cookie_set(dev_id, flow_cookie);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Add/del one FLOW rfs entry to one particular device.
+ *   @details Comments:
+       Before FLOW entry added related ip4 private base address must be set
+       at first.
+       In parameter napt_entry related entry flags must be set
+       Hardware entry id will be returned.
+ * @param[in] dev_id device id
+ * @param[in] napt_entry FLOW entry parameter
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_flow_rfs_set(a_uint32_t dev_id, a_uint8_t action, fal_flow_rfs_t * rfs)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_flow_rfs_set(dev_id, action, rfs);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+
+int ssdk_flow_cookie_set(
+		u32 protocol, __be32 src_ip,
+		__be16 src_port, __be32 dst_ip,
+		__be16 dst_port, u16 flowcookie)
+{
+	fal_flow_cookie_t flow_cookie;
+	if(protocol == 17) {
+		flow_cookie.proto = 0x2;
+	} else {
+		flow_cookie.proto = 0x1;
+	}
+	flow_cookie.src_addr = ntohl(src_ip);
+	flow_cookie.dst_addr = ntohl(dst_ip);
+	flow_cookie.src_port = ntohs(src_port);
+	flow_cookie.dst_port = ntohs(dst_port);
+	flow_cookie.flow_cookie = flowcookie;
+	return fal_flow_cookie_set(0, &flow_cookie);
+}
+
+int ssdk_rfs_ipct_rule_set(
+	__be32 ip_src, __be32 ip_dst,
+	__be32 sport, __be32 dport, uint8_t proto,
+	u16 loadbalance, bool action)
+{
+	fal_flow_rfs_t rfs;
+	if(proto == 17) {
+		rfs.proto = 0x2;
+	} else {
+		rfs.proto = 0x1;
+	}
+	rfs.src_addr = ntohl(ip_src);
+	rfs.dst_addr = ntohl(ip_dst);
+	rfs.src_port = ntohl(sport);
+	rfs.dst_port = ntohl(dport);
+	rfs.load_balance = loadbalance;
+	if(fal_flow_rfs_set(0, action, &rfs))
+		return -1;
+	return 0;
+}
+
+
+EXPORT_SYMBOL(ssdk_flow_cookie_set);
+EXPORT_SYMBOL(ssdk_rfs_ipct_rule_set);
 
 /**
  * @}
