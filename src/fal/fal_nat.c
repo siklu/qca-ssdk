@@ -1306,7 +1306,7 @@ int ssdk_flow_cookie_set(
 
 int ssdk_rfs_ipct_rule_set(
 	__be32 ip_src, __be32 ip_dst,
-	__be32 sport, __be32 dport, uint8_t proto,
+	__be16 sport, __be16 dport, uint8_t proto,
 	u16 loadbalance, bool action)
 {
 	fal_flow_rfs_t rfs;
@@ -1317,8 +1317,8 @@ int ssdk_rfs_ipct_rule_set(
 	}
 	rfs.src_addr = ntohl(ip_src);
 	rfs.dst_addr = ntohl(ip_dst);
-	rfs.src_port = ntohl(sport);
-	rfs.dst_port = ntohl(dport);
+	rfs.src_port = ntohs(sport);
+	rfs.dst_port = ntohs(dport);
 	rfs.load_balance = loadbalance;
 	if(fal_flow_rfs_set(0, action, &rfs))
 		return -1;

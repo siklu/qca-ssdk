@@ -51,7 +51,7 @@ typedef struct
 
 int ssdk_rfs_ipct_rule_set(
 	__be32 ip_src, __be32 ip_dst,
-	__be32 sport, __be32 dport, uint8_t proto,
+	__be16 sport, __be16 dport, uint8_t proto,
 	u16 loadbalance, bool action);
 
 int ssdk_rfs_mac_rule_set(ssdk_fdb_rfs_t *rfs);
