@@ -59,6 +59,11 @@
 #include "ssdk_uci.h"
 #endif
 
+#if defined (CONFIG_NF_FLOW_COOKIE)
+#include "fal_flowcookie.h"
+#include <shortcut-fe/sfe.h>
+#endif
+
 #define ISIS_CHIP_ID 0x18
 #define ISIS_CHIP_REG 0
 #define SHIVA_CHIP_ID 0x1f
@@ -140,7 +145,6 @@ qca_ar8327_phy_fixup(struct qca_phy_priv *priv, int phy)
 static int
 qca_ar8327_hw_init(struct qca_phy_priv *priv)
 {
-	struct ar8327_platform_data *plat_data;
 	struct device_node *np = NULL;
 	const __be32 *paddr;
 	a_uint32_t reg, value, i;
@@ -1433,7 +1437,7 @@ retry:
     }
 
     *data = bus->read(bus, phy_addr, reg);
-    
+
 	mutex_unlock(&bus->mdio_lock);
     if(!in_interrupt()) {
         if(irq_preepmt) {
@@ -1479,7 +1483,7 @@ qca_ar8327_phy_dbg_write(a_uint32_t dev_id, a_uint32_t phy_addr,
 {
 	struct mii_bus *bus = miibus;
     static uint16_t irq_preepmt = 0;
-    
+
 retry:
     irq_preepmt = 0;
     if(!in_interrupt()) {
@@ -1492,14 +1496,14 @@ retry:
 
 	bus->write(bus, phy_addr, QCA_MII_DBG_ADDR, dbg_addr);
 	bus->write(bus, phy_addr, QCA_MII_DBG_DATA, dbg_data);
-    
+
 	mutex_unlock(&bus->mdio_lock);
     if(!in_interrupt()) {
         if(irq_preepmt) {
             goto retry;
         }
     }
-    
+
 }
 
 void
@@ -1508,7 +1512,7 @@ qca_ar8327_mmd_write(a_uint32_t dev_id, a_uint32_t phy_addr,
 {
 	struct mii_bus *bus = miibus;
     static uint16_t irq_preepmt = 0;
-    
+
 retry:
     irq_preepmt = 0;
     if(!in_interrupt()) {
@@ -1521,7 +1525,7 @@ retry:
 
 	bus->write(bus, phy_addr, QCA_MII_MMD_ADDR, addr);
 	bus->write(bus, phy_addr, QCA_MII_MMD_DATA, data);
-    
+
 	mutex_unlock(&bus->mdio_lock);
     if(!in_interrupt()) {
         if(irq_preepmt) {
@@ -1541,9 +1545,7 @@ qca_switch_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data
         return SW_BAD_LEN;
 
 	reg_val = readl(hw_addr + reg_addr);
-/*linchen:for dess, change deviceid = 0x14 */
-        if(reg_addr == 0)
-                reg_val=(reg_val&0xffff00ff)|0x1400;
+
 	aos_mem_copy(reg_data, &reg_val, sizeof (a_uint32_t));
 	return 0;
 }
@@ -1633,6 +1635,33 @@ static a_uint8_t chip_ver_get()
 	return chip_ver;
 }
 
+static int
+qca_dess_hw_init(ssdk_init_cfg *cfg)
+{
+	a_uint32_t reg_value;
+	fal_portvlan_member_update(0, 0, 0x3e);/*should be defined by DTS*/
+	fal_portvlan_member_update(0, 1, 0x1d);
+	fal_portvlan_member_update(0, 2, 0x1b);
+	fal_portvlan_member_update(0, 3, 0x17);
+	fal_portvlan_member_update(0, 4, 0xf);
+	fal_portvlan_member_update(0, 5, 0x1);
+
+	fal_port_rxhdr_mode_set(0, 0, FAL_ALL_TYPE_FRAME_EN);
+	fal_ip_route_status_set(0, A_TRUE);
+
+	reg_value = 0xff00000;
+	qca_switch_reg_write(0, 0x0ea0, (a_uint8_t *)&reg_value, 4);
+	qca_switch_reg_write(0, 0x0ea4, (a_uint8_t *)&reg_value, 4);
+	qca_switch_reg_write(0, 0x0ea8, (a_uint8_t *)&reg_value, 4);
+	qca_switch_reg_write(0, 0x0eac, (a_uint8_t *)&reg_value, 4);
+	qca_switch_reg_write(0, 0x0eb0, (a_uint8_t *)&reg_value, 4);
+	qca_switch_reg_write(0, 0x0eb4, (a_uint8_t *)&reg_value, 4);
+	qca_switch_reg_write(0, 0x0eb8, (a_uint8_t *)&reg_value, 4);
+	qca_switch_reg_write(0, 0x0ebc, (a_uint8_t *)&reg_value, 4);
+
+	return 0;
+}
+
 static int __init
 regi_init(void)
 {
@@ -1689,8 +1718,11 @@ regi_init(void)
 
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
 		rv = ssdk_switch_register();
-		fal_port_rxhdr_mode_set(0, 0, FAL_ALL_TYPE_FRAME_EN);
-		fal_ip_route_status_set(0, 1);
+		qca_dess_hw_init(&cfg);
+
+#if defined (CONFIG_NF_FLOW_COOKIE)
+		sfe_register_flow_cookie_cb(ssdk_flow_cookie_set);
+#endif
 		/* Enable port temprarily, will remove the code when phy board is ok. */
 		switch_port_enable();
 	}
@@ -1714,8 +1746,12 @@ regi_exit(void)
     else
         printk("qca-ssdk module exit failed! (code: %d)\n", rv);
 
-	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS)
+	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS){
 		ssdk_switch_unregister();
+#if defined (CONFIG_NF_FLOW_COOKIE)
+		sfe_unregister_flow_cookie_cb(ssdk_flow_cookie_set);
+#endif
+	}
 
     ssdk_plat_exit();
 }
