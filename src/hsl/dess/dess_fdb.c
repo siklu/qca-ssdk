@@ -1667,7 +1667,8 @@ _dess_fdb_rfs_set(a_uint32_t dev_id, fal_fdb_rfs_t *rfs)
 		entry.load_balance_en = 1;
 		entry.load_balance = rfs->load_balance;
 		entry.static_en = 1;
-		entry.port.id = 0;
+		entry.port.map = 1;
+		entry.portmap_en = 1;
 		return _dess_fdb_add(0, &entry);
 	}
 }
