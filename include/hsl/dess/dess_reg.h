@@ -3863,7 +3863,7 @@ extern "C" {
 
 #define LOAD_BALANCE
 #define NAPT_ENTRY4_LOAD_BALANCE_BOFFSET         19
-#define NAPT_ENTRY4_LOAD_BALANCE_BLEN            2
+#define NAPT_ENTRY4_LOAD_BALANCE_BLEN            3
 #define NAPT_ENTRY4_LOAD_BALANCE_FLAG            HSL_RW
 
 #define FLOW_COOKIE
