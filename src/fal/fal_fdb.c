@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -20,6 +20,12 @@
 #include "sw.h"
 #include "fal_fdb.h"
 #include "hsl_api.h"
+
+#include <linux/kernel.h>
+#include <linux/module.h>
+
+#include "fal_rfs.h"
+
 
 static sw_error_t
 _fal_fdb_add(a_uint32_t dev_id, const fal_fdb_entry_t * entry)
@@ -565,6 +571,37 @@ _fal_fdb_port_del(a_uint32_t dev_id, a_uint32_t fid, fal_mac_addr_t * addr, fal_
     rv = p_api->fdb_port_del(dev_id, fid, addr, port_id);
     return rv;
 }
+
+sw_error_t
+_fal_fdb_rfs_set(a_uint32_t dev_id, const fal_fdb_rfs_t * entry)
+{
+	sw_error_t rv;
+	hsl_api_t *p_api;
+
+	SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+	if (NULL == p_api->fdb_rfs_set)
+		return SW_NOT_SUPPORTED;
+
+	rv = p_api->fdb_rfs_set(dev_id, entry);
+	return rv;
+}
+
+sw_error_t
+_fal_fdb_rfs_del(a_uint32_t dev_id, const fal_fdb_rfs_t * entry)
+{
+	sw_error_t rv;
+	hsl_api_t *p_api;
+
+	SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+	if (NULL == p_api->fdb_rfs_del)
+		return SW_NOT_SUPPORTED;
+
+	rv = p_api->fdb_rfs_del(dev_id, entry);
+	return rv;
+}
+
 
 /**
  * @brief Add a Fdb entry
@@ -1210,6 +1247,63 @@ fal_fdb_port_del(a_uint32_t dev_id, a_uint32_t fid, fal_mac_addr_t * addr, fal_p
     FAL_API_UNLOCK;
     return rv;
 }
+
+/**
+ * @brief Add a Fdb rfs entry
+ * @param[in] dev_id device id
+ * @param[in] entry fdb entry
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_fdb_rfs_set(a_uint32_t dev_id, const fal_fdb_rfs_t * entry)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_fdb_rfs_set(dev_id, entry);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Del a Fdb rfs entry
+ * @param[in] dev_id device id
+ * @param[in] entry fdb entry
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_fdb_rfs_del(a_uint32_t dev_id, const fal_fdb_rfs_t * entry)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_fdb_rfs_del(dev_id, entry);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+int ssdk_rfs_mac_rule_set(ssdk_fdb_rfs_t *rfs)
+{
+	fal_fdb_rfs_t entry;
+	memcpy(&entry.addr, rfs->addr, 6);
+	entry.fid = rfs->fid;
+	entry.load_balance = rfs->load_balance;
+	return fal_fdb_rfs_set(0, &entry);
+}
+
+int ssdk_rfs_mac_rule_del(ssdk_fdb_rfs_t *rfs)
+{
+	fal_fdb_rfs_t entry;
+	memcpy(&entry.addr, rfs->addr, 6);
+	entry.fid = rfs->fid;
+	entry.load_balance = rfs->load_balance;
+	return fal_fdb_rfs_del(0, &entry);
+}
+
+
+EXPORT_SYMBOL(ssdk_rfs_mac_rule_set);
+EXPORT_SYMBOL(ssdk_rfs_mac_rule_del);
+
 
 /**
  * @}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2014-2015, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -73,6 +73,164 @@
 
 static a_uint32_t dess_mac_snap[SW_MAX_NR_DEV] = { 0 };
 static fal_intf_mac_entry_t dess_intf_snap[SW_MAX_NR_DEV][DESS_INTF_MAC_ADDR_NUM];
+
+struct ip_host_route_ip4 {
+	a_uint8_t valid;
+	fal_ip4_addr_t ip;
+	a_uint32_t ref;
+};
+struct ip_host_route_ip6 {
+	a_uint8_t valid;
+	fal_ip6_addr_t ip;
+	a_uint32_t ref;
+};
+#define IP_HOST_ROUTE_NUM   16
+struct ip_host_route_ip4 ip_host_route_ip4_table[IP_HOST_ROUTE_NUM];
+struct ip_host_route_ip6 ip_host_route_ip6_table[IP_HOST_ROUTE_NUM];
+static sw_error_t
+_dess_ip_host_route_set(a_uint32_t dev_id, a_uint32_t hroute_id, fal_host_route_t * entry);
+static sw_error_t
+_dess_ip_host_route_get(a_uint32_t dev_id, a_uint32_t hroute_id, fal_host_route_t * entry);
+
+static a_int32_t
+_dess_ip_host_route_ip4_hw_add(fal_host_entry_t *arp_entry)
+{
+	a_uint8_t exist = 0, idx = IP_HOST_ROUTE_NUM+1, i = 0;
+	fal_ip4_addr_t ip = arp_entry->ip4_addr;
+
+	ip = ip & 0xffff0000;
+	for(i = 0; i < IP_HOST_ROUTE_NUM; i++) {
+		if(ip_host_route_ip4_table[i].valid) {
+			if(ip_host_route_ip4_table[i].ip == ip) {
+				exist = 1;
+				idx = i;
+				break;
+			}
+		} else {
+			idx = i;
+		}
+	}
+	if(!exist) {
+		fal_host_route_t entry;
+		if(idx >= IP_HOST_ROUTE_NUM) {
+			return -1;
+		}
+
+		ip_host_route_ip4_table[idx].valid = 1;
+		ip_host_route_ip4_table[idx].ip = ip;
+		memset(&entry, 0, sizeof(entry));
+		entry.valid = 1;
+		entry.ip_version = 0;
+		entry.route_addr.ip4_addr = ip;
+		entry.prefix_length = 15;
+		_dess_ip_host_route_set(0, idx, &entry);
+		ip_host_route_ip4_table[idx].ref = 1;
+	} else {
+		ip_host_route_ip4_table[idx].ref++;
+	}
+
+	return 0;
+}
+
+static a_int32_t
+_dess_ip_host_route_ip4_hw_del(fal_host_entry_t *arp_entry)
+{
+	a_uint8_t exist = 0, i = 0;
+	fal_ip4_addr_t ip = arp_entry->ip4_addr;
+
+	ip = ip & 0xffff0000;
+	for(i = 0; i < IP_HOST_ROUTE_NUM; i++) {
+		if(ip_host_route_ip4_table[i].valid) {
+			if(ip_host_route_ip4_table[i].ip == ip) {
+				exist = 1;
+				break;
+			}
+		}
+	}
+	if(exist) {
+		ip_host_route_ip4_table[i].ref--;
+		if(ip_host_route_ip4_table[i].ref == 0) {
+			fal_host_route_t entry;
+			entry.valid = 0;
+			entry.ip_version = 0;
+			ip_host_route_ip4_table[i].valid = 0;
+			return _dess_ip_host_route_set(0, i, &entry);
+		}
+	}
+	return SW_OK;
+}
+
+
+static a_int32_t
+_dess_ip_host_route_ip6_hw_add(fal_host_entry_t *arp_entry)
+{
+	a_uint8_t exist = 0, idx = IP_HOST_ROUTE_NUM+1, i = 0;
+	fal_ip6_addr_t ip = arp_entry->ip6_addr;
+
+	ip.ul[1] = 0;
+	ip.ul[2] = 0;
+	ip.ul[3] = 0;
+	for(i = 0; i < IP_HOST_ROUTE_NUM; i++) {
+		if(ip_host_route_ip6_table[i].valid) {
+			if(ip_host_route_ip6_table[i].ip.ul[0] == ip.ul[0]) {
+				exist = 1;
+				idx = i;
+				break;
+			}
+		} else {
+			idx = i;
+		}
+	}
+	if(!exist) {
+		fal_host_route_t entry;
+		if(idx >= IP_HOST_ROUTE_NUM) {
+			return -1;
+		}
+
+		ip_host_route_ip6_table[idx].valid = 1;
+		ip_host_route_ip6_table[idx].ip.ul[0] = ip.ul[0];
+		memset(&entry, 0, sizeof(entry));
+		entry.valid = 1;
+		entry.ip_version = 1;
+		entry.route_addr.ip6_addr.ul[0] = ip.ul[0];
+		entry.prefix_length = 31;
+		_dess_ip_host_route_set(0, idx, &entry);
+		ip_host_route_ip6_table[idx].ref = 1;
+	} else {
+		ip_host_route_ip6_table[idx].ref++;
+	}
+
+	return 0;
+}
+
+static a_int32_t
+_dess_ip_host_route_ip6_hw_del(fal_host_entry_t *arp_entry)
+{
+	a_uint8_t exist = 0, i = 0;
+	fal_ip6_addr_t ip = arp_entry->ip6_addr;
+
+	for(i = 0; i < IP_HOST_ROUTE_NUM; i++) {
+		if(ip_host_route_ip6_table[i].valid) {
+			if(ip_host_route_ip6_table[i].ip.ul[0] == ip.ul[0]) {
+				exist = 1;
+				break;
+			}
+		}
+	}
+	if(exist) {
+		ip_host_route_ip6_table[i].ref--;
+		if(ip_host_route_ip6_table[i].ref == 0) {
+			fal_host_route_t entry;
+			entry.valid = 0;
+			entry.ip_version = 1;
+			ip_host_route_ip6_table[i].valid = 0;
+			return _dess_ip_host_route_set(0, i, &entry);
+		}
+	}
+	return SW_OK;
+}
+
+
 
 static void
 _dess_ip_pt_learn_save(a_uint32_t dev_id, a_uint32_t * status)
@@ -633,6 +791,11 @@ _dess_ip_host_add(a_uint32_t dev_id, fal_host_entry_t * entry)
     SW_RTN_ON_ERROR(rv);
 
     SW_GET_FIELD_BY_REG(HOST_ENTRY7, TBL_IDX, entry->entry_id, reg[7]);
+	if(entry->flags == FAL_IP_IP4_ADDR) {
+		_dess_ip_host_route_ip4_hw_add(entry);
+	} else {
+		_dess_ip_host_route_ip6_hw_add(entry);
+	}
     return SW_OK;
 }
 
@@ -696,6 +859,12 @@ _dess_ip_host_del(a_uint32_t dev_id, a_uint32_t del_mode,
     SW_RTN_ON_ERROR(rv);
 
     rv = _dess_host_entry_commit(dev_id, DESS_ENTRY_ARP, op);
+	if(!rv) {
+		if(FAL_IP_IP4_ADDR & entry->flags)
+			_dess_ip_host_route_ip4_hw_del(entry);
+		else
+			_dess_ip_host_route_ip6_hw_del(entry);
+	}
     return rv;
 }
 
@@ -2258,6 +2427,125 @@ _dess_ip_host_route_get(a_uint32_t dev_id, a_uint32_t hroute_id, fal_host_route_
 
     return SW_OK;
 }
+#define RFS_ADD_OP  1
+#define RFS_DEL_OP  2
+static sw_error_t
+_dess_ip_rfs_ip4_update(
+		a_uint32_t dev_id,
+		fal_host_entry_t *entry,
+		fal_ip4_rfs_t * rfs,
+		char op)
+{
+	fal_host_entry_t tmp = *entry;
+
+	_dess_ip_host_del(dev_id, FAL_IP_ENTRY_IPADDR_EN, entry);
+	if(RFS_ADD_OP == op) {
+		tmp.lb_num = rfs->load_balance | 0x4;
+		tmp.status = 0x7;
+	}
+	else {
+		tmp.lb_num = 0;
+		tmp.status = 0x6;
+	}
+	return _dess_ip_host_add(dev_id, &tmp);
+}
+
+static sw_error_t
+_dess_ip_rfs_ip6_update(
+		a_uint32_t dev_id,
+		fal_host_entry_t *entry,
+		fal_ip6_rfs_t * rfs,
+		char op)
+{
+	fal_host_entry_t tmp = *entry;
+
+	_dess_ip_host_del(dev_id, FAL_IP_ENTRY_IPADDR_EN, entry);
+	if(RFS_ADD_OP == op) {
+		tmp.lb_num = rfs->load_balance | 0x4;
+		tmp.status = 0x7;
+	}
+	else {
+		tmp.lb_num = 0;
+		tmp.status = 0x6;
+	}
+	return _dess_ip_host_add(dev_id, &tmp);
+}
+
+static sw_error_t
+_dess_ip_rfs_ip4_set(a_uint32_t dev_id, fal_ip4_rfs_t * rfs)
+{
+	fal_host_entry_t entry;
+
+	memset(&entry, 0, sizeof(entry));
+	entry.flags = FAL_IP_IP4_ADDR;
+	entry.ip4_addr = rfs->ip4_addr;
+	if(SW_OK == _dess_ip_host_get(dev_id, 0x10, &entry)) {
+		return _dess_ip_rfs_ip4_update(dev_id, &entry, rfs, RFS_ADD_OP);
+	}
+	/*add a new one*/
+	entry.status = 0x7;
+	entry.flags = FAL_IP_IP4_ADDR;
+	entry.ip4_addr = rfs->ip4_addr;
+	memcpy(&entry.mac_addr, &rfs->mac_addr, 6);
+	entry.intf_id = rfs->vid;
+	entry.port_id = 0;
+	entry.lb_num = rfs->load_balance | 0x4;
+	return _dess_ip_host_add(dev_id, &entry);
+}
+
+static sw_error_t
+_dess_ip_rfs_ip6_set(a_uint32_t dev_id, fal_ip6_rfs_t * rfs)
+{
+	fal_host_entry_t entry;
+
+	memset(&entry, 0, sizeof(entry));
+	entry.flags = FAL_IP_IP6_ADDR;
+	entry.ip6_addr = rfs->ip6_addr;
+	if(SW_OK == _dess_ip_host_get(dev_id, 0x10, &entry)) {
+		return _dess_ip_rfs_ip6_update(dev_id, &entry, rfs, RFS_ADD_OP);
+	}
+	/*add a new one*/
+	entry.status = 0x7;
+	entry.flags = FAL_IP_IP6_ADDR;
+	entry.ip6_addr = rfs->ip6_addr;
+	memcpy(&entry.mac_addr, &rfs->mac_addr, 6);
+	entry.intf_id = rfs->vid;
+	entry.port_id = 0;
+	entry.lb_num = rfs->load_balance | 0x4;
+	return _dess_ip_host_add(dev_id, &entry);
+}
+
+static sw_error_t
+_dess_ip_rfs_ip4_del(a_uint32_t dev_id, fal_ip4_rfs_t * rfs)
+{
+	fal_host_entry_t entry;
+	sw_error_t ret;
+
+	memset(&entry, 0, sizeof(entry));
+	entry.flags = FAL_IP_IP4_ADDR;
+	entry.ip4_addr = rfs->ip4_addr;
+	if(SW_OK == (ret = _dess_ip_host_get(dev_id, 0x10, &entry))) {
+		return _dess_ip_rfs_ip4_update(dev_id, &entry, rfs, RFS_DEL_OP);
+	}
+	return ret;
+}
+
+static sw_error_t
+_dess_ip_rfs_ip6_del(a_uint32_t dev_id, fal_ip6_rfs_t * rfs)
+{
+	fal_host_entry_t entry;
+	sw_error_t ret;
+
+	memset(&entry, 0, sizeof(entry));
+	entry.flags = FAL_IP_IP6_ADDR;
+	entry.ip6_addr = rfs->ip6_addr;
+	if(SW_OK == (ret = _dess_ip_host_get(dev_id, 0x10, &entry))) {
+		return _dess_ip_rfs_ip6_update(dev_id, &entry, rfs, RFS_DEL_OP);
+	}
+	return ret;
+}
+
+
 
 sw_error_t
 dess_ip_reset(a_uint32_t dev_id)
@@ -2990,12 +3278,84 @@ dess_ip_host_route_get(a_uint32_t dev_id, a_uint32_t hroute_id, fal_host_route_t
     return rv;
 }
 
+/**
+ * @brief Set IP host route load balance.
+ * @param[in] dev_id device id
+ * @param[in] fal_ip4_rfs_t host route entry
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_ip_rfs_ip4_set(a_uint32_t dev_id, fal_ip4_rfs_t * rfs)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _dess_ip_rfs_ip4_set(dev_id, rfs);
+    HSL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Set IP6 host route load balance.
+ * @param[in] dev_id device id
+ * @param[in] fal_ip6_rfs_t host route entry
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_ip_rfs_ip6_set(a_uint32_t dev_id, fal_ip6_rfs_t * rfs)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _dess_ip_rfs_ip6_set(dev_id, rfs);
+    HSL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief del IP host route load balance.
+ * @param[in] dev_id device id
+ * @param[in] fal_ip4_rfs_t host route entry
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_ip_rfs_ip4_del(a_uint32_t dev_id, fal_ip4_rfs_t * rfs)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _dess_ip_rfs_ip4_del(dev_id, rfs);
+    HSL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief del IP6 host route load balance.
+ * @param[in] dev_id device id
+ * @param[in] fal_ip6_rfs_t host route entry
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_ip_rfs_ip6_del(a_uint32_t dev_id, fal_ip6_rfs_t * rfs)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _dess_ip_rfs_ip6_del(dev_id, rfs);
+    HSL_API_UNLOCK;
+    return rv;
+}
+
+
 sw_error_t
 dess_ip_init(a_uint32_t dev_id)
 {
     sw_error_t rv;
 
     HSL_DEV_ID_CHECK(dev_id);
+
+	memset(ip_host_route_ip4_table, 0, sizeof(ip_host_route_ip4_table));
+	memset(ip_host_route_ip6_table, 0, sizeof(ip_host_route_ip6_table));
 
     rv = dess_ip_reset(dev_id);
     SW_RTN_ON_ERROR(rv);
@@ -3043,6 +3403,10 @@ dess_ip_init(a_uint32_t dev_id)
         p_api->ip_host_route_get = dess_ip_host_route_get;
 		p_api->ip_wcmp_entry_set = dess_ip_wcmp_entry_set;
         p_api->ip_wcmp_entry_get = dess_ip_wcmp_entry_get;
+		p_api->ip_rfs_ip4_set = dess_ip_rfs_ip4_set;
+		p_api->ip_rfs_ip6_set = dess_ip_rfs_ip6_set;
+		p_api->ip_rfs_ip4_del = dess_ip_rfs_ip4_del;
+		p_api->ip_rfs_ip6_del = dess_ip_rfs_ip6_del;
     }
 #endif
 
