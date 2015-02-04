@@ -99,6 +99,13 @@ hsl_acl_ptr_get(a_uint32_t dev_id)
     return &(dev_table[dev_id].acl_func);
 }
 
+a_uint32_t hsl_dev_wan_port_get(a_uint32_t dev_id)
+{
+	if(dev_ssdk_cfg[dev_id])
+		return dev_ssdk_cfg[dev_id]->port_cfg.wan_bmp;
+	return 0;
+}
+
 sw_error_t
 hsl_dev_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 {

@@ -1577,7 +1577,7 @@ void switch_port_enable()
 }
 
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-static int ssdk_dt_parse(void)
+static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 {
 	struct device_node *switch_node = NULL;
 	a_uint32_t len = 0;
@@ -1617,6 +1617,15 @@ static int ssdk_dt_parse(void)
 		ssdk_dt_global.switch_reg_access_mode = HSL_REG_MDIO;
 	else
 		ssdk_dt_global.switch_reg_access_mode = HSL_REG_MDIO;
+
+	if (of_property_read_u32(switch_node, "switch_cpu_bmp", &cfg->port_cfg.cpu_bmp)
+		|| of_property_read_u32(switch_node, "switch_lan_bmp", &cfg->port_cfg.lan_bmp)
+		|| of_property_read_u32(switch_node, "switch_wan_bmp", &cfg->port_cfg.wan_bmp)) {
+		printk("%s: error reading device node port properties\n", switch_node->name);
+		return SW_BAD_PARAM;
+	}
+	printk("wan bmp:0x%x\n", cfg->port_cfg.wan_bmp);
+
 
 	return SW_OK;
 }
@@ -1662,6 +1671,21 @@ qca_dess_hw_init(ssdk_init_cfg *cfg)
 	return 0;
 }
 
+static void ssdk_cfg_default_init(ssdk_init_cfg *cfg)
+{
+	memset(cfg, 0, sizeof(ssdk_init_cfg));
+	cfg->cpu_mode = HSL_CPU_1;
+	cfg->nl_prot = 30;
+	cfg->reg_func.mdio_set = qca_ar8327_phy_write;
+	cfg->reg_func.mdio_get = qca_ar8327_phy_read;
+	cfg->reg_func.header_reg_set = qca_switch_reg_write;
+	cfg->reg_func.header_reg_get = qca_switch_reg_read;
+	/*will delete later, if dts merged*/
+	cfg->port_cfg.cpu_bmp = 0x1;
+	cfg->port_cfg.lan_bmp = 0x1e;
+	cfg->port_cfg.wan_bmp = 0x20;
+}
+
 static int __init
 regi_init(void)
 {
@@ -1671,18 +1695,18 @@ regi_init(void)
 	ssdk_dt_global.switch_reg_access_mode = HSL_REG_MDIO;
 	a_uint8_t chip_version = 0;
 
+	ssdk_cfg_default_init(&cfg);
+
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-		ssdk_dt_parse();
+		ssdk_dt_parse(&cfg);
 #endif
 
 	rv = ssdk_plat_init();
 	if(rv)
 		goto out;
 
-	memset(&cfg, 0, sizeof(ssdk_init_cfg));
 	memset(&chip_spec_cfg, 0, sizeof(garuda_init_spec_cfg));
 
-	cfg.cpu_mode = HSL_CPU_1;
 
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_MDIO)
 		cfg.reg_mode = HSL_MDIO;
@@ -1691,13 +1715,8 @@ regi_init(void)
 	else
 		cfg.reg_mode = HSL_MDIO;
 
-	cfg.nl_prot = 30;
 
 	cfg.chip_spec_cfg = &chip_spec_cfg;
-	cfg.reg_func.mdio_set = qca_ar8327_phy_write;
-	cfg.reg_func.mdio_get = qca_ar8327_phy_read;
-	cfg.reg_func.header_reg_set = qca_switch_reg_write;
-	cfg.reg_func.header_reg_get = qca_switch_reg_read;
 
 	chip_version = chip_ver_get();
     if(chip_version == 0x02)
