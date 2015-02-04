@@ -4670,143 +4670,228 @@ parse_acl_rule(struct switch_val *val)
 						&(rule.dest_mac_val), sizeof(fal_mac_addr_t));
 			FAL_FIELD_FLG_SET(rule.field_flg,
 					FAL_ACL_FIELD_MAC_DA);
-			val_ptr[3] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "dst_mac_address_mask")) {
 			cmd_data_check_macaddr(ext_value_p->option_value,
 						&(rule.dest_mac_mask), sizeof(fal_mac_addr_t));
-			val_ptr[4] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "src_mac_address")) {
 			cmd_data_check_macaddr(ext_value_p->option_value,
 						&(rule.src_mac_val), sizeof(fal_mac_addr_t));
 			FAL_FIELD_FLG_SET(rule.field_flg,
 					FAL_ACL_FIELD_MAC_SA);
-			val_ptr[5] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "src_mac_address_mask")) {
 			cmd_data_check_macaddr(ext_value_p->option_value,
 						&(rule.src_mac_mask), sizeof(fal_mac_addr_t));
-			val_ptr[6] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "ethernet_type")) {
 			cmd_data_check_uint16(ext_value_p->option_value,
 						&(rule.ethtype_val), sizeof(a_uint32_t));
 			FAL_FIELD_FLG_SET(rule.field_flg,
 					FAL_ACL_FIELD_MAC_ETHTYPE);
-			val_ptr[7] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "ethernet_type_mask")) {
 			cmd_data_check_uint16(ext_value_p->option_value,
 						&(rule.ethtype_mask), sizeof(a_uint32_t));
-			val_ptr[8] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "vlan_id")) {
 			cmd_data_check_uint16(ext_value_p->option_value,
 						&(rule.vid_val), sizeof(a_uint32_t));
 			FAL_FIELD_FLG_SET(rule.field_flg,
 					FAL_ACL_FIELD_MAC_VID);
-			val_ptr[9] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "vlan_id_mask")) {
 			cmd_data_check_uint16(ext_value_p->option_value,
 						&(rule.vid_mask), sizeof(a_uint32_t));
-			val_ptr[10] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "vlan_priority")) {
 			cmd_data_check_uint16(ext_value_p->option_value,
 						&(rule.up_val), sizeof(a_uint32_t));
 			FAL_FIELD_FLG_SET(rule.field_flg,
 					FAL_ACL_FIELD_MAC_UP);
-			val_ptr[11] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "vlan_priority_mask")) {
 			cmd_data_check_uint16(ext_value_p->option_value,
 						&(rule.up_mask), sizeof(a_uint32_t));
-			val_ptr[12] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "tagged")) {
 			cmd_data_check_uint16(ext_value_p->option_value,
 						&(rule.tagged_val), sizeof(a_uint32_t));
+			rule.tagged_mask = 1;
 			FAL_FIELD_FLG_SET(rule.field_flg,
 					FAL_ACL_FIELD_MAC_TAGGED);
-			val_ptr[13] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "cfi")) {
+			cmd_data_check_uint16(ext_value_p->option_value,
+						&(rule.cfi_val), sizeof(a_uint32_t));
+			rule.cfi_mask = 1;
+			FAL_FIELD_FLG_SET(rule.field_flg,
+					FAL_ACL_FIELD_MAC_CFI);
+		} else if(!strcmp(ext_value_p->option_name, "ctag_vlan_id")) {
+			cmd_data_check_uint16(ext_value_p->option_value,
+						&(rule.ctag_vid_val), sizeof(a_uint32_t));
+			FAL_FIELD_FLG_SET(rule.field_flg,
+					FAL_ACL_FIELD_MAC_CTAG_VID);
+		} else if(!strcmp(ext_value_p->option_name, "ctag_vlan_id_mask")) {
+			cmd_data_check_uint16(ext_value_p->option_value,
+						&(rule.ctag_vid_mask), sizeof(a_uint32_t));
+		} else if(!strcmp(ext_value_p->option_name, "ctag_vlan_priority")) {
+			cmd_data_check_uint16(ext_value_p->option_value,
+						&(rule.ctag_pri_val), sizeof(a_uint32_t));
+			FAL_FIELD_FLG_SET(rule.field_flg,
+					FAL_ACL_FIELD_MAC_CTAG_PRI);
+		} else if(!strcmp(ext_value_p->option_name, "ctag_vlan_priority_mask")) {
+			cmd_data_check_uint16(ext_value_p->option_value,
+						&(rule.ctag_pri_mask), sizeof(a_uint32_t));
+		} else if(!strcmp(ext_value_p->option_name, "ctagged")) {
+			cmd_data_check_uint16(ext_value_p->option_value,
+						&(rule.ctagged_val), sizeof(a_uint32_t));
+			rule.ctagged_mask = 1;
+			FAL_FIELD_FLG_SET(rule.field_flg,
+					FAL_ACL_FIELD_MAC_CTAGGED);
+		} else if(!strcmp(ext_value_p->option_name, "ctag_cfi")) {
+			cmd_data_check_uint16(ext_value_p->option_value,
+						&(rule.ctag_cfi_val), sizeof(a_uint32_t));
+			rule.ctag_cfi_mask = 1;
+			FAL_FIELD_FLG_SET(rule.field_flg,
+					FAL_ACL_FIELD_MAC_CTAG_CFI);
+		} else if(!strcmp(ext_value_p->option_name, "stag_vlan_id")) {
+			cmd_data_check_uint16(ext_value_p->option_value,
+						&(rule.stag_vid_val), sizeof(a_uint32_t));
+			FAL_FIELD_FLG_SET(rule.field_flg,
+					FAL_ACL_FIELD_MAC_STAG_VID);
+		} else if(!strcmp(ext_value_p->option_name, "stag_vlan_id_mask")) {
+			cmd_data_check_uint16(ext_value_p->option_value,
+						&(rule.stag_vid_mask), sizeof(a_uint32_t));
+		} else if(!strcmp(ext_value_p->option_name, "stag_vlan_priority")) {
+			cmd_data_check_uint16(ext_value_p->option_value,
+						&(rule.stag_pri_val), sizeof(a_uint32_t));
+			FAL_FIELD_FLG_SET(rule.field_flg,
+					FAL_ACL_FIELD_MAC_STAG_PRI);
+		} else if(!strcmp(ext_value_p->option_name, "stag_vlan_priority_mask")) {
+			cmd_data_check_uint16(ext_value_p->option_value,
+						&(rule.stag_pri_mask), sizeof(a_uint32_t));
+		} else if(!strcmp(ext_value_p->option_name, "stagged")) {
+			cmd_data_check_uint16(ext_value_p->option_value,
+						&(rule.stagged_val), sizeof(a_uint32_t));
+			rule.stagged_mask = 1;
+			FAL_FIELD_FLG_SET(rule.field_flg,
+					FAL_ACL_FIELD_MAC_STAGGED);
+		} else if(!strcmp(ext_value_p->option_name, "stag_dei")) {
+			cmd_data_check_uint16(ext_value_p->option_value,
+						&(rule.stag_dei_val), sizeof(a_uint32_t));
+			rule.stag_dei_mask = 1;
+			FAL_FIELD_FLG_SET(rule.field_flg,
+					FAL_ACL_FIELD_MAC_STAG_DEI);
 		} else if(!strcmp(ext_value_p->option_name, "tagged_mask")) {
 			cmd_data_check_uint16(ext_value_p->option_value,
 						&(rule.tagged_mask), sizeof(a_uint32_t));
-			val_ptr[14] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "ipv4_src_address")) {
 			cmd_data_check_ip4addr(ext_value_p->option_value,
 						&(rule.src_ip4_val), 4);
 			FAL_FIELD_FLG_SET(rule.field_flg,
 					FAL_ACL_FIELD_IP4_SIP);
-			val_ptr[15] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "ipv4_src_address_mask")) {
 			cmd_data_check_ip4addr(ext_value_p->option_value,
 						&(rule.src_ip4_mask), 4);
-			val_ptr[16] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "ipv4_dst_address")) {
 			cmd_data_check_ip4addr(ext_value_p->option_value,
 						&(rule.dest_ip4_val), 4);
 			FAL_FIELD_FLG_SET(rule.field_flg,
 					FAL_ACL_FIELD_IP4_DIP);
-			val_ptr[17] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "ipv4_dst_address_mask")) {
 			cmd_data_check_ip4addr(ext_value_p->option_value,
 						&(rule.dest_ip4_mask), 4);
-			val_ptr[18] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "ipv6_src_address")) {
 			cmd_data_check_ip6addr(ext_value_p->option_value,
 						&(rule.src_ip6_val), 16);
 			FAL_FIELD_FLG_SET(rule.field_flg,
 					FAL_ACL_FIELD_IP6_SIP);
-			val_ptr[15] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "ipv6_src_address_mask")) {
 			cmd_data_check_ip6addr(ext_value_p->option_value,
 						&(rule.src_ip6_mask), 16);
-			val_ptr[16] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "ipv6_dst_address")) {
 			cmd_data_check_ip6addr(ext_value_p->option_value,
 						&(rule.dest_ip6_val), 16);
 			FAL_FIELD_FLG_SET(rule.field_flg,
 					FAL_ACL_FIELD_IP4_DIP);
-			val_ptr[17] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "ipv6_dst_address_mask")) {
 			cmd_data_check_ip6addr(ext_value_p->option_value,
 						&(rule.dest_ip6_mask), 16);
-			val_ptr[18] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "ipv6_flow_label")) {
+			cmd_data_check_uint16(ext_value_p->option_value,
+						&(rule.ip6_lable_val), 16);
+			FAL_FIELD_FLG_SET(rule.field_flg,
+					FAL_ACL_FIELD_IP6_LABEL);
+		} else if(!strcmp(ext_value_p->option_name, "ipv6_flow_label_mask")) {
+			cmd_data_check_uint16(ext_value_p->option_value,
+						&(rule.ip6_lable_mask), 16);
 		} else if(!strcmp(ext_value_p->option_name, "ip_protocol")) {
 			cmd_data_check_uint16(ext_value_p->option_value,
 						&(rule.ip_proto_val), sizeof(a_uint32_t));
 			FAL_FIELD_FLG_SET(rule.field_flg,
 					FAL_ACL_FIELD_IP_PROTO);
-			val_ptr[19] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "ip_protocol_mask")) {
 			cmd_data_check_uint16(ext_value_p->option_value,
 						&(rule.ip_proto_mask), sizeof(a_uint32_t));
-			val_ptr[20] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "ip_dscp")) {
 			cmd_data_check_uint16(ext_value_p->option_value,
 						&(rule.ip_dscp_val), sizeof(a_uint32_t));
 			FAL_FIELD_FLG_SET(rule.field_flg,
 					FAL_ACL_FIELD_IP_DSCP);
-			val_ptr[21] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "ip_dscp_mask")) {
 			cmd_data_check_uint16(ext_value_p->option_value,
 						&(rule.ip_dscp_mask), sizeof(a_uint32_t));
-			val_ptr[22] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "ip_dst_port")) {
 			cmd_data_check_uint16(ext_value_p->option_value,
 						&(rule.dest_l4port_val), sizeof(a_uint32_t));
 			FAL_FIELD_FLG_SET(rule.field_flg,
 					FAL_ACL_FIELD_L4_DPORT);
 			rule.dest_l4port_op = FAL_ACL_FIELD_MASK;
-			val_ptr[23] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "ip_dst_port_mask")) {
 			cmd_data_check_uint16(ext_value_p->option_value,
 						&(rule.dest_l4port_mask), sizeof(a_uint32_t));
-			val_ptr[24] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "ip_src_port")) {
 			cmd_data_check_uint16(ext_value_p->option_value,
 						&(rule.src_l4port_val), sizeof(a_uint32_t));
 			FAL_FIELD_FLG_SET(rule.field_flg,
 					FAL_ACL_FIELD_L4_SPORT);
 			rule.src_l4port_op = FAL_ACL_FIELD_MASK;
-			val_ptr[25] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "ip_src_port_mask")) {
 			cmd_data_check_uint16(ext_value_p->option_value,
 						&(rule.src_l4port_mask), sizeof(a_uint32_t));
-			val_ptr[26] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "icmp_type")) {
+			cmd_data_check_uint16(ext_value_p->option_value,
+						&(rule.icmp_type_val), sizeof(a_uint32_t));
+			FAL_FIELD_FLG_SET(rule.field_flg,
+					FAL_ACL_FIELD_ICMP_TYPE);
+		} else if(!strcmp(ext_value_p->option_name, "icmp_type_mask")) {
+			cmd_data_check_uint16(ext_value_p->option_value,
+						&(rule.icmp_type_mask), sizeof(a_uint32_t));
+		} else if(!strcmp(ext_value_p->option_name, "icmp_code")) {
+			cmd_data_check_uint16(ext_value_p->option_value,
+						&(rule.icmp_code_val), sizeof(a_uint32_t));
+			FAL_FIELD_FLG_SET(rule.field_flg,
+					FAL_ACL_FIELD_ICMP_CODE);
+		} else if(!strcmp(ext_value_p->option_name, "icmp_code_mask")) {
+			cmd_data_check_uint16(ext_value_p->option_value,
+						&(rule.icmp_code_mask), sizeof(a_uint32_t));
+		} else if(!strcmp(ext_value_p->option_name, "tcp_flag")) {
+			cmd_data_check_uint16(ext_value_p->option_value,
+						&(rule.tcp_flag_val), sizeof(a_uint32_t));
+			FAL_FIELD_FLG_SET(rule.field_flg,
+					FAL_ACL_FIELD_TCP_FLAG);
+		} else if(!strcmp(ext_value_p->option_name, "tcp_flag_mask")) {
+			cmd_data_check_uint16(ext_value_p->option_value,
+						&(rule.tcp_flag_mask), sizeof(a_uint32_t));
+		} else if(!strcmp(ext_value_p->option_name, "ripv1")) {
+			cmd_data_check_uint16(ext_value_p->option_value,
+						&(rule.ripv1_val), sizeof(a_uint32_t));
+			rule.ripv1_mask = 1;
+			FAL_FIELD_FLG_SET(rule.field_flg,
+					FAL_ACL_FIELD_RIPV1);
+		} else if(!strcmp(ext_value_p->option_name, "dhcpv4")) {
+			cmd_data_check_uint16(ext_value_p->option_value,
+						&(rule.dhcpv4_val), sizeof(a_uint32_t));
+			rule.dhcpv4_mask = 1;
+			FAL_FIELD_FLG_SET(rule.field_flg,
+					FAL_ACL_FIELD_DHCPV4);
+		} else if(!strcmp(ext_value_p->option_name, "dhcpv6")) {
+			cmd_data_check_uint16(ext_value_p->option_value,
+						&(rule.dhcpv6_val), sizeof(a_uint32_t));
+			rule.dhcpv6_mask = 1;
+			FAL_FIELD_FLG_SET(rule.field_flg,
+					FAL_ACL_FIELD_DHCPV6);
 		} else if(!strcmp(ext_value_p->option_name, "inverse_check_fields")) {
 			if (!strcmp(ext_value_p->option_value, "y") ||
 				!strcmp(ext_value_p->option_value, "yes")) {
@@ -4817,7 +4902,6 @@ parse_acl_rule(struct switch_val *val)
 				FAL_FIELD_FLG_CLR(rule.field_flg,
 					FAL_ACL_FIELD_INVERSE_ALL);
 			}
-			val_ptr[27] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "packet_drop")) {
 			if(!strcmp(ext_value_p->option_value, "y") ||
 				!strcmp(ext_value_p->option_value, "yes")) {
@@ -4828,36 +4912,152 @@ parse_acl_rule(struct switch_val *val)
 				FAL_ACTION_FLG_CLR(rule.action_flg,
 					FAL_ACL_ACTION_DENY);
 			}
-			val_ptr[28] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "dscp_of_remark")) {
 			cmd_data_check_uint16(ext_value_p->option_value,
 						&(rule.dscp), sizeof(a_uint32_t));
 			FAL_ACTION_FLG_SET(rule.action_flg,
 					FAL_ACL_ACTION_REMARK_DSCP);
-			val_ptr[29] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "vlan_priority_of_remark")) {
 			cmd_data_check_uint16(ext_value_p->option_value,
 						&(rule.up), sizeof(a_uint32_t));
-			val_ptr[30] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "queue_of_remark")) {
 			cmd_data_check_uint16(ext_value_p->option_value,
 						&(rule.queue), sizeof(a_uint32_t));
 			FAL_ACTION_FLG_SET(rule.action_flg,
 					FAL_ACL_ACTION_REMARK_QUEUE);
-			val_ptr[31] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "port_bitmap")) {
 			cmd_data_check_pbmp(ext_value_p->option_value, &portmap, 4);
-			val_ptr[32] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "user_defined_field_value")) {
 			cmd_data_check_udf_element(ext_value_p->option_value,
 						&(rule.udf_val[0]), &(rule.udf_len));
 			FAL_FIELD_FLG_SET(rule.field_flg,
 					FAL_ACL_FIELD_UDF);
-			val_ptr[33] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "user_defined_field_mask")) {
 			cmd_data_check_udf_element(ext_value_p->option_value,
 						&(rule.udf_mask[0]), &(rule.udf_len));
-			val_ptr[34] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "redirect_to_cpu")) {
+			if(!strcmp(ext_value_p->option_value, "y") ||
+				!strcmp(ext_value_p->option_value, "yes")) {
+				FAL_ACTION_FLG_SET(rule.action_flg,
+					FAL_ACL_ACTION_RDTCPU);
+			} else if(!strcmp(ext_value_p->option_value, "n") ||
+				!strcmp(ext_value_p->option_value, "no")){
+				FAL_ACTION_FLG_CLR(rule.action_flg,
+					FAL_ACL_ACTION_RDTCPU);
+			}
+		} else if(!strcmp(ext_value_p->option_name, "copy_to_cpu")) {
+			if(!strcmp(ext_value_p->option_value, "y") ||
+				!strcmp(ext_value_p->option_value, "yes")) {
+				FAL_ACTION_FLG_SET(rule.action_flg,
+					FAL_ACL_ACTION_CPYCPU);
+			} else if(!strcmp(ext_value_p->option_value, "n") ||
+				!strcmp(ext_value_p->option_value, "no")){
+				FAL_ACTION_FLG_CLR(rule.action_flg,
+					FAL_ACL_ACTION_CPYCPU);
+			}
+		} else if(!strcmp(ext_value_p->option_name, "redirect_to_ports")) {
+			FAL_ACTION_FLG_SET(rule.action_flg,
+					FAL_ACL_ACTION_REDPT);
+			cmd_data_check_pbmp(ext_value_p->option_value, &rule.ports, 4);
+		} else if(!strcmp(ext_value_p->option_name, "mirror")) {
+			if(!strcmp(ext_value_p->option_value, "y") ||
+				!strcmp(ext_value_p->option_value, "yes")) {
+				FAL_ACTION_FLG_SET(rule.action_flg,
+					FAL_ACL_ACTION_MIRROR);
+			} else if(!strcmp(ext_value_p->option_value, "n") ||
+				!strcmp(ext_value_p->option_value, "no")){
+				FAL_ACTION_FLG_CLR(rule.action_flg,
+					FAL_ACL_ACTION_MIRROR);
+			}
+		} else if(!strcmp(ext_value_p->option_name, "remark_lookup_vid")) {
+			if(!strcmp(ext_value_p->option_value, "y") ||
+				!strcmp(ext_value_p->option_value, "yes")) {
+				FAL_ACTION_FLG_SET(rule.action_flg,
+					FAL_ACL_ACTION_REMARK_LOOKUP_VID);
+			} else if(!strcmp(ext_value_p->option_value, "n") ||
+				!strcmp(ext_value_p->option_value, "no")){
+				FAL_ACTION_FLG_CLR(rule.action_flg,
+					FAL_ACL_ACTION_REMARK_LOOKUP_VID);
+			}
+		} else if(!strcmp(ext_value_p->option_name, "stag_vid_of_remark")) {
+			FAL_ACTION_FLG_SET(rule.action_flg,
+					FAL_ACL_ACTION_REMARK_STAG_VID);
+			cmd_data_check_uint16(ext_value_p->option_value, &rule.stag_vid, 4);
+		} else if(!strcmp(ext_value_p->option_name, "stag_priority_of_remark")) {
+			FAL_ACTION_FLG_SET(rule.action_flg,
+					FAL_ACL_ACTION_REMARK_STAG_PRI);
+			cmd_data_check_uint16(ext_value_p->option_value, &rule.stag_pri, 4);
+		} else if(!strcmp(ext_value_p->option_name, "stag_dei_of_remark")) {
+			FAL_ACTION_FLG_SET(rule.action_flg,
+					FAL_ACL_ACTION_REMARK_STAG_DEI);
+			cmd_data_check_uint16(ext_value_p->option_value, &rule.stag_dei, 4);
+		} else if(!strcmp(ext_value_p->option_name, "ctag_vid_of_remark")) {
+			FAL_ACTION_FLG_SET(rule.action_flg,
+					FAL_ACL_ACTION_REMARK_CTAG_VID);
+			cmd_data_check_uint16(ext_value_p->option_value, &rule.ctag_vid, 4);
+		} else if(!strcmp(ext_value_p->option_name, "ctag_priority_of_remark")) {
+			FAL_ACTION_FLG_SET(rule.action_flg,
+					FAL_ACL_ACTION_REMARK_CTAG_PRI);
+			cmd_data_check_uint16(ext_value_p->option_value, &rule.ctag_pri, 4);
+		} else if(!strcmp(ext_value_p->option_name, "ctag_cfi_of_remark")) {
+			FAL_ACTION_FLG_SET(rule.action_flg,
+					FAL_ACL_ACTION_REMARK_CTAG_CFI);
+			cmd_data_check_uint16(ext_value_p->option_value, &rule.ctag_cfi, 4);
+		} else if(!strcmp(ext_value_p->option_name, "action_policer_id")) {
+			cmd_data_check_uint16(ext_value_p->option_value,
+						&(rule.policer_ptr), sizeof(a_uint32_t));
+			FAL_ACTION_FLG_SET(rule.action_flg,
+					FAL_ACL_ACTION_POLICER_EN);
+		} else if(!strcmp(ext_value_p->option_name, "action_arp_ptr")) {
+			cmd_data_check_uint16(ext_value_p->option_value,
+						&(rule.arp_ptr), sizeof(a_uint32_t));
+			FAL_ACTION_FLG_SET(rule.action_flg,
+					FAL_ACL_ACTION_ARP_EN);
+		} else if(!strcmp(ext_value_p->option_name, "action_wcmp_ptr")) {
+			cmd_data_check_uint16(ext_value_p->option_value,
+						&(rule.wcmp_ptr), sizeof(a_uint32_t));
+			FAL_ACTION_FLG_SET(rule.action_flg,
+					FAL_ACL_ACTION_WCMP_EN);
+		} else if(!strcmp(ext_value_p->option_name, "action_snat")) {
+			if(!strcmp(ext_value_p->option_value, "y") ||
+				!strcmp(ext_value_p->option_value, "yes")) {
+				FAL_ACTION_FLG_SET(rule.action_flg,
+					FAL_ACL_ACTION_POLICY_FORWARD_EN);
+				rule.policy_fwd |= FAL_ACL_POLICY_SNAT;
+			} else if(!strcmp(ext_value_p->option_value, "n") ||
+				!strcmp(ext_value_p->option_value, "no")){
+				rule.policy_fwd &= ~ FAL_ACL_POLICY_SNAT;
+			}
+		} else if(!strcmp(ext_value_p->option_name, "action_dnat")) {
+			if(!strcmp(ext_value_p->option_value, "y") ||
+				!strcmp(ext_value_p->option_value, "yes")) {
+				FAL_ACTION_FLG_SET(rule.action_flg,
+					FAL_ACL_ACTION_POLICY_FORWARD_EN);
+				rule.policy_fwd |= FAL_ACL_POLICY_DNAT;
+			} else if(!strcmp(ext_value_p->option_value, "n") ||
+				!strcmp(ext_value_p->option_value, "no")){
+				rule.policy_fwd &= ~ FAL_ACL_POLICY_DNAT;
+			}
+		} else if(!strcmp(ext_value_p->option_name, "bypass_egress_translation")) {
+			if(!strcmp(ext_value_p->option_value, "y") ||
+				!strcmp(ext_value_p->option_value, "yes")) {
+				FAL_ACTION_FLG_SET(rule.action_flg,
+					FAL_ACL_ACTION_BYPASS_EGRESS_TRANS);
+			} else if(!strcmp(ext_value_p->option_value, "n") ||
+				!strcmp(ext_value_p->option_value, "no")){
+				FAL_ACTION_FLG_CLR(rule.action_flg,
+					FAL_ACL_ACTION_BYPASS_EGRESS_TRANS);
+			}
+		} else if(!strcmp(ext_value_p->option_name, "interrupt_trigger")) {
+			if(!strcmp(ext_value_p->option_value, "y") ||
+				!strcmp(ext_value_p->option_value, "yes")) {
+				FAL_ACTION_FLG_SET(rule.action_flg,
+					FAL_ACL_ACTION_MATCH_TRIGGER_INTR);
+			} else if(!strcmp(ext_value_p->option_value, "n") ||
+				!strcmp(ext_value_p->option_value, "no")){
+				FAL_ACTION_FLG_CLR(rule.action_flg,
+					FAL_ACL_ACTION_MATCH_TRIGGER_INTR);
+			}
 		}
 
 		parameter_length++;
