@@ -105,7 +105,7 @@ a_bool_t dess_mac_port_valid_check(fal_port_t port_id)
 }
 
 static sw_error_t
-dess_portproperty_init(a_uint32_t dev_id, hsl_init_mode mode)
+dess_portproperty_init(a_uint32_t dev_id)
 {
     hsl_port_prop_t p_type;
     hsl_dev_t *pdev = NULL;
@@ -129,11 +129,6 @@ dess_portproperty_init(a_uint32_t dev_id, hsl_init_mode mode)
 
         for (p_type = HSL_PP_PHY; p_type < HSL_PP_BUTT; p_type++)
         {
-            if (HSL_NO_CPU == mode)
-            {
-                SW_RTN_ON_ERROR(hsl_port_prop_set(dev_id, port_id, p_type));
-                continue;
-            }
 
             switch (p_type)
             {
@@ -171,19 +166,11 @@ dess_portproperty_init(a_uint32_t dev_id, hsl_init_mode mode)
             }
         }
 
-        if (HSL_NO_CPU == mode)
-        {
-            SW_RTN_ON_ERROR(hsl_port_prop_set_phyid
-                            (dev_id, port_id, port_id + 1));
-        }
-        else
-        {
-            if (port_id != pdev->cpu_port_nr)
-            {
-                SW_RTN_ON_ERROR(hsl_port_prop_set_phyid
-                                (dev_id, port_id, port_id - 1));
-            }
-        }
+	if (port_id != pdev->cpu_port_nr)
+	{
+		SW_RTN_ON_ERROR(hsl_port_prop_set_phyid
+			(dev_id, port_id, port_id - 1));
+	}
     }
 
     return SW_OK;
@@ -199,7 +186,7 @@ dess_hw_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 #endif
 
 static sw_error_t
-dess_dev_init(a_uint32_t dev_id, hsl_init_mode cpu_mode)
+dess_dev_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 {
     a_uint32_t entry;
     sw_error_t rv;
@@ -228,6 +215,7 @@ dess_dev_init(a_uint32_t dev_id, hsl_init_mode cpu_mode)
 #endif
     if (DESS_DEVICE_ID == entry)
     {
+	#if 0
         pdev->nr_ports = 6;
         pdev->nr_phy = 5;
         pdev->cpu_port_nr = 0;
@@ -235,6 +223,30 @@ dess_dev_init(a_uint32_t dev_id, hsl_init_mode cpu_mode)
         pdev->hw_vlan_query = A_TRUE;
         pdev->nr_queue = 6;
         pdev->cpu_mode = cpu_mode;
+	#endif
+	a_uint32_t i = 0, port_nr = 0, tmp = 0;
+	tmp = cfg->port_cfg.lan_bmp | cfg->port_cfg.wan_bmp;
+	for(i = 0; i < SW_MAX_NR_PORT; i++) {
+		if(tmp & (1 << i)) {
+			port_nr++;
+		}
+	}
+	pdev->nr_phy = port_nr;
+	for(i = 0; i < SW_MAX_NR_PORT; i++) {
+		if(cfg->port_cfg.cpu_bmp & (1 << i)) {
+			port_nr++;
+			pdev->cpu_port_nr = i;
+			break;
+		}
+	}
+	if(i >= SW_MAX_NR_PORT)
+		return SW_BAD_VALUE;
+	pdev->nr_ports = port_nr;
+	pdev->nr_vlans = 4096;
+	pdev->hw_vlan_query = A_TRUE;
+	pdev->nr_queue = port_nr;
+	pdev->cpu_mode = cfg->cpu_mode;
+	pdev->wan_bmp = cfg->port_cfg.wan_bmp;
     }
 
     return SW_OK;
@@ -285,7 +297,7 @@ dess_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 
     SW_RTN_ON_ERROR(dess_reg_access_init(dev_id, cfg->reg_mode));
 
-    SW_RTN_ON_ERROR(dess_dev_init(dev_id, cfg->cpu_mode));
+    SW_RTN_ON_ERROR(dess_dev_init(dev_id, cfg));
 
 #if !(defined(KERNEL_MODULE) && defined(USER_MODE))
     {
@@ -293,7 +305,7 @@ dess_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 
         SW_RTN_ON_ERROR(hsl_port_prop_init());/*linchen port property????*/
         SW_RTN_ON_ERROR(hsl_port_prop_init_by_dev(dev_id));
-        SW_RTN_ON_ERROR(dess_portproperty_init(dev_id, cfg->cpu_mode));
+        SW_RTN_ON_ERROR(dess_portproperty_init(dev_id));
 
         DESS_MIB_INIT(rv, dev_id);
         DESS_PORT_CTRL_INIT(rv, dev_id);
