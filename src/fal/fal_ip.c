@@ -663,6 +663,69 @@ _fal_ip_rfs_ip6_rule_del(a_uint32_t dev_id, fal_ip6_rfs_t * rfs)
     return rv;
 }
 
+static sw_error_t
+_fal_default_flow_cmd_set(a_uint32_t dev_id, a_uint32_t vrf_id,
+			fal_flow_type_t type, fal_default_flow_cmd_t cmd)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->ip_default_flow_cmd_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->ip_default_flow_cmd_set(dev_id, vrf_id, type, cmd);
+    return rv;
+}
+
+sw_error_t
+_fal_default_flow_cmd_get(a_uint32_t dev_id, a_uint32_t vrf_id,
+			fal_flow_type_t type, fal_default_flow_cmd_t * cmd)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->ip_default_flow_cmd_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->ip_default_flow_cmd_get(dev_id, vrf_id, type, cmd);
+    return rv;
+}
+
+sw_error_t
+_fal_default_rt_flow_cmd_set(a_uint32_t dev_id, a_uint32_t vrf_id,
+			fal_flow_type_t type, fal_default_flow_cmd_t cmd)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->ip_default_rt_flow_cmd_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->ip_default_rt_flow_cmd_set(dev_id, vrf_id, type, cmd);
+    return rv;
+}
+
+sw_error_t
+_fal_default_rt_flow_cmd_get(a_uint32_t dev_id, a_uint32_t vrf_id,
+			fal_flow_type_t type, fal_default_flow_cmd_t * cmd)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->ip_default_rt_flow_cmd_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->ip_default_rt_flow_cmd_get(dev_id, vrf_id, type, cmd);
+    return rv;
+}
 
 /**
  * @brief Add one host entry to one particular device.
@@ -1394,6 +1457,86 @@ EXPORT_SYMBOL(ssdk_ip_rfs_ip4_rule_set);
 EXPORT_SYMBOL(ssdk_ip_rfs_ip4_rule_del);
 EXPORT_SYMBOL(ssdk_ip_rfs_ip6_rule_set);
 EXPORT_SYMBOL(ssdk_ip_rfs_ip6_rule_del);
+
+/**
+ * @brief Set default flow forward command
+ * @param[in] dev_id device id
+ * @param[in] vrf_id VRF route index, from 0~7
+ * @param[in] type traffic flow type pass through switch core
+ * @param[in] fal_default_flow_cmd_t default flow forward command when flow table mismatch
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_default_flow_cmd_set(a_uint32_t dev_id, a_uint32_t vrf_id,
+			fal_flow_type_t type, fal_default_flow_cmd_t cmd)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_default_flow_cmd_set(dev_id, vrf_id, type, cmd);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Get flow type traffic default forward command.
+ * @param[in] dev_id device id
+ * @param[in] vrf_id VRF route index, from 0~7
+ * @param[in] type traffic flow type pass through switch core
+ * @param[out] fal_default_flow_cmd_t default flow forward command when flow table mismatch
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_default_flow_cmd_get(a_uint32_t dev_id, a_uint32_t vrf_id,
+			fal_flow_type_t type, fal_default_flow_cmd_t * cmd)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_default_flow_cmd_get(dev_id, vrf_id, type, cmd);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Set default route flow forward command
+ * @param[in] dev_id device id
+ * @param[in] vrf_id VRF route index, from 0~7
+ * @param[in] type traffic flow type pass through switch core
+ * @param[in] fal_default_flow_cmd_t default route flow forward command when flow table mismatch
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_default_rt_flow_cmd_set(a_uint32_t dev_id, a_uint32_t vrf_id,
+			fal_flow_type_t type, fal_default_flow_cmd_t cmd)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_default_rt_flow_cmd_set(dev_id, vrf_id, type, cmd);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Get flow type traffic default forward command.
+ * @param[in] dev_id device id
+ * @param[in] vrf_id VRF route index, from 0~7
+ * @param[in] type traffic flow type pass through switch core
+ * @param[out] fal_default_flow_cmd_t default route flow forward command when flow table mismatch
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_default_rt_flow_cmd_get(a_uint32_t dev_id, a_uint32_t vrf_id,
+			fal_flow_type_t type, fal_default_flow_cmd_t * cmd)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_default_rt_flow_cmd_get(dev_id, vrf_id, type, cmd);
+    FAL_API_UNLOCK;
+    return rv;
+}
 
 /**
  * @}

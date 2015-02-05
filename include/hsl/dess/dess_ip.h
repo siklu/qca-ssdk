@@ -181,6 +181,18 @@ extern "C" {
     HSL_LOCAL sw_error_t
     dess_ip_host_route_get(a_uint32_t dev_id, a_uint32_t hroute_id, fal_host_route_t * entry);
 
+    HSL_LOCAL sw_error_t
+    dess_default_flow_cmd_set(a_uint32_t dev_id, a_uint32_t vrf_id, fal_flow_type_t type, fal_default_flow_cmd_t cmd);
+
+    HSL_LOCAL sw_error_t
+    dess_default_flow_cmd_get(a_uint32_t dev_id, a_uint32_t vrf_id, fal_flow_type_t type, fal_default_flow_cmd_t * cmd);
+
+    HSL_LOCAL sw_error_t
+    dess_default_rt_flow_cmd_set(a_uint32_t dev_id, a_uint32_t vrf_id, fal_flow_type_t type, fal_default_flow_cmd_t cmd);
+
+    HSL_LOCAL sw_error_t
+    dess_default_rt_flow_cmd_get(a_uint32_t dev_id, a_uint32_t vrf_id, fal_flow_type_t type, fal_default_flow_cmd_t * cmd);
+
 #endif
 
 #ifdef __cplusplus
