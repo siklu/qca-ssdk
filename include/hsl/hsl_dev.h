@@ -41,6 +41,7 @@ do { \
         a_bool_t hw_vlan_query;
         hsl_acl_func_t acl_func;
         hsl_init_mode  cpu_mode;
+	a_uint32_t wan_bmp;
     } hsl_dev_t;
 
     hsl_dev_t *hsl_dev_ptr_get(a_uint32_t dev_id);

@@ -91,6 +91,13 @@ extern "C" {
         CHIP_DESS,
     } ssdk_chip_type;
 
+	typedef struct
+	{
+		a_uint32_t cpu_bmp;
+		a_uint32_t lan_bmp;
+		a_uint32_t wan_bmp;
+	} ssdk_port_cfg;
+
     typedef struct
     {
         hsl_init_mode   cpu_mode;
@@ -107,6 +114,8 @@ extern "C" {
 
         /* chip specific parameter */
         void *          chip_spec_cfg;
+	/* port cfg */
+	ssdk_port_cfg   port_cfg;
     } ssdk_init_cfg;
 
 	typedef struct

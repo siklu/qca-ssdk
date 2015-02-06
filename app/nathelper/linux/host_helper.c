@@ -96,6 +96,9 @@ extern struct net init_net;
 char nat_lan_dev_list[IFNAMSIZ*4] = "br-lan eth0.1";
 char nat_wan_dev_list[IFNAMSIZ*4] = "eth0.2";
 
+char nat_wan_port = 0x20;
+
+
 #define NAT_LAN_DEV_VID 1
 #define NAT_WAN_DEV_VID 2
 
@@ -807,7 +810,6 @@ static sw_error_t setup_interface_entry(char *list_if, int is_wan)
                 return SW_OK;
             } else {
                 setup_lan_if = 1;
-                printk("Setup LAN interface entry!\n");
             }
         }
 #endif
@@ -845,7 +847,7 @@ static void setup_dev_list(void)
 			break;
 		tmp_vid = entry.vid;
 		if(tmp_vid != 0) {
-			if(entry.mem_ports & 0x20) {
+			if(entry.mem_ports & nat_wan_port) {
 				/*wan port*/
 				HNAT_PRINTK("wan port vid:%d\n", tmp_vid);
 				nat_wan_vid = tmp_vid;
@@ -900,7 +902,6 @@ static int setup_all_interface_entry(void)
         if (SW_OK == setup_interface_entry(nat_wan_dev_list, 1))
         {
             setup_wan_if = 1; /* setup WAN interface entry success */
-            printk("Setup WAN interface entry done!\n");
         }
     }
 #ifndef ISISC /* For S17c only */
@@ -1247,7 +1248,6 @@ arp_in(unsigned int hook,
 	if(new_skb) {
 		memset(&msg, 0, sizeof(msg));
 		msg.msg_type = NAT_HELPER_ARP_IN_MSG;
-		printk("arp in!\n");
 		msg.arp_in.skb = new_skb;
 		msg.arp_in.in = in;
 
@@ -1306,7 +1306,6 @@ arp_in_bg_handle(struct nat_helper_bg_msg *msg)
 
     if(!arp_is_reply(skb))
     {
-		printk("arp is not reply!\n");
         return 0;
     }
 #ifdef AP136_QCA_HEADER_EN
@@ -1683,7 +1682,6 @@ static unsigned int ipv6_handle(unsigned   int   hooknum,
 	new_skb = skb_clone(skb, GFP_ATOMIC);
 	if(new_skb) {
 		memset(&msg, 0, sizeof(msg));
-		printk("ipv6_handle!\n");
 		msg.msg_type = NAT_HELPER_IPV6_MSG;
 		msg.ipv6.skb = new_skb;
 		msg.ipv6.in = in;
@@ -1871,11 +1869,8 @@ static void nat_task_entry(struct work_struct *wq)
 	HNAT_PRINTK("handle msg: %d\n", msg.msg_type);
 	
 	if(msg.msg_type == NAT_HELPER_ARP_IN_MSG) {
-		printk("arp_in_bg_handle before!\n");
 		result =  arp_in_bg_handle(&msg);
-		printk("arp_in_bg_handle end!\n");
 		kfree_skb(msg.arp_in.skb);
-		printk("kfree skb end!\n");
 	} 
 	#ifdef CONFIG_IPV6_HWACCEL
 	else if(msg.msg_type == NAT_HELPER_IPV6_MSG) {
@@ -1936,6 +1931,13 @@ void nat_helper_bg_task_exit()
 
 extern int napt_procfs_init(void);
 extern void napt_procfs_exit(void);
+extern a_uint32_t hsl_dev_wan_port_get(a_uint32_t dev_id);
+
+void host_helper_wan_port_init()
+{
+	nat_wan_port = hsl_dev_wan_port_get(0);
+	printk("nat wan port is %d\n", nat_wan_port);
+}
 
 void host_helper_init(void)
 {
@@ -1997,6 +1999,7 @@ void host_helper_init(void)
 
 	REG_GET(0, 0, &nat_chip_ver, 4);
 	napt_helper_hsl_init();
+	host_helper_wan_port_init();
 }
 
 void host_helper_exit(void)
