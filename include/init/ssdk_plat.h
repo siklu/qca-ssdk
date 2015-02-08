@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2014, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2014-2015, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -83,6 +83,16 @@
 #define   AR8327_PAD_CTRL_RGMII_TXCLK_DELAY_EN	BIT(25)
 #define   AR8327_PAD_CTRL_RGMII_EN			    BIT(26)
 
+#define AR8327_PORT5_PHY_ADDR    4
+/*AR8327 inner phy debug register for RGMII mode*/
+#define AR8327_PHY_REG_MODE_SEL  0x12
+#define AR8327_PHY_RGMII_MODE    BIT(3)
+#define AR8327_PHY_REG_TEST_CTRL  0x0
+#define AR8327_PHY_RGMII_RX_DELAY    BIT(15)
+#define AR8327_PHY_REG_SYS_CTRL  0x5
+#define AR8327_PHY_RGMII_TX_DELAY    BIT(8)
+
+
 #define AR8327_REG_POS		0x10
 #define   AR8327_POS_POWER_ON_SEL	BIT(31)
 #define   AR8327_POS_LED_OPEN_EN	BIT(24)
@@ -138,6 +148,8 @@ struct qca_phy_priv {
 	void (*mii_write)(a_uint32_t reg, a_uint32_t val);
     void (*phy_dbg_write)(a_uint32_t dev_id, a_uint32_t phy_addr,
                         a_uint16_t dbg_addr, a_uint16_t dbg_data);
+	void (*phy_dbg_read)(a_uint32_t dev_id, a_uint32_t phy_addr,
+                        a_uint16_t dbg_addr, a_uint16_t *dbg_data);
     void (*phy_mmd_write)(a_uint32_t dev_id, a_uint32_t phy_addr,
                           a_uint16_t addr, a_uint16_t data);
     void (*phy_write)(a_uint32_t dev_id, a_uint32_t phy_addr,
@@ -178,4 +190,8 @@ qca_ar8327_mmd_write(a_uint32_t dev_id, a_uint32_t phy_addr,
 void
 qca_ar8327_phy_dbg_write(a_uint32_t dev_id, a_uint32_t phy_addr,
 		                          a_uint16_t dbg_addr, a_uint16_t dbg_data);
+void
+qca_ar8327_phy_dbg_read(a_uint32_t dev_id, a_uint32_t phy_addr,
+		                          a_uint16_t dbg_addr, a_uint16_t *dbg_data);
+
 #endif
