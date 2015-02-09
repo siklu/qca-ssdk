@@ -24,7 +24,6 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 
-#include "fal_rfs.h"
 
 
 static sw_error_t
@@ -1282,6 +1281,19 @@ fal_fdb_rfs_del(a_uint32_t dev_id, const fal_fdb_rfs_t * entry)
     return rv;
 }
 
+int ssdk_rfs_mac_rule_set(u16 vid, u8* mac, u8 ldb, int is_set)
+{
+	fal_fdb_rfs_t entry;
+	memcpy(&entry.addr, mac, 6);
+	entry.fid = vid;
+	entry.load_balance = ldb;
+	if(is_set)
+		return fal_fdb_rfs_set(0, &entry);
+	else
+		return fal_fdb_rfs_del(0, &entry);
+}
+
+#if 0
 int ssdk_rfs_mac_rule_set(ssdk_fdb_rfs_t *rfs)
 {
 	fal_fdb_rfs_t entry;
@@ -1303,7 +1315,7 @@ int ssdk_rfs_mac_rule_del(ssdk_fdb_rfs_t *rfs)
 
 EXPORT_SYMBOL(ssdk_rfs_mac_rule_set);
 EXPORT_SYMBOL(ssdk_rfs_mac_rule_del);
-
+#endif
 
 /**
  * @}

@@ -24,7 +24,6 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 
-#include "fal_rfs.h"
 
 static sw_error_t
 _fal_ip_host_add(a_uint32_t dev_id, fal_host_entry_t * host_entry)
@@ -1407,6 +1406,34 @@ fal_ip_rfs_ip6_rule_del(a_uint32_t dev_id, fal_ip6_rfs_t * rfs)
     return rv;
 }
 
+int ssdk_rfs_ip4_rule_set(u16 vid, u32 ip, u8* mac, u8 ldb, int is_set)
+{
+	fal_ip4_rfs_t entry;
+	memcpy(&entry.mac_addr, mac, 6);
+	entry.ip4_addr = ip;
+	entry.load_balance = ldb;
+	entry.vid = vid;
+	if(is_set)
+		return fal_ip_rfs_ip4_rule_set(0, &entry);
+	else
+		return fal_ip_rfs_ip4_rule_del(0, &entry);
+}
+
+int ssdk_rfs_ip6_rule_set(u16 vid, u8* ip, u8* mac, u8 ldb, int is_set)
+{
+	fal_ip6_rfs_t entry;
+	memcpy(&entry.mac_addr, mac, 6);
+	memcpy(&entry.ip6_addr, ip, sizeof(entry.ip6_addr));
+	entry.load_balance = ldb;
+	entry.vid = vid;
+	if(is_set)
+		return fal_ip_rfs_ip6_rule_set(0, &entry);
+	else
+		return fal_ip_rfs_ip6_rule_del(0, &entry);
+}
+
+
+#if 0
 int
 ssdk_ip_rfs_ip4_rule_set(ssdk_ip4_rfs_t * rfs)
 {
@@ -1457,7 +1484,7 @@ EXPORT_SYMBOL(ssdk_ip_rfs_ip4_rule_set);
 EXPORT_SYMBOL(ssdk_ip_rfs_ip4_rule_del);
 EXPORT_SYMBOL(ssdk_ip_rfs_ip6_rule_set);
 EXPORT_SYMBOL(ssdk_ip_rfs_ip6_rule_del);
-
+#endif
 /**
  * @brief Set default flow forward command
  * @param[in] dev_id device id
