@@ -291,7 +291,6 @@ if_mac_add(a_uint8_t *mac, a_uint8_t vid, uint32_t ipv6)
 static a_int32_t
 _arp_hw_add(fal_host_entry_t *arp_entry)
 {
-	printk("_arp_hw_add!\n");
     return IP_HOST_ADD(0, arp_entry);
 }
 
@@ -412,7 +411,6 @@ arp_hw_add(a_uint32_t port, a_uint32_t intf_id, a_uint8_t *ip, a_uint8_t *mac, i
 {
     fal_host_entry_t arp_entry;
 
-	printk("arp_hw_add enter!\n");
 
 #ifdef ISIS /* Only for AR8337(S17) */
     if (NF_S17_WAN_TYPE_PPPOEV6 == nf_athrs17_hnat_wan_type)
