@@ -4015,6 +4015,60 @@ extern "C" {
 
 
 
+#define FlOW_CMD_CTL
+#define FlOW_CMD_CTL_OFFSET                       0x0ea0
+#define FlOW_CMD_CTL_E_LENGTH                     4
+#define FlOW_CMD_CTL_E_OFFSET                     0x0
+#define FlOW_CMD_CTL_NR_E                         8
+
+#define LAN_2_LAN_DEFAULT
+#define FlOW_CMD_CTL_LAN_2_LAN_DEFAULT_BOFFSET        26
+#define FlOW_CMD_CTL_LAN_2_LAN_DEFAULT_BLEN           2
+#define FlOW_CMD_CTL_LAN_2_LAN_DEFAULT_FLAG           HSL_RW
+
+#define WAN_2_LAN_DEFAULT
+#define FlOW_CMD_CTL_WAN_2_LAN_DEFAULT_BOFFSET        24
+#define FlOW_CMD_CTL_WAN_2_LAN_DEFAULT_BLEN           2
+#define FlOW_CMD_CTL_WAN_2_LAN_DEFAULT_FLAG           HSL_RW
+
+#define LAN_2_WAN_DEFAULT
+#define FlOW_CMD_CTL_LAN_2_WAN_DEFAULT_BOFFSET            22
+#define FlOW_CMD_CTL_LAN_2_WAN_DEFAULT_BLEN               2
+#define FlOW_CMD_CTL_LAN_2_WAN_DEFAULT_FLAG               HSL_RW
+
+#define WAN_2_WAN_DEFAULT
+#define FlOW_CMD_CTL_WAN_2_WAN_DEFAULT_BOFFSET               20
+#define FlOW_CMD_CTL_WAN_2_WAN_DEFAULT_BLEN                  2
+#define FlOW_CMD_CTL_WAN_2_WAN_DEFAULT_FLAG                  HSL_RW
+
+
+#define FlOW_RT_CMD_CTL
+#define FlOW_RT_CMD_CTL_OFFSET                       0x0ec0
+#define FlOW_RT_CMD_CTL_E_LENGTH                     4
+#define FlOW_RT_CMD_CTL_E_OFFSET                     0x0
+#define FlOW_RT_CMD_CTL_NR_E                         8
+
+#define LAN_2_LAN_DEFAULT
+#define FlOW_RT_CMD_CTL_LAN_2_LAN_DEFAULT_BOFFSET        26
+#define FlOW_RT_CMD_CTL_LAN_2_LAN_DEFAULT_BLEN           2
+#define FlOW_RT_CMD_CTL_LAN_2_LAN_DEFAULT_FLAG           HSL_RW
+
+#define WAN_2_LAN_DEFAULT
+#define FlOW_RT_CMD_CTL_WAN_2_LAN_DEFAULT_BOFFSET        24
+#define FlOW_RT_CMD_CTL_WAN_2_LAN_DEFAULT_BLEN           2
+#define FlOW_RT_CMD_CTL_WAN_2_LAN_DEFAULT_FLAG           HSL_RW
+
+#define LAN_2_WAN_DEFAULT
+#define FlOW_RT_CMD_CTL_LAN_2_WAN_DEFAULT_BOFFSET            22
+#define FlOW_RT_CMD_CTL_LAN_2_WAN_DEFAULT_BLEN               2
+#define FlOW_RT_CMD_CTL_LAN_2_WAN_DEFAULT_FLAG               HSL_RW
+
+#define WAN_2_WAN_DEFAULT
+#define FlOW_RT_CMD_CTL_WAN_2_WAN_DEFAULT_BOFFSET               20
+#define FlOW_RT_CMD_CTL_WAN_2_WAN_DEFAULT_BLEN                  2
+#define FlOW_RT_CMD_CTL_WAN_2_WAN_DEFAULT_FLAG                  HSL_RW
+
+
 
 #define PRV_BASEADDR
 #define PRV_BASEADDR_OFFSET                       0x0e5c

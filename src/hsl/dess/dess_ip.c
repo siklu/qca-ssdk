@@ -2427,6 +2427,7 @@ _dess_ip_host_route_get(a_uint32_t dev_id, a_uint32_t hroute_id, fal_host_route_
 
     return SW_OK;
 }
+
 #define RFS_ADD_OP  1
 #define RFS_DEL_OP  2
 static sw_error_t
@@ -2545,7 +2546,239 @@ _dess_ip_rfs_ip6_del(a_uint32_t dev_id, fal_ip6_rfs_t * rfs)
 	return ret;
 }
 
+static sw_error_t
+_dess_default_flow_cmd_set(a_uint32_t dev_id, a_uint32_t vrf_id, fal_flow_type_t type, fal_default_flow_cmd_t cmd)
+{
+    sw_error_t rv;
+    a_uint32_t data;
 
+    HSL_DEV_ID_CHECK(dev_id);
+
+    rv = _dess_ip_feature_check(dev_id);
+    SW_RTN_ON_ERROR(rv);
+
+    if (FAL_DEFAULT_FLOW_FORWARD == cmd)
+    {
+        data = 0;
+    }
+    else if (FAL_DEFAULT_FLOW_DROP == cmd)
+    {
+        data = 1;
+    }
+    else if (FAL_DEFAULT_FLOW_RDT_TO_CPU == cmd)
+    {
+        data = 2;
+    }
+    else if (FAL_DEFAULT_FLOW_ADMIT_ALL == cmd)
+    {
+        data = 3;
+    }
+    else
+    {
+        return SW_NOT_SUPPORTED;
+    }
+
+    if (FAL_FLOW_LAN_TO_LAN == type)
+    {
+        HSL_REG_FIELD_SET(rv, dev_id, FlOW_CMD_CTL, vrf_id, LAN_2_LAN_DEFAULT,
+                      (a_uint8_t *) (&data), sizeof (a_uint32_t));
+    }
+    else if (FAL_FLOW_WAN_TO_LAN == type)
+    {
+        HSL_REG_FIELD_SET(rv, dev_id, FlOW_CMD_CTL, vrf_id, WAN_2_LAN_DEFAULT,
+                      (a_uint8_t *) (&data), sizeof (a_uint32_t));
+    }
+    else if (FAL_FLOW_LAN_TO_WAN == type)
+    {
+        HSL_REG_FIELD_SET(rv, dev_id, FlOW_CMD_CTL, vrf_id, LAN_2_WAN_DEFAULT,
+                      (a_uint8_t *) (&data), sizeof (a_uint32_t));
+    }
+    else if (FAL_FLOW_WAN_TO_WAN == type)
+    {
+        HSL_REG_FIELD_SET(rv, dev_id, FlOW_CMD_CTL, vrf_id, WAN_2_WAN_DEFAULT,
+                      (a_uint8_t *) (&data), sizeof (a_uint32_t));
+    }
+    else
+    {
+        return SW_NOT_SUPPORTED;
+    }
+
+    return rv;
+}
+
+static sw_error_t
+_dess_default_flow_cmd_get(a_uint32_t dev_id, a_uint32_t vrf_id, fal_flow_type_t type, fal_default_flow_cmd_t * cmd)
+{
+    sw_error_t rv;
+    a_uint32_t data;
+
+    HSL_DEV_ID_CHECK(dev_id);
+
+    rv = _dess_ip_feature_check(dev_id);
+    SW_RTN_ON_ERROR(rv);
+
+    if (FAL_FLOW_LAN_TO_LAN == type)
+    {
+        HSL_REG_FIELD_GET(rv, dev_id, FlOW_CMD_CTL, vrf_id, LAN_2_LAN_DEFAULT,
+                      (a_uint8_t *) (&data), sizeof (a_uint32_t));
+    }
+    else if (FAL_FLOW_WAN_TO_LAN == type)
+    {
+        HSL_REG_FIELD_GET(rv, dev_id, FlOW_CMD_CTL, vrf_id, WAN_2_LAN_DEFAULT,
+                      (a_uint8_t *) (&data), sizeof (a_uint32_t));
+    }
+    else if (FAL_FLOW_LAN_TO_WAN == type)
+    {
+        HSL_REG_FIELD_GET(rv, dev_id, FlOW_CMD_CTL, vrf_id, LAN_2_WAN_DEFAULT,
+                      (a_uint8_t *) (&data), sizeof (a_uint32_t));
+    }
+    else if (FAL_FLOW_WAN_TO_WAN == type)
+    {
+        HSL_REG_FIELD_GET(rv, dev_id, FlOW_CMD_CTL, vrf_id, WAN_2_WAN_DEFAULT,
+                      (a_uint8_t *) (&data), sizeof (a_uint32_t));
+    }
+    else
+    {
+        return SW_NOT_SUPPORTED;
+    }
+    SW_RTN_ON_ERROR(rv);
+
+    if (0 == data)
+    {
+        *cmd = FAL_DEFAULT_FLOW_FORWARD;
+    }
+    else if (1 == data)
+    {
+        *cmd = FAL_DEFAULT_FLOW_DROP;
+    }
+    else if (2 == data)
+    {
+        *cmd = FAL_DEFAULT_FLOW_RDT_TO_CPU;
+    }
+    else if (3 == data)
+    {
+        *cmd = FAL_DEFAULT_FLOW_ADMIT_ALL;
+    }
+
+    return SW_OK;
+}
+
+static sw_error_t
+_dess_default_rt_flow_cmd_set(a_uint32_t dev_id, a_uint32_t vrf_id, fal_flow_type_t type, fal_default_flow_cmd_t cmd)
+{
+    sw_error_t rv;
+    a_uint32_t data;
+
+    HSL_DEV_ID_CHECK(dev_id);
+
+    rv = _dess_ip_feature_check(dev_id);
+    SW_RTN_ON_ERROR(rv);
+
+    if (FAL_DEFAULT_FLOW_FORWARD == cmd)
+    {
+        data = 0;
+    }
+    else if (FAL_DEFAULT_FLOW_DROP == cmd)
+    {
+        data = 1;
+    }
+    else if (FAL_DEFAULT_FLOW_RDT_TO_CPU == cmd)
+    {
+        data = 2;
+    }
+    else if (FAL_DEFAULT_FLOW_ADMIT_ALL == cmd)
+    {
+        data = 3;
+    }
+    else
+    {
+        return SW_NOT_SUPPORTED;
+    }
+
+    if (FAL_FLOW_LAN_TO_LAN == type)
+    {
+        HSL_REG_FIELD_SET(rv, dev_id, FlOW_RT_CMD_CTL, vrf_id, LAN_2_LAN_DEFAULT,
+                      (a_uint8_t *) (&data), sizeof (a_uint32_t));
+    }
+    else if (FAL_FLOW_WAN_TO_LAN == type)
+    {
+        HSL_REG_FIELD_SET(rv, dev_id, FlOW_RT_CMD_CTL, vrf_id, WAN_2_LAN_DEFAULT,
+                      (a_uint8_t *) (&data), sizeof (a_uint32_t));
+    }
+    else if (FAL_FLOW_LAN_TO_WAN == type)
+    {
+        HSL_REG_FIELD_SET(rv, dev_id, FlOW_RT_CMD_CTL, vrf_id, LAN_2_WAN_DEFAULT,
+                      (a_uint8_t *) (&data), sizeof (a_uint32_t));
+    }
+    else if (FAL_FLOW_WAN_TO_WAN == type)
+    {
+        HSL_REG_FIELD_SET(rv, dev_id, FlOW_RT_CMD_CTL, vrf_id, WAN_2_WAN_DEFAULT,
+                      (a_uint8_t *) (&data), sizeof (a_uint32_t));
+    }
+    else
+    {
+        return SW_NOT_SUPPORTED;
+    }
+
+    return rv;
+}
+
+static sw_error_t
+_dess_default_rt_flow_cmd_get(a_uint32_t dev_id, a_uint32_t vrf_id, fal_flow_type_t type, fal_default_flow_cmd_t * cmd)
+{
+    sw_error_t rv;
+    a_uint32_t data;
+
+    HSL_DEV_ID_CHECK(dev_id);
+
+    rv = _dess_ip_feature_check(dev_id);
+    SW_RTN_ON_ERROR(rv);
+
+    if (FAL_FLOW_LAN_TO_LAN == type)
+    {
+        HSL_REG_FIELD_GET(rv, dev_id, FlOW_RT_CMD_CTL, vrf_id, LAN_2_LAN_DEFAULT,
+                      (a_uint8_t *) (&data), sizeof (a_uint32_t));
+    }
+    else if (FAL_FLOW_WAN_TO_LAN == type)
+    {
+        HSL_REG_FIELD_GET(rv, dev_id, FlOW_RT_CMD_CTL, vrf_id, WAN_2_LAN_DEFAULT,
+                      (a_uint8_t *) (&data), sizeof (a_uint32_t));
+    }
+    else if (FAL_FLOW_LAN_TO_WAN == type)
+    {
+        HSL_REG_FIELD_GET(rv, dev_id, FlOW_RT_CMD_CTL, vrf_id, LAN_2_WAN_DEFAULT,
+                      (a_uint8_t *) (&data), sizeof (a_uint32_t));
+    }
+    else if (FAL_FLOW_WAN_TO_WAN == type)
+    {
+        HSL_REG_FIELD_GET(rv, dev_id, FlOW_RT_CMD_CTL, vrf_id, WAN_2_WAN_DEFAULT,
+                      (a_uint8_t *) (&data), sizeof (a_uint32_t));
+    }
+    else
+    {
+        return SW_NOT_SUPPORTED;
+    }
+    SW_RTN_ON_ERROR(rv);
+
+    if (0 == data)
+    {
+        *cmd = FAL_DEFAULT_FLOW_FORWARD;
+    }
+    else if (1 == data)
+    {
+        *cmd = FAL_DEFAULT_FLOW_DROP;
+    }
+    else if (2 == data)
+    {
+        *cmd = FAL_DEFAULT_FLOW_RDT_TO_CPU;
+    }
+    else if (3 == data)
+    {
+        *cmd = FAL_DEFAULT_FLOW_ADMIT_ALL;
+    }
+
+    return SW_OK;
+}
 
 sw_error_t
 dess_ip_reset(a_uint32_t dev_id)
@@ -3346,6 +3579,81 @@ dess_ip_rfs_ip6_del(a_uint32_t dev_id, fal_ip6_rfs_t * rfs)
     return rv;
 }
 
+/**
+ * @brief Set flow type traffic default forward command.
+ * @param[in] dev_id device id
+ * @param[in] vrf_id VRF route index, from 0~7
+ * @param[in] type traffic flow type pass through switch core
+ * @param[in] fal_default_flow_cmd_mode_t default flow forward command when flow table mismatch
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_default_flow_cmd_set(a_uint32_t dev_id, a_uint32_t vrf_id, fal_flow_type_t type, fal_default_flow_cmd_t cmd)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _dess_default_flow_cmd_set(dev_id, vrf_id, type, cmd);
+    HSL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Get flow type traffic default forward command.
+ * @param[in] dev_id device id
+ * @param[in] vrf_id VRF route index, from 0~7
+ * @param[in] type traffic flow type pass through switch core
+ * @param[out] fal_default_flow_cmd_mode_t default flow forward command when flow table mismatch
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_default_flow_cmd_get(a_uint32_t dev_id, a_uint32_t vrf_id, fal_flow_type_t type, fal_default_flow_cmd_t * cmd)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _dess_default_flow_cmd_get(dev_id, vrf_id, type, cmd);
+    HSL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Set flow&route type traffic default forward command.
+ * @param[in] dev_id device id
+ * @param[in] vrf_id VRF route index, from 0~7
+ * @param[in] type traffic flow type pass through switch core
+ * @param[in] fal_default_flow_cmd_mode_t default flow&route forward command when route mac match but flow table mismatch
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_default_rt_flow_cmd_set(a_uint32_t dev_id, a_uint32_t vrf_id, fal_flow_type_t type, fal_default_flow_cmd_t cmd)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _dess_default_rt_flow_cmd_set(dev_id, vrf_id, type, cmd);
+    HSL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Get flow&route type traffic default forward command.
+ * @param[in] dev_id device id
+ * @param[in] vrf_id VRF route index, from 0~7
+ * @param[in] type traffic flow type pass through switch core
+ * @param[in] fal_default_flow_cmd_mode_t default flow&route forward command when route mac match but flow table mismatch
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_default_rt_flow_cmd_get(a_uint32_t dev_id, a_uint32_t vrf_id, fal_flow_type_t type, fal_default_flow_cmd_t * cmd)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _dess_default_rt_flow_cmd_get(dev_id, vrf_id, type, cmd);
+    HSL_API_UNLOCK;
+    return rv;
+}
 
 sw_error_t
 dess_ip_init(a_uint32_t dev_id)
@@ -3407,6 +3715,10 @@ dess_ip_init(a_uint32_t dev_id)
 		p_api->ip_rfs_ip6_set = dess_ip_rfs_ip6_set;
 		p_api->ip_rfs_ip4_del = dess_ip_rfs_ip4_del;
 		p_api->ip_rfs_ip6_del = dess_ip_rfs_ip6_del;
+        p_api->ip_default_flow_cmd_set = dess_default_flow_cmd_set;
+        p_api->ip_default_flow_cmd_get = dess_default_flow_cmd_get;
+        p_api->ip_default_rt_flow_cmd_set = dess_default_rt_flow_cmd_set;
+        p_api->ip_default_rt_flow_cmd_get = dess_default_rt_flow_cmd_get;
     }
 #endif
 

@@ -80,6 +80,22 @@ extern "C" {
 
     typedef enum
     {
+        FAL_DEFAULT_FLOW_FORWARD = 0,
+        FAL_DEFAULT_FLOW_DROP,
+        FAL_DEFAULT_FLOW_RDT_TO_CPU,
+        FAL_DEFAULT_FLOW_ADMIT_ALL,
+    } fal_default_flow_cmd_t;
+
+    typedef enum
+    {
+        FAL_FLOW_LAN_TO_LAN = 0,
+        FAL_FLOW_WAN_TO_LAN,
+        FAL_FLOW_LAN_TO_WAN,
+        FAL_FLOW_WAN_TO_WAN,
+    } fal_flow_type_t;
+
+    typedef enum
+    {
         FAL_ARP_LEARN_LOCAL = 0,
         FAL_ARP_LEARN_ALL,
     } fal_arp_learn_mode_t;
@@ -284,6 +300,22 @@ extern "C" {
 
 	sw_error_t
 	fal_ip_rfs_ip6_rule_del(a_uint32_t dev_id, fal_ip6_rfs_t * rfs);
+
+    sw_error_t
+    fal_default_flow_cmd_set(a_uint32_t dev_id, a_uint32_t vrf_id,
+			fal_flow_type_t type, fal_default_flow_cmd_t cmd);
+
+    sw_error_t
+    fal_default_flow_cmd_get(a_uint32_t dev_id, a_uint32_t vrf_id,
+			fal_flow_type_t type, fal_default_flow_cmd_t * cmd);
+
+    sw_error_t
+    fal_default_rt_flow_cmd_set(a_uint32_t dev_id, a_uint32_t vrf_id,
+			fal_flow_type_t type, fal_default_flow_cmd_t cmd);
+
+    sw_error_t
+    fal_default_rt_flow_cmd_get(a_uint32_t dev_id, a_uint32_t vrf_id,
+			fal_flow_type_t type, fal_default_flow_cmd_t * cmd);
 
 #ifdef __cplusplus
 }

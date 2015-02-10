@@ -861,7 +861,11 @@ extern "C" {
     SW_API_DEF(SW_API_IP_AGE_TIME_SET, dess_ip_age_time_set), \
     SW_API_DEF(SW_API_IP_AGE_TIME_GET, dess_ip_age_time_get), \
     SW_API_DEF(SW_API_WCMP_HASH_MODE_SET, dess_ip_wcmp_hash_mode_set), \
-    SW_API_DEF(SW_API_WCMP_HASH_MODE_GET, dess_ip_wcmp_hash_mode_get),
+    SW_API_DEF(SW_API_WCMP_HASH_MODE_GET, dess_ip_wcmp_hash_mode_get), \
+    SW_API_DEF(SW_API_IP_DEFAULT_FLOW_CMD_SET, dess_default_flow_cmd_set), \
+    SW_API_DEF(SW_API_IP_DEFAULT_FLOW_CMD_GET, dess_default_flow_cmd_get), \
+    SW_API_DEF(SW_API_IP_DEFAULT_RT_FLOW_CMD_SET, dess_default_rt_flow_cmd_set), \
+    SW_API_DEF(SW_API_IP_DEFAULT_RT_FLOW_CMD_GET, dess_default_rt_flow_cmd_get),
 
 #define IP_API_PARAM \
     SW_API_DESC(SW_API_IP_HOST_ADD) \
@@ -890,7 +894,11 @@ extern "C" {
     SW_API_DESC(SW_API_IP_AGE_TIME_SET) \
     SW_API_DESC(SW_API_IP_AGE_TIME_GET) \
     SW_API_DESC(SW_API_WCMP_HASH_MODE_SET) \
-    SW_API_DESC(SW_API_WCMP_HASH_MODE_GET)
+    SW_API_DESC(SW_API_WCMP_HASH_MODE_GET) \
+    SW_API_DESC(SW_API_IP_DEFAULT_FLOW_CMD_SET) \
+    SW_API_DESC(SW_API_IP_DEFAULT_FLOW_CMD_GET) \
+    SW_API_DESC(SW_API_IP_DEFAULT_RT_FLOW_CMD_SET) \
+    SW_API_DESC(SW_API_IP_DEFAULT_RT_FLOW_CMD_GET)
 
 #else
 #define IP_API

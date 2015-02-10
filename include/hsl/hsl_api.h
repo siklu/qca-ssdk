@@ -1497,6 +1497,7 @@ extern "C" {
 	typedef sw_error_t
     (*hsl_ip_wcmp_entry_get)(a_uint32_t dev_id,
 					a_uint32_t wcmp_id, fal_ip_wcmp_t * wcmp);
+
 	typedef sw_error_t
     (*hsl_ip_rfs_ip4_set)(a_uint32_t dev_id,
 					fal_ip4_rfs_t * rfs);
@@ -1511,6 +1512,22 @@ extern "C" {
 	typedef sw_error_t
     (*hsl_ip_rfs_ip6_del)(a_uint32_t dev_id,
 					fal_ip6_rfs_t * rfs);
+
+    typedef sw_error_t
+    (*hsl_default_flow_cmd_set)(a_uint32_t dev_id,
+					a_uint32_t vrf_id, fal_flow_type_t type, fal_default_flow_cmd_t cmd);
+
+    typedef sw_error_t
+    (*hsl_default_flow_cmd_get)(a_uint32_t dev_id,
+					a_uint32_t vrf_id, fal_flow_type_t type, fal_default_flow_cmd_t * cmd);
+
+    typedef sw_error_t
+    (*hsl_default_rt_flow_cmd_set)(a_uint32_t dev_id,
+					a_uint32_t vrf_id, fal_flow_type_t type, fal_default_flow_cmd_t cmd);
+
+    typedef sw_error_t
+    (*hsl_default_rt_flow_cmd_get)(a_uint32_t dev_id,
+					a_uint32_t vrf_id, fal_flow_type_t type, fal_default_flow_cmd_t * cmd);
 
     /* NAT */
 #define NAT_FUNC_PROTOTYPE_DEF
@@ -2164,6 +2181,10 @@ extern "C" {
 		hsl_ip_rfs_ip6_set ip_rfs_ip6_set;
 		hsl_ip_rfs_ip4_del ip_rfs_ip4_del;
 		hsl_ip_rfs_ip6_del ip_rfs_ip6_del;
+        hsl_default_flow_cmd_set ip_default_flow_cmd_set;
+        hsl_default_flow_cmd_get ip_default_flow_cmd_get;
+        hsl_default_rt_flow_cmd_set ip_default_rt_flow_cmd_set;
+        hsl_default_rt_flow_cmd_get ip_default_rt_flow_cmd_get;
 
         /* NAT */
         hsl_nat_add nat_add;

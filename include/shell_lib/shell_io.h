@@ -74,6 +74,10 @@ sw_error_t cmd_data_check_uinta(char *cmdstr, a_uint32_t * val,
                                 a_uint32_t size);
 sw_error_t cmd_data_check_maccmd(char *cmdstr, fal_fwd_cmd_t * val,
                                  a_uint32_t size);
+sw_error_t cmd_data_check_flowcmd(char *cmdstr, fal_default_flow_cmd_t * val,
+                                 a_uint32_t size);
+sw_error_t cmd_data_check_flowtype(char *cmdstr, fal_flow_type_t * val,
+                                 a_uint32_t size);
 sw_error_t cmd_data_check_ledpattern(char *info, void * val, a_uint32_t size);
 
 
