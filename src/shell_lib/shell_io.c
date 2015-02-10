@@ -117,6 +117,8 @@ static sw_data_type_t sw_data_type[] =
     SW_TYPE_DEF(SW_STP, cmd_data_check_stp_state, NULL),
     SW_TYPE_DEF(SW_LEAKY, cmd_data_check_leaky, NULL),
     SW_TYPE_DEF(SW_MACCMD, cmd_data_check_maccmd, NULL),
+    SW_TYPE_DEF(SW_FLOWCMD, cmd_data_check_flowcmd, NULL),
+    SW_TYPE_DEF(SW_FLOWTYPE, cmd_data_check_flowtype, NULL),
     SW_TYPE_DEF(SW_UINT_A, cmd_data_check_uinta, NULL),
     SW_TYPE_DEF(SW_ACLRULE, NULL, NULL),
     SW_TYPE_DEF(SW_LEDPATTERN, cmd_data_check_ledpattern, NULL),
@@ -784,6 +786,75 @@ cmd_data_check_maccmd(char *cmdstr, fal_fwd_cmd_t * val, a_uint32_t size)
     return SW_OK;
 }
 
+/*flow*/
+sw_error_t
+cmd_data_check_flowcmd(char *cmdstr, fal_default_flow_cmd_t * val, a_uint32_t size)
+{
+    if (NULL == cmdstr)
+    {
+        return SW_BAD_VALUE;
+    }
+
+    if (0 == cmdstr[0])
+    {
+        *val = FAL_DEFAULT_FLOW_FORWARD;   //default
+    }
+    else if (!strcasecmp(cmdstr, "forward"))
+    {
+        *val = FAL_DEFAULT_FLOW_FORWARD;
+    }
+    else if (!strcasecmp(cmdstr, "drop"))
+    {
+        *val = FAL_DEFAULT_FLOW_DROP;
+    }
+    else if (!strcasecmp(cmdstr, "rdtcpu"))
+    {
+        *val = FAL_DEFAULT_FLOW_RDT_TO_CPU;
+    }
+    else if (!strcasecmp(cmdstr, "admit_all"))
+    {
+        *val = FAL_DEFAULT_FLOW_ADMIT_ALL;
+    }
+    else
+    {
+        return SW_BAD_VALUE;
+    }
+
+    return SW_OK;
+}
+
+sw_error_t
+cmd_data_check_flowtype(char *cmd_str, fal_flow_type_t * arg_val,
+                        a_uint32_t size)
+{
+    if (NULL == cmd_str)
+    {
+        return SW_BAD_VALUE;
+    }
+
+    if (!strcasecmp(cmd_str, "lan2lan"))
+    {
+        *arg_val = FAL_FLOW_LAN_TO_LAN;
+    }
+    else if (!strcasecmp(cmd_str, "wan2lan"))
+    {
+        *arg_val = FAL_FLOW_WAN_TO_LAN;
+    }
+    else if (!strcasecmp(cmd_str, "lan2wan"))
+    {
+        *arg_val = FAL_FLOW_LAN_TO_WAN;
+    }
+    else if (!strcasecmp(cmd_str, "wan2wan"))
+    {
+        *arg_val = FAL_FLOW_WAN_TO_WAN;
+    }
+    else
+    {
+        return SW_BAD_VALUE;
+    }
+
+    return SW_OK;
+}
 
 sw_error_t
 cmd_data_check_confirm(char *cmdstr, a_bool_t def, a_bool_t * val,

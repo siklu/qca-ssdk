@@ -3920,6 +3920,66 @@ parse_ip_wcmphashmode(struct switch_val *val)
 }
 
 static int
+parse_ip_defaultflowcmd(struct switch_val *val)
+{
+	struct switch_ext *switch_ext_p, *switch_ext_tmp, *ext_value_p;
+	int rv = 0;
+	switch_ext_p = val->value.ext_val;
+	while(switch_ext_p) {
+		ext_value_p = switch_ext_p;
+
+		if(!strcmp(ext_value_p->option_name, "name")) {
+			switch_ext_p = switch_ext_p->next;
+			continue;
+		} else if(!strcmp(ext_value_p->option_name, "vrf_id")) {
+			val_ptr[0] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "flow_type")) {
+			val_ptr[1] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "flow_cmd")) {
+			val_ptr[2] = ext_value_p->option_value;
+		}  else {
+			rv = -1;
+			break;
+		}
+
+		parameter_length++;
+		switch_ext_p = switch_ext_p->next;
+	}
+
+	return rv;
+}
+
+static int
+parse_ip_defaultrtflowcmd(struct switch_val *val)
+{
+	struct switch_ext *switch_ext_p, *switch_ext_tmp, *ext_value_p;
+	int rv = 0;
+	switch_ext_p = val->value.ext_val;
+	while(switch_ext_p) {
+		ext_value_p = switch_ext_p;
+
+		if(!strcmp(ext_value_p->option_name, "name")) {
+			switch_ext_p = switch_ext_p->next;
+			continue;
+		} else if(!strcmp(ext_value_p->option_name, "vrf_id")) {
+			val_ptr[0] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "flow_type")) {
+			val_ptr[1] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "flow_cmd")) {
+			val_ptr[2] = ext_value_p->option_value;
+		}  else {
+			rv = -1;
+			break;
+		}
+
+		parameter_length++;
+		switch_ext_p = switch_ext_p->next;
+	}
+
+	return rv;
+}
+
+static int
 parse_nat_natentry(struct switch_val *val)
 {
 	struct switch_ext *switch_ext_p, *switch_ext_tmp, *ext_value_p;
@@ -5468,6 +5528,10 @@ parse_ip(const char *command_name, struct switch_val *val)
 		rv = parse_ip_agetime(val);
 	} else if(!strcmp(command_name, "Wcmphashmode")) {
 		rv = parse_ip_wcmphashmode(val);
+	} else if(!strcmp(command_name, "Defaultflowcmd")) {
+		rv = parse_ip_defaultflowcmd(val);
+	} else if(!strcmp(command_name, "Defaultrtflowcmd")) {
+		rv = parse_ip_defaultrtflowcmd(val);
 	} 
 
 	return rv;

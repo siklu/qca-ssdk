@@ -459,6 +459,8 @@ struct cmd_des_t gcmd_des[] =
             {"arpunksrc", "set", "set arp unkown source command", "<forward|drop|cpycpu|rdtcpu>", SW_API_ARP_UNK_SOURCE_CMD_SET, NULL},
             {"ipagetime", "set", "set dynamic ip entry age time", "<time>", SW_API_IP_AGE_TIME_SET, NULL},
             {"wcmphashmode", "set", "set wcmp hash mode", "<hashmode>", SW_API_WCMP_HASH_MODE_SET, NULL},
+            {"defaultflowcmd", "set", "set default flow command", "<vrf id> <lan2lan|wan2lan|lan2wan|wan2wan> <forward|drop|rdtcpu|admit_all>", SW_API_IP_DEFAULT_FLOW_CMD_SET, NULL},
+            {"defaultrtflowcmd", "set", "set default route flow command", "<vrf id> <lan2lan|wan2lan|lan2wan|wan2wan> <forward|drop|rdtcpu|admit_all>", SW_API_IP_DEFAULT_RT_FLOW_CMD_SET, NULL},
             {NULL, NULL, NULL, NULL, (int)NULL, NULL}/*end of desc*/
         },
     },
