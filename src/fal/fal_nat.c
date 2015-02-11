@@ -25,6 +25,7 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 
+extern int nf_athrs17_hnat_sync_counter_en;
 
 static sw_error_t
 _fal_nat_add(a_uint32_t dev_id, fal_nat_entry_t * nat_entry)
@@ -1230,11 +1231,12 @@ fal_nat_unk_session_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd)
  * @param[in] enable A_TRUE or A_FALSE
  * @return SW_OK or error code
  */
-fal_nat_global_set(a_uint32_t dev_id, a_bool_t enable)
+fal_nat_global_set(a_uint32_t dev_id, a_bool_t enable, a_bool_t sync_cnt_enable)
 {
     sw_error_t rv;
-    
+
     FAL_API_LOCK;
+	nf_athrs17_hnat_sync_counter_en = (int)sync_cnt_enable;
     rv = _fal_nat_global_set(dev_id, enable);
     FAL_API_UNLOCK;
     return rv;

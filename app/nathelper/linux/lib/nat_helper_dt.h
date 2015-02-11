@@ -17,5 +17,6 @@
 #define _NAT_HELPER_DT_H
 
 extern void host_check_aging(void);
+void napt_ct_counter_decrease(void);
 
 #endif /*_NAT_HELPER_DT_H*/

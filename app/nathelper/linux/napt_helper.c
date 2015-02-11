@@ -47,6 +47,9 @@ extern unsigned int nf_conntrack_htable_size;
 void
 napt_ct_aging_disable(uint32_t ct_addr)
 {
+	if(nf_athrs17_hnat_sync_counter_en)
+		return;
+
     if(!ct_addr)
     {
         return;
@@ -68,6 +71,9 @@ napt_ct_aging_is_enable(uint32_t ct_addr)
         return 0;
     }
 
+	if(nf_athrs17_hnat_sync_counter_en)
+		return 0;
+
     struct nf_conn *ct = (struct nf_conn *)ct_addr;
 
     return timer_pending(&(((struct nf_conn *)ct)->timeout));
@@ -76,6 +82,9 @@ napt_ct_aging_is_enable(uint32_t ct_addr)
 void
 napt_ct_aging_enable(uint32_t ct_addr)
 {
+	if(nf_athrs17_hnat_sync_counter_en)
+		return;
+
     if(!ct_addr)
     {
         return;
