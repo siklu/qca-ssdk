@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2014-2015, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -142,6 +142,7 @@ int ssdk_uci_takeover_init()
 	priv->mii_write = qca_ar8216_mii_write;
 	priv->phy_write = qca_ar8327_phy_write;
 	priv->phy_dbg_write = qca_ar8327_phy_dbg_write;
+	priv->phy_dbg_read = qca_ar8327_phy_dbg_read;
 	priv->phy_mmd_write = qca_ar8327_mmd_write;
 	priv->sw_dev.ops = &qca_ar8327_sw_ops;
 	priv->sw_dev.name = "QCA AR8327 AR8337";

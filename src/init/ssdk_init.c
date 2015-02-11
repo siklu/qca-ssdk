@@ -445,6 +445,31 @@ qca_ar8327_port_init(struct qca_phy_priv *priv, a_uint32_t port)
     }
 
 	priv->mii_write(AR8327_REG_PORT_STATUS(port), value);
+	if((port == 5) && plat_data->pad5_cfg) {
+		if(plat_data->pad5_cfg->mode == AR8327_PAD_PHY_RGMII) {
+			a_uint16_t val = 0;
+			/*enable RGMII  mode */
+			priv->phy_dbg_read(0, AR8327_PORT5_PHY_ADDR,
+								AR8327_PHY_REG_MODE_SEL, &val);
+			val |= AR8327_PHY_RGMII_MODE;
+			priv->phy_dbg_write(0, AR8327_PORT5_PHY_ADDR,
+								AR8327_PHY_REG_MODE_SEL, val);
+			if(plat_data->pad5_cfg->txclk_delay_en) {
+				priv->phy_dbg_read(0, AR8327_PORT5_PHY_ADDR,
+								AR8327_PHY_REG_SYS_CTRL, &val);
+				val |= AR8327_PHY_RGMII_TX_DELAY;
+				priv->phy_dbg_write(0, AR8327_PORT5_PHY_ADDR,
+								AR8327_PHY_REG_SYS_CTRL, val);
+			}
+			if(plat_data->pad5_cfg->rxclk_delay_en) {
+				priv->phy_dbg_read(0, AR8327_PORT5_PHY_ADDR,
+								AR8327_PHY_REG_TEST_CTRL, &val);
+				val |= AR8327_PHY_RGMII_RX_DELAY;
+				priv->phy_dbg_write(0, AR8327_PORT5_PHY_ADDR,
+								AR8327_PHY_REG_TEST_CTRL, val);
+			}
+		}
+	}
 }
 
 static int
@@ -519,6 +544,9 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 	priv->mii_write(AR8327_REG_PAD5_CTRL, value);
 
 	value = qca_ar8327_get_pad_cfg(plat_data->pad6_cfg);
+	if(plat_data->pad5_cfg &&
+		(plat_data->pad5_cfg->mode == AR8327_PAD_PHY_RGMII))
+		value |= AR8327_PAD_CTRL_PHYX_RGMII_EN;
 	priv->mii_write(AR8327_REG_PAD6_CTRL, value);
 
 #ifndef BOARD_AR71XX
@@ -801,6 +829,7 @@ qca_phy_config_init(struct phy_device *pdev)
 	priv->mii_write = qca_ar8216_mii_write;
 	priv->phy_write = qca_ar8327_phy_write;
 	priv->phy_dbg_write = qca_ar8327_phy_dbg_write;
+	priv->phy_dbg_read = qca_ar8327_phy_dbg_read;
 	priv->phy_mmd_write = qca_ar8327_mmd_write;
 
 	pdev->priv = priv;
@@ -1416,6 +1445,17 @@ qca_ar8327_phy_dbg_write(a_uint32_t dev_id, a_uint32_t phy_addr,
         mdiobus_write(bus, phy_addr, QCA_MII_DBG_ADDR, dbg_addr);
         mdiobus_write(bus, phy_addr, QCA_MII_DBG_DATA, dbg_data);
 }
+
+void
+qca_ar8327_phy_dbg_read(a_uint32_t dev_id, a_uint32_t phy_addr,
+		                a_uint16_t dbg_addr, a_uint16_t *dbg_data)
+{
+	struct mii_bus *bus = miibus;
+
+	mdiobus_write(bus, phy_addr, QCA_MII_DBG_ADDR, dbg_addr);
+	*dbg_data = mdiobus_read(bus, phy_addr, QCA_MII_DBG_DATA);
+}
+
 
 void
 qca_ar8327_mmd_write(a_uint32_t dev_id, a_uint32_t phy_addr,
