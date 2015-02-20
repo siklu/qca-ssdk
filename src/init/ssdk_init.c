@@ -72,6 +72,7 @@ static int switch_chip_id = ISIS_CHIP_ID;
 static int switch_chip_reg = ISIS_CHIP_REG;
 ssdk_dt_cfg ssdk_dt_global = {0};
 u8  __iomem      *hw_addr = NULL;
+static struct mutex switch_mdio_lock;
 
 
 static void
@@ -1014,30 +1015,14 @@ qca_ar8216_mii_read(int reg)
 	struct mii_bus *bus = miibus;
 	uint16_t r1, r2, page;
 	uint16_t lo, hi;
-    static uint16_t irq_preepmt = 0;
 
 	split_addr((uint32_t) reg, &r1, &r2, &page);
-retry:
-    irq_preepmt = 0;
-    if(!in_interrupt()) {
-	    mutex_lock(&bus->mdio_lock);
-    } else {
-        if(mutex_trylock(&bus->mdio_lock) == 0) {
-            irq_preepmt = 1;
-        }
-    }
-
-	bus->write(bus, switch_chip_id, switch_chip_reg, page);
-	lo = bus->read(bus, 0x10 | r2, r1);
-	hi = bus->read(bus, 0x10 | r2, r1 + 1);
-
-	mutex_unlock(&bus->mdio_lock);
-    if(!in_interrupt()) {
-        if(irq_preepmt) {
-            goto retry;
-        }
-    }
-
+	mutex_lock(&switch_mdio_lock);
+	mdiobus_write(bus, switch_chip_id, switch_chip_reg, page);
+	udelay(100);
+	lo = mdiobus_read(bus, 0x10 | r2, r1);
+	hi = mdiobus_read(bus, 0x10 | r2, r1 + 1);
+	mutex_unlock(&switch_mdio_lock);
 	return (hi << 16) | lo;
 }
 
@@ -1047,36 +1032,22 @@ qca_ar8216_mii_write(int reg, uint32_t val)
 	struct mii_bus *bus = miibus;
 	uint16_t r1, r2, r3;
 	uint16_t lo, hi;
-    static uint16_t irq_preepmt = 0;
 
 	split_addr((a_uint32_t) reg, &r1, &r2, &r3);
 	lo = val & 0xffff;
 	hi = (a_uint16_t) (val >> 16);
 
-retry:
-    irq_preepmt = 0;
-    if(!in_interrupt()) {
-	    mutex_lock(&bus->mdio_lock);
-    } else {
-        if(mutex_trylock(&bus->mdio_lock) == 0) {
-            irq_preepmt = 1;
-        }
-    }
-
-	bus->write(bus, switch_chip_id, switch_chip_reg, r3);
+	mutex_lock(&switch_mdio_lock);
+	mdiobus_write(bus, switch_chip_id, switch_chip_reg, r3);
+	udelay(100);
 	if(SSDK_CURRENT_CHIP_TYPE != CHIP_SHIVA) {
-	    bus->write(bus, 0x10 | r2, r1, lo);
-	    bus->write(bus, 0x10 | r2, r1 + 1, hi);
+	    mdiobus_write(bus, 0x10 | r2, r1, lo);
+	    mdiobus_write(bus, 0x10 | r2, r1 + 1, hi);
 	} else {
-	    bus->write(bus, 0x10 | r2, r1 + 1, hi);
-	    bus->write(bus, 0x10 | r2, r1, lo);
+	    mdiobus_write(bus, 0x10 | r2, r1 + 1, hi);
+	    mdiobus_write(bus, 0x10 | r2, r1, lo);
 	}
-	mutex_unlock(&bus->mdio_lock);
-    if(!in_interrupt()) {
-        if(irq_preepmt) {
-            goto retry;
-        }
-    }
+	mutex_unlock(&switch_mdio_lock);
 }
 
 static uint32_t switch_chip_id_adjuest()
@@ -1175,7 +1146,8 @@ ssdk_plat_init(void)
 	#ifdef BOARD_AR71XX
 	int rv = 0;
 	#endif
-    printk("ssdk_plat_init start\n");
+	printk("ssdk_plat_init start\n");
+	mutex_init(&switch_mdio_lock);
 
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
 		if (!request_mem_region(ssdk_dt_global.switchreg_base_addr,
@@ -1415,32 +1387,12 @@ ssdk_hsl_access_mode_set(a_uint32_t dev_id, hsl_access_mode reg_mode)
 }
 
 
-static sw_error_t
+sw_error_t
 qca_ar8327_phy_read(a_uint32_t dev_id, a_uint32_t phy_addr,
                            a_uint32_t reg, a_uint16_t* data)
 {
     struct mii_bus *bus = miibus;
-    static uint16_t irq_preepmt = 0;
-
-retry:
-    irq_preepmt = 0;
-    if(!in_interrupt()) {
-        mutex_lock(&bus->mdio_lock);
-    } else {
-        if(mutex_trylock(&bus->mdio_lock) == 0) {
-            irq_preepmt = 1;
-        }
-    }
-
-    *data = bus->read(bus, phy_addr, reg);
-    
-	mutex_unlock(&bus->mdio_lock);
-    if(!in_interrupt()) {
-        if(irq_preepmt) {
-            goto retry;
-        }
-    }
-
+    *data = mdiobus_read(bus, phy_addr, reg);
     return 0;
 }
 
@@ -1449,27 +1401,7 @@ qca_ar8327_phy_write(a_uint32_t dev_id, a_uint32_t phy_addr,
                             a_uint32_t reg, a_uint16_t data)
 {
     struct mii_bus *bus = miibus;
-    static uint16_t irq_preepmt = 0;
-
-retry:
-    irq_preepmt = 0;
-    if(!in_interrupt()) {
-        mutex_lock(&bus->mdio_lock);
-    } else {
-        if(mutex_trylock(&bus->mdio_lock) == 0) {
-            irq_preepmt = 1;
-        }
-    }
-
-    bus->write(bus, phy_addr, reg, data);
-
-	mutex_unlock(&bus->mdio_lock);
-    if(!in_interrupt()) {
-        if(irq_preepmt) {
-            goto retry;
-        }
-    }
-
+    mdiobus_write(bus, phy_addr, reg, data);
     return 0;
 }
 
@@ -1478,28 +1410,8 @@ qca_ar8327_phy_dbg_write(a_uint32_t dev_id, a_uint32_t phy_addr,
 		                a_uint16_t dbg_addr, a_uint16_t dbg_data)
 {
 	struct mii_bus *bus = miibus;
-    static uint16_t irq_preepmt = 0;
-    
-retry:
-    irq_preepmt = 0;
-    if(!in_interrupt()) {
-        mutex_lock(&bus->mdio_lock);
-    } else {
-        if(mutex_trylock(&bus->mdio_lock) == 0) {
-            irq_preepmt = 1;
-        }
-    }
-
-	bus->write(bus, phy_addr, QCA_MII_DBG_ADDR, dbg_addr);
-	bus->write(bus, phy_addr, QCA_MII_DBG_DATA, dbg_data);
-    
-	mutex_unlock(&bus->mdio_lock);
-    if(!in_interrupt()) {
-        if(irq_preepmt) {
-            goto retry;
-        }
-    }
-    
+	mdiobus_write(bus, phy_addr, QCA_MII_DBG_ADDR, dbg_addr);
+	mdiobus_write(bus, phy_addr, QCA_MII_DBG_DATA, dbg_data);
 }
 
 void
@@ -1507,28 +1419,8 @@ qca_ar8327_mmd_write(a_uint32_t dev_id, a_uint32_t phy_addr,
                           a_uint16_t addr, a_uint16_t data)
 {
 	struct mii_bus *bus = miibus;
-    static uint16_t irq_preepmt = 0;
-    
-retry:
-    irq_preepmt = 0;
-    if(!in_interrupt()) {
-        mutex_lock(&bus->mdio_lock);
-    } else {
-        if(mutex_trylock(&bus->mdio_lock) == 0) {
-            irq_preepmt = 1;
-        }
-    }
-
-	bus->write(bus, phy_addr, QCA_MII_MMD_ADDR, addr);
-	bus->write(bus, phy_addr, QCA_MII_MMD_DATA, data);
-    
-	mutex_unlock(&bus->mdio_lock);
-    if(!in_interrupt()) {
-        if(irq_preepmt) {
-            goto retry;
-        }
-    }
-
+	mdiobus_write(bus, phy_addr, QCA_MII_MMD_ADDR, addr);
+	mdiobus_write(bus, phy_addr, QCA_MII_MMD_DATA, data);
 }
 
 
