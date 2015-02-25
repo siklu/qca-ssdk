@@ -1325,9 +1325,10 @@ int ssdk_rfs_ipct_rule_set(
 	return 0;
 }
 
-
+#if 0
 EXPORT_SYMBOL(ssdk_flow_cookie_set);
 EXPORT_SYMBOL(ssdk_rfs_ipct_rule_set);
+#endif
 
 /**
  * @}

@@ -90,6 +90,10 @@ ifeq (TRUE, $(IN_MACBLOCK))
   MODULE_CFLAG += -DIN_MACBLOCK
 endif
 
+ifeq (TRUE, $(IN_RFS))
+  MODULE_CFLAG += -DIN_RFS
+endif
+
 ifneq (TRUE, $(FAL))
   MODULE_CFLAG += -DHSL_STANDALONG
 endif
