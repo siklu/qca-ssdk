@@ -162,8 +162,9 @@ _dess_nat_counter_get(a_uint32_t dev_id, a_uint32_t cnt_id,
 static sw_error_t
 _dess_nat_entry_commit(a_uint32_t dev_id, a_uint32_t entry_type, a_uint32_t op)
 {
-    a_uint32_t busy = 1, i = 0x500, entry;
+    a_uint32_t busy = 1, i = 0x9000000, entry;
     sw_error_t rv;
+
 
     while (busy && --i)
     {
@@ -171,11 +172,11 @@ _dess_nat_entry_commit(a_uint32_t dev_id, a_uint32_t entry_type, a_uint32_t op)
                           sizeof (a_uint32_t));
         SW_RTN_ON_ERROR(rv);
         SW_GET_FIELD_BY_REG(HOST_ENTRY7, TBL_BUSY, busy, entry);
-	aos_mdelay(8);
     }
 
     if (i == 0)
     {
+	printk("busy 1\n");
         return SW_BUSY;
     }
 
@@ -188,14 +189,13 @@ _dess_nat_entry_commit(a_uint32_t dev_id, a_uint32_t entry_type, a_uint32_t op)
     SW_RTN_ON_ERROR(rv);
 
     busy = 1;
-    i = 0x3000;
+    i = 0x90000000;
     while (busy && --i)
     {
         HSL_REG_ENTRY_GET(rv, dev_id, HOST_ENTRY7, 0, (a_uint8_t *) (&entry),
                           sizeof (a_uint32_t));
         SW_RTN_ON_ERROR(rv);
         SW_GET_FIELD_BY_REG(HOST_ENTRY7, TBL_BUSY, busy, entry);
-	aos_mdelay(5);
 #if 1
         if(DESS_NAT_ENTRY_SEARCH == op &&  busy) break;
 #endif
@@ -203,6 +203,7 @@ _dess_nat_entry_commit(a_uint32_t dev_id, a_uint32_t entry_type, a_uint32_t op)
 
     if (i == 0)
     {
+	printk("busy 2\n");
         return SW_BUSY;
     }
 
