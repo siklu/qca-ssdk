@@ -14,7 +14,7 @@
 
 
 /**
- * @defgroup fal_nat FAL_NAT
+ * @defgroup fal_rfs FAL_RFS
  * @{
  */
 #ifndef _FAL_RFS_H_
@@ -23,7 +23,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif                          /* __cplusplus */
-
+#if 0
 typedef struct
 {
     u8 addr[6];
@@ -68,6 +68,15 @@ ssdk_ip_rfs_ip4_rule_del(ssdk_ip4_rfs_t * rfs);
 
 int
 ssdk_ip_rfs_ip6_rule_del(ssdk_ip6_rfs_t * rfs);
+#endif
+int ssdk_rfs_mac_rule_set(u16 vid, u8* mac, u8 ldb, int is_set);
+int ssdk_rfs_ip4_rule_set(u16 vid, u32 ip, u8* mac, u8 ldb, int is_set);
+int ssdk_rfs_ip6_rule_set(u16 vid, u8* ip, u8* mac, u8 ldb, int is_set);
+int ssdk_rfs_ipct_rule_set(
+	__be32 ip_src, __be32 ip_dst,
+	__be16 sport, __be16 dport, uint8_t proto,
+	u16 loadbalance, bool action);
+
 
 
 #ifdef __cplusplus

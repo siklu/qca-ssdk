@@ -64,6 +64,11 @@
 #include <shortcut-fe/sfe.h>
 #endif
 
+#ifdef IN_RFS
+#include <qca-rfs/rfs_dev.h>
+#include "fal_rfs.h"
+#endif
+
 #define ISIS_CHIP_ID 0x18
 #define ISIS_CHIP_REG 0
 #define SHIVA_CHIP_ID 0x1f
@@ -1617,6 +1622,20 @@ static void ssdk_cfg_default_init(ssdk_init_cfg *cfg)
 	cfg->port_cfg.wan_bmp = 0x20;
 }
 
+#ifdef IN_RFS
+#if defined(CONFIG_RFS_ACCEL)
+int ssdk_netdev_rfs_cb(
+		struct net_device *dev,
+		__be32 src, __be32 dst,
+		__be16 sport, __be16 dport,
+		u8 proto, u16 rxq_index, u32 action)
+{
+	return ssdk_rfs_ipct_rule_set(src, dst, sport, dport,
+							proto, rxq_index, action);
+}
+#endif
+#endif
+
 static int __init
 regi_init(void)
 {
@@ -1626,6 +1645,12 @@ regi_init(void)
 	garuda_init_spec_cfg chip_spec_cfg;
 	ssdk_dt_global.switch_reg_access_mode = HSL_REG_MDIO;
 	a_uint8_t chip_version = 0;
+	#ifdef IN_RFS
+	struct rfs_device rfs_dev;
+	#if defined(CONFIG_RFS_ACCEL)
+	struct net_device *rfs_net = NULL;
+	#endif
+	#endif
 
 	ssdk_cfg_default_init(&cfg);
 
@@ -1681,6 +1706,25 @@ regi_init(void)
 #if defined (CONFIG_NF_FLOW_COOKIE)
 		sfe_register_flow_cookie_cb(ssdk_flow_cookie_set);
 #endif
+
+#ifdef IN_RFS
+	rfs_dev.name = NULL;
+	rfs_dev.mac_rule_cb = ssdk_rfs_mac_rule_set;
+	rfs_dev.ip4_rule_cb = ssdk_rfs_ip4_rule_set;
+	rfs_dev.ip6_rule_cb = ssdk_rfs_ip6_rule_set;
+	rfs_ess_device_register(&rfs_dev);
+	#if defined(CONFIG_RFS_ACCEL)
+	rfs_net = dev_get_by_name(&init_net, "eth0");
+	if(rfs_net) {
+		if(rfs_net->netdev_ops) {
+			if(rfs_net->netdev_ops->ndo_register_rfs_filter)
+				rfs_net->netdev_ops->ndo_register_rfs_filter(rfs_net,
+					ssdk_netdev_rfs_cb);
+		}
+	}
+	#endif
+	
+#endif
 		/* Enable port temprarily, will remove the code when phy board is ok. */
 		switch_port_enable();
 	}
@@ -1697,6 +1741,9 @@ out:
 static void __exit
 regi_exit(void)
 {
+	#ifdef IN_RFS
+	struct rfs_device rfs_dev;
+	#endif
     sw_error_t rv=ssdk_cleanup();
 
     if (rv == 0)
@@ -1709,6 +1756,14 @@ regi_exit(void)
 #if defined (CONFIG_NF_FLOW_COOKIE)
 		sfe_unregister_flow_cookie_cb(ssdk_flow_cookie_set);
 #endif
+#ifdef IN_RFS
+		rfs_dev.name = NULL;
+		rfs_dev.mac_rule_cb = ssdk_rfs_mac_rule_set;
+		rfs_dev.ip4_rule_cb = ssdk_rfs_ip4_rule_set;
+		rfs_dev.ip6_rule_cb = ssdk_rfs_ip6_rule_set;
+		rfs_ess_device_unregister(&rfs_dev);
+#endif
+
 	}
 
     ssdk_plat_exit();
