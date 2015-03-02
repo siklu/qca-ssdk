@@ -64,6 +64,7 @@ a_uint32_t nf_athrs17_hnat_wan_ip = 0;
 a_uint32_t nf_athrs17_hnat_ppp_peer_ip = 0;
 unsigned char nf_athrs17_hnat_ppp_peer_mac[ETH_ALEN] = {0};
 unsigned char nf_athrs17_hnat_wan_mac[ETH_ALEN] = {0};
+int nf_athrs17_hnat_sync_counter_en = 0;
 
 /* for IPv6 over PPPoE (only for S17c)*/
 int nf_athrs17_hnat_ppp_id2 = 0;
@@ -81,6 +82,7 @@ static void setup_proc_entry(void)
 
     nf_athrs17_hnat_ppp_id2 = 0;
     memset(&nf_athrs17_hnat_ppp_peer_mac2, 0, ETH_ALEN);
+	nf_athrs17_hnat_sync_counter_en = 0;
 }
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3,14,0)
@@ -722,6 +724,37 @@ static ssize_t napt_ppp_id2_set(struct device *dev,
 	return count;
 }
 
+static ssize_t napt_sync_counter_en_get(struct device *dev,
+		  struct device_attribute *attr,
+		  char *buf)
+{
+	ssize_t count;
+	a_uint32_t num;
+
+	num = (a_uint32_t)nf_athrs17_hnat_sync_counter_en;
+
+	count = snprintf(buf, (ssize_t)PAGE_SIZE, "%u", num);
+	return count;
+}
+
+static ssize_t napt_sync_counter_en_set(struct device *dev,
+		  struct device_attribute *attr,
+		  const char *buf, size_t count)
+{
+	char num_buf[12];
+	a_uint32_t num;
+
+
+	if (count >= sizeof(num_buf)) return 0;
+	memcpy(num_buf, buf, count);
+	num_buf[count] = '\0';
+	sscanf(num_buf, "%u", &num);
+
+	nf_athrs17_hnat_sync_counter_en = num;
+
+	return count;
+}
+
 
 struct kobject *napt_sys = NULL;
 static const struct device_attribute napt_hnat_attr =
@@ -744,6 +777,8 @@ static const struct device_attribute napt_ppp_id2_attr =
 	__ATTR(ppp_id2, S_IWUGO | S_IRUGO, napt_ppp_id2_get, napt_ppp_id2_set);
 static const struct device_attribute napt_ppp_peer_mac2_attr =
 	__ATTR(peer_mac2, S_IWUGO | S_IRUGO, napt_peer_mac2_get, napt_peer_mac2_set);
+static const struct device_attribute napt_sync_counter_en_attr =
+	__ATTR(sync_counter_en, S_IWUGO | S_IRUGO, napt_sync_counter_en_get, napt_sync_counter_en_set);
 
 
 
@@ -809,8 +844,15 @@ int napt_procfs_init(void)
 		printk("Failed to register ppp peer mac2 SysFS file\n");
 		goto CLEANUP_10;
 	}
+	ret = sysfs_create_file(napt_sys, &napt_sync_counter_en_attr.attr);
+	if (ret) {
+		printk("Failed to register sync counter en SysFS file\n");
+		goto CLEANUP_11;
+	}
 	return 0;
 
+CLEANUP_11:
+	sysfs_remove_file(napt_sys, &napt_sync_counter_en_attr.attr);
 CLEANUP_10:
 	sysfs_remove_file(napt_sys, &napt_ppp_id2_attr.attr);
 CLEANUP_9:

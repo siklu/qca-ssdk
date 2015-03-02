@@ -40,6 +40,9 @@ extern void nat_ipt_sockopts_replace(void);
 #define NAPT_BUFFER_HASH_SIZE        (NAPT_TABLE_SIZE)
 #define NAPT_BUFFER_SIZE             ((NAPT_BUFFER_HASH_SIZE)*8)
 
+static a_uint32_t napt_buffer_hash_size = NAPT_TABLE_SIZE;
+static a_uint32_t napt_buffer_size = (NAPT_BUFFER_HASH_SIZE)*8;
+
 struct napt_ct
 {
     struct napt_ct *next;
@@ -86,7 +89,14 @@ napt_hash_buf_init(struct napt_ct **hash, struct nhlist_head **hash_head)
     return 0;
 }
 
-#define NAPT_CT_HASH(ct_addr) (((ct_addr) * (0x9e370001UL)) >> 22)
+static a_uint32_t
+napt_ct_hash(a_uint32_t ct_addr)
+{
+	if(nf_athrs17_hnat_sync_counter_en == 0)
+		return (((ct_addr) * (0x9e370001UL)) >> 22);
+	else
+		return (((ct_addr) * (0x9e370001UL)) >> 29);
+}
 
 static struct napt_ct *
 napt_hash_add(a_uint32_t ct_addr, a_uint32_t *hash_cnt,
@@ -94,9 +104,9 @@ napt_hash_add(a_uint32_t ct_addr, a_uint32_t *hash_cnt,
 {
     struct napt_ct *entry = 0,*last = 0,*node = 0;
     struct nhlist_head *head = 0;
-    a_uint32_t hash_index = NAPT_CT_HASH(ct_addr);
+    a_uint32_t hash_index = napt_ct_hash(ct_addr);
 
-    if(*hash_cnt >= NAPT_BUFFER_SIZE)
+    if(*hash_cnt >= napt_buffer_size)
     {
         return NULL;
     }
@@ -142,7 +152,7 @@ napt_hash_find(a_uint32_t ct_addr, a_uint32_t *hash_cnt,
 {
     struct napt_ct *entry = 0;
     struct nhlist_head *head = 0;
-    a_uint32_t hash_index = NAPT_CT_HASH(ct_addr);
+    a_uint32_t hash_index = napt_ct_hash(ct_addr);
 
     if(*hash_cnt == 0)
     {
@@ -498,7 +508,7 @@ napt_ct_hw_aging(void)
                 continue;
             }
 
-            if(napt_ct_pkts_reach_thres(ct_addr, napt_ct, 0))
+            if((nf_athrs17_hnat_sync_counter_en == 0) && (napt_ct_pkts_reach_thres(ct_addr, napt_ct, 0)))
             {
                 printk("<aging>set PERMANENT deny ct:%x\n", ct_addr);
                 napt_ct_buf_deny_set(napt_ct, NAPT_CT_PERMANENT_DENY);
@@ -526,6 +536,40 @@ napt_ct_hw_aging(void)
     return;
 }
 
+static a_uint32_t
+napt_ct_counter_sync(a_uint32_t hw_index)
+{
+	napt_entry_t napt = {0};
+	struct nf_conn *ct = NULL;
+	struct nf_conn_counter *cct = NULL;
+
+	if((nf_athrs17_hnat_sync_counter_en == 0) || (napt_ct_addr[hw_index] == 0) || (hw_index >= NAPT_TABLE_SIZE))
+		return -1;
+
+	ct = (struct nf_conn *)napt_ct_addr[hw_index];
+	cct = nf_conn_acct_find(ct);
+
+	if((cct != NULL) && (napt_hw_get_by_index(&napt, hw_index) == 0))
+	{
+		spin_lock_bh(&ct->lock);
+		atomic64_add(napt.egress_packet, &cct[IP_CT_DIR_ORIGINAL].packets);
+		atomic64_add(napt.egress_byte, &cct[IP_CT_DIR_ORIGINAL].bytes);
+		atomic64_add(napt.ingress_packet, &cct[IP_CT_DIR_REPLY].packets);
+		atomic64_add(napt.ingress_byte, &cct[IP_CT_DIR_REPLY].bytes);
+		spin_unlock_bh(&ct->lock);
+		HNAT_PRINTK("original packets:0x%llx  bytes:0x%llx\n",
+				cct[IP_CT_DIR_ORIGINAL].packets, cct[IP_CT_DIR_ORIGINAL].bytes);
+		HNAT_PRINTK("reply packets:0x%llx  bytes:0x%llx\n",
+				cct[IP_CT_DIR_REPLY].packets, cct[IP_CT_DIR_REPLY].bytes);
+	}
+
+	return 0;
+}
+
+void napt_ct_counter_decrease(void)
+{
+	ct_buf_ct_cnt--;
+}
 
 #define NAPT_INVALID_CT_NEED_HW_CLEAR(hw_index)  \
                                 ((napt_ct_valid[hw_index] == 0) && \
@@ -538,6 +582,8 @@ napt_ct_hw_sync(a_uint8_t napt_ct_valid[])
 
     for(hw_index = 0; hw_index < NAPT_TABLE_SIZE; hw_index++)
     {
+		napt_ct_counter_sync(hw_index);
+
         if(NAPT_INVALID_CT_NEED_HW_CLEAR(hw_index))
         {
 
@@ -628,8 +674,11 @@ napt_ct_check_add_one(a_uint32_t ct_addr, a_uint8_t *napt_ct_valid)
             if(napt_ct_buf_in_hw_get(napt_ct, &hw_index))
             {
                 //printk("<napt_ct_scan> ct:%x* is exist\n", ct_addr);
-                napt_ct_frag_hw_yield(napt_ct, hw_index);
-
+				if(nf_athrs17_hnat_sync_counter_en == 0)
+				{
+                	printk("<napt_ct_scan> ct:%x* is exist\n", ct_addr);
+                	napt_ct_frag_hw_yield(napt_ct, hw_index);
+				}
             }
             else
             {
@@ -910,6 +959,17 @@ napt_ct_scan(void)
 static a_int32_t
 napt_ct_init(void)
 {
+	if(nf_athrs17_hnat_sync_counter_en == 0)
+	{
+		napt_buffer_hash_size = NAPT_TABLE_SIZE;
+		napt_buffer_size = NAPT_TABLE_SIZE*8;
+	}
+	else
+	{
+		napt_buffer_hash_size = 8;
+		napt_buffer_size = napt_buffer_hash_size;
+	}
+
     napt_hw_mode_init();
 
     if(napt_ct_buf_init() != 0)

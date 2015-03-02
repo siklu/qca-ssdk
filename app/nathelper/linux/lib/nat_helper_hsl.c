@@ -662,6 +662,10 @@ nat_hw_pub_ip_del(a_uint32_t index)
     (to)->dst_port = (from)->dst_port; \
     (to)->trans_addr = (from)->trans_addr; \
     (to)->trans_port = (from)->trans_port; \
+    (to)->ingress_packet = (from)->ingress_packet; \
+    (to)->ingress_byte = (from)->ingress_byte; \
+    (to)->egress_packet = (from)->egress_packet; \
+    (to)->egress_byte = (from)->egress_byte; \
 }
 
 a_int32_t
@@ -691,6 +695,7 @@ napt_hw_del(napt_entry_t *napt)
     fal_napt_entry_t fal_napt = {0};
 
     napt_entry_cp(&fal_napt, napt);
+	napt_ct_counter_decrease();
 
     ret = NAPT_DEL(0, FAL_NAT_ENTRY_KEY_EN, &fal_napt);
 

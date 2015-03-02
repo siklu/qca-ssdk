@@ -54,6 +54,7 @@ extern a_uint32_t nf_athrs17_hnat_wan_ip;
 extern a_uint32_t nf_athrs17_hnat_ppp_peer_ip;
 extern unsigned char nf_athrs17_hnat_ppp_peer_mac[ETH_ALEN];
 extern unsigned char nf_athrs17_hnat_wan_mac[ETH_ALEN];
+extern int nf_athrs17_hnat_sync_counter_en;
 
 extern int nf_athrs17_hnat_ppp_id2;
 extern unsigned char nf_athrs17_hnat_ppp_peer_mac2[ETH_ALEN];
@@ -79,6 +80,10 @@ typedef struct
     a_uint16_t dst_port;
     a_uint32_t trans_addr;
     a_uint16_t trans_port;
+    a_uint32_t ingress_packet;
+    a_uint32_t ingress_byte;
+    a_uint32_t egress_packet;
+    a_uint32_t egress_byte;
 } napt_entry_t;
 
 #if defined (__BIG_ENDIAN)
