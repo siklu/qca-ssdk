@@ -623,6 +623,11 @@ nat_ipt_rules_cp_from_user(void **buf, unsigned int *buf_len,
         {
             kfree(*buf);
             *buf = kmalloc(user_len, GFP_ATOMIC);
+			if(*buf == NULL)
+			{
+				HNAT_PRINTK("%s memory allocate fail\n", __func__);
+				return;
+			}
             *buf_len = user_len;
         }
     }
