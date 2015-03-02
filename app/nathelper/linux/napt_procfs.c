@@ -112,8 +112,7 @@ static int procfile_read_int(char *page, char **start, off_t off, int count,  in
     int ret;
     int *prv_data = (int *)data;
 
-    // printk("[read] prv_data 0x%p -> 0x%08x\n", prv_data, *prv_data);
-    ret = sprintf(page, "%d\n", *prv_data);
+	ret = snprintf(page, count, "%d\n", *prv_data);
 
     return ret;
 }
@@ -123,7 +122,7 @@ static int procfile_read_ip(char *page, char **start, off_t off, int count, int 
 	int ret;
 	unsigned char *prv_data = (unsigned char *)data;
 
-	ret = sprintf(page, "%d.%d.%d.%d\n", prv_data[0], prv_data[1], prv_data[2], prv_data[3]);
+	ret = snprintf(page, count, "%d.%d.%d.%d\n", prv_data[0], prv_data[1], prv_data[2], prv_data[3]);
 
 	return ret;
 }
@@ -134,7 +133,8 @@ static int procfile_read_mac(char *page, char **start, off_t off, int count, int
 	unsigned char *prv_data = (unsigned char *)data;
 	unsigned long long *ptr_ull;
 
-	ret = sprintf(page, "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x\n", prv_data[0], prv_data[1], prv_data[2], prv_data[3], prv_data[4], prv_data[5]);
+	ret = snprintf(page, count, "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x\n",
+				prv_data[0], prv_data[1], prv_data[2], prv_data[3], prv_data[4], prv_data[5]);
 
 	ptr_ull = (unsigned long long *)prv_data;
 
@@ -155,6 +155,7 @@ static int procfile_write_int(struct file *file, const char *buffer, unsigned lo
     int len;
     uint8_t tmp_buf[9] = {'0', '0', '0', '0', '0', '0', '0', '0', '0'};
     unsigned int *prv_data = (unsigned int *)data;
+	int res = 0;
     
     if(count > sizeof(tmp_buf))
         len = sizeof(tmp_buf);
@@ -164,7 +165,9 @@ static int procfile_write_int(struct file *file, const char *buffer, unsigned lo
     if(copy_from_user(tmp_buf, buffer, len))
         return -EFAULT;
 
-    *prv_data = simple_strtol((const char *)tmp_buf, NULL, 10);
+	res = kstrtol((const char *)tmp_buf, 10, prv_data);
+	if(res < 0)
+		return res;
 
     // printk("[write] prv_data 0x%p -> 0x%08x\n", prv_data, *prv_data);
 
@@ -177,6 +180,7 @@ static int procfile_write_ip(struct file *file, const char *buffer, unsigned lon
     int len;
     unsigned char tmp_buf[ATHRS17_IP_LEN];
     unsigned long *prv_data = (unsigned long *)data;
+	int res = 0;
 
     if(count > ATHRS17_IP_LEN)
         len = ATHRS17_IP_LEN;
@@ -188,7 +192,9 @@ static int procfile_write_ip(struct file *file, const char *buffer, unsigned lon
 
     tmp_buf[len-1] = '\0';
 
-    *prv_data = simple_strtoul((const char *)tmp_buf, NULL, 16);
+	res = kstrtol((const char *)tmp_buf, 16, prv_data);
+	if(res < 0)
+		return res;
 
     return ret;
 }
@@ -200,6 +206,7 @@ static int procfile_write_mac(struct file *file, const char *buffer, unsigned lo
     unsigned char tmp_buf[ATHRS17_MAC_LEN];
     unsigned char *ptr_char;
     unsigned long long *prv_data = (unsigned long long *)data;
+	int res = 0;
 
     if(count > ATHRS17_MAC_LEN)
         len = ATHRS17_MAC_LEN;
@@ -211,7 +218,9 @@ static int procfile_write_mac(struct file *file, const char *buffer, unsigned lo
 
     tmp_buf[len-1] = 't';
 
-    *prv_data = simple_strtoull((const char *)tmp_buf, NULL, 16);
+	res = kstrtoll((const char *)tmp_buf, 16, prv_data);
+	if(res < 0)
+		return res;
     *prv_data = cpu_to_be64p(prv_data);
     ptr_char = (unsigned char *)prv_data;
     ptr_char[0] = ptr_char[2];
@@ -598,11 +607,15 @@ static ssize_t napt_peer_mac_set(struct device *dev,
 	char num_buf[32];
 	unsigned long long prv_data;
 	unsigned char *ptr_char;
+	int res = 0;
 
 	if (count >= sizeof(num_buf)) return 0;
 	memcpy(num_buf, buf, count);
 	num_buf[count] = '\0';
-	prv_data = simple_strtoull((const char *)num_buf, NULL, 16);
+	res = kstrtoll((const char *)num_buf, 16, &prv_data);
+	if(res < 0)
+		return res;
+
 	prv_data = cpu_to_be64p(&prv_data);
 	ptr_char = (unsigned char *)&prv_data;
 	nf_athrs17_hnat_ppp_peer_mac[0] = ptr_char[2];
@@ -636,11 +649,15 @@ static ssize_t napt_wan_mac_set(struct device *dev,
 	char num_buf[32];
 	unsigned long long prv_data;
 	unsigned char *ptr_char;
+	int res = 0;
 
 	if (count >= sizeof(num_buf)) return 0;
 	memcpy(num_buf, buf, count);
 	num_buf[count] = '\0';
-	prv_data = simple_strtoull((const char *)num_buf, NULL, 16);
+	res = kstrtoll((const char *)num_buf, 16, &prv_data);
+	if(res < 0)
+		return res;
+
 	prv_data = cpu_to_be64p(&prv_data);
 	ptr_char = (unsigned char *)&prv_data;
 	nf_athrs17_hnat_wan_mac[0] = ptr_char[2];
@@ -674,11 +691,15 @@ static ssize_t napt_peer_mac2_set(struct device *dev,
 	char num_buf[32];
 	unsigned long long prv_data;
 	unsigned char *ptr_char;
+	int res = 0;
 
 	if (count >= sizeof(num_buf)) return 0;
 	memcpy(num_buf, buf, count);
 	num_buf[count] = '\0';
-	prv_data = simple_strtoull((const char *)num_buf, NULL, 16);
+	res = kstrtoll((const char *)num_buf, 16, &prv_data);
+	if(res < 0)
+		return res;
+
 	prv_data = cpu_to_be64p(&prv_data);
 	ptr_char = (unsigned char *)&prv_data;
 	nf_athrs17_hnat_ppp_peer_mac2[0] = ptr_char[2];
