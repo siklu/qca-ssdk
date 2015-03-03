@@ -314,6 +314,11 @@ sw_api_excep_ack(struct sock *sk, pid_t pid)
 #endif
     }
 
+	if(nlh->nlmsg_len < (SW_MAX_PAYLOAD + sizeof(nlmsghdr)))
+	{
+		dprintk("data length is less than %d bytes\n", SW_MAX_PAYLOAD);
+		SW_OUT_ON_ERROR(SW_ABORTED);
+	}
     aos_mem_copy(args, NLMSG_DATA(nlh), SW_MAX_PAYLOAD);
     /* return API result to user */
     rtn = (a_uint32_t) rv;
@@ -384,6 +389,11 @@ sw_api_exec(struct sock *sk, pid_t pid)
 #endif
     }
 
+	if(nlh->nlmsg_len < (SW_MAX_PAYLOAD + sizeof(nlmsghdr)))
+	{
+		dprintk("data length is less than %d bytes\n", SW_MAX_PAYLOAD);
+		SW_OUT_ON_ERROR(SW_ABORTED);
+	}
     aos_mem_copy(args, NLMSG_DATA(nlh), SW_MAX_PAYLOAD);
 
     rv = sw_api_cmd(args);
@@ -506,6 +516,11 @@ sw_api_excep_ack_26_22(struct sk_buff *skb)
     }
     dst_pid = nlh->nlmsg_pid;
 
+	if(nlh->nlmsg_len < (SW_MAX_PAYLOAD + sizeof(nlmsghdr)))
+	{
+		dprintk("data length is less than %d bytes\n", SW_MAX_PAYLOAD);
+		SW_OUT_ON_ERROR(SW_ABORTED);
+	}
     aos_mem_copy(args, NLMSG_DATA(nlh), SW_MAX_PAYLOAD);
     /* return API result to user */
     rtn = (a_uint32_t) rv;
@@ -574,6 +589,11 @@ sw_api_exec_26_22(pid_t parent_pid)
     }
     dst_pid = nlh->nlmsg_pid;
 
+	if(nlmsglen < (SW_MAX_PAYLOAD + sizeof(nlmsghdr)))
+	{
+		dprintk("data length is less than %d bytes\n", SW_MAX_PAYLOAD);
+		SW_OUT_ON_ERROR(SW_ABORTED);
+	}
     aos_mem_copy(args, NLMSG_DATA(nlh), SW_MAX_PAYLOAD);
     rv = sw_api_cmd(args);
 
