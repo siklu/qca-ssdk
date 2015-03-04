@@ -148,6 +148,8 @@ sw_api_cmd(a_uint32_t * args)
     pp = sw_api.api_pp;
     nr_param = sw_api.api_nr;
 
+	/* Clean up cmd_buf */
+	aos_mem_set(cmd_buf, 0, SW_MAX_API_BUF);
     rv = input_parser(pp, nr_param, args);
     SW_OUT_ON_ERROR(rv);
     func = fp->func;
