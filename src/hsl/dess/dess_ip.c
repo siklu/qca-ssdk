@@ -319,7 +319,7 @@ _dess_ip_counter_get(a_uint32_t dev_id, a_uint32_t cnt_id,
 static sw_error_t
 _dess_host_entry_commit(a_uint32_t dev_id, a_uint32_t entry_type, a_uint32_t op)
 {
-    a_uint32_t busy = 1, i = 0x500, entry, j, try_num;
+    a_uint32_t busy = 1, i = 0x9000000, entry, j, try_num;
     a_uint32_t learn_status = 0, data = 0;
     sw_error_t rv;
 
@@ -330,11 +330,11 @@ _dess_host_entry_commit(a_uint32_t dev_id, a_uint32_t entry_type, a_uint32_t op)
         SW_RTN_ON_ERROR(rv);
         //printk("IP first entry is 0x%x\r\n", entry);
         SW_GET_FIELD_BY_REG(HOST_ENTRY7, TBL_BUSY, busy, entry);
-	aos_mdelay(8);
     }
 
     if (i == 0)
     {
+	printk("host entry busy!\n");
         return SW_BUSY;
     }
 
@@ -408,7 +408,6 @@ _dess_host_entry_commit(a_uint32_t dev_id, a_uint32_t entry_type, a_uint32_t op)
             _dess_ip_pt_learn_restore(dev_id, learn_status);
             return SW_OK;
         }
-	aos_mdelay(5);
     }
 
     _dess_ip_pt_learn_restore(dev_id, learn_status);
