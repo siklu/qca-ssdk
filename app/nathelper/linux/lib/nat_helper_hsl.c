@@ -583,7 +583,7 @@ napt_hw_mode_init(void)
     /* age_speedup+age_thres_1/4+age_step_4+age_timer_28s*1+
        stop_age_when1+overwrite_disable */
     /* Also set NAT mode Port strict mode/symmetric mode */
-    a_uint32_t entry = 0x5F01CB;
+    a_uint32_t entry = 0x15F01CB;
 
     HSL_REG_ENTRY_SET(rv, 0, NAT_CTRL, 0, (a_uint8_t *) (&entry),
                       sizeof (a_uint32_t));
