@@ -64,7 +64,7 @@ a_uint32_t nf_athrs17_hnat_wan_ip = 0;
 a_uint32_t nf_athrs17_hnat_ppp_peer_ip = 0;
 unsigned char nf_athrs17_hnat_ppp_peer_mac[ETH_ALEN] = {0};
 unsigned char nf_athrs17_hnat_wan_mac[ETH_ALEN] = {0};
-int nf_athrs17_hnat_sync_counter_en = 0;
+extern int nf_athrs17_hnat_sync_counter_en;
 
 /* for IPv6 over PPPoE (only for S17c)*/
 int nf_athrs17_hnat_ppp_id2 = 0;

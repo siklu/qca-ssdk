@@ -25,7 +25,7 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 
-extern int nf_athrs17_hnat_sync_counter_en;
+int nf_athrs17_hnat_sync_counter_en = 0;
 
 static sw_error_t
 _fal_nat_add(a_uint32_t dev_id, fal_nat_entry_t * nat_entry)
