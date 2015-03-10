@@ -28,7 +28,7 @@ ifeq (ISISC, $(CHIP_TYPE))
 endif
 
 ifeq (ALL_CHIP, $(CHIP_TYPE))
-     SRC_LIST = f1_phy.c f2_phy.c
+     SRC_LIST = f1_phy.c f2_phy.c hsl_phy.c
 endif
 
 ifeq (linux, $(OS))
