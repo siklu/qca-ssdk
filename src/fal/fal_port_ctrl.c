@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -23,731 +23,976 @@
 
 
 static sw_error_t
-_fal_port_duplex_set(a_uint32_t dev_id, fal_port_t port_id,
-                     fal_port_duplex_t duplex)
+_fal_port_duplex_set (a_uint32_t dev_id, fal_port_t port_id,
+		      fal_port_duplex_t duplex)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_duplex_set)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_duplex_set)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_duplex_set(dev_id, port_id, duplex);
-    return rv;
+  rv = p_api->port_duplex_set (dev_id, port_id, duplex);
+  return rv;
 }
 
 
 static sw_error_t
-_fal_port_duplex_get(a_uint32_t dev_id, fal_port_t port_id,
-                     fal_port_duplex_t * pduplex)
+_fal_port_duplex_get (a_uint32_t dev_id, fal_port_t port_id,
+		      fal_port_duplex_t * pduplex)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_duplex_get)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_duplex_get)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_duplex_get(dev_id, port_id, pduplex);
-    return rv;
+  rv = p_api->port_duplex_get (dev_id, port_id, pduplex);
+  return rv;
 }
 
 
 static sw_error_t
-_fal_port_speed_set(a_uint32_t dev_id, fal_port_t port_id,
-                    fal_port_speed_t speed)
+_fal_port_speed_set (a_uint32_t dev_id, fal_port_t port_id,
+		     fal_port_speed_t speed)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_speed_set)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_speed_set)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_speed_set(dev_id, port_id, speed);
-    return rv;
+  rv = p_api->port_speed_set (dev_id, port_id, speed);
+  return rv;
 }
 
 
 static sw_error_t
-_fal_port_speed_get(a_uint32_t dev_id, fal_port_t port_id,
-                    fal_port_speed_t * pspeed)
+_fal_port_speed_get (a_uint32_t dev_id, fal_port_t port_id,
+		     fal_port_speed_t * pspeed)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_speed_get)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_speed_get)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_speed_get(dev_id, port_id, pspeed);
-    return rv;
+  rv = p_api->port_speed_get (dev_id, port_id, pspeed);
+  return rv;
 }
 
 
 static sw_error_t
-_fal_port_autoneg_status_get(a_uint32_t dev_id, fal_port_t port_id,
-                             a_bool_t * status)
+_fal_port_autoneg_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			      a_bool_t * status)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_autoneg_status_get)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_autoneg_status_get)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_autoneg_status_get(dev_id, port_id, status);
-    return rv;
+  rv = p_api->port_autoneg_status_get (dev_id, port_id, status);
+  return rv;
 }
 
 
 static sw_error_t
-_fal_port_autoneg_enable(a_uint32_t dev_id, fal_port_t port_id)
+_fal_port_autoneg_enable (a_uint32_t dev_id, fal_port_t port_id)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_autoneg_enable)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_autoneg_enable)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_autoneg_enable(dev_id, port_id);
-    return rv;
+  rv = p_api->port_autoneg_enable (dev_id, port_id);
+  return rv;
 }
 
 
 static sw_error_t
-_fal_port_autoneg_restart(a_uint32_t dev_id, fal_port_t port_id)
+_fal_port_autoneg_restart (a_uint32_t dev_id, fal_port_t port_id)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_autoneg_restart)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_autoneg_restart)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_autoneg_restart(dev_id, port_id);
-    return rv;
+  rv = p_api->port_autoneg_restart (dev_id, port_id);
+  return rv;
 }
 
 
 static sw_error_t
-_fal_port_autoneg_adv_set(a_uint32_t dev_id, fal_port_t port_id,
-                          a_uint32_t autoadv)
+_fal_port_autoneg_adv_set (a_uint32_t dev_id, fal_port_t port_id,
+			   a_uint32_t autoadv)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_autoneg_adv_set)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_autoneg_adv_set)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_autoneg_adv_set(dev_id, port_id, autoadv);
-    return rv;
+  rv = p_api->port_autoneg_adv_set (dev_id, port_id, autoadv);
+  return rv;
 }
 
 static sw_error_t
-_fal_port_autoneg_adv_get(a_uint32_t dev_id, fal_port_t port_id,
-                          a_uint32_t * autoadv)
+_fal_port_autoneg_adv_get (a_uint32_t dev_id, fal_port_t port_id,
+			   a_uint32_t * autoadv)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_autoneg_adv_get)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_autoneg_adv_get)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_autoneg_adv_get(dev_id, port_id, autoadv);
-    return rv;
-}
-
-
-static sw_error_t
-_fal_port_hdr_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
-{
-    sw_error_t rv;
-    hsl_api_t *p_api;
-
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
-
-    if (NULL == p_api->port_hdr_status_set)
-        return SW_NOT_SUPPORTED;
-
-    rv = p_api->port_hdr_status_set(dev_id, port_id, enable);
-    return rv;
+  rv = p_api->port_autoneg_adv_get (dev_id, port_id, autoadv);
+  return rv;
 }
 
 
 static sw_error_t
-_fal_port_hdr_status_get(a_uint32_t dev_id, fal_port_t port_id,
-                         a_bool_t * enable)
+_fal_port_hdr_status_set (a_uint32_t dev_id, fal_port_t port_id,
+			  a_bool_t enable)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_hdr_status_get)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_hdr_status_set)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_hdr_status_get(dev_id, port_id, enable);
-    return rv;
+  rv = p_api->port_hdr_status_set (dev_id, port_id, enable);
+  return rv;
 }
 
 
 static sw_error_t
-_fal_port_flowctrl_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+_fal_port_hdr_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			  a_bool_t * enable)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_flowctrl_set)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_hdr_status_get)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_flowctrl_set(dev_id, port_id, enable);
-    return rv;
+  rv = p_api->port_hdr_status_get (dev_id, port_id, enable);
+  return rv;
 }
 
 
 static sw_error_t
-_fal_port_flowctrl_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
+_fal_port_flowctrl_set (a_uint32_t dev_id, fal_port_t port_id,
+			a_bool_t enable)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_flowctrl_get)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_flowctrl_set)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_flowctrl_get(dev_id, port_id, enable);
-    return rv;
+  rv = p_api->port_flowctrl_set (dev_id, port_id, enable);
+  return rv;
 }
 
 
 static sw_error_t
-_fal_port_flowctrl_forcemode_set(a_uint32_t dev_id, fal_port_t port_id,
-                                 a_bool_t enable)
+_fal_port_flowctrl_get (a_uint32_t dev_id, fal_port_t port_id,
+			a_bool_t * enable)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_flowctrl_forcemode_set)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_flowctrl_get)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_flowctrl_forcemode_set(dev_id, port_id, enable);
-    return rv;
+  rv = p_api->port_flowctrl_get (dev_id, port_id, enable);
+  return rv;
 }
 
 
 static sw_error_t
-_fal_port_flowctrl_forcemode_get(a_uint32_t dev_id, fal_port_t port_id,
-                                 a_bool_t * enable)
+_fal_port_flowctrl_forcemode_set (a_uint32_t dev_id, fal_port_t port_id,
+				  a_bool_t enable)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_flowctrl_forcemode_get)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_flowctrl_forcemode_set)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_flowctrl_forcemode_get(dev_id, port_id, enable);
-    return rv;
-}
-
-static sw_error_t
-_fal_port_powersave_set(a_uint32_t dev_id, fal_port_t port_id,
-                        a_bool_t enable)
-{
-    sw_error_t rv;
-    hsl_api_t *p_api;
-
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
-
-    if (NULL == p_api->port_powersave_set)
-        return SW_NOT_SUPPORTED;
-
-    rv = p_api->port_powersave_set(dev_id, port_id, enable);
-    return rv;
+  rv = p_api->port_flowctrl_forcemode_set (dev_id, port_id, enable);
+  return rv;
 }
 
 
 static sw_error_t
-_fal_port_powersave_get(a_uint32_t dev_id, fal_port_t port_id,
-                        a_bool_t * enable)
+_fal_port_flowctrl_forcemode_get (a_uint32_t dev_id, fal_port_t port_id,
+				  a_bool_t * enable)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_powersave_get)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_flowctrl_forcemode_get)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_powersave_get(dev_id, port_id, enable);
-    return rv;
+  rv = p_api->port_flowctrl_forcemode_get (dev_id, port_id, enable);
+  return rv;
 }
 
 static sw_error_t
-_fal_port_hibernate_set(a_uint32_t dev_id, fal_port_t port_id,
-                        a_bool_t enable)
+_fal_port_powersave_set (a_uint32_t dev_id, fal_port_t port_id,
+			 a_bool_t enable)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_hibernate_set)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_powersave_set)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_hibernate_set(dev_id, port_id, enable);
-    return rv;
+  rv = p_api->port_powersave_set (dev_id, port_id, enable);
+  return rv;
 }
 
 
 static sw_error_t
-_fal_port_hibernate_get(a_uint32_t dev_id, fal_port_t port_id,
-                        a_bool_t * enable)
+_fal_port_powersave_get (a_uint32_t dev_id, fal_port_t port_id,
+			 a_bool_t * enable)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_hibernate_get)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_powersave_get)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_hibernate_get(dev_id, port_id, enable);
-    return rv;
+  rv = p_api->port_powersave_get (dev_id, port_id, enable);
+  return rv;
 }
 
 static sw_error_t
-_fal_port_cdt(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t mdi_pair,
-              a_uint32_t *cable_status, a_uint32_t *cable_len)
+_fal_port_hibernate_set (a_uint32_t dev_id, fal_port_t port_id,
+			 a_bool_t enable)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_cdt)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_hibernate_set)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_cdt(dev_id, port_id, mdi_pair, cable_status, cable_len);
-    return rv;
+  rv = p_api->port_hibernate_set (dev_id, port_id, enable);
+  return rv;
+}
+
+
+static sw_error_t
+_fal_port_hibernate_get (a_uint32_t dev_id, fal_port_t port_id,
+			 a_bool_t * enable)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_hibernate_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_hibernate_get (dev_id, port_id, enable);
+  return rv;
 }
 
 static sw_error_t
-_fal_port_rxhdr_mode_set(a_uint32_t dev_id, fal_port_t port_id,
-                         fal_port_header_mode_t mode)
+_fal_port_cdt (a_uint32_t dev_id, fal_port_t port_id, a_uint32_t mdi_pair,
+	       a_uint32_t * cable_status, a_uint32_t * cable_len)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_rxhdr_mode_set)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_cdt)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_rxhdr_mode_set(dev_id, port_id, mode);
-    return rv;
+  rv = p_api->port_cdt (dev_id, port_id, mdi_pair, cable_status, cable_len);
+  return rv;
 }
 
 static sw_error_t
-_fal_port_rxhdr_mode_get(a_uint32_t dev_id, fal_port_t port_id,
-                         fal_port_header_mode_t * mode)
+_fal_port_rxhdr_mode_set (a_uint32_t dev_id, fal_port_t port_id,
+			  fal_port_header_mode_t mode)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_rxhdr_mode_get)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_rxhdr_mode_set)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_rxhdr_mode_get(dev_id, port_id, mode);
-    return rv;
+  rv = p_api->port_rxhdr_mode_set (dev_id, port_id, mode);
+  return rv;
 }
 
 static sw_error_t
-_fal_port_txhdr_mode_set(a_uint32_t dev_id, fal_port_t port_id,
-                         fal_port_header_mode_t mode)
+_fal_port_rxhdr_mode_get (a_uint32_t dev_id, fal_port_t port_id,
+			  fal_port_header_mode_t * mode)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_txhdr_mode_set)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_rxhdr_mode_get)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_txhdr_mode_set(dev_id, port_id, mode);
-    return rv;
+  rv = p_api->port_rxhdr_mode_get (dev_id, port_id, mode);
+  return rv;
 }
 
 static sw_error_t
-_fal_port_txhdr_mode_get(a_uint32_t dev_id, fal_port_t port_id,
-                         fal_port_header_mode_t * mode)
+_fal_port_txhdr_mode_set (a_uint32_t dev_id, fal_port_t port_id,
+			  fal_port_header_mode_t mode)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_txhdr_mode_get)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_txhdr_mode_set)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_txhdr_mode_get(dev_id, port_id, mode);
-    return rv;
+  rv = p_api->port_txhdr_mode_set (dev_id, port_id, mode);
+  return rv;
 }
 
 static sw_error_t
-_fal_header_type_set(a_uint32_t dev_id, a_bool_t enable, a_uint32_t type)
+_fal_port_txhdr_mode_get (a_uint32_t dev_id, fal_port_t port_id,
+			  fal_port_header_mode_t * mode)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->header_type_set)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_txhdr_mode_get)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->header_type_set(dev_id, enable, type);
-    return rv;
+  rv = p_api->port_txhdr_mode_get (dev_id, port_id, mode);
+  return rv;
 }
 
 static sw_error_t
-_fal_header_type_get(a_uint32_t dev_id, a_bool_t * enable, a_uint32_t * type)
+_fal_header_type_set (a_uint32_t dev_id, a_bool_t enable, a_uint32_t type)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->header_type_get)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->header_type_set)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->header_type_get(dev_id, enable, type);
-    return rv;
+  rv = p_api->header_type_set (dev_id, enable, type);
+  return rv;
 }
 
 static sw_error_t
-_fal_port_txmac_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+_fal_header_type_get (a_uint32_t dev_id, a_bool_t * enable, a_uint32_t * type)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_txmac_status_set)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->header_type_get)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_txmac_status_set(dev_id, port_id, enable);
-    return rv;
+  rv = p_api->header_type_get (dev_id, enable, type);
+  return rv;
 }
 
 static sw_error_t
-_fal_port_txmac_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
+_fal_port_txmac_status_set (a_uint32_t dev_id, fal_port_t port_id,
+			    a_bool_t enable)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_txmac_status_get)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_txmac_status_set)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_txmac_status_get(dev_id, port_id, enable);
-    return rv;
+  rv = p_api->port_txmac_status_set (dev_id, port_id, enable);
+  return rv;
 }
 
 static sw_error_t
-_fal_port_rxmac_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+_fal_port_txmac_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			    a_bool_t * enable)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_rxmac_status_set)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_txmac_status_get)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_rxmac_status_set(dev_id, port_id, enable);
-    return rv;
+  rv = p_api->port_txmac_status_get (dev_id, port_id, enable);
+  return rv;
 }
 
 static sw_error_t
-_fal_port_rxmac_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
+_fal_port_rxmac_status_set (a_uint32_t dev_id, fal_port_t port_id,
+			    a_bool_t enable)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_rxmac_status_get)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_rxmac_status_set)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_rxmac_status_get(dev_id, port_id, enable);
-    return rv;
+  rv = p_api->port_rxmac_status_set (dev_id, port_id, enable);
+  return rv;
 }
 
 static sw_error_t
-_fal_port_txfc_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+_fal_port_rxmac_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			    a_bool_t * enable)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_txfc_status_set)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_rxmac_status_get)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_txfc_status_set(dev_id, port_id, enable);
-    return rv;
+  rv = p_api->port_rxmac_status_get (dev_id, port_id, enable);
+  return rv;
 }
 
 static sw_error_t
-_fal_port_txfc_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
+_fal_port_txfc_status_set (a_uint32_t dev_id, fal_port_t port_id,
+			   a_bool_t enable)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_txfc_status_get)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_txfc_status_set)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_txfc_status_get(dev_id, port_id, enable);
-    return rv;
+  rv = p_api->port_txfc_status_set (dev_id, port_id, enable);
+  return rv;
 }
 
 static sw_error_t
-_fal_port_rxfc_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+_fal_port_txfc_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			   a_bool_t * enable)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_rxfc_status_set)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_txfc_status_get)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_rxfc_status_set(dev_id, port_id, enable);
-    return rv;
+  rv = p_api->port_txfc_status_get (dev_id, port_id, enable);
+  return rv;
 }
 
 static sw_error_t
-_fal_port_rxfc_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
+_fal_port_rxfc_status_set (a_uint32_t dev_id, fal_port_t port_id,
+			   a_bool_t enable)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_rxfc_status_get)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_rxfc_status_set)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_rxfc_status_get(dev_id, port_id, enable);
-    return rv;
+  rv = p_api->port_rxfc_status_set (dev_id, port_id, enable);
+  return rv;
 }
 
 static sw_error_t
-_fal_port_bp_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+_fal_port_rxfc_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			   a_bool_t * enable)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_bp_status_set)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_rxfc_status_get)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_bp_status_set(dev_id, port_id, enable);
-    return rv;
+  rv = p_api->port_rxfc_status_get (dev_id, port_id, enable);
+  return rv;
 }
 
 static sw_error_t
-_fal_port_bp_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
+_fal_port_bp_status_set (a_uint32_t dev_id, fal_port_t port_id,
+			 a_bool_t enable)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_bp_status_get)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_bp_status_set)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_bp_status_get(dev_id, port_id, enable);
-    return rv;
+  rv = p_api->port_bp_status_set (dev_id, port_id, enable);
+  return rv;
 }
 
 static sw_error_t
-_fal_port_link_forcemode_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+_fal_port_bp_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			 a_bool_t * enable)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_link_forcemode_set)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_bp_status_get)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_link_forcemode_set(dev_id, port_id, enable);
-    return rv;
+  rv = p_api->port_bp_status_get (dev_id, port_id, enable);
+  return rv;
 }
 
 static sw_error_t
-_fal_port_link_forcemode_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
+_fal_port_link_forcemode_set (a_uint32_t dev_id, fal_port_t port_id,
+			      a_bool_t enable)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_link_forcemode_get)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_link_forcemode_set)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_link_forcemode_get(dev_id, port_id, enable);
-    return rv;
+  rv = p_api->port_link_forcemode_set (dev_id, port_id, enable);
+  return rv;
 }
 
 static sw_error_t
-_fal_port_link_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * status)
+_fal_port_link_forcemode_get (a_uint32_t dev_id, fal_port_t port_id,
+			      a_bool_t * enable)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_link_status_get)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_link_forcemode_get)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_link_status_get(dev_id, port_id, status);
-    return rv;
+  rv = p_api->port_link_forcemode_get (dev_id, port_id, enable);
+  return rv;
 }
 
 static sw_error_t
-_fal_ports_link_status_get(a_uint32_t dev_id, a_uint32_t * status)
+_fal_port_link_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			   a_bool_t * status)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->ports_link_status_get)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_link_status_get)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->ports_link_status_get(dev_id, status);
-    return rv;
+  rv = p_api->port_link_status_get (dev_id, port_id, status);
+  return rv;
 }
 
 static sw_error_t
-_fal_port_mac_loopback_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+_fal_ports_link_status_get (a_uint32_t dev_id, a_uint32_t * status)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_mac_loopback_set)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->ports_link_status_get)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_mac_loopback_set(dev_id, port_id, enable);
-    return rv;
+  rv = p_api->ports_link_status_get (dev_id, status);
+  return rv;
 }
 
 static sw_error_t
-_fal_port_mac_loopback_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
+_fal_port_mac_loopback_set (a_uint32_t dev_id, fal_port_t port_id,
+			    a_bool_t enable)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_mac_loopback_get)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_mac_loopback_set)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_mac_loopback_get(dev_id, port_id, enable);
-    return rv;
+  rv = p_api->port_mac_loopback_set (dev_id, port_id, enable);
+  return rv;
 }
 
 static sw_error_t
-_fal_port_congestion_drop_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t queue_id, a_bool_t enable)
+_fal_port_mac_loopback_get (a_uint32_t dev_id, fal_port_t port_id,
+			    a_bool_t * enable)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_congestion_drop_set)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_mac_loopback_get)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_congestion_drop_set(dev_id, port_id, queue_id, enable);
-    return rv;
+  rv = p_api->port_mac_loopback_get (dev_id, port_id, enable);
+  return rv;
 }
 
 static sw_error_t
-_fal_port_congestion_drop_get(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t queue_id, a_bool_t * enable)
+_fal_port_congestion_drop_set (a_uint32_t dev_id, fal_port_t port_id,
+			       a_uint32_t queue_id, a_bool_t enable)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->port_congestion_drop_get)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_congestion_drop_set)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_congestion_drop_get(dev_id, port_id, queue_id, enable);
-    return rv;
+  rv = p_api->port_congestion_drop_set (dev_id, port_id, queue_id, enable);
+  return rv;
 }
 
 static sw_error_t
-_fal_ring_flow_ctrl_thres_set(a_uint32_t dev_id, a_uint32_t ring_id, a_uint8_t on_thres, a_uint8_t off_thres)
+_fal_port_congestion_drop_get (a_uint32_t dev_id, fal_port_t port_id,
+			       a_uint32_t queue_id, a_bool_t * enable)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->ring_flow_ctrl_thres_set)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->port_congestion_drop_get)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->ring_flow_ctrl_thres_set(dev_id, ring_id, on_thres, off_thres);
-    return rv;
+  rv = p_api->port_congestion_drop_get (dev_id, port_id, queue_id, enable);
+  return rv;
 }
 
 static sw_error_t
-_fal_ring_flow_ctrl_thres_get(a_uint32_t dev_id, a_uint32_t ring_id, a_uint8_t *on_thres, a_uint8_t *off_thres)
+_fal_ring_flow_ctrl_thres_set (a_uint32_t dev_id, a_uint32_t ring_id,
+			       a_uint8_t on_thres, a_uint8_t off_thres)
 {
-    sw_error_t rv;
-    hsl_api_t *p_api;
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-    if (NULL == p_api->ring_flow_ctrl_thres_get)
-        return SW_NOT_SUPPORTED;
+  if (NULL == p_api->ring_flow_ctrl_thres_set)
+    return SW_NOT_SUPPORTED;
 
-    rv = p_api->ring_flow_ctrl_thres_get(dev_id, ring_id, on_thres, off_thres);
-    return rv;
+  rv = p_api->ring_flow_ctrl_thres_set (dev_id, ring_id, on_thres, off_thres);
+  return rv;
+}
+
+static sw_error_t
+_fal_ring_flow_ctrl_thres_get (a_uint32_t dev_id, a_uint32_t ring_id,
+			       a_uint8_t * on_thres, a_uint8_t * off_thres)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->ring_flow_ctrl_thres_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->ring_flow_ctrl_thres_get (dev_id, ring_id, on_thres, off_thres);
+  return rv;
+}
+
+static sw_error_t
+_fal_port_8023az_set (a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_8023az_set)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_8023az_set (dev_id, port_id, enable);
+  return rv;
 }
 
 
+static sw_error_t
+_fal_port_8023az_get (a_uint32_t dev_id, fal_port_t port_id,
+		      a_bool_t * enable)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_8023az_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_8023az_get (dev_id, port_id, enable);
+  return rv;
+}
+
+static sw_error_t
+_fal_port_mdix_set (a_uint32_t dev_id, fal_port_t port_id,
+		    fal_port_mdix_mode_t mode)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_mdix_set)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_mdix_set (dev_id, port_id, mode);
+  return rv;
+}
+
+static sw_error_t
+_fal_port_mdix_get (a_uint32_t dev_id, fal_port_t port_id,
+		    fal_port_mdix_mode_t * mode)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_mdix_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_mdix_get (dev_id, port_id, mode);
+  return rv;
+}
+
+static sw_error_t
+_fal_port_mdix_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			   fal_port_mdix_status_t * mode)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_mdix_status_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_mdix_status_get (dev_id, port_id, mode);
+  return rv;
+}
+
+static sw_error_t
+_fal_port_combo_prefer_medium_set (a_uint32_t dev_id, fal_port_t port_id,
+				   fal_port_medium_t medium)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_combo_prefer_medium_set)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_combo_prefer_medium_set (dev_id, port_id, medium);
+  return rv;
+}
+
+static sw_error_t
+_fal_port_combo_prefer_medium_get (a_uint32_t dev_id, fal_port_t port_id,
+				   fal_port_medium_t * medium)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_combo_prefer_medium_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_combo_prefer_medium_get (dev_id, port_id, medium);
+  return rv;
+}
+
+static sw_error_t
+_fal_port_combo_medium_status_get (a_uint32_t dev_id, fal_port_t port_id,
+				   fal_port_medium_t * medium)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_combo_medium_status_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_combo_medium_status_get (dev_id, port_id, medium);
+  return rv;
+}
+
+static sw_error_t
+_fal_port_combo_fiber_mode_set (a_uint32_t dev_id, fal_port_t port_id,
+				fal_port_fiber_mode_t mode)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_combo_fiber_mode_set)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_combo_fiber_mode_set (dev_id, port_id, mode);
+  return rv;
+}
+
+static sw_error_t
+_fal_port_combo_fiber_mode_get (a_uint32_t dev_id, fal_port_t port_id,
+				fal_port_fiber_mode_t * mode)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_combo_fiber_mode_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_combo_fiber_mode_get (dev_id, port_id, mode);
+  return rv;
+}
+
+static sw_error_t
+_fal_port_local_loopback_set (a_uint32_t dev_id, fal_port_t port_id,
+			      a_bool_t enable)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_local_loopback_set)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_local_loopback_set (dev_id, port_id, enable);
+  return rv;
+}
+
+
+static sw_error_t
+_fal_port_local_loopback_get (a_uint32_t dev_id, fal_port_t port_id,
+			      a_bool_t * enable)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_local_loopback_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_local_loopback_get (dev_id, port_id, enable);
+  return rv;
+}
+
+static sw_error_t
+_fal_port_remote_loopback_set (a_uint32_t dev_id, fal_port_t port_id,
+			       a_bool_t enable)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_remote_loopback_set)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_remote_loopback_set (dev_id, port_id, enable);
+  return rv;
+}
+
+
+static sw_error_t
+_fal_port_remote_loopback_get (a_uint32_t dev_id, fal_port_t port_id,
+			       a_bool_t * enable)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_remote_loopback_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_remote_loopback_get (dev_id, port_id, enable);
+  return rv;
+}
 
 /**
  * @brief Set duplex mode on a particular port.
@@ -757,15 +1002,15 @@ _fal_ring_flow_ctrl_thres_get(a_uint32_t dev_id, a_uint32_t ring_id, a_uint8_t *
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_duplex_set(a_uint32_t dev_id, fal_port_t port_id,
-                    fal_port_duplex_t duplex)
+fal_port_duplex_set (a_uint32_t dev_id, fal_port_t port_id,
+		     fal_port_duplex_t duplex)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_duplex_set(dev_id, port_id, duplex);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_duplex_set (dev_id, port_id, duplex);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -776,15 +1021,15 @@ fal_port_duplex_set(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_duplex_get(a_uint32_t dev_id, fal_port_t port_id,
-                    fal_port_duplex_t * pduplex)
+fal_port_duplex_get (a_uint32_t dev_id, fal_port_t port_id,
+		     fal_port_duplex_t * pduplex)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_duplex_get(dev_id, port_id, pduplex);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_duplex_get (dev_id, port_id, pduplex);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -795,15 +1040,15 @@ fal_port_duplex_get(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_speed_set(a_uint32_t dev_id, fal_port_t port_id,
-                   fal_port_speed_t speed)
+fal_port_speed_set (a_uint32_t dev_id, fal_port_t port_id,
+		    fal_port_speed_t speed)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_speed_set(dev_id, port_id, speed);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_speed_set (dev_id, port_id, speed);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -814,15 +1059,15 @@ fal_port_speed_set(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_speed_get(a_uint32_t dev_id, fal_port_t port_id,
-                   fal_port_speed_t * pspeed)
+fal_port_speed_get (a_uint32_t dev_id, fal_port_t port_id,
+		    fal_port_speed_t * pspeed)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_speed_get(dev_id, port_id, pspeed);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_speed_get (dev_id, port_id, pspeed);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -833,15 +1078,15 @@ fal_port_speed_get(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_autoneg_status_get(a_uint32_t dev_id, fal_port_t port_id,
-                            a_bool_t * status)
+fal_port_autoneg_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			     a_bool_t * status)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_autoneg_status_get(dev_id, port_id, status);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_autoneg_status_get (dev_id, port_id, status);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -851,14 +1096,14 @@ fal_port_autoneg_status_get(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_autoneg_enable(a_uint32_t dev_id, fal_port_t port_id)
+fal_port_autoneg_enable (a_uint32_t dev_id, fal_port_t port_id)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_autoneg_enable(dev_id, port_id);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_autoneg_enable (dev_id, port_id);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -868,14 +1113,14 @@ fal_port_autoneg_enable(a_uint32_t dev_id, fal_port_t port_id)
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_autoneg_restart(a_uint32_t dev_id, fal_port_t port_id)
+fal_port_autoneg_restart (a_uint32_t dev_id, fal_port_t port_id)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_autoneg_restart(dev_id, port_id);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_autoneg_restart (dev_id, port_id);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -889,15 +1134,15 @@ fal_port_autoneg_restart(a_uint32_t dev_id, fal_port_t port_id)
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_autoneg_adv_set(a_uint32_t dev_id, fal_port_t port_id,
-                         a_uint32_t autoadv)
+fal_port_autoneg_adv_set (a_uint32_t dev_id, fal_port_t port_id,
+			  a_uint32_t autoadv)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_autoneg_adv_set(dev_id, port_id, autoadv);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_autoneg_adv_set (dev_id, port_id, autoadv);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -908,15 +1153,15 @@ fal_port_autoneg_adv_set(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_autoneg_adv_get(a_uint32_t dev_id, fal_port_t port_id,
-                         a_uint32_t * autoadv)
+fal_port_autoneg_adv_get (a_uint32_t dev_id, fal_port_t port_id,
+			  a_uint32_t * autoadv)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_autoneg_adv_get(dev_id, port_id, autoadv);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_autoneg_adv_get (dev_id, port_id, autoadv);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -927,14 +1172,15 @@ fal_port_autoneg_adv_get(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_hdr_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+fal_port_hdr_status_set (a_uint32_t dev_id, fal_port_t port_id,
+			 a_bool_t enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_hdr_status_set(dev_id, port_id, enable);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_hdr_status_set (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -945,15 +1191,15 @@ fal_port_hdr_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_hdr_status_get(a_uint32_t dev_id, fal_port_t port_id,
-                        a_bool_t * enable)
+fal_port_hdr_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			 a_bool_t * enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_hdr_status_get(dev_id, port_id, enable);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_hdr_status_get (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -964,14 +1210,14 @@ fal_port_hdr_status_get(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_flowctrl_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+fal_port_flowctrl_set (a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_flowctrl_set(dev_id, port_id, enable);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_flowctrl_set (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -982,14 +1228,15 @@ fal_port_flowctrl_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_flowctrl_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
+fal_port_flowctrl_get (a_uint32_t dev_id, fal_port_t port_id,
+		       a_bool_t * enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_flowctrl_get(dev_id, port_id, enable);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_flowctrl_get (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1000,15 +1247,15 @@ fal_port_flowctrl_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_flowctrl_forcemode_set(a_uint32_t dev_id, fal_port_t port_id,
-                                a_bool_t enable)
+fal_port_flowctrl_forcemode_set (a_uint32_t dev_id, fal_port_t port_id,
+				 a_bool_t enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_flowctrl_forcemode_set(dev_id, port_id, enable);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_flowctrl_forcemode_set (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1019,15 +1266,15 @@ fal_port_flowctrl_forcemode_set(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_flowctrl_forcemode_get(a_uint32_t dev_id, fal_port_t port_id,
-                                a_bool_t * enable)
+fal_port_flowctrl_forcemode_get (a_uint32_t dev_id, fal_port_t port_id,
+				 a_bool_t * enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_flowctrl_forcemode_get(dev_id, port_id, enable);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_flowctrl_forcemode_get (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1038,15 +1285,15 @@ fal_port_flowctrl_forcemode_get(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_powersave_set(a_uint32_t dev_id, fal_port_t port_id,
-                       a_bool_t enable)
+fal_port_powersave_set (a_uint32_t dev_id, fal_port_t port_id,
+			a_bool_t enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_powersave_set(dev_id, port_id, enable);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_powersave_set (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1057,15 +1304,15 @@ fal_port_powersave_set(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_powersave_get(a_uint32_t dev_id, fal_port_t port_id,
-                       a_bool_t * enable)
+fal_port_powersave_get (a_uint32_t dev_id, fal_port_t port_id,
+			a_bool_t * enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_powersave_get(dev_id, port_id, enable);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_powersave_get (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1076,15 +1323,15 @@ fal_port_powersave_get(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_hibernate_set(a_uint32_t dev_id, fal_port_t port_id,
-                       a_bool_t enable)
+fal_port_hibernate_set (a_uint32_t dev_id, fal_port_t port_id,
+			a_bool_t enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_hibernate_set(dev_id, port_id, enable);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_hibernate_set (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1095,15 +1342,15 @@ fal_port_hibernate_set(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_hibernate_get(a_uint32_t dev_id, fal_port_t port_id,
-                       a_bool_t * enable)
+fal_port_hibernate_get (a_uint32_t dev_id, fal_port_t port_id,
+			a_bool_t * enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_hibernate_get(dev_id, port_id, enable);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_hibernate_get (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1116,15 +1363,15 @@ fal_port_hibernate_get(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_cdt(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t mdi_pair,
-             a_uint32_t *cable_status, a_uint32_t *cable_len)
+fal_port_cdt (a_uint32_t dev_id, fal_port_t port_id, a_uint32_t mdi_pair,
+	      a_uint32_t * cable_status, a_uint32_t * cable_len)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_cdt(dev_id, port_id, mdi_pair, cable_status, cable_len);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_cdt (dev_id, port_id, mdi_pair, cable_status, cable_len);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1135,15 +1382,15 @@ fal_port_cdt(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t mdi_pair,
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_rxhdr_mode_set(a_uint32_t dev_id, fal_port_t port_id,
-                        fal_port_header_mode_t mode)
+fal_port_rxhdr_mode_set (a_uint32_t dev_id, fal_port_t port_id,
+			 fal_port_header_mode_t mode)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_rxhdr_mode_set(dev_id, port_id, mode);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_rxhdr_mode_set (dev_id, port_id, mode);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1154,15 +1401,15 @@ fal_port_rxhdr_mode_set(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_rxhdr_mode_get(a_uint32_t dev_id, fal_port_t port_id,
-                        fal_port_header_mode_t * mode)
+fal_port_rxhdr_mode_get (a_uint32_t dev_id, fal_port_t port_id,
+			 fal_port_header_mode_t * mode)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_rxhdr_mode_get(dev_id, port_id, mode);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_rxhdr_mode_get (dev_id, port_id, mode);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1173,15 +1420,15 @@ fal_port_rxhdr_mode_get(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_txhdr_mode_set(a_uint32_t dev_id, fal_port_t port_id,
-                        fal_port_header_mode_t mode)
+fal_port_txhdr_mode_set (a_uint32_t dev_id, fal_port_t port_id,
+			 fal_port_header_mode_t mode)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_txhdr_mode_set(dev_id, port_id, mode);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_txhdr_mode_set (dev_id, port_id, mode);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1192,15 +1439,15 @@ fal_port_txhdr_mode_set(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_txhdr_mode_get(a_uint32_t dev_id, fal_port_t port_id,
-                        fal_port_header_mode_t * mode)
+fal_port_txhdr_mode_get (a_uint32_t dev_id, fal_port_t port_id,
+			 fal_port_header_mode_t * mode)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_txhdr_mode_get(dev_id, port_id, mode);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_txhdr_mode_get (dev_id, port_id, mode);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1211,13 +1458,13 @@ fal_port_txhdr_mode_get(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 sw_error_t
-fal_header_type_set(a_uint32_t dev_id, a_bool_t enable, a_uint32_t type)
+fal_header_type_set (a_uint32_t dev_id, a_bool_t enable, a_uint32_t type)
 {
-    sw_error_t rv;
-    FAL_API_LOCK;
-    rv = _fal_header_type_set(dev_id, enable, type);
-    FAL_API_UNLOCK;
-    return rv;
+  sw_error_t rv;
+  FAL_API_LOCK;
+  rv = _fal_header_type_set (dev_id, enable, type);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1228,14 +1475,14 @@ fal_header_type_set(a_uint32_t dev_id, a_bool_t enable, a_uint32_t type)
  * @return SW_OK or error code
  */
 sw_error_t
-fal_header_type_get(a_uint32_t dev_id, a_bool_t * enable, a_uint32_t * type)
+fal_header_type_get (a_uint32_t dev_id, a_bool_t * enable, a_uint32_t * type)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_header_type_get(dev_id, enable, type);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_header_type_get (dev_id, enable, type);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1246,13 +1493,14 @@ fal_header_type_get(a_uint32_t dev_id, a_bool_t * enable, a_uint32_t * type)
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_txmac_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+fal_port_txmac_status_set (a_uint32_t dev_id, fal_port_t port_id,
+			   a_bool_t enable)
 {
-    sw_error_t rv;
-    FAL_API_LOCK;
-    rv = _fal_port_txmac_status_set(dev_id, port_id, enable);
-    FAL_API_UNLOCK;
-    return rv;
+  sw_error_t rv;
+  FAL_API_LOCK;
+  rv = _fal_port_txmac_status_set (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1263,14 +1511,15 @@ fal_port_txmac_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_txmac_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
+fal_port_txmac_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			   a_bool_t * enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_txmac_status_get(dev_id, port_id, enable);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_txmac_status_get (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1281,13 +1530,14 @@ fal_port_txmac_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enab
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_rxmac_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+fal_port_rxmac_status_set (a_uint32_t dev_id, fal_port_t port_id,
+			   a_bool_t enable)
 {
-    sw_error_t rv;
-    FAL_API_LOCK;
-    rv = _fal_port_rxmac_status_set(dev_id, port_id, enable);
-    FAL_API_UNLOCK;
-    return rv;
+  sw_error_t rv;
+  FAL_API_LOCK;
+  rv = _fal_port_rxmac_status_set (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1298,14 +1548,15 @@ fal_port_rxmac_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_rxmac_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
+fal_port_rxmac_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			   a_bool_t * enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_rxmac_status_get(dev_id, port_id, enable);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_rxmac_status_get (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1316,13 +1567,14 @@ fal_port_rxmac_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enab
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_txfc_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+fal_port_txfc_status_set (a_uint32_t dev_id, fal_port_t port_id,
+			  a_bool_t enable)
 {
-    sw_error_t rv;
-    FAL_API_LOCK;
-    rv = _fal_port_txfc_status_set(dev_id, port_id, enable);
-    FAL_API_UNLOCK;
-    return rv;
+  sw_error_t rv;
+  FAL_API_LOCK;
+  rv = _fal_port_txfc_status_set (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1333,14 +1585,15 @@ fal_port_txfc_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_txfc_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
+fal_port_txfc_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			  a_bool_t * enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_txfc_status_get(dev_id, port_id, enable);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_txfc_status_get (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1351,14 +1604,15 @@ fal_port_txfc_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enabl
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_rxfc_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+fal_port_rxfc_status_set (a_uint32_t dev_id, fal_port_t port_id,
+			  a_bool_t enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_rxfc_status_set(dev_id, port_id, enable);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_rxfc_status_set (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1369,14 +1623,15 @@ fal_port_rxfc_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_rxfc_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
+fal_port_rxfc_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			  a_bool_t * enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_rxfc_status_get(dev_id, port_id, enable);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_rxfc_status_get (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1387,14 +1642,15 @@ fal_port_rxfc_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enabl
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_bp_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+fal_port_bp_status_set (a_uint32_t dev_id, fal_port_t port_id,
+			a_bool_t enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_bp_status_set(dev_id, port_id, enable);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_bp_status_set (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1405,14 +1661,15 @@ fal_port_bp_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_bp_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
+fal_port_bp_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			a_bool_t * enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_bp_status_get(dev_id, port_id, enable);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_bp_status_get (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1423,14 +1680,15 @@ fal_port_bp_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_link_forcemode_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+fal_port_link_forcemode_set (a_uint32_t dev_id, fal_port_t port_id,
+			     a_bool_t enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_link_forcemode_set(dev_id, port_id, enable);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_link_forcemode_set (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1441,14 +1699,15 @@ fal_port_link_forcemode_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enab
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_link_forcemode_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
+fal_port_link_forcemode_get (a_uint32_t dev_id, fal_port_t port_id,
+			     a_bool_t * enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_link_forcemode_get(dev_id, port_id, enable);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_link_forcemode_get (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1459,14 +1718,15 @@ fal_port_link_forcemode_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * en
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_link_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * status)
+fal_port_link_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			  a_bool_t * status)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_link_status_get(dev_id, port_id, status);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_link_status_get (dev_id, port_id, status);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1476,14 +1736,14 @@ fal_port_link_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * statu
  * @return SW_OK or error code
  */
 sw_error_t
-fal_ports_link_status_get(a_uint32_t dev_id, a_uint32_t * status)
+fal_ports_link_status_get (a_uint32_t dev_id, a_uint32_t * status)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_ports_link_status_get(dev_id, status);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_ports_link_status_get (dev_id, status);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 
@@ -1495,14 +1755,15 @@ fal_ports_link_status_get(a_uint32_t dev_id, a_uint32_t * status)
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_mac_loopback_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+fal_port_mac_loopback_set (a_uint32_t dev_id, fal_port_t port_id,
+			   a_bool_t enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_mac_loopback_set(dev_id, port_id, enable);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_mac_loopback_set (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1513,14 +1774,15 @@ fal_port_mac_loopback_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_mac_loopback_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
+fal_port_mac_loopback_get (a_uint32_t dev_id, fal_port_t port_id,
+			   a_bool_t * enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_mac_loopback_get(dev_id, port_id, enable);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_mac_loopback_get (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1531,14 +1793,15 @@ fal_port_mac_loopback_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enab
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_congestion_drop_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t queue_id, a_bool_t enable)
+fal_port_congestion_drop_set (a_uint32_t dev_id, fal_port_t port_id,
+			      a_uint32_t queue_id, a_bool_t enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_congestion_drop_set(dev_id, port_id, queue_id, enable);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_congestion_drop_set (dev_id, port_id, queue_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1550,14 +1813,15 @@ fal_port_congestion_drop_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t q
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_congestion_drop_get(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t queue_id, a_bool_t * enable)
+fal_port_congestion_drop_get (a_uint32_t dev_id, fal_port_t port_id,
+			      a_uint32_t queue_id, a_bool_t * enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_port_congestion_drop_get(dev_id, port_id, queue_id, enable);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_port_congestion_drop_get (dev_id, port_id, queue_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1569,14 +1833,15 @@ fal_port_congestion_drop_get(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t q
  * @return SW_OK or error code
  */
 sw_error_t
-fal_ring_flow_ctrl_thres_set(a_uint32_t dev_id, a_uint32_t ring_id, a_uint8_t on_thres, a_uint8_t off_thres)
+fal_ring_flow_ctrl_thres_set (a_uint32_t dev_id, a_uint32_t ring_id,
+			      a_uint8_t on_thres, a_uint8_t off_thres)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_ring_flow_ctrl_thres_set(dev_id, ring_id, on_thres, off_thres);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_ring_flow_ctrl_thres_set (dev_id, ring_id, on_thres, off_thres);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1588,19 +1853,281 @@ fal_ring_flow_ctrl_thres_set(a_uint32_t dev_id, a_uint32_t ring_id, a_uint8_t on
  * @return SW_OK or error code
  */
 sw_error_t
-fal_ring_flow_ctrl_thres_get(a_uint32_t dev_id, a_uint32_t ring_id, a_uint8_t *on_thres, a_uint8_t *off_thres)
+fal_ring_flow_ctrl_thres_get (a_uint32_t dev_id, a_uint32_t ring_id,
+			      a_uint8_t * on_thres, a_uint8_t * off_thres)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_ring_flow_ctrl_thres_get(dev_id, ring_id, on_thres, off_thres);
-    FAL_API_UNLOCK;
-    return rv;
+  FAL_API_LOCK;
+  rv = _fal_ring_flow_ctrl_thres_get (dev_id, ring_id, on_thres, off_thres);
+  FAL_API_UNLOCK;
+  return rv;
 }
 
+/**
+ * @brief Set 8023az status on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[in] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_8023az_set (a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+{
+  sw_error_t rv;
 
+  FAL_API_LOCK;
+  rv = _fal_port_8023az_set (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Get 8023az status on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_8023az_get (a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_8023az_get (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Set mdix mode on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[in] set mdix mode [mdx , mdix or auto]
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_mdix_set (a_uint32_t dev_id, fal_port_t port_id,
+		   fal_port_mdix_mode_t mode)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_mdix_set (dev_id, port_id, mode);
+  FAL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Get mdix on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] set mdx ,mdix or auto 
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_mdix_get (a_uint32_t dev_id, fal_port_t port_id,
+		   fal_port_mdix_mode_t * mode)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_mdix_get (dev_id, port_id, mode);
+  FAL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Get mdix status on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] set mdx ,mdix 
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_mdix_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			  fal_port_mdix_status_t * mode)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_mdix_status_get (dev_id, port_id, mode);
+  FAL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Set combo prefer medium  on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[in] set combo prefer medium [fiber for copper]
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_combo_prefer_medium_set (a_uint32_t dev_id, a_uint32_t port_id,
+				  fal_port_medium_t medium)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_combo_prefer_medium_set (dev_id, port_id, medium);
+  FAL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Get combo prefer medium  on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[in] set combo prefer medium [fiber for copper]
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_combo_prefer_medium_get (a_uint32_t dev_id, a_uint32_t port_id,
+				  fal_port_medium_t * medium)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_combo_prefer_medium_get (dev_id, port_id, medium);
+  FAL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Get combo  medium  status on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[in] get combo [fiber for copper]
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_combo_medium_status_get (a_uint32_t dev_id, a_uint32_t port_id,
+				  fal_port_medium_t * medium)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_combo_medium_status_get (dev_id, port_id, medium);
+  FAL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Set combo fiber mode  on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[in] get combo fiber mode [1000bx or 100fx]
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_combo_fiber_mode_set (a_uint32_t dev_id, a_uint32_t port_id,
+			       fal_port_fiber_mode_t mode)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_combo_fiber_mode_set (dev_id, port_id, mode);
+  FAL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Get combo fiber mode  on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[in] get combo fiber mode [1000bx or 100fx]
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_combo_fiber_mode_get (a_uint32_t dev_id, a_uint32_t port_id,
+			       fal_port_fiber_mode_t * mode)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_combo_fiber_mode_get (dev_id, port_id, mode);
+  FAL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Set local loopback  on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[in] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_local_loopback_set (a_uint32_t dev_id, fal_port_t port_id,
+			     a_bool_t enable)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_local_loopback_set (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Get local loopback status on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_local_loopback_get (a_uint32_t dev_id, fal_port_t port_id,
+			     a_bool_t * enable)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_local_loopback_get (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Set remote loopback  on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[in] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_remote_loopback_set (a_uint32_t dev_id, fal_port_t port_id,
+			      a_bool_t enable)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_remote_loopback_set (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Get remote loopback status on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_remote_loopback_get (a_uint32_t dev_id, fal_port_t port_id,
+			      a_bool_t * enable)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_remote_loopback_get (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
+}
 
 /**
  * @}
  */
-

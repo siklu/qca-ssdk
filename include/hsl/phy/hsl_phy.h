@@ -171,6 +171,12 @@ extern "C" {
 						 a_uint32_t phy_id,
 						 a_uint16_t * org_id,
 						 a_uint16_t * rev_id);
+	typedef sw_error_t(*hsl_phy_wol_status_set) (a_uint32_t dev_id,
+							 a_uint32_t phy_id,
+							 a_bool_t enable);
+	typedef sw_error_t(*hsl_phy_wol_status_get) (a_uint32_t dev_id,
+							 a_uint32_t phy_id,
+							 a_bool_t * enable);
 
 	typedef struct hsl_phy_ops_s {
 
@@ -217,9 +223,11 @@ extern "C" {
 		hsl_phy_debug_read phy_debug_read;
 		hsl_phy_mmd_write phy_mmd_write;
 		hsl_phy_mmd_read phy_mmd_read;
-		hsl_phy_magic_frame_mac_set malibu_phy_magic_frame_mac_set;
-		hsl_phy_magic_frame_mac_get malibu_phy_magic_frame_mac_get;
-		hsl_phy_phy_id_get malibu_phy_phy_id_get;
+		hsl_phy_magic_frame_mac_set phy_magic_frame_mac_set;
+		hsl_phy_magic_frame_mac_get phy_magic_frame_mac_get;
+		hsl_phy_phy_id_get phy_phy_id_get;
+		hsl_phy_wol_status_set phy_wol_status_set;
+		hsl_phy_wol_status_get phy_wol_status_get;
 
 	} hsl_phy_ops_t;
 

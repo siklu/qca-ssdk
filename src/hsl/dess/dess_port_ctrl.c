@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2014-2015, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -23,1524 +23,1984 @@
 #include "hsl_port_prop.h"
 #include "dess_port_ctrl.h"
 #include "dess_reg.h"
-#include "f1_phy.h"
+#include "hsl_phy.h"
 
 #define DMA_MAX_VIRT_RING 8
-extern a_bool_t dess_mac_port_valid_check(fal_port_t port_id);
+extern a_bool_t dess_mac_port_valid_check (fal_port_t port_id);
 
 /*
 PORT0 egress 6 queues
 PORT1~4 egress 4 queues
 PORT5 egress 6 queues
 */
-static a_uint32_t port_queue[6] = {6, 4, 4, 4, 4, 6};
+static a_uint32_t port_queue[6] = { 6, 4, 4, 4, 4, 6 };
 
 
 static a_bool_t
-_dess_port_phy_connected(a_uint32_t dev_id, fal_port_t port_id)
+_dess_port_phy_connected (a_uint32_t dev_id, fal_port_t port_id)
 {
-    if (0 == port_id)
+  if (0 == port_id)
     {
-        return A_FALSE;
+      return A_FALSE;
     }
-    else
+  else
     {
-		
-        return dess_mac_port_valid_check(port_id);
+
+      return dess_mac_port_valid_check (port_id);
     }
 }
 
 static sw_error_t
-_dess_port_duplex_set(a_uint32_t dev_id, fal_port_t port_id,
-                      fal_port_duplex_t duplex)
+_dess_port_duplex_set (a_uint32_t dev_id, fal_port_t port_id,
+		       fal_port_duplex_t duplex)
 {
-    sw_error_t rv;
-    a_uint32_t phy_id, reg_save, reg_val, force;
+  sw_error_t rv;
+  a_uint32_t phy_id, reg_save, reg_val, force;
+  hsl_phy_ops_t *phy_drv;
 
-    HSL_DEV_ID_CHECK(dev_id);
+  HSL_DEV_ID_CHECK (dev_id);
 
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
     {
-        return SW_BAD_PARAM;
+      return SW_BAD_PARAM;
     }
 
-    if (FAL_DUPLEX_BUTT <= duplex)
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_ENTRY_GET(rv, dev_id, PORT_STATUS, port_id,
-                      (a_uint8_t *) (&reg_val), sizeof (a_uint32_t));
-
-    /* for those ports without PHY device we set MAC register */
-    if (A_FALSE == _dess_port_phy_connected(dev_id, port_id))
-    {
-        SW_SET_REG_BY_FIELD(PORT_STATUS, LINK_EN, 0, reg_val);
-        if (FAL_HALF_DUPLEX == duplex)
-        {
-            SW_SET_REG_BY_FIELD(PORT_STATUS, DUPLEX_MODE, 0, reg_val);
-        }
-        else
-        {
-            SW_SET_REG_BY_FIELD(PORT_STATUS, DUPLEX_MODE, 1, reg_val);
-        }
-        reg_save = reg_val;
-    }
-    else
-    {
-        /* hardware requirement: set mac be config by sw and turn off RX/TX MAC */
-        reg_save = reg_val;
-        SW_SET_REG_BY_FIELD(PORT_STATUS, LINK_EN, 0, reg_val);
-        SW_SET_REG_BY_FIELD(PORT_STATUS, RXMAC_EN, 0, reg_val);
-        SW_SET_REG_BY_FIELD(PORT_STATUS, TXMAC_EN, 0, reg_val);
-
-        HSL_REG_ENTRY_SET(rv, dev_id, PORT_STATUS, port_id,
-                          (a_uint8_t *) (&reg_val), sizeof (a_uint32_t));
-
-        rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
-        SW_RTN_ON_ERROR(rv);
-
-        rv = f1_phy_set_duplex(dev_id, phy_id, duplex);
-        SW_RTN_ON_ERROR(rv);
-
-        /* If MAC not in sync with PHY mode, the behavior is undefine.
-           You must be careful... */
-        SW_GET_FIELD_BY_REG(PORT_STATUS, LINK_EN, force, reg_save);
-        if (!force)
-        {
-            if (FAL_HALF_DUPLEX == duplex)
-            {
-                SW_SET_REG_BY_FIELD(PORT_STATUS, DUPLEX_MODE, 0, reg_save);
-            }
-            else
-            {
-                SW_SET_REG_BY_FIELD(PORT_STATUS, DUPLEX_MODE, 1, reg_save);
-            }
-        }
-    }
-
-    HSL_REG_ENTRY_SET(rv, dev_id, PORT_STATUS, port_id,
-                      (a_uint8_t *) (&reg_save), sizeof (a_uint32_t));
-    return rv;
-}
-
-static sw_error_t
-_dess_port_duplex_get(a_uint32_t dev_id, fal_port_t port_id,
-                      fal_port_duplex_t * pduplex)
-{
-    sw_error_t rv = SW_OK;
-    a_uint32_t reg, field;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_ENTRY_GET(rv, dev_id, PORT_STATUS, port_id,
-                      (a_uint8_t *) (&reg), sizeof (a_uint32_t));
-    SW_GET_FIELD_BY_REG(PORT_STATUS, DUPLEX_MODE, field, reg);
-    if (field)
-    {
-        *pduplex = FAL_FULL_DUPLEX;
-    }
-    else
-    {
-        *pduplex = FAL_HALF_DUPLEX;
-    }
-
-    return rv;
-}
-
-static sw_error_t
-_dess_port_speed_set(a_uint32_t dev_id, fal_port_t port_id,
-                     fal_port_speed_t speed)
-{
-    sw_error_t rv;
-    a_uint32_t phy_id, reg_save, reg_val, force;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    if (FAL_SPEED_1000 < speed)
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_ENTRY_GET(rv, dev_id, PORT_STATUS, port_id,
-                      (a_uint8_t *) (&reg_val), sizeof (a_uint32_t));
-
-    /* for those ports without PHY device we set MAC register */
-    if (A_FALSE == _dess_port_phy_connected(dev_id, port_id))
-    {
-        SW_SET_REG_BY_FIELD(PORT_STATUS, LINK_EN, 0, reg_val);
-        if (FAL_SPEED_10 == speed)
-        {
-            SW_SET_REG_BY_FIELD(PORT_STATUS, SPEED_MODE, 0, reg_val);
-        }
-        else if (FAL_SPEED_100 == speed)
-        {
-            SW_SET_REG_BY_FIELD(PORT_STATUS, SPEED_MODE, 1, reg_val);
-        }
-        else
-        {
-            SW_SET_REG_BY_FIELD(PORT_STATUS, SPEED_MODE, 2, reg_val);
-        }
-        reg_save = reg_val;
-
-    }
-    else
-    {
-        /* hardware requirement: set mac be config by sw and turn off RX/TX MAC */
-        reg_save = reg_val;
-        SW_SET_REG_BY_FIELD(PORT_STATUS, LINK_EN,  0, reg_val);
-        SW_SET_REG_BY_FIELD(PORT_STATUS, RXMAC_EN, 0, reg_val);
-        SW_SET_REG_BY_FIELD(PORT_STATUS, TXMAC_EN, 0, reg_val);
-
-        HSL_REG_ENTRY_SET(rv, dev_id, PORT_STATUS, port_id,
-                          (a_uint8_t *) (&reg_val), sizeof (a_uint32_t));
-
-        rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
-        SW_RTN_ON_ERROR(rv);
-
-        rv = f1_phy_set_speed(dev_id, phy_id, speed);
-        SW_RTN_ON_ERROR(rv);
-
-        /* If MAC not in sync with PHY mode, the behavior is undefine.
-           You must be careful... */
-        SW_GET_FIELD_BY_REG(PORT_STATUS, LINK_EN, force, reg_save);
-        if (!force)
-        {
-            if (FAL_SPEED_10 == speed)
-            {
-                SW_SET_REG_BY_FIELD(PORT_STATUS, SPEED_MODE, 0, reg_save);
-            }
-            else if (FAL_SPEED_100 == speed)
-            {
-                SW_SET_REG_BY_FIELD(PORT_STATUS, SPEED_MODE, 1, reg_save);
-            }
-            else
-            {
-                SW_SET_REG_BY_FIELD(PORT_STATUS, SPEED_MODE, 2, reg_save);
-            }
-        }
-    }
-
-    HSL_REG_ENTRY_SET(rv, dev_id, PORT_STATUS, port_id,
-                      (a_uint8_t *) (&reg_save), sizeof (a_uint32_t));
-    return rv;
-}
-
-static sw_error_t
-_dess_port_speed_get(a_uint32_t dev_id, fal_port_t port_id,
-                     fal_port_speed_t * pspeed)
-{
-    sw_error_t rv = SW_OK;
-    a_uint32_t reg, field;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_ENTRY_GET(rv, dev_id, PORT_STATUS, port_id,
-                      (a_uint8_t *) (&reg), sizeof (a_uint32_t));
-    SW_RTN_ON_ERROR(rv);
-
-    SW_GET_FIELD_BY_REG(PORT_STATUS, SPEED_MODE, field, reg);
-    if (0 == field)
-    {
-        *pspeed = FAL_SPEED_10;
-    }
-    else if (1 == field)
-    {
-        *pspeed = FAL_SPEED_100;
-    }
-    else if (2 == field)
-    {
-        *pspeed = FAL_SPEED_1000;
-    }
-    else
-    {
-        *pspeed = FAL_SPEED_BUTT;
-        rv = SW_READ_ERROR;
-    }
-
-    return rv;
-}
-
-static sw_error_t
-_dess_port_autoneg_status_get(a_uint32_t dev_id, fal_port_t port_id,
-                              a_bool_t * status)
-{
-    a_uint32_t phy_id;
-    sw_error_t rv;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_PHY))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
-    SW_RTN_ON_ERROR(rv);
-
-    *status = f1_phy_autoneg_status(dev_id, phy_id);
-
-    return SW_OK;
-}
-
-static sw_error_t
-_dess_port_autoneg_enable(a_uint32_t dev_id, fal_port_t port_id)
-{
-    sw_error_t rv;
-    a_uint32_t phy_id;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_PHY))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
-    SW_RTN_ON_ERROR(rv);
-
-    rv = f1_phy_enable_autoneg(dev_id, phy_id);
-    return rv;
-}
-
-static sw_error_t
-_dess_port_autoneg_restart(a_uint32_t dev_id, fal_port_t port_id)
-{
-    sw_error_t rv;
-    a_uint32_t phy_id;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_PHY))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
-    SW_RTN_ON_ERROR(rv);
-
-    rv = f1_phy_restart_autoneg(dev_id, phy_id);
-    return rv;
-}
-
-static sw_error_t
-_dess_port_autoneg_adv_set(a_uint32_t dev_id, fal_port_t port_id,
-                           a_uint32_t autoadv)
-{
-    sw_error_t rv;
-    a_uint32_t phy_id;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_PHY))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
-    SW_RTN_ON_ERROR(rv);
-
-    rv = f1_phy_set_autoneg_adv(dev_id, phy_id, autoadv);
-    SW_RTN_ON_ERROR(rv);
-
-    return SW_OK;
-}
-
-static sw_error_t
-_dess_port_autoneg_adv_get(a_uint32_t dev_id, fal_port_t port_id,
-                           a_uint32_t * autoadv)
-{
-    sw_error_t rv;
-    a_uint32_t phy_id;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_PHY))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
-    SW_RTN_ON_ERROR(rv);
-
-    *autoadv = 0;
-    rv = f1_phy_get_autoneg_adv(dev_id, phy_id, autoadv);
-    SW_RTN_ON_ERROR(rv);
-
-    return SW_OK;
-}
-
-static sw_error_t
-_dess_port_flowctrl_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
-{
-    sw_error_t rv;
-    a_uint32_t val, force, reg;
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    if (A_TRUE == enable)
-    {
-        val = 1;
-    }
-    else if (A_FALSE == enable)
-    {
-        val = 0;
-    }
-    else
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_ENTRY_GET(rv, dev_id, PORT_STATUS, port_id,
-                      (a_uint8_t *) (&reg), sizeof (a_uint32_t));
-    SW_RTN_ON_ERROR(rv);
-
-    SW_GET_FIELD_BY_REG(PORT_STATUS, FLOW_LINK_EN, force, reg);
-    if (force)
-    {
-        /* flow control isn't in force mode so can't set */
-        return SW_DISABLE;
-    }
-
-    SW_SET_REG_BY_FIELD(PORT_STATUS, RX_FLOW_EN, val, reg);
-    SW_SET_REG_BY_FIELD(PORT_STATUS, TX_FLOW_EN, val, reg);
-    SW_SET_REG_BY_FIELD(PORT_STATUS, TX_HALF_FLOW_EN, val, reg);
-
-    HSL_REG_ENTRY_SET(rv, dev_id, PORT_STATUS, port_id,
-                      (a_uint8_t *) (&reg), sizeof (a_uint32_t));
-    return rv;
-}
-
-static sw_error_t
-_dess_port_flowctrl_get(a_uint32_t dev_id, fal_port_t port_id,
-                        a_bool_t * enable)
-{
-    sw_error_t rv;
-    a_uint32_t rx, reg;
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_ENTRY_GET(rv, dev_id, PORT_STATUS, port_id,
-                      (a_uint8_t *) (&reg), sizeof (a_uint32_t));
-    SW_RTN_ON_ERROR(rv);
-
-    SW_GET_FIELD_BY_REG(PORT_STATUS, RX_FLOW_EN, rx, reg);
-
-    if (1 == rx)
-    {
-        *enable = A_TRUE;
-    }
-    else
-    {
-        *enable = A_FALSE;
-    }
-
-    return SW_OK;
-}
-
-static sw_error_t
-_dess_port_flowctrl_forcemode_set(a_uint32_t dev_id, fal_port_t port_id,
-                                  a_bool_t enable)
-{
-    sw_error_t rv;
-    a_uint32_t reg;
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_ENTRY_GET(rv, dev_id, PORT_STATUS, port_id,
-                      (a_uint8_t *) (&reg), sizeof (a_uint32_t));
-    SW_RTN_ON_ERROR(rv);
-
-    if (A_TRUE == enable)
-    {
-        SW_SET_REG_BY_FIELD(PORT_STATUS, FLOW_LINK_EN, 0, reg);
-    }
-    else if (A_FALSE == enable)
-    {
-        /* for those ports without PHY, it can't sync flow control status */
-        if (A_FALSE == _dess_port_phy_connected(dev_id, port_id))
-        {
-            return SW_DISABLE;
-        }
-        SW_SET_REG_BY_FIELD(PORT_STATUS, FLOW_LINK_EN, 1, reg);
-    }
-    else
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_ENTRY_SET(rv, dev_id, PORT_STATUS, port_id,
-                      (a_uint8_t *) (&reg), sizeof (a_uint32_t));
-    return rv;
-}
-
-static sw_error_t
-_dess_port_flowctrl_forcemode_get(a_uint32_t dev_id, fal_port_t port_id,
-                                  a_bool_t * enable)
-{
-    sw_error_t rv;
-    a_uint32_t force, reg;
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_ENTRY_GET(rv, dev_id, PORT_STATUS, port_id,
-                      (a_uint8_t *) (&reg), sizeof (a_uint32_t));
-    SW_RTN_ON_ERROR(rv);
-
-    SW_GET_FIELD_BY_REG(PORT_STATUS, FLOW_LINK_EN, force, reg);
-    if (0 == force)
-    {
-        *enable = A_TRUE;
-    }
-    else
-    {
-        *enable = A_FALSE;
-    }
-
-    return SW_OK;
-}
-
-static sw_error_t
-_dess_port_powersave_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
-{
-    sw_error_t rv;
-    a_uint32_t phy_id = 0;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_PHY))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
-    SW_RTN_ON_ERROR(rv);
-
-    rv = f1_phy_set_powersave(dev_id, phy_id, enable);
-
-    return rv;
-}
-
-static sw_error_t
-_dess_port_powersave_get(a_uint32_t dev_id, fal_port_t port_id,
-                         a_bool_t * enable)
-{
-    sw_error_t rv;
-    a_uint32_t phy_id = 0;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_PHY))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
-    SW_RTN_ON_ERROR(rv);
-
-    rv = f1_phy_get_powersave(dev_id, phy_id, enable);
-
-    return rv;
-}
-
-static sw_error_t
-_dess_port_hibernate_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
-{
-    sw_error_t rv;
-    a_uint32_t phy_id = 0;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_PHY))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
-    SW_RTN_ON_ERROR(rv);
-
-    rv = f1_phy_set_hibernate(dev_id, phy_id, enable);
-
-    return rv;
-}
-
-static sw_error_t
-_dess_port_hibernate_get(a_uint32_t dev_id, fal_port_t port_id,
-                         a_bool_t * enable)
-{
-    sw_error_t rv;
-    a_uint32_t phy_id = 0;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_PHY))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
-    SW_RTN_ON_ERROR(rv);
-
-    rv = f1_phy_get_hibernate(dev_id, phy_id, enable);
-
-    return rv;
-}
-
-static sw_error_t
-_dess_port_cdt(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t mdi_pair,
-               fal_cable_status_t * cable_status, a_uint32_t * cable_len)
-{
-    sw_error_t rv;
-    a_uint32_t phy_id = 0;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_PHY))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
-    SW_RTN_ON_ERROR(rv);
-
-    rv = f1_phy_cdt(dev_id, phy_id, mdi_pair, cable_status, cable_len);
-
-    return rv;
-}
-
-static sw_error_t
-_dess_port_rxhdr_mode_set(a_uint32_t dev_id, fal_port_t port_id,
-                          fal_port_header_mode_t mode)
-{
-    sw_error_t rv;
-    a_uint32_t val;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    if (FAL_NO_HEADER_EN == mode)
-    {
-        val = 0;
-    }
-    else if (FAL_ONLY_MANAGE_FRAME_EN == mode && port_id != 0)
-    {
-        val = 1;
-    }
-    else if (FAL_ALL_TYPE_FRAME_EN == mode)
-    {
-        val = 2;
-    }
-    else
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_FIELD_SET(rv, dev_id, PORT_HDR_CTL, port_id, RXHDR_MODE,
-                      (a_uint8_t *) (&val), sizeof (a_uint32_t));
-    return rv;
-}
-
-static sw_error_t
-_dess_port_rxhdr_mode_get(a_uint32_t dev_id, fal_port_t port_id,
-                          fal_port_header_mode_t * mode)
-{
-    sw_error_t rv;
-    a_uint32_t val;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_FIELD_GET(rv, dev_id, PORT_HDR_CTL, port_id, RXHDR_MODE,
-                      (a_uint8_t *) (&val), sizeof (a_uint32_t));
-    SW_RTN_ON_ERROR(rv);
-
-    if (1 == val)
-    {
-        *mode = FAL_ONLY_MANAGE_FRAME_EN;
-    }
-    else if (2 == val)
-    {
-        *mode = FAL_ALL_TYPE_FRAME_EN;
-    }
-    else
-    {
-        *mode = FAL_NO_HEADER_EN;
-    }
-
-    return SW_OK;
-}
-
-static sw_error_t
-_dess_port_txhdr_mode_set(a_uint32_t dev_id, fal_port_t port_id,
-                          fal_port_header_mode_t mode)
-{
-    sw_error_t rv;
-    a_uint32_t val;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_EXCL_CPU))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    if (FAL_NO_HEADER_EN == mode)
-    {
-        val = 0;
-    }
-    else if (FAL_ONLY_MANAGE_FRAME_EN == mode)
-    {
-        val = 1;
-    }
-    else if (FAL_ALL_TYPE_FRAME_EN == mode)
-    {
-        val = 2;
-    }
-    else
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_FIELD_SET(rv, dev_id, PORT_HDR_CTL, port_id, TXHDR_MODE,
-                      (a_uint8_t *) (&val), sizeof (a_uint32_t));
-    return rv;
-}
-
-static sw_error_t
-_dess_port_txhdr_mode_get(a_uint32_t dev_id, fal_port_t port_id,
-                          fal_port_header_mode_t * mode)
-{
-    sw_error_t rv;
-    a_uint32_t val;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_EXCL_CPU))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_FIELD_GET(rv, dev_id, PORT_HDR_CTL, port_id, TXHDR_MODE,
-                      (a_uint8_t *) (&val), sizeof (a_uint32_t));
-    SW_RTN_ON_ERROR(rv);
-
-    if (1 == val)
-    {
-        *mode = FAL_ONLY_MANAGE_FRAME_EN;
-    }
-    else if (2 == val)
-    {
-        *mode = FAL_ALL_TYPE_FRAME_EN;
-    }
-    else
-    {
-        *mode = FAL_NO_HEADER_EN;
-    }
-
-    return SW_OK;
-}
-
-static sw_error_t
-_dess_header_type_set(a_uint32_t dev_id, a_bool_t enable, a_uint32_t type)
-{
-    a_uint32_t reg;
-    sw_error_t rv;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    HSL_REG_ENTRY_GET(rv, dev_id, HEADER_CTL, 0,
-                      (a_uint8_t *) (&reg), sizeof (a_uint32_t));
-    SW_RTN_ON_ERROR(rv);
-
-    if (A_TRUE == enable)
-    {
-        if (0xffff < type)
-        {
-            return SW_BAD_PARAM;
-        }
-        SW_SET_REG_BY_FIELD(HEADER_CTL, TYPE_LEN, 1, reg);
-        SW_SET_REG_BY_FIELD(HEADER_CTL, TYPE_VAL, type, reg);
-    }
-    else if (A_FALSE == enable)
-    {
-        SW_SET_REG_BY_FIELD(HEADER_CTL, TYPE_LEN, 0, reg);
-        SW_SET_REG_BY_FIELD(HEADER_CTL, TYPE_VAL, 0, reg);
-    }
-    else
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_ENTRY_SET(rv, dev_id, HEADER_CTL, 0,
-                      (a_uint8_t *) (&reg), sizeof (a_uint32_t));
-    return rv;
-}
-
-static sw_error_t
-_dess_header_type_get(a_uint32_t dev_id, a_bool_t * enable, a_uint32_t * type)
-{
-    a_uint32_t data, reg;
-    sw_error_t rv;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    HSL_REG_ENTRY_GET(rv, dev_id, HEADER_CTL, 0,
-                      (a_uint8_t *) (&reg), sizeof (a_uint32_t));
-    SW_RTN_ON_ERROR(rv);
-
-    SW_GET_FIELD_BY_REG(HEADER_CTL, TYPE_LEN, data, reg);
-    if (data)
-    {
-        SW_GET_FIELD_BY_REG(HEADER_CTL, TYPE_VAL, data, reg);
-        *enable = A_TRUE;
-        *type = data;
-    }
-    else
-    {
-        *enable = A_FALSE;
-        *type = 0;
-    }
-
-    return SW_OK;
-}
-
-static sw_error_t
-_dess_port_txmac_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
-{
-    sw_error_t rv;
-    a_uint32_t reg, force, val;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_ENTRY_GET(rv, dev_id, PORT_STATUS, port_id,
-                      (a_uint8_t *) (&reg), sizeof (a_uint32_t));
-    SW_RTN_ON_ERROR(rv);
-
-    if (A_TRUE == enable)
-    {
-        val = 1;
-    }
-    else if (A_FALSE == enable)
-    {
-        val = 0;
-    }
-    else
-    {
-        return SW_BAD_PARAM;
-    }
-
-    /* for those ports without PHY device we set MAC register */
-    if (A_FALSE == _dess_port_phy_connected(dev_id, port_id))
-    {
-        SW_SET_REG_BY_FIELD(PORT_STATUS, LINK_EN,  0, reg);
-        SW_SET_REG_BY_FIELD(PORT_STATUS, TXMAC_EN, val, reg);
-    }
-    else
-    {
-        SW_GET_FIELD_BY_REG(PORT_STATUS, LINK_EN,  force, reg);
-        if (force)
-        {
-            /* link isn't in force mode so can't set */
-            return SW_DISABLE;
-        }
-        else
-        {
-            SW_SET_REG_BY_FIELD(PORT_STATUS, TXMAC_EN, val, reg);
-        }
-    }
-
-    HSL_REG_ENTRY_SET(rv, dev_id, PORT_STATUS, port_id,
-                      (a_uint8_t *) (&reg), sizeof (a_uint32_t));
-    return rv;
-}
-
-static sw_error_t
-_dess_port_txmac_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
-{
-    sw_error_t rv;
-    a_uint32_t val;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_EXCL_CPU))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_FIELD_GET(rv, dev_id, PORT_STATUS, port_id, TXMAC_EN,
-                      (a_uint8_t *) (&val), sizeof (a_uint32_t));
-    SW_RTN_ON_ERROR(rv);
-
-    if (val)
-    {
-        *enable = A_TRUE;
-    }
-    else
-    {
-        *enable = A_FALSE;
-    }
-
-    return SW_OK;
-}
-
-static sw_error_t
-_dess_port_rxmac_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
-{
-    sw_error_t rv;
-    a_uint32_t reg, force, val;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_EXCL_CPU))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_ENTRY_GET(rv, dev_id, PORT_STATUS, port_id,
-                      (a_uint8_t *) (&reg), sizeof (a_uint32_t));
-    SW_RTN_ON_ERROR(rv);
-
-    if (A_TRUE == enable)
-    {
-        val = 1;
-    }
-    else if (A_FALSE == enable)
-    {
-        val = 0;
-    }
-    else
-    {
-        return SW_BAD_PARAM;
-    }
-
-    /* for those ports without PHY device we set MAC register */
-    if (A_FALSE == _dess_port_phy_connected(dev_id, port_id))
-    {
-        SW_SET_REG_BY_FIELD(PORT_STATUS, LINK_EN,  0, reg);
-        SW_SET_REG_BY_FIELD(PORT_STATUS, RXMAC_EN, val, reg);
-    }
-    else
-    {
-        SW_GET_FIELD_BY_REG(PORT_STATUS, LINK_EN,  force, reg);
-        if (force)
-        {
-            /* link isn't in force mode so can't set */
-            return SW_DISABLE;
-        }
-        else
-        {
-            SW_SET_REG_BY_FIELD(PORT_STATUS, RXMAC_EN, val, reg);
-        }
-    }
-
-    HSL_REG_ENTRY_SET(rv, dev_id, PORT_STATUS, port_id,
-                      (a_uint8_t *) (&reg), sizeof (a_uint32_t));
-    return rv;
-}
-
-static sw_error_t
-_dess_port_rxmac_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
-{
-    sw_error_t rv;
-    a_uint32_t val;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_EXCL_CPU))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_FIELD_GET(rv, dev_id, PORT_STATUS, port_id, RXMAC_EN,
-                      (a_uint8_t *) (&val), sizeof (a_uint32_t));
-    SW_RTN_ON_ERROR(rv);
-
-    if (val)
-    {
-        *enable = A_TRUE;
-    }
-    else
-    {
-        *enable = A_FALSE;
-    }
-
-    return SW_OK;
-}
-
-static sw_error_t
-_dess_port_txfc_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
-{
-    sw_error_t rv;
-    a_uint32_t val, reg, force;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    if (A_TRUE == enable)
-    {
-        val = 1;
-    }
-    else if (A_FALSE == enable)
-    {
-        val = 0;
-    }
-    else
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_ENTRY_GET(rv, dev_id, PORT_STATUS, port_id,
-                      (a_uint8_t *) (&reg), sizeof (a_uint32_t));
-    SW_RTN_ON_ERROR(rv);
-
-    /* for those ports without PHY device we set MAC register */
-    if (A_FALSE == _dess_port_phy_connected(dev_id, port_id))
-    {
-        SW_SET_REG_BY_FIELD(PORT_STATUS, FLOW_LINK_EN, 0, reg);
-        SW_SET_REG_BY_FIELD(PORT_STATUS, TX_FLOW_EN,   val, reg);
-    }
-    else
-    {
-        SW_GET_FIELD_BY_REG(PORT_STATUS, FLOW_LINK_EN, force, reg);
-        if (force)
-        {
-            /* flow control isn't in force mode so can't set */
-            return SW_DISABLE;
-        }
-        else
-        {
-            SW_SET_REG_BY_FIELD(PORT_STATUS, TX_FLOW_EN, val, reg);
-        }
-    }
-
-    HSL_REG_ENTRY_SET(rv, dev_id, PORT_STATUS, port_id,
-                      (a_uint8_t *) (&reg), sizeof (a_uint32_t));
-    return rv;
-}
-
-static sw_error_t
-_dess_port_txfc_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
-{
-    sw_error_t rv;
-    a_uint32_t val;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_FIELD_GET(rv, dev_id, PORT_STATUS, port_id, TX_FLOW_EN,
-                      (a_uint8_t *) (&val), sizeof (a_uint32_t));
-    SW_RTN_ON_ERROR(rv);
-
-    if (val)
-    {
-        *enable = A_TRUE;
-    }
-    else
-    {
-        *enable = A_FALSE;
-    }
-
-    return SW_OK;
-}
-
-static sw_error_t
-_dess_port_rxfc_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
-{
-    sw_error_t rv;
-    a_uint32_t val, reg, force;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_EXCL_CPU))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    if (A_TRUE == enable)
-    {
-        val = 1;
-    }
-    else if (A_FALSE == enable)
-    {
-        val = 0;
-    }
-    else
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_ENTRY_GET(rv, dev_id, PORT_STATUS, port_id,
-                      (a_uint8_t *) (&reg), sizeof (a_uint32_t));
-    SW_RTN_ON_ERROR(rv);
-
-    /* for those ports without PHY device we set MAC register */
-    if (A_FALSE == _dess_port_phy_connected(dev_id, port_id))
-    {
-        SW_SET_REG_BY_FIELD(PORT_STATUS, FLOW_LINK_EN, 0, reg);
-        SW_SET_REG_BY_FIELD(PORT_STATUS, RX_FLOW_EN,   val, reg);
-    }
-    else
-    {
-        SW_GET_FIELD_BY_REG(PORT_STATUS, FLOW_LINK_EN,  force, reg);
-        if (force)
-        {
-            /* flow control isn't in force mode so can't set */
-            return SW_DISABLE;
-        }
-        else
-        {
-            SW_SET_REG_BY_FIELD(PORT_STATUS, RX_FLOW_EN, val, reg);
-        }
-    }
-
-    HSL_REG_ENTRY_SET(rv, dev_id, PORT_STATUS, port_id,
-                      (a_uint8_t *) (&reg), sizeof (a_uint32_t));
-    return rv;
-}
-
-static sw_error_t
-_dess_port_rxfc_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
-{
-    sw_error_t rv;
-    a_uint32_t val;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_EXCL_CPU))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_FIELD_GET(rv, dev_id, PORT_STATUS, port_id, RX_FLOW_EN,
-                      (a_uint8_t *) (&val), sizeof (a_uint32_t));
-    SW_RTN_ON_ERROR(rv);
-
-    if (val)
-    {
-        *enable = A_TRUE;
-    }
-    else
-    {
-        *enable = A_FALSE;
-    }
-
-    return SW_OK;
-}
-
-static sw_error_t
-_dess_port_bp_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
-{
-    sw_error_t rv;
-    a_uint32_t val;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_EXCL_CPU))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    if (A_TRUE == enable)
-    {
-        val = 1;
-    }
-    else if (A_FALSE == enable)
-    {
-        val = 0;
-    }
-    else
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_FIELD_SET(rv, dev_id, PORT_STATUS, port_id, TX_HALF_FLOW_EN,
-                      (a_uint8_t *) (&val), sizeof (a_uint32_t));
-    return rv;
-}
-
-static sw_error_t
-_dess_port_bp_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
-{
-    sw_error_t rv;
-    a_uint32_t val;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_EXCL_CPU))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_FIELD_GET(rv, dev_id, PORT_STATUS, port_id, TX_HALF_FLOW_EN,
-                      (a_uint8_t *) (&val), sizeof (a_uint32_t));
-    SW_RTN_ON_ERROR(rv);
-
-    if (val)
-    {
-        *enable = A_TRUE;
-    }
-    else
-    {
-        *enable = A_FALSE;
-    }
-
-    return SW_OK;
-}
-
-static sw_error_t
-_dess_port_link_forcemode_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
-{
-    sw_error_t rv;
-    a_uint32_t reg;
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_duplex_set)
+    return SW_NOT_SUPPORTED;
 
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_EXCL_CPU))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_ENTRY_GET(rv, dev_id, PORT_STATUS, port_id,
-                      (a_uint8_t *) (&reg), sizeof (a_uint32_t));
-    SW_RTN_ON_ERROR(rv);
-
-    if (A_TRUE == enable)
-    {
-        SW_SET_REG_BY_FIELD(PORT_STATUS, LINK_EN, 0, reg);
-    }
-    else if (A_FALSE == enable)
-    {
-        /* for those ports without PHY, it can't sync link status */
-        if (A_FALSE == _dess_port_phy_connected(dev_id, port_id))
-        {
-            return SW_DISABLE;
-        }
-        SW_SET_REG_BY_FIELD(PORT_STATUS, LINK_EN, 1, reg);
-    }
-    else
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_ENTRY_SET(rv, dev_id, PORT_STATUS, port_id,
-                      (a_uint8_t *) (&reg), sizeof (a_uint32_t));
-    return rv;
-}
-
-static sw_error_t
-_dess_port_link_forcemode_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
-{
-    sw_error_t rv;
-    a_uint32_t val;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_EXCL_CPU))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_FIELD_GET(rv, dev_id, PORT_STATUS, port_id, LINK_EN,
-                      (a_uint8_t *) (&val), sizeof (a_uint32_t));
-    SW_RTN_ON_ERROR(rv);
-
-    if (0 == val)
-    {
-        *enable = A_TRUE;
-    }
-    else
-    {
-        *enable = A_FALSE;
-    }
-
-    return SW_OK;
-}
-
-static sw_error_t
-_dess_port_link_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * status)
-{
-    sw_error_t rv;
-    a_uint32_t phy_id;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_EXCL_CPU))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    /* for those ports without PHY device supposed always link up */
-    if (A_FALSE == _dess_port_phy_connected(dev_id, port_id))
+  if (FAL_DUPLEX_BUTT <= duplex)
     {
-        *status = A_TRUE;
+      return SW_BAD_PARAM;
     }
-    else
-    {
-        rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
-        SW_RTN_ON_ERROR(rv);
-
-        if (A_TRUE == f1_phy_get_link_status(dev_id, phy_id))
-        {
-            *status = A_TRUE;
-        }
-        else
-        {
-            *status = A_FALSE;
-        }
-    }
-
-    return SW_OK;
-}
-
-static sw_error_t
-_dess_port_mac_loopback_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
-{
-    sw_error_t rv = SW_OK;
-    a_uint32_t val;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_EXCL_CPU))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    if (A_TRUE == enable)
-    {
-        val = 1;
-    }
-    else if (A_FALSE == enable)
-    {
-        val = 0;
-    }
-    else
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_FIELD_SET(rv, dev_id, PORT_HDR_CTL, port_id, LOOPBACK_EN,
-                      (a_uint8_t *) (&val), sizeof (a_uint32_t));
-    return rv;
-}
-
-static sw_error_t
-_dess_port_mac_loopback_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable)
-{
-    sw_error_t rv;
-    a_uint32_t val;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_EXCL_CPU))
-    {
-        return SW_BAD_PARAM;
-    }
 
-    HSL_REG_FIELD_GET(rv, dev_id, PORT_HDR_CTL, port_id, LOOPBACK_EN,
-                      (a_uint8_t *) (&val), sizeof (a_uint32_t));
-    SW_RTN_ON_ERROR(rv);
+  HSL_REG_ENTRY_GET (rv, dev_id, PORT_STATUS, port_id,
+		     (a_uint8_t *) (&reg_val), sizeof (a_uint32_t));
 
-    if (0 == val)
+  /* for those ports without PHY device we set MAC register */
+  if (A_FALSE == _dess_port_phy_connected (dev_id, port_id))
     {
-        *enable = A_FALSE;
-    }
-    else
-    {
-        *enable = A_TRUE;
-    }
-
-    return SW_OK;
-}
-
-
-static sw_error_t
-_dess_port_congestion_drop_set(a_uint32_t dev_id, fal_port_t port_id,a_uint32_t queue_id,  a_bool_t enable)
-{
-	sw_error_t rv = SW_OK;
-	a_uint32_t val, offset = 0, field = 0;
-
-	HSL_DEV_ID_CHECK(dev_id);
-
-	if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
+      SW_SET_REG_BY_FIELD (PORT_STATUS, LINK_EN, 0, reg_val);
+      if (FAL_HALF_DUPLEX == duplex)
 	{
-		return SW_BAD_PARAM;
+	  SW_SET_REG_BY_FIELD (PORT_STATUS, DUPLEX_MODE, 0, reg_val);
 	}
-
-	if(queue_id >= port_queue[port_id])
+      else
 	{
-		return SW_BAD_PARAM;
+	  SW_SET_REG_BY_FIELD (PORT_STATUS, DUPLEX_MODE, 1, reg_val);
 	}
+      reg_save = reg_val;
+    }
+  else
+    {
+      /* hardware requirement: set mac be config by sw and turn off RX/TX MAC */
+      reg_save = reg_val;
+      SW_SET_REG_BY_FIELD (PORT_STATUS, LINK_EN, 0, reg_val);
+      SW_SET_REG_BY_FIELD (PORT_STATUS, RXMAC_EN, 0, reg_val);
+      SW_SET_REG_BY_FIELD (PORT_STATUS, TXMAC_EN, 0, reg_val);
 
-	if(port_id != 0)
-		offset = port_id * 4 + 2;
-	offset += queue_id;
+      HSL_REG_ENTRY_SET (rv, dev_id, PORT_STATUS, port_id,
+			 (a_uint8_t *) (&reg_val), sizeof (a_uint32_t));
 
-	if (A_TRUE == enable)
+      rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+      SW_RTN_ON_ERROR (rv);
+
+      rv = phy_drv->phy_duplex_set (dev_id, phy_id, duplex);
+      SW_RTN_ON_ERROR (rv);
+
+      /* If MAC not in sync with PHY mode, the behavior is undefine.
+         You must be careful... */
+      SW_GET_FIELD_BY_REG (PORT_STATUS, LINK_EN, force, reg_save);
+      if (!force)
 	{
-		field = 1<<offset;
+	  if (FAL_HALF_DUPLEX == duplex)
+	    {
+	      SW_SET_REG_BY_FIELD (PORT_STATUS, DUPLEX_MODE, 0, reg_save);
+	    }
+	  else
+	    {
+	      SW_SET_REG_BY_FIELD (PORT_STATUS, DUPLEX_MODE, 1, reg_save);
+	    }
 	}
-	else if (A_FALSE == enable)
-	{
-		field = ~(1<<offset);
-	}
-	else
-	{
-		return SW_BAD_PARAM;
-	}
+    }
 
-	
+  HSL_REG_ENTRY_SET (rv, dev_id, PORT_STATUS, port_id,
+		     (a_uint8_t *) (&reg_save), sizeof (a_uint32_t));
+  return rv;
+}
 
-	HSL_REG_ENTRY_GET(rv, dev_id, FLOW_CONGE_DROP_CTRL0, 0, 
-					  (a_uint8_t *) (&val), sizeof (a_uint32_t));
-	if(A_TRUE == enable) {
-		val = val | field;
-	} else {
-		val = val & field;
+static sw_error_t
+_dess_port_duplex_get (a_uint32_t dev_id, fal_port_t port_id,
+		       fal_port_duplex_t * pduplex)
+{
+  sw_error_t rv = SW_OK;
+  a_uint32_t reg, field;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  HSL_REG_ENTRY_GET (rv, dev_id, PORT_STATUS, port_id,
+		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+  SW_GET_FIELD_BY_REG (PORT_STATUS, DUPLEX_MODE, field, reg);
+  if (field)
+    {
+      *pduplex = FAL_FULL_DUPLEX;
+    }
+  else
+    {
+      *pduplex = FAL_HALF_DUPLEX;
+    }
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_speed_set (a_uint32_t dev_id, fal_port_t port_id,
+		      fal_port_speed_t speed)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id, reg_save, reg_val, force;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_speed_set)
+    return SW_NOT_SUPPORTED;
+
+  if (FAL_SPEED_1000 < speed)
+    {
+      return SW_BAD_PARAM;
+    }
+
+  HSL_REG_ENTRY_GET (rv, dev_id, PORT_STATUS, port_id,
+		     (a_uint8_t *) (&reg_val), sizeof (a_uint32_t));
+
+  /* for those ports without PHY device we set MAC register */
+  if (A_FALSE == _dess_port_phy_connected (dev_id, port_id))
+    {
+      SW_SET_REG_BY_FIELD (PORT_STATUS, LINK_EN, 0, reg_val);
+      if (FAL_SPEED_10 == speed)
+	{
+	  SW_SET_REG_BY_FIELD (PORT_STATUS, SPEED_MODE, 0, reg_val);
 	}
-	
-	HSL_REG_ENTRY_SET(rv, dev_id, FLOW_CONGE_DROP_CTRL0, 0, 
-					  (a_uint8_t *) (&val), sizeof (a_uint32_t));
-	return rv;
+      else if (FAL_SPEED_100 == speed)
+	{
+	  SW_SET_REG_BY_FIELD (PORT_STATUS, SPEED_MODE, 1, reg_val);
+	}
+      else
+	{
+	  SW_SET_REG_BY_FIELD (PORT_STATUS, SPEED_MODE, 2, reg_val);
+	}
+      reg_save = reg_val;
+
+    }
+  else
+    {
+      /* hardware requirement: set mac be config by sw and turn off RX/TX MAC */
+      reg_save = reg_val;
+      SW_SET_REG_BY_FIELD (PORT_STATUS, LINK_EN, 0, reg_val);
+      SW_SET_REG_BY_FIELD (PORT_STATUS, RXMAC_EN, 0, reg_val);
+      SW_SET_REG_BY_FIELD (PORT_STATUS, TXMAC_EN, 0, reg_val);
+
+      HSL_REG_ENTRY_SET (rv, dev_id, PORT_STATUS, port_id,
+			 (a_uint8_t *) (&reg_val), sizeof (a_uint32_t));
+
+      rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+      SW_RTN_ON_ERROR (rv);
+
+      rv = phy_drv->phy_speed_set (dev_id, phy_id, speed);
+      SW_RTN_ON_ERROR (rv);
+
+      /* If MAC not in sync with PHY mode, the behavior is undefine.
+         You must be careful... */
+      SW_GET_FIELD_BY_REG (PORT_STATUS, LINK_EN, force, reg_save);
+      if (!force)
+	{
+	  if (FAL_SPEED_10 == speed)
+	    {
+	      SW_SET_REG_BY_FIELD (PORT_STATUS, SPEED_MODE, 0, reg_save);
+	    }
+	  else if (FAL_SPEED_100 == speed)
+	    {
+	      SW_SET_REG_BY_FIELD (PORT_STATUS, SPEED_MODE, 1, reg_save);
+	    }
+	  else
+	    {
+	      SW_SET_REG_BY_FIELD (PORT_STATUS, SPEED_MODE, 2, reg_save);
+	    }
+	}
+    }
+
+  HSL_REG_ENTRY_SET (rv, dev_id, PORT_STATUS, port_id,
+		     (a_uint8_t *) (&reg_save), sizeof (a_uint32_t));
+  return rv;
+}
+
+static sw_error_t
+_dess_port_speed_get (a_uint32_t dev_id, fal_port_t port_id,
+		      fal_port_speed_t * pspeed)
+{
+  sw_error_t rv = SW_OK;
+  a_uint32_t reg, field;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  HSL_REG_ENTRY_GET (rv, dev_id, PORT_STATUS, port_id,
+		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+  SW_RTN_ON_ERROR (rv);
+
+  SW_GET_FIELD_BY_REG (PORT_STATUS, SPEED_MODE, field, reg);
+  if (0 == field)
+    {
+      *pspeed = FAL_SPEED_10;
+    }
+  else if (1 == field)
+    {
+      *pspeed = FAL_SPEED_100;
+    }
+  else if (2 == field)
+    {
+      *pspeed = FAL_SPEED_1000;
+    }
+  else
+    {
+      *pspeed = FAL_SPEED_BUTT;
+      rv = SW_READ_ERROR;
+    }
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_autoneg_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			       a_bool_t * status)
+{
+  a_uint32_t phy_id;
+  sw_error_t rv;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_autoneg_status_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  *status = phy_drv->phy_autoneg_status_get (dev_id, phy_id);
+
+  return SW_OK;
+}
+
+static sw_error_t
+_dess_port_autoneg_enable (a_uint32_t dev_id, fal_port_t port_id)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_autoneg_enable_set)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_autoneg_enable_set (dev_id, phy_id);
+  return rv;
+}
+
+static sw_error_t
+_dess_port_autoneg_restart (a_uint32_t dev_id, fal_port_t port_id)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_restart_autoneg)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_restart_autoneg (dev_id, phy_id);
+  return rv;
+}
+
+static sw_error_t
+_dess_port_autoneg_adv_set (a_uint32_t dev_id, fal_port_t port_id,
+			    a_uint32_t autoadv)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_autoneg_adv_set)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_autoneg_adv_set (dev_id, phy_id, autoadv);
+  SW_RTN_ON_ERROR (rv);
+
+  return SW_OK;
+}
+
+static sw_error_t
+_dess_port_autoneg_adv_get (a_uint32_t dev_id, fal_port_t port_id,
+			    a_uint32_t * autoadv)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_autoneg_adv_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  *autoadv = 0;
+  rv = phy_drv->phy_autoneg_adv_get (dev_id, phy_id, autoadv);
+  SW_RTN_ON_ERROR (rv);
+
+  return SW_OK;
+}
+
+static sw_error_t
+_dess_port_flowctrl_set (a_uint32_t dev_id, fal_port_t port_id,
+			 a_bool_t enable)
+{
+  sw_error_t rv;
+  a_uint32_t val, force, reg;
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  if (A_TRUE == enable)
+    {
+      val = 1;
+    }
+  else if (A_FALSE == enable)
+    {
+      val = 0;
+    }
+  else
+    {
+      return SW_BAD_PARAM;
+    }
+
+  HSL_REG_ENTRY_GET (rv, dev_id, PORT_STATUS, port_id,
+		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+  SW_RTN_ON_ERROR (rv);
+
+  SW_GET_FIELD_BY_REG (PORT_STATUS, FLOW_LINK_EN, force, reg);
+  if (force)
+    {
+      /* flow control isn't in force mode so can't set */
+      return SW_DISABLE;
+    }
+
+  SW_SET_REG_BY_FIELD (PORT_STATUS, RX_FLOW_EN, val, reg);
+  SW_SET_REG_BY_FIELD (PORT_STATUS, TX_FLOW_EN, val, reg);
+  SW_SET_REG_BY_FIELD (PORT_STATUS, TX_HALF_FLOW_EN, val, reg);
+
+  HSL_REG_ENTRY_SET (rv, dev_id, PORT_STATUS, port_id,
+		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+  return rv;
+}
+
+static sw_error_t
+_dess_port_flowctrl_get (a_uint32_t dev_id, fal_port_t port_id,
+			 a_bool_t * enable)
+{
+  sw_error_t rv;
+  a_uint32_t rx, reg;
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  HSL_REG_ENTRY_GET (rv, dev_id, PORT_STATUS, port_id,
+		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+  SW_RTN_ON_ERROR (rv);
+
+  SW_GET_FIELD_BY_REG (PORT_STATUS, RX_FLOW_EN, rx, reg);
+
+  if (1 == rx)
+    {
+      *enable = A_TRUE;
+    }
+  else
+    {
+      *enable = A_FALSE;
+    }
+
+  return SW_OK;
+}
+
+static sw_error_t
+_dess_port_flowctrl_forcemode_set (a_uint32_t dev_id, fal_port_t port_id,
+				   a_bool_t enable)
+{
+  sw_error_t rv;
+  a_uint32_t reg;
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  HSL_REG_ENTRY_GET (rv, dev_id, PORT_STATUS, port_id,
+		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+  SW_RTN_ON_ERROR (rv);
+
+  if (A_TRUE == enable)
+    {
+      SW_SET_REG_BY_FIELD (PORT_STATUS, FLOW_LINK_EN, 0, reg);
+    }
+  else if (A_FALSE == enable)
+    {
+      /* for those ports without PHY, it can't sync flow control status */
+      if (A_FALSE == _dess_port_phy_connected (dev_id, port_id))
+	{
+	  return SW_DISABLE;
+	}
+      SW_SET_REG_BY_FIELD (PORT_STATUS, FLOW_LINK_EN, 1, reg);
+    }
+  else
+    {
+      return SW_BAD_PARAM;
+    }
+
+  HSL_REG_ENTRY_SET (rv, dev_id, PORT_STATUS, port_id,
+		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+  return rv;
+}
+
+static sw_error_t
+_dess_port_flowctrl_forcemode_get (a_uint32_t dev_id, fal_port_t port_id,
+				   a_bool_t * enable)
+{
+  sw_error_t rv;
+  a_uint32_t force, reg;
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  HSL_REG_ENTRY_GET (rv, dev_id, PORT_STATUS, port_id,
+		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+  SW_RTN_ON_ERROR (rv);
+
+  SW_GET_FIELD_BY_REG (PORT_STATUS, FLOW_LINK_EN, force, reg);
+  if (0 == force)
+    {
+      *enable = A_TRUE;
+    }
+  else
+    {
+      *enable = A_FALSE;
+    }
+
+  return SW_OK;
+}
+
+static sw_error_t
+_dess_port_powersave_set (a_uint32_t dev_id, fal_port_t port_id,
+			  a_bool_t enable)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_powersave_set)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_powersave_set (dev_id, phy_id, enable);
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_powersave_get (a_uint32_t dev_id, fal_port_t port_id,
+			  a_bool_t * enable)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_powersave_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_powersave_get (dev_id, phy_id, enable);
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_hibernate_set (a_uint32_t dev_id, fal_port_t port_id,
+			  a_bool_t enable)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_hibernation_set)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_hibernation_set (dev_id, phy_id, enable);
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_hibernate_get (a_uint32_t dev_id, fal_port_t port_id,
+			  a_bool_t * enable)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_hibernation_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_hibernation_get (dev_id, phy_id, enable);
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_cdt (a_uint32_t dev_id, fal_port_t port_id, a_uint32_t mdi_pair,
+		fal_cable_status_t * cable_status, a_uint32_t * cable_len)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_cdt)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_cdt (dev_id, phy_id, mdi_pair, cable_status, cable_len);
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_rxhdr_mode_set (a_uint32_t dev_id, fal_port_t port_id,
+			   fal_port_header_mode_t mode)
+{
+  sw_error_t rv;
+  a_uint32_t val;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  if (FAL_NO_HEADER_EN == mode)
+    {
+      val = 0;
+    }
+  else if (FAL_ONLY_MANAGE_FRAME_EN == mode && port_id != 0)
+    {
+      val = 1;
+    }
+  else if (FAL_ALL_TYPE_FRAME_EN == mode)
+    {
+      val = 2;
+    }
+  else
+    {
+      return SW_BAD_PARAM;
+    }
+
+  HSL_REG_FIELD_SET (rv, dev_id, PORT_HDR_CTL, port_id, RXHDR_MODE,
+		     (a_uint8_t *) (&val), sizeof (a_uint32_t));
+  return rv;
+}
+
+static sw_error_t
+_dess_port_rxhdr_mode_get (a_uint32_t dev_id, fal_port_t port_id,
+			   fal_port_header_mode_t * mode)
+{
+  sw_error_t rv;
+  a_uint32_t val;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  HSL_REG_FIELD_GET (rv, dev_id, PORT_HDR_CTL, port_id, RXHDR_MODE,
+		     (a_uint8_t *) (&val), sizeof (a_uint32_t));
+  SW_RTN_ON_ERROR (rv);
+
+  if (1 == val)
+    {
+      *mode = FAL_ONLY_MANAGE_FRAME_EN;
+    }
+  else if (2 == val)
+    {
+      *mode = FAL_ALL_TYPE_FRAME_EN;
+    }
+  else
+    {
+      *mode = FAL_NO_HEADER_EN;
+    }
+
+  return SW_OK;
+}
+
+static sw_error_t
+_dess_port_txhdr_mode_set (a_uint32_t dev_id, fal_port_t port_id,
+			   fal_port_header_mode_t mode)
+{
+  sw_error_t rv;
+  a_uint32_t val;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_EXCL_CPU))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  if (FAL_NO_HEADER_EN == mode)
+    {
+      val = 0;
+    }
+  else if (FAL_ONLY_MANAGE_FRAME_EN == mode)
+    {
+      val = 1;
+    }
+  else if (FAL_ALL_TYPE_FRAME_EN == mode)
+    {
+      val = 2;
+    }
+  else
+    {
+      return SW_BAD_PARAM;
+    }
+
+  HSL_REG_FIELD_SET (rv, dev_id, PORT_HDR_CTL, port_id, TXHDR_MODE,
+		     (a_uint8_t *) (&val), sizeof (a_uint32_t));
+  return rv;
+}
+
+static sw_error_t
+_dess_port_txhdr_mode_get (a_uint32_t dev_id, fal_port_t port_id,
+			   fal_port_header_mode_t * mode)
+{
+  sw_error_t rv;
+  a_uint32_t val;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_EXCL_CPU))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  HSL_REG_FIELD_GET (rv, dev_id, PORT_HDR_CTL, port_id, TXHDR_MODE,
+		     (a_uint8_t *) (&val), sizeof (a_uint32_t));
+  SW_RTN_ON_ERROR (rv);
+
+  if (1 == val)
+    {
+      *mode = FAL_ONLY_MANAGE_FRAME_EN;
+    }
+  else if (2 == val)
+    {
+      *mode = FAL_ALL_TYPE_FRAME_EN;
+    }
+  else
+    {
+      *mode = FAL_NO_HEADER_EN;
+    }
+
+  return SW_OK;
+}
+
+static sw_error_t
+_dess_header_type_set (a_uint32_t dev_id, a_bool_t enable, a_uint32_t type)
+{
+  a_uint32_t reg;
+  sw_error_t rv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  HSL_REG_ENTRY_GET (rv, dev_id, HEADER_CTL, 0,
+		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+  SW_RTN_ON_ERROR (rv);
+
+  if (A_TRUE == enable)
+    {
+      if (0xffff < type)
+	{
+	  return SW_BAD_PARAM;
+	}
+      SW_SET_REG_BY_FIELD (HEADER_CTL, TYPE_LEN, 1, reg);
+      SW_SET_REG_BY_FIELD (HEADER_CTL, TYPE_VAL, type, reg);
+    }
+  else if (A_FALSE == enable)
+    {
+      SW_SET_REG_BY_FIELD (HEADER_CTL, TYPE_LEN, 0, reg);
+      SW_SET_REG_BY_FIELD (HEADER_CTL, TYPE_VAL, 0, reg);
+    }
+  else
+    {
+      return SW_BAD_PARAM;
+    }
+
+  HSL_REG_ENTRY_SET (rv, dev_id, HEADER_CTL, 0,
+		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+  return rv;
+}
+
+static sw_error_t
+_dess_header_type_get (a_uint32_t dev_id, a_bool_t * enable,
+		       a_uint32_t * type)
+{
+  a_uint32_t data, reg;
+  sw_error_t rv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  HSL_REG_ENTRY_GET (rv, dev_id, HEADER_CTL, 0,
+		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+  SW_RTN_ON_ERROR (rv);
+
+  SW_GET_FIELD_BY_REG (HEADER_CTL, TYPE_LEN, data, reg);
+  if (data)
+    {
+      SW_GET_FIELD_BY_REG (HEADER_CTL, TYPE_VAL, data, reg);
+      *enable = A_TRUE;
+      *type = data;
+    }
+  else
+    {
+      *enable = A_FALSE;
+      *type = 0;
+    }
+
+  return SW_OK;
+}
+
+static sw_error_t
+_dess_port_txmac_status_set (a_uint32_t dev_id, fal_port_t port_id,
+			     a_bool_t enable)
+{
+  sw_error_t rv;
+  a_uint32_t reg, force, val;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  HSL_REG_ENTRY_GET (rv, dev_id, PORT_STATUS, port_id,
+		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+  SW_RTN_ON_ERROR (rv);
+
+  if (A_TRUE == enable)
+    {
+      val = 1;
+    }
+  else if (A_FALSE == enable)
+    {
+      val = 0;
+    }
+  else
+    {
+      return SW_BAD_PARAM;
+    }
+
+  /* for those ports without PHY device we set MAC register */
+  if (A_FALSE == _dess_port_phy_connected (dev_id, port_id))
+    {
+      SW_SET_REG_BY_FIELD (PORT_STATUS, LINK_EN, 0, reg);
+      SW_SET_REG_BY_FIELD (PORT_STATUS, TXMAC_EN, val, reg);
+    }
+  else
+    {
+      SW_GET_FIELD_BY_REG (PORT_STATUS, LINK_EN, force, reg);
+      if (force)
+	{
+	  /* link isn't in force mode so can't set */
+	  return SW_DISABLE;
+	}
+      else
+	{
+	  SW_SET_REG_BY_FIELD (PORT_STATUS, TXMAC_EN, val, reg);
+	}
+    }
+
+  HSL_REG_ENTRY_SET (rv, dev_id, PORT_STATUS, port_id,
+		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+  return rv;
+}
+
+static sw_error_t
+_dess_port_txmac_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			     a_bool_t * enable)
+{
+  sw_error_t rv;
+  a_uint32_t val;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_EXCL_CPU))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  HSL_REG_FIELD_GET (rv, dev_id, PORT_STATUS, port_id, TXMAC_EN,
+		     (a_uint8_t *) (&val), sizeof (a_uint32_t));
+  SW_RTN_ON_ERROR (rv);
+
+  if (val)
+    {
+      *enable = A_TRUE;
+    }
+  else
+    {
+      *enable = A_FALSE;
+    }
+
+  return SW_OK;
+}
+
+static sw_error_t
+_dess_port_rxmac_status_set (a_uint32_t dev_id, fal_port_t port_id,
+			     a_bool_t enable)
+{
+  sw_error_t rv;
+  a_uint32_t reg, force, val;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_EXCL_CPU))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  HSL_REG_ENTRY_GET (rv, dev_id, PORT_STATUS, port_id,
+		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+  SW_RTN_ON_ERROR (rv);
+
+  if (A_TRUE == enable)
+    {
+      val = 1;
+    }
+  else if (A_FALSE == enable)
+    {
+      val = 0;
+    }
+  else
+    {
+      return SW_BAD_PARAM;
+    }
+
+  /* for those ports without PHY device we set MAC register */
+  if (A_FALSE == _dess_port_phy_connected (dev_id, port_id))
+    {
+      SW_SET_REG_BY_FIELD (PORT_STATUS, LINK_EN, 0, reg);
+      SW_SET_REG_BY_FIELD (PORT_STATUS, RXMAC_EN, val, reg);
+    }
+  else
+    {
+      SW_GET_FIELD_BY_REG (PORT_STATUS, LINK_EN, force, reg);
+      if (force)
+	{
+	  /* link isn't in force mode so can't set */
+	  return SW_DISABLE;
+	}
+      else
+	{
+	  SW_SET_REG_BY_FIELD (PORT_STATUS, RXMAC_EN, val, reg);
+	}
+    }
+
+  HSL_REG_ENTRY_SET (rv, dev_id, PORT_STATUS, port_id,
+		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+  return rv;
+}
+
+static sw_error_t
+_dess_port_rxmac_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			     a_bool_t * enable)
+{
+  sw_error_t rv;
+  a_uint32_t val;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_EXCL_CPU))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  HSL_REG_FIELD_GET (rv, dev_id, PORT_STATUS, port_id, RXMAC_EN,
+		     (a_uint8_t *) (&val), sizeof (a_uint32_t));
+  SW_RTN_ON_ERROR (rv);
+
+  if (val)
+    {
+      *enable = A_TRUE;
+    }
+  else
+    {
+      *enable = A_FALSE;
+    }
+
+  return SW_OK;
+}
+
+static sw_error_t
+_dess_port_txfc_status_set (a_uint32_t dev_id, fal_port_t port_id,
+			    a_bool_t enable)
+{
+  sw_error_t rv;
+  a_uint32_t val, reg, force;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  if (A_TRUE == enable)
+    {
+      val = 1;
+    }
+  else if (A_FALSE == enable)
+    {
+      val = 0;
+    }
+  else
+    {
+      return SW_BAD_PARAM;
+    }
+
+  HSL_REG_ENTRY_GET (rv, dev_id, PORT_STATUS, port_id,
+		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+  SW_RTN_ON_ERROR (rv);
+
+  /* for those ports without PHY device we set MAC register */
+  if (A_FALSE == _dess_port_phy_connected (dev_id, port_id))
+    {
+      SW_SET_REG_BY_FIELD (PORT_STATUS, FLOW_LINK_EN, 0, reg);
+      SW_SET_REG_BY_FIELD (PORT_STATUS, TX_FLOW_EN, val, reg);
+    }
+  else
+    {
+      SW_GET_FIELD_BY_REG (PORT_STATUS, FLOW_LINK_EN, force, reg);
+      if (force)
+	{
+	  /* flow control isn't in force mode so can't set */
+	  return SW_DISABLE;
+	}
+      else
+	{
+	  SW_SET_REG_BY_FIELD (PORT_STATUS, TX_FLOW_EN, val, reg);
+	}
+    }
+
+  HSL_REG_ENTRY_SET (rv, dev_id, PORT_STATUS, port_id,
+		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+  return rv;
+}
+
+static sw_error_t
+_dess_port_txfc_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			    a_bool_t * enable)
+{
+  sw_error_t rv;
+  a_uint32_t val;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  HSL_REG_FIELD_GET (rv, dev_id, PORT_STATUS, port_id, TX_FLOW_EN,
+		     (a_uint8_t *) (&val), sizeof (a_uint32_t));
+  SW_RTN_ON_ERROR (rv);
+
+  if (val)
+    {
+      *enable = A_TRUE;
+    }
+  else
+    {
+      *enable = A_FALSE;
+    }
+
+  return SW_OK;
+}
+
+static sw_error_t
+_dess_port_rxfc_status_set (a_uint32_t dev_id, fal_port_t port_id,
+			    a_bool_t enable)
+{
+  sw_error_t rv;
+  a_uint32_t val, reg, force;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_EXCL_CPU))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  if (A_TRUE == enable)
+    {
+      val = 1;
+    }
+  else if (A_FALSE == enable)
+    {
+      val = 0;
+    }
+  else
+    {
+      return SW_BAD_PARAM;
+    }
+
+  HSL_REG_ENTRY_GET (rv, dev_id, PORT_STATUS, port_id,
+		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+  SW_RTN_ON_ERROR (rv);
+
+  /* for those ports without PHY device we set MAC register */
+  if (A_FALSE == _dess_port_phy_connected (dev_id, port_id))
+    {
+      SW_SET_REG_BY_FIELD (PORT_STATUS, FLOW_LINK_EN, 0, reg);
+      SW_SET_REG_BY_FIELD (PORT_STATUS, RX_FLOW_EN, val, reg);
+    }
+  else
+    {
+      SW_GET_FIELD_BY_REG (PORT_STATUS, FLOW_LINK_EN, force, reg);
+      if (force)
+	{
+	  /* flow control isn't in force mode so can't set */
+	  return SW_DISABLE;
+	}
+      else
+	{
+	  SW_SET_REG_BY_FIELD (PORT_STATUS, RX_FLOW_EN, val, reg);
+	}
+    }
+
+  HSL_REG_ENTRY_SET (rv, dev_id, PORT_STATUS, port_id,
+		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+  return rv;
+}
+
+static sw_error_t
+_dess_port_rxfc_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			    a_bool_t * enable)
+{
+  sw_error_t rv;
+  a_uint32_t val;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_EXCL_CPU))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  HSL_REG_FIELD_GET (rv, dev_id, PORT_STATUS, port_id, RX_FLOW_EN,
+		     (a_uint8_t *) (&val), sizeof (a_uint32_t));
+  SW_RTN_ON_ERROR (rv);
+
+  if (val)
+    {
+      *enable = A_TRUE;
+    }
+  else
+    {
+      *enable = A_FALSE;
+    }
+
+  return SW_OK;
+}
+
+static sw_error_t
+_dess_port_bp_status_set (a_uint32_t dev_id, fal_port_t port_id,
+			  a_bool_t enable)
+{
+  sw_error_t rv;
+  a_uint32_t val;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_EXCL_CPU))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  if (A_TRUE == enable)
+    {
+      val = 1;
+    }
+  else if (A_FALSE == enable)
+    {
+      val = 0;
+    }
+  else
+    {
+      return SW_BAD_PARAM;
+    }
+
+  HSL_REG_FIELD_SET (rv, dev_id, PORT_STATUS, port_id, TX_HALF_FLOW_EN,
+		     (a_uint8_t *) (&val), sizeof (a_uint32_t));
+  return rv;
+}
+
+static sw_error_t
+_dess_port_bp_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			  a_bool_t * enable)
+{
+  sw_error_t rv;
+  a_uint32_t val;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_EXCL_CPU))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  HSL_REG_FIELD_GET (rv, dev_id, PORT_STATUS, port_id, TX_HALF_FLOW_EN,
+		     (a_uint8_t *) (&val), sizeof (a_uint32_t));
+  SW_RTN_ON_ERROR (rv);
+
+  if (val)
+    {
+      *enable = A_TRUE;
+    }
+  else
+    {
+      *enable = A_FALSE;
+    }
+
+  return SW_OK;
+}
+
+static sw_error_t
+_dess_port_link_forcemode_set (a_uint32_t dev_id, fal_port_t port_id,
+			       a_bool_t enable)
+{
+  sw_error_t rv;
+  a_uint32_t reg;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_EXCL_CPU))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  HSL_REG_ENTRY_GET (rv, dev_id, PORT_STATUS, port_id,
+		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+  SW_RTN_ON_ERROR (rv);
+
+  if (A_TRUE == enable)
+    {
+      SW_SET_REG_BY_FIELD (PORT_STATUS, LINK_EN, 0, reg);
+    }
+  else if (A_FALSE == enable)
+    {
+      /* for those ports without PHY, it can't sync link status */
+      if (A_FALSE == _dess_port_phy_connected (dev_id, port_id))
+	{
+	  return SW_DISABLE;
+	}
+      SW_SET_REG_BY_FIELD (PORT_STATUS, LINK_EN, 1, reg);
+    }
+  else
+    {
+      return SW_BAD_PARAM;
+    }
+
+  HSL_REG_ENTRY_SET (rv, dev_id, PORT_STATUS, port_id,
+		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+  return rv;
+}
+
+static sw_error_t
+_dess_port_link_forcemode_get (a_uint32_t dev_id, fal_port_t port_id,
+			       a_bool_t * enable)
+{
+  sw_error_t rv;
+  a_uint32_t val;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_EXCL_CPU))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  HSL_REG_FIELD_GET (rv, dev_id, PORT_STATUS, port_id, LINK_EN,
+		     (a_uint8_t *) (&val), sizeof (a_uint32_t));
+  SW_RTN_ON_ERROR (rv);
+
+  if (0 == val)
+    {
+      *enable = A_TRUE;
+    }
+  else
+    {
+      *enable = A_FALSE;
+    }
+
+  return SW_OK;
+}
+
+static sw_error_t
+_dess_port_link_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			    a_bool_t * status)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_EXCL_CPU))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_link_status_get)
+    return SW_NOT_SUPPORTED;
+
+  /* for those ports without PHY device supposed always link up */
+  if (A_FALSE == _dess_port_phy_connected (dev_id, port_id))
+    {
+      *status = A_TRUE;
+    }
+  else
+    {
+      rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+      SW_RTN_ON_ERROR (rv);
+
+      if (A_TRUE == phy_drv->phy_link_status_get (dev_id, phy_id))
+	{
+	  *status = A_TRUE;
+	}
+      else
+	{
+	  *status = A_FALSE;
+	}
+    }
+
+  return SW_OK;
+}
+
+static sw_error_t
+_dess_port_mac_loopback_set (a_uint32_t dev_id, fal_port_t port_id,
+			     a_bool_t enable)
+{
+  sw_error_t rv = SW_OK;
+  a_uint32_t val;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_EXCL_CPU))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  if (A_TRUE == enable)
+    {
+      val = 1;
+    }
+  else if (A_FALSE == enable)
+    {
+      val = 0;
+    }
+  else
+    {
+      return SW_BAD_PARAM;
+    }
+
+  HSL_REG_FIELD_SET (rv, dev_id, PORT_HDR_CTL, port_id, LOOPBACK_EN,
+		     (a_uint8_t *) (&val), sizeof (a_uint32_t));
+  return rv;
+}
+
+static sw_error_t
+_dess_port_mac_loopback_get (a_uint32_t dev_id, fal_port_t port_id,
+			     a_bool_t * enable)
+{
+  sw_error_t rv;
+  a_uint32_t val;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_EXCL_CPU))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  HSL_REG_FIELD_GET (rv, dev_id, PORT_HDR_CTL, port_id, LOOPBACK_EN,
+		     (a_uint8_t *) (&val), sizeof (a_uint32_t));
+  SW_RTN_ON_ERROR (rv);
+
+  if (0 == val)
+    {
+      *enable = A_FALSE;
+    }
+  else
+    {
+      *enable = A_TRUE;
+    }
+
+  return SW_OK;
 }
 
 
 static sw_error_t
-_dess_port_congestion_drop_get(a_uint32_t dev_id, fal_port_t port_id,a_uint32_t queue_id,  a_bool_t *enable)
+_dess_port_congestion_drop_set (a_uint32_t dev_id, fal_port_t port_id,
+				a_uint32_t queue_id, a_bool_t enable)
 {
-	sw_error_t rv = SW_OK;
-	a_uint32_t val, offset = 0;
+  sw_error_t rv = SW_OK;
+  a_uint32_t val, offset = 0, field = 0;
 
-	HSL_DEV_ID_CHECK(dev_id);
+  HSL_DEV_ID_CHECK (dev_id);
 
-	if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
-	{
-		return SW_BAD_PARAM;
-	}
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
+    {
+      return SW_BAD_PARAM;
+    }
 
-	if(queue_id >= port_queue[port_id])
-	{
-		return SW_BAD_PARAM;
-	}
+  if (queue_id >= port_queue[port_id])
+    {
+      return SW_BAD_PARAM;
+    }
 
-	if(port_id != 0)
-		offset = port_id * 4 + 2;
-	offset += queue_id;
+  if (port_id != 0)
+    offset = port_id * 4 + 2;
+  offset += queue_id;
 
-	HSL_REG_ENTRY_GET(rv, dev_id, FLOW_CONGE_DROP_CTRL0, 0, 
-					  (a_uint8_t *) (&val), sizeof (a_uint32_t));
-	val = (val >> offset) & 0x1;
-	if(val == 0) {
-		*enable = A_FALSE;
-	} else if(val == 1) {
-		*enable = A_TRUE;
-	}
-	return rv;
-}
-
-static sw_error_t
-_dess_ring_flow_ctrl_thres_set(a_uint32_t dev_id, a_uint32_t ring_id, a_uint8_t on_thres,  a_uint8_t off_thres)
-{
-	sw_error_t rv;
-	a_uint32_t val = 0;
-
-	HSL_DEV_ID_CHECK(dev_id);
-
-	if (ring_id >= DMA_MAX_VIRT_RING)
-	{
-		return SW_BAD_PARAM;
-	}
-
-	if (off_thres > on_thres || off_thres == 0)
-	{
-		return SW_BAD_PARAM;
-	}
-
-	SW_SET_REG_BY_FIELD(RING_FLOW_CTRL_THRES, XON, on_thres, val);
-	SW_SET_REG_BY_FIELD(RING_FLOW_CTRL_THRES, XOFF, off_thres, val);
-	HSL_REG_ENTRY_SET(rv, dev_id, RING_FLOW_CTRL_THRES, ring_id,
-					  (a_uint8_t *) (&val), sizeof (a_uint32_t));
+  if (A_TRUE == enable)
+    {
+      field = 1 << offset;
+    }
+  else if (A_FALSE == enable)
+    {
+      field = ~(1 << offset);
+    }
+  else
+    {
+      return SW_BAD_PARAM;
+    }
 
 
-	return rv;
+
+  HSL_REG_ENTRY_GET (rv, dev_id, FLOW_CONGE_DROP_CTRL0, 0,
+		     (a_uint8_t *) (&val), sizeof (a_uint32_t));
+  if (A_TRUE == enable)
+    {
+      val = val | field;
+    }
+  else
+    {
+      val = val & field;
+    }
+
+  HSL_REG_ENTRY_SET (rv, dev_id, FLOW_CONGE_DROP_CTRL0, 0,
+		     (a_uint8_t *) (&val), sizeof (a_uint32_t));
+  return rv;
 }
 
 
 static sw_error_t
-_dess_ring_flow_ctrl_thres_get(a_uint32_t dev_id, a_uint32_t ring_id, a_uint8_t *on_thres,  a_uint8_t *off_thres)
+_dess_port_congestion_drop_get (a_uint32_t dev_id, fal_port_t port_id,
+				a_uint32_t queue_id, a_bool_t * enable)
 {
+  sw_error_t rv = SW_OK;
+  a_uint32_t val, offset = 0;
 
-	sw_error_t rv;
-	a_uint32_t val = 0;
-	a_uint8_t hthres, lthres;
+  HSL_DEV_ID_CHECK (dev_id);
 
-	HSL_DEV_ID_CHECK(dev_id);
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
+    {
+      return SW_BAD_PARAM;
+    }
 
-	if (ring_id >= DMA_MAX_VIRT_RING)
-	{
-		return SW_BAD_PARAM;
-	}
+  if (queue_id >= port_queue[port_id])
+    {
+      return SW_BAD_PARAM;
+    }
 
-	HSL_REG_ENTRY_GET(rv, dev_id, RING_FLOW_CTRL_THRES, ring_id,
-					  (a_uint8_t *) (&val), sizeof (a_uint32_t));
+  if (port_id != 0)
+    offset = port_id * 4 + 2;
+  offset += queue_id;
 
-	SW_GET_FIELD_BY_REG(RING_FLOW_CTRL_THRES, XON, hthres, val);
-	SW_GET_FIELD_BY_REG(RING_FLOW_CTRL_THRES, XOFF, lthres, val);
-	
-	*on_thres = hthres;
-	*off_thres = lthres;
-	
-	return rv;
+  HSL_REG_ENTRY_GET (rv, dev_id, FLOW_CONGE_DROP_CTRL0, 0,
+		     (a_uint8_t *) (&val), sizeof (a_uint32_t));
+  val = (val >> offset) & 0x1;
+  if (val == 0)
+    {
+      *enable = A_FALSE;
+    }
+  else if (val == 1)
+    {
+      *enable = A_TRUE;
+    }
+  return rv;
+}
+
+static sw_error_t
+_dess_ring_flow_ctrl_thres_set (a_uint32_t dev_id, a_uint32_t ring_id,
+				a_uint8_t on_thres, a_uint8_t off_thres)
+{
+  sw_error_t rv;
+  a_uint32_t val = 0;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (ring_id >= DMA_MAX_VIRT_RING)
+    {
+      return SW_BAD_PARAM;
+    }
+
+  if (off_thres > on_thres || off_thres == 0)
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_SET_REG_BY_FIELD (RING_FLOW_CTRL_THRES, XON, on_thres, val);
+  SW_SET_REG_BY_FIELD (RING_FLOW_CTRL_THRES, XOFF, off_thres, val);
+  HSL_REG_ENTRY_SET (rv, dev_id, RING_FLOW_CTRL_THRES, ring_id,
+		     (a_uint8_t *) (&val), sizeof (a_uint32_t));
+
+
+  return rv;
 }
 
 
+static sw_error_t
+_dess_ring_flow_ctrl_thres_get (a_uint32_t dev_id, a_uint32_t ring_id,
+				a_uint8_t * on_thres, a_uint8_t * off_thres)
+{
+
+  sw_error_t rv;
+  a_uint32_t val = 0;
+  a_uint8_t hthres, lthres;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (ring_id >= DMA_MAX_VIRT_RING)
+    {
+      return SW_BAD_PARAM;
+    }
+
+  HSL_REG_ENTRY_GET (rv, dev_id, RING_FLOW_CTRL_THRES, ring_id,
+		     (a_uint8_t *) (&val), sizeof (a_uint32_t));
+
+  SW_GET_FIELD_BY_REG (RING_FLOW_CTRL_THRES, XON, hthres, val);
+  SW_GET_FIELD_BY_REG (RING_FLOW_CTRL_THRES, XOFF, lthres, val);
+
+  *on_thres = hthres;
+  *off_thres = lthres;
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_8023az_set (a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_8023az_set)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_8023az_set (dev_id, phy_id, enable);
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_8023az_get (a_uint32_t dev_id, fal_port_t port_id,
+		       a_bool_t * enable)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_8023az_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_8023az_get (dev_id, phy_id, enable);
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_mdix_set (a_uint32_t dev_id, fal_port_t port_id,
+		     fal_port_mdix_mode_t mode)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_mdix_set)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_mdix_set (dev_id, phy_id, mode);
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_mdix_get (a_uint32_t dev_id, fal_port_t port_id,
+		     fal_port_mdix_mode_t * mode)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_mdix_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_mdix_get (dev_id, phy_id, mode);
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_mdix_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			    fal_port_mdix_status_t * mode)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_mdix_status_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_mdix_status_get (dev_id, phy_id, mode);
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_combo_prefer_medium_set (a_uint32_t dev_id, fal_port_t port_id,
+				    fal_port_medium_t phy_medium)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_combo_prefer_medium_set)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_combo_prefer_medium_set (dev_id, phy_id, phy_medium);
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_combo_prefer_medium_get (a_uint32_t dev_id, fal_port_t port_id,
+				    fal_port_medium_t * phy_medium)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_combo_prefer_medium_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_combo_prefer_medium_get (dev_id, phy_id, phy_medium);
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_combo_medium_status_get (a_uint32_t dev_id, fal_port_t port_id,
+				    fal_port_medium_t * phy_medium)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_combo_medium_status_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_combo_medium_status_get (dev_id, phy_id, phy_medium);
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_combo_fiber_mode_set (a_uint32_t dev_id, fal_port_t port_id,
+				 fal_port_fiber_mode_t fiber_mode)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_combo_fiber_mode_set)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_combo_fiber_mode_set (dev_id, phy_id, fiber_mode);
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_combo_fiber_mode_get (a_uint32_t dev_id, fal_port_t port_id,
+				 fal_port_fiber_mode_t * fiber_mode)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_combo_fiber_mode_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_combo_fiber_mode_get (dev_id, phy_id, fiber_mode);
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_local_loopback_set (a_uint32_t dev_id, fal_port_t port_id,
+			       a_bool_t enable)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_local_loopback_set)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_local_loopback_set (dev_id, phy_id, enable);
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_local_loopback_get (a_uint32_t dev_id, fal_port_t port_id,
+			       a_bool_t * enable)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_local_loopback_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_local_loopback_get (dev_id, phy_id, enable);
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_remote_loopback_set (a_uint32_t dev_id, fal_port_t port_id,
+				a_bool_t enable)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_remote_loopback_set)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_remote_loopback_set (dev_id, phy_id, enable);
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_remote_loopback_get (a_uint32_t dev_id, fal_port_t port_id,
+				a_bool_t * enable)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_remote_loopback_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_remote_loopback_get (dev_id, phy_id, enable);
+
+  return rv;
+}
 
 /**
  * @brief Set duplex mode on a particular port.
@@ -1550,15 +2010,15 @@ _dess_ring_flow_ctrl_thres_get(a_uint32_t dev_id, a_uint32_t ring_id, a_uint8_t 
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_duplex_set(a_uint32_t dev_id, fal_port_t port_id,
-                     fal_port_duplex_t duplex)
+dess_port_duplex_set (a_uint32_t dev_id, fal_port_t port_id,
+		      fal_port_duplex_t duplex)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _dess_port_duplex_set(dev_id, port_id, duplex);
-    HSL_API_UNLOCK;
-    return rv;
+  HSL_API_LOCK;
+  rv = _dess_port_duplex_set (dev_id, port_id, duplex);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1569,15 +2029,15 @@ dess_port_duplex_set(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_duplex_get(a_uint32_t dev_id, fal_port_t port_id,
-                     fal_port_duplex_t * pduplex)
+dess_port_duplex_get (a_uint32_t dev_id, fal_port_t port_id,
+		      fal_port_duplex_t * pduplex)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _dess_port_duplex_get(dev_id, port_id, pduplex);
-    HSL_API_UNLOCK;
-    return rv;
+  HSL_API_LOCK;
+  rv = _dess_port_duplex_get (dev_id, port_id, pduplex);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1588,15 +2048,15 @@ dess_port_duplex_get(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_speed_set(a_uint32_t dev_id, fal_port_t port_id,
-                    fal_port_speed_t speed)
+dess_port_speed_set (a_uint32_t dev_id, fal_port_t port_id,
+		     fal_port_speed_t speed)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _dess_port_speed_set(dev_id, port_id, speed);
-    HSL_API_UNLOCK;
-    return rv;
+  HSL_API_LOCK;
+  rv = _dess_port_speed_set (dev_id, port_id, speed);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1607,15 +2067,15 @@ dess_port_speed_set(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_speed_get(a_uint32_t dev_id, fal_port_t port_id,
-                    fal_port_speed_t * pspeed)
+dess_port_speed_get (a_uint32_t dev_id, fal_port_t port_id,
+		     fal_port_speed_t * pspeed)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _dess_port_speed_get(dev_id, port_id, pspeed);
-    HSL_API_UNLOCK;
-    return rv;
+  HSL_API_LOCK;
+  rv = _dess_port_speed_get (dev_id, port_id, pspeed);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1626,15 +2086,15 @@ dess_port_speed_get(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_autoneg_status_get(a_uint32_t dev_id, fal_port_t port_id,
-                             a_bool_t * status)
+dess_port_autoneg_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			      a_bool_t * status)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _dess_port_autoneg_status_get(dev_id, port_id, status);
-    HSL_API_UNLOCK;
-    return rv;
+  HSL_API_LOCK;
+  rv = _dess_port_autoneg_status_get (dev_id, port_id, status);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1644,14 +2104,14 @@ dess_port_autoneg_status_get(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_autoneg_enable(a_uint32_t dev_id, fal_port_t port_id)
+dess_port_autoneg_enable (a_uint32_t dev_id, fal_port_t port_id)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _dess_port_autoneg_enable(dev_id, port_id);
-    HSL_API_UNLOCK;
-    return rv;
+  HSL_API_LOCK;
+  rv = _dess_port_autoneg_enable (dev_id, port_id);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1661,14 +2121,14 @@ dess_port_autoneg_enable(a_uint32_t dev_id, fal_port_t port_id)
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_autoneg_restart(a_uint32_t dev_id, fal_port_t port_id)
+dess_port_autoneg_restart (a_uint32_t dev_id, fal_port_t port_id)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _dess_port_autoneg_restart(dev_id, port_id);
-    HSL_API_UNLOCK;
-    return rv;
+  HSL_API_LOCK;
+  rv = _dess_port_autoneg_restart (dev_id, port_id);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1682,15 +2142,15 @@ dess_port_autoneg_restart(a_uint32_t dev_id, fal_port_t port_id)
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_autoneg_adv_set(a_uint32_t dev_id, fal_port_t port_id,
-                          a_uint32_t autoadv)
+dess_port_autoneg_adv_set (a_uint32_t dev_id, fal_port_t port_id,
+			   a_uint32_t autoadv)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _dess_port_autoneg_adv_set(dev_id, port_id, autoadv);
-    HSL_API_UNLOCK;
-    return rv;
+  HSL_API_LOCK;
+  rv = _dess_port_autoneg_adv_set (dev_id, port_id, autoadv);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1701,15 +2161,15 @@ dess_port_autoneg_adv_set(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_autoneg_adv_get(a_uint32_t dev_id, fal_port_t port_id,
-                          a_uint32_t * autoadv)
+dess_port_autoneg_adv_get (a_uint32_t dev_id, fal_port_t port_id,
+			   a_uint32_t * autoadv)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _dess_port_autoneg_adv_get(dev_id, port_id, autoadv);
-    HSL_API_UNLOCK;
-    return rv;
+  HSL_API_LOCK;
+  rv = _dess_port_autoneg_adv_get (dev_id, port_id, autoadv);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1720,14 +2180,15 @@ dess_port_autoneg_adv_get(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_flowctrl_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+dess_port_flowctrl_set (a_uint32_t dev_id, fal_port_t port_id,
+			a_bool_t enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _dess_port_flowctrl_set(dev_id, port_id, enable);
-    HSL_API_UNLOCK;
-    return rv;
+  HSL_API_LOCK;
+  rv = _dess_port_flowctrl_set (dev_id, port_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1738,14 +2199,15 @@ dess_port_flowctrl_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_flowctrl_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
+dess_port_flowctrl_get (a_uint32_t dev_id, fal_port_t port_id,
+			a_bool_t * enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _dess_port_flowctrl_get(dev_id, port_id, enable);
-    HSL_API_UNLOCK;
-    return rv;
+  HSL_API_LOCK;
+  rv = _dess_port_flowctrl_get (dev_id, port_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1756,15 +2218,15 @@ dess_port_flowctrl_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_flowctrl_forcemode_set(a_uint32_t dev_id, fal_port_t port_id,
-                                 a_bool_t enable)
+dess_port_flowctrl_forcemode_set (a_uint32_t dev_id, fal_port_t port_id,
+				  a_bool_t enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _dess_port_flowctrl_forcemode_set(dev_id, port_id, enable);
-    HSL_API_UNLOCK;
-    return rv;
+  HSL_API_LOCK;
+  rv = _dess_port_flowctrl_forcemode_set (dev_id, port_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1775,15 +2237,15 @@ dess_port_flowctrl_forcemode_set(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_flowctrl_forcemode_get(a_uint32_t dev_id, fal_port_t port_id,
-                                 a_bool_t * enable)
+dess_port_flowctrl_forcemode_get (a_uint32_t dev_id, fal_port_t port_id,
+				  a_bool_t * enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _dess_port_flowctrl_forcemode_get(dev_id, port_id, enable);
-    HSL_API_UNLOCK;
-    return rv;
+  HSL_API_LOCK;
+  rv = _dess_port_flowctrl_forcemode_get (dev_id, port_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1794,14 +2256,15 @@ dess_port_flowctrl_forcemode_get(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_powersave_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+dess_port_powersave_set (a_uint32_t dev_id, fal_port_t port_id,
+			 a_bool_t enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _dess_port_powersave_set(dev_id, port_id, enable);
-    HSL_API_UNLOCK;
-    return rv;
+  HSL_API_LOCK;
+  rv = _dess_port_powersave_set (dev_id, port_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1812,15 +2275,15 @@ dess_port_powersave_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_powersave_get(a_uint32_t dev_id, fal_port_t port_id,
-                        a_bool_t * enable)
+dess_port_powersave_get (a_uint32_t dev_id, fal_port_t port_id,
+			 a_bool_t * enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _dess_port_powersave_get(dev_id, port_id, enable);
-    HSL_API_UNLOCK;
-    return rv;
+  HSL_API_LOCK;
+  rv = _dess_port_powersave_get (dev_id, port_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1831,14 +2294,15 @@ dess_port_powersave_get(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_hibernate_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+dess_port_hibernate_set (a_uint32_t dev_id, fal_port_t port_id,
+			 a_bool_t enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _dess_port_hibernate_set(dev_id, port_id, enable);
-    HSL_API_UNLOCK;
-    return rv;
+  HSL_API_LOCK;
+  rv = _dess_port_hibernate_set (dev_id, port_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1849,15 +2313,15 @@ dess_port_hibernate_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_hibernate_get(a_uint32_t dev_id, fal_port_t port_id,
-                        a_bool_t * enable)
+dess_port_hibernate_get (a_uint32_t dev_id, fal_port_t port_id,
+			 a_bool_t * enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _dess_port_hibernate_get(dev_id, port_id, enable);
-    HSL_API_UNLOCK;
-    return rv;
+  HSL_API_LOCK;
+  rv = _dess_port_hibernate_get (dev_id, port_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1870,15 +2334,15 @@ dess_port_hibernate_get(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_cdt(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t mdi_pair,
-              fal_cable_status_t * cable_status, a_uint32_t * cable_len)
+dess_port_cdt (a_uint32_t dev_id, fal_port_t port_id, a_uint32_t mdi_pair,
+	       fal_cable_status_t * cable_status, a_uint32_t * cable_len)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _dess_port_cdt(dev_id, port_id, mdi_pair, cable_status, cable_len);
-    HSL_API_UNLOCK;
-    return rv;
+  HSL_API_LOCK;
+  rv = _dess_port_cdt (dev_id, port_id, mdi_pair, cable_status, cable_len);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1889,15 +2353,15 @@ dess_port_cdt(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t mdi_pair,
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_rxhdr_mode_set(a_uint32_t dev_id, fal_port_t port_id,
-                         fal_port_header_mode_t mode)
+dess_port_rxhdr_mode_set (a_uint32_t dev_id, fal_port_t port_id,
+			  fal_port_header_mode_t mode)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _dess_port_rxhdr_mode_set(dev_id, port_id, mode);
-    HSL_API_UNLOCK;
-    return rv;
+  HSL_API_LOCK;
+  rv = _dess_port_rxhdr_mode_set (dev_id, port_id, mode);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1908,15 +2372,15 @@ dess_port_rxhdr_mode_set(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_rxhdr_mode_get(a_uint32_t dev_id, fal_port_t port_id,
-                         fal_port_header_mode_t * mode)
+dess_port_rxhdr_mode_get (a_uint32_t dev_id, fal_port_t port_id,
+			  fal_port_header_mode_t * mode)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _dess_port_rxhdr_mode_get(dev_id, port_id, mode);
-    HSL_API_UNLOCK;
-    return rv;
+  HSL_API_LOCK;
+  rv = _dess_port_rxhdr_mode_get (dev_id, port_id, mode);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1927,15 +2391,15 @@ dess_port_rxhdr_mode_get(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_txhdr_mode_set(a_uint32_t dev_id, fal_port_t port_id,
-                         fal_port_header_mode_t mode)
+dess_port_txhdr_mode_set (a_uint32_t dev_id, fal_port_t port_id,
+			  fal_port_header_mode_t mode)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _dess_port_txhdr_mode_set(dev_id, port_id, mode);
-    HSL_API_UNLOCK;
-    return rv;
+  HSL_API_LOCK;
+  rv = _dess_port_txhdr_mode_set (dev_id, port_id, mode);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1946,15 +2410,15 @@ dess_port_txhdr_mode_set(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_txhdr_mode_get(a_uint32_t dev_id, fal_port_t port_id,
-                         fal_port_header_mode_t * mode)
+dess_port_txhdr_mode_get (a_uint32_t dev_id, fal_port_t port_id,
+			  fal_port_header_mode_t * mode)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _dess_port_txhdr_mode_get(dev_id, port_id, mode);
-    HSL_API_UNLOCK;
-    return rv;
+  HSL_API_LOCK;
+  rv = _dess_port_txhdr_mode_get (dev_id, port_id, mode);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1965,13 +2429,13 @@ dess_port_txhdr_mode_get(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_header_type_set(a_uint32_t dev_id, a_bool_t enable, a_uint32_t type)
+dess_header_type_set (a_uint32_t dev_id, a_bool_t enable, a_uint32_t type)
 {
-    sw_error_t rv;
-    HSL_API_LOCK;
-    rv = _dess_header_type_set(dev_id, enable, type);
-    HSL_API_UNLOCK;
-    return rv;
+  sw_error_t rv;
+  HSL_API_LOCK;
+  rv = _dess_header_type_set (dev_id, enable, type);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -1982,14 +2446,14 @@ dess_header_type_set(a_uint32_t dev_id, a_bool_t enable, a_uint32_t type)
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_header_type_get(a_uint32_t dev_id, a_bool_t * enable, a_uint32_t * type)
+dess_header_type_get (a_uint32_t dev_id, a_bool_t * enable, a_uint32_t * type)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _dess_header_type_get(dev_id, enable, type);
-    HSL_API_UNLOCK;
-    return rv;
+  HSL_API_LOCK;
+  rv = _dess_header_type_get (dev_id, enable, type);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -2000,13 +2464,14 @@ dess_header_type_get(a_uint32_t dev_id, a_bool_t * enable, a_uint32_t * type)
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_txmac_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+dess_port_txmac_status_set (a_uint32_t dev_id, fal_port_t port_id,
+			    a_bool_t enable)
 {
-    sw_error_t rv;
-    HSL_API_LOCK;
-    rv = _dess_port_txmac_status_set(dev_id, port_id, enable);
-    HSL_API_UNLOCK;
-    return rv;
+  sw_error_t rv;
+  HSL_API_LOCK;
+  rv = _dess_port_txmac_status_set (dev_id, port_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -2017,14 +2482,15 @@ dess_port_txmac_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enabl
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_txmac_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
+dess_port_txmac_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			    a_bool_t * enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _dess_port_txmac_status_get(dev_id, port_id, enable);
-    HSL_API_UNLOCK;
-    return rv;
+  HSL_API_LOCK;
+  rv = _dess_port_txmac_status_get (dev_id, port_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -2035,13 +2501,14 @@ dess_port_txmac_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * ena
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_rxmac_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+dess_port_rxmac_status_set (a_uint32_t dev_id, fal_port_t port_id,
+			    a_bool_t enable)
 {
-    sw_error_t rv;
-    HSL_API_LOCK;
-    rv = _dess_port_rxmac_status_set(dev_id, port_id, enable);
-    HSL_API_UNLOCK;
-    return rv;
+  sw_error_t rv;
+  HSL_API_LOCK;
+  rv = _dess_port_rxmac_status_set (dev_id, port_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -2052,14 +2519,15 @@ dess_port_rxmac_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enabl
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_rxmac_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
+dess_port_rxmac_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			    a_bool_t * enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _dess_port_rxmac_status_get(dev_id, port_id, enable);
-    HSL_API_UNLOCK;
-    return rv;
+  HSL_API_LOCK;
+  rv = _dess_port_rxmac_status_get (dev_id, port_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -2070,13 +2538,14 @@ dess_port_rxmac_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * ena
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_txfc_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+dess_port_txfc_status_set (a_uint32_t dev_id, fal_port_t port_id,
+			   a_bool_t enable)
 {
-    sw_error_t rv;
-    HSL_API_LOCK;
-    rv = _dess_port_txfc_status_set(dev_id, port_id, enable);
-    HSL_API_UNLOCK;
-    return rv;
+  sw_error_t rv;
+  HSL_API_LOCK;
+  rv = _dess_port_txfc_status_set (dev_id, port_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -2087,14 +2556,15 @@ dess_port_txfc_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_txfc_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
+dess_port_txfc_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			   a_bool_t * enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _dess_port_txfc_status_get(dev_id, port_id, enable);
-    HSL_API_UNLOCK;
-    return rv;
+  HSL_API_LOCK;
+  rv = _dess_port_txfc_status_get (dev_id, port_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -2105,13 +2575,14 @@ dess_port_txfc_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enab
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_rxfc_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+dess_port_rxfc_status_set (a_uint32_t dev_id, fal_port_t port_id,
+			   a_bool_t enable)
 {
-    sw_error_t rv;
-    HSL_API_LOCK;
-    rv = _dess_port_rxfc_status_set(dev_id, port_id, enable);
-    HSL_API_UNLOCK;
-    return rv;
+  sw_error_t rv;
+  HSL_API_LOCK;
+  rv = _dess_port_rxfc_status_set (dev_id, port_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -2122,14 +2593,15 @@ dess_port_rxfc_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_rxfc_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
+dess_port_rxfc_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			   a_bool_t * enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _dess_port_rxfc_status_get(dev_id, port_id, enable);
-    HSL_API_UNLOCK;
-    return rv;
+  HSL_API_LOCK;
+  rv = _dess_port_rxfc_status_get (dev_id, port_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -2140,13 +2612,14 @@ dess_port_rxfc_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enab
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_bp_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+dess_port_bp_status_set (a_uint32_t dev_id, fal_port_t port_id,
+			 a_bool_t enable)
 {
-    sw_error_t rv;
-    HSL_API_LOCK;
-    rv = _dess_port_bp_status_set(dev_id, port_id, enable);
-    HSL_API_UNLOCK;
-    return rv;
+  sw_error_t rv;
+  HSL_API_LOCK;
+  rv = _dess_port_bp_status_set (dev_id, port_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -2157,14 +2630,15 @@ dess_port_bp_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_bp_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
+dess_port_bp_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			 a_bool_t * enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _dess_port_bp_status_get(dev_id, port_id, enable);
-    HSL_API_UNLOCK;
-    return rv;
+  HSL_API_LOCK;
+  rv = _dess_port_bp_status_get (dev_id, port_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -2175,13 +2649,14 @@ dess_port_bp_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_link_forcemode_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+dess_port_link_forcemode_set (a_uint32_t dev_id, fal_port_t port_id,
+			      a_bool_t enable)
 {
-    sw_error_t rv;
-    HSL_API_LOCK;
-    rv = _dess_port_link_forcemode_set(dev_id, port_id, enable);
-    HSL_API_UNLOCK;
-    return rv;
+  sw_error_t rv;
+  HSL_API_LOCK;
+  rv = _dess_port_link_forcemode_set (dev_id, port_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -2192,14 +2667,15 @@ dess_port_link_forcemode_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t ena
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_link_forcemode_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
+dess_port_link_forcemode_get (a_uint32_t dev_id, fal_port_t port_id,
+			      a_bool_t * enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _dess_port_link_forcemode_get(dev_id, port_id, enable);
-    HSL_API_UNLOCK;
-    return rv;
+  HSL_API_LOCK;
+  rv = _dess_port_link_forcemode_get (dev_id, port_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -2210,14 +2686,15 @@ dess_port_link_forcemode_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * e
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_link_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * status)
+dess_port_link_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			   a_bool_t * status)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _dess_port_link_status_get(dev_id, port_id, status);
-    HSL_API_UNLOCK;
-    return rv;
+  HSL_API_LOCK;
+  rv = _dess_port_link_status_get (dev_id, port_id, status);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -2228,13 +2705,14 @@ dess_port_link_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * stat
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_mac_loopback_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+dess_port_mac_loopback_set (a_uint32_t dev_id, fal_port_t port_id,
+			    a_bool_t enable)
 {
-    sw_error_t rv;
-    HSL_API_LOCK;
-    rv = _dess_port_mac_loopback_set(dev_id, port_id, enable);
-    HSL_API_UNLOCK;
-    return rv;
+  sw_error_t rv;
+  HSL_API_LOCK;
+  rv = _dess_port_mac_loopback_set (dev_id, port_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -2245,14 +2723,15 @@ dess_port_mac_loopback_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enabl
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_mac_loopback_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
+dess_port_mac_loopback_get (a_uint32_t dev_id, fal_port_t port_id,
+			    a_bool_t * enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _dess_port_mac_loopback_get(dev_id, port_id, enable);
-    HSL_API_UNLOCK;
-    return rv;
+  HSL_API_LOCK;
+  rv = _dess_port_mac_loopback_get (dev_id, port_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -2264,13 +2743,14 @@ dess_port_mac_loopback_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * ena
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_congestion_drop_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t queue_id, a_bool_t enable)
+dess_port_congestion_drop_set (a_uint32_t dev_id, fal_port_t port_id,
+			       a_uint32_t queue_id, a_bool_t enable)
 {
-    sw_error_t rv;
-    HSL_API_LOCK;
-    rv = _dess_port_congestion_drop_set(dev_id, port_id, queue_id, enable);
-    HSL_API_UNLOCK;
-    return rv;
+  sw_error_t rv;
+  HSL_API_LOCK;
+  rv = _dess_port_congestion_drop_set (dev_id, port_id, queue_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -2282,14 +2762,15 @@ dess_port_congestion_drop_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t 
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_port_congestion_drop_get(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t queue_id, a_bool_t * enable)
+dess_port_congestion_drop_get (a_uint32_t dev_id, fal_port_t port_id,
+			       a_uint32_t queue_id, a_bool_t * enable)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _dess_port_congestion_drop_get(dev_id, port_id, queue_id, enable);
-    HSL_API_UNLOCK;
-    return rv;
+  HSL_API_LOCK;
+  rv = _dess_port_congestion_drop_get (dev_id, port_id, queue_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -2301,13 +2782,14 @@ dess_port_congestion_drop_get(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t 
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_ring_flow_ctrl_thres_set(a_uint32_t dev_id, a_uint32_t ring_id, a_uint8_t on_thres, a_uint8_t off_thres)
+dess_ring_flow_ctrl_thres_set (a_uint32_t dev_id, a_uint32_t ring_id,
+			       a_uint8_t on_thres, a_uint8_t off_thres)
 {
-    sw_error_t rv;
-    HSL_API_LOCK;
-    rv = _dess_ring_flow_ctrl_thres_set(dev_id, ring_id, on_thres, off_thres);
-    HSL_API_UNLOCK;
-    return rv;
+  sw_error_t rv;
+  HSL_API_LOCK;
+  rv = _dess_ring_flow_ctrl_thres_set (dev_id, ring_id, on_thres, off_thres);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -2319,78 +2801,357 @@ dess_ring_flow_ctrl_thres_set(a_uint32_t dev_id, a_uint32_t ring_id, a_uint8_t o
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_ring_flow_ctrl_thres_get(a_uint32_t dev_id, a_uint32_t ring_id, a_uint8_t *on_thres, a_uint8_t *off_thres)
+dess_ring_flow_ctrl_thres_get (a_uint32_t dev_id, a_uint32_t ring_id,
+			       a_uint8_t * on_thres, a_uint8_t * off_thres)
 {
-    sw_error_t rv;
+  sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _dess_ring_flow_ctrl_thres_get(dev_id, ring_id, on_thres, off_thres);
-    HSL_API_UNLOCK;
-    return rv;
+  HSL_API_LOCK;
+  rv = _dess_ring_flow_ctrl_thres_get (dev_id, ring_id, on_thres, off_thres);
+  HSL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Set 802.3az status on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_port_8023az_set (a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+{
+  sw_error_t rv;
+
+  HSL_API_LOCK;
+  rv = _dess_port_8023az_set (dev_id, port_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Get 8023az status on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_port_8023az_get (a_uint32_t dev_id, fal_port_t port_id,
+		      a_bool_t * enable)
+{
+  sw_error_t rv;
+
+  HSL_API_LOCK;
+  rv = _dess_port_8023az_get (dev_id, port_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Set mdix on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] mode
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_port_mdix_set (a_uint32_t dev_id, a_uint32_t phy_id,
+		    fal_port_mdix_mode_t mode)
+{
+  sw_error_t rv;
+
+  HSL_API_LOCK;
+  rv = _dess_port_mdix_set (dev_id, phy_id, mode);
+  HSL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Get mdix configuration on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] mode 
+ * @return SW_OK or error code
+ */
+
+HSL_LOCAL sw_error_t
+dess_port_mdix_get (a_uint32_t dev_id, fal_port_t port_id,
+		    fal_port_mdix_mode_t * mode)
+{
+  sw_error_t rv;
+
+  HSL_API_LOCK;
+  rv = _dess_port_mdix_get (dev_id, port_id, mode);
+  HSL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Get mdix status on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] mode 
+ * @return SW_OK or error code
+ */
+
+HSL_LOCAL sw_error_t
+dess_port_mdix_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			   fal_port_mdix_status_t * mode)
+{
+  sw_error_t rv;
+
+  HSL_API_LOCK;
+  rv = _dess_port_mdix_status_get (dev_id, port_id, mode);
+  HSL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Set combo prefer medium on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] phy_medium [fiber or copper]
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_port_combo_prefer_medium_set (a_uint32_t dev_id, a_uint32_t phy_id,
+				   fal_port_medium_t phy_medium)
+{
+  sw_error_t rv;
+
+  HSL_API_LOCK;
+  rv = _dess_port_combo_prefer_medium_set (dev_id, phy_id, phy_medium);
+  HSL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Get combo prefer medium on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] phy_medium [fiber or copper]
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_port_combo_prefer_medium_get (a_uint32_t dev_id, a_uint32_t phy_id,
+				   fal_port_medium_t * phy_medium)
+{
+  sw_error_t rv;
+
+  HSL_API_LOCK;
+  rv = _dess_port_combo_prefer_medium_get (dev_id, phy_id, phy_medium);
+  HSL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Get current combo medium status on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] phy_medium [fiber or copper]
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_port_combo_medium_status_get (a_uint32_t dev_id, a_uint32_t phy_id,
+				   fal_port_medium_t * phy_medium)
+{
+  sw_error_t rv;
+
+  HSL_API_LOCK;
+  rv = _dess_port_combo_medium_status_get (dev_id, phy_id, phy_medium);
+  HSL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Set fiber mode on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] fiber mode [1000bx or 100fx]
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_port_combo_fiber_mode_set (a_uint32_t dev_id, a_uint32_t phy_id,
+				fal_port_fiber_mode_t fiber_mode)
+{
+  sw_error_t rv;
+
+  HSL_API_LOCK;
+  rv = _dess_port_combo_fiber_mode_set (dev_id, phy_id, fiber_mode);
+  HSL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Get fiber mode on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] fiber mode [1000bx or 100fx]
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_port_combo_fiber_mode_get (a_uint32_t dev_id, a_uint32_t phy_id,
+				fal_port_fiber_mode_t * fiber_mode)
+{
+  sw_error_t rv;
+
+  HSL_API_LOCK;
+  rv = _dess_port_combo_fiber_mode_get (dev_id, phy_id, fiber_mode);
+  HSL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Set phy local loop back on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[in] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_port_local_loopback_set (a_uint32_t dev_id, fal_port_t port_id,
+			      a_bool_t enable)
+{
+  sw_error_t rv;
+  HSL_API_LOCK;
+  rv = _dess_port_local_loopback_set (dev_id, port_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Get phy local loop back on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_port_local_loopback_get (a_uint32_t dev_id, fal_port_t port_id,
+			      a_bool_t * enable)
+{
+  sw_error_t rv;
+
+  HSL_API_LOCK;
+  rv = _dess_port_local_loopback_get (dev_id, port_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Set phy remote loop back on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[in] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_port_remote_loopback_set (a_uint32_t dev_id, fal_port_t port_id,
+			       a_bool_t enable)
+{
+  sw_error_t rv;
+  HSL_API_LOCK;
+  rv = _dess_port_remote_loopback_set (dev_id, port_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Get phy remote loop back on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_port_remote_loopback_get (a_uint32_t dev_id, fal_port_t port_id,
+			       a_bool_t * enable)
+{
+  sw_error_t rv;
+
+  HSL_API_LOCK;
+  rv = _dess_port_remote_loopback_get (dev_id, port_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 
 sw_error_t
-dess_port_ctrl_init(a_uint32_t dev_id)
+dess_port_ctrl_init (a_uint32_t dev_id)
 {
-    HSL_DEV_ID_CHECK(dev_id);
+  HSL_DEV_ID_CHECK (dev_id);
 
 #ifndef HSL_STANDALONG
-    {
-        hsl_api_t *p_api;
+  {
+    hsl_api_t *p_api;
 
-        SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+    SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
 
-        p_api->port_duplex_get = dess_port_duplex_get;
-        p_api->port_duplex_set = dess_port_duplex_set;
-        p_api->port_speed_get = dess_port_speed_get;
-        p_api->port_speed_set = dess_port_speed_set;
-        p_api->port_autoneg_status_get = dess_port_autoneg_status_get;
-        p_api->port_autoneg_enable = dess_port_autoneg_enable;
-        p_api->port_autoneg_restart = dess_port_autoneg_restart;
-        p_api->port_autoneg_adv_get = dess_port_autoneg_adv_get;
-        p_api->port_autoneg_adv_set = dess_port_autoneg_adv_set;
-        p_api->port_flowctrl_set = dess_port_flowctrl_set;
-        p_api->port_flowctrl_get = dess_port_flowctrl_get;
-        p_api->port_flowctrl_forcemode_set = dess_port_flowctrl_forcemode_set;
-        p_api->port_flowctrl_forcemode_get = dess_port_flowctrl_forcemode_get;
-        p_api->port_powersave_set = dess_port_powersave_set;
-        p_api->port_powersave_get = dess_port_powersave_get;
-        p_api->port_hibernate_set = dess_port_hibernate_set;
-        p_api->port_hibernate_get = dess_port_hibernate_get;
-        p_api->port_cdt = dess_port_cdt;
-        p_api->port_rxhdr_mode_set = dess_port_rxhdr_mode_set;
-        p_api->port_rxhdr_mode_get = dess_port_rxhdr_mode_get;
-        p_api->port_txhdr_mode_set = dess_port_txhdr_mode_set;
-        p_api->port_txhdr_mode_get = dess_port_txhdr_mode_get;
-        p_api->header_type_set = dess_header_type_set;
-        p_api->header_type_get = dess_header_type_get;
-        p_api->port_txmac_status_set = dess_port_txmac_status_set;
-        p_api->port_txmac_status_get = dess_port_txmac_status_get;
-        p_api->port_rxmac_status_set = dess_port_rxmac_status_set;
-        p_api->port_rxmac_status_get = dess_port_rxmac_status_get;
-        p_api->port_txfc_status_set = dess_port_txfc_status_set;
-        p_api->port_txfc_status_get = dess_port_txfc_status_get;
-        p_api->port_rxfc_status_set = dess_port_rxfc_status_set;
-        p_api->port_rxfc_status_get = dess_port_rxfc_status_get;
-        p_api->port_bp_status_set = dess_port_bp_status_set;
-        p_api->port_bp_status_get = dess_port_bp_status_get;
-        p_api->port_link_forcemode_set = dess_port_link_forcemode_set;
-        p_api->port_link_forcemode_get = dess_port_link_forcemode_get;
-        p_api->port_link_status_get = dess_port_link_status_get;
-        p_api->port_mac_loopback_set=dess_port_mac_loopback_set;
-        p_api->port_mac_loopback_get=dess_port_mac_loopback_get;
-		p_api->port_congestion_drop_set = dess_port_congestion_drop_set;
-        p_api->port_congestion_drop_get = dess_port_congestion_drop_get;
-		p_api->ring_flow_ctrl_thres_set = dess_ring_flow_ctrl_thres_set;
-        p_api->ring_flow_ctrl_thres_get = dess_ring_flow_ctrl_thres_get;
-    }
+    p_api->port_duplex_get = dess_port_duplex_get;
+    p_api->port_duplex_set = dess_port_duplex_set;
+    p_api->port_speed_get = dess_port_speed_get;
+    p_api->port_speed_set = dess_port_speed_set;
+    p_api->port_autoneg_status_get = dess_port_autoneg_status_get;
+    p_api->port_autoneg_enable = dess_port_autoneg_enable;
+    p_api->port_autoneg_restart = dess_port_autoneg_restart;
+    p_api->port_autoneg_adv_get = dess_port_autoneg_adv_get;
+    p_api->port_autoneg_adv_set = dess_port_autoneg_adv_set;
+    p_api->port_flowctrl_set = dess_port_flowctrl_set;
+    p_api->port_flowctrl_get = dess_port_flowctrl_get;
+    p_api->port_flowctrl_forcemode_set = dess_port_flowctrl_forcemode_set;
+    p_api->port_flowctrl_forcemode_get = dess_port_flowctrl_forcemode_get;
+    p_api->port_powersave_set = dess_port_powersave_set;
+    p_api->port_powersave_get = dess_port_powersave_get;
+    p_api->port_hibernate_set = dess_port_hibernate_set;
+    p_api->port_hibernate_get = dess_port_hibernate_get;
+    p_api->port_cdt = dess_port_cdt;
+    p_api->port_rxhdr_mode_set = dess_port_rxhdr_mode_set;
+    p_api->port_rxhdr_mode_get = dess_port_rxhdr_mode_get;
+    p_api->port_txhdr_mode_set = dess_port_txhdr_mode_set;
+    p_api->port_txhdr_mode_get = dess_port_txhdr_mode_get;
+    p_api->header_type_set = dess_header_type_set;
+    p_api->header_type_get = dess_header_type_get;
+    p_api->port_txmac_status_set = dess_port_txmac_status_set;
+    p_api->port_txmac_status_get = dess_port_txmac_status_get;
+    p_api->port_rxmac_status_set = dess_port_rxmac_status_set;
+    p_api->port_rxmac_status_get = dess_port_rxmac_status_get;
+    p_api->port_txfc_status_set = dess_port_txfc_status_set;
+    p_api->port_txfc_status_get = dess_port_txfc_status_get;
+    p_api->port_rxfc_status_set = dess_port_rxfc_status_set;
+    p_api->port_rxfc_status_get = dess_port_rxfc_status_get;
+    p_api->port_bp_status_set = dess_port_bp_status_set;
+    p_api->port_bp_status_get = dess_port_bp_status_get;
+    p_api->port_link_forcemode_set = dess_port_link_forcemode_set;
+    p_api->port_link_forcemode_get = dess_port_link_forcemode_get;
+    p_api->port_link_status_get = dess_port_link_status_get;
+    p_api->port_mac_loopback_set = dess_port_mac_loopback_set;
+    p_api->port_mac_loopback_get = dess_port_mac_loopback_get;
+    p_api->port_congestion_drop_set = dess_port_congestion_drop_set;
+    p_api->port_congestion_drop_get = dess_port_congestion_drop_get;
+    p_api->ring_flow_ctrl_thres_set = dess_ring_flow_ctrl_thres_set;
+    p_api->ring_flow_ctrl_thres_get = dess_ring_flow_ctrl_thres_get;
+    p_api->port_8023az_set = dess_port_8023az_set;
+    p_api->port_8023az_get = dess_port_8023az_get;
+    p_api->port_mdix_set = dess_port_mdix_set;
+    p_api->port_mdix_get = dess_port_mdix_get;
+    p_api->port_mdix_status_get = dess_port_mdix_status_get;
+    p_api->port_combo_prefer_medium_set = dess_port_combo_prefer_medium_set;
+    p_api->port_combo_prefer_medium_get = dess_port_combo_prefer_medium_get;
+    p_api->port_combo_medium_status_get = dess_port_combo_medium_status_get;
+    p_api->port_combo_fiber_mode_set = dess_port_combo_fiber_mode_set;
+    p_api->port_combo_fiber_mode_get = dess_port_combo_fiber_mode_get;
+    p_api->port_local_loopback_set = dess_port_local_loopback_set;
+    p_api->port_local_loopback_get = dess_port_local_loopback_get;
+    p_api->port_remote_loopback_set = dess_port_remote_loopback_set;
+    p_api->port_remote_loopback_get = dess_port_remote_loopback_get;
+  }
 #endif
 
-    return SW_OK;
+  return SW_OK;
 }
 
 /**
  * @}
  */
-
