@@ -552,10 +552,17 @@ napt_ct_counter_sync(a_uint32_t hw_index)
 	if((cct != NULL) && (napt_hw_get_by_index(&napt, hw_index) == 0))
 	{
 		spin_lock_bh(&ct->lock);
-		atomic64_add(napt.egress_packet, &cct[IP_CT_DIR_ORIGINAL].packets);
-		atomic64_add(napt.egress_byte, &cct[IP_CT_DIR_ORIGINAL].bytes);
-		atomic64_add(napt.ingress_packet, &cct[IP_CT_DIR_REPLY].packets);
-		atomic64_add(napt.ingress_byte, &cct[IP_CT_DIR_REPLY].bytes);
+		if ((ct->status & IPS_NAT_MASK) == IPS_SRC_NAT) {
+			atomic64_add(napt.egress_packet, &cct[IP_CT_DIR_ORIGINAL].packets);
+			atomic64_add(napt.egress_byte, &cct[IP_CT_DIR_ORIGINAL].bytes);
+			atomic64_add(napt.ingress_packet, &cct[IP_CT_DIR_REPLY].packets);
+			atomic64_add(napt.ingress_byte, &cct[IP_CT_DIR_REPLY].bytes);
+		} else {
+			atomic64_add(napt.ingress_packet, &cct[IP_CT_DIR_ORIGINAL].packets);
+			atomic64_add(napt.ingress_byte, &cct[IP_CT_DIR_ORIGINAL].bytes);
+			atomic64_add(napt.egress_packet, &cct[IP_CT_DIR_REPLY].packets);
+			atomic64_add(napt.egress_byte, &cct[IP_CT_DIR_REPLY].bytes);
+		}
 		spin_unlock_bh(&ct->lock);
 		HNAT_PRINTK("original packets:0x%llx  bytes:0x%llx\n",
 				cct[IP_CT_DIR_ORIGINAL].packets, cct[IP_CT_DIR_ORIGINAL].bytes);
