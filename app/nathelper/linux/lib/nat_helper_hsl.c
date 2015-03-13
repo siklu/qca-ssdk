@@ -39,13 +39,24 @@ int nat_chip_ver = 0;
 
 #define DESS_CHIP(ver) ((((ver)&0xffff)>>8) == 0x14)
 
-static a_uint8_t
-hw_debug_counter_get(void)
-{
-    static a_uint32_t debug_counter = 0;
+#define ARP_HW_COUNTER_OFFSET  8
 
-    return ((debug_counter++) & 0x7);
+static a_uint8_t
+nat_hw_debug_counter_get(void)
+{
+    static a_uint32_t nat_debug_counter = 0;
+
+    return ((nat_debug_counter++) & 0x7);
 }
+
+static a_uint8_t
+arp_hw_debug_counter_get(void)
+{
+    static a_uint32_t ip_debug_counter = 0;
+
+    return ((ip_debug_counter++) & 0x7) + ARP_HW_COUNTER_OFFSET;
+}
+
 
 a_int32_t
 nat_hw_add(nat_entry_t *nat)
@@ -58,7 +69,7 @@ nat_hw_add(nat_entry_t *nat)
     hw_nat.port_num = nat->port_num;
     hw_nat.port_range = nat->port_range;
     hw_nat.counter_en = 1;
-    hw_nat.counter_id = hw_debug_counter_get();
+    hw_nat.counter_id = nat_hw_debug_counter_get();
 
     if(NAT_ADD(0, &hw_nat) != 0)
     {
@@ -466,7 +477,7 @@ arp_hw_add(a_uint32_t port, a_uint32_t intf_id, a_uint8_t *ip, a_uint8_t *mac, i
     }
     else
     {
-        arp_entry.counter_id = hw_debug_counter_get();
+        arp_entry.counter_id = arp_hw_debug_counter_get();
     }
 
     if(_arp_hw_add(&arp_entry) != 0)
@@ -678,7 +689,7 @@ napt_hw_add(napt_entry_t *napt)
 
     fal_napt.flags |= FAL_NAT_ENTRY_TRANS_IPADDR_INDEX;
     fal_napt.counter_en = 1;
-    fal_napt.counter_id = hw_debug_counter_get();
+    fal_napt.counter_id = nat_hw_debug_counter_get();
     fal_napt.action = FAL_MAC_FRWRD;
 
     ret = NAPT_ADD(0, &fal_napt);
