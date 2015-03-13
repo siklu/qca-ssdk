@@ -816,6 +816,8 @@ napt_ct_pkts_thres_calc(a_uint32_t cnt, a_uint32_t napt_ct_offload_cnt)
 
 #define NAPT_CT_SHOULD_CARE(ct) ((ct) && \
                                   NAPT_CT_TYPE_IS_NAT(ct) && \
+                                  !NAPT_CT_TYPE_IS_NAT_ALG(ct) && \
+                                  NAPT_CT_INTF_EXPECTED(ct) && \
                                   NAPT_CT_STATUS_IS_ESTAB(ct) &&\
                                   nat_hw_prv_base_is_match( \
                                             NAPT_CT_PRIV_IP_GET(ct)))
