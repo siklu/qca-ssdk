@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -122,8 +122,12 @@ extern "C" {
 	{
 		a_uint32_t switchreg_base_addr;
 		a_uint32_t switchreg_size;
+		a_uint32_t psgmiireg_base_addr;
+		a_uint32_t psgmiireg_size;
 		a_uint8_t *reg_access_mode;
+		a_uint8_t *psgmii_reg_access_str;
 		hsl_reg_mode switch_reg_access_mode;
+		hsl_reg_mode psgmii_reg_access_mode;
 	} ssdk_dt_cfg;
 
 #if defined ATHENA
