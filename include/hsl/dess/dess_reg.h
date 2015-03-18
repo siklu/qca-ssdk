@@ -4018,7 +4018,7 @@ extern "C" {
 #define FlOW_CMD_CTL
 #define FlOW_CMD_CTL_OFFSET                       0x0ea0
 #define FlOW_CMD_CTL_E_LENGTH                     4
-#define FlOW_CMD_CTL_E_OFFSET                     0x0
+#define FlOW_CMD_CTL_E_OFFSET                     0x4
 #define FlOW_CMD_CTL_NR_E                         8
 
 #define LAN_2_LAN_DEFAULT
@@ -4045,7 +4045,7 @@ extern "C" {
 #define FlOW_RT_CMD_CTL
 #define FlOW_RT_CMD_CTL_OFFSET                       0x0ec0
 #define FlOW_RT_CMD_CTL_E_LENGTH                     4
-#define FlOW_RT_CMD_CTL_E_OFFSET                     0x0
+#define FlOW_RT_CMD_CTL_E_OFFSET                     0x4
 #define FlOW_RT_CMD_CTL_NR_E                         8
 
 #define LAN_2_LAN_DEFAULT
