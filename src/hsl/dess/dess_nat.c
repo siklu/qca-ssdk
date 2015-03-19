@@ -68,6 +68,10 @@
 static a_uint32_t dess_nat_snap[SW_MAX_NR_DEV] = { 0 };
 extern a_uint32_t dess_nat_global_status;
 
+#if defined(IN_NAT_HELPER)
+extern void nat_helper_cookie_del(a_uint32_t hw_index);
+#endif
+
 static sw_error_t
 _dess_nat_feature_check(a_uint32_t dev_id)
 {
@@ -2095,12 +2099,228 @@ _dess_nat_unk_session_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd)
     return SW_OK;
 }
 
+#define DESS_NAT_VRF_ENTRY_TBL_ADDR   0x0484
+#define DESS_NAT_VRF_ENTRY_MASK_ADDR   0x0488
+
+a_uint8_t _dess_snat_matched(a_uint32_t dev_id, fal_ip4_addr_t addr)
+{
+	a_bool_t nat_enable = 0, napt_enable = 0;
+	fal_ip4_addr_t mask, base;
+	a_uint32_t reg_addr;
+	sw_error_t rv;
+
+	_dess_nat_status_get(dev_id, &nat_enable);
+	_dess_napt_status_get(dev_id, &napt_enable);
+	if(!(nat_enable & napt_enable))
+		return 0;
+
+	/*check for private base ip*/
+	reg_addr = DESS_NAT_VRF_ENTRY_MASK_ADDR;
+	HSL_REG_ENTRY_GEN_GET(rv, dev_id, reg_addr, sizeof (a_uint32_t),
+                          (a_uint8_t *) (&mask), sizeof (a_uint32_t));
+
+	reg_addr = DESS_NAT_VRF_ENTRY_TBL_ADDR;
+	HSL_REG_ENTRY_GEN_GET(rv, dev_id, reg_addr, sizeof (a_uint32_t),
+                          (a_uint8_t *) (&base), sizeof (a_uint32_t));
+	if((mask&addr) == (mask&base)) {
+		return 1;
+	}
+
+	return 0;
+}
+
+a_uint8_t _dess_dnat_matched(
+		a_uint32_t dev_id,
+		fal_ip4_addr_t addr,
+		a_uint8_t *index)
+{
+	a_bool_t nat_enable = 0, napt_enable = 0;
+	fal_nat_pub_addr_t entry;
+	sw_error_t ret;
+
+	_dess_nat_status_get(dev_id, &nat_enable);
+	_dess_napt_status_get(dev_id, &napt_enable);
+	if(!(nat_enable & napt_enable))
+		return 0;
+
+	/*check for public ip*/
+	memset(&entry, 0, sizeof(entry));
+	entry.entry_id = FAL_NEXT_ENTRY_FIRST_ID;
+	while(1) {
+		ret = _dess_nat_pub_addr_next(dev_id, 0, &entry);
+		if(ret) {
+			break;
+		}
+		if(entry.pub_addr == addr) {
+			*index = entry.entry_id;
+			return 1;
+		}
+	}
+	return 0;
+}
+
+
+
+static sw_error_t
+_dess_flow_cookie_snat_set(a_uint32_t dev_id, fal_flow_cookie_t * flow_cookie)
+{
+	fal_napt_entry_t entry;
+	sw_error_t ret;
+
+	memset(&entry, 0, sizeof(entry));
+	entry.flags = FAL_NAT_ENTRY_TRANS_IPADDR_INDEX | flow_cookie->proto;
+	entry.status = 0xf;
+	entry.src_addr = flow_cookie->src_addr;
+	entry.dst_addr = flow_cookie->dst_addr;
+	entry.src_port = flow_cookie->src_port;
+	entry.dst_port = flow_cookie->dst_port;
+	entry.action = FAL_MAC_RDT_TO_CPU;
+	ret = _dess_napt_get(dev_id, 0, &entry);
+	if(ret) {
+		if(flow_cookie->flow_cookie == 0)
+			return SW_OK;
+	}
+	if(flow_cookie->flow_cookie == 0) {
+		if(entry.flow_cookie == 0) {
+			ret = _dess_napt_del(dev_id, FAL_NAT_ENTRY_KEY_EN, &entry);
+			#if defined(IN_NAT_HELPER)
+			#if 0
+			napt_cookie[entry.entry_id*2+1] = 0;
+			#endif
+			nat_helper_cookie_del(entry.entry_id);
+			#endif
+			return ret;
+		}
+		ret = _dess_napt_del(dev_id, FAL_NAT_ENTRY_KEY_EN, &entry);
+	} else {
+		entry.flow_cookie = flow_cookie->flow_cookie;
+		ret = _dess_napt_add(dev_id, &entry);
+	}
+
+	return ret;
+}
+
+static sw_error_t
+_dess_flow_cookie_dnat_set(
+		a_uint32_t dev_id,
+		fal_flow_cookie_t * flow_cookie,
+		a_uint8_t index)
+{
+	fal_napt_entry_t entry;
+	sw_error_t ret = 0;
+
+	memset(&entry, 0, sizeof(entry));
+	entry.flags = FAL_NAT_ENTRY_TRANS_IPADDR_INDEX | flow_cookie->proto;
+	entry.status = 0xf;
+	entry.trans_addr = index;
+	entry.trans_port = flow_cookie->dst_port;
+	entry.dst_addr = flow_cookie->src_addr;
+	entry.dst_port = flow_cookie->src_port;
+	entry.action = FAL_MAC_RDT_TO_CPU;
+	ret = _dess_napt_get(dev_id, 0, &entry);
+	if(ret) {
+		if(flow_cookie->flow_cookie == 0) {
+			return SW_OK;
+		} else {
+			/*add a fresh flowcookie*/
+			entry.flow_cookie = flow_cookie->flow_cookie;
+			ret = _dess_napt_add(dev_id, &entry);
+			return ret;
+		}
+	}
+	if(flow_cookie->flow_cookie == 0) {
+		/*del flow cookie*/
+		if(entry.flow_cookie == 0) {
+			ret = _dess_napt_del(dev_id, FAL_NAT_ENTRY_KEY_EN, &entry);
+			#if defined(IN_NAT_HELPER)
+			#if 0
+			napt_cookie[entry.entry_id*2] = 0;
+			#endif
+			nat_helper_cookie_del(entry.entry_id);
+			#endif
+			return ret;
+		}
+		ret = _dess_napt_del(dev_id, FAL_NAT_ENTRY_KEY_EN, &entry);
+		if(entry.load_balance & 4) {
+			/*keep rfs*/
+			entry.flow_cookie = 0;
+			ret = _dess_napt_add(dev_id, &entry);
+			return ret;
+		}
+	} else {
+		/*add flow cookie*/
+		ret = _dess_napt_del(dev_id, FAL_NAT_ENTRY_KEY_EN, &entry);
+		entry.flow_cookie = flow_cookie->flow_cookie;
+		ret = _dess_napt_add(dev_id, &entry);
+		return ret;
+	}
+	return ret;
+
+}
+
+static sw_error_t
+_dess_flow_rfs_dnat_set(
+		a_uint32_t dev_id,
+		a_uint8_t action,
+		fal_flow_rfs_t * rfs,
+		a_uint8_t index)
+{
+	fal_napt_entry_t entry;
+	sw_error_t ret = 0;
+
+	memset(&entry, 0, sizeof(entry));
+	entry.flags = FAL_NAT_ENTRY_TRANS_IPADDR_INDEX | rfs->proto;
+	entry.status = 0xf;
+	entry.trans_addr = index;
+	entry.trans_port = rfs->dst_port;
+	entry.dst_addr = rfs->src_addr;
+	entry.dst_port = rfs->src_port;
+	entry.action = FAL_MAC_RDT_TO_CPU;
+	ret = _dess_napt_get(dev_id, 0, &entry);
+	if(ret) {
+		if(action == 0) {
+			return SW_FAIL;
+		} else {
+			/*add a fresh rfs*/
+			entry.load_balance = rfs->load_balance | 4;
+			ret = _dess_napt_add(dev_id, &entry);
+			return ret;
+		}
+	}
+	if(action == 0) {
+		/*del flow rfs*/
+		ret = _dess_napt_del(dev_id, FAL_NAT_ENTRY_KEY_EN, &entry);
+		if(entry.flow_cookie != 0) {
+			/*keep cookie*/
+			entry.load_balance = 0;
+			ret = _dess_napt_add(dev_id, &entry);
+			return ret;
+		}
+	} else {
+		/*add flow rfs*/
+		ret = _dess_napt_del(dev_id, FAL_NAT_ENTRY_KEY_EN, &entry);
+		entry.load_balance = rfs->load_balance | 4;
+		ret = _dess_napt_add(dev_id, &entry);
+		return ret;
+	}
+	return ret;
+
+}
+
+
 static sw_error_t
 _dess_flow_cookie_set(a_uint32_t dev_id, fal_flow_cookie_t * flow_cookie)
 {
 	fal_napt_entry_t entry;
 	sw_error_t ret;
+	a_uint8_t index;
 
+	if(_dess_dnat_matched(dev_id, flow_cookie->dst_addr, &index))
+		return _dess_flow_cookie_dnat_set(dev_id, flow_cookie, index);
+	if(_dess_snat_matched(dev_id, flow_cookie->src_addr))
+		return _dess_flow_cookie_snat_set(dev_id, flow_cookie);
+
+	/*normal flow*/
 	memset(&entry, 0, sizeof(entry));
 	entry.flags = flow_cookie->proto;
 	entry.src_addr = flow_cookie->src_addr;
@@ -2113,9 +2333,11 @@ _dess_flow_cookie_set(a_uint32_t dev_id, fal_flow_cookie_t * flow_cookie)
 	if(flow_cookie->flow_cookie == 0) {
 		/*del*/
 		_dess_flow_del(0, FAL_NAT_ENTRY_KEY_EN, &entry);
-		entry.status = 0xe;
-		entry.flow_cookie = 0;
-		return _dess_flow_add(0, &entry);
+		if(entry.load_balance & 4) {
+			entry.status = 0xf;
+			entry.flow_cookie = 0;
+			return _dess_flow_add(0, &entry);
+		}
 	} else {
 		/*add*/
 		if(ret == SW_OK)
@@ -2132,6 +2354,10 @@ _dess_flow_rfs_set(a_uint32_t dev_id, a_uint8_t action, fal_flow_rfs_t * rfs)
 {
 	fal_napt_entry_t entry;
 	sw_error_t ret;
+	a_uint8_t index;
+
+	if(_dess_dnat_matched(dev_id, rfs->dst_addr, &index))
+		return _dess_flow_rfs_dnat_set(dev_id, action, rfs, index);
 
 	memset(&entry, 0, sizeof(entry));
 	entry.flags = rfs->proto;
@@ -2145,9 +2371,10 @@ _dess_flow_rfs_set(a_uint32_t dev_id, a_uint8_t action, fal_flow_rfs_t * rfs)
 	if(action == 0) {
 		/*del*/
 		_dess_flow_del(0, FAL_NAT_ENTRY_KEY_EN, &entry);
-		entry.status = 0xe;
-		entry.load_balance = 0;
-		return _dess_flow_add(0, &entry);
+		if(entry.flow_cookie != 0) {
+			entry.load_balance = 0;
+			return _dess_flow_add(0, &entry);
+		}
 	} else {
 		/*add*/
 		if(ret == SW_OK)

@@ -24,6 +24,8 @@
 #endif
 
 #include <linux/if_ether.h>
+#include "fal_nat.h"
+
 
 #define NAT_HW_NUM 32
 #define NAT_HW_PORT_RANGE_MAX 255
@@ -153,6 +155,12 @@ a_int32_t
 nat_hw_pub_ip_del(a_uint32_t index);
 a_int32_t
 napt_hw_add(napt_entry_t *napt_entry);
+a_int32_t
+napt_hw_get(napt_entry_t *napt, fal_napt_entry_t *entry);
+a_int32_t
+napt_hw_dnat_cookie_add(napt_entry_t *napt, a_uint32_t cookie);
+a_int32_t
+napt_hw_snat_cookie_add(napt_entry_t *napt, a_uint32_t cookie);
 a_int32_t
 napt_hw_del(napt_entry_t *napt_entry);
 a_int32_t

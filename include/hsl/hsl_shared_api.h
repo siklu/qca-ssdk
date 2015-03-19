@@ -24,6 +24,7 @@ extern ssdk_chip_type SSDK_CURRENT_CHIP_TYPE;  /*running chip type*/
 #if !defined (HSL_STANDALONG)
 /*NAT API*/
 #define NAPT_ADD hsl_api_ptr_get(0)->napt_add
+#define NAPT_GET hsl_api_ptr_get(0)->napt_get
 #define NAT_PUB_ADDR_ADD  hsl_api_ptr_get(0)->nat_pub_addr_add
 #define NAPT_NEXT hsl_api_ptr_get(0)->napt_next
 #define NAT_PRV_BASE_ADDR_SET hsl_api_ptr_get(0)->nat_prv_base_addr_set
