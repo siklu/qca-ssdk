@@ -1365,11 +1365,13 @@ static int malibu_phy_probe(struct phy_device *pdev)
 	int ret;
 	hsl_phy_ops_t malibu_phy_api_ops = { 0 };
 
+#if 0
 	malibu_phy_api_ops.phy_powersave_set = malibu_phy_set_powersave;
 	malibu_phy_api_ops.phy_powersave_get = malibu_phy_get_powersave;
 	malibu_phy_api_ops.phy_hibernation_set = malibu_phy_set_hibernate;
 	malibu_phy_api_ops.phy_hibernation_get = malibu_phy_get_hibernate;
 	malibu_phy_api_ops.phy_cdt = malibu_phy_cdt;
+#endif
 
 	ret = hsl_phy_api_ops_register(&malibu_phy_api_ops);
 	return ret;
