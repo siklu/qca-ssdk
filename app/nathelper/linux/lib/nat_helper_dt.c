@@ -27,10 +27,12 @@
 #include "../nat_helper.h"
 #include "../napt_helper.h"
 
-#include "nat_helper_dt.h"
-#include "nat_helper_hsl.h"
 #include "fal_type.h"
 #include "fal_nat.h"
+
+#include "nat_helper_dt.h"
+#include "nat_helper_hsl.h"
+
 
 extern int nat_sockopts_init;
 extern uint32_t napt_set_default_route(fal_ip4_addr_t dst_addr, fal_ip4_addr_t src_addr);
@@ -299,6 +301,8 @@ napt_ct_buf_ct_add(a_uint32_t ct_addr)
 
 #define NAPT_CT_PERMANENT_DENY 5
 static a_uint32_t napt_ct_addr[NAPT_TABLE_SIZE] = {0};
+a_uint32_t napt_cookie[NAPT_TABLE_SIZE*2] = {0};
+
 
 #define NAPT_CT_PACKET_THRES_BASE    (50)
 static a_uint64_t packets_bdir_total = 0;
@@ -338,11 +342,60 @@ napt_ct_pkts_reach_thres(a_uint32_t ct_addr, struct napt_ct *napt_ct,
     return 0;
 }
 
+a_uint8_t napt_dnat_flow_find_del(
+		napt_entry_t *napt,
+		fal_napt_entry_t *entry)
+{
+	fal_napt_entry_t tmp_entry;
+	napt_entry_t tmp_napt;
+	a_int32_t ret;
+
+	memset(&tmp_entry, 0, sizeof(tmp_entry));
+	memset(&tmp_napt, 0, sizeof(tmp_napt));
+	tmp_napt = *napt;
+	tmp_napt.src_addr = 0;
+	tmp_napt.src_port = 0;
+	ret = napt_hw_get(&tmp_napt, &tmp_entry);
+	if(!ret) {
+		napt_hw_del(&tmp_napt);
+		*entry = tmp_entry;
+		return 0;
+	}
+	return 1;
+}
+
+a_uint8_t napt_snat_flow_find_del(
+		napt_entry_t *napt,
+		fal_napt_entry_t *entry)
+{
+	fal_napt_entry_t tmp_entry;
+	napt_entry_t tmp_napt;
+	a_int32_t ret;
+
+	memset(&tmp_entry, 0, sizeof(tmp_entry));
+	memset(&tmp_napt, 0, sizeof(tmp_napt));
+	tmp_napt = *napt;
+	tmp_napt.trans_addr = 0;
+	tmp_napt.trans_port = 0;
+	ret = napt_hw_get(&tmp_napt, &tmp_entry);
+	if(!ret) {
+		napt_hw_del(&tmp_napt);
+		*entry = tmp_entry;
+		return 0;
+	}
+	return 1;
+}
+
+
+
+
 static a_int32_t
 napt_ct_hw_add(a_uint32_t ct_addr, a_uint16_t *hw_index)
 {
     napt_entry_t napt = {0};
-    a_uint32_t index;
+    a_uint32_t index, i, dcookie = 0, scookie = 0;
+	fal_napt_entry_t entry;
+	a_uint8_t ret = 0;
 
     if (!ct_addr)
         return -1;
@@ -359,7 +412,14 @@ napt_ct_hw_add(a_uint32_t ct_addr, a_uint16_t *hw_index)
         HNAT_ERR_PRINTK("####%s##nat_hw_pub_ip_add fail!\n", __func__);
         return -1;
     }
-
+	ret = napt_dnat_flow_find_del(&napt, &entry);
+	if(!ret) {
+		dcookie = entry.flow_cookie;
+	}
+	ret = napt_snat_flow_find_del(&napt, &entry);
+	if(!ret) {
+		scookie = entry.flow_cookie;
+	}
     sw_error_t rv = napt_hw_add(&napt);
 
     if(rv == 0)
@@ -378,6 +438,9 @@ napt_ct_hw_add(a_uint32_t ct_addr, a_uint16_t *hw_index)
             *hw_index = napt.entry_id;
             // Added from 1.0.7 for default route.
             napt_set_default_route(napt.dst_addr, napt.src_addr);
+			i = napt.entry_id;
+			napt_cookie[i*2] = dcookie;
+			napt_cookie[i*2+1] = scookie;
 
             return 0;
         }
@@ -408,6 +471,30 @@ napt_ct_hw_del (napt_entry_t *napt)
     return 0;
 }
 
+void nat_helper_cookie_del(a_uint32_t hw_index)
+{
+	struct napt_ct *napt_ct = NULL;
+	a_uint32_t ct_addr;
+	ct_addr = napt_ct_addr[hw_index];
+	if(ct_addr) {
+		napt_ct = napt_ct_buf_ct_find(ct_addr);
+	}
+	if(napt_ct)
+    {
+        napt_ct_buf_in_hw_clear(napt_ct);
+
+        if(napt_ct_buf_deny_get(napt_ct) != NAPT_CT_PERMANENT_DENY)
+        {
+            napt_ct_buf_ct_info_clear(napt_ct);
+        }
+    }
+	napt_ct_addr[hw_index] = 0;
+	napt_cookie[hw_index*2] = 0;
+	napt_cookie[hw_index*2+1] = 0;
+	printk("nat_helper_cookie_del for index 0x%x\n", hw_index);
+}
+
+
 static a_int32_t
 napt_ct_del(struct napt_ct *napt_ct, napt_entry_t *napt)
 {
@@ -422,6 +509,14 @@ napt_ct_del(struct napt_ct *napt_ct, napt_entry_t *napt)
 
     NAPT_CT_AGING_ENABLE(napt_ct_addr[hw_index]);
     napt_ct_addr[hw_index] = 0;
+	if(napt_cookie[hw_index*2]) {
+		napt_hw_dnat_cookie_add(napt, napt_cookie[hw_index*2]);
+		napt_cookie[hw_index*2] = 0;
+	}
+	if(napt_cookie[hw_index*2+1]) {
+		napt_hw_snat_cookie_add(napt, napt_cookie[hw_index*2+1]);
+		napt_cookie[hw_index*2+1] = 0;
+	}
 
     if(napt_ct)
     {

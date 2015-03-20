@@ -699,6 +699,58 @@ napt_hw_add(napt_entry_t *napt)
 }
 
 a_int32_t
+napt_hw_get(napt_entry_t *napt, fal_napt_entry_t *entry)
+{
+	a_int32_t ret = 0;
+	fal_napt_entry_t fal_napt = {0};
+
+	napt_entry_cp(&fal_napt, napt);
+
+	ret = NAPT_GET(0, 0, &fal_napt);
+
+	if(!ret)
+		*entry = fal_napt;
+	return ret;
+}
+
+a_int32_t
+napt_hw_dnat_cookie_add(napt_entry_t *napt, a_uint32_t cookie)
+{
+	a_int32_t ret = 0;
+	fal_napt_entry_t fal_napt = {0};
+	fal_napt.flags = napt->flags | 0x10;
+	fal_napt.status = 0xf;
+	fal_napt.dst_addr = napt->dst_addr;
+	fal_napt.dst_port = napt->dst_port;
+	fal_napt.trans_addr = napt->trans_addr;
+	fal_napt.trans_port = napt->trans_port;
+	fal_napt.action = FAL_MAC_RDT_TO_CPU;
+	fal_napt.flow_cookie = cookie;
+	ret = NAPT_ADD(0, &fal_napt);
+	return ret;
+}
+
+a_int32_t
+napt_hw_snat_cookie_add(napt_entry_t *napt, a_uint32_t cookie)
+{
+	a_int32_t ret = 0;
+	fal_napt_entry_t fal_napt = {0};
+	fal_napt.flags = napt->flags | 0x10;
+	fal_napt.status = 0xf;
+	fal_napt.dst_addr = napt->dst_addr;
+	fal_napt.dst_port = napt->dst_port;
+	fal_napt.src_addr = napt->src_addr;
+	fal_napt.src_port = napt->src_port;
+	fal_napt.action = FAL_MAC_RDT_TO_CPU;
+	fal_napt.flow_cookie = cookie;
+	ret = NAPT_ADD(0, &fal_napt);
+	return ret;
+}
+
+
+
+
+a_int32_t
 napt_hw_del(napt_entry_t *napt)
 {
     a_int32_t ret = 0;

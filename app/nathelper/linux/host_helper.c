@@ -708,7 +708,7 @@ static sw_error_t setup_interface_entry(char *list_if, int is_wan)
     char temp[IFNAMSIZ*4]; /* Max 4 interface entries right now. */
     char *dev_name, *list_all;
     struct net_device *nat_dev;
-    struct in_device *in_device_lan = NULL;
+    struct in_device *in_device_lan = NULL, *in_device_wan = NULL;
     uint8_t *devmac, if_mac_addr[MAC_LEN];
     char *br_name;
     uint32_t vid = 0;
@@ -813,6 +813,15 @@ static sw_error_t setup_interface_entry(char *list_if, int is_wan)
             }
         }
 #endif
+		if (1 == is_wan) {
+			in_device_wan = (struct in_device *) nat_dev->ip_ptr;
+			if((in_device_wan) && (in_device_wan->ifa_list))
+			{
+				a_uint32_t index;
+				nat_hw_pub_ip_add(ntohl((a_uint32_t)(in_device_wan->ifa_list->ifa_address)), &index);
+				printk("pubip add 0x%x\n", (a_uint32_t)(in_device_wan->ifa_list->ifa_address));
+			}
+		}
         memcpy(if_mac_addr, devmac, MAC_LEN);
         devmac = if_mac_addr;
         dev_put(nat_dev);
