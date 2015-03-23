@@ -1699,7 +1699,7 @@ regi_init(void)
 	else if(chip_version == 0x14)
 		cfg.chip_type = CHIP_DESS;
     else
-		rv = 100;
+	rv = -100;
 
     if(rv)
 		goto out;
