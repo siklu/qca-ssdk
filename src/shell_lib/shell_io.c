@@ -161,6 +161,10 @@ static sw_data_type_t sw_data_type[] =
     SW_TYPE_DEF(SW_SEC_ICMP4, cmd_data_check_sec_icmp4, NULL),
     SW_TYPE_DEF(SW_SEC_ICMP6, cmd_data_check_sec_icmp6, NULL),
     SW_TYPE_DEF(SW_REMARKENTRY, cmd_data_check_remark_entry, NULL),
+    SW_TYPE_DEF(SW_DEFAULT_ROUTE_ENTRY, cmd_data_check_default_route_entry, NULL),
+    SW_TYPE_DEF(SW_HOST_ROUTE_ENTRY, cmd_data_check_host_route_entry, NULL),
+    SW_TYPE_DEF(SW_IP_RFS_IP4, cmd_data_check_ip4_rfs_entry, NULL),
+	SW_TYPE_DEF(SW_IP_RFS_IP6, cmd_data_check_ip6_rfs_entry, NULL),
 };
 
 sw_data_type_t *
@@ -2085,6 +2089,20 @@ cmd_data_check_host_entry(char *cmd_str, void * val, a_uint32_t size)
     if (rv)
         return rv;
 
+    rv = __cmd_data_check_complex("load_balance num", "0",
+                        "usage: integer\n",
+                        cmd_data_check_uint32, &(entry.lb_num),
+                        sizeof (a_uint32_t));
+    if (rv)
+        return rv;
+
+    rv = __cmd_data_check_complex("vrf id", "0",
+                        "usage: integer\n",
+                        cmd_data_check_uint32, &(entry.vrf_id),
+                        sizeof (a_uint32_t));
+    if (rv)
+        return rv;
+
     rv = __cmd_data_check_complex("port id", "0",
                         "usage: integer\n",
                         cmd_data_check_uint32, &(entry.port_id),
@@ -2466,6 +2484,13 @@ cmd_data_check_intf_mac_entry(char *cmd_str, void * val, a_uint32_t size)
     rv = __cmd_data_check_complex("entryid", "0",
                         "usage: integer\n",
                         cmd_data_check_uint32, &(entry.entry_id),
+                        sizeof (a_uint32_t));
+    if (rv)
+        return rv;
+
+    rv = __cmd_data_check_complex("vrf id", "0",
+                        "usage: integer\n",
+                        cmd_data_check_uint32, &(entry.vrf_id),
                         sizeof (a_uint32_t));
     if (rv)
         return rv;
@@ -3263,4 +3288,502 @@ cmd_data_check_remark_entry(char *info, void *val, a_uint32_t size)
     return SW_OK;
 }
 
+sw_error_t
+cmd_data_check_default_route_entry(char *cmd_str, void * val, a_uint32_t size)
+{
+    char *cmd;
+    a_uint32_t tmp;
+    sw_error_t rv;
+    fal_default_route_t entry;
 
+    aos_mem_zero(&entry, sizeof (fal_intf_mac_entry_t));
+
+    do
+    {
+        cmd = get_sub_cmd("entry valid", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: 0 for invalid and 1 for valid \n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint32(cmd, &(entry.valid), sizeof (a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: 0 for invalid and 1 for valid \n");
+        }
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    do
+    {
+        cmd = get_sub_cmd("vrf id", "0");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: VRF id\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint16(cmd, &(entry.vrf_id), sizeof (a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: VRF id\n");
+        }
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    do
+    {
+        cmd = get_sub_cmd("ip version", "0");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: 0 for ipv4 and 1 for ipv6 \n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint16(cmd, &(entry.ip_version), sizeof (a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: 0 for ipv4 and 1 for ipv6 \n");
+        }
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    do
+    {
+        cmd = get_sub_cmd("route type", "0");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: 0 for arp and 1 for wcmp \n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint16(cmd, &(entry.droute_type), sizeof (a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: 0 for arp and 1 for wcmp \n");
+        }
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    do
+    {
+        cmd = get_sub_cmd("index", "0");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: index for arp entry or wcmp entry \n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint16(cmd, &(entry.index), sizeof (a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: index for arp entry or wcmp entry \n");
+        }
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    *(fal_default_route_t *)val = entry;
+    return SW_OK;
+}
+
+sw_error_t
+cmd_data_check_host_route_entry(char *cmd_str, void * val, a_uint32_t size)
+{
+    char *cmd;
+    a_uint32_t tmp;
+    sw_error_t rv;
+    fal_host_route_t entry;
+
+    aos_mem_zero(&entry, sizeof (fal_intf_mac_entry_t));
+
+    do
+    {
+        cmd = get_sub_cmd("entry valid", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: 0 for invalid and 1 for valid \n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint32(cmd, &(entry.valid), sizeof (a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: 0 for invalid and 1 for valid \n");
+        }
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    do
+    {
+        cmd = get_sub_cmd("vrf id", "0");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: VRF id\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint16(cmd, &(entry.vrf_id), sizeof (a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: VRF id\n");
+        }
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    do
+    {
+        cmd = get_sub_cmd("ip version", "0");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: 0 for ipv4 and 1 for ipv6 \n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint16(cmd, &(entry.ip_version), sizeof (a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: 0 for ipv4 and 1 for ipv6 \n");
+        }
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    if (entry.ip_version == 0) /*IPv4*/
+    {
+        rv = __cmd_data_check_complex("ip4 addr", NULL,
+                            "usage: the format is xx.xx.xx.xx \n",
+                            cmd_data_check_ip4addr, &(entry.route_addr.ip4_addr),
+                            4);
+        if (rv)
+            return rv;
+    }
+    else if (entry.ip_version == 1) /*IPv6*/
+    {
+        rv = __cmd_data_check_complex("ip6 addr", NULL,
+                            "usage: the format is xxxx::xxxx \n",
+                            cmd_data_check_ip6addr, &(entry.route_addr.ip6_addr),
+                            16);
+        if (rv)
+            return rv;
+    }
+    else
+    {
+        return SW_BAD_VALUE;
+    }
+
+    do
+    {
+        cmd = get_sub_cmd("prefix_length", "0");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: prefix length for this host route, 0~31 for ipv4 and 0~127 for ipv6 \n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint16(cmd, &(entry.prefix_length), sizeof (a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: prefix length for this host route, 0~31 for ipv4 and 0~127 for ipv6 \n");
+        }
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    *(fal_host_route_t *)val = entry;
+    return SW_OK;
+}
+
+sw_error_t
+cmd_data_check_ip4_rfs_entry(char *cmd_str, void * val, a_uint32_t size)
+{
+	char *cmd;
+	a_uint32_t tmp;
+	sw_error_t rv;
+	fal_ip4_rfs_t entry;
+
+	aos_mem_zero(&entry, sizeof (fal_ip4_rfs_t));
+
+	rv = __cmd_data_check_complex("mac addr", NULL,
+                        "usage: the format is xx-xx-xx-xx-xx-xx \n",
+                        cmd_data_check_macaddr, &(entry.mac_addr),
+                        sizeof (fal_mac_addr_t));
+    if (rv)
+        return rv;
+
+	rv = __cmd_data_check_complex("ip4 addr", NULL,
+                            "usage: the format is xx.xx.xx.xx \n",
+                            cmd_data_check_ip4addr, &(entry.ip4_addr),
+                            4);
+    if (rv)
+        return rv;
+
+	rv = __cmd_data_check_complex("vid", "0",
+                        "usage: the format is xx \n",
+                        cmd_data_check_uint32, &(entry.vid),
+                        sizeof (a_uint32_t));
+    if (rv)
+        return rv;
+
+	rv = __cmd_data_check_complex("loadbalance", "0",
+                        "usage: the format is xx \n",
+                        cmd_data_check_uint32, &tmp,
+                        sizeof (a_uint32_t));
+    if (rv)
+        return rv;
+	entry.load_balance = tmp;
+	*(fal_ip4_rfs_t *)val = entry;
+	return SW_OK;
+}
+
+sw_error_t
+cmd_data_check_fdb_rfs(char *cmd_str, void * val, a_uint32_t size)
+{
+	char *cmd;
+	a_uint32_t tmp;
+	sw_error_t rv;
+	fal_fdb_rfs_t entry;
+
+	aos_mem_zero(&entry, sizeof (fal_fdb_rfs_t));
+
+	rv = __cmd_data_check_complex("mac addr", NULL,
+                        "usage: the format is xx-xx-xx-xx-xx-xx \n",
+                        cmd_data_check_macaddr, &(entry.addr),
+                        sizeof (fal_mac_addr_t));
+    if (rv)
+        return rv;
+
+	rv = __cmd_data_check_complex("fid", NULL,
+                            "usage: the format is xx\n",
+                            cmd_data_check_uint32, &tmp,
+                            sizeof (a_uint32_t));
+    if (rv)
+        return rv;
+	entry.fid = tmp;
+
+	rv = __cmd_data_check_complex("loadbalance", "0",
+                        "usage: the format is xx \n",
+                        cmd_data_check_uint32, &tmp,
+                        sizeof (a_uint32_t));
+    if (rv)
+        return rv;
+
+	entry.load_balance = tmp;
+
+	*(fal_fdb_rfs_t *)val = entry;
+	return SW_OK;
+}
+
+
+sw_error_t
+cmd_data_check_flow_cookie(char *cmd_str, void * val, a_uint32_t size)
+{
+	char *cmd;
+	a_uint32_t tmp;
+	sw_error_t rv;
+	fal_flow_cookie_t entry;
+
+	aos_mem_zero(&entry, sizeof (fal_flow_cookie_t));
+
+	rv = __cmd_data_check_complex("proto", "0",
+                        "usage: the format is xx \n",
+                        cmd_data_check_uint32, &(entry.proto),
+                        sizeof (a_uint32_t));
+    if (rv)
+        return rv;
+
+	rv = __cmd_data_check_complex("src addr", NULL,
+                            "usage: the format is xx.xx.xx.xx \n",
+                            cmd_data_check_ip4addr, &(entry.src_addr),
+                            4);
+    if (rv)
+        return rv;
+
+	rv = __cmd_data_check_complex("dst addr", NULL,
+                            "usage: the format is xx.xx.xx.xx \n",
+                            cmd_data_check_ip4addr, &(entry.dst_addr),
+                            4);
+    if (rv)
+        return rv;
+
+	rv = __cmd_data_check_complex("src port", "0",
+                        "usage: the format is xx \n",
+                        cmd_data_check_uint32, &(entry.src_port),
+                        sizeof (a_uint32_t));
+    if (rv)
+        return rv;
+
+	rv = __cmd_data_check_complex("dst port", "0",
+                        "usage: the format is xx \n",
+                        cmd_data_check_uint32, &(entry.dst_port),
+                        sizeof (a_uint32_t));
+    if (rv)
+        return rv;
+
+	rv = __cmd_data_check_complex("flow cookie", "0",
+                        "usage: the format is xx \n",
+                        cmd_data_check_uint32, &(entry.flow_cookie),
+                        sizeof (a_uint32_t));
+    if (rv)
+        return rv;
+
+
+	*(fal_flow_cookie_t *)val = entry;
+	return SW_OK;
+}
+
+sw_error_t
+cmd_data_check_flow_rfs(char *cmd_str, void * val, a_uint32_t size)
+{
+	char *cmd;
+	a_uint32_t tmp;
+	sw_error_t rv;
+	fal_flow_rfs_t entry;
+
+	aos_mem_zero(&entry, sizeof (fal_flow_cookie_t));
+
+	rv = __cmd_data_check_complex("proto", "0",
+                        "usage: the format is xx \n",
+                        cmd_data_check_uint32, &(entry.proto),
+                        sizeof (a_uint32_t));
+    if (rv)
+        return rv;
+
+	rv = __cmd_data_check_complex("src addr", NULL,
+                            "usage: the format is xx.xx.xx.xx \n",
+                            cmd_data_check_ip4addr, &(entry.src_addr),
+                            4);
+    if (rv)
+        return rv;
+
+	rv = __cmd_data_check_complex("dst addr", NULL,
+                            "usage: the format is xx.xx.xx.xx \n",
+                            cmd_data_check_ip4addr, &(entry.dst_addr),
+                            4);
+    if (rv)
+        return rv;
+
+	rv = __cmd_data_check_complex("src port", "0",
+                        "usage: the format is xx \n",
+                        cmd_data_check_uint32, &(entry.src_port),
+                        sizeof (a_uint32_t));
+    if (rv)
+        return rv;
+
+	rv = __cmd_data_check_complex("dst port", "0",
+                        "usage: the format is xx \n",
+                        cmd_data_check_uint32, &(entry.dst_port),
+                        sizeof (a_uint32_t));
+    if (rv)
+        return rv;
+
+	rv = __cmd_data_check_complex("flow rfs", "0",
+                        "usage: the format is xx \n",
+                        cmd_data_check_uint32, &tmp,
+                        sizeof (a_uint32_t));
+    if (rv)
+        return rv;
+
+	entry.load_balance = tmp;
+
+
+	*(fal_flow_rfs_t *)val = entry;
+	return SW_OK;
+}
+
+sw_error_t
+cmd_data_check_ip6_rfs_entry(char *cmd_str, void * val, a_uint32_t size)
+{
+	char *cmd;
+	a_uint32_t tmp;
+	sw_error_t rv;
+	fal_ip6_rfs_t entry;
+
+	aos_mem_zero(&entry, sizeof (fal_ip4_rfs_t));
+
+	rv = __cmd_data_check_complex("mac addr", NULL,
+                        "usage: the format is xx-xx-xx-xx-xx-xx \n",
+                        cmd_data_check_macaddr, &(entry.mac_addr),
+                        sizeof (fal_mac_addr_t));
+    if (rv)
+        return rv;
+
+	rv = __cmd_data_check_complex("ip6 addr", NULL,
+                            "usage: the format is xxxx::xxxx \n",
+                            cmd_data_check_ip6addr, &(entry.ip6_addr),
+                            16);
+    if (rv)
+        return rv;
+
+	rv = __cmd_data_check_complex("vid", "0",
+                        "usage: the format is xx \n",
+                        cmd_data_check_uint32, &(entry.vid),
+                        sizeof (a_uint32_t));
+    if (rv)
+        return rv;
+
+	rv = __cmd_data_check_complex("loadbalance", "0",
+                        "usage: the format is xx \n",
+                        cmd_data_check_uint32, &tmp,
+                        sizeof (a_uint32_t));
+    if (rv)
+        return rv;
+	entry.load_balance = tmp;
+
+	*(fal_ip6_rfs_t *)val = entry;
+	return SW_OK;
+}
