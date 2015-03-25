@@ -2072,6 +2072,34 @@ parse_portvlan_egbypass(struct switch_val *val)
 }
 
 static int
+parse_portvlan_ptvrfid(struct switch_val *val)
+{
+	struct switch_ext *switch_ext_p, *switch_ext_tmp, *ext_value_p;
+	int rv = 0;
+	switch_ext_p = val->value.ext_val;
+	while(switch_ext_p) {
+		ext_value_p = switch_ext_p;
+
+		if(!strcmp(ext_value_p->option_name, "name")) {
+			switch_ext_p = switch_ext_p->next;
+			continue;
+		} else if(!strcmp(ext_value_p->option_name, "port_id")) {
+			val_ptr[0] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "vrf_id")) {
+			val_ptr[1] = ext_value_p->option_value;
+		}  else {
+			rv = -1;
+			break;
+		}
+
+		parameter_length++;
+		switch_ext_p = switch_ext_p->next;
+	}
+
+	return rv;
+}
+
+static int
 parse_vlan_entry(struct switch_val *val)
 {
 	struct switch_ext *switch_ext_p, *switch_ext_tmp, *ext_value_p;
@@ -3604,6 +3632,11 @@ parse_ip_hostentry(struct switch_val *val)
 {
 	struct switch_ext *switch_ext_p, *switch_ext_tmp, *ext_value_p;
 	int rv = 0;
+	char* vrf_temp = "0";
+	val_ptr[6] = vrf_temp;
+	parameter_length ++;
+	val_ptr[7] = vrf_temp;
+	parameter_length ++;
 	switch_ext_p = val->value.ext_val;
 	while(switch_ext_p) {
 		ext_value_p = switch_ext_p;
@@ -3623,14 +3656,20 @@ parse_ip_hostentry(struct switch_val *val)
 			val_ptr[4] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "interface_id")) {
 			val_ptr[5] = ext_value_p->option_value;
-		} else if(!strcmp(ext_value_p->option_name, "port_id")) {
+		} else if(!strcmp(ext_value_p->option_name, "load_balance_num")) {
 			val_ptr[6] = ext_value_p->option_value;
-		} else if(!strcmp(ext_value_p->option_name, "action")) {
+			parameter_length --;
+		} else if(!strcmp(ext_value_p->option_name, "vrf_id")) {
 			val_ptr[7] = ext_value_p->option_value;
-		} else if(!strcmp(ext_value_p->option_name, "mirror")) {
+			parameter_length --;
+		} else if(!strcmp(ext_value_p->option_name, "port_id")) {
 			val_ptr[8] = ext_value_p->option_value;
-		} else if(!strcmp(ext_value_p->option_name, "counter")) {
+		} else if(!strcmp(ext_value_p->option_name, "action")) {
 			val_ptr[9] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "mirror")) {
+			val_ptr[10] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "counter")) {
+			val_ptr[11] = ext_value_p->option_value;
 		}  else {
 			rv = -1;
 			break;
@@ -3648,6 +3687,9 @@ parse_ip_intfentry(struct switch_val *val)
 {
 	struct switch_ext *switch_ext_p, *switch_ext_tmp, *ext_value_p;
 	int rv = 0;
+	char* vrf_temp = "0";
+	val_ptr[1] = vrf_temp;
+	parameter_length ++;
 	switch_ext_p = val->value.ext_val;
 	while(switch_ext_p) {
 		ext_value_p = switch_ext_p;
@@ -3657,16 +3699,19 @@ parse_ip_intfentry(struct switch_val *val)
 			continue;
 		} else if(!strcmp(ext_value_p->option_name, "entry_id")) {
 			val_ptr[0] = ext_value_p->option_value;
-		} else if(!strcmp(ext_value_p->option_name, "vlan_low")) {
+		} else if(!strcmp(ext_value_p->option_name, "vrf_id")) {
 			val_ptr[1] = ext_value_p->option_value;
-		} else if(!strcmp(ext_value_p->option_name, "vlan_high")) {
+			parameter_length --;
+		} else if(!strcmp(ext_value_p->option_name, "vlan_low")) {
 			val_ptr[2] = ext_value_p->option_value;
-		} else if(!strcmp(ext_value_p->option_name, "mac_addr")) {
+		} else if(!strcmp(ext_value_p->option_name, "vlan_high")) {
 			val_ptr[3] = ext_value_p->option_value;
-		} else if(!strcmp(ext_value_p->option_name, "ipv4_route")) {
+		} else if(!strcmp(ext_value_p->option_name, "mac_addr")) {
 			val_ptr[4] = ext_value_p->option_value;
-		} else if(!strcmp(ext_value_p->option_name, "ipv6_route")) {
+		} else if(!strcmp(ext_value_p->option_name, "ipv4_route")) {
 			val_ptr[5] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "ipv6_route")) {
+			val_ptr[6] = ext_value_p->option_value;
 		}  else {
 			rv = -1;
 			break;
@@ -3966,6 +4011,192 @@ parse_ip_defaultrtflowcmd(struct switch_val *val)
 		} else if(!strcmp(ext_value_p->option_name, "flow_type")) {
 			val_ptr[1] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "flow_cmd")) {
+			val_ptr[2] = ext_value_p->option_value;
+		}  else {
+			rv = -1;
+			break;
+		}
+
+		parameter_length++;
+		switch_ext_p = switch_ext_p->next;
+	}
+
+	return rv;
+}
+
+static int
+parse_ip_hostroute(struct switch_val *val)
+{
+	struct switch_ext *switch_ext_p, *switch_ext_tmp, *ext_value_p;
+	int rv = 0;
+	switch_ext_p = val->value.ext_val;
+	while(switch_ext_p) {
+		ext_value_p = switch_ext_p;
+
+		if(!strcmp(ext_value_p->option_name, "name")) {
+			switch_ext_p = switch_ext_p->next;
+			continue;
+		} else if(!strcmp(ext_value_p->option_name, "entry_id")) {
+			val_ptr[0] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "entry")) {
+			val_ptr[1] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "vrf_id")) {
+			val_ptr[2] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "ip_version")) {
+			val_ptr[3] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "ip_addr")) {
+			val_ptr[4] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "prefix_length")) {
+			val_ptr[5] = ext_value_p->option_value;
+		}  else {
+			rv = -1;
+			break;
+		}
+
+		parameter_length++;
+		switch_ext_p = switch_ext_p->next;
+	}
+
+	return rv;
+}
+
+static int
+parse_ip_defaultroute(struct switch_val *val)
+{
+	struct switch_ext *switch_ext_p, *switch_ext_tmp, *ext_value_p;
+	int rv = 0;
+	switch_ext_p = val->value.ext_val;
+	while(switch_ext_p) {
+		ext_value_p = switch_ext_p;
+
+		if(!strcmp(ext_value_p->option_name, "name")) {
+			switch_ext_p = switch_ext_p->next;
+			continue;
+		} else if(!strcmp(ext_value_p->option_name, "entry_id")) {
+			val_ptr[0] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "entry")) {
+			val_ptr[1] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "vrf_id")) {
+			val_ptr[2] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "route_type'1'")) {
+			val_ptr[3] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "index")) {
+			val_ptr[4] = ext_value_p->option_value;
+		}  else {
+			rv = -1;
+			break;
+		}
+
+		parameter_length++;
+		switch_ext_p = switch_ext_p->next;
+	}
+
+	return rv;
+}
+
+static int
+parse_ip_vrfbaseaddr(struct switch_val *val)
+{
+	struct switch_ext *switch_ext_p, *switch_ext_tmp, *ext_value_p;
+	int rv = 0;
+	switch_ext_p = val->value.ext_val;
+	while(switch_ext_p) {
+		ext_value_p = switch_ext_p;
+
+		if(!strcmp(ext_value_p->option_name, "name")) {
+			switch_ext_p = switch_ext_p->next;
+			continue;
+		} else if(!strcmp(ext_value_p->option_name, "vrf_id")) {
+			val_ptr[0] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "base_addr")) {
+			val_ptr[1] = ext_value_p->option_value;
+		}  else {
+			rv = -1;
+			break;
+		}
+
+		parameter_length++;
+		switch_ext_p = switch_ext_p->next;
+	}
+
+	return rv;
+}
+
+static int
+parse_ip_vrfbasemask(struct switch_val *val)
+{
+	struct switch_ext *switch_ext_p, *switch_ext_tmp, *ext_value_p;
+	int rv = 0;
+	switch_ext_p = val->value.ext_val;
+	while(switch_ext_p) {
+		ext_value_p = switch_ext_p;
+
+		if(!strcmp(ext_value_p->option_name, "name")) {
+			switch_ext_p = switch_ext_p->next;
+			continue;
+		} else if(!strcmp(ext_value_p->option_name, "vrf_id")) {
+			val_ptr[0] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "base_mask")) {
+			val_ptr[1] = ext_value_p->option_value;
+		}  else {
+			rv = -1;
+			break;
+		}
+
+		parameter_length++;
+		switch_ext_p = switch_ext_p->next;
+	}
+
+	return rv;
+}
+
+static int
+parse_ip_rfsip4(struct switch_val *val)
+{
+	struct switch_ext *switch_ext_p, *switch_ext_tmp, *ext_value_p;
+	int rv = 0;
+	switch_ext_p = val->value.ext_val;
+	while(switch_ext_p) {
+		ext_value_p = switch_ext_p;
+
+		if(!strcmp(ext_value_p->option_name, "name")) {
+			switch_ext_p = switch_ext_p->next;
+			continue;
+		} else if(!strcmp(ext_value_p->option_name, "mac_addr")) {
+			val_ptr[0] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "ip4_addr")) {
+			val_ptr[1] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "vlan_id")) {
+			val_ptr[2] = ext_value_p->option_value;
+		}  else {
+			rv = -1;
+			break;
+		}
+
+		parameter_length++;
+		switch_ext_p = switch_ext_p->next;
+	}
+
+	return rv;
+}
+
+static int
+parse_ip_rfsip6(struct switch_val *val)
+{
+	struct switch_ext *switch_ext_p, *switch_ext_tmp, *ext_value_p;
+	int rv = 0;
+	switch_ext_p = val->value.ext_val;
+	while(switch_ext_p) {
+		ext_value_p = switch_ext_p;
+
+		if(!strcmp(ext_value_p->option_name, "name")) {
+			switch_ext_p = switch_ext_p->next;
+			continue;
+		} else if(!strcmp(ext_value_p->option_name, "vrf_id")) {
+			val_ptr[0] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "ip6_addr")) {
+			val_ptr[1] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "vlan_id")) {
 			val_ptr[2] = ext_value_p->option_value;
 		}  else {
 			rv = -1;
@@ -5344,6 +5575,8 @@ parse_portvlan(const char *command_name, struct switch_val *val)
 		rv = parse_portvlan_netiso(val);
 	} else if(!strcmp(command_name, "EgBypass")) {
 		rv = parse_portvlan_egbypass(val);
+	} else if(!strcmp(command_name, "Ptvrfid")) {
+		rv = parse_portvlan_ptvrfid(val);
 	} 
 
 	return rv;
@@ -5532,6 +5765,18 @@ parse_ip(const char *command_name, struct switch_val *val)
 		rv = parse_ip_defaultflowcmd(val);
 	} else if(!strcmp(command_name, "Defaultrtflowcmd")) {
 		rv = parse_ip_defaultrtflowcmd(val);
+	} else if(!strcmp(command_name, "HostRoute")) {
+		rv = parse_ip_hostroute(val);
+	} else if(!strcmp(command_name, "DefaultRoute")) {
+		rv = parse_ip_defaultroute(val);
+	} else if(!strcmp(command_name, "Vrfbaseaddr")) {
+		rv = parse_ip_vrfbaseaddr(val);
+	} else if(!strcmp(command_name, "Vrfbasemask")) {
+		rv = parse_ip_vrfbasemask(val);
+	} else if(!strcmp(command_name, "Rfsip4")) {
+		rv = parse_ip_rfsip4(val);
+	} else if(!strcmp(command_name, "Rfsip6")) {
+		rv = parse_ip_rfsip6(val);
 	} 
 
 	return rv;

@@ -187,5 +187,22 @@ cmd_data_check_sec_icmp6(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size);
 sw_error_t
 cmd_data_check_remark_entry(char *info, void *val, a_uint32_t size);
 
+sw_error_t
+cmd_data_check_default_route_entry(char *cmd_str, void * val, a_uint32_t size);
+
+sw_error_t
+cmd_data_check_host_route_entry(char *cmd_str, void * val, a_uint32_t size);
+
+sw_error_t
+cmd_data_check_ip4_rfs_entry(char *cmd_str, void * val, a_uint32_t size);
+sw_error_t
+cmd_data_check_ip6_rfs_entry(char *cmd_str, void * val, a_uint32_t size);
+sw_error_t
+cmd_data_check_flow_cookie(char *cmd_str, void * val, a_uint32_t size);
+
+sw_error_t
+cmd_data_check_fdb_rfs(char *cmd_str, void * val, a_uint32_t size);
+sw_error_t
+cmd_data_check_flow_rfs(char *cmd_str, void * val, a_uint32_t size);
 #endif
 
