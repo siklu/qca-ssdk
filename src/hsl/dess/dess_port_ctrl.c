@@ -1423,6 +1423,49 @@ _dess_port_link_status_get (a_uint32_t dev_id, fal_port_t port_id,
 }
 
 static sw_error_t
+_dess_ports_link_status_get(a_uint32_t dev_id, a_uint32_t * status)
+{
+    sw_error_t rv;
+    a_uint32_t port_id;
+    a_uint32_t phy_id;
+    hsl_dev_t *pdev = NULL;
+    hsl_phy_ops_t *phy_drv;
+
+    HSL_DEV_ID_CHECK(dev_id);
+    if (NULL == phy_drv->phy_link_status_get)
+    return SW_NOT_SUPPORTED;
+
+    pdev = hsl_dev_ptr_get(dev_id);
+    if (pdev == NULL)
+        return SW_NOT_INITIALIZED;
+
+    *status = 0x0;
+    for (port_id = 0; port_id < pdev->nr_ports; port_id++)
+    {
+        /* for those ports without PHY device supposed always link up */
+        if (A_FALSE == _dess_port_phy_connected(dev_id, port_id))
+        {
+            *status |= (0x1 << port_id);
+        }
+        else
+        {
+            rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
+            SW_RTN_ON_ERROR(rv);
+
+            if (A_TRUE == phy_drv->phy_link_status_get (dev_id, phy_id))
+            {
+                *status |= (0x1 << port_id);
+            }
+            else
+            {
+                *status &= ~(0x1 << port_id);
+            }
+        }
+    }
+    return SW_OK;
+}
+
+static sw_error_t
 _dess_port_mac_loopback_set (a_uint32_t dev_id, fal_port_t port_id,
 			     a_bool_t enable)
 {
@@ -1998,6 +2041,299 @@ _dess_port_remote_loopback_get (a_uint32_t dev_id, fal_port_t port_id,
   SW_RTN_ON_ERROR (rv);
 
   rv = phy_drv->phy_remote_loopback_get (dev_id, phy_id, enable);
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_reset (a_uint32_t dev_id, fal_port_t port_id)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_reset)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_reset(dev_id, phy_id);
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_power_off (a_uint32_t dev_id, fal_port_t port_id)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_power_off)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_power_off(dev_id, phy_id);
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_power_on (a_uint32_t dev_id, fal_port_t port_id)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_power_on)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_power_on(dev_id, phy_id);
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_wol_status_set (a_uint32_t dev_id, fal_port_t port_id,
+				a_bool_t enable)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_wol_status_set)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_wol_status_set (dev_id, phy_id, enable);
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_wol_status_get (a_uint32_t dev_id, fal_port_t port_id,
+				a_bool_t * enable)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_wol_status_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_wol_status_get (dev_id, phy_id, enable);
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_phy_id_get (a_uint32_t dev_id, fal_port_t port_id,
+				a_uint16_t * org_id, a_uint16_t * rev_id)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_id_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_id_get (dev_id, phy_id,org_id,rev_id);
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_magic_frame_mac_set (a_uint32_t dev_id, fal_port_t port_id,
+				fal_mac_addr_t * mac)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_magic_frame_mac_set)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_magic_frame_mac_set (dev_id, phy_id,mac);
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_magic_frame_mac_get (a_uint32_t dev_id, fal_port_t port_id,
+				fal_mac_addr_t * mac)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_magic_frame_mac_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_magic_frame_mac_get (dev_id, phy_id,mac);
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_interface_mode_set (a_uint32_t dev_id, fal_port_t port_id,
+				fal_port_interface_mode_t  mode)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_interface_mode_set)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_interface_mode_set (dev_id, phy_id,mode);
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_interface_mode_get (a_uint32_t dev_id, fal_port_t port_id,
+				fal_port_interface_mode_t * mode)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_interface_mode_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_interface_mode_get (dev_id, phy_id,mode);
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_interface_mode_status_get (a_uint32_t dev_id, fal_port_t port_id,
+				fal_port_interface_mode_t * mode)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_interface_mode_status_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_interface_mode_status_get (dev_id, phy_id,mode);
 
   return rv;
 }
@@ -2698,6 +3034,23 @@ dess_port_link_status_get (a_uint32_t dev_id, fal_port_t port_id,
 }
 
 /**
+ * @brief Get link status on all ports.
+ * @param[in] dev_id device id
+ * @param[out] status link status bitmap and bit 0 for port 0, bi 1 for port 1, ..., etc.
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_ports_link_status_get(a_uint32_t dev_id, a_uint32_t * status)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _dess_ports_link_status_get(dev_id, status);
+    HSL_API_UNLOCK;
+    return rv;
+}
+
+/**
  * @brief Set mac loop back on a particular port.
  * @param[in] dev_id device id
  * @param[in] port_id port id
@@ -3077,6 +3430,203 @@ dess_port_remote_loopback_get (a_uint32_t dev_id, fal_port_t port_id,
   return rv;
 }
 
+/**
+ * @brief software reset on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[in]
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_port_reset (a_uint32_t dev_id, fal_port_t port_id)
+{
+  sw_error_t rv;
+  HSL_API_LOCK;
+  rv = _dess_port_reset (dev_id, port_id);
+  HSL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief phy power off on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[in]
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_port_power_off (a_uint32_t dev_id, fal_port_t port_id)
+{
+  sw_error_t rv;
+  HSL_API_LOCK;
+  rv = _dess_port_power_off (dev_id, port_id);
+  HSL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief phy power on on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[in]
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_port_power_on (a_uint32_t dev_id, fal_port_t port_id)
+{
+  sw_error_t rv;
+  HSL_API_LOCK;
+  rv = _dess_port_power_on (dev_id, port_id);
+  HSL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Set phy wol enable on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[in] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_port_wol_status_set (a_uint32_t dev_id, fal_port_t port_id,
+			       a_bool_t enable)
+{
+  sw_error_t rv;
+  HSL_API_LOCK;
+  rv = _dess_port_wol_status_set (dev_id, port_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Get phy wol status on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_port_wol_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			       a_bool_t * enable)
+{
+  sw_error_t rv;
+
+  HSL_API_LOCK;
+  rv = _dess_port_wol_status_get (dev_id, port_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Get phy id on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] org_id and rev_id
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_port_phy_id_get (a_uint32_t dev_id, fal_port_t port_id,
+			       a_uint16_t * org_id, a_uint16_t * rev_id)
+{
+  sw_error_t rv;
+
+  HSL_API_LOCK;
+  rv = _dess_port_phy_id_get (dev_id, port_id, org_id,rev_id);
+  HSL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Set phy magic frame mac on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[in] mac address
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_port_magic_frame_mac_set (a_uint32_t dev_id, fal_port_t port_id,
+			      fal_mac_addr_t * mac)
+{
+  sw_error_t rv;
+  HSL_API_LOCK;
+  rv = _dess_port_magic_frame_mac_set (dev_id, port_id, mac);
+  HSL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Get phy magic frame mac on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] mac address
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_port_magic_frame_mac_get (a_uint32_t dev_id, fal_port_t port_id,
+			      fal_mac_addr_t * mac)
+{
+  sw_error_t rv;
+  HSL_API_LOCK;
+  rv = _dess_port_magic_frame_mac_get (dev_id, port_id, mac);
+  HSL_API_UNLOCK;
+  return rv;
+}
+
+
+/**
+ * @brief Set phy interface mode.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[in] interface mode..
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_port_interface_mode_set (a_uint32_t dev_id, fal_port_t port_id,
+			      fal_port_interface_mode_t  mode)
+{
+  sw_error_t rv;
+  HSL_API_LOCK;
+  rv = _dess_port_interface_mode_set (dev_id, port_id, mode);
+  HSL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Set phy interface mode.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] interface mode..
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_port_interface_mode_get (a_uint32_t dev_id, fal_port_t port_id,
+			      fal_port_interface_mode_t  * mode)
+{
+  sw_error_t rv;
+  HSL_API_LOCK;
+  rv = _dess_port_interface_mode_get (dev_id, port_id, mode);
+  HSL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Set phy interface mode status.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] interface mode..
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_port_interface_mode_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			      fal_port_interface_mode_t  * mode)
+{
+  sw_error_t rv;
+  HSL_API_LOCK;
+  rv = _dess_port_interface_mode_status_get (dev_id, port_id, mode);
+  HSL_API_UNLOCK;
+  return rv;
+}
 
 sw_error_t
 dess_port_ctrl_init (a_uint32_t dev_id)
@@ -3126,6 +3676,7 @@ dess_port_ctrl_init (a_uint32_t dev_id)
     p_api->port_link_forcemode_set = dess_port_link_forcemode_set;
     p_api->port_link_forcemode_get = dess_port_link_forcemode_get;
     p_api->port_link_status_get = dess_port_link_status_get;
+    p_api->ports_link_status_get = dess_ports_link_status_get;
     p_api->port_mac_loopback_set = dess_port_mac_loopback_set;
     p_api->port_mac_loopback_get = dess_port_mac_loopback_get;
     p_api->port_congestion_drop_set = dess_port_congestion_drop_set;
@@ -3146,6 +3697,17 @@ dess_port_ctrl_init (a_uint32_t dev_id)
     p_api->port_local_loopback_get = dess_port_local_loopback_get;
     p_api->port_remote_loopback_set = dess_port_remote_loopback_set;
     p_api->port_remote_loopback_get = dess_port_remote_loopback_get;
+    p_api->port_reset = dess_port_reset;
+    p_api->port_power_off = dess_port_power_off;
+    p_api->port_power_on = dess_port_power_on;
+    p_api->port_phy_id_get = dess_port_phy_id_get;
+    p_api->port_wol_status_set = dess_port_wol_status_set;
+    p_api->port_wol_status_get = dess_port_wol_status_get;
+    p_api->port_magic_frame_mac_set = dess_port_magic_frame_mac_set;
+    p_api->port_magic_frame_mac_get = dess_port_magic_frame_mac_get;
+    p_api->port_interface_mode_set = dess_port_interface_mode_set;
+    p_api->port_interface_mode_get = dess_port_interface_mode_get;
+    p_api->port_interface_mode_status_get = dess_port_interface_mode_status_get;
   }
 #endif
 

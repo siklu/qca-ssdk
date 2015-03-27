@@ -87,6 +87,12 @@ extern "C"
 #define MALIBU_SG_BX_PAGES                  0x0
 #define MALIBU_SG_COPPER_PAGES              0x1
 
+#define MALIBU_PHY_PSGMII_BASET              0x0
+#define MALIBU_PHY_PSGMII_BX1000              0x1
+#define MALIBU_PHY_PSGMII_FX100              0x2
+#define MALIBU_PHY_PSGMII_AMDET              0x3
+#define MALIBU_PHY_SGMII_BASET              0x4
+
 #define MALIBU_PHY4_PREFER_FIBER  0x400
 #define PHY4_PREFER_COPPER                0x0
 #define PHY4_PREFER_FIBER                 0x1

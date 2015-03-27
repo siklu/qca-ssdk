@@ -492,7 +492,41 @@ extern "C"
     (*hsl_port_remote_loopback_get) (a_uint32_t dev_id, fal_port_t port_id,
 				     a_bool_t * enable);
 
+  typedef sw_error_t
+    (*hsl_port_reset) (a_uint32_t dev_id, fal_port_t port_id);
 
+  typedef sw_error_t
+    (*hsl_port_power_off) (a_uint32_t dev_id, fal_port_t port_id);
+
+  typedef sw_error_t
+    (*hsl_port_power_on) (a_uint32_t dev_id, fal_port_t port_id);
+
+  typedef sw_error_t
+    (*hsl_port_phy_id_get) (a_uint32_t dev_id, fal_port_t port_id,a_uint16_t * org_id, a_uint16_t * rev_id);
+
+  typedef sw_error_t
+    (*hsl_port_wol_status_set) (a_uint32_t dev_id, fal_port_t port_id,a_bool_t enable);
+
+  typedef sw_error_t
+    (*hsl_port_wol_status_get) (a_uint32_t dev_id, fal_port_t port_id,a_bool_t *enable);
+
+  typedef sw_error_t
+    (*hsl_port_magic_frame_mac_set) (a_uint32_t dev_id, fal_port_t port_id,fal_mac_addr_t * mac);
+
+  typedef sw_error_t
+    (*hsl_port_magic_frame_mac_get) (a_uint32_t dev_id, fal_port_t port_id,fal_mac_addr_t * mac);
+
+  typedef sw_error_t
+    (*hsl_port_interface_mode_set) (a_uint32_t dev_id, fal_port_t port_id,
+			      fal_port_interface_mode_t mode);
+
+  typedef sw_error_t
+    (*hsl_port_interface_mode_get) (a_uint32_t dev_id, fal_port_t port_id,
+			      fal_port_interface_mode_t * mode);
+
+  typedef sw_error_t
+    (*hsl_port_interface_mode_status_get) (a_uint32_t dev_id, fal_port_t port_id,
+			      fal_port_interface_mode_t * mode);
   /* VLAN */
 #define VLAN_FUNC_PROTOTYPE_DEF
   typedef sw_error_t
@@ -1982,7 +2016,6 @@ extern "C"
     hsl_port_flowctrl_get port_flowctrl_get;
     hsl_port_flowctrl_forcemode_set port_flowctrl_forcemode_set;
     hsl_port_flowctrl_forcemode_get port_flowctrl_forcemode_get;
-
     hsl_port_powersave_set port_powersave_set;
     hsl_port_powersave_get port_powersave_get;
     hsl_port_hibernate_set port_hibernate_set;
@@ -2028,7 +2061,17 @@ extern "C"
     hsl_port_local_loopback_get port_local_loopback_get;
     hsl_port_remote_loopback_set port_remote_loopback_set;
     hsl_port_remote_loopback_get port_remote_loopback_get;
-
+    hsl_port_reset port_reset;
+    hsl_port_power_off port_power_off;
+    hsl_port_power_on port_power_on;
+    hsl_port_phy_id_get port_phy_id_get;
+    hsl_port_wol_status_set port_wol_status_set;
+    hsl_port_wol_status_get port_wol_status_get;
+    hsl_port_magic_frame_mac_set port_magic_frame_mac_set;
+    hsl_port_magic_frame_mac_get port_magic_frame_mac_get;
+    hsl_port_interface_mode_set port_interface_mode_set;
+    hsl_port_interface_mode_get port_interface_mode_get;
+    hsl_port_interface_mode_status_get port_interface_mode_status_get;
 
     /* VLAN */
     hsl_vlan_entry_append vlan_entry_append;

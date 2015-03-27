@@ -168,6 +168,11 @@ static sw_data_type_t sw_data_type[] =
     SW_TYPE_DEF(SW_HOST_ROUTE_ENTRY, cmd_data_check_host_route_entry, NULL),
     SW_TYPE_DEF(SW_IP_RFS_IP4, cmd_data_check_ip4_rfs_entry, NULL),
 	SW_TYPE_DEF(SW_IP_RFS_IP6, cmd_data_check_ip6_rfs_entry, NULL),
+    SW_TYPE_DEF(SW_CROSSOVER_MODE, cmd_data_check_crossover_mode, NULL),
+    SW_TYPE_DEF(SW_CROSSOVER_STATUS, cmd_data_check_crossover_status, NULL),
+    SW_TYPE_DEF(SW_PREFER_MEDIUM, cmd_data_check_prefer_medium, NULL),
+    SW_TYPE_DEF(SW_FIBER_MODE, cmd_data_check_fiber_mode, NULL),
+    SW_TYPE_DEF(SW_INTERFACE_MODE, cmd_data_check_interface_mode, NULL),
 };
 
 sw_data_type_t *
@@ -434,6 +439,105 @@ cmd_data_check_capable(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
     return SW_OK;
 }
 
+sw_error_t
+cmd_data_check_crossover_mode(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
+{
+    if (cmd_str == NULL)
+        return SW_BAD_PARAM;
+
+    if (!strncasecmp(cmd_str, "auto", 5))
+        *arg_val = PHY_MDIX_AUTO;
+    else if (!strncasecmp(cmd_str, "mdi", 4))
+        *arg_val = PHY_MDIX_MDI;
+    else if (!strncasecmp(cmd_str, "mdix", 5))
+        *arg_val = PHY_MDIX_MDIX;
+    else
+    {
+        //dprintf("input error \n");
+        return SW_BAD_VALUE;
+    }
+
+    return SW_OK;
+}
+
+sw_error_t
+cmd_data_check_crossover_status(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
+{
+    if (cmd_str == NULL)
+        return SW_BAD_PARAM;
+    if (!strncasecmp(cmd_str, "mdi", 4))
+        *arg_val = PHY_MDIX_STATUS_MDI;
+    else if (!strncasecmp(cmd_str, "mdix", 5))
+        *arg_val = PHY_MDIX_STATUS_MDIX;
+    else
+    {
+        //dprintf("input error \n");
+        return SW_BAD_VALUE;
+    }
+
+    return SW_OK;
+}
+
+sw_error_t
+cmd_data_check_prefer_medium(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
+{
+    if (cmd_str == NULL)
+        return SW_BAD_PARAM;
+    if (!strncasecmp(cmd_str, "copper", 7))
+        *arg_val = PHY_MEDIUM_COPPER;
+    else if (!strncasecmp(cmd_str, "fiber", 6))
+        *arg_val = PHY_MEDIUM_FIBER;
+    else
+    {
+        //dprintf("input error \n");
+        return SW_BAD_VALUE;
+    }
+
+    return SW_OK;
+}
+
+sw_error_t
+cmd_data_check_fiber_mode(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
+{
+    if (cmd_str == NULL)
+        return SW_BAD_PARAM;
+    if (!strncasecmp(cmd_str, "100fx", 6))
+        *arg_val = PHY_FIBER_100FX;
+    else if (!strncasecmp(cmd_str, "1000bx", 7))
+        *arg_val = PHY_FIBER_1000BX;
+    else
+    {
+        //dprintf("input error \n");
+        return SW_BAD_VALUE;
+    }
+
+    return SW_OK;
+}
+
+sw_error_t
+cmd_data_check_interface_mode(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
+{
+    if (cmd_str == NULL)
+        return SW_BAD_PARAM;
+
+    if (!strncasecmp(cmd_str, "psgmii_baset", 13))
+        *arg_val = PHY_PSGMII_BASET;
+    else if (!strncasecmp(cmd_str, "psgmii_bx1000", 14))
+        *arg_val = PHY_PSGMII_BX1000;
+    else if (!strncasecmp(cmd_str, "psgmii_fx100", 13))
+        *arg_val = PHY_PSGMII_FX100;
+    else if (!strncasecmp(cmd_str, "psgmii_amdet", 13))
+        *arg_val = PHY_PSGMII_AMDET;
+    else if (!strncasecmp(cmd_str, "sgmii_baset", 13))
+        *arg_val = PHY_SGMII_BASET;
+    else
+    {
+        //dprintf("input error \n");
+        return SW_BAD_VALUE;
+    }
+
+    return SW_OK;
+}
 /*portvlan*/
 sw_error_t
 cmd_data_check_1qmode(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)

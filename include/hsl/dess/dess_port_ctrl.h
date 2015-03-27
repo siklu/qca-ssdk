@@ -311,7 +311,7 @@ extern "C"
 				   fal_mac_addr_t * mac);
 
   HSL_LOCAL sw_error_t
-    dess_port_id_get (a_uint32_t dev_id, fal_port_t port_id,
+    dess_port_phy_id_get (a_uint32_t dev_id, fal_port_t port_id,
 		      a_uint16_t * org_id, a_uint16_t * rev_id);
 
   HSL_LOCAL sw_error_t
@@ -322,6 +322,26 @@ extern "C"
     dess_port_wol_status_get (a_uint32_t dev_id, fal_port_t port_id,
 			      a_bool_t * enable);
 
+  HSL_LOCAL sw_error_t
+    dess_port_reset (a_uint32_t dev_id, fal_port_t port_id);
+
+  HSL_LOCAL sw_error_t
+    dess_port_power_off (a_uint32_t dev_id, fal_port_t port_id);
+
+  HSL_LOCAL sw_error_t
+    dess_port_power_on (a_uint32_t dev_id, fal_port_t port_id);
+
+  HSL_LOCAL sw_error_t
+    dess_port_interface_mode_set (a_uint32_t dev_id, fal_port_t port_id,
+			      fal_port_interface_mode_t mode);
+
+  HSL_LOCAL sw_error_t
+    dess_port_interface_mode_get (a_uint32_t dev_id, fal_port_t port_id,
+			      fal_port_interface_mode_t * mode);
+
+  HSL_LOCAL sw_error_t
+    dess_port_interface_mode_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			      fal_port_interface_mode_t * mode);
 #endif
 
 #ifdef __cplusplus
