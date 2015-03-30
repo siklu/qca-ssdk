@@ -62,6 +62,10 @@ static char command_name[COMMAND_NAME_MAX_LEN] = {0};
 static char whole_command_line[COMMAND_LINE_MAX_LEN] = {0};
 static char *val_ptr[SWITCH_CFG_LEN_MAX] = {0};
 static unsigned int parameter_length = 0;
+static char *vrf_dflt_str = "0";
+static char *lb_dflt_str = "0";
+static char *cookie_dflt_str = "0";
+static char *priority_dflt_str = "no";
 
 static int
 parse_qos_qtxbufsts(struct switch_val *val)
@@ -1554,6 +1558,68 @@ parse_port_macloopback(struct switch_val *val)
 
 	return rv;
 }
+
+static int
+parse_port_congedrop(struct switch_val *val)
+{
+	struct switch_ext *switch_ext_p, *switch_ext_tmp, *ext_value_p;
+	int rv = 0;
+	switch_ext_p = val->value.ext_val;
+	while(switch_ext_p) {
+		ext_value_p = switch_ext_p;
+
+		if(!strcmp(ext_value_p->option_name, "name")) {
+			switch_ext_p = switch_ext_p->next;
+			continue;
+		} else if(!strcmp(ext_value_p->option_name, "port_id")) {
+			val_ptr[0] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "queue_id")) {
+			val_ptr[1] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "status")) {
+			val_ptr[2] = ext_value_p->option_value;
+		} else {
+			rv = -1;
+			break;
+		}
+
+		parameter_length++;
+		switch_ext_p = switch_ext_p->next;
+	}
+
+	return rv;
+}
+
+static int
+parse_port_ringfcthresh(struct switch_val *val)
+{
+	struct switch_ext *switch_ext_p, *switch_ext_tmp, *ext_value_p;
+	int rv = 0;
+	switch_ext_p = val->value.ext_val;
+	while(switch_ext_p) {
+		ext_value_p = switch_ext_p;
+
+		if(!strcmp(ext_value_p->option_name, "name")) {
+			switch_ext_p = switch_ext_p->next;
+			continue;
+		} else if(!strcmp(ext_value_p->option_name, "ring_id")) {
+			val_ptr[0] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "on_thresh")) {
+			val_ptr[1] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "off_thresh")) {
+			val_ptr[2] = ext_value_p->option_value;
+		} else {
+			rv = -1;
+			break;
+		}
+
+		parameter_length++;
+		switch_ext_p = switch_ext_p->next;
+	}
+
+	return rv;
+}
+
+
 
 static int
 parse_portvlan_ingress(struct switch_val *val)
@@ -3628,6 +3694,59 @@ parse_misc_rtdpppoe(struct switch_val *val)
 }
 
 static int
+parse_misc_glomacaddr(struct switch_val *val)
+{
+	struct switch_ext *switch_ext_p, *switch_ext_tmp, *ext_value_p;
+	int rv = 0;
+	switch_ext_p = val->value.ext_val;
+	while(switch_ext_p) {
+		ext_value_p = switch_ext_p;
+
+		if(!strcmp(ext_value_p->option_name, "name")) {
+			switch_ext_p = switch_ext_p->next;
+			continue;
+		} else if(!strcmp(ext_value_p->option_name, "macaddr")) {
+			val_ptr[0] = ext_value_p->option_value;
+		}  else {
+			rv = -1;
+			break;
+		}
+
+		parameter_length++;
+		switch_ext_p = switch_ext_p->next;
+	}
+
+	return rv;
+}
+
+static int
+parse_misc_framecrc(struct switch_val *val)
+{
+	struct switch_ext *switch_ext_p, *switch_ext_tmp, *ext_value_p;
+	int rv = 0;
+	switch_ext_p = val->value.ext_val;
+	while(switch_ext_p) {
+		ext_value_p = switch_ext_p;
+
+		if(!strcmp(ext_value_p->option_name, "name")) {
+			switch_ext_p = switch_ext_p->next;
+			continue;
+		} else if(!strcmp(ext_value_p->option_name, "status")) {
+			val_ptr[0] = ext_value_p->option_value;
+		}  else {
+			rv = -1;
+			break;
+		}
+
+		parameter_length++;
+		switch_ext_p = switch_ext_p->next;
+	}
+
+	return rv;
+}
+
+
+static int
 parse_ip_hostentry(struct switch_val *val)
 {
 	struct switch_ext *switch_ext_p, *switch_ext_tmp, *ext_value_p;
@@ -4216,6 +4335,8 @@ parse_nat_natentry(struct switch_val *val)
 	struct switch_ext *switch_ext_p, *switch_ext_tmp, *ext_value_p;
 	int rv = 0;
 	switch_ext_p = val->value.ext_val;
+	val_ptr[4] = vrf_dflt_str;
+	parameter_length ++;
 	while(switch_ext_p) {
 		ext_value_p = switch_ext_p;
 		
@@ -4230,61 +4351,16 @@ parse_nat_natentry(struct switch_val *val)
 			val_ptr[2] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "select_index")) {
 			val_ptr[3] = ext_value_p->option_value;
-		} else if(!strcmp(ext_value_p->option_name, "src_addr")) {
+		} else if(!strcmp(ext_value_p->option_name, "vrf_id")) {
 			val_ptr[4] = ext_value_p->option_value;
-		} else if(!strcmp(ext_value_p->option_name, "translate_addr")) {
+			parameter_length --;
+		} else if(!strcmp(ext_value_p->option_name, "src_addr")) {
 			val_ptr[5] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "translate_addr")) {
+			val_ptr[6] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "port_number")) {
-			val_ptr[6] = ext_value_p->option_value;
+			val_ptr[7] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "port_range")) {
-			val_ptr[7] = ext_value_p->option_value;
-		} else if(!strcmp(ext_value_p->option_name, "action")) {
-			val_ptr[8] = ext_value_p->option_value;
-		} else if(!strcmp(ext_value_p->option_name, "mirror")) {
-			val_ptr[9] = ext_value_p->option_value;
-		} else if(!strcmp(ext_value_p->option_name, "counter")) {
-			val_ptr[10] = ext_value_p->option_value;
-		}  else {
-			rv = -1;
-			break;
-		}
-	
-		parameter_length++;
-		switch_ext_p = switch_ext_p->next;
-	}
-
-	return rv;
-}
-
-static int
-parse_nat_naptentry(struct switch_val *val)
-{
-	struct switch_ext *switch_ext_p, *switch_ext_tmp, *ext_value_p;
-	int rv = 0;
-	switch_ext_p = val->value.ext_val;
-	while(switch_ext_p) {
-		ext_value_p = switch_ext_p;
-		
-		if(!strcmp(ext_value_p->option_name, "name")) {
-			switch_ext_p = switch_ext_p->next;
-			continue;
-		} else if(!strcmp(ext_value_p->option_name, "entry_id")) {
-			val_ptr[0] = ext_value_p->option_value;
-		} else if(!strcmp(ext_value_p->option_name, "entry_flags")) {
-			val_ptr[1] = ext_value_p->option_value;
-		} else if(!strcmp(ext_value_p->option_name, "entry_status")) {
-			val_ptr[2] = ext_value_p->option_value;
-		} else if(!strcmp(ext_value_p->option_name, "src_addr")) {
-			val_ptr[3] = ext_value_p->option_value;
-		} else if(!strcmp(ext_value_p->option_name, "dst_addr")) {
-			val_ptr[4] = ext_value_p->option_value;
-		} else if(!strcmp(ext_value_p->option_name, "translate_addr")) {
-			val_ptr[5] = ext_value_p->option_value;
-		} else if(!strcmp(ext_value_p->option_name, "src_port")) {
-			val_ptr[6] = ext_value_p->option_value;
-		} else if(!strcmp(ext_value_p->option_name, "dst_port")) {
-			val_ptr[7] = ext_value_p->option_value;
-		} else if(!strcmp(ext_value_p->option_name, "translate_port")) {
 			val_ptr[8] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "action")) {
 			val_ptr[9] = ext_value_p->option_value;
@@ -4303,6 +4379,202 @@ parse_nat_naptentry(struct switch_val *val)
 
 	return rv;
 }
+
+static int
+parse_nat_naptentry(struct switch_val *val)
+{
+	struct switch_ext *switch_ext_p, *switch_ext_tmp, *ext_value_p;
+	int rv = 0;
+	switch_ext_p = val->value.ext_val;
+	val_ptr[3] = vrf_dflt_str;
+	parameter_length ++;
+	val_ptr[4] = cookie_dflt_str;
+	parameter_length ++;
+	val_ptr[5] = lb_dflt_str;
+	parameter_length ++;
+	val_ptr[15] = priority_dflt_str;
+	parameter_length ++;
+	while(switch_ext_p) {
+		ext_value_p = switch_ext_p;
+
+		if(!strcmp(ext_value_p->option_name, "name")) {
+			switch_ext_p = switch_ext_p->next;
+			continue;
+		} else if(!strcmp(ext_value_p->option_name, "entry_id")) {
+			val_ptr[0] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "entry_flags")) {
+			val_ptr[1] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "entry_status")) {
+			val_ptr[2] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "vrf_id")) {
+			val_ptr[3] = ext_value_p->option_value;
+			parameter_length --;
+		} else if(!strcmp(ext_value_p->option_name, "flow_cookie")) {
+			val_ptr[4] = ext_value_p->option_value;
+			parameter_length --;
+		} else if(!strcmp(ext_value_p->option_name, "load_balance")) {
+			val_ptr[5] = ext_value_p->option_value;
+			parameter_length --;
+		} else if(!strcmp(ext_value_p->option_name, "src_addr")) {
+			val_ptr[6] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "dst_addr")) {
+			val_ptr[7] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "translate_addr")) {
+			val_ptr[8] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "src_port")) {
+			val_ptr[9] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "dst_port")) {
+			val_ptr[10] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "translate_port")) {
+			val_ptr[11] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "action")) {
+			val_ptr[12] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "mirror")) {
+			val_ptr[13] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "counter")) {
+			val_ptr[14] = ext_value_p->option_value;
+		}  else if(!strcmp(ext_value_p->option_name, "priority")) {
+			val_ptr[15] = ext_value_p->option_value;
+			parameter_length --;
+		}  else {
+			rv = -1;
+			break;
+		}
+
+		parameter_length++;
+		switch_ext_p = switch_ext_p->next;
+	}
+
+	return rv;
+}
+
+static int
+parse_nat_flowentry(struct switch_val *val)
+{
+	struct switch_ext *switch_ext_p, *switch_ext_tmp, *ext_value_p;
+	int rv = 0;
+	switch_ext_p = val->value.ext_val;
+	while(switch_ext_p) {
+		ext_value_p = switch_ext_p;
+
+		if(!strcmp(ext_value_p->option_name, "name")) {
+			switch_ext_p = switch_ext_p->next;
+			continue;
+		} else if(!strcmp(ext_value_p->option_name, "entry_id")) {
+			val_ptr[0] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "entry_flags")) {
+			val_ptr[1] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "entry_status")) {
+			val_ptr[2] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "vrf_id")) {
+			val_ptr[3] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "flow_cookie")) {
+			val_ptr[4] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "load_balance")) {
+			val_ptr[5] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "src_addr")) {
+			val_ptr[6] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "dst_addr")) {
+			val_ptr[7] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "src_port")) {
+			val_ptr[8] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "dst_port")) {
+			val_ptr[9] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "action")) {
+			val_ptr[10] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "mirror")) {
+			val_ptr[11] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "counter")) {
+			val_ptr[12] = ext_value_p->option_value;
+		}  else if(!strcmp(ext_value_p->option_name, "priority")) {
+			val_ptr[13] = ext_value_p->option_value;
+		}  else {
+			rv = -1;
+			break;
+		}
+
+		parameter_length++;
+		switch_ext_p = switch_ext_p->next;
+	}
+
+	return rv;
+}
+
+static int
+parse_nat_flowcookie(struct switch_val *val)
+{
+	struct switch_ext *switch_ext_p, *switch_ext_tmp, *ext_value_p;
+	int rv = 0;
+	switch_ext_p = val->value.ext_val;
+	while(switch_ext_p) {
+		ext_value_p = switch_ext_p;
+
+		if(!strcmp(ext_value_p->option_name, "name")) {
+			switch_ext_p = switch_ext_p->next;
+			continue;
+		} else if(!strcmp(ext_value_p->option_name, "proto")) {
+			val_ptr[0] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "src_addr")) {
+			val_ptr[1] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "dst_addr")) {
+			val_ptr[2] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "src_port")) {
+			val_ptr[3] = ext_value_p->option_value;
+		}  else if(!strcmp(ext_value_p->option_name, "dst_port")) {
+			val_ptr[4] = ext_value_p->option_value;
+		}  else if(!strcmp(ext_value_p->option_name, "flow_cookie")) {
+			val_ptr[5] = ext_value_p->option_value;
+		}  else {
+			rv = -1;
+			break;
+		}
+
+		parameter_length++;
+		switch_ext_p = switch_ext_p->next;
+	}
+
+	return rv;
+}
+
+static int
+parse_nat_flowrfs(struct switch_val *val)
+{
+	struct switch_ext *switch_ext_p, *switch_ext_tmp, *ext_value_p;
+	int rv = 0;
+	switch_ext_p = val->value.ext_val;
+	while(switch_ext_p) {
+		ext_value_p = switch_ext_p;
+
+		if(!strcmp(ext_value_p->option_name, "name")) {
+			switch_ext_p = switch_ext_p->next;
+			continue;
+		} else if(!strcmp(ext_value_p->option_name, "action")) {
+			val_ptr[0] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "proto")) {
+			val_ptr[1] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "src_addr")) {
+			val_ptr[2] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "dst_addr")) {
+			val_ptr[3] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "src_port")) {
+			val_ptr[4] = ext_value_p->option_value;
+		}  else if(!strcmp(ext_value_p->option_name, "dst_port")) {
+			val_ptr[5] = ext_value_p->option_value;
+		}  else if(!strcmp(ext_value_p->option_name, "flow_rfs")) {
+			val_ptr[6] = ext_value_p->option_value;
+		}  else {
+			rv = -1;
+			break;
+		}
+
+		parameter_length++;
+		switch_ext_p = switch_ext_p->next;
+	}
+
+	return rv;
+}
+
+
 
 static int
 parse_nat_natstatus(struct switch_val *val)
@@ -4545,6 +4817,9 @@ parse_nat_global(struct switch_val *val)
 {
 	struct switch_ext *switch_ext_p, *switch_ext_tmp, *ext_value_p;
 	int rv = 0;
+	char *sync_str = "disable";
+	val_ptr[1] = sync_str;
+	parameter_length++;
 	switch_ext_p = val->value.ext_val;
 	while(switch_ext_p) {
 		ext_value_p = switch_ext_p;
@@ -4554,6 +4829,9 @@ parse_nat_global(struct switch_val *val)
 			continue;
 		} else if(!strcmp(ext_value_p->option_name, "status")) {
 			val_ptr[0] = ext_value_p->option_value;
+		}  else if(!strcmp(ext_value_p->option_name, "sync")) {
+			val_ptr[1] = ext_value_p->option_value;
+			parameter_length--;
 		}  else {
 			rv = -1;
 			break;
@@ -5530,6 +5808,10 @@ parse_port(const char *command_name, struct switch_val *val)
 		rv = parse_port_linkforcemode(val);
 	} else if(!strcmp(command_name, "MacLoopback")) {
 		rv = parse_port_macloopback(val);
+	} else if(!strcmp(command_name, "CongeDrop")) {
+		rv = parse_port_congedrop(val);
+	} else if(!strcmp(command_name, "RingFcThresh")) {
+		rv = parse_port_ringfcthresh(val);
 	}
 
 	return rv;
@@ -5730,7 +6012,11 @@ parse_misc(const char *command_name, struct switch_val *val)
 		rv = parse_misc_cpuvid(val);
 	} else if(!strcmp(command_name, "RtdPppoe")) {
 		rv = parse_misc_rtdpppoe(val);
-	} 
+	} else if(!strcmp(command_name, "GloMacAddr")) {
+		rv = parse_misc_glomacaddr(val);
+	} else if(!strcmp(command_name, "Framecrc")) {
+		rv = parse_misc_framecrc(val);
+	}
 
 	return rv;
 }
@@ -5790,6 +6076,12 @@ parse_nat(const char *command_name, struct switch_val *val)
 		rv = parse_nat_natentry(val);
 	} else if(!strcmp(command_name, "Naptentry")) {
 		rv = parse_nat_naptentry(val);
+	} else if(!strcmp(command_name, "Flowentry")) {
+		rv = parse_nat_flowentry(val);
+	} else if(!strcmp(command_name, "Flowcookie")) {
+		rv = parse_nat_flowcookie(val);
+	} else if(!strcmp(command_name, "Flowrfs")) {
+		rv = parse_nat_flowrfs(val);
 	} else if(!strcmp(command_name, "Natstatus")) {
 		rv = parse_nat_natstatus(val);
 	} else if(!strcmp(command_name, "Naptstatus")) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2013, 2015, The Linux Foundation. All rights reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -118,6 +118,9 @@ cmd_data_check_nat_entry(char *cmd_str, void * val, a_uint32_t size);
 
 sw_error_t
 cmd_data_check_napt_entry(char *cmd_str, void * val, a_uint32_t size);
+
+sw_error_t
+cmd_data_check_flow_entry(char *cmd_str, void * val, a_uint32_t size);
 
 sw_error_t
 cmd_data_check_napt_mode(char *cmd_str, fal_napt_mode_t * arg_val, a_uint32_t size);

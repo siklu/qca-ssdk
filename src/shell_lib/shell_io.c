@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2013, 2015, The Linux Foundation. All rights reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -139,6 +139,9 @@ static sw_data_type_t sw_data_type[] =
     SW_TYPE_DEF(SW_IP_GUARDMODE, cmd_data_check_ip_guard_mode, NULL),
     SW_TYPE_DEF(SW_NATENTRY, cmd_data_check_nat_entry, NULL),
     SW_TYPE_DEF(SW_NAPTENTRY, cmd_data_check_napt_entry, NULL),
+    SW_TYPE_DEF(SW_FLOWENTRY, cmd_data_check_flow_entry, NULL),
+    SW_TYPE_DEF(SW_FLOWCOOKIE, cmd_data_check_flow_cookie, NULL),
+    SW_TYPE_DEF(SW_FLOWRFS, cmd_data_check_flow_rfs, NULL),
     SW_TYPE_DEF(SW_NAPTMODE, cmd_data_check_napt_mode, NULL),
     SW_TYPE_DEF(SW_IP4ADDR, cmd_data_check_ip4addr, NULL),
     SW_TYPE_DEF(SW_IP6ADDR, cmd_data_check_ip6addr, NULL),
@@ -2244,6 +2247,14 @@ cmd_data_check_nat_entry(char *cmd_str, void * val, a_uint32_t size)
                         "usage: integer\n",
                         cmd_data_check_uint32, &(entry.slct_idx),
                         sizeof (a_uint32_t));
+
+	if (rv)
+        return rv;
+
+	rv = __cmd_data_check_complex("vrf_id", "0",
+                        "usage: integer\n",
+                        cmd_data_check_uint32, &(entry.vrf_id),
+                        sizeof (a_uint32_t));
     if (rv)
         return rv;
 
@@ -2343,6 +2354,27 @@ cmd_data_check_napt_entry(char *cmd_str, void * val, a_uint32_t size)
     if (rv)
         return rv;
 
+	rv = __cmd_data_check_complex("vrf_id", "0x0",
+                        "usage: integer\n",
+                        cmd_data_check_uint32, &(entry.vrf_id),
+                        sizeof (a_uint32_t));
+    if (rv)
+        return rv;
+
+	rv = __cmd_data_check_complex("flow_cookie", "0x0",
+                        "usage: integer\n",
+                        cmd_data_check_uint32, &(entry.flow_cookie),
+                        sizeof (a_uint32_t));
+    if (rv)
+        return rv;
+
+	rv = __cmd_data_check_complex("load_balance", "0x0",
+                        "usage: integer\n",
+                        cmd_data_check_uint32, &(entry.load_balance),
+                        sizeof (a_uint32_t));
+    if (rv)
+        return rv;
+
     rv = __cmd_data_check_complex("src addr", "0.0.0.0",
                         "usage: the format is xx.xx.xx.xx \n",
                         cmd_data_check_ip4addr, &(entry.src_addr),
@@ -2428,6 +2460,160 @@ cmd_data_check_napt_entry(char *cmd_str, void * val, a_uint32_t size)
         rv = __cmd_data_check_complex("counter id", "0",
                             "usage: integer\n",
                             cmd_data_check_uint32, &(entry.counter_id),
+                            sizeof (a_uint32_t));
+        if (rv)
+            return rv;
+    }
+
+	rv = __cmd_data_check_boolean("priority", "no",
+                        "usage: <yes/no/y/n>\n",
+                        cmd_data_check_confirm, A_FALSE, &entry.priority_en,
+                        sizeof (a_bool_t));
+    if (rv)
+        return rv;
+
+	if (A_TRUE == entry.priority_en)
+    {
+        rv = __cmd_data_check_complex("priority value", "0",
+                            "usage: integer\n",
+                            cmd_data_check_uint32, &(entry.priority_val),
+                            sizeof (a_uint32_t));
+        if (rv)
+            return rv;
+    }
+
+    *(fal_napt_entry_t *)val = entry;
+    return SW_OK;
+}
+
+sw_error_t
+cmd_data_check_flow_entry(char *cmd_str, void * val, a_uint32_t size)
+{
+    sw_error_t rv;
+    a_uint32_t tmp;
+    fal_napt_entry_t entry;
+
+    aos_mem_zero(&entry, sizeof (fal_napt_entry_t));
+
+    rv = __cmd_data_check_complex("entryid", "0",
+                        "usage: integer\n",
+                        cmd_data_check_uint32, &entry.entry_id,
+                        sizeof (a_uint32_t));
+    if (rv)
+        return rv;
+
+    rv = __cmd_data_check_complex("entryflags", "0",
+                        "usage: bitmap for host entry\n",
+                        cmd_data_check_uint32, &(entry.flags),
+                        sizeof (a_uint32_t));
+    if (rv)
+        return rv;
+
+    rv = __cmd_data_check_complex("entrystatus", "0xf",
+                        "usage: integer\n",
+                        cmd_data_check_uint32, &(entry.status),
+                        sizeof (a_uint32_t));
+    if (rv)
+        return rv;
+
+	rv = __cmd_data_check_complex("vrf_id", "0x0",
+                        "usage: integer\n",
+                        cmd_data_check_uint32, &(entry.vrf_id),
+                        sizeof (a_uint32_t));
+    if (rv)
+        return rv;
+
+	rv = __cmd_data_check_complex("flow_cookie", "0x0",
+                        "usage: integer\n",
+                        cmd_data_check_uint32, &(entry.flow_cookie),
+                        sizeof (a_uint32_t));
+    if (rv)
+        return rv;
+
+	rv = __cmd_data_check_complex("load_balance", "0x0",
+                        "usage: integer\n",
+                        cmd_data_check_uint32, &(entry.load_balance),
+                        sizeof (a_uint32_t));
+    if (rv)
+        return rv;
+
+    rv = __cmd_data_check_complex("src addr", "0.0.0.0",
+                        "usage: the format is xx.xx.xx.xx \n",
+                        cmd_data_check_ip4addr, &(entry.src_addr),
+                        4);
+    if (rv)
+        return rv;
+
+    rv = __cmd_data_check_complex("dst addr", "0.0.0.0",
+                        "usage: the format is xx.xx.xx.xx \n",
+                        cmd_data_check_ip4addr, &(entry.dst_addr),
+                        4);
+    if (rv)
+        return rv;
+
+
+    rv = __cmd_data_check_complex("src port", "0",
+                        "usage: 0- 65535\n",
+                        cmd_data_check_uint16, &tmp,
+                        sizeof (a_uint32_t));
+    if (rv)
+        return rv;
+    entry.src_port = tmp & 0xffff;
+
+    rv = __cmd_data_check_complex("dst port", "0",
+                        "usage: 0- 65535\n",
+                        cmd_data_check_uint16, &tmp,
+                        sizeof (a_uint32_t));
+    if (rv)
+        return rv;
+    entry.dst_port = tmp & 0xffff;
+
+
+    rv = __cmd_data_check_complex("action", "forward",
+                        "usage: <forward/drop/cpycpu/rdtcpu>\n",
+                        cmd_data_check_maccmd, &(entry.action),
+                        sizeof (fal_fwd_cmd_t));
+    if (rv)
+        return rv;
+
+    rv = __cmd_data_check_boolean("mirror", "no",
+                        "usage: <yes/no/y/n>\n",
+                        cmd_data_check_confirm, A_FALSE, &entry.mirror_en,
+                        sizeof (a_bool_t));
+    if (rv)
+        return rv;
+
+
+    rv = __cmd_data_check_boolean("counter", "no",
+                        "usage: <yes/no/y/n>\n",
+                        cmd_data_check_confirm, A_FALSE, &entry.counter_en,
+                        sizeof (a_bool_t));
+    if (rv)
+        return rv;
+
+
+    if (A_TRUE == entry.counter_en)
+    {
+        rv = __cmd_data_check_complex("counter id", "0",
+                            "usage: integer\n",
+                            cmd_data_check_uint32, &(entry.counter_id),
+                            sizeof (a_uint32_t));
+        if (rv)
+            return rv;
+    }
+
+	rv = __cmd_data_check_boolean("priority", "no",
+                        "usage: <yes/no/y/n>\n",
+                        cmd_data_check_confirm, A_FALSE, &entry.priority_en,
+                        sizeof (a_bool_t));
+    if (rv)
+        return rv;
+
+	if (A_TRUE == entry.priority_en)
+    {
+        rv = __cmd_data_check_complex("priority value", "0",
+                            "usage: integer\n",
+                            cmd_data_check_uint32, &(entry.priority_val),
                             sizeof (a_uint32_t));
         if (rv)
             return rv;
