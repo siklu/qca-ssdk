@@ -28,6 +28,8 @@ extern "C" {
 #include "fal/fal_type.h"
 #include "fal_multi.h"
 
+#define FAL_MIN_VRF_ID 0
+#define FAL_MAX_VRF_ID 7
     /* IP WCMP hash key flags */
 #define FAL_WCMP_HASH_KEY_SIP             0x1
 #define FAL_WCMP_HASH_KEY_DIP             0x2

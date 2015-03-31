@@ -23,6 +23,8 @@ extern "C" {
 
 #include "common/sw.h"
 
+#define SSDK_MAX_PORT_NUM 7
+
     typedef enum {
         HSL_MDIO = 1,
         HSL_HEADER,
