@@ -1591,7 +1591,7 @@ _dess_ring_flow_ctrl_thres_set (a_uint32_t dev_id, a_uint32_t ring_id,
       return SW_BAD_PARAM;
     }
 
-  if (off_thres > on_thres || off_thres == 0)
+  if (on_thres > off_thres || on_thres == 0)
     {
       return SW_BAD_PARAM;
     }
