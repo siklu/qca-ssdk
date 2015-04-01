@@ -50,7 +50,7 @@ struct cmd_des_t gcmd_des[] =
             {"linkforcemode", "set", "set link force mode of a port", "<port_id> <enable|disable>", SW_API_PT_LINK_MODE_SET, NULL},
             {"macLoopback", "set", "set mac level loop back mode of port", "<port_id> <enable|disable>", SW_API_PT_MAC_LOOPBACK_SET, NULL},
 			{"congedrop", "set", "set congestion drop of port queue", "<port_id> <queue_id> <enable|disable>", SW_API_PT_CONGESTION_DROP_SET, NULL},
-			{"ringfcthres", "set", "set flwo ctrl thres of ring", "<port_id> <ring_id> <on_thres> <off_thres>", SW_API_PT_RING_FLOW_CTRL_THRES_SET, NULL},
+			{"ringfcthresh", "set", "set flwo ctrl thres of ring", "<ring_id> <on_thres> <off_thres>", SW_API_PT_RING_FLOW_CTRL_THRES_SET, NULL},
             {NULL, NULL, NULL, NULL, (int)NULL, NULL},/*end of desc*/
         },
     },

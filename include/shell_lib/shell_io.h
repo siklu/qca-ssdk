@@ -42,6 +42,8 @@ sw_error_t cmd_data_check_uint32(char *cmd_str, a_uint32_t * arg_val,
                                  a_uint32_t size);
 sw_error_t cmd_data_check_uint16(char *cmd_str, a_uint32_t * arg_val,
                                  a_uint32_t size);
+sw_error_t cmd_data_check_uint8(char *cmd_str, a_uint32_t * arg_val,
+                                 a_uint32_t size);
 sw_error_t cmd_data_check_enable(char *cmd_str, a_uint32_t * arg_val,
                                  a_uint32_t size);
 sw_error_t cmd_data_check_pbmp(char *cmd_str, a_uint32_t * arg_val,
