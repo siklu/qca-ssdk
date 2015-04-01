@@ -82,6 +82,8 @@ static int switch_chip_id = ISIS_CHIP_ID;
 static int switch_chip_reg = ISIS_CHIP_REG;
 ssdk_dt_cfg ssdk_dt_global = {0};
 u8  __iomem      *hw_addr = NULL;
+u8  __iomem      *psgmii_hw_addr = NULL;
+
 static struct mutex switch_mdio_lock;
 
 static void
@@ -1200,6 +1202,20 @@ ssdk_plat_init(void)
                 return -1;
         }
 	}
+	if(ssdk_dt_global.psgmii_reg_access_mode == HSL_REG_LOCAL_BUS) {
+		if (!request_mem_region(ssdk_dt_global.psgmiireg_base_addr,
+				ssdk_dt_global.psgmiireg_size, "psgmii_mem")) {
+                printk("%s Unable to request psgmii resource.", __func__);
+                return -1;
+        }
+
+		psgmii_hw_addr = ioremap_nocache(ssdk_dt_global.psgmiireg_base_addr,
+				ssdk_dt_global.psgmiireg_size);
+		if (!psgmii_hw_addr) {
+                printk("%s ioremap fail.", __func__);
+                return -1;
+        }
+	}
 
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_MDIO) {
 		if(miibus_get())
@@ -1498,6 +1514,33 @@ qca_switch_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_dat
 	return 0;
 }
 
+uint32_t
+qca_psgmii_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
+{
+	uint32_t reg_val = 0;
+
+	if (len != sizeof (a_uint32_t))
+        return SW_BAD_LEN;
+
+	reg_val = readl(psgmii_hw_addr + reg_addr);
+
+	aos_mem_copy(reg_data, &reg_val, sizeof (a_uint32_t));
+	return 0;
+}
+
+uint32_t
+qca_psgmii_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
+{
+	uint32_t reg_val = 0;
+	if (len != sizeof (a_uint32_t))
+        return SW_BAD_LEN;
+
+	aos_mem_copy(&reg_val, reg_data, sizeof (a_uint32_t));
+	writel(reg_val, psgmii_hw_addr + reg_addr);
+	return 0;
+}
+
+
 void switch_port_enable()
 {
 	a_uint32_t value = 0x4e;
@@ -1516,6 +1559,7 @@ void switch_port_enable()
 static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 {
 	struct device_node *switch_node = NULL;
+	struct device_node *psgmii_node = NULL;
 	a_uint32_t len = 0;
 	const __be32 *reg_cfg;
 
@@ -1562,6 +1606,25 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 	}
 	printk("wan bmp:0x%x\n", cfg->port_cfg.wan_bmp);
 
+	psgmii_node = of_find_node_by_name(NULL, "ess-psgmii");
+	if (!psgmii_node) {
+		return SW_BAD_PARAM;
+	}
+	printk("ess-psgmii DT exist!\n");
+	reg_cfg = of_get_property(psgmii_node, "reg", &len);
+	if(!reg_cfg) {
+		printk("%s: error reading device node properties for reg\n", psgmii_node->name);
+		return SW_BAD_PARAM;
+	}
+
+	ssdk_dt_global.psgmiireg_base_addr = be32_to_cpup(reg_cfg);
+	ssdk_dt_global.psgmiireg_size = be32_to_cpup(reg_cfg + 1);
+	if (of_property_read_string(psgmii_node, "psgmii_access_mode", &ssdk_dt_global.psgmii_reg_access_str)) {
+		printk("%s: error reading device node properties for psmgii_access_mode\n", psgmii_node->name);
+		return SW_BAD_PARAM;
+	}
+	if(!strcmp(ssdk_dt_global.psgmii_reg_access_str, "local bus"))
+		ssdk_dt_global.psgmii_reg_access_mode = HSL_REG_LOCAL_BUS;
 
 	return SW_OK;
 }
@@ -1651,6 +1714,7 @@ regi_init(void)
 	int rv = 0;
 	garuda_init_spec_cfg chip_spec_cfg;
 	ssdk_dt_global.switch_reg_access_mode = HSL_REG_MDIO;
+	ssdk_dt_global.psgmii_reg_access_mode = HSL_REG_MDIO;
 	a_uint8_t chip_version = 0;
 	#ifdef IN_RFS
 	struct rfs_device rfs_dev;
