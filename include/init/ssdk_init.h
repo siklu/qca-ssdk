@@ -116,8 +116,9 @@ extern "C" {
 
         /* chip specific parameter */
         void *          chip_spec_cfg;
-	/* port cfg */
-	ssdk_port_cfg   port_cfg;
+		/* port cfg */
+		ssdk_port_cfg   port_cfg;
+		a_uint32_t      mac_mode;
     } ssdk_init_cfg;
 
 	typedef struct

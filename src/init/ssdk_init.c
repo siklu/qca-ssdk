@@ -1561,7 +1561,7 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 	struct device_node *switch_node = NULL;
 	struct device_node *psgmii_node = NULL;
 	a_uint32_t len = 0;
-	const __be32 *reg_cfg;
+	const __be32 *reg_cfg, *mac_mode;
 
 
 	/*
@@ -1626,6 +1626,13 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 	if(!strcmp(ssdk_dt_global.psgmii_reg_access_str, "local bus"))
 		ssdk_dt_global.psgmii_reg_access_mode = HSL_REG_LOCAL_BUS;
 
+	mac_mode = of_get_property(switch_node, "switch_mac_mode", &len);
+	if(!mac_mode) {
+		printk("%s: error reading device node properties for mac mode\n", switch_node->name);
+		return SW_BAD_PARAM;
+	}
+	cfg->mac_mode = be32_to_cpup(mac_mode);
+	printk("mac mode=%d\n", be32_to_cpup(mac_mode));
 	return SW_OK;
 }
 #endif
@@ -1696,6 +1703,7 @@ qca_dess_hw_init(ssdk_init_cfg *cfg)
 	qca_switch_reg_write(0, 0x0e38, (a_uint8_t *)&reg_value, 4);
 	fal_ip_vrf_base_addr_set(0, 0, 0);
 
+	/*TODO:set mac mode in gcc*/
 	return 0;
 }
 
