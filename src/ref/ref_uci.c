@@ -4157,7 +4157,7 @@ parse_ip_hostroute(struct switch_val *val)
 			continue;
 		} else if(!strcmp(ext_value_p->option_name, "entry_id")) {
 			val_ptr[0] = ext_value_p->option_value;
-		} else if(!strcmp(ext_value_p->option_name, "entry")) {
+		} else if(!strcmp(ext_value_p->option_name, "entry_valid")) {
 			val_ptr[1] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "vrf_id")) {
 			val_ptr[2] = ext_value_p->option_value;
@@ -4193,11 +4193,11 @@ parse_ip_defaultroute(struct switch_val *val)
 			continue;
 		} else if(!strcmp(ext_value_p->option_name, "entry_id")) {
 			val_ptr[0] = ext_value_p->option_value;
-		} else if(!strcmp(ext_value_p->option_name, "entry")) {
+		} else if(!strcmp(ext_value_p->option_name, "entry_valid")) {
 			val_ptr[1] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "vrf_id")) {
 			val_ptr[2] = ext_value_p->option_value;
-		} else if(!strcmp(ext_value_p->option_name, "route_type'1'")) {
+		} else if(!strcmp(ext_value_p->option_name, "route_type")) {
 			val_ptr[3] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "index")) {
 			val_ptr[4] = ext_value_p->option_value;
@@ -4287,7 +4287,9 @@ parse_ip_rfsip4(struct switch_val *val)
 			val_ptr[1] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "vlan_id")) {
 			val_ptr[2] = ext_value_p->option_value;
-		}  else {
+		} else if(!strcmp(ext_value_p->option_name, "load_balance")) {
+			val_ptr[3] = ext_value_p->option_value;
+		} else {
 			rv = -1;
 			break;
 		}
@@ -4311,13 +4313,15 @@ parse_ip_rfsip6(struct switch_val *val)
 		if(!strcmp(ext_value_p->option_name, "name")) {
 			switch_ext_p = switch_ext_p->next;
 			continue;
-		} else if(!strcmp(ext_value_p->option_name, "vrf_id")) {
+		} else if(!strcmp(ext_value_p->option_name, "mac_addr")) {
 			val_ptr[0] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "ip6_addr")) {
 			val_ptr[1] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "vlan_id")) {
 			val_ptr[2] = ext_value_p->option_value;
-		}  else {
+		} else if(!strcmp(ext_value_p->option_name, "load_balance")) {
+			val_ptr[3] = ext_value_p->option_value;
+		} else {
 			rv = -1;
 			break;
 		}
