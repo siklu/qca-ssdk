@@ -28,6 +28,7 @@
 #include <linux/if_arp.h>
 #include <linux/if_vlan.h>
 #include <linux/inetdevice.h>
+#include <linux/string.h>
 #include <net/netfilter/nf_conntrack_acct.h>
 #include <net/netfilter/nf_conntrack_helper.h>
 #include <net/netfilter/nf_conntrack.h>
@@ -238,9 +239,8 @@ napt_ct_intf_is_expected(uint32_t ct_addr)
 	dev = ip_dev_find(&init_net, dst_ip);
 	if(dev) {
 		if(dev->type == ARPHRD_ETHER) {
-			if (is_vlan_dev(dev)) {
+			if(strstr(dev->name, "eth0"))
 				return 1;
-			}
 		}
 	}
 
