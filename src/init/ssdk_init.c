@@ -1643,29 +1643,51 @@ static a_uint8_t chip_ver_get()
 	return chip_ver;
 }
 
+static int ssdk_flow_default_act_init()
+{
+	a_uint32_t vrf_id = 0;
+	fal_flow_type_t type = 0;
+	for(vrf_id = FAL_MIN_VRF_ID; vrf_id <= FAL_MAX_VRF_ID; vrf_id++)
+	{
+		for(type = FAL_FLOW_LAN_TO_LAN; type <= FAL_FLOW_WAN_TO_WAN; type++)
+		{
+			fal_default_flow_cmd_set(0, vrf_id, type, FAL_DEFAULT_FLOW_ADMIT_ALL);
+		}
+	}
+
+	return 0;
+}
+static ssdk_portvlan_init(a_uint32_t cpu_bmp, a_uint32_t lan_bmp, a_uint32_t wan_bmp)
+{
+	a_uint32_t port = 0;
+	for(port = 0; port < SSDK_MAX_PORT_NUM; port++)
+	{
+		if(cpu_bmp & (1 << port))
+		{
+			fal_portvlan_member_update(0, 0, lan_bmp|wan_bmp);
+		}
+		if(lan_bmp & (1 << port))
+		{
+			fal_portvlan_member_update(0, port, (lan_bmp|cpu_bmp)&(~(1<<port)));
+		}
+		if(wan_bmp & (1 << port))
+		{
+			fal_portvlan_member_update(0, port, (wan_bmp|cpu_bmp)&(~(1<<port)));
+		}
+	}
+	return 0;
+}
 static int
 qca_dess_hw_init(ssdk_init_cfg *cfg)
 {
 	a_uint32_t reg_value;
-	fal_portvlan_member_update(0, 0, 0x3e);/*should be defined by DTS*/
-	fal_portvlan_member_update(0, 1, 0x1d);
-	fal_portvlan_member_update(0, 2, 0x1b);
-	fal_portvlan_member_update(0, 3, 0x17);
-	fal_portvlan_member_update(0, 4, 0xf);
-	fal_portvlan_member_update(0, 5, 0x1);
+
+	ssdk_portvlan_init(cfg->port_cfg.cpu_bmp, cfg->port_cfg.lan_bmp, cfg->port_cfg.wan_bmp);
 
 	fal_port_rxhdr_mode_set(0, 0, FAL_ALL_TYPE_FRAME_EN);
 	fal_ip_route_status_set(0, A_TRUE);
 
-	reg_value = 0xff00000;
-	qca_switch_reg_write(0, 0x0ea0, (a_uint8_t *)&reg_value, 4);
-	qca_switch_reg_write(0, 0x0ea4, (a_uint8_t *)&reg_value, 4);
-	qca_switch_reg_write(0, 0x0ea8, (a_uint8_t *)&reg_value, 4);
-	qca_switch_reg_write(0, 0x0eac, (a_uint8_t *)&reg_value, 4);
-	qca_switch_reg_write(0, 0x0eb0, (a_uint8_t *)&reg_value, 4);
-	qca_switch_reg_write(0, 0x0eb4, (a_uint8_t *)&reg_value, 4);
-	qca_switch_reg_write(0, 0x0eb8, (a_uint8_t *)&reg_value, 4);
-	qca_switch_reg_write(0, 0x0ebc, (a_uint8_t *)&reg_value, 4);
+	ssdk_flow_default_act_init();
 
 	/*set normal hash and disable nat/napt*/
 	qca_switch_reg_read(0, 0x0e38, (a_uint8_t *)&reg_value, 4);
@@ -1794,7 +1816,7 @@ regi_init(void)
 		}
 	}
 	#endif
-	
+
 #endif
 		/* Enable port temprarily, will remove the code when phy board is ok. */
 		switch_port_enable();
