@@ -2285,6 +2285,10 @@ parse_fdb_entry(struct switch_val *val)
 			val_ptr[10] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "white_list_en")) {
 			val_ptr[11] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "load_balance_en")) {
+			val_ptr[12] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "load_balance")) {
+			val_ptr[13] = ext_value_p->option_value;
 		}  else {
 			rv = -1;
 			break;
@@ -2294,6 +2298,10 @@ parse_fdb_entry(struct switch_val *val)
 		switch_ext_p = switch_ext_p->next;
 	}
 
+	if(val_ptr[12] == NULL) {
+		val_ptr[12] = "no";
+		parameter_length++;
+	}
 	return rv;
 }
 
