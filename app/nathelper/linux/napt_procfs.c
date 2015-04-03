@@ -65,7 +65,7 @@ a_uint32_t nf_athrs17_hnat_ppp_peer_ip = 0;
 unsigned char nf_athrs17_hnat_ppp_peer_mac[ETH_ALEN] = {0};
 unsigned char nf_athrs17_hnat_wan_mac[ETH_ALEN] = {0};
 extern int nf_athrs17_hnat_sync_counter_en;
-
+extern char  hnat_log_en;
 /* for IPv6 over PPPoE (only for S17c)*/
 int nf_athrs17_hnat_ppp_id2 = 0;
 unsigned char nf_athrs17_hnat_ppp_peer_mac2[ETH_ALEN] = {0};
@@ -776,6 +776,38 @@ static ssize_t napt_sync_counter_en_set(struct device *dev,
 	return count;
 }
 
+static ssize_t napt_log_en_get(struct device *dev,
+		  struct device_attribute *attr,
+		  char *buf)
+{
+	ssize_t count;
+	a_uint32_t num;
+
+	num = (a_uint32_t)hnat_log_en;
+
+	count = snprintf(buf, (ssize_t)PAGE_SIZE, "%u", num);
+	return count;
+}
+
+static ssize_t napt_log_en_set(struct device *dev,
+		  struct device_attribute *attr,
+		  const char *buf, size_t count)
+{
+	char num_buf[12];
+	a_uint32_t num;
+
+
+	if (count >= sizeof(num_buf)) return 0;
+	memcpy(num_buf, buf, count);
+	num_buf[count] = '\0';
+	sscanf(num_buf, "%u", &num);
+
+	hnat_log_en = num;
+
+	return count;
+}
+
+
 
 struct kobject *napt_sys = NULL;
 static const struct device_attribute napt_hnat_attr =
@@ -800,6 +832,8 @@ static const struct device_attribute napt_ppp_peer_mac2_attr =
 	__ATTR(peer_mac2, S_IWUGO | S_IRUGO, napt_peer_mac2_get, napt_peer_mac2_set);
 static const struct device_attribute napt_sync_counter_en_attr =
 	__ATTR(sync_counter_en, S_IWUGO | S_IRUGO, napt_sync_counter_en_get, napt_sync_counter_en_set);
+static const struct device_attribute napt_log_en_attr =
+	__ATTR(log_en, S_IWUGO | S_IRUGO, napt_log_en_get, napt_log_en_set);
 
 
 
@@ -870,8 +904,15 @@ int napt_procfs_init(void)
 		printk("Failed to register sync counter en SysFS file\n");
 		goto CLEANUP_11;
 	}
+	ret = sysfs_create_file(napt_sys, &napt_log_en_attr.attr);
+	if (ret) {
+		printk("Failed to register log en SysFS file\n");
+		goto CLEANUP_12;
+	}
 	return 0;
 
+CLEANUP_12:
+	sysfs_remove_file(napt_sys, &napt_log_en_attr.attr);
 CLEANUP_11:
 	sysfs_remove_file(napt_sys, &napt_sync_counter_en_attr.attr);
 CLEANUP_10:
@@ -902,6 +943,8 @@ void napt_procfs_exit(void)
 {
 	printk("napt procfs exit\n");
 
+	sysfs_remove_file(napt_sys, &napt_log_en_attr.attr);
+	sysfs_remove_file(napt_sys, &napt_sync_counter_en_attr.attr);
 	sysfs_remove_file(napt_sys, &napt_ppp_peer_mac2_attr.attr);
 	sysfs_remove_file(napt_sys, &napt_ppp_id2_attr.attr);
 	sysfs_remove_file(napt_sys, &napt_wan_mac_attr.attr);

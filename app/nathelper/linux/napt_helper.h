@@ -87,12 +87,5 @@ napt_ct_intf_is_expected(uint32_t ct_addr);
 
 #endif
 
-//#define HNAT_DEBUG 1
-
-#ifdef HNAT_DEBUG
-#define HNAT_PRINTK(x...) aos_printk(x)
-#else
-#define HNAT_PRINTK(x...)
-#endif
 
 #endif

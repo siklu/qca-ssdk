@@ -759,11 +759,17 @@ static sw_error_t setup_interface_entry(char *list_if, int is_wan)
             devmac = (uint8_t *)nat_dev->dev_addr;
         }
         /* get vid */
+#if 0
 #if defined(CONFIG_VLAN_8021Q) || defined(CONFIG_VLAN_8021Q_MODULE)
         vid = vlan_dev_vlan_id(nat_dev);
 #else
         vid = 0;
 #endif
+#endif
+		if(is_wan)
+			vid = nat_wan_vid;
+		else
+			vid = nat_lan_vid;
 #ifdef CONFIG_IPV6_HWACCEL
         ipv6 = 1;
         if (is_wan)
@@ -860,12 +866,12 @@ static void setup_dev_list(void)
 				/*wan port*/
 				HNAT_PRINTK("wan port vid:%d\n", tmp_vid);
 				nat_wan_vid = tmp_vid;
-				snprintf(nat_wan_dev_list, IFNAMSIZ, "eth0.%d", tmp_vid);
+				snprintf(nat_wan_dev_list, IFNAMSIZ, "eth0.%d eth0", tmp_vid);
 			} else {
 				/*lan port*/
 				HNAT_PRINTK("lan port vid:%d\n", tmp_vid);
 				nat_lan_vid = tmp_vid;
-				snprintf(nat_lan_dev_list, IFNAMSIZ, "eth0.%d", tmp_vid);
+				snprintf(nat_lan_dev_list, IFNAMSIZ, "eth0.%d eth1", tmp_vid);
 			}
 		}
 	}
