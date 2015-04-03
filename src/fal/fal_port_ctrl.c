@@ -994,6 +994,171 @@ _fal_port_remote_loopback_get (a_uint32_t dev_id, fal_port_t port_id,
   return rv;
 }
 
+static sw_error_t
+_fal_port_reset (a_uint32_t dev_id, fal_port_t port_id)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_reset)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_reset (dev_id, port_id);
+  return rv;
+}
+
+static sw_error_t
+_fal_port_power_off (a_uint32_t dev_id, fal_port_t port_id)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_power_off)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_power_off (dev_id, port_id);
+  return rv;
+}
+
+static sw_error_t
+_fal_port_power_on (a_uint32_t dev_id, fal_port_t port_id)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_power_on)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_power_on (dev_id, port_id);
+  return rv;
+}
+
+static sw_error_t
+_fal_port_phy_id_get (a_uint32_t dev_id, fal_port_t port_id,a_uint16_t * org_id, a_uint16_t * rev_id)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_phy_id_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_phy_id_get (dev_id, port_id,org_id,rev_id);
+  return rv;
+}
+
+static sw_error_t
+_fal_port_wol_status_set (a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_wol_status_set)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_wol_status_set (dev_id, port_id,enable);
+  return rv;
+}
+
+static sw_error_t
+_fal_port_wol_status_get (a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_wol_status_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_wol_status_get (dev_id, port_id,enable);
+  return rv;
+}
+
+static sw_error_t
+_fal_port_magic_frame_mac_set (a_uint32_t dev_id, fal_port_t port_id, fal_mac_addr_t * mac)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_magic_frame_mac_set)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_magic_frame_mac_set (dev_id, port_id, mac);
+  return rv;
+}
+
+static sw_error_t
+_fal_port_magic_frame_mac_get (a_uint32_t dev_id, fal_port_t port_id, fal_mac_addr_t * mac)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_magic_frame_mac_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_magic_frame_mac_get (dev_id, port_id, mac);
+  return rv;
+}
+
+static sw_error_t
+_fal_port_interface_mode_set (a_uint32_t dev_id, fal_port_t port_id, fal_port_interface_mode_t  mode)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_interface_mode_set)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_interface_mode_set (dev_id, port_id, mode);
+  return rv;
+}
+
+static sw_error_t
+_fal_port_interface_mode_get (a_uint32_t dev_id, fal_port_t port_id, fal_port_interface_mode_t * mode)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_interface_mode_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_interface_mode_get (dev_id, port_id, mode);
+  return rv;
+}
+
+static sw_error_t
+_fal_port_interface_mode_status_get (a_uint32_t dev_id, fal_port_t port_id, fal_port_interface_mode_t * mode)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_interface_mode_status_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_interface_mode_status_get (dev_id, port_id, mode);
+  return rv;
+}
+
 /**
  * @brief Set duplex mode on a particular port.
  * @param[in] dev_id device id
@@ -2127,6 +2292,205 @@ fal_port_remote_loopback_get (a_uint32_t dev_id, fal_port_t port_id,
   FAL_API_UNLOCK;
   return rv;
 }
+
+/**
+ * @brief software reset on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out]
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_reset (a_uint32_t dev_id, fal_port_t port_id)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_reset (dev_id, port_id);
+  FAL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief power off on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out]
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_power_off (a_uint32_t dev_id, fal_port_t port_id)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_power_off (dev_id, port_id);
+  FAL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief power on on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out]
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_power_on (a_uint32_t dev_id, fal_port_t port_id)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_power_on (dev_id, port_id);
+  FAL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief phy id on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out]
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_phy_id_get (a_uint32_t dev_id, fal_port_t port_id, a_uint16_t * org_id, a_uint16_t * rev_id)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_phy_id_get (dev_id, port_id,org_id,rev_id);
+  FAL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief wol status on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out]
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_wol_status_set (a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_wol_status_set (dev_id, port_id,enable);
+  FAL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief wol status on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out]
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_wol_status_get (a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_wol_status_get (dev_id, port_id,enable);
+  FAL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief magic frame mac on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out]
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_magic_frame_mac_set (a_uint32_t dev_id, fal_port_t port_id, fal_mac_addr_t * mac)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_magic_frame_mac_set (dev_id, port_id,mac);
+  FAL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief magic frame mac  on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out]
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_magic_frame_mac_get (a_uint32_t dev_id, fal_port_t port_id, fal_mac_addr_t * mac)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_magic_frame_mac_get (dev_id, port_id,mac);
+  FAL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief interface mode  on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out]
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_interface_mode_set (a_uint32_t dev_id, fal_port_t port_id, fal_port_interface_mode_t  mode)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_interface_mode_set (dev_id, port_id,mode);
+  FAL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief interface mode on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out]
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_interface_mode_get (a_uint32_t dev_id, fal_port_t port_id, fal_port_interface_mode_t * mode)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_interface_mode_get (dev_id, port_id,mode);
+  FAL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief interface mode status on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out]
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_interface_mode_status_get (a_uint32_t dev_id, fal_port_t port_id, fal_port_interface_mode_t * mode)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_interface_mode_status_get (dev_id, port_id,mode);
+  FAL_API_UNLOCK;
+  return rv;
+}
+
 
 /**
  * @}

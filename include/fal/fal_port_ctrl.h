@@ -198,6 +198,21 @@ extern "c" {
 				    /**< Phy auto-negotiation done */
 	} fal_port_auto_neg_status_t;
 
+
+/** Phy interface mode */
+	typedef enum {
+		PHY_PSGMII_BASET = 0,
+				/**< PSGMII mode */
+		PHY_PSGMII_BX1000 = 1,
+				/**< PSGMII BX1000 mode */
+		PHY_PSGMII_FX100 = 2,
+				/**< PSGMII FX100 mode */
+		PHY_PSGMII_AMDET = 3,
+				/**< PSGMII Auto mode */
+		PHY_SGMII_BASET = 4,
+				/**< SGMII mode */
+	} fal_port_interface_mode_t;
+
 /*above is new add for malibu phy*/
 
 	 sw_error_t
@@ -437,6 +452,47 @@ extern "c" {
 	 sw_error_t
 	    fal_port_remote_loopback_get(a_uint32_t dev_id, fal_port_t port_id,
 					 a_bool_t * enable);
+
+	 sw_error_t
+	    fal_port_reset(a_uint32_t dev_id, fal_port_t port_id);
+
+	 sw_error_t
+	    fal_port_power_off(a_uint32_t dev_id, fal_port_t port_id);
+
+	 sw_error_t
+	    fal_port_power_on(a_uint32_t dev_id, fal_port_t port_id);
+
+    sw_error_t
+    fal_port_magic_frame_mac_set (a_uint32_t dev_id, fal_port_t port_id,
+				   fal_mac_addr_t * mac);
+
+   sw_error_t
+   fal_port_magic_frame_mac_get (a_uint32_t dev_id, fal_port_t port_id,
+				   fal_mac_addr_t * mac);
+
+ sw_error_t
+    fal_port_phy_id_get (a_uint32_t dev_id, fal_port_t port_id,
+		      a_uint16_t * org_id, a_uint16_t * rev_id);
+
+ sw_error_t
+    fal_port_wol_status_set (a_uint32_t dev_id, fal_port_t port_id,
+			      a_bool_t enable);
+
+ sw_error_t
+    fal_port_wol_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			      a_bool_t * enable);
+
+ sw_error_t
+    fal_port_interface_mode_set (a_uint32_t dev_id, fal_port_t port_id,
+			      fal_port_interface_mode_t mode);
+
+ sw_error_t
+    fal_port_interface_mode_get (a_uint32_t dev_id, fal_port_t port_id,
+			      fal_port_interface_mode_t * mode);
+
+ sw_error_t
+    fal_port_interface_mode_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			      fal_port_interface_mode_t * mode);
 
 #ifdef __cplusplus
 }

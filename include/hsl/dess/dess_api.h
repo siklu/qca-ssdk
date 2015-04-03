@@ -65,7 +65,24 @@ extern "C" {
     SW_API_DEF(SW_API_PT_CONGESTION_DROP_SET, dess_port_congestion_drop_set), \
     SW_API_DEF(SW_API_PT_CONGESTION_DROP_GET, dess_port_congestion_drop_get), \
     SW_API_DEF(SW_API_PT_RING_FLOW_CTRL_THRES_SET, dess_ring_flow_ctrl_thres_set), \
-	SW_API_DEF(SW_API_PT_RING_FLOW_CTRL_THRES_GET, dess_ring_flow_ctrl_thres_get),
+    SW_API_DEF(SW_API_PT_RING_FLOW_CTRL_THRES_GET, dess_ring_flow_ctrl_thres_get),\
+    SW_API_DEF(SW_API_PT_8023AZ_SET, dess_port_8023az_set), \
+    SW_API_DEF(SW_API_PT_8023AZ_GET, dess_port_8023az_get), \
+    SW_API_DEF(SW_API_PT_MDIX_SET, dess_port_mdix_set), \
+    SW_API_DEF(SW_API_PT_MDIX_GET, dess_port_mdix_get), \
+    SW_API_DEF(SW_API_PT_MDIX_STATUS_GET, dess_port_mdix_status_get), \
+    SW_API_DEF(SW_API_PT_COMBO_PREFER_MEDIUM_SET, dess_port_combo_prefer_medium_set), \
+    SW_API_DEF(SW_API_PT_COMBO_PREFER_MEDIUM_GET, dess_port_combo_prefer_medium_get), \
+    SW_API_DEF(SW_API_PT_COMBO_MEDIUM_STATUS_GET, dess_port_combo_medium_status_get), \
+    SW_API_DEF(SW_API_PT_COMBO_FIBER_MODE_SET, dess_port_combo_fiber_mode_set), \
+    SW_API_DEF(SW_API_PT_COMBO_FIBER_MODE_GET, dess_port_combo_fiber_mode_get), \
+    SW_API_DEF(SW_API_PT_LOCAL_LOOPBACK_SET, dess_port_local_loopback_set), \
+    SW_API_DEF(SW_API_PT_LOCAL_LOOPBACK_GET, dess_port_local_loopback_get), \
+    SW_API_DEF(SW_API_PT_REMOTE_LOOPBACK_SET, dess_port_remote_loopback_set), \
+    SW_API_DEF(SW_API_PT_REMOTE_LOOPBACK_GET, dess_port_remote_loopback_get), \
+    SW_API_DEF(SW_API_PT_RESET, dess_port_reset), \
+    SW_API_DEF(SW_API_PT_POWER_OFF, dess_port_power_off), \
+    SW_API_DEF(SW_API_PT_POWER_ON, dess_port_power_on),
 
 #define PORTCONTROL_API_PARAM \
     SW_API_DESC(SW_API_PT_DUPLEX_GET) \
@@ -110,7 +127,25 @@ extern "C" {
     SW_API_DESC(SW_API_PT_CONGESTION_DROP_SET) \
     SW_API_DESC(SW_API_PT_CONGESTION_DROP_GET) \
     SW_API_DESC(SW_API_PT_RING_FLOW_CTRL_THRES_SET) \
-	SW_API_DESC(SW_API_PT_RING_FLOW_CTRL_THRES_GET)
+    SW_API_DESC(SW_API_PT_RING_FLOW_CTRL_THRES_GET)\
+    SW_API_DESC(SW_API_PT_8023AZ_SET) \
+    SW_API_DESC(SW_API_PT_8023AZ_GET) \
+    SW_API_DESC(SW_API_PT_MDIX_SET) \
+    SW_API_DESC(SW_API_PT_MDIX_GET) \
+    SW_API_DESC(SW_API_PT_MDIX_STATUS_GET) \
+    SW_API_DESC(SW_API_PT_COMBO_PREFER_MEDIUM_SET) \
+    SW_API_DESC(SW_API_PT_COMBO_PREFER_MEDIUM_GET) \
+    SW_API_DESC(SW_API_PT_COMBO_MEDIUM_STATUS_GET) \
+    SW_API_DESC(SW_API_PT_COMBO_FIBER_MODE_SET) \
+    SW_API_DESC(SW_API_PT_COMBO_FIBER_MODE_GET) \
+    SW_API_DESC(SW_API_PT_LOCAL_LOOPBACK_SET) \
+    SW_API_DESC(SW_API_PT_LOCAL_LOOPBACK_GET) \
+    SW_API_DESC(SW_API_PT_REMOTE_LOOPBACK_SET) \
+    SW_API_DESC(SW_API_PT_REMOTE_LOOPBACK_GET) \
+    SW_API_DESC(SW_API_PT_RESET) \
+    SW_API_DESC(SW_API_PT_POWER_OFF) \
+    SW_API_DESC(SW_API_PT_POWER_ON)
+
 #else
 #define PORTCONTROL_API
 #define PORTCONTROL_API_PARAM

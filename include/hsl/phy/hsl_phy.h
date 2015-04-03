@@ -125,6 +125,10 @@ extern "C" {
 						       a_uint32_t phy_id,
 						       fal_port_reset_status_t *
 						       status);
+	typedef sw_error_t(*hsl_phy_power_off) (a_uint32_t dev_id,
+					    a_uint32_t phy_id);
+	typedef sw_error_t(*hsl_phy_power_on) (a_uint32_t dev_id,
+					    a_uint32_t phy_id);
 	typedef sw_error_t(*hsl_phy_id_get) (a_uint32_t dev_id,
 					     a_uint32_t phy_id,
 					     a_uint16_t * org_id,
@@ -166,18 +170,24 @@ extern "C" {
 	typedef sw_error_t(*hsl_phy_magic_frame_mac_get) (a_uint32_t dev_id,
 							  a_uint32_t phy_id,
 							  fal_mac_addr_t * mac);
-
-	typedef sw_error_t(*hsl_phy_phy_id_get) (a_uint32_t dev_id,
-						 a_uint32_t phy_id,
-						 a_uint16_t * org_id,
-						 a_uint16_t * rev_id);
 	typedef sw_error_t(*hsl_phy_wol_status_set) (a_uint32_t dev_id,
 							 a_uint32_t phy_id,
 							 a_bool_t enable);
 	typedef sw_error_t(*hsl_phy_wol_status_get) (a_uint32_t dev_id,
 							 a_uint32_t phy_id,
 							 a_bool_t * enable);
-
+	typedef sw_error_t(*hsl_phy_interface_mode_set) (a_uint32_t dev_id,
+							 a_uint32_t phy_id,
+							 fal_port_interface_mode_t
+							 interface_mode);
+	typedef sw_error_t(*hsl_phy_interface_mode_get) (a_uint32_t dev_id,
+							 a_uint32_t phy_id,
+							 fal_port_interface_mode_t
+							 * interface_mode);
+	typedef sw_error_t(*hsl_phy_interface_mode_status_get) (a_uint32_t dev_id,
+							 a_uint32_t phy_id,
+							 fal_port_interface_mode_t
+							 * interface_mode);
 	typedef struct hsl_phy_ops_s {
 
 		hsl_phy_init phy_init;
@@ -191,6 +201,8 @@ extern "C" {
 		hsl_phy_autoneg_enable_get phy_autoneg_enable_get;
 		hsl_phy_restart_autoneg phy_restart_autoneg;
 		hsl_phy_autoneg_status_get phy_autoneg_status_get;
+		hsl_phy_autoneg_adv_set phy_autoneg_adv_set;
+		hsl_phy_autoneg_adv_get phy_autoneg_adv_get;
 		hsl_phy_powersave_set phy_powersave_set;
 		hsl_phy_powersave_get phy_powersave_get;
 		hsl_phy_cdt phy_cdt;
@@ -213,10 +225,10 @@ extern "C" {
 		hsl_phy_combo_fiber_mode_set phy_combo_fiber_mode_set;
 		hsl_phy_combo_fiber_mode_get phy_combo_fiber_mode_get;
 		hsl_phy_reset phy_reset;
+		hsl_phy_power_off phy_power_off;
+		hsl_phy_power_on phy_power_on;
 		hsl_phy_reset_status_get phy_reset_status_get;
 		hsl_phy_id_get phy_id_get;
-		hsl_phy_autoneg_adv_set phy_autoneg_adv_set;
-		hsl_phy_autoneg_adv_get phy_autoneg_adv_get;
 		hsl_phy_reg_write phy_reg_write;
 		hsl_phy_reg_read phy_reg_read;
 		hsl_phy_debug_write phy_debug_write;
@@ -225,9 +237,11 @@ extern "C" {
 		hsl_phy_mmd_read phy_mmd_read;
 		hsl_phy_magic_frame_mac_set phy_magic_frame_mac_set;
 		hsl_phy_magic_frame_mac_get phy_magic_frame_mac_get;
-		hsl_phy_phy_id_get phy_phy_id_get;
 		hsl_phy_wol_status_set phy_wol_status_set;
 		hsl_phy_wol_status_get phy_wol_status_get;
+		hsl_phy_interface_mode_set phy_interface_mode_set;
+		hsl_phy_interface_mode_get phy_interface_mode_get;
+		hsl_phy_interface_mode_status_get phy_interface_mode_status_get;
 
 	} hsl_phy_ops_t;
 
