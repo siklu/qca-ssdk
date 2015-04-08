@@ -529,6 +529,7 @@ struct cmd_des_t gcmd_des[] =
             {"natunksess", "set", "set nat unkown session command", "<forward|drop|cpycpu|rdtcpu>", SW_API_NAT_UNK_SESSION_CMD_SET, NULL},
             {"prvbasemask", "set", "set nat prv base mask", "<ip4 mask>", SW_API_PRV_BASE_MASK_SET, NULL},
 			{"global", "set", "set global nat function", "<enable|disable> <enable:sync counter|disable:unsync counter>", SW_API_NAT_GLOBAL_SET, NULL},
+			{"flowentry", "set", "add flow entry", "", SW_API_FLOW_ADD, NULL},
 			{"flowentry", "add", "add flow entry", "", SW_API_FLOW_ADD, NULL},
             {"flowentry", "del", "del flow entry", "<del_mode>", SW_API_FLOW_DEL, NULL},
 			{"flowentry", "next", "next flow entry", "<next_mode>", SW_API_FLOW_NEXT, NULL},

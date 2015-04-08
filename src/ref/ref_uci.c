@@ -66,6 +66,7 @@ static char *vrf_dflt_str = "0";
 static char *lb_dflt_str = "0";
 static char *cookie_dflt_str = "0";
 static char *priority_dflt_str = "no";
+static char *param_dflt_str = " ";
 
 static int
 parse_qos_qtxbufsts(struct switch_val *val)
@@ -3764,6 +3765,8 @@ parse_ip_hostentry(struct switch_val *val)
 	parameter_length ++;
 	val_ptr[7] = vrf_temp;
 	parameter_length ++;
+	val_ptr[12] = param_dflt_str;
+	parameter_length ++;
 	switch_ext_p = val->value.ext_val;
 	while(switch_ext_p) {
 		ext_value_p = switch_ext_p;
@@ -3797,6 +3800,9 @@ parse_ip_hostentry(struct switch_val *val)
 			val_ptr[10] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "counter")) {
 			val_ptr[11] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "counter_id")) {
+			val_ptr[12] = ext_value_p->option_value;
+			parameter_length --;
 		}  else {
 			rv = -1;
 			break;
@@ -4349,6 +4355,8 @@ parse_nat_natentry(struct switch_val *val)
 	switch_ext_p = val->value.ext_val;
 	val_ptr[4] = vrf_dflt_str;
 	parameter_length ++;
+	val_ptr[12] = param_dflt_str;
+	parameter_length ++;
 	while(switch_ext_p) {
 		ext_value_p = switch_ext_p;
 		
@@ -4380,7 +4388,10 @@ parse_nat_natentry(struct switch_val *val)
 			val_ptr[10] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "counter")) {
 			val_ptr[11] = ext_value_p->option_value;
-		}  else {
+		} else if(!strcmp(ext_value_p->option_name, "counter_id")) {
+			val_ptr[12] = ext_value_p->option_value;
+			parameter_length --;
+		} else {
 			rv = -1;
 			break;
 		}
@@ -4404,7 +4415,11 @@ parse_nat_naptentry(struct switch_val *val)
 	parameter_length ++;
 	val_ptr[5] = lb_dflt_str;
 	parameter_length ++;
-	val_ptr[15] = priority_dflt_str;
+	val_ptr[15] = param_dflt_str;
+	parameter_length ++;
+	val_ptr[16] = priority_dflt_str;
+	parameter_length ++;
+	val_ptr[17] = param_dflt_str;
 	parameter_length ++;
 	while(switch_ext_p) {
 		ext_value_p = switch_ext_p;
@@ -4445,8 +4460,14 @@ parse_nat_naptentry(struct switch_val *val)
 			val_ptr[13] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "counter")) {
 			val_ptr[14] = ext_value_p->option_value;
-		}  else if(!strcmp(ext_value_p->option_name, "priority")) {
+		} else if(!strcmp(ext_value_p->option_name, "counter_id")) {
 			val_ptr[15] = ext_value_p->option_value;
+			parameter_length --;
+		}  else if(!strcmp(ext_value_p->option_name, "priority")) {
+			val_ptr[16] = ext_value_p->option_value;
+			parameter_length --;
+		}  else if(!strcmp(ext_value_p->option_name, "priority_val")) {
+			val_ptr[17] = ext_value_p->option_value;
 			parameter_length --;
 		}  else {
 			rv = -1;
@@ -4466,6 +4487,10 @@ parse_nat_flowentry(struct switch_val *val)
 	struct switch_ext *switch_ext_p, *switch_ext_tmp, *ext_value_p;
 	int rv = 0;
 	switch_ext_p = val->value.ext_val;
+	val_ptr[13] = param_dflt_str;
+	parameter_length ++;
+	val_ptr[15] = param_dflt_str;
+	parameter_length ++;
 	while(switch_ext_p) {
 		ext_value_p = switch_ext_p;
 
@@ -4498,9 +4523,15 @@ parse_nat_flowentry(struct switch_val *val)
 			val_ptr[11] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "counter")) {
 			val_ptr[12] = ext_value_p->option_value;
-		}  else if(!strcmp(ext_value_p->option_name, "priority")) {
+		} else if(!strcmp(ext_value_p->option_name, "counter_id")) {
 			val_ptr[13] = ext_value_p->option_value;
-		}  else {
+			parameter_length --;
+		} else if(!strcmp(ext_value_p->option_name, "priority")) {
+			val_ptr[14] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "priority_val")) {
+			val_ptr[15] = ext_value_p->option_value;
+			parameter_length --;
+		} else {
 			rv = -1;
 			break;
 		}
