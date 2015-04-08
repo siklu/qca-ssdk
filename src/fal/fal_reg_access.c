@@ -87,6 +87,38 @@ _fal_reg_set(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t value[],
 
 
 static sw_error_t
+_fal_psgmii_reg_get(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t value[],
+             a_uint32_t value_len)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->psgmii_reg_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->psgmii_reg_get(dev_id, reg_addr, value, value_len);
+    return rv;
+}
+
+static sw_error_t
+_fal_psgmii_reg_set(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t value[],
+             a_uint32_t value_len)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->psgmii_reg_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->psgmii_reg_set(dev_id, reg_addr, value, value_len);
+    return rv;
+}
+
+static sw_error_t
 _fal_reg_field_get(a_uint32_t dev_id, a_uint32_t reg_addr,
                    a_uint32_t bit_offset, a_uint32_t field_len,
                    a_uint8_t value[], a_uint32_t value_len)
@@ -195,6 +227,46 @@ fal_reg_set(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t value[],
 
     FAL_API_LOCK;
     rv = _fal_reg_set(dev_id, reg_addr, value, value_len);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+  * fal_psgmii_reg_get - get value of specific register in psgmii module
+  * @reg_addr: address of the register
+  * @value: pointer to the memory storing the value.
+  * @value_len: length of the value.
+  *
+  * Get the value of a specific register field with related parameter
+  */
+sw_error_t
+fal_psgmii_reg_get(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t value[],
+            a_uint32_t value_len)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_psgmii_reg_get(dev_id, reg_addr, value, value_len);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+  * fal_psgmii_reg_set - set value of specific register in psgmii module
+  * @reg_addr: address of the register
+  * @value: pointer to the memory storing the value.
+  * @value_len: length of the value.
+  *
+  * Get the value of a specific register field with related parameter
+  */
+sw_error_t
+fal_psgmii_reg_set(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t value[],
+            a_uint32_t value_len)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_psgmii_reg_set(dev_id, reg_addr, value, value_len);
     FAL_API_UNLOCK;
     return rv;
 }

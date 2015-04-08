@@ -430,14 +430,14 @@ _dess_cosmap_egress_remark_set(a_uint32_t dev_id, a_uint32_t tbl_id,
     }
 
     data = (tbl->y_up & 0x7)
-	  | ((tbl->y_dei & 0x1) << 3)	
+           | ((tbl->y_dei & 0x1) << 3)
            | ((tbl->g_up & 0x7) << 4)
-	  | ((tbl->g_dei & 0x1) << 7)	
            | ((tbl->y_dscp & 0x3f) << 8)
+           | ((tbl->g_dei & 0x1) << 14)
            | ((tbl->g_dscp & 0x3f) << 16)
-           | ((tbl->remark_dscp & 0x1) << 24)
-           | ((tbl->remark_up & 0x1) << 23)
-           | ((tbl->remark_dei & 0x1) << 22);
+           | ((tbl->remark_dscp & 0x1) << 23)
+           | ((tbl->remark_up & 0x1) << 22)
+           | ((tbl->remark_dei & 0x1) << 7);
 
     addr = DESS_EGRESS_REAMRK_ADDR + (tbl_id << 4);
     HSL_REG_ENTRY_GEN_SET(rv, dev_id, addr, sizeof (a_uint32_t),
@@ -464,25 +464,25 @@ _dess_cosmap_egress_remark_get(a_uint32_t dev_id, a_uint32_t tbl_id,
                           (a_uint8_t *) (&data), sizeof (a_uint32_t));
     SW_RTN_ON_ERROR(rv);
 
-    if (data & (0x1 << 24))
+    if (data & (0x1 << 23))
     {
         tbl->remark_dscp = A_TRUE;
         tbl->y_dscp = (data >> 8) & 0x3f;
         tbl->g_dscp = (data >> 16) & 0x3f;
     }
 
-    if (data & (0x1 << 23))
+    if (data & (0x1 << 22))
     {
         tbl->remark_up = A_TRUE;
         tbl->y_up = data & 0x7;
         tbl->g_up = (data >> 4) & 0x7;
     }
 
-    if (data & (0x1 << 22))
+    if (data & (0x1 << 7))
     {
         tbl->remark_dei = A_TRUE;
         tbl->y_dei = (data >> 3) & 0x1;
-        tbl->g_dei = (data >> 7) & 0x1;
+        tbl->g_dei = (data >> 14) & 0x1;
     }
 
     return SW_OK;

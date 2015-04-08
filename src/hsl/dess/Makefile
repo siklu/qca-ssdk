@@ -92,7 +92,7 @@ ifeq (TRUE, $(IN_SEC))
 endif
 
 ifeq (TRUE, $(IN_INTERFACECONTROL))
-  SRC_LIST += dess_interface_ctrl.c
+  SRC_LIST += dess_interface_ctrl.c dess_psgmii.c
 endif
 
 ifeq (linux, $(OS))

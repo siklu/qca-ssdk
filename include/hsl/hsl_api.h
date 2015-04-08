@@ -1909,6 +1909,14 @@ extern "C"
 		    a_uint8_t value[], a_uint32_t value_len);
 
   typedef sw_error_t
+    (*hsl_psgmii_reg_get) (a_uint32_t dev_id, a_uint32_t reg_addr,
+		    a_uint8_t value[], a_uint32_t value_len);
+
+  typedef sw_error_t
+    (*hsl_psgmii_reg_set) (a_uint32_t dev_id, a_uint32_t reg_addr,
+		    a_uint8_t value[], a_uint32_t value_len);
+
+  typedef sw_error_t
     (*hsl_reg_field_get) (a_uint32_t dev_id, a_uint32_t reg_addr,
 			  a_uint32_t bit_offset, a_uint32_t field_len,
 			  a_uint8_t value[], a_uint32_t value_len);
@@ -2472,6 +2480,8 @@ extern "C"
     hsl_reg_field_set reg_field_set;
     hsl_reg_entries_get reg_entries_get;
     hsl_reg_entries_set reg_entries_set;
+    hsl_psgmii_reg_get psgmii_reg_get;
+    hsl_psgmii_reg_set psgmii_reg_set;
 
       /*INIT*/ hsl_dev_reset dev_reset;
     hsl_dev_clean dev_clean;

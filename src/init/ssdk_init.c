@@ -1806,6 +1806,13 @@ regi_init(void)
 	else
 		cfg.reg_mode = HSL_MDIO;
 
+	if (psgmii_hw_addr) {
+		cfg.reg_func.psgmii_reg_set = qca_psgmii_reg_write;
+		cfg.reg_func.psgmii_reg_get = qca_psgmii_reg_read;
+	} else {
+		cfg.reg_func.psgmii_reg_set = NULL;
+		cfg.reg_func.psgmii_reg_get = NULL;
+	}
 
 	cfg.chip_spec_cfg = &chip_spec_cfg;
 

@@ -582,6 +582,8 @@ struct cmd_des_t gcmd_des[] =
             {"aclRule", "dump", "dump all acl rule", "", SW_API_ACL_RULE_DUMP, NULL},
             {"device",  "reset", "reset device",     "", SW_API_SWITCH_RESET, NULL},
             {"ssdk",  "config", "show ssdk configuration",     "", SW_API_SSDK_CFG, NULL},
+            {"preg", "get", "read psgmii register", "<reg_addr> <4>", SW_API_PSGMII_REG_GET, NULL},
+            {"preg", "set", "write psgmii register", "<reg_addr> <value> <4>", SW_API_PSGMII_REG_SET, NULL},
             {NULL, NULL, NULL, NULL, (int)NULL, NULL}/*end of desc*/
         },
     },

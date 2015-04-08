@@ -18,6 +18,7 @@
 #include "hsl_dev.h"
 #include "sd.h"
 #include "dess_reg_access.h"
+#include "dess_psgmii.h"
 
 #if 0
 #include <linux/kernel.h>
@@ -337,6 +338,8 @@ dess_reg_access_init(a_uint32_t dev_id, hsl_access_mode mode)
     p_api->reg_set = dess_reg_set;
     p_api->reg_field_get = dess_reg_field_get;
     p_api->reg_field_set = dess_reg_field_set;
+    p_api->psgmii_reg_get = dess_psgmii_reg_get;
+    p_api->psgmii_reg_set = dess_psgmii_reg_set;
 
     return SW_OK;
 }
