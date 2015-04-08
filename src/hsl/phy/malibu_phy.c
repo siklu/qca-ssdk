@@ -2006,6 +2006,8 @@ sw_error_t
 malibu_phy_interface_set_mode(a_uint32_t dev_id, a_uint32_t phy_id, fal_port_interface_mode_t interface_mode)
 {
 	a_uint16_t phy_data;
+	a_uint16_t phy_data1 = 0;
+
        if (phy_id != COMBO_PHY_ID)
 		return SW_NOT_SUPPORTED;
 	phy_data = malibu_phy_reg_read(dev_id, phy_id, MALIBU_PHY_CHIP_CONFIG);
@@ -2026,6 +2028,17 @@ malibu_phy_interface_set_mode(a_uint32_t dev_id, a_uint32_t phy_id, fal_port_int
 	}
 
 	malibu_phy_reg_write(dev_id, phy_id, MALIBU_PHY_CHIP_CONFIG, phy_data);
+
+/* reset operation */
+	phy_data1 = malibu_phy_mmd_read(0, PSGMII_ID, MALIBU_PHY_MMD1_NUM,
+				       MALIBU_PSGMII_CALIB_CTRL);
+	phy_data1 |= 0x4000;
+	malibu_phy_mmd_write(0, PSGMII_ID, MALIBU_PHY_MMD1_NUM,
+			     MALIBU_PSGMII_CALIB_CTRL, phy_data1);
+
+	phy_data1 &= 0xbfff;
+	malibu_phy_mmd_write(0, PSGMII_ID, MALIBU_PHY_MMD1_NUM,
+			     MALIBU_PSGMII_CALIB_CTRL, phy_data1);
 
 	return SW_OK;
 }
@@ -2202,6 +2215,25 @@ malibu_phy_intr_status_get(a_uint32_t dev_id, a_uint32_t phy_id,
 	return SW_OK;
 }
 
+/******************************************************************************
+*
+* malibu_phy_hw_register init to avoid packet loss
+*
+*/
+sw_error_t
+malibu_phy_hw_init(void)
+{
+	a_uint16_t phy_data = 0;
+	phy_data = malibu_phy_mmd_read(0, PSGMII_ID, MALIBU_PHY_MMD1_NUM,
+				       MALIBU_PSGMII_FIFI_CTRL);
+	phy_data &= 0xbfff;
+
+	malibu_phy_mmd_write(0, PSGMII_ID, MALIBU_PHY_MMD1_NUM,
+			     MALIBU_PSGMII_FIFI_CTRL, phy_data);
+	return SW_OK;
+}
+
+
 static int malibu_phy_probe(struct phy_device *pdev)
 {
 	int ret;
@@ -2256,6 +2288,9 @@ static int malibu_phy_probe(struct phy_device *pdev)
 
 
 	ret = hsl_phy_api_ops_register(&malibu_phy_api_ops);
+
+	malibu_phy_hw_init();
+
 	return ret;
 }
 

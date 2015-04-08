@@ -37,6 +37,7 @@ extern "C"
 #define BIT_1                    1
 #define BIT_0                    0
 #define COMBO_PHY_ID 4
+#define PSGMII_ID 5
 
   /* PHY Registers */
 #define MALIBU_PHY_CONTROL                      0
@@ -71,8 +72,12 @@ extern "C"
 #define MALIBU_PHY_MMD3_WOL_MAGIC_MAC_CTRL3   0x804c
 #define MALIBU_PHY_MMD3_WOL_CTRL  0x8012
 
+#define MALIBU_PSGMII_FIFI_CTRL  0x6e
+#define MALIBU_PSGMII_CALIB_CTRL  0x27
+
 #define MALIBU_PHY_MMD7_NUM  7
 #define MALIBU_PHY_MMD3_NUM  3
+#define MALIBU_PHY_MMD1_NUM  1
 
 #define MALIBU_PHY_SGMII_STATUS            0x1a	/* sgmii_status  Register  */
 #define MALIBU_PHY4_AUTO_SGMII_SELECT   0x40
