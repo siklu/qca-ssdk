@@ -26,6 +26,17 @@ extern "C" {
 
 #include "init/ssdk_init.h"
 
+enum dess_port_cfg {
+	PORT_WRAPPER_PSGMII = 0,
+	PORT_WRAPPER_PSGMII_RGMII5,
+	PORT_WRAPPER_PSGMII_RMII0,
+	PORT_WRAPPER_PSGMII_RMII1,
+	PORT_WRAPPER_PSGMII_RMII0_RMII1,
+	PORT_WRAPPER_PSGMII_RGMII4,
+	PORT_WRAPPER_MAX
+};
+
+
 
     sw_error_t
     dess_init(a_uint32_t dev_id, ssdk_init_cfg *cfg);

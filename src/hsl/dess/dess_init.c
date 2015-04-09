@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2014-2015, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -57,39 +57,21 @@ a_uint32_t dess_nat_global_status = 0;
    PORT0 always connect to external DMA device.
    MAC1..MAC4 connect to internal PHY0..PHY3.
 */
-enum dess_port_cfg {
-	PORT_WRAPPER_PSGMII = 0,
-	PORT_WRAPPER_PSGMII_RGMII,
-	PORT_WRAPPER_PSGMII_RMII0,
-	PORT_WRAPPER_PSGMII_RMII1,
-	PORT_WRAPPER_PSGMII_RMII0_RMII1,
-	PORT_WRAPPER_SGMII,
-	PORT_WRAPPER_SGMII_RGMII,
-	PORT_WRAPPER_SGMII_RMII0,
-	PORT_WRAPPER_SGMII_RMII1,
-	PORT_WRAPPER_SGMII_RMII0_RMII1,
-	PORT_WRAPPER_MAX
-};
+
 
 a_uint32_t dess_pbmp[PORT_WRAPPER_MAX] = {
 	((1<<1) | (1<<2) | (1<<3) | (1<<4) | (1<<5)), /*PORT_WRAPPER_PSGMII*/
-	((1<<1) | (1<<2) | (1<<3) | (1<<4) | (1<<5)), /*PORT_WRAPPER_PSGMII_RGMII*/
+	((1<<1) | (1<<2) | (1<<3) | (1<<4) | (1<<5)), /*PORT_WRAPPER_PSGMII_RGMII5*/
 	((1<<1) | (1<<2) | (1<<3) | (1<<4) | (1<<5)), /*PORT_WRAPPER_PSGMII_RMII0*/
 	((1<<1) | (1<<2) | (1<<3) | (1<<4) | (1<<5)), /*PORT_WRAPPER_PSGMII_RMII1*/
 	((1<<1) | (1<<2) | (1<<3) | (1<<4) | (1<<5)), /*PORT_WRAPPER_PSGMII_RMII0_RMII1*/
-	(1<<1),                                       /*PORT_WRAPPER_SGMII*/
-	((1<<1) | (1<<5)),                            /*PORT_WRAPPER_SGMII_RGMII*/
-	((1<<1) | (1<<5)),                            /*PORT_WRAPPER_SGMII_RMII0*/
-	((1<<1) | (1<<4)),                            /*PORT_WRAPPER_SGMII_RMII1*/
-	((1<<1) | (1<<4) | (1<<5))                    /*PORT_WRAPPER_SGMII_RMII0_RMII1*/
+	((1<<1) | (1<<2) | (1<<3) | (1<<4) | (1<<5)), /*PORT_WRAPPER_SGMII_RGMII4*/
 	};
 
 
 enum dess_port_cfg dess_get_port_config()
 {
-	/*get the efused id*/
-
-	return PORT_WRAPPER_PSGMII;
+	return dess_cfg[0]->mac_mode;
 }
 
 a_bool_t dess_mac_port_valid_check(fal_port_t port_id)
