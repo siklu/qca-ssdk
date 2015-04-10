@@ -270,6 +270,26 @@ malibu_phy_mmd_read(a_uint32_t dev_id, a_uint32_t phy_id,
 
 /******************************************************************************
 *
+* malibu_phy_reset - reset the phy
+*
+* reset the phy
+*/
+sw_error_t malibu_phy_reset(a_uint32_t dev_id, a_uint32_t phy_id)
+{
+	a_uint16_t phy_data;
+
+	if (phy_id == COMBO_PHY_ID)
+		__phy_reg_pages_sel_by_active_medium(dev_id, phy_id);
+
+	phy_data = malibu_phy_reg_read(dev_id, phy_id, MALIBU_PHY_CONTROL);
+	malibu_phy_reg_write(dev_id, phy_id, MALIBU_PHY_CONTROL,
+			     phy_data | MALIBU_CTRL_SOFTWARE_RESET);
+
+	return SW_OK;
+}
+
+/******************************************************************************
+*
 * malibu_phy_set_powersave - set power saving status
 *
 * set power saving status
@@ -591,6 +611,7 @@ malibu_phy_set_mdix(a_uint32_t dev_id, a_uint32_t phy_id,
 
 	malibu_phy_reg_write(dev_id, phy_id, MALIBU_PHY_SPEC_CONTROL, phy_data);
 
+	malibu_phy_reset(dev_id, phy_id);
 	return SW_OK;
 }
 
@@ -732,7 +753,7 @@ malibu_phy_set_remote_loopback(a_uint32_t dev_id, a_uint32_t phy_id,
 {
 	a_uint16_t phy_data;
 
-	phy_data == malibu_phy_mmd_read(dev_id, phy_id, MALIBU_PHY_MMD3_NUM,
+	phy_data = malibu_phy_mmd_read(dev_id, phy_id, MALIBU_PHY_MMD3_NUM,
 					MALIBU_PHY_MMD3_ADDR_REMOTE_LOOPBACK_CTRL);
 
 	if (enable == A_TRUE) {
@@ -760,7 +781,7 @@ malibu_phy_get_remote_loopback(a_uint32_t dev_id, a_uint32_t phy_id,
 {
 	a_uint16_t phy_data;
 
-	phy_data == malibu_phy_mmd_read(dev_id, phy_id, MALIBU_PHY_MMD3_NUM,
+	phy_data = malibu_phy_mmd_read(dev_id, phy_id, MALIBU_PHY_MMD3_NUM,
 					MALIBU_PHY_MMD3_ADDR_REMOTE_LOOPBACK_CTRL);
 
 	if (phy_data & 0x0001) {
@@ -1061,26 +1082,6 @@ a_bool_t malibu_phy_speed_duplex_resolved(a_uint32_t dev_id, a_uint32_t phy_id)
 		return A_FALSE;
 
 	return A_TRUE;
-}
-
-/******************************************************************************
-*
-* malibu_phy_reset - reset the phy
-*
-* reset the phy
-*/
-sw_error_t malibu_phy_reset(a_uint32_t dev_id, a_uint32_t phy_id)
-{
-	a_uint16_t phy_data;
-
-	if (phy_id == COMBO_PHY_ID)
-		__phy_reg_pages_sel_by_active_medium(dev_id, phy_id);
-
-	phy_data = malibu_phy_reg_read(dev_id, phy_id, MALIBU_PHY_CONTROL);
-	malibu_phy_reg_write(dev_id, phy_id, MALIBU_PHY_CONTROL,
-			     phy_data | MALIBU_CTRL_SOFTWARE_RESET);
-
-	return SW_OK;
 }
 
 /******************************************************************************
@@ -2254,7 +2255,7 @@ static int malibu_phy_probe(struct phy_device *pdev)
 	malibu_phy_api_ops.phy_powersave_get = malibu_phy_get_powersave;
 	malibu_phy_api_ops.phy_cdt = malibu_phy_cdt;
 	malibu_phy_api_ops.phy_link_status_get = malibu_phy_get_link_status;
-       malibu_phy_api_ops.phy_mdix_set = malibu_phy_set_mdix;
+        malibu_phy_api_ops.phy_mdix_set = malibu_phy_set_mdix;
 	malibu_phy_api_ops.phy_mdix_get = malibu_phy_get_mdix;
 	malibu_phy_api_ops.phy_mdix_status_get = malibu_phy_get_mdix_status;
 	malibu_phy_api_ops.phy_8023az_set = malibu_phy_set_8023az;
@@ -2281,7 +2282,7 @@ static int malibu_phy_probe(struct phy_device *pdev)
 	malibu_phy_api_ops.phy_magic_frame_mac_set = malibu_phy_set_magic_frame_mac;
 	malibu_phy_api_ops.phy_magic_frame_mac_get = malibu_phy_get_magic_frame_mac;
 	malibu_phy_api_ops.phy_wol_status_set = malibu_phy_set_wol_status;
-	malibu_phy_api_ops.phy_wol_status_get = malibu_phy_set_wol_status;
+	malibu_phy_api_ops.phy_wol_status_get = malibu_phy_get_wol_status;
 	malibu_phy_api_ops.phy_interface_mode_set = malibu_phy_interface_set_mode;
 	malibu_phy_api_ops.phy_interface_mode_get = malibu_phy_interface_get_mode;
 	malibu_phy_api_ops.phy_interface_mode_status_get = malibu_phy_interface_get_mode_status;
