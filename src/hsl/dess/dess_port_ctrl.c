@@ -73,7 +73,12 @@ _dess_port_duplex_set (a_uint32_t dev_id, fal_port_t port_id,
     {
       return SW_BAD_PARAM;
     }
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+      SW_RTN_ON_ERROR (rv);
 
+      rv = phy_drv->phy_duplex_set (dev_id, phy_id, duplex);
+      SW_RTN_ON_ERROR (rv);
+#if 0
   HSL_REG_ENTRY_GET (rv, dev_id, PORT_STATUS, port_id,
 		     (a_uint8_t *) (&reg_val), sizeof (a_uint32_t));
 
@@ -126,6 +131,7 @@ _dess_port_duplex_set (a_uint32_t dev_id, fal_port_t port_id,
 
   HSL_REG_ENTRY_SET (rv, dev_id, PORT_STATUS, port_id,
 		     (a_uint8_t *) (&reg_save), sizeof (a_uint32_t));
+  #endif
   return rv;
 }
 
@@ -134,7 +140,8 @@ _dess_port_duplex_get (a_uint32_t dev_id, fal_port_t port_id,
 		       fal_port_duplex_t * pduplex)
 {
   sw_error_t rv = SW_OK;
-  a_uint32_t reg, field;
+  a_uint32_t phy_id,reg, field;
+  hsl_phy_ops_t *phy_drv;
 
   HSL_DEV_ID_CHECK (dev_id);
 
@@ -143,6 +150,17 @@ _dess_port_duplex_get (a_uint32_t dev_id, fal_port_t port_id,
       return SW_BAD_PARAM;
     }
 
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_duplex_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+      SW_RTN_ON_ERROR (rv);
+
+      rv = phy_drv->phy_duplex_get (dev_id, phy_id, pduplex);
+      SW_RTN_ON_ERROR (rv);
+
+#if 0
   HSL_REG_ENTRY_GET (rv, dev_id, PORT_STATUS, port_id,
 		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
   SW_GET_FIELD_BY_REG (PORT_STATUS, DUPLEX_MODE, field, reg);
@@ -154,6 +172,8 @@ _dess_port_duplex_get (a_uint32_t dev_id, fal_port_t port_id,
     {
       *pduplex = FAL_HALF_DUPLEX;
     }
+
+#endif
 
   return rv;
 }
@@ -182,6 +202,12 @@ _dess_port_speed_set (a_uint32_t dev_id, fal_port_t port_id,
       return SW_BAD_PARAM;
     }
 
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+      SW_RTN_ON_ERROR (rv);
+
+      rv = phy_drv->phy_speed_set (dev_id, phy_id, speed);
+      SW_RTN_ON_ERROR (rv);
+#if 0
   HSL_REG_ENTRY_GET (rv, dev_id, PORT_STATUS, port_id,
 		     (a_uint8_t *) (&reg_val), sizeof (a_uint32_t));
 
@@ -243,6 +269,7 @@ _dess_port_speed_set (a_uint32_t dev_id, fal_port_t port_id,
 
   HSL_REG_ENTRY_SET (rv, dev_id, PORT_STATUS, port_id,
 		     (a_uint8_t *) (&reg_save), sizeof (a_uint32_t));
+  #endif
   return rv;
 }
 
@@ -251,7 +278,8 @@ _dess_port_speed_get (a_uint32_t dev_id, fal_port_t port_id,
 		      fal_port_speed_t * pspeed)
 {
   sw_error_t rv = SW_OK;
-  a_uint32_t reg, field;
+  a_uint32_t phy_id,reg, field;
+  hsl_phy_ops_t *phy_drv;
 
   HSL_DEV_ID_CHECK (dev_id);
 
@@ -260,6 +288,17 @@ _dess_port_speed_get (a_uint32_t dev_id, fal_port_t port_id,
       return SW_BAD_PARAM;
     }
 
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_speed_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+      SW_RTN_ON_ERROR (rv);
+
+      rv = phy_drv->phy_speed_get (dev_id, phy_id, pspeed);
+      SW_RTN_ON_ERROR (rv);
+
+#if 0
   HSL_REG_ENTRY_GET (rv, dev_id, PORT_STATUS, port_id,
 		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
   SW_RTN_ON_ERROR (rv);
@@ -282,6 +321,7 @@ _dess_port_speed_get (a_uint32_t dev_id, fal_port_t port_id,
       *pspeed = FAL_SPEED_BUTT;
       rv = SW_READ_ERROR;
     }
+#endif
 
   return rv;
 }
