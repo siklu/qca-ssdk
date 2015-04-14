@@ -602,6 +602,7 @@ malibu_phy_set_mdix(a_uint32_t dev_id, a_uint32_t phy_id,
 	if (mode == PHY_MDIX_AUTO) {
 		phy_data |= MALIBU_PHY_MDIX_AUTO;
 	} else if (mode == PHY_MDIX_MDIX) {
+		phy_data &= ~MALIBU_PHY_MDIX_AUTO;
 		phy_data |= MALIBU_PHY_MDIX;
 	} else if (mode == PHY_MDIX_MDI) {
 		phy_data &= ~MALIBU_PHY_MDIX_AUTO;
@@ -1609,88 +1610,6 @@ malibu_phy_get_speed(a_uint32_t dev_id, a_uint32_t phy_id,
 
 /******************************************************************************
 *
-* malibu_phy_set_speed - Determines the speed of phy ports associated with the
-* specified device.
-*/
-sw_error_t
-malibu_phy_set_speed(a_uint32_t dev_id, a_uint32_t phy_id,
-		     fal_port_speed_t speed)
-{
-	a_uint16_t phy_data = 0;
-	a_uint16_t phy_status = 0;
-
-	a_uint32_t autoneg, oldneg;
-	fal_port_duplex_t old_duplex;
-
-	if (phy_id == COMBO_PHY_ID) {
-		if (MALIBU_PHY_MEDIUM_COPPER !=
-		    __phy_active_medium_get(dev_id, phy_id))
-
-			return SW_NOT_SUPPORTED;
-
-		__phy_reg_pages_sel(dev_id, phy_id, MALIBU_PHY_COPPER_PAGES);
-	}
-
-	if (FAL_SPEED_1000 == speed) {
-		phy_data |= MALIBU_CTRL_SPEED_1000;
-	} else if (FAL_SPEED_100 == speed) {
-		phy_data |= MALIBU_CTRL_SPEED_100;
-	} else if (FAL_SPEED_10 == speed) {
-		phy_data |= MALIBU_CTRL_SPEED_10;
-	} else {
-		return SW_BAD_PARAM;
-	}
-
-	phy_data &= ~MALIBU_CTRL_AUTONEGOTIATION_ENABLE;
-
-	(void)malibu_phy_get_autoneg_adv(dev_id, phy_id, &autoneg);
-	oldneg = autoneg;
-	autoneg &= ~FAL_PHY_ADV_GE_SPEED_ALL;
-
-	(void)malibu_phy_get_duplex(dev_id, phy_id, &old_duplex);
-
-	if (old_duplex == FAL_FULL_DUPLEX) {
-		phy_data |= MALIBU_CTRL_FULL_DUPLEX;
-
-		if (FAL_SPEED_1000 == speed) {
-			autoneg |= FAL_PHY_ADV_1000T_FD;
-		} else if (FAL_SPEED_100 == speed) {
-			autoneg |= FAL_PHY_ADV_100TX_FD;
-		} else {
-			autoneg |= FAL_PHY_ADV_10T_FD;
-		}
-	} else if (old_duplex == FAL_HALF_DUPLEX) {
-		phy_data &= ~MALIBU_CTRL_FULL_DUPLEX;
-
-		if (FAL_SPEED_100 == speed) {
-			autoneg |= FAL_PHY_ADV_100TX_HD;
-		} else {
-			autoneg |= FAL_PHY_ADV_10T_HD;
-		}
-	} else {
-		return SW_FAIL;
-	}
-
-	(void)malibu_phy_set_autoneg_adv(dev_id, phy_id, autoneg);
-	(void)malibu_phy_restart_autoneg(dev_id, phy_id);
-	if (malibu_phy_get_link_status(dev_id, phy_id)) {
-		do {
-			phy_status =
-			    malibu_phy_reg_read(dev_id, phy_id,
-						MALIBU_PHY_STATUS);
-		}
-		while (!MALIBU_AUTONEG_DONE(phy_status));
-	}
-
-	malibu_phy_reg_write(dev_id, phy_id, MALIBU_PHY_CONTROL, phy_data);
-	(void)malibu_phy_set_autoneg_adv(dev_id, phy_id, oldneg);
-
-	return SW_OK;
-
-}
-
-/******************************************************************************
-*
 * malibu_phy_get_duplex - Determines the speed of phy ports associated with the
 * specified device.
 */
@@ -1713,6 +1632,80 @@ malibu_phy_get_duplex(a_uint32_t dev_id, a_uint32_t phy_id,
 		*duplex = FAL_HALF_DUPLEX;
 
 	return SW_OK;
+}
+
+/******************************************************************************
+*
+* malibu_phy_set_speed - Determines the speed of phy ports associated with the
+* specified device.
+*/
+sw_error_t
+malibu_phy_set_speed(a_uint32_t dev_id, a_uint32_t phy_id,
+		     fal_port_speed_t speed)
+{
+	a_uint16_t phy_data = 0;
+	a_uint16_t phy_status = 0;
+
+	a_uint32_t autoneg, oldneg;
+	fal_port_duplex_t old_duplex;
+
+	if (phy_id == COMBO_PHY_ID) {
+		if (MALIBU_PHY_MEDIUM_COPPER !=
+		    __phy_active_medium_get(dev_id, phy_id))
+
+			return SW_NOT_SUPPORTED;
+
+		__phy_reg_pages_sel(dev_id, phy_id, MALIBU_PHY_COPPER_PAGES);
+	}
+
+	phy_data = malibu_phy_reg_read(dev_id, phy_id, MALIBU_PHY_CONTROL);
+
+	malibu_phy_get_duplex(dev_id, phy_id, &old_duplex);
+
+	if (old_duplex == FAL_FULL_DUPLEX) {
+		phy_data |= MALIBU_CTRL_FULL_DUPLEX;
+
+		if (FAL_SPEED_1000 == speed) {
+			phy_data |= MALIBU_CTRL_SPEED_1000;
+			phy_data &= ~MALIBU_CTRL_SPEED_100;
+			phy_data |= MALIBU_CTRL_AUTONEGOTIATION_ENABLE;
+		} else if (FAL_SPEED_100 == speed) {
+			phy_data |= MALIBU_CTRL_SPEED_100;
+			phy_data &= ~MALIBU_CTRL_SPEED_1000;
+			phy_data &= ~MALIBU_CTRL_AUTONEGOTIATION_ENABLE;
+		} else if (FAL_SPEED_10 == speed){
+			phy_data &= ~MALIBU_CTRL_SPEED_100;
+			phy_data &= ~MALIBU_CTRL_SPEED_1000;
+			phy_data &= ~MALIBU_CTRL_AUTONEGOTIATION_ENABLE;
+		} else {
+		return SW_BAD_PARAM;
+		}
+	} else if (old_duplex == FAL_HALF_DUPLEX) {
+		phy_data &= ~MALIBU_CTRL_FULL_DUPLEX;
+
+		if (FAL_SPEED_100 == speed) {
+			phy_data |= MALIBU_CTRL_SPEED_100;
+			phy_data &= ~MALIBU_CTRL_SPEED_1000;
+			phy_data &= ~MALIBU_CTRL_AUTONEGOTIATION_ENABLE;
+		} else if (FAL_SPEED_10 == speed) {
+			phy_data &= ~MALIBU_CTRL_SPEED_100;
+			phy_data &= ~MALIBU_CTRL_SPEED_1000;
+			phy_data &= ~MALIBU_CTRL_AUTONEGOTIATION_ENABLE;
+		} else if (FAL_SPEED_10000== speed){
+            phy_data |= MALIBU_CTRL_FULL_DUPLEX;
+            phy_data |= MALIBU_CTRL_SPEED_1000;
+		    phy_data &= ~MALIBU_CTRL_SPEED_100;
+		    phy_data |= MALIBU_CTRL_AUTONEGOTIATION_ENABLE;
+		} else {
+		return SW_BAD_PARAM;
+	       }
+	} else {
+		return SW_FAIL;
+	}
+
+	malibu_phy_reg_write(dev_id, phy_id, MALIBU_PHY_CONTROL, phy_data);
+	return SW_OK;
+
 }
 
 /******************************************************************************
@@ -1750,6 +1743,18 @@ malibu_phy_set_duplex(a_uint32_t dev_id, a_uint32_t phy_id,
 				} else {
 					return SW_BAD_PARAM;
 				}
+				} else {
+
+					if (duplex == FAL_FULL_DUPLEX) {
+					phy_data |= MALIBU_CTRL_FULL_DUPLEX;
+					phy_data &= ~MALIBU_CTRL_AUTONEGOTIATION_ENABLE;
+				} else if (duplex == FAL_HALF_DUPLEX) {
+					phy_data &= ~MALIBU_CTRL_FULL_DUPLEX;
+					phy_data &= ~MALIBU_CTRL_AUTONEGOTIATION_ENABLE;
+				} else {
+					return SW_BAD_PARAM;
+				}
+					} 
 				malibu_phy_reg_write(dev_id, phy_id,
 						     MALIBU_PHY_CONTROL,
 						     phy_data);
@@ -1757,115 +1762,64 @@ malibu_phy_set_duplex(a_uint32_t dev_id, a_uint32_t phy_id,
 				return SW_OK;
 			}
 
-			if (A_TRUE == malibu_phy_autoneg_status(dev_id, phy_id))
-				phy_data &= ~MALIBU_CTRL_AUTONEGOTIATION_ENABLE;
-
-			(void)malibu_phy_get_autoneg_adv(dev_id, phy_id,
-							 &autoneg);
-			oldneg = autoneg;
-			autoneg &= ~FAL_PHY_ADV_BX_SPEED_ALL;
-			(void)malibu_phy_get_speed(dev_id, phy_id, &old_speed);
-
-			if (FAL_SPEED_1000 == old_speed) {
-				phy_data |= MALIBU_CTRL_SPEED_1000;
-			} else {
-				return SW_FAIL;
-			}
-
-			if (duplex == FAL_FULL_DUPLEX) {
-				phy_data |= MALIBU_CTRL_FULL_DUPLEX;
-
-				if (FAL_SPEED_1000 == old_speed) {
-					autoneg = FAL_PHY_ADV_1000BX_FD;
-				}
-			} else if (duplex == FAL_HALF_DUPLEX) {
-				phy_data &= ~MALIBU_CTRL_FULL_DUPLEX;
-
-				if (FAL_SPEED_1000 == old_speed) {
-					autoneg = FAL_PHY_ADV_1000BX_HD;
-				}
-			} else {
-				return SW_BAD_PARAM;
-			}
-
-			(void)malibu_phy_set_autoneg_adv(dev_id, phy_id,
-							 autoneg);
-			(void)malibu_phy_restart_autoneg(dev_id, phy_id);
-			if (malibu_phy_get_link_status(dev_id, phy_id)) {
-				do {
-					phy_status =
-					    malibu_phy_reg_read(dev_id, phy_id,
-								MALIBU_PHY_STATUS);
-				}
-				while (!MALIBU_AUTONEG_DONE(phy_status));
-			}
-
-			malibu_phy_reg_write(dev_id, phy_id, MALIBU_PHY_CONTROL,
-					     phy_data);
-			(void)malibu_phy_set_autoneg_adv(dev_id, phy_id,
-							 oldneg);
-
-			return SW_OK;
-
 		} else {
 			__phy_reg_pages_sel(dev_id, phy_id,
 					    MALIBU_PHY_COPPER_PAGES);
 		}
-	}
 
-	if (A_TRUE == malibu_phy_autoneg_status(dev_id, phy_id))
-		phy_data &= ~MALIBU_CTRL_AUTONEGOTIATION_ENABLE;
+	phy_data = malibu_phy_reg_read(dev_id, phy_id, MALIBU_PHY_CONTROL);
 
-	(void)malibu_phy_get_autoneg_adv(dev_id, phy_id, &autoneg);
-	oldneg = autoneg;
-	autoneg &= ~FAL_PHY_ADV_GE_SPEED_ALL;
-	(void)malibu_phy_get_speed(dev_id, phy_id, &old_speed);
+       malibu_phy_get_speed(dev_id, phy_id, &old_speed);
 
-	if (FAL_SPEED_1000 == old_speed) {
-		phy_data |= MALIBU_CTRL_SPEED_1000;
-	} else if (FAL_SPEED_100 == old_speed) {
-		phy_data |= MALIBU_CTRL_SPEED_100;
-	} else if (FAL_SPEED_10 == old_speed) {
-		phy_data |= MALIBU_CTRL_SPEED_10;
-	} else {
-		return SW_FAIL;
-	}
+       if (old_speed == FAL_SPEED_1000) {
 
-	if (duplex == FAL_FULL_DUPLEX) {
+	    phy_data |= MALIBU_CTRL_SPEED_1000;
+	    phy_data &= ~MALIBU_CTRL_SPEED_100;
+	    phy_data |= MALIBU_CTRL_AUTONEGOTIATION_ENABLE;
+
+		if (duplex == FAL_FULL_DUPLEX) {
 		phy_data |= MALIBU_CTRL_FULL_DUPLEX;
 
-		if (FAL_SPEED_1000 == old_speed) {
-			autoneg = FAL_PHY_ADV_1000T_FD;
-		} else if (FAL_SPEED_100 == old_speed) {
-			autoneg = FAL_PHY_ADV_100TX_FD;
+		} else if (duplex == FAL_HALF_DUPLEX) {
+
+		return SW_NOT_SUPPORTED;
 		} else {
-			autoneg = FAL_PHY_ADV_10T_FD;
+		return SW_BAD_PARAM;
 		}
-	} else if (duplex == FAL_HALF_DUPLEX) {
+         } else if (old_speed == FAL_SPEED_100) {
+	       phy_data |= MALIBU_CTRL_SPEED_100;
+		phy_data &= ~MALIBU_CTRL_SPEED_1000;
+		phy_data &= ~MALIBU_CTRL_AUTONEGOTIATION_ENABLE;
+
+         if (duplex == FAL_FULL_DUPLEX) {
+		phy_data |= MALIBU_CTRL_FULL_DUPLEX;
+		
+		} else if (duplex == FAL_HALF_DUPLEX) {
+
 		phy_data &= ~MALIBU_CTRL_FULL_DUPLEX;
 
-		if (FAL_SPEED_100 == old_speed) {
-			autoneg = FAL_PHY_ADV_100TX_HD;
 		} else {
-			autoneg = FAL_PHY_ADV_10T_HD;
-		}
-	} else {
 		return SW_BAD_PARAM;
-	}
+		} 
+          } else if (old_speed == FAL_SPEED_10) {
+          	phy_data &= ~MALIBU_CTRL_SPEED_100;
+		phy_data &= ~MALIBU_CTRL_SPEED_1000;
+		phy_data &= ~MALIBU_CTRL_AUTONEGOTIATION_ENABLE;
 
-	(void)malibu_phy_set_autoneg_adv(dev_id, phy_id, autoneg);
-	(void)malibu_phy_restart_autoneg(dev_id, phy_id);
-	if (malibu_phy_get_link_status(dev_id, phy_id)) {
-		do {
-			phy_status =
-			    malibu_phy_reg_read(dev_id, phy_id,
-						MALIBU_PHY_STATUS);
+         if (duplex == FAL_FULL_DUPLEX) {
+		phy_data |= MALIBU_CTRL_FULL_DUPLEX;
+		
+		} else if (duplex == FAL_HALF_DUPLEX) {
+
+		phy_data &= ~MALIBU_CTRL_FULL_DUPLEX;
+
+		} else {
+		return SW_BAD_PARAM;
 		}
-		while (!MALIBU_AUTONEG_DONE(phy_status));
-	}
-
-	malibu_phy_reg_write(dev_id, phy_id, MALIBU_PHY_CONTROL, phy_data);
-	(void)malibu_phy_set_autoneg_adv(dev_id, phy_id, oldneg);
+          } else {
+             return SW_FAIL;
+          }
+		malibu_phy_reg_write(dev_id, phy_id, MALIBU_PHY_CONTROL, phy_data);
 
 	return SW_OK;
 }
