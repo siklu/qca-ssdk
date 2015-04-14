@@ -1115,8 +1115,13 @@ static int miibus_get()
 	const __be32 *prop = NULL;
 	struct device_node *mdio_node = NULL;
 	struct platform_device *mdio_plat = NULL;
+	struct qca961x_mdio_data *mdio_data = NULL;
 
-	mdio_node = of_find_compatible_node(NULL, NULL, "virtual,mdio-gpio");
+	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS)
+		mdio_node = of_find_compatible_node(NULL, NULL, "qcom,qca961x-mdio");
+	else
+		mdio_node = of_find_compatible_node(NULL, NULL, "virtual,mdio-gpio");
+
 	if (!mdio_node) {
 		printk("getting virtual,mdio-gpio failed\n");
 		return 1;
@@ -1128,7 +1133,18 @@ static int miibus_get()
 		return 1;
 	}
 
-	miibus = dev_get_drvdata(&mdio_plat->dev);
+	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS)
+	{
+		mdio_data = dev_get_drvdata(&mdio_plat->dev);
+		if (!mdio_data) {
+                	printk("cannot get mdio_data reference from device data\n");
+                	return 1;
+        	}
+		miibus = mdio_data->mii_bus;
+	}
+	else
+		miibus = dev_get_drvdata(&mdio_plat->dev);
+
 	if (!miibus) {
 		printk("cannot get mii bus reference from device data\n");
 		return 1;
@@ -1188,6 +1204,9 @@ ssdk_plat_init(void)
 	printk("ssdk_plat_init start\n");
 	mutex_init(&switch_mdio_lock);
 
+	if(miibus_get())
+		return -ENODEV;
+
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
 		if (!request_mem_region(ssdk_dt_global.switchreg_base_addr,
 				ssdk_dt_global.switchreg_size, "switch_mem")) {
@@ -1218,9 +1237,6 @@ ssdk_plat_init(void)
 	}
 
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_MDIO) {
-		if(miibus_get())
-			return -ENODEV;
-
 		if(driver_find(qca_phy_driver.name, &mdio_bus_type)){
 			printk("QCA PHY driver had been Registered\n");
 			return 0;
