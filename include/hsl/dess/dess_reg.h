@@ -3436,6 +3436,11 @@ extern "C" {
 #define PPPOE_SESSION_E_OFFSET                     0x4
 #define PPPOE_SESSION_NR_E                         16
 
+#define VRF_ID
+#define PPPOE_SESSION_VRF_ID_BOFFSET           18
+#define PPPOE_SESSION_VRF_ID_BLEN              3
+#define PPPOE_SESSION_VRF_ID_FLAG              HSL_RW
+
 #define ENTRY_VALID
 #define PPPOE_SESSION_ENTRY_VALID_BOFFSET          16
 #define PPPOE_SESSION_ENTRY_VALID_BLEN             2
@@ -3445,6 +3450,7 @@ extern "C" {
 #define PPPOE_SESSION_SEESION_ID_BOFFSET           0
 #define PPPOE_SESSION_SEESION_ID_BLEN              16
 #define PPPOE_SESSION_SEESION_ID_FLAG              HSL_RW
+
 
 
 #define PPPOE_EDIT
