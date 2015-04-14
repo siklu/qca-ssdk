@@ -2152,6 +2152,13 @@ cmd_data_check_pppoe(char *cmd_str, void * val, a_uint32_t size)
     if (rv)
         return rv;
 
+    rv = __cmd_data_check_complex("vrf_id", "0",
+                        "usage: the range is 0 -- 7\n",
+                        cmd_data_check_uint32, &entry.vrf_id,
+                        sizeof (a_uint32_t));
+    if (rv)
+        return rv;
+
     *(fal_pppoe_session_t*)val = entry;
     return SW_OK;
 }

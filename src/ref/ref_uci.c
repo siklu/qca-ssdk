@@ -3609,6 +3609,8 @@ parse_misc_extendpppoe(struct switch_val *val)
 			val_ptr[2] = ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "unicast_seesion")) {
 			val_ptr[3] = ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "vrf_id")) {
+			val_ptr[4] = ext_value_p->option_value;
 		}  else {
 			rv = -1;
 			break;

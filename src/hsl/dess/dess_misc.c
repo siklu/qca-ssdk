@@ -754,6 +754,11 @@ _dess_pppoe_session_add(a_uint32_t dev_id, fal_pppoe_session_t * session_tbl)
         return SW_BAD_PARAM;
     }
 
+    if(session_tbl->vrf_id > FAL_MAX_VRF_ID)
+    {
+        return SW_BAD_PARAM;
+    }
+
     for (i = 0; i < DESS_MAX_PPPOE_SESSION; i++)
     {
         HSL_REG_ENTRY_GET(rv, dev_id, PPPOE_SESSION, i,
@@ -778,17 +783,18 @@ _dess_pppoe_session_add(a_uint32_t dev_id, fal_pppoe_session_t * session_tbl)
         return SW_NO_RESOURCE;
     }
 
-#if 0
     if (A_TRUE == session_tbl->uni_session)
     {
         SW_SET_REG_BY_FIELD(PPPOE_SESSION, ENTRY_VALID, 2, reg);
     }
     else
-#endif
     {
         SW_SET_REG_BY_FIELD(PPPOE_SESSION, ENTRY_VALID, 1, reg);
     }
+
     SW_SET_REG_BY_FIELD(PPPOE_SESSION, SEESION_ID, session_tbl->session_id,
+                        reg);
+    SW_SET_REG_BY_FIELD(PPPOE_SESSION, VRF_ID, session_tbl->vrf_id,
                         reg);
 
     HSL_REG_ENTRY_SET(rv, dev_id, PPPOE_SESSION, entry_idx,
@@ -825,6 +831,7 @@ _dess_pppoe_session_del(a_uint32_t dev_id, fal_pppoe_session_t * session_tbl)
         {
             SW_SET_REG_BY_FIELD(PPPOE_SESSION, ENTRY_VALID, 0, reg);
             SW_SET_REG_BY_FIELD(PPPOE_SESSION, SEESION_ID, 0, reg);
+            SW_SET_REG_BY_FIELD(PPPOE_SESSION, VRF_ID, 0, reg);
             HSL_REG_ENTRY_SET(rv, dev_id, PPPOE_SESSION, i,
                               (a_uint8_t *) (&reg), sizeof (a_uint32_t));
             return rv;
@@ -838,7 +845,7 @@ static sw_error_t
 _dess_pppoe_session_get(a_uint32_t dev_id, fal_pppoe_session_t * session_tbl)
 {
     sw_error_t rv;
-    a_uint32_t reg, i, valid, id;
+    a_uint32_t reg, i, valid, id, vrf_id;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -855,6 +862,7 @@ _dess_pppoe_session_get(a_uint32_t dev_id, fal_pppoe_session_t * session_tbl)
 
         SW_GET_FIELD_BY_REG(PPPOE_SESSION, ENTRY_VALID, valid, reg);
         SW_GET_FIELD_BY_REG(PPPOE_SESSION, SEESION_ID, id, reg);
+        SW_GET_FIELD_BY_REG(PPPOE_SESSION, VRF_ID, vrf_id, reg);
 
         if (((1 == valid) || (2 == valid)) && (id == session_tbl->session_id))
         {
@@ -870,6 +878,7 @@ _dess_pppoe_session_get(a_uint32_t dev_id, fal_pppoe_session_t * session_tbl)
             }
 
             session_tbl->entry_id = i;
+            session_tbl->vrf_id = vrf_id;
             return SW_OK;
         }
     }
@@ -1231,7 +1240,7 @@ _dess_global_macaddr_set(a_uint32_t dev_id, fal_mac_addr_t * addr)
 	sw_error_t rv;
     a_uint32_t reg = 0;
 
-	
+
 	HSL_DEV_ID_CHECK(dev_id);
 
 	reg = (addr->uc[4] << 8) | addr->uc[5];
@@ -1248,7 +1257,7 @@ _dess_global_macaddr_get(a_uint32_t dev_id, fal_mac_addr_t * addr)
 	sw_error_t rv;
     a_uint32_t reg = 0;
 
-	
+
 	HSL_DEV_ID_CHECK(dev_id);
 	HSL_REG_ENTRY_GET(rv, dev_id, GLOBAL_MAC_ADDR0, 0, (a_uint8_t *) (&reg), sizeof (a_uint32_t));
 	addr->uc[4] = (reg >> 8) & 0xff;
@@ -2258,7 +2267,7 @@ dess_global_macaddr_set(a_uint32_t dev_id, fal_mac_addr_t * addr)
 /**
  * @brief Get global macaddr on particular device.
  * @param[in]  dev_id device id
- * @param[out] addr   addr 
+ * @param[out] addr   addr
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
