@@ -1601,7 +1601,7 @@ fal_port_vrf_id_get(a_uint32_t dev_id, fal_port_t port_id,
     sw_error_t rv;
 
     FAL_API_LOCK;
-    rv = _fal_port_vrf_id_set(dev_id, port_id, vrf_id);
+    rv = _fal_port_vrf_id_get(dev_id, port_id, vrf_id);
     FAL_API_UNLOCK;
     return rv;
 }
