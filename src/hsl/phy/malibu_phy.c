@@ -1615,7 +1615,7 @@ a_bool_t malibu_phy_autoneg_status(a_uint32_t dev_id, a_uint32_t phy_id)
 	if (phy_id == COMBO_PHY_ID) {
 
 		if (__medium_is_fiber_100fx(dev_id, phy_id))
-			return SW_NOT_SUPPORTED;
+			return A_FALSE;
 		__phy_reg_pages_sel_by_active_medium(dev_id, phy_id);
 	}
 
