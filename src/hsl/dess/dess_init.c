@@ -69,7 +69,7 @@ a_uint32_t dess_pbmp[PORT_WRAPPER_MAX] = {
 	};
 
 
-enum dess_port_cfg dess_get_port_config()
+enum dess_port_cfg dess_get_port_config(void)
 {
 	return dess_cfg[0]->mac_mode;
 }

@@ -1410,25 +1410,6 @@ ssdk_init(a_uint32_t dev_id, ssdk_init_cfg * cfg)
 }
 
 sw_error_t
-ssdk_reduced_init(a_uint32_t dev_id, hsl_init_mode cpu_mode,
-                  hsl_access_mode reg_mode)
-{
-    sw_error_t rv;
-
-#if (defined(KERNEL_MODULE) && defined(USER_MODE))
-    rv = hsl_dev_reduced_init(dev_id, cpu_mode, reg_mode);
-#else
-#ifdef HSL_STANDALONG
-    rv = hsl_dev_reduced_init(dev_id, cpu_mode, reg_mode);
-#else
-    rv = fal_reduced_init(dev_id, cpu_mode, reg_mode);
-#endif
-#endif
-
-    return rv;
-}
-
-sw_error_t
 ssdk_cleanup(void)
 {
     sw_error_t rv;
