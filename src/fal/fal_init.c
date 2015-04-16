@@ -53,36 +53,6 @@ fal_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 }
 
 
-/**
- * @brief Init fal layer.
- * @details Comments:
- *   This operation will init fal layer and hsl layer
- * @param[in] dev_id device id
- * @param[in] cpu_mode cpu port connecting mode
- * @param[in] reg_mode register access mode
- * @return SW_OK or error code
- */
-sw_error_t
-fal_reduced_init(a_uint32_t dev_id, hsl_init_mode cpu_mode, hsl_access_mode reg_mode)
-{
-    sw_error_t rv;
-    HSL_DEV_ID_CHECK(dev_id);
-
-    rv = hsl_api_init(dev_id);
-    SW_RTN_ON_ERROR(rv);
-
-    rv = hsl_dev_reduced_init(dev_id, cpu_mode, reg_mode);
-    SW_RTN_ON_ERROR(rv);
-
-#ifdef IN_VLAN
-    rv = fal_vlan_init(dev_id);
-    SW_RTN_ON_ERROR(rv);
-#endif
-
-    return rv;
-}
-
-
 static sw_error_t
 _fal_reset(a_uint32_t dev_id)
 {

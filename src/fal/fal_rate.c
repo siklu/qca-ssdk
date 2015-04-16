@@ -778,7 +778,7 @@ fal_rate_port_add_rate_byte_set(a_uint32_t dev_id, fal_port_t port_id,
     sw_error_t rv;
 
     FAL_API_LOCK;
-    _fal_rate_port_add_rate_byte_set(dev_id, port_id, number);
+    rv = _fal_rate_port_add_rate_byte_set(dev_id, port_id, number);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -790,7 +790,7 @@ fal_rate_port_add_rate_byte_get(a_uint32_t dev_id, fal_port_t port_id,
     sw_error_t rv;
 
     FAL_API_LOCK;
-    _fal_rate_port_add_rate_byte_get(dev_id, port_id, number);
+    rv = _fal_rate_port_add_rate_byte_get(dev_id, port_id, number);
     FAL_API_UNLOCK;
     return rv;
 }
