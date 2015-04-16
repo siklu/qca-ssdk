@@ -270,6 +270,66 @@ malibu_phy_mmd_read(a_uint32_t dev_id, a_uint32_t phy_id,
 
 /******************************************************************************
 *
+* malibu_phy_get_speed - Determines the speed of phy ports associated with the
+* specified device.
+*/
+
+sw_error_t
+malibu_phy_get_speed(a_uint32_t dev_id, a_uint32_t phy_id,
+		     fal_port_speed_t * speed)
+{
+	a_uint16_t phy_data;
+
+	if (phy_id == COMBO_PHY_ID) {
+		__phy_reg_pages_sel_by_active_medium(dev_id, phy_id);
+	}
+	phy_data = malibu_phy_reg_read(dev_id, phy_id, MALIBU_PHY_SPEC_STATUS);
+
+	switch (phy_data & MALIBU_STATUS_SPEED_MASK) {
+	case MALIBU_STATUS_SPEED_1000MBS:
+		*speed = FAL_SPEED_1000;
+		break;
+	case MALIBU_STATUS_SPEED_100MBS:
+		*speed = FAL_SPEED_100;
+		break;
+	case MALIBU_STATUS_SPEED_10MBS:
+		*speed = FAL_SPEED_10;
+		break;
+	default:
+		return SW_READ_ERROR;
+	}
+
+	return SW_OK;
+}
+
+/******************************************************************************
+*
+* malibu_phy_get_duplex - Determines the speed of phy ports associated with the
+* specified device.
+*/
+sw_error_t
+malibu_phy_get_duplex(a_uint32_t dev_id, a_uint32_t phy_id,
+		      fal_port_duplex_t * duplex)
+{
+	a_uint16_t phy_data;
+
+	if (phy_id == COMBO_PHY_ID) {
+		__phy_reg_pages_sel_by_active_medium(dev_id, phy_id);
+	}
+
+	phy_data = malibu_phy_reg_read(dev_id, phy_id, MALIBU_PHY_SPEC_STATUS);
+
+	//read duplex
+	if (phy_data & MALIBU_STATUS_FULL_DUPLEX)
+		*duplex = FAL_FULL_DUPLEX;
+	else
+		*duplex = FAL_HALF_DUPLEX;
+
+	return SW_OK;
+}
+
+/******************************************************************************
+*
 * malibu_phy_reset - reset the phy
 *
 * reset the phy
@@ -475,8 +535,10 @@ malibu_phy_set_combo_prefer_medium(a_uint32_t dev_id, a_uint32_t phy_id,
 
 	if (phy_medium == PHY_MEDIUM_FIBER) {
 		phy_data |= MALIBU_PHY4_PREFER_FIBER;
+		phy_data &= ~0x8000;
 	} else if (phy_medium == PHY_MEDIUM_COPPER) {
 		phy_data &= ~MALIBU_PHY4_PREFER_FIBER;
+		phy_data |= 0x8000;
 	} else {
 		return SW_BAD_PARAM;
 	}
@@ -690,22 +752,58 @@ malibu_phy_set_local_loopback(a_uint32_t dev_id, a_uint32_t phy_id,
 			      a_bool_t enable)
 {
 	a_uint16_t phy_data;
+	fal_port_speed_t old_speed;
+	fal_port_duplex_t old_duplex;
 
-	if (phy_id == COMBO_PHY_ID) {
+       if (enable == A_TRUE) {
+	     if (phy_id == COMBO_PHY_ID) {
 
-		__phy_reg_pages_sel_by_active_medium(dev_id, phy_id);
+		 if (MALIBU_PHY_MEDIUM_COPPER !=
+		    __phy_active_medium_get(dev_id, phy_id)) {
 
-	}
+			__phy_reg_pages_sel(dev_id, phy_id,
+					    MALIBU_PHY_SGBX_PAGES);
 
-	phy_data = malibu_phy_reg_read(dev_id, phy_id, MALIBU_PHY_CONTROL);
+			if (__medium_is_fiber_100fx(dev_id, phy_id)) {
 
-	if (enable == A_TRUE) {
-		phy_data |= MALIBU_LOCAL_LOOPBACK_ENABLE;
-		phy_data &= ~MALIBU_CTRL_AUTONEGOTIATION_ENABLE;
-	} else {
-		phy_data |= MALIBU_CTRL_AUTONEGOTIATION_ENABLE;
-		phy_data &= ~MALIBU_LOCAL_LOOPBACK_ENABLE;
-	}
+				phy_data = MALIBU_100M_LOOPBACK;
+
+				} else {
+                                   phy_data = MALIBU_1000M_LOOPBACK;
+					}
+				malibu_phy_reg_write(dev_id, phy_id, MALIBU_PHY_CONTROL, phy_data);
+				return SW_OK;
+			}
+                 __phy_reg_pages_sel(dev_id, phy_id,
+					    MALIBU_PHY_COPPER_PAGES);
+		}
+
+			  malibu_phy_get_speed(dev_id, phy_id, &old_speed);
+			  if (old_speed == FAL_SPEED_1000) {
+			  	phy_data = MALIBU_1000M_LOOPBACK;
+			  	} else if (old_speed == FAL_SPEED_100) {
+			  	   phy_data = MALIBU_100M_LOOPBACK;
+			  	} else if (old_speed == FAL_SPEED_10) {
+			  	   phy_data = MALIBU_10M_LOOPBACK;
+			  	} else {
+                                return SW_FAIL;
+			  	}
+         } else {
+            if (phy_id == COMBO_PHY_ID) {
+		 if (MALIBU_PHY_MEDIUM_COPPER !=
+		    __phy_active_medium_get(dev_id, phy_id)) {
+
+			__phy_reg_pages_sel(dev_id, phy_id,
+					    MALIBU_PHY_SGBX_PAGES);
+			
+			} else {
+	                 __phy_reg_pages_sel(dev_id, phy_id,
+					    MALIBU_PHY_COPPER_PAGES);
+			}
+           	 }
+			  phy_data = MALIBU_COMMON_CTRL;
+		 }
+
 
 	malibu_phy_reg_write(dev_id, phy_id, MALIBU_PHY_CONTROL, phy_data);
 	return SW_OK;
@@ -1576,66 +1674,6 @@ sw_error_t malibu_phy_enable_autoneg(a_uint32_t dev_id, a_uint32_t phy_id)
 
 /******************************************************************************
 *
-* malibu_phy_get_speed - Determines the speed of phy ports associated with the
-* specified device.
-*/
-
-sw_error_t
-malibu_phy_get_speed(a_uint32_t dev_id, a_uint32_t phy_id,
-		     fal_port_speed_t * speed)
-{
-	a_uint16_t phy_data;
-
-	if (phy_id == COMBO_PHY_ID) {
-		__phy_reg_pages_sel_by_active_medium(dev_id, phy_id);
-	}
-	phy_data = malibu_phy_reg_read(dev_id, phy_id, MALIBU_PHY_SPEC_STATUS);
-
-	switch (phy_data & MALIBU_STATUS_SPEED_MASK) {
-	case MALIBU_STATUS_SPEED_1000MBS:
-		*speed = FAL_SPEED_1000;
-		break;
-	case MALIBU_STATUS_SPEED_100MBS:
-		*speed = FAL_SPEED_100;
-		break;
-	case MALIBU_STATUS_SPEED_10MBS:
-		*speed = FAL_SPEED_10;
-		break;
-	default:
-		return SW_READ_ERROR;
-	}
-
-	return SW_OK;
-}
-
-/******************************************************************************
-*
-* malibu_phy_get_duplex - Determines the speed of phy ports associated with the
-* specified device.
-*/
-sw_error_t
-malibu_phy_get_duplex(a_uint32_t dev_id, a_uint32_t phy_id,
-		      fal_port_duplex_t * duplex)
-{
-	a_uint16_t phy_data;
-
-	if (phy_id == COMBO_PHY_ID) {
-		__phy_reg_pages_sel_by_active_medium(dev_id, phy_id);
-	}
-
-	phy_data = malibu_phy_reg_read(dev_id, phy_id, MALIBU_PHY_SPEC_STATUS);
-
-	//read duplex
-	if (phy_data & MALIBU_STATUS_FULL_DUPLEX)
-		*duplex = FAL_FULL_DUPLEX;
-	else
-		*duplex = FAL_HALF_DUPLEX;
-
-	return SW_OK;
-}
-
-/******************************************************************************
-*
 * malibu_phy_set_speed - Determines the speed of phy ports associated with the
 * specified device.
 */
@@ -1754,15 +1792,13 @@ malibu_phy_set_duplex(a_uint32_t dev_id, a_uint32_t phy_id,
 				} else {
 					return SW_BAD_PARAM;
 				}
-					} 
+					}
 				malibu_phy_reg_write(dev_id, phy_id,
 						     MALIBU_PHY_CONTROL,
 						     phy_data);
 
 				return SW_OK;
 			}
-
-		} else {
 			__phy_reg_pages_sel(dev_id, phy_id,
 					    MALIBU_PHY_COPPER_PAGES);
 		}
