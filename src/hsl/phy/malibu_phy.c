@@ -958,42 +958,14 @@ malibu_phy_cdt_get(a_uint32_t dev_id, a_uint32_t phy_id,
 	if ((!port_cdt) || (phy_id > 4)) {
 		return SW_FAIL;
 	}
-#if 0
-	/*disable clock gating */
-	org_debug_value = f1_phy_debug_read(dev_id, phy_id, 0x3f);
-	f1_phy_debug_write(dev_id, phy_id, 0x3f, 0);
-#endif
+
 
 	malibu_phy_cdt_start(dev_id, phy_id);
 
 	/* Get cable status */
 	status = malibu_phy_mmd_read(dev_id, phy_id, 3, 0x8064);
 
-#if 0
-	/* Workaround for cable lenth less than 20M  */
-	port_cdt->pair_c_status = (status >> 4) & 0x3;
-	/* Get Cable Length value */
-	cable_delta_time = f1_phy_mmd_read(dev_id, phy_id, 3, 0x8067);
-	/* the actual cable length equals to CableDeltaTime * 0.824 */
-	port_cdt->pair_c_len = (cable_delta_time * 824) / 1000;
-	if ((1 == port_cdt->pair_c_status) &&
-	    (port_cdt->pair_c_len > 0) && (port_cdt->pair_c_len <= 20)) {
-		reg806e = f1_phy_mmd_read(dev_id, phy_id, 3, 0x806e);
-		f1_phy_mmd_write(dev_id, phy_id, 3, 0x806e,
-				 reg806e & (~0x8000));
 
-		f1_phy_reset(dev_id, phy_id);
-		f1_phy_reset_done(dev_id, phy_id);
-		do {
-			link_st = f1_phy_get_link_status(dev_id, phy_id);
-			aos_mdelay(100);
-		} while ((A_FALSE == link_st) && (--ii));
-
-		f1_phy_cdt_start(dev_id, phy_id);
-		/* Get cable status */
-		status = f1_phy_mmd_read(dev_id, phy_id, 3, 0x8064);
-	}
-#endif
 
 	for (i = 0; i < 4; i++) {
 		switch (i) {
@@ -1039,10 +1011,6 @@ malibu_phy_cdt_get(a_uint32_t dev_id, a_uint32_t phy_id,
 		}
 	}
 
-#if 0
-	/*restore debug port value */
-	f1_phy_debug_write(dev_id, phy_id, 0x3f, org_debug_value);
-#endif
 
 	return SW_OK;
 }
@@ -1443,6 +1411,9 @@ malibu_phy_set_autoneg_adv(a_uint32_t dev_id, a_uint32_t phy_id,
 			if (autoneg & FAL_PHY_ADV_1000BX_FD)
 				phy_data |= MALIBU_BX_ADVERTISE_1000FULL;
 
+			if (autoneg & FAL_PHY_ADV_1000BX_HD)
+				phy_data |= MALIBU_BX_ADVERTISE_1000HALF;
+
 			if (autoneg & FAL_PHY_ADV_PAUSE)
 				phy_data |= MALIBU_BX_ADVERTISE_PAUSE;
 
@@ -1565,6 +1536,9 @@ malibu_phy_get_autoneg_adv(a_uint32_t dev_id, a_uint32_t phy_id,
 
 			if (phy_data & MALIBU_BX_ADVERTISE_ASYM_PAUSE)
 				*autoneg |= FAL_PHY_ADV_ASY_PAUSE;
+
+			if (phy_data & MALIBU_BX_ADVERTISE_1000HALF)
+				*autoneg |= FAL_PHY_ADV_1000BX_HD;
 
 			if (phy_data & MALIBU_BX_ADVERTISE_1000FULL)
 				*autoneg |= FAL_PHY_ADV_1000BX_FD;
@@ -2120,6 +2094,24 @@ malibu_phy_intr_mask_set(a_uint32_t dev_id, a_uint32_t phy_id,
 		phy_data &= (~MALIBU_INTR_BX_FX_STATUS_DOWN_CHANGE);
 	}
 
+	if (FAL_PHY_INTR_MEDIA_STATUS_CHANGE & intr_mask_flag) {
+		phy_data |= MALIBU_INTR_MEDIA_STATUS_CHANGE;
+	} else {
+		phy_data &= (~MALIBU_INTR_MEDIA_STATUS_CHANGE);
+	}
+
+	if (FAL_PHY_INTR_WOL_STATUS & intr_mask_flag) {
+		phy_data |= MALIBU_INTR_WOL;
+	} else {
+		phy_data &= (~MALIBU_INTR_WOL);
+	}
+
+	if (FAL_PHY_INTR_POE_STATUS & intr_mask_flag) {
+		phy_data |= MALIBU_INTR_POE;
+	} else {
+		phy_data &= (~MALIBU_INTR_POE);
+	}
+
 	malibu_phy_reg_write(dev_id, phy_id, MALIBU_PHY_INTR_MASK, phy_data);
 	return SW_OK;
 }
@@ -2162,6 +2154,18 @@ malibu_phy_intr_mask_get(a_uint32_t dev_id, a_uint32_t phy_id,
 		*intr_mask_flag |= FAL_PHY_INTR_BX_FX_STATUS_DOWN_CHANGE;
 	}
 
+	if (MALIBU_INTR_MEDIA_STATUS_CHANGE  & phy_data) {
+		*intr_mask_flag |= FAL_PHY_INTR_MEDIA_STATUS_CHANGE;
+	}
+
+	if (MALIBU_INTR_WOL  & phy_data) {
+		*intr_mask_flag |= FAL_PHY_INTR_WOL_STATUS;
+	}
+
+	if (MALIBU_INTR_POE  & phy_data) {
+		*intr_mask_flag |= FAL_PHY_INTR_POE_STATUS;
+	}
+
 	return SW_OK;
 }
 
@@ -2201,6 +2205,17 @@ malibu_phy_intr_status_get(a_uint32_t dev_id, a_uint32_t phy_id,
 
 	if (MALIBU_INTR_BX_FX_STATUS_DOWN_CHANGE & phy_data) {
 		*intr_status_flag |= FAL_PHY_INTR_BX_FX_STATUS_DOWN_CHANGE;
+	}
+	if (MALIBU_INTR_MEDIA_STATUS_CHANGE  & phy_data) {
+		*intr_status_flag |= FAL_PHY_INTR_MEDIA_STATUS_CHANGE;
+	}
+
+	if (MALIBU_INTR_WOL  & phy_data) {
+		*intr_status_flag |= FAL_PHY_INTR_WOL_STATUS;
+	}
+
+	if (MALIBU_INTR_POE  & phy_data) {
+		*intr_status_flag |= FAL_PHY_INTR_POE_STATUS;
 	}
 
 	return SW_OK;
