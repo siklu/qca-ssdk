@@ -40,6 +40,7 @@
 #include <linux/phy.h>
 #include <linux/delay.h>
 #include <linux/string.h>
+#include <malibu_phy.h>
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 #include <linux/switch.h>
 #include <linux/of.h>
@@ -85,6 +86,10 @@ u8  __iomem      *hw_addr = NULL;
 u8  __iomem      *psgmii_hw_addr = NULL;
 
 static struct mutex switch_mdio_lock;
+phy_identification_t phy_array[] =
+{
+	{0x0, 0x004DD0B0, malibu_phy_init},
+};
 
 static void
 qca_phy_read_port_link(struct qca_phy_priv *priv, int port,
@@ -1390,6 +1395,29 @@ ssdk_switch_init(a_uint32_t dev_id)
 }
 
 
+
+int ssdk_phy_init(ssdk_init_cfg *cfg)
+{
+
+	int size = sizeof(phy_array)/sizeof(phy_identification_t);
+	a_uint32_t phy_id = 0;
+	a_uint16_t org_id = 0, rev_id = 0;
+	int i = 0;
+
+	for(i=0;i<size;i++)
+	{
+		cfg->reg_func.mdio_get(0, phy_array[i].phy_addr, 2, &org_id);
+		cfg->reg_func.mdio_get(0, phy_array[i].phy_addr, 3, &rev_id);
+		phy_id = (org_id<<16) | rev_id;
+
+		if(phy_array[i].phy_id == phy_id)
+			return phy_array[i].init();
+	}
+
+	return SW_FAIL;
+}
+
+
 sw_error_t
 ssdk_init(a_uint32_t dev_id, ssdk_init_cfg * cfg)
 {
@@ -1405,6 +1433,7 @@ ssdk_init(a_uint32_t dev_id, ssdk_init_cfg * cfg)
 #endif
 #endif
     rv =  ssdk_switch_init(dev_id);
+	ssdk_phy_init(cfg);
 
     return rv;
 }

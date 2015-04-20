@@ -2314,7 +2314,7 @@ static void malibu_phy_remove(struct phy_device *pdev)
 * malibu_phy_init -
 *
 */
-a_bool_t malibu_phy_init(void)
+a_bool_t malibu_phy_register(void)
 {
 
 	static struct phy_driver qca_malibu_phy_driver = {
@@ -2330,9 +2330,9 @@ a_bool_t malibu_phy_init(void)
 	return phy_driver_register(&qca_malibu_phy_driver);
 }
 
-int malibu_phy_test(void)
+int malibu_phy_init(void)
 {
-
 	phy_api_ops_init(0);
 	return malibu_phy_probe((struct phy_device *)NULL);
 }
+
