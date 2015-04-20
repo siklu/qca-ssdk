@@ -188,6 +188,16 @@ extern "C" {
 							 a_uint32_t phy_id,
 							 fal_port_interface_mode_t
 							 * interface_mode);
+	typedef sw_error_t(*hsl_phy_intr_mask_set) (a_uint32_t dev_id,
+						      a_uint32_t phy_id,
+						      a_uint32_t mask);
+	typedef sw_error_t(*hsl_phy_intr_mask_get) (a_uint32_t dev_id,
+						      a_uint32_t phy_id,
+						      a_uint32_t * mask);
+	typedef sw_error_t(*hsl_phy_intr_status_get) (a_uint32_t dev_id,
+						      a_uint32_t phy_id,
+						      a_uint32_t * status);
+
 	typedef struct hsl_phy_ops_s {
 
 		hsl_phy_init phy_init;
@@ -242,7 +252,9 @@ extern "C" {
 		hsl_phy_interface_mode_set phy_interface_mode_set;
 		hsl_phy_interface_mode_get phy_interface_mode_get;
 		hsl_phy_interface_mode_status_get phy_interface_mode_status_get;
-
+		hsl_phy_intr_mask_set  phy_intr_mask_set;
+		hsl_phy_intr_mask_get  phy_intr_mask_get;
+		hsl_phy_intr_status_get  phy_intr_status_get;
 	} hsl_phy_ops_t;
 
 	sw_error_t hsl_phy_api_ops_register(hsl_phy_ops_t * phy_api_ops);

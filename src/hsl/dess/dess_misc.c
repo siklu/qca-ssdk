@@ -23,7 +23,7 @@
 #include "hsl_port_prop.h"
 #include "dess_misc.h"
 #include "dess_reg.h"
-#include "f1_phy.h"
+#include "hsl_phy.h"
 
 #define DESS_MAX_FRMAE_SIZE      9216
 
@@ -1077,6 +1077,7 @@ _dess_port_link_intr_mask_set(a_uint32_t dev_id, a_uint32_t port_id, a_uint32_t 
 {
     sw_error_t rv;
     a_uint32_t phy_id;
+    hsl_phy_ops_t *phy_drv;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1085,10 +1086,15 @@ _dess_port_link_intr_mask_set(a_uint32_t dev_id, a_uint32_t port_id, a_uint32_t 
         return SW_BAD_PARAM;
     }
 
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+
+  if (NULL == phy_drv->phy_intr_mask_set)
+    return SW_NOT_SUPPORTED;
+
     rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
     SW_RTN_ON_ERROR(rv);
 
-    rv = f1_phy_intr_mask_set(dev_id, phy_id, intr_mask_flag);
+    rv = phy_drv->phy_intr_mask_set(dev_id, phy_id, intr_mask_flag);
     return rv;
 }
 
@@ -1097,6 +1103,7 @@ _dess_port_link_intr_mask_get(a_uint32_t dev_id, a_uint32_t port_id, a_uint32_t 
 {
     sw_error_t rv;
     a_uint32_t phy_id;
+    hsl_phy_ops_t *phy_drv;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1105,10 +1112,16 @@ _dess_port_link_intr_mask_get(a_uint32_t dev_id, a_uint32_t port_id, a_uint32_t 
         return SW_BAD_PARAM;
     }
 
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+
+  if (NULL == phy_drv->phy_intr_mask_get)
+    return SW_NOT_SUPPORTED;
+
     rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
     SW_RTN_ON_ERROR(rv);
 
-    rv = f1_phy_intr_mask_get(dev_id, phy_id, intr_mask_flag);
+     rv = phy_drv->phy_intr_mask_get(dev_id, phy_id, intr_mask_flag);
+
     return rv;
 }
 
@@ -1117,6 +1130,7 @@ _dess_port_link_intr_status_get(a_uint32_t dev_id, a_uint32_t port_id, a_uint32_
 {
     sw_error_t rv;
     a_uint32_t phy_id;
+    hsl_phy_ops_t *phy_drv;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1125,10 +1139,15 @@ _dess_port_link_intr_status_get(a_uint32_t dev_id, a_uint32_t port_id, a_uint32_
         return SW_BAD_PARAM;
     }
 
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+
+  if (NULL == phy_drv->phy_intr_status_get)
+    return SW_NOT_SUPPORTED;
+
     rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
     SW_RTN_ON_ERROR(rv);
 
-    rv = f1_phy_intr_status_get(dev_id, phy_id, intr_mask_flag);
+     rv = phy_drv->phy_intr_status_get(dev_id, phy_id, intr_mask_flag);
     return rv;
 }
 
