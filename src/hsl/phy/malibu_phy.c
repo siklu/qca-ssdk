@@ -2291,8 +2291,9 @@ static int malibu_phy_probe(struct phy_device *pdev)
 	malibu_phy_api_ops.phy_interface_mode_set = malibu_phy_interface_set_mode;
 	malibu_phy_api_ops.phy_interface_mode_get = malibu_phy_interface_get_mode;
 	malibu_phy_api_ops.phy_interface_mode_status_get = malibu_phy_interface_get_mode_status;
-
-
+	malibu_phy_api_ops.phy_intr_mask_set = malibu_phy_intr_mask_set;
+	malibu_phy_api_ops.phy_intr_mask_get = malibu_phy_intr_mask_get;
+	malibu_phy_api_ops.phy_intr_status_get = malibu_phy_intr_status_get;
 	ret = hsl_phy_api_ops_register(&malibu_phy_api_ops);
 
 	malibu_phy_hw_init();
