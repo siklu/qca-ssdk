@@ -576,7 +576,7 @@ extern "C"
     malibu_phy_intr_status_get (a_uint32_t dev_id, a_uint32_t phy_id,
 				a_uint32_t * intr_status_flag);
 
-  int malibu_phy_test (void);
+  int malibu_phy_init(void);
 
 #ifdef __cplusplus
 }

@@ -133,6 +133,12 @@ extern "C" {
 		hsl_reg_mode psgmii_reg_access_mode;
 	} ssdk_dt_cfg;
 
+typedef struct phy_identification {
+	a_uint16_t phy_addr;
+	a_uint32_t phy_id;
+	int (*init)(void);
+} phy_identification_t;
+
 #if defined ATHENA
 #define def_init_cfg  {.reg_mode = HSL_MDIO, .cpu_mode = HSL_CPU_2};
 #elif defined GARUDA
