@@ -47,6 +47,13 @@
 #include "ssdk_plat.h"
 #include "ref_vlan.h"
 
+extern void
+qca_ar8327_phy_disable();
+extern void
+qca_ar8327_phy_enable(struct qca_phy_priv *priv);
+extern void
+qca_ar8327_port_init(struct qca_phy_priv *priv, a_uint32_t port);
+
 int
 qca_ar8327_sw_set_max_frame_size(struct switch_dev *dev,
 										const struct switch_attr *attr,
@@ -105,7 +112,12 @@ qca_ar8327_sw_reset_switch(struct switch_dev *dev)
 
     /*for (i = 0; i < AR8327_MAX_VLANS; i++)*/
     /*    priv->vlan_id[i] = i;*/
+#ifndef BOARD_AR71XX
 
+	qca_ar8327_phy_disable();
+	msleep(1000);
+
+#endif
     /* init switch */
     rv += ssdk_switch_init(0);
 
@@ -114,7 +126,13 @@ qca_ar8327_sw_reset_switch(struct switch_dev *dev)
     priv->init = true;
     rv += qca_ar8327_sw_hw_apply(dev);
     priv->init = false;
-
+	#ifndef BOARD_AR71XX
+	for (i = 0; i < AR8327_NUM_PORTS; i++) {
+		qca_ar8327_port_init(priv, i);
+    }
+	fal_port_link_forcemode_set(0, 5, A_FALSE);
+	qca_ar8327_phy_enable(priv);
+	#endif
     return rv;
 }
 
