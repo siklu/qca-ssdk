@@ -1227,7 +1227,7 @@ static sw_error_t
 _isisc_port_link_forcemode_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
     sw_error_t rv;
-    a_uint32_t reg;
+    a_uint32_t reg, tmp;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1240,12 +1240,18 @@ _isisc_port_link_forcemode_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t e
                       (a_uint8_t *) (&reg), sizeof (a_uint32_t));
     SW_RTN_ON_ERROR(rv);
 
+    SW_GET_FIELD_BY_REG(PORT_STATUS, LINK_EN, tmp, reg);
+
     if (A_TRUE == enable)
     {
+	if(tmp == 0)
+		return SW_OK;
         SW_SET_REG_BY_FIELD(PORT_STATUS, LINK_EN, 0, reg);
     }
     else if (A_FALSE == enable)
     {
+	if(tmp == 1)
+		return SW_OK;
         /* for those ports without PHY, it can't sync link status */
         if (A_FALSE == _isisc_port_phy_connected(dev_id, port_id))
         {

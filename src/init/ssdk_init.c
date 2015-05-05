@@ -153,6 +153,49 @@ qca_ar8327_phy_fixup(struct qca_phy_priv *priv, int phy)
 	}
 }
 
+void
+qca_ar8327_phy_disable()
+{
+	int i = 0;
+	for (i = 0; i < AR8327_NUM_PHYS; i++) {
+		/* power down all phy*/
+		qca_ar8327_phy_write(0, i, MII_BMCR, BMCR_PDOWN);
+	}
+}
+
+void
+qca_mac_disable()
+{
+	qca_ar8216_mii_write(AR8327_REG_PAD0_CTRL, 0);
+	qca_ar8216_mii_write(AR8327_REG_PAD5_CTRL, 0);
+	qca_ar8216_mii_write(AR8327_REG_PAD6_CTRL, 0);
+	qca_ar8216_mii_write(AR8327_REG_POS, AR8327_REG_POS_HW_INIT);
+	qca_ar8216_mii_write(AR8327_REG_PAD_SGMII_CTRL, AR8327_REG_PAD_SGMII_CTRL_HW_INIT);
+	qca_ar8216_mii_write(AR8327_REG_PORT_STATUS(0), 0);
+	qca_ar8216_mii_write(AR8327_REG_PORT_STATUS(1), 0);
+	qca_ar8216_mii_write(AR8327_REG_PORT_STATUS(2), 0);
+	qca_ar8216_mii_write(AR8327_REG_PORT_STATUS(3), 0);
+	qca_ar8216_mii_write(AR8327_REG_PORT_STATUS(4), 0);
+	qca_ar8216_mii_write(AR8327_REG_PORT_STATUS(5), 0);
+	qca_ar8216_mii_write(AR8327_REG_PORT_STATUS(6), 0);
+}
+
+
+void
+qca_ar8327_phy_enable(struct qca_phy_priv *priv)
+{
+	int i = 0;
+	for (i = 0; i < AR8327_NUM_PHYS; i++) {
+		qca_ar8327_phy_fixup(priv, i);
+
+		/* start autoneg*/
+		priv->phy_write(0, i, MII_ADVERTISE, ADVERTISE_ALL |
+						     ADVERTISE_PAUSE_CAP | ADVERTISE_PAUSE_ASYM);
+		priv->phy_write(0, i, MII_CTRL1000, ADVERTISE_1000FULL);
+		priv->phy_write(0, i, MII_BMCR, BMCR_RESET | BMCR_ANENABLE);
+	}
+}
+
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 static int
 qca_ar8327_hw_init(struct qca_phy_priv *priv)
@@ -393,7 +436,7 @@ qca_ar8327_set_led_cfg(struct qca_phy_priv *priv,
     return new_pos;
 }
 
-static void
+void
 qca_ar8327_port_init(struct qca_phy_priv *priv, a_uint32_t port)
 {
 	struct ar8327_platform_data *plat_data;
@@ -440,48 +483,29 @@ qca_ar8327_port_init(struct qca_phy_priv *priv, a_uint32_t port)
 			return;
 		}
 	}
-
-	value = AR8327_PORT_STATUS_TXMAC | AR8327_PORT_STATUS_RXMAC;
-	value|= port_cfg->duplex ? AR8327_PORT_STATUS_DUPLEX : 0;
-	value |= port_cfg->rxpause ? AR8327_PORT_STATUS_RXFLOW : 0;
-	value |= port_cfg->txpause ? AR8327_PORT_STATUS_TXFLOW : 0;
-
-    if(port_cfg->speed == AR8327_PORT_SPEED_10) {
-        value |= AR8327_PORT_SPEED_10M;
-    } else if(port_cfg->speed == AR8327_PORT_SPEED_100) {
-        value |= AR8327_PORT_SPEED_100M;
-    } else if(port_cfg->speed == AR8327_PORT_SPEED_1000) {
-        value |= AR8327_PORT_SPEED_1000M;
-    } else {
-        value |= AR8327_PORT_SPEED_1000M;
-    }
-
-	priv->mii_write(AR8327_REG_PORT_STATUS(port), value);
-	if((port == 5) && plat_data->pad5_cfg) {
-		if(plat_data->pad5_cfg->mode == AR8327_PAD_PHY_RGMII) {
-			a_uint16_t val = 0;
-			/*enable RGMII  mode */
-			priv->phy_dbg_read(0, AR8327_PORT5_PHY_ADDR,
-								AR8327_PHY_REG_MODE_SEL, &val);
-			val |= AR8327_PHY_RGMII_MODE;
-			priv->phy_dbg_write(0, AR8327_PORT5_PHY_ADDR,
-								AR8327_PHY_REG_MODE_SEL, val);
-			if(plat_data->pad5_cfg->txclk_delay_en) {
-				priv->phy_dbg_read(0, AR8327_PORT5_PHY_ADDR,
-								AR8327_PHY_REG_SYS_CTRL, &val);
-				val |= AR8327_PHY_RGMII_TX_DELAY;
-				priv->phy_dbg_write(0, AR8327_PORT5_PHY_ADDR,
-								AR8327_PHY_REG_SYS_CTRL, val);
-			}
-			if(plat_data->pad5_cfg->rxclk_delay_en) {
-				priv->phy_dbg_read(0, AR8327_PORT5_PHY_ADDR,
-								AR8327_PHY_REG_TEST_CTRL, &val);
-				val |= AR8327_PHY_RGMII_RX_DELAY;
-				priv->phy_dbg_write(0, AR8327_PORT5_PHY_ADDR,
-								AR8327_PHY_REG_TEST_CTRL, val);
-			}
-		}
+	/*disable mac at first*/
+	fal_port_rxmac_status_set(0, port, A_FALSE);
+	fal_port_txmac_status_set(0, port, A_FALSE);
+	value = port_cfg->duplex ? FAL_FULL_DUPLEX : FAL_HALF_DUPLEX;
+	fal_port_duplex_set(0, port, value);
+	value = port_cfg->txpause ? A_TRUE : A_FALSE;
+	fal_port_txfc_status_set(0, port, value);
+	value = port_cfg->rxpause ? A_TRUE : A_FALSE;
+	fal_port_rxfc_status_set(0, port, value);
+	if(port_cfg->speed == AR8327_PORT_SPEED_10) {
+		value = FAL_SPEED_10;
+	} else if(port_cfg->speed == AR8327_PORT_SPEED_100) {
+		value = FAL_SPEED_100;
+	} else if(port_cfg->speed == AR8327_PORT_SPEED_1000) {
+		value = FAL_SPEED_1000;
+	} else {
+		value = FAL_SPEED_1000;
 	}
+	fal_port_speed_set(0, port, value);
+	/*enable mac at last*/
+	udelay(800);
+	fal_port_rxmac_status_set(0, port, A_TRUE);
+	fal_port_txmac_status_set(0, port, A_TRUE);
 }
 
 static int
@@ -499,6 +523,18 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 	value = priv->mii_read(AR8327_REG_CTRL);
 	value |= 0x80000000;
 	priv->mii_write(AR8327_REG_CTRL, value);
+	/*Need wait reset done*/
+	do {
+		udelay(10);
+		value = priv->mii_read(AR8327_REG_CTRL);
+	} while(value & AR8327_CTRL_RESET);
+	do {
+		udelay(10);
+		value = priv->mii_read(0x20);
+	} while ((value & SSDK_GLOBAL_INITIALIZED_STATUS) != SSDK_GLOBAL_INITIALIZED_STATUS);
+	#ifndef BOARD_AR71XX
+	fal_port_link_forcemode_set(0, 5, A_TRUE);
+	#endif
 
 	value = priv->mii_read(AR8327_REG_PORT_LOOKUP(0));
 	value &= ~0x5e;
@@ -601,6 +637,7 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 
 	priv->mii_write(AR8327_REG_POS, new_pos);
 
+#ifdef BOARD_AR71XX
 	for (i = 0; i < AR8327_NUM_PHYS; i++) {
 		qca_ar8327_phy_fixup(priv, i);
 
@@ -610,6 +647,7 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 		priv->phy_write(0, i, MII_CTRL1000, ADVERTISE_1000FULL);
 		priv->phy_write(0, i, MII_BMCR, BMCR_RESET | BMCR_ANENABLE);
 	}
+#endif
 
 	if(priv->version == QCA_VER_AR8337) {
         value = priv->mii_read(AR8327_REG_PAD5_CTRL);
@@ -617,11 +655,13 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
         priv->mii_write(AR8327_REG_PAD5_CTRL, value);
     }
 
+#ifdef BOARD_AR71XX
 	msleep(1000);
 
 	for (i = 0; i < AR8327_NUM_PORTS; i++) {
 		qca_ar8327_port_init(priv, i);
     }
+#endif
 
 	return 0;
 }
@@ -1305,9 +1345,11 @@ ssdk_switch_init(a_uint32_t dev_id)
             break;
         }
 #endif
+#ifdef BOARD_AR71XX
         if (i  != 0) {
             fal_port_link_forcemode_set(dev_id, i, A_FALSE);
         }
+#endif
         fal_port_rxhdr_mode_set(dev_id, i, FAL_NO_HEADER_EN);
         fal_port_txhdr_mode_set(dev_id, i, FAL_NO_HEADER_EN);
         fal_port_3az_status_set(dev_id, i, A_FALSE);
@@ -1422,6 +1464,14 @@ sw_error_t
 ssdk_init(a_uint32_t dev_id, ssdk_init_cfg * cfg)
 {
     sw_error_t rv;
+
+	#ifndef BOARD_AR71XX
+		if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_MDIO) {
+			qca_ar8327_phy_disable();
+			qca_mac_disable();
+			msleep(1000);
+		}
+	#endif
 
 #if (defined(KERNEL_MODULE) && defined(USER_MODE))
     rv = hsl_dev_init(dev_id, cfg);
