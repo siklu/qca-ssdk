@@ -1472,6 +1472,7 @@ _dess_ports_link_status_get(a_uint32_t dev_id, a_uint32_t * status)
     hsl_phy_ops_t *phy_drv;
 
     HSL_DEV_ID_CHECK(dev_id);
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
     if (NULL == phy_drv->phy_link_status_get)
     return SW_NOT_SUPPORTED;
 
