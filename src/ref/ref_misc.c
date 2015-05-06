@@ -51,8 +51,12 @@ extern void
 qca_ar8327_phy_disable();
 extern void
 qca_ar8327_phy_enable(struct qca_phy_priv *priv);
+#ifndef BOARD_AR71XX
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,14,0))
 extern void
 qca_ar8327_port_init(struct qca_phy_priv *priv, a_uint32_t port);
+#endif
+#endif
 
 int
 qca_ar8327_sw_set_max_frame_size(struct switch_dev *dev,
@@ -127,9 +131,11 @@ qca_ar8327_sw_reset_switch(struct switch_dev *dev)
     rv += qca_ar8327_sw_hw_apply(dev);
     priv->init = false;
 	#ifndef BOARD_AR71XX
+	#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,14,0))
 	for (i = 0; i < AR8327_NUM_PORTS; i++) {
 		qca_ar8327_port_init(priv, i);
-    }
+	}
+	#endif
 	fal_port_link_forcemode_set(0, 5, A_FALSE);
 	qca_ar8327_phy_enable(priv);
 	#endif
