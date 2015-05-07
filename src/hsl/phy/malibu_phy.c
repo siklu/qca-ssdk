@@ -138,18 +138,31 @@ static malibu_phy_medium_t __phy_active_medium_get(a_uint32_t dev_id,
 						   a_uint32_t phy_id)
 {
 	a_uint16_t phy_data = 0;
+	a_uint16_t phy_mode = 0;
 
-	phy_data = malibu_phy_reg_read(dev_id, phy_id, MALIBU_PHY_SGMII_STATUS);
+	phy_mode = malibu_phy_reg_read(dev_id, phy_id, MALIBU_PHY_CHIP_CONFIG);
+	phy_mode &= 0x000f;
 
-	if ((phy_data & MALIBU_PHY4_AUTO_COPPER_SELECT)) {
-		return MALIBU_PHY_MEDIUM_COPPER;
-	} else if ((phy_data & MALIBU_PHY4_AUTO_BX1000_SELECT)) {
-		return MALIBU_PHY_MEDIUM_FIBER;	/*PHY_MEDIUM_FIBER_BX1000 */
-	} else if ((phy_data & MALIBU_PHY4_AUTO_FX100_SELECT)) {
-		return MALIBU_PHY_MEDIUM_FIBER;	/*PHY_MEDIUM_FIBER_FX100 */
-	}
-	/* link down */
-	return __phy_prefer_medium_get(dev_id, phy_id);
+       if (phy_mode == MALIBU_PHY_PSGMII_AMDET)  {
+
+		phy_data = malibu_phy_reg_read(dev_id, phy_id, MALIBU_PHY_SGMII_STATUS);
+
+		if ((phy_data & MALIBU_PHY4_AUTO_COPPER_SELECT)) {
+			return MALIBU_PHY_MEDIUM_COPPER;
+		} else if ((phy_data & MALIBU_PHY4_AUTO_BX1000_SELECT)) {
+			return MALIBU_PHY_MEDIUM_FIBER;	/*PHY_MEDIUM_FIBER_BX1000 */
+		} else if ((phy_data & MALIBU_PHY4_AUTO_FX100_SELECT)) {
+			return MALIBU_PHY_MEDIUM_FIBER;	/*PHY_MEDIUM_FIBER_FX100 */
+		}
+		/* link down */
+		return __phy_prefer_medium_get(dev_id, phy_id);
+       }  else if ((phy_mode == MALIBU_PHY_PSGMII_BASET) ||(phy_mode == MALIBU_PHY_SGMII_BASET) )  {
+       	return MALIBU_PHY_MEDIUM_COPPER;
+       }  else if ((phy_mode == MALIBU_PHY_PSGMII_BX1000) ||(phy_mode == MALIBU_PHY_PSGMII_FX100)) {
+       	return MALIBU_PHY_MEDIUM_FIBER;
+       } else {
+       	return MALIBU_PHY_MEDIUM_COPPER;
+       }
 }
 
 /******************************************************************************
