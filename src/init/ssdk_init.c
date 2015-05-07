@@ -75,6 +75,9 @@
 #define SHIVA_CHIP_ID 0x1f
 #define SHIVA_CHIP_REG 0x10
 
+#ifdef IN_RFS
+struct rfs_device rfs_dev;
+#endif
 
 /*
  * Using ISIS's address as default
@@ -1823,10 +1826,11 @@ regi_init(void)
 	ssdk_dt_global.psgmii_reg_access_mode = HSL_REG_MDIO;
 	a_uint8_t chip_version = 0;
 	#ifdef IN_RFS
-	struct rfs_device rfs_dev;
 	#if defined(CONFIG_RFS_ACCEL)
 	struct net_device *rfs_net = NULL;
 	#endif
+
+	memset(&rfs_dev, 0, sizeof(rfs_dev));
 	#endif
 
 	ssdk_cfg_default_init(&cfg);
@@ -1925,9 +1929,6 @@ out:
 static void __exit
 regi_exit(void)
 {
-	#ifdef IN_RFS
-	struct rfs_device rfs_dev;
-	#endif
     sw_error_t rv=ssdk_cleanup();
 
     if (rv == 0)
@@ -1941,10 +1942,6 @@ regi_exit(void)
 		sfe_unregister_flow_cookie_cb(ssdk_flow_cookie_set);
 #endif
 #ifdef IN_RFS
-		rfs_dev.name = NULL;
-		rfs_dev.mac_rule_cb = ssdk_rfs_mac_rule_set;
-		rfs_dev.ip4_rule_cb = ssdk_rfs_ip4_rule_set;
-		rfs_dev.ip6_rule_cb = ssdk_rfs_ip6_rule_set;
 		rfs_ess_device_unregister(&rfs_dev);
 #endif
 
