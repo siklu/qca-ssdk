@@ -48,7 +48,7 @@ extern "C" {
 							 a_bool_t * enable);
 	typedef sw_error_t(*hsl_phy_restart_autoneg) (a_uint32_t dev_id,
 						      a_uint32_t phy_id);
-	typedef sw_error_t(*hsl_phy_autoneg_status_get) (a_uint32_t dev_id,
+	typedef a_bool_t(*hsl_phy_autoneg_status_get) (a_uint32_t dev_id,
 							 a_uint32_t phy_id);
 	typedef sw_error_t(*hsl_phy_powersave_set) (a_uint32_t dev_id,
 						    a_uint32_t phy_id,
@@ -60,7 +60,7 @@ extern "C" {
 					  a_uint32_t mdi_pair,
 					  fal_cable_status_t * cable_status,
 					  a_uint32_t * cable_len);
-	typedef sw_error_t(*hsl_phy_link_status_get) (a_uint32_t dev_id,
+	typedef a_bool_t(*hsl_phy_link_status_get) (a_uint32_t dev_id,
 						      a_uint32_t phy_id);
 	typedef sw_error_t(*hsl_phy_get_ability) (a_uint32_t dev_id,
 						  a_uint32_t phy_id,
@@ -143,14 +143,14 @@ extern "C" {
 						a_uint32_t phy_addr,
 						a_uint32_t reg,
 						a_uint16_t reg_val);
-	typedef sw_error_t(*hsl_phy_reg_read) (a_uint32_t dev_id,
+	typedef a_uint16_t(*hsl_phy_reg_read) (a_uint32_t dev_id,
 					       a_uint32_t phy_addr,
 					       a_uint32_t reg);
 	typedef sw_error_t(*hsl_phy_debug_write) (a_uint32_t dev_id,
 						  a_uint32_t phy_id,
 						  a_uint16_t reg_id,
 						  a_uint16_t reg_val);
-	typedef sw_error_t(*hsl_phy_debug_read) (a_uint32_t dev_id,
+	typedef a_uint16_t(*hsl_phy_debug_read) (a_uint32_t dev_id,
 						 a_uint32_t phy_id,
 						 a_uint16_t reg_id);
 	typedef sw_error_t(*hsl_phy_mmd_write) (a_uint32_t dev_id,
@@ -158,7 +158,7 @@ extern "C" {
 						a_uint16_t mmd_num,
 						a_uint16_t reg_id,
 						a_uint16_t reg_val);
-	typedef sw_error_t(*hsl_phy_mmd_read) (a_uint32_t dev_id,
+	typedef a_uint16_t(*hsl_phy_mmd_read) (a_uint32_t dev_id,
 					       a_uint32_t phy_id,
 					       a_uint16_t mmd_num,
 					       a_uint16_t reg_id);
