@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -453,6 +453,8 @@ extern "C" {
     sw_error_t
     f1_phy_intr_status_get(a_uint32_t dev_id, a_uint32_t phy_id,
                            a_uint32_t * intr_status_flag);
+
+    int f1_phy_init(void);
 
 #ifdef __cplusplus
 }

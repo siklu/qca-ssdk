@@ -40,6 +40,8 @@
 #include <linux/phy.h>
 #include <linux/delay.h>
 #include <linux/string.h>
+#include <f1_phy.h>
+#include <f2_phy.h>
 #include <malibu_phy.h>
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 #include <linux/switch.h>
@@ -92,6 +94,8 @@ static struct mutex switch_mdio_lock;
 phy_identification_t phy_array[] =
 {
 	{0x0, 0x004DD0B0, malibu_phy_init},
+	{0x0, 0x004DD036, f1_phy_init},
+	{0x0, 0x004DD042, f2_phy_init}
 };
 
 static void
