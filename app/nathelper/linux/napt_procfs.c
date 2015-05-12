@@ -167,6 +167,7 @@ static int procfile_write_int(struct file *file, const char *buffer, unsigned lo
     if(copy_from_user(tmp_buf, buffer, len))
         return -EFAULT;
 
+	tmp_buf[len-1] = '\0';
 	res = kstrtol((const char *)tmp_buf, 10, prv_data);
 	if(res < 0)
 		return res;
