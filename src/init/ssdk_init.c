@@ -133,6 +133,11 @@ qca_phy_read_port_link(struct qca_phy_priv *priv, int port,
 static void
 qca_ar8327_phy_fixup(struct qca_phy_priv *priv, int phy)
 {
+	#ifndef BOARD_AR71XX
+	#if LINUX_VERSION_CODE < KERNEL_VERSION(3,14,0)
+	struct ar8327_platform_data *plat_data;
+	#endif
+	#endif
 	switch (priv->revision) {
 	case 1:
 		/* 100m waveform */
@@ -154,6 +159,39 @@ qca_ar8327_phy_fixup(struct qca_phy_priv *priv, int phy)
 		priv->phy_dbg_write(0, phy, 0x3c, 0x6000);
 		break;
 	}
+	#ifndef BOARD_AR71XX
+	#if LINUX_VERSION_CODE < KERNEL_VERSION(3,14,0)
+	plat_data = priv->phy->dev.platform_data;
+	if (plat_data == NULL) {
+		return;
+	}
+	if((phy == 4) && (plat_data->pad5_cfg)) {
+		if(plat_data->pad5_cfg->mode == AR8327_PAD_PHY_RGMII) {
+			a_uint16_t val = 0;
+			/*enable RGMII  mode */
+			priv->phy_dbg_read(0, AR8327_PORT5_PHY_ADDR,
+					AR8327_PHY_REG_MODE_SEL, &val);
+			val |= AR8327_PHY_RGMII_MODE;
+			priv->phy_dbg_write(0, AR8327_PORT5_PHY_ADDR,
+					AR8327_PHY_REG_MODE_SEL, val);
+			if(plat_data->pad5_cfg->txclk_delay_en) {
+				priv->phy_dbg_read(0, AR8327_PORT5_PHY_ADDR,
+						AR8327_PHY_REG_SYS_CTRL, &val);
+				val |= AR8327_PHY_RGMII_TX_DELAY;
+				priv->phy_dbg_write(0, AR8327_PORT5_PHY_ADDR,
+						AR8327_PHY_REG_SYS_CTRL, val);
+			}
+			if(plat_data->pad5_cfg->rxclk_delay_en) {
+				priv->phy_dbg_read(0, AR8327_PORT5_PHY_ADDR,
+						AR8327_PHY_REG_TEST_CTRL, &val);
+				val |= AR8327_PHY_RGMII_RX_DELAY;
+				priv->phy_dbg_write(0, AR8327_PORT5_PHY_ADDR,
+						AR8327_PHY_REG_TEST_CTRL, val);
+			}
+		}
+	}
+	#endif
+	#endif
 }
 
 void
