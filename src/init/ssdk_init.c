@@ -210,7 +210,6 @@ qca_mac_disable()
 	qca_ar8216_mii_write(AR8327_REG_PAD0_CTRL, 0);
 	qca_ar8216_mii_write(AR8327_REG_PAD5_CTRL, 0);
 	qca_ar8216_mii_write(AR8327_REG_PAD6_CTRL, 0);
-	qca_ar8216_mii_write(AR8327_REG_POS, AR8327_REG_POS_HW_INIT);
 	qca_ar8216_mii_write(AR8327_REG_PAD_SGMII_CTRL, AR8327_REG_PAD_SGMII_CTRL_HW_INIT);
 	qca_ar8216_mii_write(AR8327_REG_PORT_STATUS(0), 0);
 	qca_ar8216_mii_write(AR8327_REG_PORT_STATUS(1), 0);
