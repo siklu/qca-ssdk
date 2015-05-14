@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -20,6 +20,11 @@
 #include "hsl.h"
 #include "f1_phy.h"
 #include "aos_timer.h"
+#include "hsl_phy.h"
+#include <linux/kconfig.h>
+#include <linux/kernel.h>
+#include <linux/module.h>
+#include <linux/phy.h>
 
 static a_uint16_t
 _phy_reg_read(a_uint32_t dev_id, a_uint32_t phy_addr, a_uint32_t reg)
@@ -43,8 +48,38 @@ _phy_reg_write(a_uint32_t dev_id, a_uint32_t phy_addr, a_uint32_t reg,
     HSL_PHY_SET(rv, dev_id, phy_addr, reg, val);
 }
 
-#define f1_phy_reg_read _phy_reg_read
-#define f1_phy_reg_write _phy_reg_write
+/* #define f1_phy_reg_read _phy_reg_read */
+/* #define f1_phy_reg_write _phy_reg_write */
+
+/******************************************************************************
+*
+* f1_phy_mii_read - mii register read
+*
+* mil register read
+*/
+a_uint16_t
+f1_phy_reg_read(a_uint32_t dev_id, a_uint32_t phy_id, a_uint32_t reg_id)
+{
+ 	return _phy_reg_read(dev_id, phy_id, reg_id);
+
+}
+
+/******************************************************************************
+*
+* f1_phy_reg_write - mii register write
+*
+* mii register write
+*/
+sw_error_t
+f1_phy_reg_write(a_uint32_t dev_id, a_uint32_t phy_id, a_uint32_t reg_id,
+		       a_uint16_t reg_val)
+{
+
+       _phy_reg_write(dev_id,phy_id, reg_id, reg_val);
+
+	return SW_OK;
+}
+
 
 /******************************************************************************
 *
@@ -1224,6 +1259,8 @@ f1_phy_intr_status_get(a_uint32_t dev_id, a_uint32_t phy_id,
     return SW_OK;
 }
 
+
+#if 0
 /******************************************************************************
 *
 * f1_phy_init -
@@ -1241,3 +1278,54 @@ f1_phy_init(a_uint32_t dev_id, a_uint32_t phy_id,
     else
         return A_FALSE;
 }
+
+#endif
+
+static int f1_phy_probe(struct phy_device *pdev)
+{
+	int ret;
+	hsl_phy_ops_t f1_phy_api_ops = { 0 };
+
+	f1_phy_api_ops.phy_hibernation_set = f1_phy_set_hibernate;
+	f1_phy_api_ops.phy_hibernation_get = f1_phy_get_hibernate;
+	f1_phy_api_ops.phy_speed_get = f1_phy_get_speed;
+	f1_phy_api_ops.phy_speed_set = f1_phy_set_speed;
+	f1_phy_api_ops.phy_duplex_get = f1_phy_get_duplex;
+	f1_phy_api_ops.phy_duplex_set = f1_phy_set_duplex;
+	f1_phy_api_ops.phy_autoneg_enable_set = f1_phy_enable_autoneg;
+	f1_phy_api_ops.phy_restart_autoneg = f1_phy_restart_autoneg;
+	f1_phy_api_ops.phy_autoneg_status_get = f1_phy_autoneg_status;
+	f1_phy_api_ops.phy_autoneg_adv_set = f1_phy_set_autoneg_adv;
+	f1_phy_api_ops.phy_autoneg_adv_get = f1_phy_get_autoneg_adv;
+	f1_phy_api_ops.phy_powersave_set = f1_phy_set_powersave;
+	f1_phy_api_ops.phy_powersave_get = f1_phy_get_powersave;
+	f1_phy_api_ops.phy_cdt = f1_phy_cdt;
+	f1_phy_api_ops.phy_link_status_get = f1_phy_get_link_status;
+	f1_phy_api_ops.phy_reset = f1_phy_reset;
+	f1_phy_api_ops.phy_power_off = f1_phy_poweroff;
+	f1_phy_api_ops.phy_power_on = 	f1_phy_poweron;
+	f1_phy_api_ops.phy_id_get = f1_phy_get_phy_id;
+	f1_phy_api_ops.phy_reg_write = f1_phy_reg_write;
+	f1_phy_api_ops.phy_reg_read = f1_phy_reg_read;
+	f1_phy_api_ops.phy_debug_write = f1_phy_debug_write;
+	f1_phy_api_ops.phy_debug_read = f1_phy_debug_read;
+	f1_phy_api_ops.phy_mmd_write = f1_phy_mmd_write;
+	f1_phy_api_ops.phy_mmd_read = f1_phy_mmd_read;
+	f1_phy_api_ops.phy_intr_mask_set = f1_phy_intr_mask_set;
+	f1_phy_api_ops.phy_intr_mask_get = f1_phy_intr_mask_get;
+	f1_phy_api_ops.phy_intr_status_get = f1_phy_intr_status_get;
+	ret = hsl_phy_api_ops_register(&f1_phy_api_ops);
+
+	if (ret == 0)
+		printk("qca probe f1 phy driver succeeded!\n");
+	else
+		printk("qca probe f1 phy driver failed! (code: %d)\n", ret);
+	return ret;
+}
+
+int f1_phy_init(void)
+{
+	phy_api_ops_init(0);
+	return f1_phy_probe((struct phy_device *)NULL);
+}
+

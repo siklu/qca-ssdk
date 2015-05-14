@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -23,7 +23,8 @@
 #include "hsl_port_prop.h"
 #include "athena_port_ctrl.h"
 #include "athena_reg.h"
-#include "f2_phy.h"
+#include "hsl_phy.h"
+
 
 
 static sw_error_t
@@ -34,6 +35,7 @@ _athena_port_duplex_set(a_uint32_t dev_id, fal_port_t port_id,
     a_uint32_t phy_id = 0;
     a_uint32_t reg_save = 0;
     a_uint32_t reg_val = 0;
+    hsl_phy_ops_t *phy_drv;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -41,6 +43,11 @@ _athena_port_duplex_set(a_uint32_t dev_id, fal_port_t port_id,
     {
         return SW_BAD_PARAM;
     }
+
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+    if (NULL == phy_drv->phy_duplex_set)
+         return SW_NOT_SUPPORTED;
+
 
     if (FAL_DUPLEX_BUTT <= duplex)
     {
@@ -63,7 +70,7 @@ _athena_port_duplex_set(a_uint32_t dev_id, fal_port_t port_id,
     HSL_REG_ENTRY_SET(rv, dev_id, PORT_STATUS, port_id,
                       (a_uint8_t *) (&reg_val), sizeof (a_uint32_t));
 
-    rv = f2_phy_set_duplex(dev_id, phy_id, duplex);
+    rv = phy_drv->phy_duplex_set(dev_id, phy_id, duplex);
 
     //retore reg value
     HSL_REG_ENTRY_SET(rv, dev_id, PORT_STATUS, port_id,
@@ -79,6 +86,7 @@ _athena_port_duplex_get(a_uint32_t dev_id, fal_port_t port_id,
 {
     sw_error_t rv;
     a_uint32_t phy_id;
+    hsl_phy_ops_t *phy_drv;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -87,10 +95,15 @@ _athena_port_duplex_get(a_uint32_t dev_id, fal_port_t port_id,
         return SW_BAD_PARAM;
     }
 
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+    if (NULL == phy_drv->phy_duplex_get)
+         return SW_NOT_SUPPORTED;
+
+
     rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
     SW_RTN_ON_ERROR(rv);
 
-    rv = f2_phy_get_duplex(dev_id, phy_id, pduplex);
+    rv = phy_drv->phy_duplex_get(dev_id, phy_id, pduplex);
     return rv;
 }
 
@@ -101,6 +114,7 @@ _athena_port_speed_set(a_uint32_t dev_id, fal_port_t port_id,
 {
     sw_error_t rv;
     a_uint32_t phy_id = 0;
+    hsl_phy_ops_t *phy_drv;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -108,6 +122,11 @@ _athena_port_speed_set(a_uint32_t dev_id, fal_port_t port_id,
     {
         return SW_BAD_PARAM;
     }
+
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+    if (NULL == phy_drv->phy_speed_set)
+         return SW_NOT_SUPPORTED;
+
 
     rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
     SW_RTN_ON_ERROR(rv);
@@ -117,7 +136,7 @@ _athena_port_speed_set(a_uint32_t dev_id, fal_port_t port_id,
         return SW_BAD_PARAM;
     }
 
-    rv = f2_phy_set_speed(dev_id, phy_id, speed);
+    rv = phy_drv->phy_speed_set(dev_id, phy_id, speed);
 
     return rv;
 }
@@ -129,6 +148,7 @@ _athena_port_speed_get(a_uint32_t dev_id, fal_port_t port_id,
 {
     sw_error_t rv;
     a_uint32_t phy_id;
+    hsl_phy_ops_t *phy_drv;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -137,10 +157,15 @@ _athena_port_speed_get(a_uint32_t dev_id, fal_port_t port_id,
         return SW_BAD_PARAM;
     }
 
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+    if (NULL == phy_drv->phy_speed_get)
+         return SW_NOT_SUPPORTED;
+
+
     rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
     SW_RTN_ON_ERROR(rv);
 
-    rv = f2_phy_get_speed(dev_id, phy_id, pspeed);
+    rv = phy_drv->phy_speed_get(dev_id, phy_id, pspeed);
 
     return rv;
 }
@@ -152,6 +177,7 @@ _athena_port_autoneg_status_get(a_uint32_t dev_id, fal_port_t port_id,
 {
     sw_error_t rv;
     a_uint32_t phy_id;
+    hsl_phy_ops_t *phy_drv;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -160,10 +186,15 @@ _athena_port_autoneg_status_get(a_uint32_t dev_id, fal_port_t port_id,
         return SW_BAD_PARAM;
     }
 
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+    if (NULL == phy_drv->phy_autoneg_status_get)
+         return SW_NOT_SUPPORTED;
+
+
     rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
     SW_RTN_ON_ERROR(rv);
 
-    *status = f2_phy_autoneg_status(dev_id, phy_id);
+    *status = phy_drv->phy_autoneg_status_get(dev_id, phy_id);
 
     return SW_OK;
 }
@@ -174,6 +205,7 @@ _athena_port_autoneg_enable(a_uint32_t dev_id, fal_port_t port_id)
 {
     sw_error_t rv;
     a_uint32_t phy_id;
+    hsl_phy_ops_t *phy_drv;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -182,10 +214,15 @@ _athena_port_autoneg_enable(a_uint32_t dev_id, fal_port_t port_id)
         return SW_BAD_PARAM;
     }
 
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+    if (NULL == phy_drv->phy_autoneg_enable_set)
+	  return SW_NOT_SUPPORTED;
+
+
     rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
     SW_RTN_ON_ERROR(rv);
 
-    rv = f2_phy_enable_autoneg(dev_id, phy_id);
+    rv = phy_drv->phy_autoneg_enable_set(dev_id, phy_id);
     return rv;
 }
 
@@ -195,6 +232,7 @@ _athena_port_autoneg_restart(a_uint32_t dev_id, fal_port_t port_id)
 {
     sw_error_t rv;
     a_uint32_t phy_id;
+    hsl_phy_ops_t *phy_drv;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -203,10 +241,14 @@ _athena_port_autoneg_restart(a_uint32_t dev_id, fal_port_t port_id)
         return SW_BAD_PARAM;
     }
 
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+    if (NULL == phy_drv->phy_restart_autoneg)
+         return SW_NOT_SUPPORTED;
+
     rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
     SW_RTN_ON_ERROR(rv);
 
-    rv = f2_phy_restart_autoneg(dev_id, phy_id);
+    rv = phy_drv->phy_restart_autoneg(dev_id, phy_id);
     return rv;
 }
 
@@ -217,6 +259,7 @@ _athena_port_autoneg_adv_set(a_uint32_t dev_id, fal_port_t port_id,
 {
     sw_error_t rv;
     a_uint32_t phy_id;
+    hsl_phy_ops_t *phy_drv;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -225,10 +268,14 @@ _athena_port_autoneg_adv_set(a_uint32_t dev_id, fal_port_t port_id,
         return SW_BAD_PARAM;
     }
 
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+    if (NULL == phy_drv->phy_autoneg_adv_set)
+        return SW_NOT_SUPPORTED;
+
     rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
     SW_RTN_ON_ERROR(rv);
 
-    rv = f2_phy_set_autoneg_adv(dev_id, phy_id, autoadv);
+    rv = phy_drv->phy_autoneg_adv_set(dev_id, phy_id, autoadv);
     SW_RTN_ON_ERROR(rv);
 
     return SW_OK;
@@ -241,6 +288,7 @@ _athena_port_autoneg_adv_get(a_uint32_t dev_id, fal_port_t port_id,
 {
     sw_error_t rv;
     a_uint32_t phy_id;
+    hsl_phy_ops_t *phy_drv;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -249,11 +297,16 @@ _athena_port_autoneg_adv_get(a_uint32_t dev_id, fal_port_t port_id,
         return SW_BAD_PARAM;
     }
 
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+    if (NULL == phy_drv->phy_autoneg_adv_get)
+        return SW_NOT_SUPPORTED;
+
+
     rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
     SW_RTN_ON_ERROR(rv);
 
     *autoadv = 0;
-    rv = f2_phy_get_autoneg_adv(dev_id, phy_id, autoadv);
+    rv = phy_drv->phy_autoneg_adv_get(dev_id, phy_id, autoadv);
     SW_RTN_ON_ERROR(rv);
 
     return SW_OK;
@@ -330,6 +383,7 @@ _athena_port_powersave_set(a_uint32_t dev_id, fal_port_t port_id,
 {
     sw_error_t rv;
     a_uint32_t phy_id = 0;
+    hsl_phy_ops_t *phy_drv;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -338,10 +392,15 @@ _athena_port_powersave_set(a_uint32_t dev_id, fal_port_t port_id,
         return SW_BAD_PARAM;
     }
 
+     SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+     if (NULL == phy_drv->phy_powersave_set)
+	   return SW_NOT_SUPPORTED;
+
+
     rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
     SW_RTN_ON_ERROR(rv);
 
-    rv = f2_phy_set_powersave(dev_id, phy_id, enable);
+    rv = phy_drv->phy_powersave_set(dev_id, phy_id, enable);
 
     return rv;
 }
@@ -352,6 +411,7 @@ _athena_port_powersave_get(a_uint32_t dev_id, fal_port_t port_id,
 {
     sw_error_t rv;
     a_uint32_t phy_id = 0;
+    hsl_phy_ops_t *phy_drv;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -360,10 +420,15 @@ _athena_port_powersave_get(a_uint32_t dev_id, fal_port_t port_id,
         return SW_BAD_PARAM;
     }
 
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+    if (NULL == phy_drv->phy_powersave_get)
+	  return SW_NOT_SUPPORTED;
+
+
     rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
     SW_RTN_ON_ERROR(rv);
 
-    rv = f2_phy_get_powersave(dev_id, phy_id, enable);
+    rv = phy_drv->phy_powersave_get(dev_id, phy_id, enable);
 
     return rv;
 }
@@ -374,6 +439,7 @@ _athena_port_hibernate_set(a_uint32_t dev_id, fal_port_t port_id,
 {
     sw_error_t rv;
     a_uint32_t phy_id = 0;
+    hsl_phy_ops_t *phy_drv;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -382,10 +448,14 @@ _athena_port_hibernate_set(a_uint32_t dev_id, fal_port_t port_id,
         return SW_BAD_PARAM;
     }
 
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+    if (NULL == phy_drv->phy_hibernation_set)
+        return SW_NOT_SUPPORTED;
+
     rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
     SW_RTN_ON_ERROR(rv);
 
-    rv = f2_phy_set_hibernate(dev_id, phy_id, enable);
+    rv = phy_drv->phy_hibernation_set(dev_id, phy_id, enable);
 
     return rv;
 }
@@ -396,6 +466,7 @@ _athena_port_hibernate_get(a_uint32_t dev_id, fal_port_t port_id,
 {
     sw_error_t rv;
     a_uint32_t phy_id = 0;
+    hsl_phy_ops_t *phy_drv;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -404,10 +475,14 @@ _athena_port_hibernate_get(a_uint32_t dev_id, fal_port_t port_id,
         return SW_BAD_PARAM;
     }
 
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+    if (NULL == phy_drv->phy_hibernation_get)
+        return SW_NOT_SUPPORTED;
+
     rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
     SW_RTN_ON_ERROR(rv);
 
-    rv = f2_phy_get_hibernate(dev_id, phy_id, enable);
+    rv = phy_drv->phy_hibernation_get(dev_id, phy_id, enable);
 
     return rv;
 }

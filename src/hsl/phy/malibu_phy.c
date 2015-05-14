@@ -2309,6 +2309,11 @@ static int malibu_phy_probe(struct phy_device *pdev)
 	malibu_phy_api_ops.phy_intr_status_get = malibu_phy_intr_status_get;
 	ret = hsl_phy_api_ops_register(&malibu_phy_api_ops);
 
+	if (ret == 0)
+		printk("qca probe malibu phy driver succeeded!\n");
+	else
+		printk("qca probe malibu phy driver failed! (code: %d)\n", ret);
+
 	malibu_phy_hw_init();
 
 	return ret;
