@@ -54,6 +54,7 @@ _qca_ar8327_sw_capture_port_counter(struct switch_dev *dev, int port)
     fal_mib_info_t  mib_Info;
     struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 
+    memset(&mib_Info, 0, sizeof(mib_Info));
     fal_get_mib_info(0, port, &mib_Info);
     pos = port * QCA_MIB_ITEM_NUMBER;
     priv->mib_counters[pos++] += mib_Info.RxBroad;
