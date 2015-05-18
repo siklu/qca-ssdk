@@ -1682,11 +1682,13 @@ void switch_port_enable()
 
 	aos_mem_copy(reg_value, &value, sizeof(a_uint32_t));
 	qca_switch_reg_write(0, 0x7c, &reg_value, 4 );
+/*
 	qca_switch_reg_write(0, 0x80, &reg_value, 4 );
 	qca_switch_reg_write(0, 0x84, &reg_value, 4 );
 	qca_switch_reg_write(0, 0x88, &reg_value, 4 );
 	qca_switch_reg_write(0, 0x8c, (a_uint8_t *)&reg_value, 4 );
 	qca_switch_reg_write(0, 0x90, (a_uint8_t *)&reg_value, 4 );
+*/
 }
 
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
