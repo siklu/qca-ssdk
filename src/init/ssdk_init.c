@@ -1643,6 +1643,9 @@ qca_psgmii_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data
 	if (len != sizeof (a_uint32_t))
         return SW_BAD_LEN;
 
+	if (psgmii_hw_addr == NULL)
+		return SW_NOT_SUPPORTED;
+
 	reg_val = readl(psgmii_hw_addr + reg_addr);
 
 	aos_mem_copy(reg_data, &reg_val, sizeof (a_uint32_t));
@@ -1655,6 +1658,9 @@ qca_psgmii_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_dat
 	uint32_t reg_val = 0;
 	if (len != sizeof (a_uint32_t))
         return SW_BAD_LEN;
+
+	if (psgmii_hw_addr == NULL)
+		return SW_NOT_SUPPORTED;
 
 	aos_mem_copy(&reg_val, reg_data, sizeof (a_uint32_t));
 	writel(reg_val, psgmii_hw_addr + reg_addr);
@@ -1825,6 +1831,18 @@ qca_dess_hw_init(ssdk_init_cfg *cfg)
 	fal_ip_vrf_base_addr_set(0, 0, 0);
 
 	/*TODO:set mac mode in gcc*/
+	/*Config PSGMII module for Dakota*/
+	reg_value = 0x2803;
+	qca_psgmii_reg_write(0, DESS_PSGMII_PLL_VCO_RELATED_CONTROL_1,
+						(a_uint8_t *)&reg_value, 4);
+	reg_value = 0x4ADA;
+	qca_psgmii_reg_write(0, DESS_PSGMII_VCO_CALIBRATION_CONTROL_1,
+						(a_uint8_t *)&reg_value, 4);
+	udelay(1000);
+	reg_value = 0xADA;
+	qca_psgmii_reg_write(0, DESS_PSGMII_VCO_CALIBRATION_CONTROL_1,
+						(a_uint8_t *)&reg_value, 4);
+	udelay(1000);
 	return 0;
 }
 
