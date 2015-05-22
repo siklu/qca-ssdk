@@ -968,6 +968,13 @@ static int ssdk_switch_register()
 	}
 	qca_phy_priv_global = priv;
 
+	priv->mii_read = qca_ar8216_mii_read;
+	priv->mii_write = qca_ar8216_mii_write;
+	priv->phy_write = qca_ar8327_phy_write;
+	priv->phy_dbg_write = qca_ar8327_phy_dbg_write;
+	priv->phy_dbg_read = qca_ar8327_phy_dbg_read;
+	priv->phy_mmd_write = qca_ar8327_mmd_write;
+
 	mutex_init(&priv->reg_mutex);
 
 	sw_dev = &priv->sw_dev;
