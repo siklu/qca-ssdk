@@ -372,7 +372,7 @@ _dess_host_entry_commit(a_uint32_t dev_id, a_uint32_t entry_type, a_uint32_t op)
     for (j = 0; j < try_num; j++)
     {
         busy = 1;
-        i = 0x3000;
+	i = 0x9000000;
         while (busy && --i)
         {
             HSL_REG_ENTRY_GET(rv, dev_id, HOST_ENTRY7, 0, (a_uint8_t *) (&entry),
