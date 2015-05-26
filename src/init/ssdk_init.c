@@ -1833,7 +1833,7 @@ qca_dess_hw_init(ssdk_init_cfg *cfg)
 	/*set normal hash and disable nat/napt*/
 	qca_switch_reg_read(0, 0x0e38, (a_uint8_t *)&reg_value, 4);
 	reg_value = (reg_value|0x1000000|0x8);
-	reg_value &= ~3;
+	reg_value &= ~2;
 	qca_switch_reg_write(0, 0x0e38, (a_uint8_t *)&reg_value, 4);
 	fal_ip_vrf_base_addr_set(0, 0, 0);
 
