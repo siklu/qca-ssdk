@@ -3519,12 +3519,21 @@ dess_ip_host_route_get(a_uint32_t dev_id, a_uint32_t hroute_id, fal_host_route_t
 HSL_LOCAL sw_error_t
 dess_ip_rfs_ip4_set(a_uint32_t dev_id, fal_ip4_rfs_t * rfs)
 {
-    sw_error_t rv;
+	sw_error_t rv;
+	fal_intf_mac_entry_t mac_entry;
 
-    HSL_API_LOCK;
-    rv = _dess_ip_rfs_ip4_set(dev_id, rfs);
-    HSL_API_UNLOCK;
-    return rv;
+	HSL_API_LOCK;
+	memset(&mac_entry, 0, sizeof(mac_entry));
+	mac_entry.ip4_route = A_TRUE;
+	mac_entry.ip6_route = A_TRUE;
+	mac_entry.vid_low = rfs->vid;
+	mac_entry.vid_high = rfs->vid;
+	mac_entry.mac_addr = rfs->mac_addr;
+	rv = _dess_ip_intf_entry_add(dev_id, &mac_entry);
+	if(!rv)
+    		rv = _dess_ip_rfs_ip4_set(dev_id, rfs);
+	HSL_API_UNLOCK;
+	return rv;
 }
 
 /**
@@ -3536,12 +3545,21 @@ dess_ip_rfs_ip4_set(a_uint32_t dev_id, fal_ip4_rfs_t * rfs)
 HSL_LOCAL sw_error_t
 dess_ip_rfs_ip6_set(a_uint32_t dev_id, fal_ip6_rfs_t * rfs)
 {
-    sw_error_t rv;
+	sw_error_t rv;
+	fal_intf_mac_entry_t mac_entry;
 
-    HSL_API_LOCK;
-    rv = _dess_ip_rfs_ip6_set(dev_id, rfs);
-    HSL_API_UNLOCK;
-    return rv;
+	HSL_API_LOCK;
+	memset(&mac_entry, 0, sizeof(mac_entry));
+	mac_entry.ip4_route = A_TRUE;
+	mac_entry.ip6_route = A_TRUE;
+	mac_entry.vid_low = rfs->vid;
+	mac_entry.vid_high = rfs->vid;
+	mac_entry.mac_addr = rfs->mac_addr;
+	rv = _dess_ip_intf_entry_add(dev_id, &mac_entry);
+	if(!rv)
+		rv = _dess_ip_rfs_ip6_set(dev_id, rfs);
+	HSL_API_UNLOCK;
+	return rv;
 }
 
 /**
