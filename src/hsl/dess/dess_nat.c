@@ -2174,6 +2174,7 @@ _dess_flow_cookie_snat_set(a_uint32_t dev_id, fal_flow_cookie_t * flow_cookie)
 	entry.dst_addr = flow_cookie->dst_addr;
 	entry.src_port = flow_cookie->src_port;
 	entry.dst_port = flow_cookie->dst_port;
+	entry.trans_port = flow_cookie->src_port;
 	entry.action = FAL_MAC_RDT_TO_CPU;
 	ret = _dess_napt_get(dev_id, 0, &entry);
 	if(ret) {
@@ -2216,6 +2217,7 @@ _dess_flow_cookie_dnat_set(
 	entry.trans_port = flow_cookie->dst_port;
 	entry.dst_addr = flow_cookie->src_addr;
 	entry.dst_port = flow_cookie->src_port;
+	entry.src_port = flow_cookie->dst_port;
 	entry.action = FAL_MAC_RDT_TO_CPU;
 	ret = _dess_napt_get(dev_id, 0, &entry);
 	if(ret) {
@@ -2275,6 +2277,7 @@ _dess_flow_rfs_dnat_set(
 	entry.trans_port = rfs->dst_port;
 	entry.dst_addr = rfs->src_addr;
 	entry.dst_port = rfs->src_port;
+	entry.src_port = rfs->dst_port;
 	entry.action = FAL_MAC_RDT_TO_CPU;
 	ret = _dess_napt_get(dev_id, 0, &entry);
 	if(ret) {
