@@ -1977,6 +1977,14 @@ regi_init(void)
 					ssdk_netdev_rfs_cb);
 		}
 	}
+	rfs_net = dev_get_by_name(&init_net, "eth1");
+        if(rfs_net) {
+                if(rfs_net->netdev_ops) {
+                        if(rfs_net->netdev_ops->ndo_register_rfs_filter)
+                                rfs_net->netdev_ops->ndo_register_rfs_filter(rfs_net,
+                                        ssdk_netdev_rfs_cb);
+                }
+        }
 	#endif
 
 #endif
