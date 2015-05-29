@@ -136,6 +136,10 @@ qca_ar8327_sw_reset_switch(struct switch_dev *dev)
 		qca_ar8327_port_init(priv, i);
 	}
 	#endif
+	fal_port_link_forcemode_set(0, 1, A_FALSE);
+	fal_port_link_forcemode_set(0, 2, A_FALSE);
+	fal_port_link_forcemode_set(0, 3, A_FALSE);
+	fal_port_link_forcemode_set(0, 4, A_FALSE);
 	fal_port_link_forcemode_set(0, 5, A_FALSE);
 	qca_ar8327_phy_enable(priv);
 	#endif
