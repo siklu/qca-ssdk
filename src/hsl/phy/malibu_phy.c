@@ -1716,7 +1716,7 @@ malibu_phy_set_speed(a_uint32_t dev_id, a_uint32_t phy_id,
 			phy_data &= ~MALIBU_CTRL_SPEED_100;
 			phy_data &= ~MALIBU_CTRL_SPEED_1000;
 			phy_data &= ~MALIBU_CTRL_AUTONEGOTIATION_ENABLE;
-		} else if (FAL_SPEED_10000== speed){
+		} else if (FAL_SPEED_1000 == speed){
             phy_data |= MALIBU_CTRL_FULL_DUPLEX;
             phy_data |= MALIBU_CTRL_SPEED_1000;
 		    phy_data &= ~MALIBU_CTRL_SPEED_100;
