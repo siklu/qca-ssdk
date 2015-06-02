@@ -1402,8 +1402,10 @@ ssdk_switch_init(a_uint32_t dev_id)
             fal_port_link_forcemode_set(dev_id, i, A_FALSE);
         }
 #endif
-        fal_port_rxhdr_mode_set(dev_id, i, FAL_NO_HEADER_EN);
-        fal_port_txhdr_mode_set(dev_id, i, FAL_NO_HEADER_EN);
+        if (SSDK_CURRENT_CHIP_TYPE != CHIP_DESS) {
+            fal_port_rxhdr_mode_set(dev_id, i, FAL_NO_HEADER_EN);
+            fal_port_txhdr_mode_set(dev_id, i, FAL_NO_HEADER_EN);
+        }
         fal_port_3az_status_set(dev_id, i, A_FALSE);
         fal_port_flowctrl_forcemode_set(dev_id, i, A_TRUE);
         fal_port_flowctrl_set(dev_id, i, A_FALSE);
