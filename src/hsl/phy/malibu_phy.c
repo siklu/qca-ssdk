@@ -2243,12 +2243,23 @@ sw_error_t
 malibu_phy_hw_init(void)
 {
 	a_uint16_t phy_data = 0;
+	a_uint32_t dev_id = 0;
+	a_uint32_t phy_id = 0;
+
 	phy_data = malibu_phy_mmd_read(0, PSGMII_ID, MALIBU_PHY_MMD1_NUM,
 				       MALIBU_PSGMII_FIFI_CTRL);
 	phy_data &= 0xbfff;
 
 	malibu_phy_mmd_write(0, PSGMII_ID, MALIBU_PHY_MMD1_NUM,
 			     MALIBU_PSGMII_FIFI_CTRL, phy_data);
+
+/*disable phy power saving function by default */
+	for (phy_id = 0; phy_id < 5; phy_id++) {
+		malibu_phy_set_powersave(dev_id, phy_id, A_FALSE);
+		malibu_phy_set_8023az(dev_id, phy_id, A_FALSE);
+		malibu_phy_set_hibernate(dev_id, phy_id, A_FALSE);
+	}
+
 	return SW_OK;
 }
 
