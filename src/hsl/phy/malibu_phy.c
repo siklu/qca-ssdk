@@ -440,11 +440,18 @@ malibu_phy_set_8023az(a_uint32_t dev_id, a_uint32_t phy_id, a_bool_t enable)
 
 	phy_data = malibu_phy_mmd_read(dev_id, phy_id, MALIBU_PHY_MMD7_NUM,
 				       MALIBU_PHY_MMD7_ADDR_8023AZ_EEE_CTRL);
-
 	if (enable == A_TRUE) {
 		phy_data |= 0x0006;
+		malibu_phy_mmd_write(dev_id, phy_id, MALIBU_PHY_MMD3_NUM,
+			     MALIBU_PHY_MMD3_ADDR_8023AZ_TIMER_CTRL, AZ_TIMER_CTRL_ADJUST_VALUE);
+		malibu_phy_mmd_write(dev_id, phy_id, MALIBU_PHY_MMD3_NUM,
+			     MALIBU_PHY_MMD3_ADDR_8023AZ_CLD_CTRL, AZ_CLD_CTRL_ADJUST_VALUE);
 	} else {
 		phy_data &= ~0x0006;
+		malibu_phy_mmd_write(dev_id, phy_id, MALIBU_PHY_MMD3_NUM,
+			     MALIBU_PHY_MMD3_ADDR_8023AZ_TIMER_CTRL, AZ_TIMER_CTRL_DEFAULT_VALUE);
+		malibu_phy_mmd_write(dev_id, phy_id, MALIBU_PHY_MMD3_NUM,
+			     MALIBU_PHY_MMD3_ADDR_8023AZ_CLD_CTRL, AZ_CLD_CTRL_DEFAULT_VALUE);
 	}
 
 	malibu_phy_mmd_write(dev_id, phy_id, MALIBU_PHY_MMD7_NUM,
