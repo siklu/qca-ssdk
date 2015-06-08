@@ -1626,6 +1626,9 @@ qca_switch_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data
 	if (len != sizeof (a_uint32_t))
         return SW_BAD_LEN;
 
+	if ((reg_addr%4)!= 0)
+	return SW_BAD_PARAM;
+
 	reg_val = readl(hw_addr + reg_addr);
 
 	aos_mem_copy(reg_data, &reg_val, sizeof (a_uint32_t));
@@ -1639,6 +1642,9 @@ qca_switch_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_dat
 	if (len != sizeof (a_uint32_t))
         return SW_BAD_LEN;
 
+	if ((reg_addr%4)!= 0)
+	return SW_BAD_PARAM;
+
 	aos_mem_copy(&reg_val, reg_data, sizeof (a_uint32_t));
 	writel(reg_val, hw_addr + reg_addr);
 	return 0;
@@ -1651,6 +1657,9 @@ qca_psgmii_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data
 
 	if (len != sizeof (a_uint32_t))
         return SW_BAD_LEN;
+
+	if((reg_addr%4)!=0)
+	return SW_BAD_PARAM;
 
 	if (psgmii_hw_addr == NULL)
 		return SW_NOT_SUPPORTED;
@@ -1667,6 +1676,9 @@ qca_psgmii_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_dat
 	uint32_t reg_val = 0;
 	if (len != sizeof (a_uint32_t))
         return SW_BAD_LEN;
+
+	if((reg_addr%4)!=0)
+	return SW_BAD_PARAM;
 
 	if (psgmii_hw_addr == NULL)
 		return SW_NOT_SUPPORTED;
