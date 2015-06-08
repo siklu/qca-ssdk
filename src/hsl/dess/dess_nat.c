@@ -65,6 +65,7 @@
 
 #define DESS_NAT_PORT_NUM                       255
 
+static aos_lock_t dess_nat_lock;
 static a_uint32_t dess_nat_snap[SW_MAX_NR_DEV] = { 0 };
 extern a_uint32_t dess_nat_global_status;
 
@@ -892,16 +893,27 @@ _dess_napt_add(a_uint32_t dev_id, fal_napt_entry_t * entry)
     rv = _dess_napt_sw_to_hw(dev_id, entry, reg);
     SW_RTN_ON_ERROR(rv);
 
+	aos_lock_bh(&dess_nat_lock);
     rv = _dess_nat_down_to_hw(dev_id, reg);
-    SW_RTN_ON_ERROR(rv);
+    	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+    	}
 
     rv = _dess_nat_entry_commit(dev_id, DESS_ENTRY_NAPT, DESS_NAT_ENTRY_ADD);
-    SW_RTN_ON_ERROR(rv);
+    	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+    	}
 
     rv = _dess_nat_up_to_sw(dev_id, reg);
-    SW_RTN_ON_ERROR(rv);
+    	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+    	}
 
     SW_GET_FIELD_BY_REG(HOST_ENTRY7, TBL_IDX, entry->entry_id, reg[7]);
+	aos_unlock_bh(&dess_nat_lock);
     return SW_OK;
 }
 
@@ -926,16 +938,27 @@ _dess_napt_del(a_uint32_t dev_id, a_uint32_t del_mode, fal_napt_entry_t * entry)
         rv = _dess_napt_sw_to_hw(dev_id, entry, reg);
         SW_RTN_ON_ERROR(rv);
 
+	aos_lock_bh(&dess_nat_lock);
         rv = _dess_nat_down_to_hw(dev_id, reg);
-        SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
 
         rv = _dess_nat_entry_commit(dev_id, DESS_ENTRY_NAPT, DESS_NAT_ENTRY_DEL);
-        SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
 
         rv = _dess_nat_up_to_sw(dev_id, reg);
-        SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
 
         SW_GET_FIELD_BY_REG(HOST_ENTRY7, TBL_IDX, entry->entry_id, reg[7]);
+	aos_unlock_bh(&dess_nat_lock);
         return SW_OK;
     }
     else
@@ -961,10 +984,14 @@ _dess_napt_del(a_uint32_t dev_id, a_uint32_t del_mode, fal_napt_entry_t * entry)
             SW_SET_REG_BY_FIELD(NAPT_ENTRY4, AGE_FLAG, entry->status, reg[4]);
         }
 
+	aos_lock_bh(&dess_nat_lock);
         rv = _dess_nat_down_to_hw(dev_id, reg);
-        SW_RTN_ON_ERROR(rv);
-
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
         rv = _dess_nat_entry_commit(dev_id, DESS_ENTRY_NAPT, DESS_NAT_ENTRY_FLUSH);
+	aos_unlock_bh(&dess_nat_lock);
         return rv;
     }
 }
@@ -992,14 +1019,25 @@ _dess_napt_get(a_uint32_t dev_id, a_uint32_t get_mode, fal_napt_entry_t * entry)
     SW_RTN_ON_ERROR(rv);
 #endif
 
+	aos_lock_bh(&dess_nat_lock);
     rv = _dess_nat_down_to_hw(dev_id, reg);
-    SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
 
     rv = _dess_nat_entry_commit(dev_id, DESS_ENTRY_NAPT, DESS_NAT_ENTRY_SEARCH);
-    SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
 
     rv = _dess_nat_up_to_sw(dev_id, reg);
-    SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
+	aos_unlock_bh(&dess_nat_lock);
 
     SW_GET_FIELD_BY_REG(HOST_ENTRY7, TBL_STAUS, found, reg[7]);
     SW_GET_FIELD_BY_REG(NAPT_ENTRY4, AGE_FLAG,  age, reg[4]);
@@ -1081,14 +1119,25 @@ _dess_napt_next(a_uint32_t dev_id, a_uint32_t next_mode,
 
     SW_SET_REG_BY_FIELD(HOST_ENTRY7, TBL_IDX, idx, reg[7]);
 
+	aos_lock_bh(&dess_nat_lock);
     rv = _dess_nat_down_to_hw(dev_id, reg);
-    SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
 
     rv = _dess_nat_entry_commit(dev_id, DESS_ENTRY_NAPT, DESS_NAT_ENTRY_NEXT);
-    SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
 
     rv = _dess_nat_up_to_sw(dev_id, reg);
-    SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
+	aos_unlock_bh(&dess_nat_lock);
 
     aos_mem_zero(napt_entry, sizeof (fal_nat_entry_t));
 
@@ -1186,16 +1235,27 @@ _dess_flow_add(a_uint32_t dev_id, fal_napt_entry_t * entry)
     rv = _dess_napt_sw_to_hw(dev_id, entry, reg);
     SW_RTN_ON_ERROR(rv);
 
+	aos_lock_bh(&dess_nat_lock);
     rv = _dess_nat_down_to_hw(dev_id, reg);
-    SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
 
     rv = _dess_nat_entry_commit(dev_id, DESS_ENTRY_FLOW, DESS_NAT_ENTRY_ADD);
-    SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
 
     rv = _dess_nat_up_to_sw(dev_id, reg);
-    SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
 
     SW_GET_FIELD_BY_REG(HOST_ENTRY7, TBL_IDX, entry->entry_id, reg[7]);
+	aos_unlock_bh(&dess_nat_lock);
     return SW_OK;
 }
 
@@ -1220,16 +1280,27 @@ _dess_flow_del(a_uint32_t dev_id, a_uint32_t del_mode, fal_napt_entry_t * entry)
         rv = _dess_napt_sw_to_hw(dev_id, entry, reg);
         SW_RTN_ON_ERROR(rv);
 
+	aos_lock_bh(&dess_nat_lock);
         rv = _dess_nat_down_to_hw(dev_id, reg);
-        SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
 
         rv = _dess_nat_entry_commit(dev_id, DESS_ENTRY_FLOW, DESS_NAT_ENTRY_DEL);
-        SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
 
         rv = _dess_nat_up_to_sw(dev_id, reg);
-        SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
 
         SW_GET_FIELD_BY_REG(HOST_ENTRY7, TBL_IDX, entry->entry_id, reg[7]);
+	aos_unlock_bh(&dess_nat_lock);
         return SW_OK;
     }
     else
@@ -1255,10 +1326,15 @@ _dess_flow_del(a_uint32_t dev_id, a_uint32_t del_mode, fal_napt_entry_t * entry)
             SW_SET_REG_BY_FIELD(NAPT_ENTRY4, AGE_FLAG, entry->status, reg[4]);
         }
 
+	aos_lock_bh(&dess_nat_lock);
         rv = _dess_nat_down_to_hw(dev_id, reg);
-        SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
 
         rv = _dess_nat_entry_commit(dev_id, DESS_ENTRY_FLOW, DESS_NAT_ENTRY_FLUSH);
+	aos_unlock_bh(&dess_nat_lock);
         return rv;
     }
 }
@@ -1286,14 +1362,25 @@ _dess_flow_get(a_uint32_t dev_id, a_uint32_t get_mode, fal_napt_entry_t * entry)
     SW_RTN_ON_ERROR(rv);
 #endif
 
+	aos_lock_bh(&dess_nat_lock);
     rv = _dess_nat_down_to_hw(dev_id, reg);
-    SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
 
     rv = _dess_nat_entry_commit(dev_id, DESS_ENTRY_FLOW, DESS_NAT_ENTRY_SEARCH);
-    SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
 
     rv = _dess_nat_up_to_sw(dev_id, reg);
-    SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
+	aos_unlock_bh(&dess_nat_lock);
 
     SW_GET_FIELD_BY_REG(HOST_ENTRY7, TBL_STAUS, found, reg[7]);
     SW_GET_FIELD_BY_REG(NAPT_ENTRY4, AGE_FLAG,  age, reg[4]);
@@ -1375,14 +1462,25 @@ _dess_flow_next(a_uint32_t dev_id, a_uint32_t next_mode,
 
     SW_SET_REG_BY_FIELD(HOST_ENTRY7, TBL_IDX, idx, reg[7]);
 
+	aos_lock_bh(&dess_nat_lock);
     rv = _dess_nat_down_to_hw(dev_id, reg);
-    SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
 
     rv = _dess_nat_entry_commit(dev_id, DESS_ENTRY_FLOW, DESS_NAT_ENTRY_NEXT);
-    SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
 
     rv = _dess_nat_up_to_sw(dev_id, reg);
-    SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
+	aos_unlock_bh(&dess_nat_lock);
 
     aos_mem_zero(napt_entry, sizeof (fal_nat_entry_t));
 
@@ -3191,6 +3289,7 @@ dess_nat_init(a_uint32_t dev_id)
     sw_error_t rv;
 
     HSL_DEV_ID_CHECK(dev_id);
+	aos_lock_init(&dess_nat_lock);
 
     rv = dess_nat_reset(dev_id);
     SW_RTN_ON_ERROR(rv);

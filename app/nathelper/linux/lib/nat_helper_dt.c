@@ -354,7 +354,6 @@ a_uint8_t napt_dnat_flow_find_del(
 	memset(&tmp_napt, 0, sizeof(tmp_napt));
 	tmp_napt = *napt;
 	tmp_napt.src_addr = 0;
-	tmp_napt.src_port = 0;
 	ret = napt_hw_get(&tmp_napt, &tmp_entry);
 	if(!ret) {
 		napt_hw_del(&tmp_napt);
@@ -376,7 +375,6 @@ a_uint8_t napt_snat_flow_find_del(
 	memset(&tmp_napt, 0, sizeof(tmp_napt));
 	tmp_napt = *napt;
 	tmp_napt.trans_addr = 0;
-	tmp_napt.trans_port = 0;
 	ret = napt_hw_get(&tmp_napt, &tmp_entry);
 	if(!ret) {
 		napt_hw_del(&tmp_napt);
@@ -1118,7 +1116,9 @@ napt_ct_scan_thread(void *param)
 		if(!nat_sockopts_init) {
 			nat_ipt_sockopts_replace();
 		}
+	HNAT_PRINTK("[ct scan start]\n");
         napt_ct_scan();
+	HNAT_PRINTK("[ct scan end]\n");
 
         if((--times) == 0)
         {
@@ -1128,7 +1128,9 @@ napt_ct_scan_thread(void *param)
 
         if((--arp_check_time) == 0)
         {
+		HNAT_PRINTK("[host check start]\n");
             host_check_aging();
+		HNAT_PRINTK("[host check end]\n");
             arp_check_time = (ARP_CHECK_AGING_SEC/NAPT_CT_POLLING_SEC);
         }
 
@@ -1136,8 +1138,10 @@ napt_ct_scan_thread(void *param)
         napt_set_ipv6_default_route();
 #endif
         
-        if (NAPT_CT_TASK_SHOULD_STOP())
+        if (NAPT_CT_TASK_SHOULD_STOP()) {
+		printk("should stop!\n");
             break;
+	}
 
         NAPT_CT_TASK_SLEEP(NAPT_CT_POLLING_SEC);
     }

@@ -34,6 +34,10 @@ typedef aos_lock_pvt_t aos_lock_t;
 
 #define aos_unlock(lock) __aos_unlock(lock)
 
+#define aos_lock_bh(lock) __aos_lock_bh(lock)
+
+#define aos_unlock_bh(lock) __aos_unlock_bh(lock)
+
 
 #define aos_irq_save(flags) __aos_irq_save(flags)
 

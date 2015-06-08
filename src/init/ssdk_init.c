@@ -36,6 +36,7 @@
 #include <linux/types.h>
 //#include <asm/mach-types.h>
 #include <generated/autoconf.h>
+#include <linux/inetdevice.h>
 #include <linux/netdevice.h>
 #include <linux/phy.h>
 #include <linux/delay.h>
@@ -68,6 +69,9 @@
 #endif
 
 #ifdef IN_RFS
+#if defined(CONFIG_VLAN_8021Q) || defined(CONFIG_VLAN_8021Q_MODULE)
+#include <linux/if_vlan.h>
+#endif
 #include <qca-rfs/rfs_dev.h>
 #include "fal_rfs.h"
 #endif
@@ -79,6 +83,7 @@
 
 #ifdef IN_RFS
 struct rfs_device rfs_dev;
+struct notifier_block ssdk_inet_notifier;
 #endif
 
 /*
@@ -1896,6 +1901,143 @@ int ssdk_netdev_rfs_cb(
 							proto, rxq_index, action);
 }
 #endif
+int ssdk_intf_search(
+	fal_intf_mac_entry_t *exist_entry, int num,
+	fal_intf_mac_entry_t *new_entry, int *index)
+{
+	int i = 0;
+	*index = 0xffffffff;
+	for (i = 0; i < num; i++) {
+		if (exist_entry[i].vid_high == 0 && exist_entry[i].vid_low == 0)
+			*index = i;
+		if (!memcmp(exist_entry[i].mac_addr.uc, new_entry->mac_addr.uc, 6) &&
+			exist_entry[i].vid_low == new_entry->vid_low) {
+			*index = i;
+			return 1;
+		}
+	}
+	return 0;
+}
+
+void ssdk_intf_set(struct net_device *dev, char op)
+{
+	a_uint8_t *devmac = NULL;
+	fal_vlan_t entry;
+	a_uint32_t tmp_vid = 0xffffffff;
+	fal_intf_mac_entry_t intf_entry;
+	char wan_port = 0;
+	sw_error_t rv;
+	static fal_intf_mac_entry_t if_mac_entry[8] = {{0}};
+	int index = 0xffffffff;
+	/*get mac*/
+	devmac = (a_uint8_t*)(dev->dev_addr);
+	/*get wan port*/
+	wan_port = hsl_dev_wan_port_get(0);
+	/*get vid*/
+	memset(&intf_entry, 0, sizeof(intf_entry));
+	intf_entry.ip4_route = 1;
+	intf_entry.ip6_route = 1;
+	memcpy(&intf_entry.mac_addr, devmac, 6);
+
+	#if defined(CONFIG_VLAN_8021Q) || defined(CONFIG_VLAN_8021Q_MODULE)
+	tmp_vid = vlan_dev_vlan_id(dev);
+	if (tmp_vid) {
+		intf_entry.vid_low = tmp_vid;
+		intf_entry.vid_high = intf_entry.vid_low;
+		if (op) {
+			if (!ssdk_intf_search(if_mac_entry, 8, &intf_entry, &index)) {
+				if (index != 0xffffffff) {
+					rv = fal_ip_intf_entry_add(0, &intf_entry);
+					if (SW_OK == rv) {
+						if_mac_entry[index] = intf_entry;
+					}
+				}
+			}
+		}
+		else {
+			if (ssdk_intf_search(if_mac_entry, 8, &intf_entry, &index)) {
+				intf_entry.entry_id = if_mac_entry[index].entry_id;
+				fal_ip_intf_entry_del(0, 1, &intf_entry);
+				memset(&if_mac_entry[index], 0, sizeof(fal_intf_mac_entry_t));
+			}
+		}
+		return;
+	} else {
+		tmp_vid = 0xffffffff;
+	}
+	#endif
+	while(1) {
+		if (SW_OK != fal_vlan_next(0, tmp_vid, &entry))
+			break;
+		tmp_vid = entry.vid;
+		if (tmp_vid != 0) {
+			if(entry.mem_ports & wan_port) {
+				if (!strcmp(dev->name, "eth0")) {
+					intf_entry.vid_low = tmp_vid;
+					intf_entry.vid_high = intf_entry.vid_low;
+					if (op) {
+						if (!ssdk_intf_search(if_mac_entry, 8, &intf_entry, &index)) {
+							if (index != 0xffffffff) {
+								rv = fal_ip_intf_entry_add(0, &intf_entry);
+								if (SW_OK == rv) {
+									if_mac_entry[index] = intf_entry;
+								}
+							}
+						}
+					}
+					else {
+						if (ssdk_intf_search(if_mac_entry, 8, &intf_entry, &index)) {
+							intf_entry.entry_id = if_mac_entry[index].entry_id;
+							fal_ip_intf_entry_del(0, 1, &intf_entry);
+							memset(&if_mac_entry[index], 0, sizeof(fal_intf_mac_entry_t));
+						}
+					}
+				}
+			} else {
+				if (strcmp(dev->name, "eth0")) {
+					intf_entry.vid_low = tmp_vid;
+					intf_entry.vid_high = intf_entry.vid_low;
+					if (op) {
+						if (!ssdk_intf_search(if_mac_entry, 8, &intf_entry, &index)) {
+							if (index != 0xffffffff) {
+								rv = fal_ip_intf_entry_add(0, &intf_entry);
+								if (SW_OK == rv) {
+									if_mac_entry[index] = intf_entry;
+								}
+							}
+						}
+					}
+					else {
+						if (ssdk_intf_search(if_mac_entry, 8, &intf_entry, &index)) {
+							intf_entry.entry_id = if_mac_entry[index].entry_id;
+							fal_ip_intf_entry_del(0, 1, &intf_entry);
+							memset(&if_mac_entry[index], 0, sizeof(fal_intf_mac_entry_t));
+						}
+					}
+				}
+			}
+		}
+	}
+
+}
+
+static int ssdk_inet_event(struct notifier_block *this, unsigned long event, void *ptr)
+{
+	struct net_device *dev = ((struct in_ifaddr *)ptr)->ifa_dev->dev;
+
+	if (!strstr(dev->name, "eth") && !strstr(dev->name, "br")) {
+		return NOTIFY_DONE;
+	}
+	switch (event) {
+		case NETDEV_DOWN:
+			ssdk_intf_set(dev, 0);
+			break;
+		case NETDEV_UP:
+			ssdk_intf_set(dev, 1);
+			break;
+	}
+	return NOTIFY_DONE;
+}
 #endif
 
 static int __init
@@ -1993,6 +2135,9 @@ regi_init(void)
                 }
         }
 	#endif
+	ssdk_inet_notifier.notifier_call = ssdk_inet_event;
+	ssdk_inet_notifier.priority = 1;
+	register_inetaddr_notifier(&ssdk_inet_notifier);
 
 #endif
 		/* Enable port temprarily, will remove the code when phy board is ok. */
@@ -2025,6 +2170,7 @@ regi_exit(void)
 #endif
 #ifdef IN_RFS
 		rfs_ess_device_unregister(&rfs_dev);
+	unregister_inetaddr_notifier(&ssdk_inet_notifier);
 #endif
 
 	}

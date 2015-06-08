@@ -724,6 +724,7 @@ napt_hw_dnat_cookie_add(napt_entry_t *napt, a_uint32_t cookie)
 	fal_napt.dst_port = napt->dst_port;
 	fal_napt.trans_addr = napt->trans_addr;
 	fal_napt.trans_port = napt->trans_port;
+	fal_napt.src_port = napt->src_port;
 	fal_napt.action = FAL_MAC_RDT_TO_CPU;
 	fal_napt.flow_cookie = cookie;
 	ret = NAPT_ADD(0, &fal_napt);
@@ -741,6 +742,7 @@ napt_hw_snat_cookie_add(napt_entry_t *napt, a_uint32_t cookie)
 	fal_napt.dst_port = napt->dst_port;
 	fal_napt.src_addr = napt->src_addr;
 	fal_napt.src_port = napt->src_port;
+	fal_napt.trans_port = napt->trans_port;
 	fal_napt.action = FAL_MAC_RDT_TO_CPU;
 	fal_napt.flow_cookie = cookie;
 	ret = NAPT_ADD(0, &fal_napt);
