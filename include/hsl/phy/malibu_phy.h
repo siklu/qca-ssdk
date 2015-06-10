@@ -84,6 +84,16 @@ extern "C"
 #define AZ_CLD_CTRL_ADJUST_VALUE     0x8396
 
 
+#define MALIBU_PHY_MMD7_COUNTER_CTRL       0x8029
+#define MALIBU_PHY_MMD7_INGRESS_COUNTER_HIGH       0x802a
+#define MALIBU_PHY_MMD7_INGRESS_COUNTER_LOW       0x802b
+#define MALIBU_PHY_MMD7_INGRESS_ERROR_COUNTER       0x802c
+#define MALIBU_PHY_MMD7_EGRESS_COUNTER_HIGH       0x802d
+#define MALIBU_PHY_MMD7_EGRESS_COUNTER_LOW       0x802e
+#define MALIBU_PHY_MMD7_EGRESS_ERROR_COUNTER       0x802f
+
+
+
 #define MALIBU_PSGMII_FIFI_CTRL  0x6e
 #define MALIBU_PSGMII_CALIB_CTRL  0x27
 
@@ -582,6 +592,18 @@ extern "C"
     sw_error_t
     malibu_phy_intr_status_get (a_uint32_t dev_id, a_uint32_t phy_id,
 				a_uint32_t * intr_status_flag);
+
+  sw_error_t
+  malibu_phy_set_counter (a_uint32_t dev_id, a_uint32_t phy_id,
+				a_bool_t enable);
+  
+  sw_error_t
+  malibu_phy_get_counter (a_uint32_t dev_id, a_uint32_t phy_id,
+				a_bool_t * enable);
+
+  sw_error_t
+  malibu_phy_show_counter (a_uint32_t dev_id, a_uint32_t phy_id,
+			 fal_port_counter_info_t * counter_info);
 
   int malibu_phy_init(void);
 

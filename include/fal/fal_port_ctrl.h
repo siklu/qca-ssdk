@@ -219,6 +219,14 @@ extern "c" {
 				/**< SGMII mode */
 	} fal_port_interface_mode_t;
 
+/** Phy counter information */
+typedef struct {
+	a_uint32_t RxGoodFrame;
+	a_uint32_t RxBadCRC;
+	a_uint32_t TxGoodFrame;
+	a_uint32_t TxBadCRC;
+} fal_port_counter_info_t;
+
 /*above is new add for malibu phy*/
 
 	 sw_error_t
@@ -499,6 +507,18 @@ extern "c" {
  sw_error_t
     fal_port_interface_mode_status_get (a_uint32_t dev_id, fal_port_t port_id,
 			      fal_port_interface_mode_t * mode);
+
+sw_error_t
+   fal_port_counter_set(a_uint32_t dev_id, fal_port_t port_id,
+		   a_bool_t enable);
+
+sw_error_t
+   fal_port_counter_get(a_uint32_t dev_id, fal_port_t port_id,
+		   a_bool_t * enable);
+
+sw_error_t
+   fal_port_counter_show (a_uint32_t dev_id, fal_port_t port_id,
+				 fal_port_counter_info_t * counter_info);
 
 #ifdef __cplusplus
 }

@@ -197,6 +197,16 @@ extern "C" {
 	typedef sw_error_t(*hsl_phy_intr_status_get) (a_uint32_t dev_id,
 						      a_uint32_t phy_id,
 						      a_uint32_t * status);
+	typedef sw_error_t(*hsl_phy_counter_set) (a_uint32_t dev_id,
+						      a_uint32_t phy_id,
+						      a_bool_t enable);
+	typedef sw_error_t(*hsl_phy_counter_get) (a_uint32_t dev_id,
+						      a_uint32_t phy_id,
+						      a_bool_t * enable);
+	typedef sw_error_t(*hsl_phy_counter_show) (a_uint32_t dev_id,
+						      a_uint32_t phy_id,
+						      fal_port_counter_info_t * counter_info);
+
 
 	typedef struct hsl_phy_ops_s {
 
@@ -255,6 +265,9 @@ extern "C" {
 		hsl_phy_intr_mask_set  phy_intr_mask_set;
 		hsl_phy_intr_mask_get  phy_intr_mask_get;
 		hsl_phy_intr_status_get  phy_intr_status_get;
+		hsl_phy_counter_set  phy_counter_set;
+		hsl_phy_counter_get  phy_counter_get;
+		hsl_phy_counter_show  phy_counter_show;
 	} hsl_phy_ops_t;
 
 	sw_error_t hsl_phy_api_ops_register(hsl_phy_ops_t * phy_api_ops);

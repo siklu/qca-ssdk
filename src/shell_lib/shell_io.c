@@ -173,6 +173,7 @@ static sw_data_type_t sw_data_type[] =
     SW_TYPE_DEF(SW_PREFER_MEDIUM, cmd_data_check_prefer_medium, NULL),
     SW_TYPE_DEF(SW_FIBER_MODE, cmd_data_check_fiber_mode, NULL),
     SW_TYPE_DEF(SW_INTERFACE_MODE, cmd_data_check_interface_mode, NULL),
+    SW_TYPE_DEF(SW_COUNTER_INFO, NULL, NULL),
 };
 
 sw_data_type_t *

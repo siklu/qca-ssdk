@@ -2243,6 +2243,89 @@ malibu_phy_intr_status_get(a_uint32_t dev_id, a_uint32_t phy_id,
 
 /******************************************************************************
 *
+* malibu_phy_set_counter - set counter status
+*
+* set counter  status
+*/
+sw_error_t
+malibu_phy_set_counter(a_uint32_t dev_id, a_uint32_t phy_id, a_bool_t enable)
+{
+	a_uint16_t phy_data;
+
+	phy_data = malibu_phy_mmd_read(dev_id, phy_id, MALIBU_PHY_MMD7_NUM,
+					MALIBU_PHY_MMD7_COUNTER_CTRL);
+
+	if (enable == A_TRUE) {
+		phy_data |= 0x0003;
+	} else {
+		phy_data &= ~0x0003;
+	}
+
+	malibu_phy_mmd_write(dev_id, phy_id, MALIBU_PHY_MMD7_NUM,
+			     MALIBU_PHY_MMD7_COUNTER_CTRL, phy_data);
+
+	return SW_OK;
+}
+
+/******************************************************************************
+*
+* malibu_phy_get_counter_status - get counter status
+*
+* set counter status
+*/
+sw_error_t
+malibu_phy_get_counter(a_uint32_t dev_id, a_uint32_t phy_id,
+			 a_bool_t * enable)
+{
+	a_uint16_t phy_data;
+
+	*enable = A_FALSE;
+
+	phy_data = malibu_phy_mmd_read(dev_id, phy_id, MALIBU_PHY_MMD7_NUM,
+					MALIBU_PHY_MMD7_COUNTER_CTRL);
+
+	if (phy_data & 0x0001)
+		*enable = A_TRUE;
+
+	return SW_OK;
+}
+
+/******************************************************************************
+*
+* malibu_phy_show show counter statistics
+*
+* show counter statistics
+*/
+sw_error_t
+malibu_phy_show_counter(a_uint32_t dev_id, a_uint32_t phy_id,
+			 fal_port_counter_info_t * counter_infor)
+{
+	a_uint16_t ingress_high_counter;
+	a_uint16_t ingress_low_counter;
+	a_uint16_t egress_high_counter;
+	a_uint16_t egress_low_counter;
+
+	ingress_high_counter = malibu_phy_mmd_read(dev_id, phy_id, MALIBU_PHY_MMD7_NUM,
+					MALIBU_PHY_MMD7_INGRESS_COUNTER_HIGH);
+	ingress_low_counter = malibu_phy_mmd_read(dev_id, phy_id, MALIBU_PHY_MMD7_NUM,
+					MALIBU_PHY_MMD7_INGRESS_COUNTER_LOW);
+	counter_infor->RxGoodFrame = (ingress_high_counter << 16 ) | ingress_low_counter;
+	counter_infor->RxBadCRC = malibu_phy_mmd_read(dev_id, phy_id, MALIBU_PHY_MMD7_NUM,
+					MALIBU_PHY_MMD7_INGRESS_ERROR_COUNTER);
+
+	egress_high_counter = malibu_phy_mmd_read(dev_id, phy_id, MALIBU_PHY_MMD7_NUM,
+					MALIBU_PHY_MMD7_EGRESS_COUNTER_HIGH);
+	egress_low_counter = malibu_phy_mmd_read(dev_id, phy_id, MALIBU_PHY_MMD7_NUM,
+					MALIBU_PHY_MMD7_EGRESS_COUNTER_LOW);
+	counter_infor->TxGoodFrame = (egress_high_counter << 16 ) | egress_low_counter;
+	counter_infor->TxBadCRC = malibu_phy_mmd_read(dev_id, phy_id, MALIBU_PHY_MMD7_NUM,
+					MALIBU_PHY_MMD7_EGRESS_ERROR_COUNTER);
+
+	return SW_OK;
+}
+
+/******************************************************************************
+*
 * malibu_phy_hw_register init to avoid packet loss
 *
 */
@@ -2325,6 +2408,9 @@ static int malibu_phy_probe(struct phy_device *pdev)
 	malibu_phy_api_ops.phy_intr_mask_set = malibu_phy_intr_mask_set;
 	malibu_phy_api_ops.phy_intr_mask_get = malibu_phy_intr_mask_get;
 	malibu_phy_api_ops.phy_intr_status_get = malibu_phy_intr_status_get;
+	malibu_phy_api_ops.phy_counter_set = malibu_phy_set_counter;
+	malibu_phy_api_ops.phy_counter_get = malibu_phy_get_counter;
+	malibu_phy_api_ops.phy_counter_show = malibu_phy_show_counter;
 	ret = hsl_phy_api_ops_register(&malibu_phy_api_ops);
 
 	if (ret == 0)

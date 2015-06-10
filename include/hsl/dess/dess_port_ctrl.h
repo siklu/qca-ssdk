@@ -342,6 +342,16 @@ extern "C"
   HSL_LOCAL sw_error_t
     dess_port_interface_mode_status_get (a_uint32_t dev_id, fal_port_t port_id,
 			      fal_port_interface_mode_t * mode);
+   HSL_LOCAL sw_error_t
+    dess_port_counter_set (a_uint32_t dev_id, fal_port_t port_id,
+			      a_bool_t enable);
+
+  HSL_LOCAL sw_error_t
+    dess_port_counter_get (a_uint32_t dev_id, fal_port_t port_id,
+			      a_bool_t * enable);
+   HSL_LOCAL sw_error_t
+    dess_port_counter_show (a_uint32_t dev_id, fal_port_t port_id,
+			      fal_port_counter_info_t * counter_info);
 #endif
 
 #ifdef __cplusplus

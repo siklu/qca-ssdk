@@ -527,6 +527,15 @@ extern "C"
   typedef sw_error_t
     (*hsl_port_interface_mode_status_get) (a_uint32_t dev_id, fal_port_t port_id,
 			      fal_port_interface_mode_t * mode);
+   typedef sw_error_t
+    (*hsl_port_counter_set) (a_uint32_t dev_id, fal_port_t port_id,
+			    a_bool_t enable);
+  typedef sw_error_t
+    (*hsl_port_counter_get) (a_uint32_t dev_id, fal_port_t port_id,
+			    a_bool_t * enable);
+    typedef sw_error_t
+    (*hsl_port_counter_show) (a_uint32_t dev_id, fal_port_t port_id,
+			      fal_port_counter_info_t * counter_info);
   /* VLAN */
 #define VLAN_FUNC_PROTOTYPE_DEF
   typedef sw_error_t
@@ -2080,6 +2089,9 @@ extern "C"
     hsl_port_interface_mode_set port_interface_mode_set;
     hsl_port_interface_mode_get port_interface_mode_get;
     hsl_port_interface_mode_status_get port_interface_mode_status_get;
+    hsl_port_counter_set port_counter_set;
+    hsl_port_counter_get port_counter_get;
+    hsl_port_counter_show port_counter_show;
 
     /* VLAN */
     hsl_vlan_entry_append vlan_entry_append;

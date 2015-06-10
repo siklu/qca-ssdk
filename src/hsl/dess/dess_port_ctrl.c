@@ -2379,6 +2379,85 @@ _dess_port_interface_mode_status_get (a_uint32_t dev_id, fal_port_t port_id,
   return rv;
 }
 
+static sw_error_t
+_dess_port_counter_set (a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_counter_set)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_counter_set (dev_id, phy_id, enable);
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_counter_get (a_uint32_t dev_id, fal_port_t port_id,
+		       a_bool_t * enable)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_counter_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_counter_get (dev_id, phy_id, enable);
+
+  return rv;
+}
+
+static sw_error_t
+_dess_port_counter_show (a_uint32_t dev_id, fal_port_t port_id,
+				fal_port_counter_info_t * counter_info)
+{
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
+
+  HSL_DEV_ID_CHECK (dev_id);
+
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+      return SW_BAD_PARAM;
+    }
+
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_counter_show)
+    return SW_NOT_SUPPORTED;
+
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_counter_show (dev_id, phy_id,counter_info);
+
+  return rv;
+}
+
 /**
  * @brief Set duplex mode on a particular port.
  * @param[in] dev_id device id
@@ -3669,6 +3748,62 @@ dess_port_interface_mode_status_get (a_uint32_t dev_id, fal_port_t port_id,
   return rv;
 }
 
+/**
+ * @brief Set counter status on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_port_counter_set (a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+{
+  sw_error_t rv;
+
+  HSL_API_LOCK;
+  rv = _dess_port_counter_set (dev_id, port_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Get counter status on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_port_counter_get (a_uint32_t dev_id, fal_port_t port_id,
+		      a_bool_t * enable)
+{
+  sw_error_t rv;
+
+  HSL_API_LOCK;
+  rv = _dess_port_counter_get (dev_id, port_id, enable);
+  HSL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Get counter statistics  on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] frame counter statistics
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_port_counter_show(a_uint32_t dev_id, fal_port_t port_id,
+		      fal_port_counter_info_t * counter_info)
+{
+  sw_error_t rv;
+
+  HSL_API_LOCK;
+  rv = _dess_port_counter_show (dev_id, port_id, counter_info);
+  HSL_API_UNLOCK;
+  return rv;
+}
+
 sw_error_t
 dess_port_ctrl_init (a_uint32_t dev_id)
 {
@@ -3749,6 +3884,9 @@ dess_port_ctrl_init (a_uint32_t dev_id)
     p_api->port_interface_mode_set = dess_port_interface_mode_set;
     p_api->port_interface_mode_get = dess_port_interface_mode_get;
     p_api->port_interface_mode_status_get = dess_port_interface_mode_status_get;
+    p_api->port_counter_set = dess_port_counter_set;
+    p_api->port_counter_get = dess_port_counter_get;
+    p_api->port_counter_show = dess_port_counter_show;
   }
 #endif
 
