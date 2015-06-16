@@ -31,9 +31,11 @@ typedef spinlock_t aos_lock_pvt_t;
 
 #define __aos_unlock(lock) spin_unlock(lock)
 
+#define __aos_lock_bh(lock) spin_lock_bh(lock)
+
+#define __aos_unlock_bh(lock) spin_unlock_bh(lock)
 
 #define __aos_irq_save(flags) local_irq_save(flags)
-
 
 #define __aos_irq_restore(flags) local_irq_restore(flags)
 

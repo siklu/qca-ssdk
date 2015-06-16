@@ -2490,6 +2490,7 @@ _dess_ip_rfs_ip4_set(a_uint32_t dev_id, fal_ip4_rfs_t * rfs)
 	entry.intf_id = rfs->vid;
 	entry.port_id = 0;
 	entry.lb_num = rfs->load_balance | 0x4;
+	entry.action = FAL_MAC_RDT_TO_CPU;
 	return _dess_ip_host_add(dev_id, &entry);
 }
 
@@ -2512,6 +2513,7 @@ _dess_ip_rfs_ip6_set(a_uint32_t dev_id, fal_ip6_rfs_t * rfs)
 	entry.intf_id = rfs->vid;
 	entry.port_id = 0;
 	entry.lb_num = rfs->load_balance | 0x4;
+	entry.action = FAL_MAC_RDT_TO_CPU;
 	return _dess_ip_host_add(dev_id, &entry);
 }
 
