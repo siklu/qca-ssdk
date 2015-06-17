@@ -1860,6 +1860,9 @@ qca_dess_hw_init(ssdk_init_cfg *cfg)
 
 	/*TODO:set mac mode in gcc*/
 	/*Config PSGMII module for Dakota*/
+	reg_value = 0x2200;
+	qca_psgmii_reg_write(0, DESS_PSGMII_MODE_CONTROL,
+						(a_uint8_t *)&reg_value, 4);
 	reg_value = 0x2803;
 	qca_psgmii_reg_write(0, DESS_PSGMII_PLL_VCO_RELATED_CONTROL_1,
 						(a_uint8_t *)&reg_value, 4);
