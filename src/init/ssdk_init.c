@@ -1449,6 +1449,24 @@ ssdk_switch_init(a_uint32_t dev_id)
         if ((SSDK_CURRENT_CHIP_TYPE == CHIP_SHIVA))  continue;
         /* Updating HOL registers and RGMII delay settings
 	    with the values suggested by QCA switch team */
+		/*Special setting for Dakota*/
+	if (SSDK_CURRENT_CHIP_TYPE == CHIP_DESS)
+	{
+		nr = 240; /*30*8*/
+		fal_qos_port_tx_buf_nr_set(dev_id, i, &nr);
+		nr = 48; /*6*8*/
+		fal_qos_port_rx_buf_nr_set(dev_id, i, &nr);
+		fal_qos_port_red_en_set(dev_id, i, A_TRUE);
+		nr = 32;
+		fal_qos_queue_tx_buf_nr_set(dev_id, i, 5, &nr);
+		fal_qos_queue_tx_buf_nr_set(dev_id, i, 4, &nr);
+		fal_qos_queue_tx_buf_nr_set(dev_id, i, 3, &nr);
+		fal_qos_queue_tx_buf_nr_set(dev_id, i, 2, &nr);
+		fal_qos_queue_tx_buf_nr_set(dev_id, i, 1, &nr);
+		fal_qos_queue_tx_buf_nr_set(dev_id, i, 0, &nr);
+		continue;
+	}
+
         if (i == 0 || i == 5 || i == 6)
         {
             nr = 240; /*30*8*/
