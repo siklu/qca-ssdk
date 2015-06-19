@@ -808,7 +808,14 @@ static ssize_t napt_log_en_set(struct device *dev,
 	return count;
 }
 
-
+extern void napt_helper_show(void);
+static ssize_t napt_log_show_get(struct device *dev,
+		  struct device_attribute *attr,
+		  char *buf)
+{
+	napt_helper_show();
+	return 0;
+}
 
 struct kobject *napt_sys = NULL;
 static const struct device_attribute napt_hnat_attr =
@@ -835,6 +842,8 @@ static const struct device_attribute napt_sync_counter_en_attr =
 	__ATTR(sync_counter_en, S_IWUGO | S_IRUGO, napt_sync_counter_en_get, napt_sync_counter_en_set);
 static const struct device_attribute napt_log_en_attr =
 	__ATTR(log_en, S_IWUGO | S_IRUGO, napt_log_en_get, napt_log_en_set);
+static const struct device_attribute napt_log_show_attr =
+	__ATTR(log_show, S_IWUGO | S_IRUGO, napt_log_show_get, NULL);
 
 
 
@@ -910,8 +919,15 @@ int napt_procfs_init(void)
 		printk("Failed to register log en SysFS file\n");
 		goto CLEANUP_12;
 	}
+	ret = sysfs_create_file(napt_sys, &napt_log_show_attr.attr);
+	if (ret) {
+		printk("Failed to register log show SysFS file\n");
+		goto CLEANUP_13;
+	}
 	return 0;
 
+CLEANUP_13:
+	sysfs_remove_file(napt_sys, &napt_log_show_attr.attr);
 CLEANUP_12:
 	sysfs_remove_file(napt_sys, &napt_log_en_attr.attr);
 CLEANUP_11:
@@ -944,6 +960,7 @@ void napt_procfs_exit(void)
 {
 	printk("napt procfs exit\n");
 
+	sysfs_remove_file(napt_sys, &napt_log_show_attr.attr);
 	sysfs_remove_file(napt_sys, &napt_log_en_attr.attr);
 	sysfs_remove_file(napt_sys, &napt_sync_counter_en_attr.attr);
 	sysfs_remove_file(napt_sys, &napt_ppp_peer_mac2_attr.attr);

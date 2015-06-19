@@ -1613,6 +1613,9 @@ void host_check_aging(void)
     host_entry_p = &host_entry;
     host_entry_p->entry_id = FAL_NEXT_ENTRY_FIRST_ID;
 
+	/*check host is not neccessary, check napt is enough*/
+	return;
+
     local_irq_save(flags);
     while (1)
     {
@@ -1817,7 +1820,7 @@ static unsigned int ipv6_bg_handle(struct nat_helper_bg_msg *msg)
             }
             else /* ND AD packets without option filed? Fix Me!! */
             {
-                sa = skb->mac_header + MAC_LEN;
+		sa = skb_mac_header(skb) + MAC_LEN;
                 HNAT_PRINTK("isis_v6 Changed sa  = %.2x-%.2x-%.2x-%.2x-%.2x-%.2x\n", sa[0], sa[1], sa[2], sa[3], sa[4], sa[5]);
                 arp_hw_add(sport, vid, sip, sa, 1);
             }
@@ -1997,9 +2000,12 @@ void host_helper_init(void)
     memcpy(nat_bridge_dev, nat_lan_dev_list, strlen(nat_lan_dev_list)+1);
 
     nf_register_hook(&arpinhook);
+/*hnat not upport ipv6*/
+#if 0
 #ifdef CONFIG_IPV6_HWACCEL
     aos_printk("Registering IPv6 hooks... \n");
     nf_register_hook(&ipv6_inhook);
+#endif
 #endif
 
 #ifdef AUTO_UPDATE_PPPOE_INFO
@@ -2022,8 +2028,10 @@ void host_helper_exit(void)
     napt_procfs_exit();
 
     nf_unregister_hook(&arpinhook);
+#if 0
 #ifdef CONFIG_IPV6_HWACCEL
     nf_unregister_hook(&ipv6_inhook);
+#endif
 #endif
 }
 
