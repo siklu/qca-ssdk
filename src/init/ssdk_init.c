@@ -1407,10 +1407,8 @@ ssdk_switch_init(a_uint32_t dev_id)
             fal_port_link_forcemode_set(dev_id, i, A_FALSE);
         }
 #endif
-        if (SSDK_CURRENT_CHIP_TYPE != CHIP_DESS) {
-            fal_port_rxhdr_mode_set(dev_id, i, FAL_NO_HEADER_EN);
-            fal_port_txhdr_mode_set(dev_id, i, FAL_NO_HEADER_EN);
-        }
+        fal_port_rxhdr_mode_set(dev_id, i, FAL_NO_HEADER_EN);
+        fal_port_txhdr_mode_set(dev_id, i, FAL_NO_HEADER_EN);
         fal_port_3az_status_set(dev_id, i, A_FALSE);
         fal_port_flowctrl_forcemode_set(dev_id, i, A_TRUE);
         fal_port_flowctrl_set(dev_id, i, A_FALSE);
@@ -1864,7 +1862,6 @@ qca_dess_hw_init(ssdk_init_cfg *cfg)
 
 	ssdk_portvlan_init(cfg->port_cfg.cpu_bmp, cfg->port_cfg.lan_bmp, cfg->port_cfg.wan_bmp);
 
-	fal_port_rxhdr_mode_set(0, 0, FAL_ALL_TYPE_FRAME_EN);
 	fal_ip_route_status_set(0, A_TRUE);
 
 	ssdk_flow_default_act_init();
