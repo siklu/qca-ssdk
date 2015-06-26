@@ -1417,6 +1417,13 @@ ssdk_switch_init(a_uint32_t dev_id)
             fal_port_flowctrl_set(dev_id, i, A_TRUE);
             fal_port_flowctrl_forcemode_set(dev_id, i, A_FALSE);
         }
+
+        //According to HW suggestion, enable CPU port flow control for Dakota
+        if (i == 0 && SSDK_CURRENT_CHIP_TYPE == CHIP_DESS) {
+            fal_port_flowctrl_forcemode_set(dev_id, i, A_TRUE);
+            fal_port_flowctrl_set(dev_id, i, A_TRUE);
+        }
+
         fal_port_default_svid_set(dev_id, i, 0);
         fal_port_default_cvid_set(dev_id, i, 0);
         fal_port_1qmode_set(dev_id, i, FAL_1Q_DISABLE);
