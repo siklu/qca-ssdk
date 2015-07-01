@@ -66,6 +66,7 @@ unsigned char nf_athrs17_hnat_ppp_peer_mac[ETH_ALEN] = {0};
 unsigned char nf_athrs17_hnat_wan_mac[ETH_ALEN] = {0};
 extern int nf_athrs17_hnat_sync_counter_en;
 extern char  hnat_log_en;
+extern int scan_period;
 /* for IPv6 over PPPoE (only for S17c)*/
 int nf_athrs17_hnat_ppp_id2 = 0;
 unsigned char nf_athrs17_hnat_ppp_peer_mac2[ETH_ALEN] = {0};
@@ -808,6 +809,37 @@ static ssize_t napt_log_en_set(struct device *dev,
 	return count;
 }
 
+static ssize_t napt_scan_period_get(struct device *dev,
+		  struct device_attribute *attr,
+		  char *buf)
+{
+	ssize_t count;
+	a_uint32_t num;
+
+	num = (a_uint32_t)scan_period;
+
+	count = snprintf(buf, (ssize_t)PAGE_SIZE, "%u", num);
+	return count;
+}
+
+static ssize_t napt_scan_period_set(struct device *dev,
+		  struct device_attribute *attr,
+		  const char *buf, size_t count)
+{
+	char num_buf[12];
+	a_uint32_t num;
+
+
+	if (count >= sizeof(num_buf)) return 0;
+	memcpy(num_buf, buf, count);
+	num_buf[count] = '\0';
+	sscanf(num_buf, "%u", &num);
+
+	scan_period = num;
+
+	return count;
+}
+
 extern void napt_helper_show(void);
 static ssize_t napt_log_show_get(struct device *dev,
 		  struct device_attribute *attr,
@@ -844,6 +876,8 @@ static const struct device_attribute napt_log_en_attr =
 	__ATTR(log_en, S_IWUGO | S_IRUGO, napt_log_en_get, napt_log_en_set);
 static const struct device_attribute napt_log_show_attr =
 	__ATTR(log_show, S_IWUGO | S_IRUGO, napt_log_show_get, NULL);
+static const struct device_attribute napt_scan_period_attr =
+	__ATTR(speriod, S_IWUGO | S_IRUGO, napt_scan_period_get, napt_scan_period_set);
 
 
 
@@ -924,8 +958,15 @@ int napt_procfs_init(void)
 		printk("Failed to register log show SysFS file\n");
 		goto CLEANUP_13;
 	}
+	ret = sysfs_create_file(napt_sys, &napt_scan_period_attr.attr);
+	if (ret) {
+		printk("Failed to register scan period SysFS file\n");
+		goto CLEANUP_14;
+	}
 	return 0;
 
+CLEANUP_14:
+	sysfs_remove_file(napt_sys, &napt_scan_period_attr.attr);
 CLEANUP_13:
 	sysfs_remove_file(napt_sys, &napt_log_show_attr.attr);
 CLEANUP_12:
@@ -960,6 +1001,7 @@ void napt_procfs_exit(void)
 {
 	printk("napt procfs exit\n");
 
+	sysfs_remove_file(napt_sys, &napt_scan_period_attr.attr);
 	sysfs_remove_file(napt_sys, &napt_log_show_attr.attr);
 	sysfs_remove_file(napt_sys, &napt_log_en_attr.attr);
 	sysfs_remove_file(napt_sys, &napt_sync_counter_en_attr.attr);
