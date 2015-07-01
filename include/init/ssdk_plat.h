@@ -204,7 +204,7 @@ struct qca_phy_priv {
 
 };
 
-struct qca961x_mdio_data {
+struct ipq40xx_mdio_data {
         struct mii_bus          *mii_bus;
         void __iomem            *membase;
         int phy_irq[PHY_MAX_ADDR];

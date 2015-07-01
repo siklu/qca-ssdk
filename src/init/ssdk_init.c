@@ -1217,10 +1217,10 @@ static int miibus_get()
 	const __be32 *prop = NULL;
 	struct device_node *mdio_node = NULL;
 	struct platform_device *mdio_plat = NULL;
-	struct qca961x_mdio_data *mdio_data = NULL;
+	struct ipq40xx_mdio_data *mdio_data = NULL;
 
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS)
-		mdio_node = of_find_compatible_node(NULL, NULL, "qcom,qca961x-mdio");
+		mdio_node = of_find_compatible_node(NULL, NULL, "qcom,ipq40xx-mdio");
 	else
 		mdio_node = of_find_compatible_node(NULL, NULL, "virtual,mdio-gpio");
 
