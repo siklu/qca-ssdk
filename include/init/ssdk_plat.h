@@ -231,4 +231,12 @@ void
 qca_ar8327_phy_dbg_read(a_uint32_t dev_id, a_uint32_t phy_addr,
 		                          a_uint16_t dbg_addr, a_uint16_t *dbg_data);
 
+void 
+qca_phy_mmd_write(u32 dev_id, u32 phy_id,
+                     u16 mmd_num, u16 reg_id, u16 reg_val);
+
+u16 
+qca_phy_mmd_read(u32 dev_id, u32 phy_id,
+		u16 mmd_num, u16 reg_id);
+
 #endif

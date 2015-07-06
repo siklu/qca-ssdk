@@ -114,16 +114,18 @@ qca_ar8327_sw_reset_switch(struct switch_dev *dev)
     memset(priv->vlan_tagged, 0, sizeof(a_uint8_t) * AR8327_MAX_VLANS);
     memset(priv->pvid, 0, sizeof(a_uint16_t) * AR8327_NUM_PORTS);
 
-    /*for (i = 0; i < AR8327_MAX_VLANS; i++)*/
-    /*    priv->vlan_id[i] = i;*/
-#ifndef BOARD_AR71XX
+	/*for (i = 0; i < AR8327_MAX_VLANS; i++)*/
+	/*    priv->vlan_id[i] = i;*/
+	#ifndef BOARD_AR71XX
+	if (priv->version == QCA_VER_AR8327 ||
+		priv->version == QCA_VER_AR8337) {
+		qca_ar8327_phy_disable();
+		msleep(1000);
+	/* init switch, not necessary for dess??*/
+	rv += ssdk_switch_init(0);
 
-	qca_ar8327_phy_disable();
-	msleep(1000);
-
-#endif
-    /* init switch */
-    rv += ssdk_switch_init(0);
+	}
+	#endif
 
     mutex_unlock(&priv->reg_mutex);
 
@@ -136,13 +138,19 @@ qca_ar8327_sw_reset_switch(struct switch_dev *dev)
 		qca_ar8327_port_init(priv, i);
 	}
 	#endif
-	fal_port_link_forcemode_set(0, 1, A_FALSE);
-	fal_port_link_forcemode_set(0, 2, A_FALSE);
-	fal_port_link_forcemode_set(0, 3, A_FALSE);
-	fal_port_link_forcemode_set(0, 4, A_FALSE);
-	fal_port_link_forcemode_set(0, 5, A_FALSE);
-	qca_ar8327_phy_enable(priv);
+	if (priv->version == QCA_VER_AR8327 ||
+		priv->version == QCA_VER_AR8337) {
+		fal_port_link_forcemode_set(0, 1, A_FALSE);
+		fal_port_link_forcemode_set(0, 2, A_FALSE);
+		fal_port_link_forcemode_set(0, 3, A_FALSE);
+		fal_port_link_forcemode_set(0, 4, A_FALSE);
+		fal_port_link_forcemode_set(0, 5, A_FALSE);
+		qca_ar8327_phy_enable(priv);
+	}
 	#endif
-    return rv;
+	fal_port_rxmac_status_set(0, 0, A_TRUE);
+	fal_port_txmac_status_set(0, 0, A_TRUE);
+
+	return rv;
 }
 
