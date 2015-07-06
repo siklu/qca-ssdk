@@ -2348,11 +2348,11 @@ malibu_phy_hw_init(void)
 	malibu_phy_mmd_write(0, PSGMII_ID, MALIBU_PHY_MMD1_NUM,
 			     MALIBU_PSGMII_MODE_CTRL, MALIBU_PHY_PSGMII_MODE_CTRL_ADJUST_VALUE);
 
-/*disable phy power saving function by default */
+/*enable phy power saving function by default */
 	for (phy_id = 0; phy_id < 5; phy_id++) {
-		malibu_phy_set_powersave(dev_id, phy_id, A_FALSE);
-		malibu_phy_set_8023az(dev_id, phy_id, A_FALSE);
-		malibu_phy_set_hibernate(dev_id, phy_id, A_FALSE);
+		malibu_phy_set_powersave(dev_id, phy_id, A_TRUE);
+		malibu_phy_set_8023az(dev_id, phy_id, A_TRUE);
+		malibu_phy_set_hibernate(dev_id, phy_id, A_TRUE);
 	}
 
 	return SW_OK;
