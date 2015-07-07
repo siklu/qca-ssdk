@@ -33,6 +33,7 @@
 #include "nat_helper_dt.h"
 #include "nat_helper_hsl.h"
 
+#define NAPT_CT_POLLING_SEC         5
 
 extern int nat_sockopts_init;
 extern uint32_t napt_set_default_route(fal_ip4_addr_t dst_addr, fal_ip4_addr_t src_addr);
@@ -57,6 +58,13 @@ struct napt_ct
 	a_uint64_t last_jiffies;
 };
 
+struct napt_debug_counter
+{
+	a_uint32_t interate_cnt;
+	a_uint32_t care_cnt;
+	a_uint32_t thresh_low_cnt;
+};
+
 struct nhlist_head
 {
     struct napt_ct *next;
@@ -65,6 +73,9 @@ struct nhlist_head
 static struct nhlist_head *ct_buf_hash_head = NULL;
 static struct napt_ct *ct_buf = NULL;
 static a_uint32_t ct_buf_ct_cnt = 0;
+static struct napt_debug_counter napt_ct_debug_info;
+
+int scan_period = NAPT_CT_POLLING_SEC;
 
 static a_int32_t
 napt_hash_buf_init(struct napt_ct **hash, struct nhlist_head **hash_head)
@@ -315,6 +326,7 @@ napt_ct_buf_ct_info_clear(struct napt_ct *napt_ct)
 		last->next = napt_ct->next;
     napt_ct->ct_addr = 0;
     napt_ct->ct_packets = 0;
+	napt_ct->deny = 0;
 	napt_ct->next = NULL;
 }
 
@@ -817,7 +829,7 @@ napt_ct_check_add_one(a_uint32_t ct_addr, a_uint8_t *napt_ct_valid)
 
     if(napt_ct_buf_deny_get(napt_ct) >= NAPT_CT_PERMANENT_DENY)
     {
-        printk("<napt_ct_scan> ct:%x is PERMANENT deny\n",
+        HNAT_PRINTK("<napt_ct_scan> ct:%x is PERMANENT deny\n",
                ct_addr);
         return -1;
 
@@ -849,6 +861,8 @@ napt_ct_check_add_one(a_uint32_t ct_addr, a_uint8_t *napt_ct_valid)
 #endif
                 }
             }
+        } else {
+        	napt_ct_debug_info.thresh_low_cnt++;
         }
 
         in_hw = napt_ct_buf_in_hw_get(napt_ct, &hw_index);
@@ -984,12 +998,15 @@ napt_ct_check_add(void)
 
     NAPT_CT_LIST_LOCK();
 	HNAT_PRINTK("lock enter!\n");
+	memset(&napt_ct_debug_info, 0, sizeof(napt_ct_debug_info));
     while((ct_addr = NAPT_CT_LIST_ITERATE(&hash, &iterate)))
     {
 		ct_cnt++;
+		napt_ct_debug_info.interate_cnt++;
         if (NAPT_CT_SHOULD_CARE(ct_addr))
         {
 			care_cnt++;
+			napt_ct_debug_info.care_cnt++;
 			HNAT_PRINTK("should care ct_addr=0x%x\n", ct_addr);
             if(napt_ct_check_add_one(ct_addr, napt_ct_valid) != -1)
             {
@@ -1159,12 +1176,11 @@ napt_ct_exit(void)
 static a_int32_t
 napt_ct_scan_thread(void *param)
 {
-#define NAPT_CT_POLLING_SEC         5
 #define NAPT_CT_AGING_SEC           20
 #define ARP_CHECK_AGING_SEC       40
 
-    a_uint32_t times = (NAPT_CT_AGING_SEC/NAPT_CT_POLLING_SEC);
-    a_uint32_t arp_check_time = (ARP_CHECK_AGING_SEC/NAPT_CT_POLLING_SEC);
+    a_uint32_t times = (NAPT_CT_AGING_SEC/scan_period);
+    a_uint32_t arp_check_time = (ARP_CHECK_AGING_SEC/scan_period);
     // a_bool_t l3_enable;
 
     if(napt_ct_init() != 0)
@@ -1185,7 +1201,7 @@ napt_ct_scan_thread(void *param)
         if((--times) == 0)
         {
             napt_ct_hw_aging();
-            times = (NAPT_CT_AGING_SEC/NAPT_CT_POLLING_SEC);
+            times = (NAPT_CT_AGING_SEC/scan_period);
         }
 
         if((--arp_check_time) == 0)
@@ -1193,7 +1209,7 @@ napt_ct_scan_thread(void *param)
 		HNAT_PRINTK("[host check start]\n");
             host_check_aging();
 		HNAT_PRINTK("[host check end]\n");
-            arp_check_time = (ARP_CHECK_AGING_SEC/NAPT_CT_POLLING_SEC);
+            arp_check_time = (ARP_CHECK_AGING_SEC/scan_period);
         }
 
 #ifdef ISISC /* only for S17c */
@@ -1205,7 +1221,7 @@ napt_ct_scan_thread(void *param)
             break;
 	}
 
-        NAPT_CT_TASK_SLEEP(NAPT_CT_POLLING_SEC);
+        NAPT_CT_TASK_SLEEP(scan_period);
     }
 
     napt_ct_exit();
@@ -1222,6 +1238,10 @@ void napt_helper_show(void)
 		}
 	}
 	printk("current hardware offload count: 0x%x\n", napt_ct_hw_cnt);
+	printk("interate:0x%x, care:0x%x, low_thresh=0x%x\n",
+			napt_ct_debug_info.interate_cnt,
+			napt_ct_debug_info.care_cnt,
+			napt_ct_debug_info.thresh_low_cnt);
 }
 
 void
