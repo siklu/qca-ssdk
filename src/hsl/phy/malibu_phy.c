@@ -371,6 +371,7 @@ sw_error_t
 malibu_phy_set_powersave(a_uint32_t dev_id, a_uint32_t phy_id, a_bool_t enable)
 {
 	a_uint16_t phy_data;
+	a_bool_t  status;
 
 	if (phy_id == COMBO_PHY_ID) {
 		if (MALIBU_PHY_MEDIUM_COPPER !=
@@ -378,17 +379,45 @@ malibu_phy_set_powersave(a_uint32_t dev_id, a_uint32_t phy_id, a_bool_t enable)
 			return SW_NOT_SUPPORTED;
 	}
 
-	malibu_phy_reg_write(dev_id, phy_id, MALIBU_DEBUG_PORT_ADDRESS,
-			     MALIBU_DEBUG_PHY_POWER_SAVING_CTRL);
-	phy_data = malibu_phy_reg_read(dev_id, phy_id, MALIBU_DEBUG_PORT_DATA);
-
 	if (enable == A_TRUE) {
-		phy_data |= 0x8000;
-	} else {
-		phy_data &= ~0x8000;
-	}
+		malibu_phy_get_8023az (dev_id,phy_id,&status);
+		if (status == A_FALSE) {
+			phy_data = malibu_phy_mmd_read(dev_id, phy_id, MALIBU_PHY_MMD3_NUM,
+						   MALIBU_PHY_MMD3_ADDR_8023AZ_TIMER_CTRL);
+			phy_data &= ~(1<<14);
+			malibu_phy_mmd_write(dev_id, phy_id, MALIBU_PHY_MMD3_NUM,
+			     MALIBU_PHY_MMD3_ADDR_8023AZ_TIMER_CTRL, phy_data);
+		}
+		phy_data = malibu_phy_mmd_read(dev_id, phy_id, MALIBU_PHY_MMD3_NUM,
+						   MALIBU_PHY_MMD3_ADDR_CLD_CTRL5);
+		phy_data &= ~(1<<14);
+		malibu_phy_mmd_write(dev_id, phy_id, MALIBU_PHY_MMD3_NUM,
+			     MALIBU_PHY_MMD3_ADDR_CLD_CTRL5, phy_data);
+		phy_data = malibu_phy_mmd_read(dev_id, phy_id, MALIBU_PHY_MMD3_NUM,
+						   MALIBU_PHY_MMD3_ADDR_CLD_CTRL3);
+		phy_data &= ~(1<<15);
+		malibu_phy_mmd_write(dev_id, phy_id, MALIBU_PHY_MMD3_NUM,
+			     MALIBU_PHY_MMD3_ADDR_CLD_CTRL3, phy_data);
 
-	malibu_phy_reg_write(dev_id, phy_id, MALIBU_DEBUG_PORT_DATA, phy_data);
+	} else {
+		phy_data = malibu_phy_mmd_read(dev_id, phy_id, MALIBU_PHY_MMD3_NUM,
+						   MALIBU_PHY_MMD3_ADDR_8023AZ_TIMER_CTRL);
+		phy_data|= (1<<14);
+		malibu_phy_mmd_write(dev_id, phy_id, MALIBU_PHY_MMD3_NUM,
+			     MALIBU_PHY_MMD3_ADDR_8023AZ_TIMER_CTRL, phy_data);
+		phy_data = malibu_phy_mmd_read(dev_id, phy_id, MALIBU_PHY_MMD3_NUM,
+						   MALIBU_PHY_MMD3_ADDR_CLD_CTRL5);
+		phy_data|= (1<<14);
+		malibu_phy_mmd_write(dev_id, phy_id, MALIBU_PHY_MMD3_NUM,
+			     MALIBU_PHY_MMD3_ADDR_CLD_CTRL5, phy_data);
+		phy_data = malibu_phy_mmd_read(dev_id, phy_id, MALIBU_PHY_MMD3_NUM,
+						   MALIBU_PHY_MMD3_ADDR_CLD_CTRL3);
+		phy_data|= (1<<15);
+		malibu_phy_mmd_write(dev_id, phy_id, MALIBU_PHY_MMD3_NUM,
+			     MALIBU_PHY_MMD3_ADDR_CLD_CTRL3, phy_data);
+
+	}
+	malibu_phy_reg_write(dev_id, phy_id, MALIBU_PHY_CONTROL, 0x9040);
 
 	return SW_OK;
 }
@@ -404,6 +433,9 @@ malibu_phy_get_powersave(a_uint32_t dev_id, a_uint32_t phy_id,
 			 a_bool_t * enable)
 {
 	a_uint16_t phy_data;
+	a_uint16_t phy_data1;
+	a_uint16_t phy_data2;
+	a_bool_t  status;
 
 	if (phy_id == COMBO_PHY_ID) {
 		if (MALIBU_PHY_MEDIUM_COPPER !=
@@ -411,13 +443,26 @@ malibu_phy_get_powersave(a_uint32_t dev_id, a_uint32_t phy_id,
 			return SW_NOT_SUPPORTED;
 	}
 
-	*enable = A_FALSE;
-	malibu_phy_reg_write(dev_id, phy_id, MALIBU_DEBUG_PORT_ADDRESS,
-			     MALIBU_DEBUG_PHY_POWER_SAVING_CTRL);
-	phy_data = malibu_phy_reg_read(dev_id, phy_id, MALIBU_DEBUG_PORT_DATA);
+	phy_data = malibu_phy_mmd_read(dev_id, phy_id, MALIBU_PHY_MMD3_NUM,
+					   MALIBU_PHY_MMD3_ADDR_8023AZ_TIMER_CTRL);
+	phy_data1 = malibu_phy_mmd_read(dev_id, phy_id, MALIBU_PHY_MMD3_NUM,
+					   MALIBU_PHY_MMD3_ADDR_CLD_CTRL5);
+	phy_data2 = malibu_phy_mmd_read(dev_id, phy_id, MALIBU_PHY_MMD3_NUM,
+					   MALIBU_PHY_MMD3_ADDR_CLD_CTRL3);
+	malibu_phy_get_8023az (dev_id,phy_id,&status);
+	if(status == A_TRUE) {
+		if ((phy_data & 0x4000) && !(phy_data1 & 0x4000) && !(phy_data2 & 0x8000)) {
+			*enable = A_TRUE;
+		}
+	} else {
+		if (!(phy_data & 0x4000) && !(phy_data1 & 0x4000) && !(phy_data2 & 0x8000)) {
+			*enable = A_TRUE;
+		}
+	}
 
-	if (phy_data & 0x8000)
-		*enable = A_TRUE;
+	if ((phy_data & 0x4000) && (phy_data1 & 0x4000) && (phy_data2 & 0x8000)) {
+		*enable = A_FALSE;
+	}
 
 	return SW_OK;
 }
