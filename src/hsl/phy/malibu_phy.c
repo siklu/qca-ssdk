@@ -2400,6 +2400,12 @@ malibu_phy_hw_init(void)
 		malibu_phy_set_hibernate(dev_id, phy_id, A_TRUE);
 	}
 
+	phy_data = malibu_phy_mmd_read(0, 4, MALIBU_PHY_MMD3_NUM,
+		MALIBU_PHY_MMD3_ADDR_REMOTE_LOOPBACK_CTRL);
+	phy_data &= (~(1<<1));
+	malibu_phy_mmd_write(0, 4, MALIBU_PHY_MMD3_NUM,
+		MALIBU_PHY_MMD3_ADDR_REMOTE_LOOPBACK_CTRL, phy_data);
+
 	return SW_OK;
 }
 
