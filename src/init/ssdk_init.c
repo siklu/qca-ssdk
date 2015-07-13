@@ -969,6 +969,7 @@ static int ssdk_switch_register()
 	struct switch_dev *sw_dev;
 	struct qca_phy_priv *priv;
 	int ret = 0;
+	a_uint32_t chip_id = 0;
 
 	priv = kzalloc(sizeof(struct qca_phy_priv), GFP_KERNEL);
 	if (priv == NULL) {
@@ -982,6 +983,12 @@ static int ssdk_switch_register()
 	priv->phy_dbg_write = qca_ar8327_phy_dbg_write;
 	priv->phy_dbg_read = qca_ar8327_phy_dbg_read;
 	priv->phy_mmd_write = qca_ar8327_mmd_write;
+
+	if (fal_reg_get(0, 0, (a_uint8_t *)&chip_id, 4) == SW_OK) {
+		priv->version = ((chip_id >> 8) & 0xff);
+		priv->revision = (chip_id & 0xff);
+		printk("Dakota Chip version 0x%x%x\n", priv->version, priv->revision);
+	}
 
 	mutex_init(&priv->reg_mutex);
 
