@@ -241,6 +241,8 @@ napt_ct_intf_is_expected(uint32_t ct_addr)
 		if(dev->type == ARPHRD_ETHER) {
 			if(strstr(dev->name, "eth0"))
 				return 1;
+		} else if (dev->type == ARPHRD_PPP) {
+			return 1;
 		}
 	}
 

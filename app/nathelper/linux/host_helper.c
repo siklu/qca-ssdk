@@ -825,7 +825,7 @@ static sw_error_t setup_interface_entry(char *list_if, int is_wan)
 			{
 				a_uint32_t index;
 				nat_hw_pub_ip_add(ntohl((a_uint32_t)(in_device_wan->ifa_list->ifa_address)), &index);
-				printk("pubip add 0x%x\n", (a_uint32_t)(in_device_wan->ifa_list->ifa_address));
+				HNAT_PRINTK("pubip add 0x%x\n", (a_uint32_t)(in_device_wan->ifa_list->ifa_address));
 			}
 		}
         memcpy(if_mac_addr, devmac, MAC_LEN);
@@ -866,7 +866,7 @@ static void setup_dev_list(void)
 				/*wan port*/
 				HNAT_PRINTK("wan port vid:%d\n", tmp_vid);
 				nat_wan_vid = tmp_vid;
-				snprintf(nat_wan_dev_list, IFNAMSIZ, "eth0.%d eth0", tmp_vid);
+				snprintf(nat_wan_dev_list, IFNAMSIZ, "eth0.%d eth0 pppoe-wan", tmp_vid);
 			} else {
 				/*lan port*/
 				HNAT_PRINTK("lan port vid:%d\n", tmp_vid);
@@ -962,7 +962,7 @@ static void isis_pppoe_check_for_redial(void)
                 /* force PPPoE parser for multi- and uni-cast packets; for v1.0.7+ */
                 pppoetbl.session_id = nf_athrs17_hnat_ppp_id;
                 pppoetbl.multi_session = 1;
-                pppoetbl.uni_session = 1;
+                pppoetbl.uni_session = 0;
                 pppoetbl.entry_id = 0;
                 /* set the PPPoE edit reg (0x2200), and PPPoE session reg (0x5f000) */
                 if (PPPOE_SESSION_TABLE_ADD(0, &pppoetbl) == SW_OK)
@@ -1097,7 +1097,7 @@ static int add_pppoe_host_entry(uint32_t sport, a_int32_t arp_entry_id)
 
         pppoetbl.session_id = nf_athrs17_hnat_ppp_id;
         pppoetbl.multi_session = 1;
-        pppoetbl.uni_session = 1;
+        pppoetbl.uni_session = 0;
         pppoetbl.entry_id = 0;
 
         /* set the PPPoE edit reg (0x2200), and PPPoE session reg (0x5f000) */
@@ -1128,8 +1128,10 @@ static int add_pppoe_host_entry(uint32_t sport, a_int32_t arp_entry_id)
 
                 aos_printk("adding ACLs \n");
                 pppoe_gwid = a_entry_id;
-                pppoe_add_acl_rules(*(uint32_t *)&wanip, *(uint32_t *)&lanip, a_entry_id);
+			pppoe_add_acl_rules(nf_athrs17_hnat_wan_ip, *(uint32_t *)&lanip, a_entry_id);
                 aos_printk("ACL creation okay... \n");
+            } else {
+			HNAT_PRINTK("pppoe arp add fail!\n");
             }
         }
         else
@@ -1453,7 +1455,6 @@ static int qcaswitch_pppoe_ip_event(struct notifier_block *this,
 {
     struct in_ifaddr *ifa = (struct in_ifaddr *)ptr;
     struct net_device *dev = (struct net_device *)ifa->ifa_dev->dev;
-    struct ppp *ppp = netdev_priv(dev);
     struct list_head *list;
     struct channel *pch;
     struct sock *sk;
@@ -1461,6 +1462,9 @@ static int qcaswitch_pppoe_ip_event(struct notifier_block *this,
     unsigned long  flags;
     static int connection_count = 0;
     fal_pppoe_session_t del_pppoetbl;
+	int channel_count;
+	struct ppp_channel *ppp_chan[1];
+	int channel_protocol;
 
     if (!((dev->type == ARPHRD_PPP) && (dev->flags & IFF_POINTOPOINT)))
         return NOTIFY_DONE;
@@ -1473,76 +1477,70 @@ static int qcaswitch_pppoe_ip_event(struct notifier_block *this,
     switch (event)
     {
         case NETDEV_UP:
-            local_irq_save(flags);
-            list = &ppp->channels;
-            if (list_empty(list))
-            {
-                local_irq_restore(flags);
-                return NOTIFY_DONE;
-            }
-            if ((ppp->flags & SC_MULTILINK) == 0)
-            {
+            if (ppp_is_multilink(dev) == 0) {
                 /* not doing multilink: send it down the first channel */
-                list = list->next;
-                pch = list_entry(list, struct channel, clist);
-                if (pch->chan)
-                {
-                    if (pch->chan->private)
-                    {
-                        /* the NETDEV_UP event will be sent many times
-                        * because of ifa operation ifa->ifa_local != ifa->ifa_address
-                        * means that remote ip is really added.
-                        */
-                        if (ifa->ifa_local == ifa->ifa_address)
-                        {
-                            local_irq_restore(flags);
-                            return NOTIFY_DONE;
-                        }
-                        sk = (struct sock *)pch->chan->private;
-                        po = (struct pppox_sock*)sk;
-                        connection_count++;
-                        if (((NF_S17_WAN_TYPE_PPPOE == nf_athrs17_hnat_wan_type) &&
-                                (0 != nf_athrs17_hnat_ppp_id))) /* another session for IPv6 */
-                        {
-                            nf_athrs17_hnat_ppp_id2 = po->num;
-                            memcpy(nf_athrs17_hnat_ppp_peer_mac2, po->pppoe_pa.remote, ETH_ALEN);
-                        }
-                        else
-                        {
-                            nf_athrs17_hnat_wan_type = NF_S17_WAN_TYPE_PPPOE;
-                            nf_athrs17_hnat_wan_ip = ifa->ifa_local;
-                            nf_athrs17_hnat_ppp_peer_ip = ifa->ifa_address;
-                            memcpy(nf_athrs17_hnat_ppp_peer_mac, po->pppoe_pa.remote, ETH_ALEN);
-                            nf_athrs17_hnat_ppp_id = po->num;
-                        }
-                    }
-                }
-                else
-                {
-                    local_irq_restore(flags);
-                    /* channel got unregistered */
-                    return NOTIFY_DONE;
-                }
-            }
-            local_irq_restore(flags);
-            break;
+			channel_count = ppp_hold_channels(dev, ppp_chan, 1);
+			if (channel_count != 1)
+				return NOTIFY_DONE;
+
+			channel_protocol = ppp_channel_get_protocol(ppp_chan[0]);
+			if (channel_protocol == PX_PROTO_OE)
+			{
+				if (ppp_chan[0]->private)
+				{
+					/* the NETDEV_UP event will be sent many times
+					* because of ifa operation ifa->ifa_local != ifa->ifa_address
+					* means that remote ip is really added.
+					*/
+					if (ifa->ifa_local == ifa->ifa_address)
+					{
+						ppp_release_channels(ppp_chan, 1);
+						return NOTIFY_DONE;
+					}
+					sk = (struct sock *)(ppp_chan[0]->private);
+					po = (struct pppox_sock*)sk;
+					connection_count++;
+					if (((NF_S17_WAN_TYPE_PPPOE == nf_athrs17_hnat_wan_type) &&
+					(0 != nf_athrs17_hnat_ppp_id))) /* another session for IPv6 */
+					{
+						nf_athrs17_hnat_ppp_id2 = ntohs(po->proto.pppoe.pa.sid);
+						memcpy(nf_athrs17_hnat_ppp_peer_mac2,
+							po->proto.pppoe.pa.remote, ETH_ALEN);
+					} else {
+						nf_athrs17_hnat_wan_type = NF_S17_WAN_TYPE_PPPOE;
+						nf_athrs17_hnat_wan_ip = ifa->ifa_local;
+						nf_athrs17_hnat_ppp_peer_ip = ifa->ifa_address;
+						memcpy(nf_athrs17_hnat_ppp_peer_mac,
+							po->pppoe_pa.remote, ETH_ALEN);
+						nf_athrs17_hnat_ppp_id = ntohs(po->pppoe_pa.sid);
+					}
+					ppp_release_channels(ppp_chan, 1);
+				} else {
+					ppp_release_channels(ppp_chan, 1);
+					/* channel got unregistered */
+					return NOTIFY_DONE;
+				}
+			} else {
+				ppp_release_channels(ppp_chan, 1);
+				/* channel got unregistered */
+				return NOTIFY_DONE;
+			}
+		}
+		break;
 
         case NETDEV_DOWN:
             if (NF_S17_WAN_TYPE_PPPOE != nf_athrs17_hnat_wan_type)
             {
                 return NOTIFY_DONE;
             }
-            printk("DOWN: local: "NIPQUAD_FMT"\n", NIPQUAD(ifa->ifa_local));
-            printk("DOWN: address: "NIPQUAD_FMT"\n", NIPQUAD(ifa->ifa_address));
             connection_count--;
-            local_irq_save(flags);
             if (ifa->ifa_local == nf_athrs17_hnat_wan_ip)
             {
                 /* PPPoE Interface really down */
                 ipv6_droute_del_acl_rules();
                 del_pppoetbl.session_id = nf_athrs17_hnat_ppp_id;
                 del_pppoetbl.multi_session = 1;
-                del_pppoetbl.uni_session = 1;
+                del_pppoetbl.uni_session = 0;
                 del_pppoetbl.entry_id = 0;
                 PPPOE_SESSION_TABLE_DEL(0, &del_pppoetbl);
                 nf_athrs17_hnat_wan_type = NF_S17_WAN_TYPE_IP;
@@ -1557,7 +1555,7 @@ static int qcaswitch_pppoe_ip_event(struct notifier_block *this,
                 {
                     del_pppoetbl.session_id = nf_athrs17_hnat_ppp_id2;
                     del_pppoetbl.multi_session = 1;
-                    del_pppoetbl.uni_session = 1;
+                    del_pppoetbl.uni_session = 0;
                     del_pppoetbl.entry_id = 0;
                     PPPOE_SESSION_TABLE_DEL(0, &del_pppoetbl);
                 }
@@ -1565,7 +1563,6 @@ static int qcaswitch_pppoe_ip_event(struct notifier_block *this,
                 memset(&nf_athrs17_hnat_ppp_peer_mac2, 0, ETH_ALEN);
             }
             qcaswitch_hostentry_flush();
-            local_irq_restore(flags);
             break;
 
         default:
@@ -1612,6 +1609,9 @@ void host_check_aging(void)
 
     host_entry_p = &host_entry;
     host_entry_p->entry_id = FAL_NEXT_ENTRY_FIRST_ID;
+
+	/*check host is not neccessary, check napt is enough*/
+	return;
 
     local_irq_save(flags);
     while (1)
@@ -1817,7 +1817,7 @@ static unsigned int ipv6_bg_handle(struct nat_helper_bg_msg *msg)
             }
             else /* ND AD packets without option filed? Fix Me!! */
             {
-                sa = skb->mac_header + MAC_LEN;
+		sa = skb_mac_header(skb) + MAC_LEN;
                 HNAT_PRINTK("isis_v6 Changed sa  = %.2x-%.2x-%.2x-%.2x-%.2x-%.2x\n", sa[0], sa[1], sa[2], sa[3], sa[4], sa[5]);
                 arp_hw_add(sport, vid, sip, sa, 1);
             }
@@ -1997,9 +1997,12 @@ void host_helper_init(void)
     memcpy(nat_bridge_dev, nat_lan_dev_list, strlen(nat_lan_dev_list)+1);
 
     nf_register_hook(&arpinhook);
+/*hnat not upport ipv6*/
+#if 0
 #ifdef CONFIG_IPV6_HWACCEL
     aos_printk("Registering IPv6 hooks... \n");
     nf_register_hook(&ipv6_inhook);
+#endif
 #endif
 
 #ifdef AUTO_UPDATE_PPPOE_INFO
@@ -2022,8 +2025,10 @@ void host_helper_exit(void)
     napt_procfs_exit();
 
     nf_unregister_hook(&arpinhook);
+#if 0
 #ifdef CONFIG_IPV6_HWACCEL
     nf_unregister_hook(&ipv6_inhook);
+#endif
 #endif
 }
 

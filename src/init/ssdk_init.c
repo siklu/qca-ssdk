@@ -36,6 +36,7 @@
 #include <linux/types.h>
 //#include <asm/mach-types.h>
 #include <generated/autoconf.h>
+#include <linux/inetdevice.h>
 #include <linux/netdevice.h>
 #include <linux/phy.h>
 #include <linux/delay.h>
@@ -68,6 +69,9 @@
 #endif
 
 #ifdef IN_RFS
+#if defined(CONFIG_VLAN_8021Q) || defined(CONFIG_VLAN_8021Q_MODULE)
+#include <linux/if_vlan.h>
+#endif
 #include <qca-rfs/rfs_dev.h>
 #include "fal_rfs.h"
 #endif
@@ -79,6 +83,10 @@
 
 #ifdef IN_RFS
 struct rfs_device rfs_dev;
+struct notifier_block ssdk_inet_notifier;
+#if defined(CONFIG_RFS_ACCEL)
+struct notifier_block ssdk_dev_notifier;
+#endif
 #endif
 
 /*
@@ -1212,10 +1220,10 @@ static int miibus_get()
 	const __be32 *prop = NULL;
 	struct device_node *mdio_node = NULL;
 	struct platform_device *mdio_plat = NULL;
-	struct qca961x_mdio_data *mdio_data = NULL;
+	struct ipq40xx_mdio_data *mdio_data = NULL;
 
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS)
-		mdio_node = of_find_compatible_node(NULL, NULL, "qcom,qca961x-mdio");
+		mdio_node = of_find_compatible_node(NULL, NULL, "qcom,ipq40xx-mdio");
 	else
 		mdio_node = of_find_compatible_node(NULL, NULL, "virtual,mdio-gpio");
 
@@ -1414,6 +1422,13 @@ ssdk_switch_init(a_uint32_t dev_id)
             fal_port_flowctrl_set(dev_id, i, A_TRUE);
             fal_port_flowctrl_forcemode_set(dev_id, i, A_FALSE);
         }
+
+        //According to HW suggestion, enable CPU port flow control for Dakota
+        if (i == 0 && SSDK_CURRENT_CHIP_TYPE == CHIP_DESS) {
+            fal_port_flowctrl_forcemode_set(dev_id, i, A_TRUE);
+            fal_port_flowctrl_set(dev_id, i, A_TRUE);
+        }
+
         fal_port_default_svid_set(dev_id, i, 0);
         fal_port_default_cvid_set(dev_id, i, 0);
         fal_port_1qmode_set(dev_id, i, FAL_1Q_DISABLE);
@@ -1444,6 +1459,24 @@ ssdk_switch_init(a_uint32_t dev_id)
         if ((SSDK_CURRENT_CHIP_TYPE == CHIP_SHIVA))  continue;
         /* Updating HOL registers and RGMII delay settings
 	    with the values suggested by QCA switch team */
+		/*Special setting for Dakota*/
+	if (SSDK_CURRENT_CHIP_TYPE == CHIP_DESS)
+	{
+		nr = 240; /*30*8*/
+		fal_qos_port_tx_buf_nr_set(dev_id, i, &nr);
+		nr = 48; /*6*8*/
+		fal_qos_port_rx_buf_nr_set(dev_id, i, &nr);
+		fal_qos_port_red_en_set(dev_id, i, A_TRUE);
+		nr = 32;
+		fal_qos_queue_tx_buf_nr_set(dev_id, i, 5, &nr);
+		fal_qos_queue_tx_buf_nr_set(dev_id, i, 4, &nr);
+		fal_qos_queue_tx_buf_nr_set(dev_id, i, 3, &nr);
+		fal_qos_queue_tx_buf_nr_set(dev_id, i, 2, &nr);
+		fal_qos_queue_tx_buf_nr_set(dev_id, i, 1, &nr);
+		fal_qos_queue_tx_buf_nr_set(dev_id, i, 0, &nr);
+		continue;
+	}
+
         if (i == 0 || i == 5 || i == 6)
         {
             nr = 240; /*30*8*/
@@ -1513,6 +1546,216 @@ int ssdk_phy_init(ssdk_init_cfg *cfg)
 	return SW_FAIL;
 }
 
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+struct reset_control *ess_rst;
+void ssdk_ess_reset()
+{
+	reset_control_assert(ess_rst);
+	mdelay(10);
+	reset_control_deassert(ess_rst);
+	mdelay(100);
+}
+#endif
+
+
+void ssdk_psgmii_self_test()
+{
+	int i = 0, phy = 0,j=0;
+	int reset = 0;
+	u32 value = 0;
+	u32 phy_t_status = 0;
+
+	qca_ar8327_phy_write(0, 4, 0x1f, 0x8500);/*switch to access MII reg for copper*/
+	for(phy = 0; phy < 5; phy++) {
+		/*enable phy mdio broadcast write*/
+		qca_phy_mmd_write(0, phy, 7, 0x8028, 0x801f);
+	}
+
+	/* force no link by power down */
+	qca_ar8327_phy_write(0, 0x1f, 0x0, 0x1840);
+
+	/*packet number*/
+	qca_phy_mmd_write(0, 0x1f, 7, 0x8021, 0x3000);
+	qca_phy_mmd_write(0, 0x1f, 7, 0x8062, 0x05e0);
+
+	/*fix mdi status */
+	qca_ar8327_phy_write(0, 0x1f, 0x10, 0x6800);
+
+	for(i = 0; i < 100; i++)
+	{
+		phy_t_status = 0;
+
+		for(phy = 0; phy < 5; phy++) {
+			value = readl(hw_addr+0x66c+phy*0xc);
+			writel((value|(1<<21)), (hw_addr+0x66c+phy*0xc));
+		}
+
+		for (phy = 0;phy < 5; phy++)
+		{
+			u32 tx_counter_ok, tx_counter_error;
+			u32 rx_counter_ok, rx_counter_error;
+			u32 tx_counter_ok_high16;
+			u32 rx_counter_ok_high16;
+			u32 tx_ok,rx_ok;
+			qca_ar8327_phy_write(0, phy, 0x0, 0x9000);
+			qca_ar8327_phy_write(0, phy, 0x0, 0x4140);
+			j=0;
+			while (j<100)
+			{
+				u16 status;
+				qca_ar8327_phy_read(0, phy, 0x11, &status);
+				if(status & (1 << 10))
+					break;
+				mdelay(10);
+				j++;
+			}
+
+			/*enable check*/
+			qca_phy_mmd_write(0, phy, 7, 0x8029, 0x0000);
+			qca_phy_mmd_write(0, phy, 7, 0x8029, 0x0003);
+
+			/*start traffic*/
+			qca_phy_mmd_write(0, phy, 7, 0x8020, 0xa000);
+			mdelay(200);
+
+			/*check counter*/
+			tx_counter_ok = qca_phy_mmd_read(0, phy, 7, 0x802e);
+			tx_counter_ok_high16 = qca_phy_mmd_read(0, phy, 7, 0x802d);
+			tx_counter_error = qca_phy_mmd_read(0, phy, 7, 0x802f);
+			rx_counter_ok = qca_phy_mmd_read(0, phy, 7, 0x802b);
+			rx_counter_ok_high16 = qca_phy_mmd_read(0, phy, 7, 0x802a);
+			rx_counter_error = qca_phy_mmd_read(0, phy, 7, 0x802c);
+			tx_ok = tx_counter_ok + (tx_counter_ok_high16<<16);
+			rx_ok = rx_counter_ok + (rx_counter_ok_high16<<16);  
+			if( tx_ok== 0x3000 && tx_counter_error == 0)/*success*/
+			{
+				phy_t_status &= (~(1<<phy));
+			}
+			else
+			{
+				printk("tx_ok = 0x%x, rx_ok = 0x%x, tx_counter_error = 0x%x, rx_counter_error = 0x%x\n",
+						tx_ok, rx_ok, tx_counter_error, rx_counter_error);
+				printk("PHY %d single test PSGMII issue happen \n", phy);           
+				phy_t_status |= (1<<phy);
+			}
+
+			qca_ar8327_phy_write(0, phy, 0x0, 0x1840);
+		}
+
+		qca_ar8327_phy_write(0, 0x1f, 0x0, 0x9000);
+
+		qca_ar8327_phy_write(0, 0x1f, 0x0, 0x4140);
+
+		j=0;
+		while(j < 100)
+		{
+			for(phy = 0; phy < 5; phy++)
+			{
+				u16 status;
+				qca_ar8327_phy_read(0, phy, 0x11, &status);
+				if(!(status & (1 << 10)))
+					break;
+			}
+
+			if(phy >= 5)
+				break;
+			mdelay(10);
+			j++;
+		}
+		/*enable check*/
+		qca_phy_mmd_write(0, 0x1f, 7, 0x8029, 0x0000);
+		qca_phy_mmd_write(0, 0x1f, 7, 0x8029, 0x0003);
+
+		/*start traffic*/
+		qca_phy_mmd_write(0, 0x1f, 7, 0x8020, 0xa000);
+		mdelay(200);
+		for(phy = 0; phy < 5; phy++)
+		{
+			u32 tx_counter_ok, tx_counter_error;
+			u32 rx_counter_ok, rx_counter_error;
+			u32 tx_counter_ok_high16;
+			u32 rx_counter_ok_high16;
+			u32 tx_ok,rx_ok;
+			/*check counter*/
+			tx_counter_ok = qca_phy_mmd_read(0, phy, 7, 0x802e);
+			tx_counter_ok_high16 = qca_phy_mmd_read(0, phy, 7, 0x802d);
+			tx_counter_error = qca_phy_mmd_read(0, phy, 7, 0x802f);
+			rx_counter_ok = qca_phy_mmd_read(0, phy, 7, 0x802b);
+			rx_counter_ok_high16 = qca_phy_mmd_read(0, phy, 7, 0x802a);
+			rx_counter_error = qca_phy_mmd_read(0, phy, 7, 0x802c);
+			tx_ok = tx_counter_ok + (tx_counter_ok_high16<<16);
+			rx_ok = rx_counter_ok + (rx_counter_ok_high16<<16);
+			if( tx_ok== 0x3000 && tx_counter_error == 0)/*success*/
+			{
+				phy_t_status &= (~(1<<(phy+8)));
+			}
+			else
+			{
+				printk("tx_ok = 0x%x, rx_ok = 0x%x, tx_counter_error = 0x%x, rx_counter_error = 0x%x\n",
+						tx_ok, rx_ok, tx_counter_error, rx_counter_error);
+				printk("PHY %d PSGMII issue happen,Reset PSGMII!!!!!!\n", phy);
+				phy_t_status |= (1<<(phy+8));
+			}
+		}
+		printk("PHY all test 0x%x \r\n",phy_t_status);
+		if (phy_t_status)
+		{
+			qca_ar8327_phy_write(0, 5, 0x0, 0x005b);/*fix phy psgmii RX 20bit*/
+			qca_ar8327_phy_write(0, 5, 0x0, 0x001b);/*reset phy psgmii*/
+			qca_ar8327_phy_write(0, 5, 0x0, 0x005b);/*release reset phy psgmii*/
+			mdelay(100);
+			qca_ar8327_phy_write(0, 5, 0x1a, 0x2230);/*freeze phy psgmii RX CDR*/
+
+			#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+			ssdk_ess_reset();
+			#endif
+
+			qca_ar8327_phy_write(0, 5, 0x1a, 0x3230);/*relesae phy psgmii RX CDR*/
+			qca_ar8327_phy_write(0, 5, 0x0, 0x005f);/*release phy psgmii RX 20bit*/
+			mdelay(200);
+		}
+		else
+		{
+		                break;
+		}
+	}
+
+#if 1
+	if (i>=100)
+		printk("PSGMII cannot recover\n");
+	else
+		printk("PSGMII recovered after %d times reset\n",i);
+#endif
+	/*configuration recover*/
+	/*packet number*/
+	qca_phy_mmd_write(0, 0x1f, 7, 0x8021, 0x0);
+	/*disable check*/
+	qca_phy_mmd_write(0, 0x1f, 7, 0x8029, 0x0);
+	/*disable traffic*/
+	qca_phy_mmd_write(0, 0x1f, 7, 0x8020, 0x0);
+}
+
+
+void clear_self_test_config()
+{
+	int i = 0, phy = 0;
+	u32 value = 0;
+	/* disable EEE */
+	qca_phy_mmd_write(0, 0x1f, 0x7,  0x3c, 0x0);
+
+	/*disable phy internal loopback*/
+	qca_ar8327_phy_write(0, 0x1f, 0x10, 0x6860);
+	qca_ar8327_phy_write(0, 0x1f, 0x0, 0x9040);
+
+	for(phy = 0; phy < 5; phy++)
+	{
+		/*disable mac loop back*/
+		value = readl(hw_addr+0x66c+phy*0xc);
+		writel((value&(~(1<<21))), (hw_addr+0x66c+phy*0xc));
+		/*diable phy mdio broadcast write*/
+		qca_phy_mmd_write(0, phy, 7, 0x8028, 0x001f);
+	}
+}
 
 sw_error_t
 ssdk_init(a_uint32_t dev_id, ssdk_init_cfg * cfg)
@@ -1534,10 +1777,20 @@ ssdk_init(a_uint32_t dev_id, ssdk_init_cfg * cfg)
     rv = hsl_dev_init(dev_id, cfg);
 #else
     rv = fal_init(dev_id, cfg);
+    if (rv != SW_OK)
+	printk("ssdk fal init failed \r\n");
 #endif
 #endif
+
+    ssdk_phy_init(cfg);
+
+	if (cfg->chip_type == CHIP_DESS)
+		ssdk_psgmii_self_test();
     rv =  ssdk_switch_init(dev_id);
-	ssdk_phy_init(cfg);
+    if (rv != SW_OK)
+	printk("ssdk switch init failed \r\n");
+	if (cfg->chip_type == CHIP_DESS)
+		clear_self_test_config();
 
     return rv;
 }
@@ -1617,6 +1870,35 @@ qca_ar8327_mmd_write(a_uint32_t dev_id, a_uint32_t phy_addr,
         mdiobus_write(bus, phy_addr, QCA_MII_MMD_DATA, data);
 }
 
+void qca_phy_mmd_write(u32 dev_id, u32 phy_id,
+                     u16 mmd_num, u16 reg_id, u16 reg_val)
+{
+	qca_ar8327_phy_write(dev_id, phy_id,
+			QCA_MII_MMD_ADDR, mmd_num);
+	qca_ar8327_phy_write(dev_id, phy_id,
+			QCA_MII_MMD_DATA, reg_id);
+	qca_ar8327_phy_write(dev_id, phy_id,
+			QCA_MII_MMD_ADDR,
+			0x4000 | mmd_num);
+	qca_ar8327_phy_write(dev_id, phy_id,
+		QCA_MII_MMD_DATA, reg_val);
+}
+
+u16 qca_phy_mmd_read(u32 dev_id, u32 phy_id,
+		u16 mmd_num, u16 reg_id)
+{
+	u16 value = 0;
+	qca_ar8327_phy_write(dev_id, phy_id,
+			QCA_MII_MMD_ADDR, mmd_num);
+	qca_ar8327_phy_write(dev_id, phy_id,
+			QCA_MII_MMD_DATA, reg_id);
+	qca_ar8327_phy_write(dev_id, phy_id,
+			QCA_MII_MMD_ADDR,
+			0x4000 | mmd_num);
+	qca_ar8327_phy_read(dev_id, phy_id,
+			QCA_MII_MMD_DATA, &value);
+	return value;
+}
 
 uint32_t
 qca_switch_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
@@ -1689,20 +1971,9 @@ qca_psgmii_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_dat
 }
 
 
-void switch_port_enable()
+void switch_cpuport_enable()
 {
-	a_uint32_t value = 0x4e;
-	a_uint8_t reg_value[] = {0};
-
-	aos_mem_copy(reg_value, &value, sizeof(a_uint32_t));
-	qca_switch_reg_write(0, 0x7c, &reg_value, 4 );
-/*
-	qca_switch_reg_write(0, 0x80, &reg_value, 4 );
-	qca_switch_reg_write(0, 0x84, &reg_value, 4 );
-	qca_switch_reg_write(0, 0x88, &reg_value, 4 );
-	qca_switch_reg_write(0, 0x8c, (a_uint8_t *)&reg_value, 4 );
-	qca_switch_reg_write(0, 0x90, (a_uint8_t *)&reg_value, 4 );
-*/
+	writel(0x7e, hw_addr + 0x7c);
 }
 
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
@@ -1841,8 +2112,8 @@ qca_dess_hw_init(ssdk_init_cfg *cfg)
 
 	ssdk_portvlan_init(cfg->port_cfg.cpu_bmp, cfg->port_cfg.lan_bmp, cfg->port_cfg.wan_bmp);
 
-	fal_port_rxhdr_mode_set(0, 0, FAL_ALL_TYPE_FRAME_EN);
 	fal_ip_route_status_set(0, A_TRUE);
+	fal_port_rxhdr_mode_set(0, 0, FAL_ALL_TYPE_FRAME_EN);
 
 	ssdk_flow_default_act_init();
 
@@ -1855,17 +2126,10 @@ qca_dess_hw_init(ssdk_init_cfg *cfg)
 
 	/*TODO:set mac mode in gcc*/
 	/*Config PSGMII module for Dakota*/
-	reg_value = 0x2803;
-	qca_psgmii_reg_write(0, DESS_PSGMII_PLL_VCO_RELATED_CONTROL_1,
+	reg_value = 0x2200;
+	qca_psgmii_reg_write(0, DESS_PSGMII_MODE_CONTROL,
 						(a_uint8_t *)&reg_value, 4);
-	reg_value = 0x4ADA;
-	qca_psgmii_reg_write(0, DESS_PSGMII_VCO_CALIBRATION_CONTROL_1,
-						(a_uint8_t *)&reg_value, 4);
-	udelay(1000);
-	reg_value = 0xADA;
-	qca_psgmii_reg_write(0, DESS_PSGMII_VCO_CALIBRATION_CONTROL_1,
-						(a_uint8_t *)&reg_value, 4);
-	udelay(1000);
+
 	return 0;
 }
 
@@ -1895,9 +2159,190 @@ int ssdk_netdev_rfs_cb(
 	return ssdk_rfs_ipct_rule_set(src, dst, sport, dport,
 							proto, rxq_index, action);
 }
-#endif
-#endif
 
+static int ssdk_dev_event(struct notifier_block *this, unsigned long event, void *ptr)
+{
+	struct net_device *dev = netdev_notifier_info_to_dev(ptr);
+
+	switch (event) {
+		case NETDEV_UP:
+			if (strstr(dev->name, "eth")) {
+				if (dev->netdev_ops && dev->netdev_ops->ndo_register_rfs_filter) {
+					dev->netdev_ops->ndo_register_rfs_filter(dev,
+						ssdk_netdev_rfs_cb);
+				}
+			}
+			break;
+	}
+	return NOTIFY_DONE;
+}
+#endif
+int ssdk_intf_search(
+	fal_intf_mac_entry_t *exist_entry, int num,
+	fal_intf_mac_entry_t *new_entry, int *index)
+{
+	int i = 0;
+	*index = 0xffffffff;
+	for (i = 0; i < num; i++) {
+		if (exist_entry[i].vid_high == 0 && exist_entry[i].vid_low == 0)
+			*index = i;
+		if (!memcmp(exist_entry[i].mac_addr.uc, new_entry->mac_addr.uc, 6) &&
+			exist_entry[i].vid_low == new_entry->vid_low) {
+			*index = i;
+			return 1;
+		}
+	}
+	return 0;
+}
+
+void ssdk_intf_set(struct net_device *dev, char op)
+{
+	a_uint8_t *devmac = NULL;
+	fal_vlan_t entry;
+	a_uint32_t tmp_vid = 0xffffffff;
+	fal_intf_mac_entry_t intf_entry;
+	char wan_port = 0;
+	sw_error_t rv;
+	static fal_intf_mac_entry_t if_mac_entry[8] = {{0}};
+	int index = 0xffffffff;
+	/*get mac*/
+	devmac = (a_uint8_t*)(dev->dev_addr);
+	/*get wan port*/
+	wan_port = hsl_dev_wan_port_get(0);
+	/*get vid*/
+	memset(&intf_entry, 0, sizeof(intf_entry));
+	intf_entry.ip4_route = 1;
+	intf_entry.ip6_route = 1;
+	memcpy(&intf_entry.mac_addr, devmac, 6);
+
+	#if defined(CONFIG_VLAN_8021Q) || defined(CONFIG_VLAN_8021Q_MODULE)
+	tmp_vid = vlan_dev_vlan_id(dev);
+	if (tmp_vid) {
+		intf_entry.vid_low = tmp_vid;
+		intf_entry.vid_high = intf_entry.vid_low;
+		if (op) {
+			if (!ssdk_intf_search(if_mac_entry, 8, &intf_entry, &index)) {
+				if (index != 0xffffffff) {
+					rv = fal_ip_intf_entry_add(0, &intf_entry);
+					if (SW_OK == rv) {
+						if_mac_entry[index] = intf_entry;
+					}
+				}
+			}
+		}
+		else {
+			if (ssdk_intf_search(if_mac_entry, 8, &intf_entry, &index)) {
+				intf_entry.entry_id = if_mac_entry[index].entry_id;
+				fal_ip_intf_entry_del(0, 1, &intf_entry);
+				memset(&if_mac_entry[index], 0, sizeof(fal_intf_mac_entry_t));
+			}
+		}
+		return;
+	} else {
+		tmp_vid = 0xffffffff;
+	}
+	#endif
+	while(1) {
+		if (SW_OK != fal_vlan_next(0, tmp_vid, &entry))
+			break;
+		tmp_vid = entry.vid;
+		if (tmp_vid != 0) {
+			if(entry.mem_ports & wan_port) {
+				if (!strcmp(dev->name, "eth0")) {
+					intf_entry.vid_low = tmp_vid;
+					intf_entry.vid_high = intf_entry.vid_low;
+					if (op) {
+						if (!ssdk_intf_search(if_mac_entry, 8, &intf_entry, &index)) {
+							if (index != 0xffffffff) {
+								rv = fal_ip_intf_entry_add(0, &intf_entry);
+								if (SW_OK == rv) {
+									if_mac_entry[index] = intf_entry;
+								}
+							}
+						}
+					}
+					else {
+						if (ssdk_intf_search(if_mac_entry, 8, &intf_entry, &index)) {
+							intf_entry.entry_id = if_mac_entry[index].entry_id;
+							fal_ip_intf_entry_del(0, 1, &intf_entry);
+							memset(&if_mac_entry[index], 0, sizeof(fal_intf_mac_entry_t));
+						}
+					}
+				}
+			} else {
+				if (strcmp(dev->name, "eth0")) {
+					intf_entry.vid_low = tmp_vid;
+					intf_entry.vid_high = intf_entry.vid_low;
+					if (op) {
+						if (!ssdk_intf_search(if_mac_entry, 8, &intf_entry, &index)) {
+							if (index != 0xffffffff) {
+								rv = fal_ip_intf_entry_add(0, &intf_entry);
+								if (SW_OK == rv) {
+									if_mac_entry[index] = intf_entry;
+								}
+							}
+						}
+					}
+					else {
+						if (ssdk_intf_search(if_mac_entry, 8, &intf_entry, &index)) {
+							intf_entry.entry_id = if_mac_entry[index].entry_id;
+							fal_ip_intf_entry_del(0, 1, &intf_entry);
+							memset(&if_mac_entry[index], 0, sizeof(fal_intf_mac_entry_t));
+						}
+					}
+				}
+			}
+		}
+	}
+
+}
+
+static int ssdk_inet_event(struct notifier_block *this, unsigned long event, void *ptr)
+{
+	struct net_device *dev = ((struct in_ifaddr *)ptr)->ifa_dev->dev;
+
+	if (!strstr(dev->name, "eth") && !strstr(dev->name, "br")) {
+		return NOTIFY_DONE;
+	}
+	switch (event) {
+		case NETDEV_DOWN:
+			ssdk_intf_set(dev, 0);
+			break;
+		case NETDEV_UP:
+			ssdk_intf_set(dev, 1);
+			break;
+	}
+	return NOTIFY_DONE;
+}
+#endif
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+char ssdk_driver_name[] = "ess_ssdk";
+
+static int ssdk_probe(struct platform_device *pdev)
+{
+	ess_rst = devm_reset_control_get(&pdev->dev, "ess_rst");
+	reset_control_assert(ess_rst);
+	mdelay(10);
+	reset_control_deassert(ess_rst);
+	mdelay(100);
+	printk("reset ok in probe!\n");
+	return 0;
+}
+
+static const struct of_device_id ssdk_of_mtable[] = {
+        {.compatible = "qcom,ess-switch" },
+        {}
+};
+
+static struct platform_driver ssdk_driver = {
+        .driver = {
+                .name    = ssdk_driver_name,
+                .owner   = THIS_MODULE,
+                .of_match_table = ssdk_of_mtable,
+        },
+        .probe    = ssdk_probe,
+};
+#endif
 static int __init
 regi_init(void)
 {
@@ -1907,11 +2352,11 @@ regi_init(void)
 	ssdk_dt_global.switch_reg_access_mode = HSL_REG_MDIO;
 	ssdk_dt_global.psgmii_reg_access_mode = HSL_REG_MDIO;
 	a_uint8_t chip_version = 0;
-	#ifdef IN_RFS
-	#if defined(CONFIG_RFS_ACCEL)
-	struct net_device *rfs_net = NULL;
+	#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+	struct device dev;
+	struct reset_control *ess_rst = NULL;
 	#endif
-
+	#ifdef IN_RFS
 	memset(&rfs_dev, 0, sizeof(rfs_dev));
 	#endif
 
@@ -1926,6 +2371,15 @@ regi_init(void)
 		goto out;
 
 	memset(&chip_spec_cfg, 0, sizeof(garuda_init_spec_cfg));
+
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
+		dev.of_node=of_find_node_by_name(NULL, "ess-switch");
+
+		platform_driver_register(&ssdk_driver);
+	}
+#endif
+
 
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_MDIO)
 		cfg.reg_mode = HSL_MDIO;
@@ -1976,27 +2430,17 @@ regi_init(void)
 	rfs_dev.ip6_rule_cb = ssdk_rfs_ip6_rule_set;
 	rfs_ess_device_register(&rfs_dev);
 	#if defined(CONFIG_RFS_ACCEL)
-	rfs_net = dev_get_by_name(&init_net, "eth0");
-	if(rfs_net) {
-		if(rfs_net->netdev_ops) {
-			if(rfs_net->netdev_ops->ndo_register_rfs_filter)
-				rfs_net->netdev_ops->ndo_register_rfs_filter(rfs_net,
-					ssdk_netdev_rfs_cb);
-		}
-	}
-	rfs_net = dev_get_by_name(&init_net, "eth1");
-        if(rfs_net) {
-                if(rfs_net->netdev_ops) {
-                        if(rfs_net->netdev_ops->ndo_register_rfs_filter)
-                                rfs_net->netdev_ops->ndo_register_rfs_filter(rfs_net,
-                                        ssdk_netdev_rfs_cb);
-                }
-        }
+	ssdk_dev_notifier.notifier_call = ssdk_dev_event;
+	ssdk_dev_notifier.priority = 1;
+	register_netdevice_notifier(&ssdk_dev_notifier);
 	#endif
+	ssdk_inet_notifier.notifier_call = ssdk_inet_event;
+	ssdk_inet_notifier.priority = 1;
+	register_inetaddr_notifier(&ssdk_inet_notifier);
 
 #endif
 		/* Enable port temprarily, will remove the code when phy board is ok. */
-		switch_port_enable();
+		switch_cpuport_enable();
 	}
 
 out:
@@ -2025,6 +2469,10 @@ regi_exit(void)
 #endif
 #ifdef IN_RFS
 		rfs_ess_device_unregister(&rfs_dev);
+	unregister_inetaddr_notifier(&ssdk_inet_notifier);
+	#if defined(CONFIG_RFS_ACCEL)
+	unregister_netdevice_notifier(&ssdk_dev_notifier);
+	#endif
 #endif
 
 	}

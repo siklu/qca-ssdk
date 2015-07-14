@@ -318,7 +318,7 @@ void pppoe_add_acl_rules(uint32_t wan_ip, uint32_t local_ip, uint32_t gw_entry_i
             case 1:
                 aos_printk("PPPoE adding rule #%d\n", S17_ACL_LIST_PPPOE+1);
                 myacl.rule_type = FAL_ACL_RULE_IP4;
-                myacl.dest_ip4_val = local_ip;
+                myacl.dest_ip4_val = ntohl(local_ip);
                 myacl.dest_ip4_mask = 0xffffff00;
 
                 /*

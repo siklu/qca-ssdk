@@ -120,6 +120,9 @@
 #define AR8327_REG_PORT_LOOKUP(_i) (0x660 + (_i) * 0xc)
 #define AR8327_REG_PORT_VLAN0(_i) (0x420 + (_i) * 0x8)
 
+#define DESS_PSGMII_MODE_CONTROL	0x1b4
+#define   DESS_PSGMII_ATHR_CSCO_MODE_25M	BIT(0)
+
 #define DESS_PSGMII_PLL_VCO_RELATED_CONTROL_1	0x78c
 #define   DESS_PSGMII_MII_REG_UPHY_PLL_LCKDT_EN	BIT(0)
 
@@ -201,7 +204,7 @@ struct qca_phy_priv {
 
 };
 
-struct qca961x_mdio_data {
+struct ipq40xx_mdio_data {
         struct mii_bus          *mii_bus;
         void __iomem            *membase;
         int phy_irq[PHY_MAX_ADDR];
@@ -227,5 +230,13 @@ qca_ar8327_phy_dbg_write(a_uint32_t dev_id, a_uint32_t phy_addr,
 void
 qca_ar8327_phy_dbg_read(a_uint32_t dev_id, a_uint32_t phy_addr,
 		                          a_uint16_t dbg_addr, a_uint16_t *dbg_data);
+
+void 
+qca_phy_mmd_write(u32 dev_id, u32 phy_id,
+                     u16 mmd_num, u16 reg_id, u16 reg_val);
+
+u16 
+qca_phy_mmd_read(u32 dev_id, u32 phy_id,
+		u16 mmd_num, u16 reg_id);
 
 #endif

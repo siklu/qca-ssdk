@@ -558,6 +558,11 @@ _dess_rate_port_shaper_set(a_uint32_t dev_id, fal_port_t port_id,
         HSL_REG_FIELD_SET(rv, dev_id, EG_SHAPER7, port_id, EG_PT,
                           (a_uint8_t *) (&data), sizeof (a_uint32_t));
         SW_RTN_ON_ERROR(rv);
+
+        data = 0;
+        HSL_REG_FIELD_SET(rv, dev_id, EG_SHAPER7, port_id, EG_TS,
+                          (a_uint8_t *) (&data), sizeof (a_uint32_t));
+        SW_RTN_ON_ERROR(rv);
     }
 
     HSL_REG_FIELD_SET(rv, dev_id, EG_SHAPER0, port_id, EG_Q0_CIR,
@@ -712,6 +717,11 @@ _dess_rate_queue_shaper_set(a_uint32_t dev_id, fal_port_t port_id,
 
         data = 0;
         HSL_REG_FIELD_SET(rv, dev_id, EG_SHAPER7, port_id, EG_PT,
+                          (a_uint8_t *) (&data), sizeof (a_uint32_t));
+        SW_RTN_ON_ERROR(rv);
+
+        data = 0;
+        HSL_REG_FIELD_SET(rv, dev_id, EG_SHAPER7, port_id, EG_TS,
                           (a_uint8_t *) (&data), sizeof (a_uint32_t));
         SW_RTN_ON_ERROR(rv);
     }
