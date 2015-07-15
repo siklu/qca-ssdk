@@ -987,7 +987,7 @@ static int ssdk_switch_register()
 	if (fal_reg_get(0, 0, (a_uint8_t *)&chip_id, 4) == SW_OK) {
 		priv->version = ((chip_id >> 8) & 0xff);
 		priv->revision = (chip_id & 0xff);
-		printk("Dakota Chip version 0x%x%x\n", priv->version, priv->revision);
+		printk("Dakota Chip version 0x%02x%02x\n", priv->version, priv->revision);
 	}
 
 	mutex_init(&priv->reg_mutex);
@@ -1428,12 +1428,6 @@ ssdk_switch_init(a_uint32_t dev_id)
         if (i != 0 && i != 6) {
             fal_port_flowctrl_set(dev_id, i, A_TRUE);
             fal_port_flowctrl_forcemode_set(dev_id, i, A_FALSE);
-        }
-
-        //According to HW suggestion, enable CPU port flow control for Dakota
-        if (i == 0 && SSDK_CURRENT_CHIP_TYPE == CHIP_DESS) {
-            fal_port_flowctrl_forcemode_set(dev_id, i, A_TRUE);
-            fal_port_flowctrl_set(dev_id, i, A_TRUE);
         }
 
         fal_port_default_svid_set(dev_id, i, 0);
@@ -1978,9 +1972,16 @@ qca_psgmii_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_dat
 }
 
 
-void switch_cpuport_enable()
+void switch_cpuport_setup()
 {
-	writel(0x7e, hw_addr + 0x7c);
+	//According to HW suggestion, enable CPU port flow control for Dakota
+	fal_port_flowctrl_forcemode_set(0, 0, A_TRUE);
+	fal_port_flowctrl_set(0, 0, A_TRUE);
+
+	fal_port_duplex_set(0, 0, FAL_FULL_DUPLEX);
+	fal_port_speed_set(0, 0, FAL_SPEED_1000);
+	fal_port_txmac_status_set(0, 0, A_TRUE);
+	fal_port_rxmac_status_set(0, 0, A_TRUE);
 }
 
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
@@ -2369,9 +2370,9 @@ regi_init(void)
 
 	ssdk_cfg_default_init(&cfg);
 
-#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-		ssdk_dt_parse(&cfg);
-#endif
+	#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+	ssdk_dt_parse(&cfg);
+	#endif
 
 	rv = ssdk_plat_init();
 	if(rv)
@@ -2379,13 +2380,13 @@ regi_init(void)
 
 	memset(&chip_spec_cfg, 0, sizeof(garuda_init_spec_cfg));
 
-#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+	#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
 		dev.of_node=of_find_node_by_name(NULL, "ess-switch");
 
 		platform_driver_register(&ssdk_driver);
 	}
-#endif
+	#endif
 
 
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_MDIO)
@@ -2406,18 +2407,18 @@ regi_init(void)
 	cfg.chip_spec_cfg = &chip_spec_cfg;
 
 	chip_version = chip_ver_get();
-    if(chip_version == 0x02)
-        cfg.chip_type = CHIP_SHIVA;
-    else if(chip_version == 0x13)
-        cfg.chip_type = CHIP_ISISC;
-    else if(chip_version == 0x12)
-        cfg.chip_type = CHIP_ISIS;
+	if(chip_version == 0x02)
+		cfg.chip_type = CHIP_SHIVA;
+	else if(chip_version == 0x13)
+		cfg.chip_type = CHIP_ISISC;
+	else if(chip_version == 0x12)
+		cfg.chip_type = CHIP_ISIS;
 	else if(chip_version == 0x14)
 		cfg.chip_type = CHIP_DESS;
-    else
-	rv = -100;
+	else
+		rv = -100;
 
-    if(rv)
+	if(rv)
 		goto out;
 
 	rv = ssdk_init(0, &cfg);
@@ -2426,28 +2427,28 @@ regi_init(void)
 		rv = ssdk_switch_register();
 		qca_dess_hw_init(&cfg);
 
-#if defined (CONFIG_NF_FLOW_COOKIE)
+		#if defined (CONFIG_NF_FLOW_COOKIE)
 		sfe_register_flow_cookie_cb(ssdk_flow_cookie_set);
-#endif
+		#endif
 
-#ifdef IN_RFS
-	rfs_dev.name = NULL;
-	rfs_dev.mac_rule_cb = ssdk_rfs_mac_rule_set;
-	rfs_dev.ip4_rule_cb = ssdk_rfs_ip4_rule_set;
-	rfs_dev.ip6_rule_cb = ssdk_rfs_ip6_rule_set;
-	rfs_ess_device_register(&rfs_dev);
-	#if defined(CONFIG_RFS_ACCEL)
-	ssdk_dev_notifier.notifier_call = ssdk_dev_event;
-	ssdk_dev_notifier.priority = 1;
-	register_netdevice_notifier(&ssdk_dev_notifier);
-	#endif
-	ssdk_inet_notifier.notifier_call = ssdk_inet_event;
-	ssdk_inet_notifier.priority = 1;
-	register_inetaddr_notifier(&ssdk_inet_notifier);
+		#ifdef IN_RFS
+		rfs_dev.name = NULL;
+		rfs_dev.mac_rule_cb = ssdk_rfs_mac_rule_set;
+		rfs_dev.ip4_rule_cb = ssdk_rfs_ip4_rule_set;
+		rfs_dev.ip6_rule_cb = ssdk_rfs_ip6_rule_set;
+		rfs_ess_device_register(&rfs_dev);
+		#if defined(CONFIG_RFS_ACCEL)
+		ssdk_dev_notifier.notifier_call = ssdk_dev_event;
+		ssdk_dev_notifier.priority = 1;
+		register_netdevice_notifier(&ssdk_dev_notifier);
+		#endif
+		ssdk_inet_notifier.notifier_call = ssdk_inet_event;
+		ssdk_inet_notifier.priority = 1;
+		register_inetaddr_notifier(&ssdk_inet_notifier);
+		#endif
 
-#endif
-		/* Enable port temprarily, will remove the code when phy board is ok. */
-		switch_cpuport_enable();
+		/* Setup Cpu port for Dakota platform. */
+		switch_cpuport_setup();
 	}
 
 out:
@@ -2462,29 +2463,29 @@ out:
 static void __exit
 regi_exit(void)
 {
-    sw_error_t rv=ssdk_cleanup();
+	sw_error_t rv=ssdk_cleanup();
 
-    if (rv == 0)
-    	printk("qca-ssdk module exit  done!\n");
-    else
-        printk("qca-ssdk module exit failed! (code: %d)\n", rv);
+	if (rv == 0)
+		printk("qca-ssdk module exit  done!\n");
+	else
+		printk("qca-ssdk module exit failed! (code: %d)\n", rv);
 
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS){
 		ssdk_switch_unregister();
-#if defined (CONFIG_NF_FLOW_COOKIE)
+		#if defined (CONFIG_NF_FLOW_COOKIE)
 		sfe_unregister_flow_cookie_cb(ssdk_flow_cookie_set);
-#endif
-#ifdef IN_RFS
+		#endif
+		#ifdef IN_RFS
 		rfs_ess_device_unregister(&rfs_dev);
-	unregister_inetaddr_notifier(&ssdk_inet_notifier);
-	#if defined(CONFIG_RFS_ACCEL)
-	unregister_netdevice_notifier(&ssdk_dev_notifier);
-	#endif
-#endif
+		unregister_inetaddr_notifier(&ssdk_inet_notifier);
+		#if defined(CONFIG_RFS_ACCEL)
+		unregister_netdevice_notifier(&ssdk_dev_notifier);
+		#endif
+		#endif
 
 	}
 
-    ssdk_plat_exit();
+	ssdk_plat_exit();
 }
 
 module_init(regi_init);

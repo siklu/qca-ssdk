@@ -1008,7 +1008,7 @@ _dess_port_txmac_status_get (a_uint32_t dev_id, fal_port_t port_id,
 
   HSL_DEV_ID_CHECK (dev_id);
 
-  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_EXCL_CPU))
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
     {
       return SW_BAD_PARAM;
     }
@@ -1038,7 +1038,7 @@ _dess_port_rxmac_status_set (a_uint32_t dev_id, fal_port_t port_id,
 
   HSL_DEV_ID_CHECK (dev_id);
 
-  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_EXCL_CPU))
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
     {
       return SW_BAD_PARAM;
     }
@@ -1094,7 +1094,7 @@ _dess_port_rxmac_status_get (a_uint32_t dev_id, fal_port_t port_id,
 
   HSL_DEV_ID_CHECK (dev_id);
 
-  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_EXCL_CPU))
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
     {
       return SW_BAD_PARAM;
     }
@@ -1296,7 +1296,7 @@ _dess_port_bp_status_set (a_uint32_t dev_id, fal_port_t port_id,
 
   HSL_DEV_ID_CHECK (dev_id);
 
-  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_EXCL_CPU))
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
     {
       return SW_BAD_PARAM;
     }
@@ -1328,7 +1328,7 @@ _dess_port_bp_status_get (a_uint32_t dev_id, fal_port_t port_id,
 
   HSL_DEV_ID_CHECK (dev_id);
 
-  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_EXCL_CPU))
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
     {
       return SW_BAD_PARAM;
     }
@@ -1515,7 +1515,7 @@ _dess_port_mac_loopback_set (a_uint32_t dev_id, fal_port_t port_id,
 
   HSL_DEV_ID_CHECK (dev_id);
 
-  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_EXCL_CPU))
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
     {
       return SW_BAD_PARAM;
     }
@@ -1547,7 +1547,7 @@ _dess_port_mac_loopback_get (a_uint32_t dev_id, fal_port_t port_id,
 
   HSL_DEV_ID_CHECK (dev_id);
 
-  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_EXCL_CPU))
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
     {
       return SW_BAD_PARAM;
     }
