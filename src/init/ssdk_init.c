@@ -39,6 +39,7 @@
 #include <linux/inetdevice.h>
 #include <linux/netdevice.h>
 #include <linux/phy.h>
+#include <linux/clk.h>
 #include <linux/delay.h>
 #include <linux/string.h>
 #include <f1_phy.h>
@@ -1320,6 +1321,13 @@ ssdk_plat_init(void)
 		return -ENODEV;
 
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
+		/* Enable ess clock here */
+		if(!IS_ERR(ssdk_dt_global.ess_clk))
+		{
+			printk("enable ess clk\n");
+			clk_prepare_enable(ssdk_dt_global.ess_clk);
+		}
+
 		if (!request_mem_region(ssdk_dt_global.switchreg_base_addr,
 				ssdk_dt_global.switchreg_size, "switch_mem")) {
                 printk("%s Unable to request resource.", __func__);
@@ -2016,6 +2024,10 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 		printk("%s: error reading device node properties for switch_access_mode\n", switch_node->name);
 		return SW_BAD_PARAM;
 	}
+
+	ssdk_dt_global.ess_clk = of_clk_get_by_name(switch_node, "ess_clk");
+	if (IS_ERR(ssdk_dt_global.ess_clk))
+		printk("Getting ess_clk failed!\n");
 
 	printk("switchreg_base_addr: 0x%x\n", ssdk_dt_global.switchreg_base_addr);
 	printk("switchreg_size: 0x%x\n", ssdk_dt_global.switchreg_size);

@@ -139,6 +139,7 @@ extern "C" {
 		a_uint8_t *psgmii_reg_access_str;
 		hsl_reg_mode switch_reg_access_mode;
 		hsl_reg_mode psgmii_reg_access_mode;
+		struct clk *ess_clk;
 	} ssdk_dt_cfg;
 
 typedef struct phy_identification {
