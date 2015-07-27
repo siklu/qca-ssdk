@@ -68,6 +68,10 @@ extern "C" {
 #define     RX_TRAFFIC_BLINK_EN    7
 #define     TX_TRAFFIC_BLINK_EN    8
 #define     LINKUP_OVERRIDE_EN     9
+#define     LED_MAP_10M_SPEED	0x3e4
+#define     LED_MAP_100M_SPEED	0x3d4
+#define     LED_MAP_1000M_SPEED	0x3cc
+#define     LED_MAP_ALL_SPEED	0x3fc
 
 
     /**
@@ -110,6 +114,9 @@ extern "C" {
     fal_led_ctrl_pattern_get(a_uint32_t dev_id, led_pattern_group_t group,
                              led_pattern_id_t id, led_ctrl_pattern_t * pattern);
 
+	sw_error_t
+	fal_led_source_pattern_set(a_uint32_t dev_id, a_uint32_t source_id,
+                            led_ctrl_pattern_t * pattern);
 
 #ifdef __cplusplus
 }

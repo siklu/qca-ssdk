@@ -22,6 +22,7 @@ extern "C" {
 #endif                          /* __cplusplus */
 
 #include "common/sw.h"
+#include "fal_led.h"
 
 #define SSDK_MAX_PORT_NUM 7
 
@@ -123,6 +124,14 @@ enum ssdk_port_wrapper_cfg {
 		a_uint32_t wan_bmp;
 	} ssdk_port_cfg;
 
+	typedef struct
+	{
+		a_uint32_t led_source_id;
+		led_ctrl_pattern_t led_pattern;
+
+	} led_source_cfg_t;
+
+
     typedef struct
     {
         hsl_init_mode   cpu_mode;
@@ -142,6 +151,8 @@ enum ssdk_port_wrapper_cfg {
 		/* port cfg */
 		ssdk_port_cfg   port_cfg;
 		a_uint32_t      mac_mode;
+		a_uint32_t led_source_num;
+		led_source_cfg_t led_source_cfg[14];
     } ssdk_init_cfg;
 
 	typedef struct

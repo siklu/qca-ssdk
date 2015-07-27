@@ -1455,6 +1455,10 @@ typedef sw_error_t
 				 led_pattern_id_t id,
 				 led_ctrl_pattern_t * pattern);
 
+  typedef sw_error_t
+    (*hsl_led_ctrl_source_set) (a_uint32_t dev_id, a_uint32_t source_id,
+				 led_ctrl_pattern_t * pattern);
+
   /* CoSMAP */
 #define COSMAP_FUNC_PROTOTYPE_DEF
   typedef sw_error_t
@@ -2352,6 +2356,7 @@ typedef sw_error_t
     /* LED */
     hsl_led_ctrl_pattern_set led_ctrl_pattern_set;
     hsl_led_ctrl_pattern_get led_ctrl_pattern_get;
+    hsl_led_ctrl_source_set led_ctrl_source_set;
 
     /* CoSMap */
     hsl_cosmap_dscp_to_pri_set cosmap_dscp_to_pri_set;

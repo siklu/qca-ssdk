@@ -24,6 +24,7 @@
 #include "fal_stp.h"
 #include "fal_igmp.h"
 #include "fal_qos.h"
+#include "fal_led.h"
 #include "hsl.h"
 #include "hsl_dev.h"
 #include "ssdk_init.h"
@@ -48,6 +49,7 @@
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 #include <linux/switch.h>
 #include <linux/of.h>
+#include <drivers/leds/leds-ipq40xx.h>
 #else
 #include <net/switch.h>
 #include <linux/ar8216_platform.h>
@@ -2004,8 +2006,10 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 {
 	struct device_node *switch_node = NULL;
 	struct device_node *psgmii_node = NULL;
-	a_uint32_t len = 0;
-	const __be32 *reg_cfg, *mac_mode;
+	struct device_node *child = NULL;
+	a_uint32_t len = 0,i = 0;
+	const __be32 *reg_cfg, *mac_mode,*led_source,*led_mode, *led_speed, *led_freq;
+	a_uint8_t *led_str;
 
 
 	/*
@@ -2083,6 +2087,45 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 	printk("mac mode=%d\n", be32_to_cpup(mac_mode));
 	ssdk_dt_global.mac_mode = cfg->mac_mode;
 	printk("current mac mode = %d\n", ssdk_dt_global.mac_mode);
+	for_each_available_child_of_node(switch_node, child) {
+
+		led_source = of_get_property(child, "source", &len);
+		if (led_source)
+			cfg->led_source_cfg[i].led_source_id = be32_to_cpup(led_source);
+		if (!of_property_read_string(child, "mode", &led_str)) {
+			if (!strcmp(led_str, "normal"))
+			cfg->led_source_cfg[i].led_pattern.mode = LED_PATTERN_MAP_EN;
+			if (!strcmp(led_str, "on"))
+			cfg->led_source_cfg[i].led_pattern.mode = LED_ALWAYS_ON;
+			if (!strcmp(led_str, "blink"))
+			cfg->led_source_cfg[i].led_pattern.mode = LED_ALWAYS_BLINK;
+			if (!strcmp(led_str, "off"))
+			cfg->led_source_cfg[i].led_pattern.mode = LED_ALWAYS_OFF;
+		}
+		if (!of_property_read_string(child, "speed", &led_str)) {
+			if (!strcmp(led_str, "10M"))
+			cfg->led_source_cfg[i].led_pattern.map = LED_MAP_10M_SPEED;
+			if (!strcmp(led_str, "100M"))
+			cfg->led_source_cfg[i].led_pattern.map = LED_MAP_100M_SPEED;
+			if (!strcmp(led_str, "100M"))
+			cfg->led_source_cfg[i].led_pattern.map = LED_MAP_1000M_SPEED;
+			if (!strcmp(led_str, "all"))
+			cfg->led_source_cfg[i].led_pattern.map = LED_MAP_ALL_SPEED;
+		}
+		if (!of_property_read_string(child, "freq", &led_str)) {
+			if (!strcmp(led_str, "2Hz"))
+			cfg->led_source_cfg[i].led_pattern.freq = LED_BLINK_2HZ;
+			if (!strcmp(led_str, "4Hz"))
+			cfg->led_source_cfg[i].led_pattern.freq = LED_BLINK_4HZ;
+			if (!strcmp(led_str, "8Hz"))
+			cfg->led_source_cfg[i].led_pattern.freq = LED_BLINK_8HZ;
+			if (!strcmp(led_str, "auto"))
+			cfg->led_source_cfg[i].led_pattern.freq = LED_BLINK_TXRX;
+		}
+		i++;
+	}
+	cfg->led_source_num = i;
+	printk("current dts led_source_num is =%d\n",cfg->led_source_num);
 	return SW_OK;
 }
 #endif
@@ -2134,48 +2177,92 @@ static ssdk_portvlan_init(a_uint32_t cpu_bmp, a_uint32_t lan_bmp, a_uint32_t wan
 	}
 	return 0;
 }
-static int
-qca_dess_hw_init(ssdk_init_cfg *cfg)
+static int ssdk_dess_led_init(ssdk_init_cfg *cfg)
+{
+	a_uint32_t i,led_num, led_source_id,source_id;
+	a_uint32_t len = 0;
+	led_ctrl_pattern_t  pattern;
+
+	if(cfg->led_source_num != 0) {
+		for (i = 0; i < cfg->led_source_num; i++) {
+
+			led_source_id = cfg->led_source_cfg[i].led_source_id;
+			pattern.mode = cfg->led_source_cfg[i].led_pattern.mode;
+			pattern.map = cfg->led_source_cfg[i].led_pattern.map;
+			pattern.freq = cfg->led_source_cfg[i].led_pattern.freq;
+			fal_led_source_pattern_set(0, led_source_id,&pattern);
+			led_num = ((led_source_id-1)/3) + 3;
+			source_id = led_source_id%3;
+		#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+			if (source_id == 1) {
+				if (led_source_id == 1) {
+					ipq40xx_led_source_select(led_num, LAN0_1000_LNK_ACTIVITY);
+				}
+				if (led_source_id == 4) {
+					ipq40xx_led_source_select(led_num, LAN1_1000_LNK_ACTIVITY);
+				}
+				if (led_source_id == 7) {
+					ipq40xx_led_source_select(led_num, LAN2_1000_LNK_ACTIVITY);
+				}
+				if (led_source_id == 10) {
+					ipq40xx_led_source_select(led_num, LAN3_1000_LNK_ACTIVITY);
+				}
+				if (led_source_id == 13) {
+					ipq40xx_led_source_select(led_num, WAN_1000_LNK_ACTIVITY);
+				}
+			}
+			if (source_id == 2) {
+				if (led_source_id == 2) {
+					ipq40xx_led_source_select(led_num, LAN0_100_LNK_ACTIVITY);
+				}
+				if (led_source_id == 5) {
+					ipq40xx_led_source_select(led_num, LAN1_100_LNK_ACTIVITY);
+				}
+				if (led_source_id == 8) {
+					ipq40xx_led_source_select(led_num, LAN2_100_LNK_ACTIVITY);
+				}
+				if (led_source_id == 11) {
+					ipq40xx_led_source_select(led_num, LAN3_100_LNK_ACTIVITY);
+				}
+				if (led_source_id == 14) {
+					ipq40xx_led_source_select(led_num, WAN_100_LNK_ACTIVITY);
+				}
+			}
+			if (source_id == 0) {
+				if (led_source_id == 3) {
+					ipq40xx_led_source_select(led_num, LAN0_10_LNK_ACTIVITY);
+				}
+				if (led_source_id == 6) {
+					ipq40xx_led_source_select(led_num, LAN1_10_LNK_ACTIVITY);
+				}
+				if (led_source_id == 9) {
+					ipq40xx_led_source_select(led_num, LAN2_10_LNK_ACTIVITY);
+				}
+				if (led_source_id == 12) {
+					ipq40xx_led_source_select(led_num, LAN3_10_LNK_ACTIVITY);
+				}
+				if (led_source_id == 15) {
+					ipq40xx_led_source_select(led_num, WAN_10_LNK_ACTIVITY);
+				}
+			}
+		#endif
+		}
+	}
+	return 0;
+}
+
+static int ssdk_dess_mac_mode_init(a_uint32_t mac_mode)
 {
 	a_uint32_t reg_value;
-	hsl_api_t *p_api;
-	a_uint32_t reg_value1;
 	u8  __iomem      *gcc_addr = NULL;
 	u8  __iomem      *gpio_addr = NULL;
 	u8  __iomem      *mdc_addr = NULL;
-	a_uint16_t reg_data;
 
-	ssdk_portvlan_init(cfg->port_cfg.cpu_bmp, cfg->port_cfg.lan_bmp, cfg->port_cfg.wan_bmp);
-
-	fal_ip_route_status_set(0, A_TRUE);
-	fal_port_rxhdr_mode_set(0, 0, FAL_ALL_TYPE_FRAME_EN);
-
-	ssdk_flow_default_act_init();
-
-	/*set normal hash and disable nat/napt*/
-	qca_switch_reg_read(0, 0x0e38, (a_uint8_t *)&reg_value, 4);
-	reg_value = (reg_value|0x1000000|0x8);
-	reg_value &= ~2;
-	qca_switch_reg_write(0, 0x0e38, (a_uint8_t *)&reg_value, 4);
-	fal_ip_vrf_base_addr_set(0, 0, 0);
-
-	p_api = hsl_api_ptr_get (0);
-	if (p_api && p_api->port_flowctrl_thresh_set)
-		p_api->port_flowctrl_thresh_set(0, 0, SSDK_PORT0_FC_THRESH_ON_DFLT,
-							SSDK_PORT0_FC_THRESH_OFF_DFLT);
-
-	if (p_api && p_api->ip_glb_lock_time_set)
-		p_api->ip_glb_lock_time_set(0, FAL_GLB_LOCK_TIME_100US);
-
-	/*TODO:set mac mode in gcc*/
-	/*Config SGMII module for Dakota*/
-
-	switch(cfg->mac_mode) {
+	switch(mac_mode) {
 		case PORT_WRAPPER_PSGMII:
-		reg_value = 0x2200;
-		qca_psgmii_reg_write(0, DESS_PSGMII_MODE_CONTROL,
-					(a_uint8_t *)&reg_value, 4);
-
+			reg_value = 0x2200;
+			qca_psgmii_reg_write(0, DESS_PSGMII_MODE_CONTROL,
+								(a_uint8_t *)&reg_value, 4);
 			break;
 		case PORT_WRAPPER_SGMII0_RGMII5:
 		case PORT_WRAPPER_SGMII1_RGMII5:
@@ -2184,23 +2271,23 @@ qca_dess_hw_init(ssdk_init_cfg *cfg)
 		case PORT_WRAPPER_SGMII4_RGMII4:
 
 		/*config sgmii */
-			if ((cfg->mac_mode == PORT_WRAPPER_SGMII0_RGMII5)
-				||(cfg->mac_mode == PORT_WRAPPER_SGMII0_RGMII4)) {
+			if ((mac_mode == PORT_WRAPPER_SGMII0_RGMII5)
+				||(mac_mode == PORT_WRAPPER_SGMII0_RGMII4)) {
 				/*PSGMII channnel 0 as SGMII*/
 				reg_value = 0x2001;
 				fal_psgmii_reg_set(0, 0x1b4,
 								(a_uint8_t *)&reg_value, 4);
 				udelay(1000);
 			}
-			if ((cfg->mac_mode == PORT_WRAPPER_SGMII1_RGMII5)
-				||(cfg->mac_mode == PORT_WRAPPER_SGMII1_RGMII4)) {
+			if ((mac_mode == PORT_WRAPPER_SGMII1_RGMII5)
+				||(mac_mode == PORT_WRAPPER_SGMII1_RGMII4)) {
 				/*PSGMII channnel 1 as SGMII*/
 				reg_value = 0x2003;
 				fal_psgmii_reg_set(0, 0x1b4,
 								(a_uint8_t *)&reg_value, 4);
 				udelay(1000);
 			}
-			if ((cfg->mac_mode == PORT_WRAPPER_SGMII4_RGMII4)) {
+			if ((mac_mode == PORT_WRAPPER_SGMII4_RGMII4)) {
 				/*PSGMII channnel 4 as SGMII*/
 				reg_value = 0x2005;
 				fal_psgmii_reg_set(0, 0x1b4,
@@ -2241,8 +2328,8 @@ qca_dess_hw_init(ssdk_init_cfg *cfg)
 			udelay(1000);
 
 			/* Reconfig channel 0 as SGMII and re autoneg*/
-			if ((cfg->mac_mode == PORT_WRAPPER_SGMII0_RGMII5)
-				||(cfg->mac_mode == PORT_WRAPPER_SGMII0_RGMII4)) {
+			if ((mac_mode == PORT_WRAPPER_SGMII0_RGMII5)
+				||(mac_mode == PORT_WRAPPER_SGMII0_RGMII4)) {
 			/*PSGMII channnel 0 as SGMII*/
 			reg_value = 0x2001;
 			fal_psgmii_reg_set(0, 0x1b4,
@@ -2259,8 +2346,8 @@ qca_dess_hw_init(ssdk_init_cfg *cfg)
 			mdelay(10);
 			}
 			/* Reconfig channel 1 as SGMII and re autoneg*/
-			if ((cfg->mac_mode == PORT_WRAPPER_SGMII1_RGMII5)
-				||(cfg->mac_mode == PORT_WRAPPER_SGMII1_RGMII4)) {
+			if ((mac_mode == PORT_WRAPPER_SGMII1_RGMII5)
+				||(mac_mode == PORT_WRAPPER_SGMII1_RGMII4)) {
 
 			/*PSGMII channnel 1 as SGMII*/
 			reg_value = 0x2003;
@@ -2279,8 +2366,7 @@ qca_dess_hw_init(ssdk_init_cfg *cfg)
 
 			}
 			/* Reconfig channel 4 as SGMII and re autoneg*/
-			if ((cfg->mac_mode == PORT_WRAPPER_SGMII4_RGMII4)) {
-
+			if ((mac_mode == PORT_WRAPPER_SGMII4_RGMII4)) {
 			/*PSGMII channnel 4 as SGMII*/
 			reg_value = 0x2005;
 			fal_psgmii_reg_set(0, 0x1b4,
@@ -2335,8 +2421,8 @@ qca_dess_hw_init(ssdk_init_cfg *cfg)
 				iounmap(gpio_addr);
 			}
 			/* config mac5 RGMII*/
-			if ((cfg->mac_mode == PORT_WRAPPER_SGMII0_RGMII5)
-				||(cfg->mac_mode == PORT_WRAPPER_SGMII1_RGMII5)) {
+			if ((mac_mode == PORT_WRAPPER_SGMII0_RGMII5)
+				||(mac_mode == PORT_WRAPPER_SGMII1_RGMII5)) {
 				qca_ar8327_phy_dbg_write(0, 4, 0x5, 0x2d47);
 				qca_ar8327_phy_dbg_write(0, 4, 0xb, 0xbc40);
 				qca_ar8327_phy_dbg_write(0, 4, 0x0, 0x82ee);
@@ -2344,9 +2430,9 @@ qca_dess_hw_init(ssdk_init_cfg *cfg)
 				qca_switch_reg_write(0, 0x90, (a_uint8_t *)&reg_value, 4);
 			}
 			/* config mac4 RGMII*/
-			if ((cfg->mac_mode == PORT_WRAPPER_SGMII0_RGMII4)
-				||(cfg->mac_mode == PORT_WRAPPER_SGMII1_RGMII4)
-				||(cfg->mac_mode == PORT_WRAPPER_SGMII4_RGMII4)) {
+			if ((mac_mode == PORT_WRAPPER_SGMII0_RGMII4)
+				||(mac_mode == PORT_WRAPPER_SGMII1_RGMII4)
+				||(mac_mode == PORT_WRAPPER_SGMII4_RGMII4)) {
 				qca_ar8327_phy_dbg_write(0, 4, 0x5, 0x2d47);
 				qca_ar8327_phy_dbg_write(0, 4, 0xb, 0xbc40);
 				qca_ar8327_phy_dbg_write(0, 4, 0x0, 0x82ee);
@@ -2354,7 +2440,43 @@ qca_dess_hw_init(ssdk_init_cfg *cfg)
 				qca_switch_reg_write(0, 0x8c, (a_uint8_t *)&reg_value, 4);
 			}
 			break;
+
 	}
+	return 0;
+}
+
+static int
+qca_dess_hw_init(ssdk_init_cfg *cfg)
+{
+	a_uint32_t reg_value;
+	hsl_api_t *p_api;
+
+	ssdk_portvlan_init(cfg->port_cfg.cpu_bmp, cfg->port_cfg.lan_bmp, cfg->port_cfg.wan_bmp);
+
+	fal_port_rxhdr_mode_set(0, 0, FAL_ALL_TYPE_FRAME_EN);
+	fal_ip_route_status_set(0, A_TRUE);
+
+	ssdk_flow_default_act_init();
+
+	/*set normal hash and disable nat/napt*/
+	qca_switch_reg_read(0, 0x0e38, (a_uint8_t *)&reg_value, 4);
+	reg_value = (reg_value|0x1000000|0x8);
+	reg_value &= ~2;
+	qca_switch_reg_write(0, 0x0e38, (a_uint8_t *)&reg_value, 4);
+	fal_ip_vrf_base_addr_set(0, 0, 0);
+
+	p_api = hsl_api_ptr_get (0);
+	if (p_api && p_api->port_flowctrl_thresh_set)
+		p_api->port_flowctrl_thresh_set(0, 0, SSDK_PORT0_FC_THRESH_ON_DFLT,
+							SSDK_PORT0_FC_THRESH_OFF_DFLT);
+
+
+	/*config psgmii,sgmii or rgmii mode for Dakota*/
+	ssdk_dess_mac_mode_init(cfg->mac_mode);
+
+	/*add BGA Board led contorl*/
+	ssdk_dess_led_init(cfg);
+
 	return 0;
 }
 
