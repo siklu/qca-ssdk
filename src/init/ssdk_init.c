@@ -99,6 +99,11 @@ ssdk_dt_cfg ssdk_dt_global = {0};
 u8  __iomem      *hw_addr = NULL;
 u8  __iomem      *psgmii_hw_addr = NULL;
 
+a_uint32_t ssdk_dt_global_get_mac_mode(void)
+{
+	return ssdk_dt_global.mac_mode;
+}
+
 static struct mutex switch_mdio_lock;
 phy_identification_t phy_array[] =
 {
@@ -240,7 +245,9 @@ qca_ar8327_phy_enable(struct qca_phy_priv *priv)
 {
 	int i = 0;
 	for (i = 0; i < AR8327_NUM_PHYS; i++) {
-		qca_ar8327_phy_fixup(priv, i);
+		if (priv->version == QCA_VER_AR8327 ||
+			priv->version == QCA_VER_AR8337)
+			qca_ar8327_phy_fixup(priv, i);
 
 		/* start autoneg*/
 		priv->phy_write(0, i, MII_ADVERTISE, ADVERTISE_ALL |
@@ -2074,6 +2081,8 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 	}
 	cfg->mac_mode = be32_to_cpup(mac_mode);
 	printk("mac mode=%d\n", be32_to_cpup(mac_mode));
+	ssdk_dt_global.mac_mode = cfg->mac_mode;
+	printk("current mac mode = %d\n", ssdk_dt_global.mac_mode);
 	return SW_OK;
 }
 #endif
@@ -2130,6 +2139,11 @@ qca_dess_hw_init(ssdk_init_cfg *cfg)
 {
 	a_uint32_t reg_value;
 	hsl_api_t *p_api;
+	a_uint32_t reg_value1;
+	u8  __iomem      *gcc_addr = NULL;
+	u8  __iomem      *gpio_addr = NULL;
+	u8  __iomem      *mdc_addr = NULL;
+	a_uint16_t reg_data;
 
 	ssdk_portvlan_init(cfg->port_cfg.cpu_bmp, cfg->port_cfg.lan_bmp, cfg->port_cfg.wan_bmp);
 
@@ -2151,11 +2165,193 @@ qca_dess_hw_init(ssdk_init_cfg *cfg)
 							SSDK_PORT0_FC_THRESH_OFF_DFLT);
 
 	/*TODO:set mac mode in gcc*/
-	/*Config PSGMII module for Dakota*/
-	reg_value = 0x2200;
-	qca_psgmii_reg_write(0, DESS_PSGMII_MODE_CONTROL,
-						(a_uint8_t *)&reg_value, 4);
+	/*Config SGMII module for Dakota*/
 
+	switch(cfg->mac_mode) {
+		case PORT_WRAPPER_PSGMII:
+		reg_value = 0x2200;
+		qca_psgmii_reg_write(0, DESS_PSGMII_MODE_CONTROL,
+					(a_uint8_t *)&reg_value, 4);
+
+			break;
+		case PORT_WRAPPER_SGMII0_RGMII5:
+		case PORT_WRAPPER_SGMII1_RGMII5:
+		case PORT_WRAPPER_SGMII0_RGMII4:
+		case PORT_WRAPPER_SGMII1_RGMII4:
+		case PORT_WRAPPER_SGMII4_RGMII4:
+
+		/*config sgmii */
+			if ((cfg->mac_mode == PORT_WRAPPER_SGMII0_RGMII5)
+				||(cfg->mac_mode == PORT_WRAPPER_SGMII0_RGMII4)) {
+				/*PSGMII channnel 0 as SGMII*/
+				reg_value = 0x2001;
+				fal_psgmii_reg_set(0, 0x1b4,
+								(a_uint8_t *)&reg_value, 4);
+				udelay(1000);
+			}
+			if ((cfg->mac_mode == PORT_WRAPPER_SGMII1_RGMII5)
+				||(cfg->mac_mode == PORT_WRAPPER_SGMII1_RGMII4)) {
+				/*PSGMII channnel 1 as SGMII*/
+				reg_value = 0x2003;
+				fal_psgmii_reg_set(0, 0x1b4,
+								(a_uint8_t *)&reg_value, 4);
+				udelay(1000);
+			}
+			if ((cfg->mac_mode == PORT_WRAPPER_SGMII4_RGMII4)) {
+				/*PSGMII channnel 4 as SGMII*/
+				reg_value = 0x2005;
+				fal_psgmii_reg_set(0, 0x1b4,
+								(a_uint8_t *)&reg_value, 4);
+				udelay(1000);
+			}
+
+			/*clock gen 1*/
+			reg_value = 0xea6;
+			fal_psgmii_reg_set(0, 0x13c,
+							(a_uint8_t *)&reg_value, 4);
+			mdelay(10);
+			/*softreset psgmii, fixme*/
+			gcc_addr = ioremap_nocache(0x1812000, 0x200);
+			if (!gcc_addr) {
+				printk("gcc map fail!\n");
+				return 0;
+			} else {
+				printk("gcc map success!\n");
+				writel(0x20, gcc_addr+0xc);
+				mdelay(10);
+				writel(0x0, gcc_addr+0xc);
+				mdelay(10);
+				iounmap(gcc_addr);
+			}
+			/*relock pll*/
+			reg_value = 0x2803;
+			fal_psgmii_reg_set(0, DESS_PSGMII_PLL_VCO_RELATED_CONTROL_1,
+							(a_uint8_t *)&reg_value, 4);
+			udelay(1000);
+			reg_value = 0x4ADA;
+			fal_psgmii_reg_set(0, DESS_PSGMII_VCO_CALIBRATION_CONTROL_1,
+							(a_uint8_t *)&reg_value, 4);
+			udelay(1000);
+			reg_value = 0xADA;
+			fal_psgmii_reg_set(0, DESS_PSGMII_VCO_CALIBRATION_CONTROL_1,
+							(a_uint8_t *)&reg_value, 4);
+			udelay(1000);
+
+			/* Reconfig channel 0 as SGMII and re autoneg*/
+			if ((cfg->mac_mode == PORT_WRAPPER_SGMII0_RGMII5)
+				||(cfg->mac_mode == PORT_WRAPPER_SGMII0_RGMII4)) {
+			/*PSGMII channnel 0 as SGMII*/
+			reg_value = 0x2001;
+			fal_psgmii_reg_set(0, 0x1b4,
+								(a_uint8_t *)&reg_value, 4);
+			udelay(1000);
+			/* restart channel 0 autoneg*/
+			reg_value = 0xc4;
+			fal_psgmii_reg_set(0, 0x1c8,
+							(a_uint8_t *)&reg_value, 4);
+			mdelay(10);
+			reg_value = 0x44;
+			fal_psgmii_reg_set(0, 0x1c8,
+							(a_uint8_t *)&reg_value, 4);
+			mdelay(10);
+			}
+			/* Reconfig channel 1 as SGMII and re autoneg*/
+			if ((cfg->mac_mode == PORT_WRAPPER_SGMII1_RGMII5)
+				||(cfg->mac_mode == PORT_WRAPPER_SGMII1_RGMII4)) {
+
+			/*PSGMII channnel 1 as SGMII*/
+			reg_value = 0x2003;
+			fal_psgmii_reg_set(0, 0x1b4,
+							(a_uint8_t *)&reg_value, 4);
+			udelay(1000);
+			/* restart channel 1 autoneg*/
+			reg_value = 0xc4;
+			fal_psgmii_reg_set(0, 0x1e0,
+							(a_uint8_t *)&reg_value, 4);
+			mdelay(10);
+			reg_value = 0x44;
+			fal_psgmii_reg_set(0, 0x1e0,
+							(a_uint8_t *)&reg_value, 4);
+			mdelay(10);
+
+			}
+			/* Reconfig channel 4 as SGMII and re autoneg*/
+			if ((cfg->mac_mode == PORT_WRAPPER_SGMII4_RGMII4)) {
+
+			/*PSGMII channnel 4 as SGMII*/
+			reg_value = 0x2005;
+			fal_psgmii_reg_set(0, 0x1b4,
+							(a_uint8_t *)&reg_value, 4);
+			udelay(1000);
+			/* restart channel 4 autoneg*/
+			reg_value = 0xc4;
+			fal_psgmii_reg_set(0, 0x228,
+							(a_uint8_t *)&reg_value, 4);
+			mdelay(10);
+			reg_value = 0x44;
+			fal_psgmii_reg_set(0, 0x228,
+							(a_uint8_t *)&reg_value, 4);
+			mdelay(10);
+			}
+
+		  	/* config RGMII*/
+			reg_value = 0x400;
+			fal_reg_set(0, 0x4, (a_uint8_t *)&reg_value, 4);
+
+			/* enable mdc and mdio access*/
+			mdc_addr = ioremap_nocache(0x1006000, 0x2000);
+			if (!mdc_addr) {
+				printk("mdc_addr map fail!\n");
+				return 0;
+			} else {
+				printk("mdc_addr map success!\n");
+				writel(0x4806, mdc_addr+0x0000);
+				writel(0x4806, mdc_addr+0x1000);
+				iounmap(mdc_addr);
+			}
+
+			/* RGMII signal configuration*/
+			gpio_addr = ioremap_nocache(0x1016000, 0xd000);
+			if (!gpio_addr) {
+				printk("gpio_addr map fail!\n");
+				return 0;
+			} else {
+				printk("gpio_addr map success!\n");
+				writel(0x01c6, gpio_addr+0x0000);
+				writel(0x01ca, gpio_addr+0x1000);
+				writel(0x01ca, gpio_addr+0x2000);
+				writel(0x01ca, gpio_addr+0x3000);
+				writel(0x01ca, gpio_addr+0x4000);
+				writel(0x01ca, gpio_addr+0x5000);
+				writel(0x01ca, gpio_addr+0x6000);
+				writel(0x01ca, gpio_addr+0x7000);
+				writel(0x01ca, gpio_addr+0x8000);
+				writel(0x01ca, gpio_addr+0x9000);
+				writel(0x01ca, gpio_addr+0xa000);
+				writel(0x01c6, gpio_addr+0xb000);
+				iounmap(gpio_addr);
+			}
+			/* config mac5 RGMII*/
+			if ((cfg->mac_mode == PORT_WRAPPER_SGMII0_RGMII5)
+				||(cfg->mac_mode == PORT_WRAPPER_SGMII1_RGMII5)) {
+				qca_ar8327_phy_dbg_write(0, 4, 0x5, 0x2d47);
+				qca_ar8327_phy_dbg_write(0, 4, 0xb, 0xbc40);
+				qca_ar8327_phy_dbg_write(0, 4, 0x0, 0x82ee);
+				reg_value = 0x7e;
+				qca_switch_reg_write(0, 0x90, (a_uint8_t *)&reg_value, 4);
+			}
+			/* config mac4 RGMII*/
+			if ((cfg->mac_mode == PORT_WRAPPER_SGMII0_RGMII4)
+				||(cfg->mac_mode == PORT_WRAPPER_SGMII1_RGMII4)
+				||(cfg->mac_mode == PORT_WRAPPER_SGMII4_RGMII4)) {
+				qca_ar8327_phy_dbg_write(0, 4, 0x5, 0x2d47);
+				qca_ar8327_phy_dbg_write(0, 4, 0xb, 0xbc40);
+				qca_ar8327_phy_dbg_write(0, 4, 0x0, 0x82ee);
+				reg_value = 0x7e;
+				qca_switch_reg_write(0, 0x8c, (a_uint8_t *)&reg_value, 4);
+			}
+			break;
+	}
 	return 0;
 }
 

@@ -62,14 +62,18 @@ a_uint32_t dess_nat_global_status = 0;
 a_uint32_t dess_pbmp[PORT_WRAPPER_MAX] = {
 	((1<<1) | (1<<2) | (1<<3) | (1<<4) | (1<<5)), /*PORT_WRAPPER_PSGMII*/
 	((1<<1) | (1<<2) | (1<<3) | (1<<4) | (1<<5)), /*PORT_WRAPPER_PSGMII_RGMII5*/
+	((1<<1) | (1<<5)),                            /*PORT_WRAPPER_SGMII0_RGMII5*/
+	((1<<2) | (1<<5)),                            /*PORT_WRAPPER_SGMII1_RGMII5*/
 	((1<<1) | (1<<2) | (1<<3) | (1<<4) | (1<<5)), /*PORT_WRAPPER_PSGMII_RMII0*/
 	((1<<1) | (1<<2) | (1<<3) | (1<<4) | (1<<5)), /*PORT_WRAPPER_PSGMII_RMII1*/
 	((1<<1) | (1<<2) | (1<<3) | (1<<4) | (1<<5)), /*PORT_WRAPPER_PSGMII_RMII0_RMII1*/
 	((1<<1) | (1<<2) | (1<<3) | (1<<4) | (1<<5)), /*PORT_WRAPPER_SGMII_RGMII4*/
+	((1<<1) | (1<<4)),                            /*PORT_WRAPPER_SGMII0_RGMII4*/
+	((1<<2) | (1<<4)),                            /*PORT_WRAPPER_SGMII1_RGMII4*/
+	((1<<5) | (1<<4)),                            /*PORT_WRAPPER_SGMII4_RGMII4*/
 	};
 
-
-enum dess_port_cfg dess_get_port_config(void)
+enum ssdk_port_wrapper_cfg dess_get_port_config(void)
 {
 	return dess_cfg[0]->mac_mode;
 }
@@ -77,7 +81,7 @@ enum dess_port_cfg dess_get_port_config(void)
 a_bool_t dess_mac_port_valid_check(fal_port_t port_id)
 {
 	a_uint32_t bitmap = 0;
-	enum dess_port_cfg cfg;
+	enum ssdk_port_wrapper_cfg cfg;
 
 	cfg = dess_get_port_config();
 	bitmap = dess_pbmp[cfg];
@@ -92,7 +96,7 @@ dess_portproperty_init(a_uint32_t dev_id)
     hsl_port_prop_t p_type;
     hsl_dev_t *pdev = NULL;
     fal_port_t port_id;
-	enum dess_port_cfg cfg;
+	enum ssdk_port_wrapper_cfg cfg;
 	a_uint32_t bitmap = 0;
 
 

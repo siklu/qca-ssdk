@@ -101,6 +101,7 @@ qca_ar8327_sw_reset_switch(struct switch_dev *dev)
 	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 	int i;
 	int rv = 0;
+	a_uint32_t mac_mode;
 
 	mutex_lock(&priv->reg_mutex);
 
@@ -145,6 +146,21 @@ qca_ar8327_sw_reset_switch(struct switch_dev *dev)
 		fal_port_link_forcemode_set(0, 3, A_FALSE);
 		fal_port_link_forcemode_set(0, 4, A_FALSE);
 		fal_port_link_forcemode_set(0, 5, A_FALSE);
+	}
+
+	mac_mode = ssdk_dt_global_get_mac_mode();
+	/* set mac5 flowcontol force for RGMII */
+	if ((mac_mode == PORT_WRAPPER_SGMII0_RGMII5)
+		||(mac_mode == PORT_WRAPPER_SGMII1_RGMII5)) {
+		fal_port_flowctrl_forcemode_set(0, 5, A_TRUE);
+		fal_port_flowctrl_set(0, 5, A_TRUE);
+	}
+	/* set mac4 flowcontol force for RGMII */
+	if ((mac_mode == PORT_WRAPPER_SGMII0_RGMII4)
+		||(mac_mode == PORT_WRAPPER_SGMII1_RGMII4)
+		||(mac_mode == PORT_WRAPPER_SGMII4_RGMII4)) {
+		fal_port_flowctrl_forcemode_set(0, 4, A_TRUE);
+		fal_port_flowctrl_set(0, 4, A_TRUE);
 	}
 	qca_ar8327_phy_enable(priv);
 	#endif
