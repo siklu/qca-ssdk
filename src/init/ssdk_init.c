@@ -2129,6 +2129,7 @@ static int
 qca_dess_hw_init(ssdk_init_cfg *cfg)
 {
 	a_uint32_t reg_value;
+	hsl_api_t *p_api;
 
 	ssdk_portvlan_init(cfg->port_cfg.cpu_bmp, cfg->port_cfg.lan_bmp, cfg->port_cfg.wan_bmp);
 
@@ -2143,6 +2144,11 @@ qca_dess_hw_init(ssdk_init_cfg *cfg)
 	reg_value &= ~2;
 	qca_switch_reg_write(0, 0x0e38, (a_uint8_t *)&reg_value, 4);
 	fal_ip_vrf_base_addr_set(0, 0, 0);
+
+	p_api = hsl_api_ptr_get (0);
+	if (p_api && p_api->port_flowctrl_thresh_set)
+		p_api->port_flowctrl_thresh_set(0, 0, SSDK_PORT0_FC_THRESH_ON_DFLT,
+							SSDK_PORT0_FC_THRESH_OFF_DFLT);
 
 	/*TODO:set mac mode in gcc*/
 	/*Config PSGMII module for Dakota*/

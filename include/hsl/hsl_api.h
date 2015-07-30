@@ -294,6 +294,9 @@ extern "C"
   typedef sw_error_t
     (*hsl_port_flowctrl_get) (a_uint32_t dev_id, fal_port_t port_id,
 			      a_bool_t * enable);
+typedef sw_error_t
+    (*hsl_port_flowctrl_thresh_set) (a_uint32_t dev_id, fal_port_t port_id,
+			      a_uint8_t  on, a_uint8_t  off);
 
   typedef sw_error_t
     (*hsl_port_flowctrl_forcemode_set) (a_uint32_t dev_id, fal_port_t port_id,
@@ -2031,6 +2034,7 @@ extern "C"
     hsl_port_hdr_status_get port_hdr_status_get;
     hsl_port_flowctrl_set port_flowctrl_set;
     hsl_port_flowctrl_get port_flowctrl_get;
+	hsl_port_flowctrl_thresh_set port_flowctrl_thresh_set;
     hsl_port_flowctrl_forcemode_set port_flowctrl_forcemode_set;
     hsl_port_flowctrl_forcemode_get port_flowctrl_forcemode_get;
     hsl_port_powersave_set port_powersave_set;
