@@ -1415,7 +1415,7 @@ ssdk_switch_init(a_uint32_t dev_id)
     /*enable cpu and disable mirror*/
     fal_cpu_port_status_set(dev_id, A_TRUE);
     /* setup MTU */
-    fal_frame_max_size_set(dev_id, 1518+8+2);
+    fal_frame_max_size_set(dev_id, 1518);
     /* Enable MIB counters */
     fal_mib_status_set(dev_id, A_TRUE);
     fal_igmp_mld_rp_set(dev_id, 0);
