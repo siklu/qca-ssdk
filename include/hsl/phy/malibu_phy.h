@@ -43,6 +43,9 @@ extern "C"
 #define MALIBU_100M_LOOPBACK  0x6100
 #define MALIBU_1000M_LOOPBACK  0x4140
 
+#define MALIBU_1_0 0x004DD0B0
+#define MALIBU_1_1 0x004DD0B1
+
 
   /* PHY Registers */
 #define MALIBU_PHY_CONTROL                      0

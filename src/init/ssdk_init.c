@@ -108,6 +108,7 @@ static struct mutex switch_mdio_lock;
 phy_identification_t phy_array[] =
 {
 	{0x0, 0x004DD0B0, malibu_phy_init},
+	{0x0, 0x004DD0B1, malibu_phy_init},
 	{0x0, 0x004DD036, f1_phy_init},
 	{0x0, 0x004DD033, f1_phy_init},
 	{0x0, 0x004DD042, f2_phy_init}
