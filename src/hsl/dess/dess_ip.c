@@ -2781,6 +2781,17 @@ _dess_default_rt_flow_cmd_get(a_uint32_t dev_id, a_uint32_t vrf_id, fal_flow_typ
     return SW_OK;
 }
 
+static sw_error_t
+_dess_ip_glb_lock_time_set(a_uint32_t dev_id, fal_glb_lock_time_t lock_time)
+{
+	sw_error_t rv;
+	a_uint32_t data = lock_time;
+
+	HSL_REG_FIELD_SET(rv, dev_id, ROUTER_CTRL, 0, GLB_LOCKTIME,
+                      (a_uint8_t *) (&data), sizeof (a_uint32_t));
+	return rv;
+}
+
 sw_error_t
 dess_ip_reset(a_uint32_t dev_id)
 {
@@ -3674,6 +3685,23 @@ dess_default_rt_flow_cmd_get(a_uint32_t dev_id, a_uint32_t vrf_id, fal_flow_type
     return rv;
 }
 
+/**
+ * @brief Set blobal lock time.
+ * @param[in] dev_id device id
+ * @param[in] fal_glb_lock_time_t lock time
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_ip_glb_lock_time_set(a_uint32_t dev_id, fal_glb_lock_time_t lock_time)
+{
+	sw_error_t rv;
+
+	HSL_API_LOCK;
+	rv = _dess_ip_glb_lock_time_set(dev_id, lock_time);
+	HSL_API_UNLOCK;
+	return rv;
+}
+
 sw_error_t
 dess_ip_init(a_uint32_t dev_id)
 {
@@ -3738,6 +3766,7 @@ dess_ip_init(a_uint32_t dev_id)
         p_api->ip_default_flow_cmd_get = dess_default_flow_cmd_get;
         p_api->ip_default_rt_flow_cmd_set = dess_default_rt_flow_cmd_set;
         p_api->ip_default_rt_flow_cmd_get = dess_default_rt_flow_cmd_get;
+	p_api->ip_glb_lock_time_set = dess_ip_glb_lock_time_set;
     }
 #endif
 

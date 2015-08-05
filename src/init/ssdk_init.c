@@ -2165,6 +2165,9 @@ qca_dess_hw_init(ssdk_init_cfg *cfg)
 		p_api->port_flowctrl_thresh_set(0, 0, SSDK_PORT0_FC_THRESH_ON_DFLT,
 							SSDK_PORT0_FC_THRESH_OFF_DFLT);
 
+	if (p_api && p_api->ip_glb_lock_time_set)
+		p_api->ip_glb_lock_time_set(0, FAL_GLB_LOCK_TIME_100US);
+
 	/*TODO:set mac mode in gcc*/
 	/*Config SGMII module for Dakota*/
 

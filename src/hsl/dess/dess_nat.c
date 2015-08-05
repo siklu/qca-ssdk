@@ -2442,7 +2442,7 @@ _dess_flow_cookie_set(a_uint32_t dev_id, fal_flow_cookie_t * flow_cookie)
 	} else {
 		/*add*/
 		if(ret == SW_OK)
-			_dess_flow_del(0, 0, &entry);
+			_dess_flow_del(0, FAL_NAT_ENTRY_KEY_EN, &entry);
 		entry.status = 0xf;
 		entry.flow_cookie = flow_cookie->flow_cookie;
 		return _dess_flow_add(0, &entry);
@@ -2479,7 +2479,7 @@ _dess_flow_rfs_set(a_uint32_t dev_id, a_uint8_t action, fal_flow_rfs_t * rfs)
 	} else {
 		/*add*/
 		if(ret == SW_OK)
-			_dess_flow_del(0, 0, &entry);
+			_dess_flow_del(0, FAL_NAT_ENTRY_KEY_EN, &entry);
 		entry.status = 0xf;
 		entry.load_balance = rfs->load_balance | 0x4;
 		return _dess_flow_add(0, &entry);
