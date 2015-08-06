@@ -1715,6 +1715,9 @@ typedef sw_error_t
 				    a_uint32_t vrf_id, fal_flow_type_t type,
 				    fal_default_flow_cmd_t * cmd);
 
+typedef sw_error_t
+	(*hsl_ip_glb_lock_time_set) (a_uint32_t dev_id, fal_glb_lock_time_t lock_time);
+
   /* NAT */
 #define NAT_FUNC_PROTOTYPE_DEF
   typedef sw_error_t
@@ -2420,6 +2423,7 @@ typedef sw_error_t
     hsl_default_flow_cmd_get ip_default_flow_cmd_get;
     hsl_default_rt_flow_cmd_set ip_default_rt_flow_cmd_set;
     hsl_default_rt_flow_cmd_get ip_default_rt_flow_cmd_get;
+	hsl_ip_glb_lock_time_set ip_glb_lock_time_set;
 
     /* NAT */
     hsl_nat_add nat_add;
