@@ -246,8 +246,7 @@ qca_ar8327_phy_enable(struct qca_phy_priv *priv)
 {
 	int i = 0;
 	for (i = 0; i < AR8327_NUM_PHYS; i++) {
-		if (priv->version == QCA_VER_AR8327 ||
-			priv->version == QCA_VER_AR8337)
+		if (priv->version == QCA_VER_AR8327)
 			qca_ar8327_phy_fixup(priv, i);
 
 		/* start autoneg*/
