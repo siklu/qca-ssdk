@@ -294,6 +294,9 @@ extern "C"
   typedef sw_error_t
     (*hsl_port_flowctrl_get) (a_uint32_t dev_id, fal_port_t port_id,
 			      a_bool_t * enable);
+typedef sw_error_t
+    (*hsl_port_flowctrl_thresh_set) (a_uint32_t dev_id, fal_port_t port_id,
+			      a_uint8_t  on, a_uint8_t  off);
 
   typedef sw_error_t
     (*hsl_port_flowctrl_forcemode_set) (a_uint32_t dev_id, fal_port_t port_id,
@@ -1712,6 +1715,9 @@ extern "C"
 				    a_uint32_t vrf_id, fal_flow_type_t type,
 				    fal_default_flow_cmd_t * cmd);
 
+typedef sw_error_t
+	(*hsl_ip_glb_lock_time_set) (a_uint32_t dev_id, fal_glb_lock_time_t lock_time);
+
   /* NAT */
 #define NAT_FUNC_PROTOTYPE_DEF
   typedef sw_error_t
@@ -2031,6 +2037,7 @@ extern "C"
     hsl_port_hdr_status_get port_hdr_status_get;
     hsl_port_flowctrl_set port_flowctrl_set;
     hsl_port_flowctrl_get port_flowctrl_get;
+	hsl_port_flowctrl_thresh_set port_flowctrl_thresh_set;
     hsl_port_flowctrl_forcemode_set port_flowctrl_forcemode_set;
     hsl_port_flowctrl_forcemode_get port_flowctrl_forcemode_get;
     hsl_port_powersave_set port_powersave_set;
@@ -2416,6 +2423,7 @@ extern "C"
     hsl_default_flow_cmd_get ip_default_flow_cmd_get;
     hsl_default_rt_flow_cmd_set ip_default_rt_flow_cmd_set;
     hsl_default_rt_flow_cmd_get ip_default_rt_flow_cmd_get;
+	hsl_ip_glb_lock_time_set ip_glb_lock_time_set;
 
     /* NAT */
     hsl_nat_add nat_add;

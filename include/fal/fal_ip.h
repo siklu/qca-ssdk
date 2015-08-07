@@ -96,6 +96,15 @@ extern "C" {
         FAL_FLOW_WAN_TO_WAN,
     } fal_flow_type_t;
 
+typedef enum
+{
+	FAL_GLB_LOCK_TIME_DISABLE = 0,
+	FAL_GLB_LOCK_TIME_100US,
+	FAL_GLB_LOCK_TIME_1MS,
+	FAL_GLB_LOCK_TIME_10MS,
+} fal_glb_lock_time_t;
+		
+
     typedef enum
     {
         FAL_ARP_LEARN_LOCAL = 0,

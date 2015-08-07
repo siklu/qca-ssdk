@@ -65,6 +65,21 @@ extern "C" {
     typedef sw_error_t
     (*psgmii_reg_get) (a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t *reg_data, a_uint32_t len);
 
+enum ssdk_port_wrapper_cfg {
+	PORT_WRAPPER_PSGMII = 0,
+	PORT_WRAPPER_PSGMII_RGMII5,
+	PORT_WRAPPER_SGMII0_RGMII5,
+	PORT_WRAPPER_SGMII1_RGMII5,
+	PORT_WRAPPER_PSGMII_RMII0,
+	PORT_WRAPPER_PSGMII_RMII1,
+	PORT_WRAPPER_PSGMII_RMII0_RMII1,
+	PORT_WRAPPER_PSGMII_RGMII4,
+	PORT_WRAPPER_SGMII0_RGMII4,
+	PORT_WRAPPER_SGMII1_RGMII4,
+	PORT_WRAPPER_SGMII4_RGMII4,
+	PORT_WRAPPER_MAX
+};
+
     typedef struct
     {
         mdio_reg_set    mdio_set;
@@ -139,6 +154,8 @@ extern "C" {
 		a_uint8_t *psgmii_reg_access_str;
 		hsl_reg_mode switch_reg_access_mode;
 		hsl_reg_mode psgmii_reg_access_mode;
+		struct clk *ess_clk;
+		a_uint32_t      mac_mode;
 	} ssdk_dt_cfg;
 
 typedef struct phy_identification {
@@ -253,6 +270,7 @@ typedef struct phy_identification {
 
     sw_error_t
     ssdk_hsl_access_mode_set(a_uint32_t dev_id, hsl_access_mode reg_mode);
+	a_uint32_t ssdk_dt_global_get_mac_mode(void);
 
 #ifdef __cplusplus
 }

@@ -98,21 +98,22 @@ qca_ar8327_sw_get_max_frame_size(struct switch_dev *dev,
 int
 qca_ar8327_sw_reset_switch(struct switch_dev *dev)
 {
-    struct qca_phy_priv *priv = qca_phy_priv_get(dev);
-    int i;
-    int rv = 0;
+	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
+	int i;
+	int rv = 0;
+	a_uint32_t mac_mode;
 
-    mutex_lock(&priv->reg_mutex);
+	mutex_lock(&priv->reg_mutex);
 
-    /* flush all vlan translation unit entries */
-    fal_vlan_flush(0);
+	/* flush all vlan translation unit entries */
+	fal_vlan_flush(0);
 
-    /* reset VLAN shadow */
-    priv->vlan = 0;
-    memset(priv->vlan_id, 0, sizeof(a_uint16_t) * AR8327_MAX_VLANS);
-    memset(priv->vlan_table, 0, sizeof(a_uint8_t) * AR8327_MAX_VLANS);
-    memset(priv->vlan_tagged, 0, sizeof(a_uint8_t) * AR8327_MAX_VLANS);
-    memset(priv->pvid, 0, sizeof(a_uint16_t) * AR8327_NUM_PORTS);
+	/* reset VLAN shadow */
+	priv->vlan = 0;
+	memset(priv->vlan_id, 0, sizeof(a_uint16_t) * AR8327_MAX_VLANS);
+	memset(priv->vlan_table, 0, sizeof(a_uint8_t) * AR8327_MAX_VLANS);
+	memset(priv->vlan_tagged, 0, sizeof(a_uint8_t) * AR8327_MAX_VLANS);
+	memset(priv->pvid, 0, sizeof(a_uint16_t) * AR8327_NUM_PORTS);
 
 	/*for (i = 0; i < AR8327_MAX_VLANS; i++)*/
 	/*    priv->vlan_id[i] = i;*/
@@ -145,11 +146,24 @@ qca_ar8327_sw_reset_switch(struct switch_dev *dev)
 		fal_port_link_forcemode_set(0, 3, A_FALSE);
 		fal_port_link_forcemode_set(0, 4, A_FALSE);
 		fal_port_link_forcemode_set(0, 5, A_FALSE);
-		qca_ar8327_phy_enable(priv);
 	}
+
+	mac_mode = ssdk_dt_global_get_mac_mode();
+	/* set mac5 flowcontol force for RGMII */
+	if ((mac_mode == PORT_WRAPPER_SGMII0_RGMII5)
+		||(mac_mode == PORT_WRAPPER_SGMII1_RGMII5)) {
+		fal_port_flowctrl_forcemode_set(0, 5, A_TRUE);
+		fal_port_flowctrl_set(0, 5, A_TRUE);
+	}
+	/* set mac4 flowcontol force for RGMII */
+	if ((mac_mode == PORT_WRAPPER_SGMII0_RGMII4)
+		||(mac_mode == PORT_WRAPPER_SGMII1_RGMII4)
+		||(mac_mode == PORT_WRAPPER_SGMII4_RGMII4)) {
+		fal_port_flowctrl_forcemode_set(0, 4, A_TRUE);
+		fal_port_flowctrl_set(0, 4, A_TRUE);
+	}
+	qca_ar8327_phy_enable(priv);
 	#endif
-	fal_port_rxmac_status_set(0, 0, A_TRUE);
-	fal_port_txmac_status_set(0, 0, A_TRUE);
 
 	return rv;
 }

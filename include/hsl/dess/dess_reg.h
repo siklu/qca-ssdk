@@ -1544,6 +1544,13 @@ extern "C" {
 #define ROUTER_EG_E_OFFSET   0x0004
 #define ROUTER_EG_NR_E       1
 
+/* port flow control threshold Register */
+#define PORT_FLOC_CTRL_THRESH
+#define PORT_FLOC_CTRL_THRESH_OFFSET	0x9b0
+#define PORT_FLOC_CTRL_THRESH_E_LENGTH   4
+#define PORT_FLOC_CTRL_THRESH_E_OFFSET   0x0004
+#define PORT_FLOC_CTRL_THRESH_NR_E       7
+
 
     /* LED control Register */
 #define LED_CTRL               "ledctrl"

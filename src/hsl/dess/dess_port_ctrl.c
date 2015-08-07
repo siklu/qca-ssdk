@@ -506,6 +506,19 @@ _dess_port_flowctrl_set (a_uint32_t dev_id, fal_port_t port_id,
 }
 
 static sw_error_t
+_dess_port_flowctrl_thresh_set (a_uint32_t dev_id, fal_port_t port_id,
+			 a_uint8_t on, a_uint8_t off)
+{
+	sw_error_t rv;
+	a_uint32_t reg;
+
+	reg = (on << 16) | off;
+	HSL_REG_ENTRY_SET (rv, dev_id, PORT_FLOC_CTRL_THRESH, port_id,
+		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+	return rv;
+}
+
+static sw_error_t
 _dess_port_flowctrl_get (a_uint32_t dev_id, fal_port_t port_id,
 			 a_bool_t * enable)
 {
@@ -1008,7 +1021,7 @@ _dess_port_txmac_status_get (a_uint32_t dev_id, fal_port_t port_id,
 
   HSL_DEV_ID_CHECK (dev_id);
 
-  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_EXCL_CPU))
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
     {
       return SW_BAD_PARAM;
     }
@@ -1038,7 +1051,7 @@ _dess_port_rxmac_status_set (a_uint32_t dev_id, fal_port_t port_id,
 
   HSL_DEV_ID_CHECK (dev_id);
 
-  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_EXCL_CPU))
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
     {
       return SW_BAD_PARAM;
     }
@@ -1094,7 +1107,7 @@ _dess_port_rxmac_status_get (a_uint32_t dev_id, fal_port_t port_id,
 
   HSL_DEV_ID_CHECK (dev_id);
 
-  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_EXCL_CPU))
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
     {
       return SW_BAD_PARAM;
     }
@@ -1296,7 +1309,7 @@ _dess_port_bp_status_set (a_uint32_t dev_id, fal_port_t port_id,
 
   HSL_DEV_ID_CHECK (dev_id);
 
-  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_EXCL_CPU))
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
     {
       return SW_BAD_PARAM;
     }
@@ -1328,7 +1341,7 @@ _dess_port_bp_status_get (a_uint32_t dev_id, fal_port_t port_id,
 
   HSL_DEV_ID_CHECK (dev_id);
 
-  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_EXCL_CPU))
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
     {
       return SW_BAD_PARAM;
     }
@@ -1515,7 +1528,7 @@ _dess_port_mac_loopback_set (a_uint32_t dev_id, fal_port_t port_id,
 
   HSL_DEV_ID_CHECK (dev_id);
 
-  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_EXCL_CPU))
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
     {
       return SW_BAD_PARAM;
     }
@@ -1547,7 +1560,7 @@ _dess_port_mac_loopback_get (a_uint32_t dev_id, fal_port_t port_id,
 
   HSL_DEV_ID_CHECK (dev_id);
 
-  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_EXCL_CPU))
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
     {
       return SW_BAD_PARAM;
     }
@@ -2645,6 +2658,26 @@ dess_port_flowctrl_set (a_uint32_t dev_id, fal_port_t port_id,
   rv = _dess_port_flowctrl_set (dev_id, port_id, enable);
   HSL_API_UNLOCK;
   return rv;
+}
+
+/**
+ * @brief Set flow control(rx/tx/bp) threshold on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[in] on on threshold
+ * @param[in] off off threshold
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+dess_port_flowctrl_thresh_set (a_uint32_t dev_id, fal_port_t port_id,
+			a_uint8_t on, a_uint8_t off)
+{
+	sw_error_t rv;
+
+	HSL_API_LOCK;
+	rv = _dess_port_flowctrl_thresh_set (dev_id, port_id, on, off);
+	HSL_API_UNLOCK;
+	return rv;
 }
 
 /**
@@ -3826,6 +3859,7 @@ dess_port_ctrl_init (a_uint32_t dev_id)
     p_api->port_autoneg_adv_set = dess_port_autoneg_adv_set;
     p_api->port_flowctrl_set = dess_port_flowctrl_set;
     p_api->port_flowctrl_get = dess_port_flowctrl_get;
+	p_api->port_flowctrl_thresh_set = dess_port_flowctrl_thresh_set;
     p_api->port_flowctrl_forcemode_set = dess_port_flowctrl_forcemode_set;
     p_api->port_flowctrl_forcemode_get = dess_port_flowctrl_forcemode_get;
     p_api->port_powersave_set = dess_port_powersave_set;
