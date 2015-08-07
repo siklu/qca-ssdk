@@ -2286,7 +2286,8 @@ _dess_flow_cookie_snat_set(a_uint32_t dev_id, fal_flow_cookie_t * flow_cookie)
 			#if 0
 			napt_cookie[entry.entry_id*2+1] = 0;
 			#endif
-			nat_helper_cookie_del(entry.entry_id);
+			if (dess_nat_global_status)
+				nat_helper_cookie_del(entry.entry_id);
 			#endif
 			return ret;
 		}
@@ -2336,7 +2337,8 @@ _dess_flow_cookie_dnat_set(
 			#if 0
 			napt_cookie[entry.entry_id*2] = 0;
 			#endif
-			nat_helper_cookie_del(entry.entry_id);
+			if (dess_nat_global_status)
+				nat_helper_cookie_del(entry.entry_id);
 			#endif
 			return ret;
 		}

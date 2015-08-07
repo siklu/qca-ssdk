@@ -2030,5 +2030,9 @@ void host_helper_exit(void)
     nf_unregister_hook(&ipv6_inhook);
 #endif
 #endif
+
+	#ifdef AUTO_UPDATE_PPPOE_INFO
+	unregister_inetaddr_notifier(&qcaswitch_ip_notifier);
+	#endif
 }
 
