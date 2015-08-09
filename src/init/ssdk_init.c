@@ -1419,6 +1419,9 @@ ssdk_switch_init(a_uint32_t dev_id)
     /* Enable MIB counters */
     fal_mib_status_set(dev_id, A_TRUE);
     fal_igmp_mld_rp_set(dev_id, 0);
+	/*enable pppoe for dakota to support RSS*/
+	if (SSDK_CURRENT_CHIP_TYPE == CHIP_DESS)
+		fal_pppoe_status_set(dev_id, A_TRUE);
 
     for (i = 0; i < p_dev->nr_ports; i++)
     {
