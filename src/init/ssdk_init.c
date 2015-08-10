@@ -150,42 +150,19 @@ qca_phy_read_port_link(struct qca_phy_priv *priv, int port,
 	port_link->rx_flow = !!(port_status & AR8327_PORT_STATUS_RXFLOW);
 }
 
+#ifndef BOARD_AR71XX
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3,14,0)
 static void
-qca_ar8327_phy_fixup(struct qca_phy_priv *priv, int phy)
+ssdk_phy_rgmii_set(struct qca_phy_priv *priv)
 {
-	#ifndef BOARD_AR71XX
-	#if LINUX_VERSION_CODE < KERNEL_VERSION(3,14,0)
 	struct ar8327_platform_data *plat_data;
-	#endif
-	#endif
-	switch (priv->revision) {
-	case 1:
-		/* 100m waveform */
-		priv->phy_dbg_write(0, phy, 0, 0x02ea);
-		/* turn on giga clock */
-		priv->phy_dbg_write(0, phy, 0x3d, 0x68a0);
-		break;
 
-	case 2:
-		priv->phy_mmd_write(0, phy, 0x7, 0x3c);
-		priv->phy_mmd_write(0, phy, 0x4007, 0x0);
-		/* fallthrough */
-	case 4:
-		priv->phy_mmd_write(0, phy, 0x3, 0x800d);
-		priv->phy_mmd_write(0, phy, 0x4003, 0x803f);
-
-		priv->phy_dbg_write(0, phy, 0x3d, 0x6860);
-		priv->phy_dbg_write(0, phy, 0x5, 0x2c46);
-		priv->phy_dbg_write(0, phy, 0x3c, 0x6000);
-		break;
-	}
-	#ifndef BOARD_AR71XX
-	#if LINUX_VERSION_CODE < KERNEL_VERSION(3,14,0)
 	plat_data = priv->phy->dev.platform_data;
 	if (plat_data == NULL) {
 		return;
 	}
-	if((phy == 4) && (plat_data->pad5_cfg)) {
+
+	if(plat_data->pad5_cfg) {
 		if(plat_data->pad5_cfg->mode == AR8327_PAD_PHY_RGMII) {
 			a_uint16_t val = 0;
 			/*enable RGMII  mode */
@@ -210,8 +187,35 @@ qca_ar8327_phy_fixup(struct qca_phy_priv *priv, int phy)
 			}
 		}
 	}
-	#endif
-	#endif
+}
+#endif
+#endif
+
+
+static void
+qca_ar8327_phy_fixup(struct qca_phy_priv *priv, int phy)
+{
+	switch (priv->revision) {
+	case 1:
+		/* 100m waveform */
+		priv->phy_dbg_write(0, phy, 0, 0x02ea);
+		/* turn on giga clock */
+		priv->phy_dbg_write(0, phy, 0x3d, 0x68a0);
+		break;
+
+	case 2:
+		priv->phy_mmd_write(0, phy, 0x7, 0x3c);
+		priv->phy_mmd_write(0, phy, 0x4007, 0x0);
+		/* fallthrough */
+	case 4:
+		priv->phy_mmd_write(0, phy, 0x3, 0x800d);
+		priv->phy_mmd_write(0, phy, 0x4003, 0x803f);
+
+		priv->phy_dbg_write(0, phy, 0x3d, 0x6860);
+		priv->phy_dbg_write(0, phy, 0x5, 0x2c46);
+		priv->phy_dbg_write(0, phy, 0x3c, 0x6000);
+		break;
+	}
 }
 
 void
@@ -245,6 +249,11 @@ void
 qca_ar8327_phy_enable(struct qca_phy_priv *priv)
 {
 	int i = 0;
+	#ifndef BOARD_AR71XX
+        #if LINUX_VERSION_CODE < KERNEL_VERSION(3,14,0)
+        ssdk_phy_rgmii_set(priv);
+        #endif
+        #endif
 	for (i = 0; i < AR8327_NUM_PHYS; i++) {
 		if (priv->version == QCA_VER_AR8327)
 			qca_ar8327_phy_fixup(priv, i);
