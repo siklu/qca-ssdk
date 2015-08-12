@@ -58,6 +58,22 @@ _fal_led_ctrl_pattern_get(a_uint32_t dev_id, led_pattern_group_t group,
     return rv;
 }
 
+static sw_error_t
+_fal_led_source_pattern_set(a_uint32_t dev_id, a_uint32_t source_id,
+                          led_ctrl_pattern_t * pattern)
+{
+	sw_error_t rv;
+	hsl_api_t *p_api;
+
+	SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+	if (NULL == p_api->led_ctrl_source_set)
+	return SW_NOT_SUPPORTED;
+
+	rv = p_api->led_ctrl_source_set(dev_id, source_id, pattern);
+	return rv;
+}
+
 
 /**
 * @brief Set led control pattern on a particular device.
@@ -98,6 +114,27 @@ fal_led_ctrl_pattern_get(a_uint32_t dev_id, led_pattern_group_t group,
     FAL_API_UNLOCK;
     return rv;
 }
+
+/**
+* @brief Set led control source on a particular device.
+* @param[in] dev_id device id
+* @param[in] source id
+* @param[in] id pattern id
+* @param[in] pattern led control pattern
+* @return SW_OK or error code
+*/
+sw_error_t
+fal_led_source_pattern_set(a_uint32_t dev_id, a_uint32_t source_id,
+                        led_ctrl_pattern_t * pattern)
+{
+	sw_error_t rv;
+
+	FAL_API_LOCK;
+	rv = _fal_led_source_pattern_set(dev_id, source_id, pattern);
+	FAL_API_UNLOCK;
+	return rv;
+}
+
 
 /**
  * @}

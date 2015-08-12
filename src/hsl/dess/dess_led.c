@@ -341,6 +341,251 @@ _dess_led_ctrl_pattern_get(a_uint32_t dev_id, led_pattern_group_t group,
     return SW_OK;
 }
 
+static sw_error_t
+_dess_led_source_pattern_set(a_uint32_t dev_id, a_uint32_t source_id, led_ctrl_pattern_t * pattern)
+{
+	a_uint32_t data = 0, data1 = 0, reg = 0, mode;
+	sw_error_t rv;
+	a_uint32_t addr;
+
+	HSL_DEV_ID_CHECK(dev_id);
+
+	if (LED_ALWAYS_OFF == pattern->mode)
+	{
+		mode = 0;
+	}
+	else if (LED_ALWAYS_BLINK == pattern->mode)
+	{
+		mode = 1;
+	}
+	else if (LED_ALWAYS_ON == pattern->mode)
+	{
+		mode = 2;
+	}
+	else if (LED_PATTERN_MAP_EN == pattern->mode)
+	{
+		mode = 3;
+	}
+	else
+	{
+		return SW_BAD_PARAM;
+	}
+
+	SW_SET_REG_BY_FIELD(LED_CTRL, PATTERN_EN, mode, data);
+
+	if (pattern->map & (1 << FULL_DUPLEX_LIGHT_EN))
+	{
+	    SW_SET_REG_BY_FIELD(LED_CTRL, FULL_LIGHT_EN, 1, data);
+	}
+
+	if (pattern->map & (1 << HALF_DUPLEX_LIGHT_EN))
+	{
+	    SW_SET_REG_BY_FIELD(LED_CTRL, HALF_LIGHT_EN, 1, data);
+	}
+
+	if (pattern->map & (1 << POWER_ON_LIGHT_EN))
+	{
+	    SW_SET_REG_BY_FIELD(LED_CTRL, POWERON_LIGHT_EN, 1, data);
+	}
+
+	if (pattern->map & (1 << LINK_1000M_LIGHT_EN))
+	{
+	    SW_SET_REG_BY_FIELD(LED_CTRL, GE_LIGHT_EN, 1, data);
+	}
+
+	if (pattern->map & (1 << LINK_100M_LIGHT_EN))
+	{
+	    SW_SET_REG_BY_FIELD(LED_CTRL, FE_LIGHT_EN, 1, data);
+	}
+
+	if (pattern->map & (1 << LINK_10M_LIGHT_EN))
+	{
+	    SW_SET_REG_BY_FIELD(LED_CTRL, ETH_LIGHT_EN, 1, data);
+	}
+
+	if (pattern->map & (1 << COLLISION_BLINK_EN))
+	{
+	    SW_SET_REG_BY_FIELD(LED_CTRL, COL_BLINK_EN, 1, data);
+	}
+
+	if (pattern->map & (1 << RX_TRAFFIC_BLINK_EN))
+	{
+	    SW_SET_REG_BY_FIELD(LED_CTRL, RX_BLINK_EN, 1, data);
+	}
+
+	if (pattern->map & (1 << TX_TRAFFIC_BLINK_EN))
+	{
+	    SW_SET_REG_BY_FIELD(LED_CTRL, TX_BLINK_EN, 1, data);
+	}
+
+	if (pattern->map & (1 << LINKUP_OVERRIDE_EN))
+	{
+	    SW_SET_REG_BY_FIELD(LED_CTRL, LINKUP_OVER_EN, 1, data);
+	}
+	else
+	{
+	    SW_SET_REG_BY_FIELD(LED_CTRL, LINKUP_OVER_EN, 0, data);
+	}
+
+	if (LED_BLINK_2HZ == pattern->freq)
+	{
+	    SW_SET_REG_BY_FIELD(LED_CTRL, BLINK_FREQ, 0, data);
+	}
+	else if (LED_BLINK_4HZ == pattern->freq)
+	{
+	    SW_SET_REG_BY_FIELD(LED_CTRL, BLINK_FREQ, 1, data);
+	}
+	else if (LED_BLINK_8HZ == pattern->freq)
+	{
+	    SW_SET_REG_BY_FIELD(LED_CTRL, BLINK_FREQ, 2, data);
+	}
+	else if (LED_BLINK_TXRX == pattern->freq)
+	{
+	    SW_SET_REG_BY_FIELD(LED_CTRL, BLINK_FREQ, 3, data);
+	}
+	else
+	{
+	    return SW_BAD_PARAM;
+	}
+
+	if (source_id == 1)
+	{
+
+		addr = LED_PATTERN_ADDR;
+		HSL_REG_ENTRY_GEN_GET(rv, dev_id, addr, sizeof (a_uint32_t),
+				(a_uint8_t *) (&reg),
+				sizeof (a_uint32_t));
+		reg &= 0xffff0000;
+		reg |= data;
+		HSL_REG_ENTRY_GEN_SET(rv, dev_id, addr, sizeof (a_uint32_t),
+				(a_uint8_t *) (&reg),
+				sizeof (a_uint32_t));
+		SW_RTN_ON_ERROR(rv);
+
+	}
+	else if (source_id == 2)
+	{
+		addr = LED_PATTERN_ADDR + (1 << 2);
+		HSL_REG_ENTRY_GEN_GET(rv, dev_id, addr, sizeof (a_uint32_t),
+				(a_uint8_t *) (&reg),
+				 sizeof (a_uint32_t));
+		reg &= 0xffff0000;
+		reg |= data;
+		HSL_REG_ENTRY_GEN_SET(rv, dev_id, addr, sizeof (a_uint32_t),
+				(a_uint8_t *) (&reg),
+				sizeof (a_uint32_t));
+		SW_RTN_ON_ERROR(rv);
+
+	}
+	else if (source_id == 3)
+	{
+		addr = LED_PATTERN_ADDR + (2 << 2);
+		HSL_REG_ENTRY_GEN_GET(rv, dev_id, addr, sizeof (a_uint32_t),
+				(a_uint8_t *) (&reg),
+				sizeof (a_uint32_t));
+		reg &= 0xffff0000;
+		reg |= data;
+		HSL_REG_ENTRY_GEN_SET(rv, dev_id, addr, sizeof (a_uint32_t),
+				 (a_uint8_t *) (&reg),
+				sizeof (a_uint32_t));
+		SW_RTN_ON_ERROR(rv);
+
+	}
+	if (source_id == 13)
+	{
+		addr = LED_PATTERN_ADDR;
+		HSL_REG_ENTRY_GEN_GET(rv, dev_id, addr, sizeof (a_uint32_t),
+				(a_uint8_t *) (&reg),
+				 sizeof (a_uint32_t));
+		reg &= 0xffff;
+		reg |= (data << 16);
+		HSL_REG_ENTRY_GEN_SET(rv, dev_id, addr, sizeof (a_uint32_t),
+				 (a_uint8_t *) (&reg),
+				 sizeof (a_uint32_t));
+		SW_RTN_ON_ERROR(rv);
+
+	}
+	else if (source_id == 14)
+	{
+		addr = LED_PATTERN_ADDR + (1 << 2);
+		HSL_REG_ENTRY_GEN_GET(rv, dev_id, addr, sizeof (a_uint32_t),
+				(a_uint8_t *) (&reg),
+				sizeof (a_uint32_t));
+		reg &= 0xffff;
+		reg |= (data << 16);
+		HSL_REG_ENTRY_GEN_SET(rv, dev_id, addr, sizeof (a_uint32_t),
+				(a_uint8_t *) (&reg),
+				sizeof (a_uint32_t));
+		SW_RTN_ON_ERROR(rv);
+
+	}
+	else if (source_id == 15)
+	{
+		addr = LED_PATTERN_ADDR + (2 << 2);
+		HSL_REG_ENTRY_GEN_GET(rv, dev_id, addr, sizeof (a_uint32_t),
+				(a_uint8_t *) (&reg),
+				sizeof (a_uint32_t));
+		reg &= 0xffff;
+		reg |= (data << 16);
+		HSL_REG_ENTRY_GEN_SET(rv, dev_id, addr, sizeof (a_uint32_t),
+				(a_uint8_t *) (&reg),
+				sizeof (a_uint32_t));
+		SW_RTN_ON_ERROR(rv);
+
+	}
+	else if ((source_id) >= 4 && (source_id <= 12))
+	{
+		HSL_REG_ENTRY_GET(rv, dev_id, LED_PATTERN, 0,
+                      (a_uint8_t *) (&data1), sizeof (a_uint32_t));
+		SW_RTN_ON_ERROR(rv);
+
+		if (source_id == 4)
+		{
+			SW_SET_REG_BY_FIELD(LED_PATTERN, P1L0_MODE, mode, data1);
+		}
+		if (source_id == 5)
+		{
+			SW_SET_REG_BY_FIELD(LED_PATTERN, P1L1_MODE, mode, data1);
+		}
+		if (source_id == 6)
+		{
+			SW_SET_REG_BY_FIELD(LED_PATTERN, P1L2_MODE, mode, data1);
+		}
+		if (source_id == 7)
+		{
+			SW_SET_REG_BY_FIELD(LED_PATTERN, P2L0_MODE, mode, data1);
+		}
+		if (source_id == 8)
+		{
+			SW_SET_REG_BY_FIELD(LED_PATTERN, P2L1_MODE, mode, data1);
+		}
+		if (source_id == 9)
+		{
+			SW_SET_REG_BY_FIELD(LED_PATTERN, P2L2_MODE, mode, data1);
+		}
+		if (source_id == 10)
+		{
+			SW_SET_REG_BY_FIELD(LED_PATTERN, P3L0_MODE, mode, data1);
+		}
+		if (source_id == 11)
+		{
+			SW_SET_REG_BY_FIELD(LED_PATTERN, P3L1_MODE, mode, data1);
+		}
+		if (source_id == 12)
+		{
+			SW_SET_REG_BY_FIELD(LED_PATTERN, P3L2_MODE, mode, data1);
+		}
+
+		HSL_REG_ENTRY_SET(rv, dev_id, LED_PATTERN, 0,
+                      (a_uint8_t *) (&data1), sizeof (a_uint32_t));
+		SW_RTN_ON_ERROR(rv);
+
+	}
+
+	return SW_OK;
+
+}
+
 /**
 * @brief Set led control pattern on a particular device.
 * @param[in] dev_id device id
@@ -381,6 +626,25 @@ dess_led_ctrl_pattern_get(a_uint32_t dev_id, led_pattern_group_t group,
     return rv;
 }
 
+/**
+* @brief Set led source pattern on a particular device.
+* @param[in] dev_id device id
+* @param[in] source id
+* @param[in] id pattern id
+* @param[in] pattern led control pattern
+* @return SW_OK or error code
+*/
+HSL_LOCAL sw_error_t
+dess_led_source_pattern_set(a_uint32_t dev_id, a_uint32_t source_id, led_ctrl_pattern_t * pattern)
+{
+	sw_error_t rv;
+
+	HSL_API_LOCK;
+	rv = _dess_led_source_pattern_set(dev_id, source_id, pattern);
+	HSL_API_UNLOCK;
+	return rv;
+}
+
 sw_error_t
 dess_led_init(a_uint32_t dev_id)
 {
@@ -393,6 +657,7 @@ dess_led_init(a_uint32_t dev_id)
         SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
         p_api->led_ctrl_pattern_set = dess_led_ctrl_pattern_set;
         p_api->led_ctrl_pattern_get = dess_led_ctrl_pattern_get;
+	p_api->led_ctrl_source_set = dess_led_source_pattern_set;
     }
 #endif
 

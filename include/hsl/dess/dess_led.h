@@ -47,6 +47,10 @@ extern "C" {
     dess_led_ctrl_pattern_get(a_uint32_t dev_id, led_pattern_group_t group,
                               led_pattern_id_t id, led_ctrl_pattern_t * pattern);
 
+	HSL_LOCAL sw_error_t
+	dess_led_source_pattern_set(a_uint32_t dev_id, a_uint32_t source_id, led_ctrl_pattern_t * pattern);
+
+
 #endif
 
 #ifdef __cplusplus
