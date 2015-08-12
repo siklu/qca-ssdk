@@ -33,7 +33,7 @@ _shiva_port_duplex_set(a_uint32_t dev_id, fal_port_t port_id,
     sw_error_t rv;
     a_uint32_t phy_id = 0;
     a_uint32_t reg_save = 0;
-    a_uint32_t reg_val = 0;
+    a_uint32_t reg_val = 0, tmp;
     hsl_phy_ops_t *phy_drv;
 
     HSL_DEV_ID_CHECK(dev_id);
@@ -54,6 +54,11 @@ _shiva_port_duplex_set(a_uint32_t dev_id, fal_port_t port_id,
 
     rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
     SW_RTN_ON_ERROR(rv);
+
+	rv = phy_drv->phy_duplex_get(dev_id, phy_id, &tmp);
+	SW_RTN_ON_ERROR(rv);
+	if (tmp == duplex)
+		return SW_OK;
 
     //save reg value
     HSL_REG_ENTRY_GET(rv, dev_id, PORT_STATUS, port_id,
@@ -362,7 +367,7 @@ static sw_error_t
 _shiva_port_flowctrl_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
     sw_error_t rv;
-    a_uint32_t val, force, reg;
+    a_uint32_t val, force, reg, tmp;
 
     if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
     {
@@ -392,10 +397,13 @@ _shiva_port_flowctrl_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
         /* flow control isn't in force mode so can't set */
         return SW_DISABLE;
     }
+	tmp = reg;
 
     SW_SET_REG_BY_FIELD(PORT_STATUS, RX_FLOW_EN, val, reg);
     SW_SET_REG_BY_FIELD(PORT_STATUS, TX_FLOW_EN, val, reg);
     SW_SET_REG_BY_FIELD(PORT_STATUS, TX_HALF_FLOW_EN, val, reg);
+	if (tmp == reg)
+		return SW_OK;
 
     HSL_REG_ENTRY_SET(rv, dev_id, PORT_STATUS, port_id,
                       (a_uint8_t *) (&reg), sizeof (a_uint32_t));
