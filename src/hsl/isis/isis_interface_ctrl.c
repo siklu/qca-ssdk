@@ -1403,6 +1403,97 @@ _isis_interface_phy_mode_get(a_uint32_t dev_id, a_uint32_t phy_id, fal_phy_confi
     return SW_OK;
 }
 
+static sw_error_t
+_isis_interface_mac_sgmii_set(a_uint32_t dev_id,a_uint32_t value)
+{
+    sw_error_t rv;
+    a_uint32_t reg;
+
+    reg = value;
+
+    HSL_REG_ENTRY_SET(rv, dev_id, SGMII_CTRL, 0,
+                      (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+
+    return rv;
+}
+
+static sw_error_t
+_isis_interface_mac_sgmii_get(a_uint32_t dev_id, a_uint32_t *value)
+{
+    sw_error_t rv;
+    a_uint32_t reg;
+
+    HSL_REG_ENTRY_GET(rv, dev_id, SGMII_CTRL, 0,
+                      (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+
+    SW_RTN_ON_ERROR(rv);
+
+	*value = reg;
+
+    return rv;
+}
+
+static sw_error_t
+_isis_interface_mac_pad_set(a_uint32_t dev_id,a_uint32_t port_num, a_uint32_t value)
+{
+    sw_error_t rv;
+    a_uint32_t reg;
+
+    reg = value;
+
+    switch (port_num)
+    {
+	    case ISIS_MAC_0:
+		    HSL_REG_ENTRY_SET(rv, dev_id, PORT0_PAD_CTRL, 0,
+				    (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+		    break;
+	    case ISIS_MAC_5:
+		    HSL_REG_ENTRY_SET(rv, dev_id, PORT5_PAD_CTRL, 0,
+				    (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+		    break;
+	    case ISIS_MAC_6:
+		    HSL_REG_ENTRY_SET(rv, dev_id, PORT6_PAD_CTRL, 0,
+				    (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+		    break;
+	    default:
+		    return SW_BAD_PARAM;
+    }
+
+    return rv;
+}
+
+static sw_error_t
+_isis_interface_mac_pad_get(a_uint32_t dev_id,a_uint32_t port_num, a_uint32_t *value)
+{
+    sw_error_t rv;
+    a_uint32_t reg;
+
+    switch (port_num)
+    {
+	    case ISIS_MAC_0:
+		    HSL_REG_ENTRY_GET(rv, dev_id, PORT0_PAD_CTRL, 0,
+				    (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+		    break;
+	    case ISIS_MAC_5:
+		    HSL_REG_ENTRY_GET(rv, dev_id, PORT5_PAD_CTRL, 0,
+				    (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+		    break;
+	    case ISIS_MAC_6:
+		    HSL_REG_ENTRY_GET(rv, dev_id, PORT6_PAD_CTRL, 0,
+				    (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+		    break;
+	    default:
+		    return SW_BAD_PARAM;
+    }
+    SW_RTN_ON_ERROR(rv);
+
+    *value = reg;
+
+    return rv;
+}
+
+
+
 /**
   * @brief Set 802.3az status on a particular port.
  * @param[in] dev_id device id
@@ -1511,6 +1602,79 @@ isis_interface_phy_mode_get(a_uint32_t dev_id, a_uint32_t phy_id, fal_phy_config
     return rv;
 }
 
+/**
+ * @brief Get mac pad configuration.
+ * @param[in] dev_id device id
+ * @param[in] port_num port num
+ * @param[out] config value
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+isis_interface_mac_pad_get(a_uint32_t dev_id,a_uint32_t port_num, a_uint32_t* value)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _isis_interface_mac_pad_get(dev_id, port_num, value);
+    HSL_API_UNLOCK;
+    return rv;
+}
+
+
+/**
+ * @brief Set mac pad configuration.
+ * @param[in] dev_id device id
+ * @param[in] port_num port num
+ * @param[in] config value
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+isis_interface_mac_pad_set(a_uint32_t dev_id,a_uint32_t port_num, a_uint32_t value)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _isis_interface_mac_pad_set(dev_id,port_num,value);
+    HSL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Get mac SGMII configuration.
+ * @param[in] dev_id device id
+ * @param[out] config value
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+isis_interface_mac_sgmii_get(a_uint32_t dev_id, a_uint32_t* value)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _isis_interface_mac_sgmii_get(dev_id, value);
+    HSL_API_UNLOCK;
+    return rv;
+}
+
+
+/**
+ * @brief Set mac SGMII configuration.
+ * @param[in] dev_id device id
+ * @param[in] config value
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+isis_interface_mac_sgmii_set(a_uint32_t dev_id, a_uint32_t value)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _isis_interface_mac_sgmii_set(dev_id, value);
+    HSL_API_UNLOCK;
+    return rv;
+}
+
+
 sw_error_t
 isis_interface_ctrl_init(a_uint32_t dev_id)
 {
@@ -1528,6 +1692,10 @@ isis_interface_ctrl_init(a_uint32_t dev_id)
         p_api->interface_mac_mode_get = isis_interface_mac_mode_get;
         p_api->interface_phy_mode_set = isis_interface_phy_mode_set;
         p_api->interface_phy_mode_get = isis_interface_phy_mode_get;
+	p_api->interface_mac_pad_get = isis_interface_mac_pad_get;
+	p_api->interface_mac_pad_set = isis_interface_mac_pad_set;
+	p_api->interface_mac_sgmii_get = isis_interface_mac_sgmii_get;
+	p_api->interface_mac_sgmii_set = isis_interface_mac_sgmii_set;
     }
 #endif
 
