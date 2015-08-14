@@ -1909,6 +1909,19 @@ typedef sw_error_t
   typedef sw_error_t
     (*hsl_interface_mac06_exch_get) (a_uint32_t dev_id, a_bool_t * enable);
 
+  typedef sw_error_t
+    (*hsl_interface_pad_get) (a_uint32_t dev_id,a_uint32_t port_num, a_uint32_t *value);
+
+  typedef sw_error_t
+    (*hsl_interface_pad_set) (a_uint32_t dev_id,a_uint32_t port_num, a_uint32_t value);
+
+  typedef sw_error_t
+    (*hsl_interface_sgmii_get) (a_uint32_t dev_id, a_uint32_t * value);
+
+  typedef sw_error_t
+    (*hsl_interface_sgmii_set) (a_uint32_t dev_id, a_uint32_t value);
+
+
   /* REG */
 #define REG_FUNC_PROTOTYPE_DEF
   typedef sw_error_t
@@ -2493,6 +2506,10 @@ typedef sw_error_t
     hsl_interface_fx100_status_get interface_fx100_status_get;
     hsl_interface_mac06_exch_set interface_mac06_exch_set;
     hsl_interface_mac06_exch_get interface_mac06_exch_get;
+    hsl_interface_pad_get	interface_mac_pad_get;
+    hsl_interface_pad_set	interface_mac_pad_set;
+    hsl_interface_sgmii_get	interface_mac_sgmii_get;
+    hsl_interface_sgmii_set	interface_mac_sgmii_set;
 #endif
 #endif
 

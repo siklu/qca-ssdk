@@ -233,17 +233,22 @@ qca_ar8327_phy_disable()
 void
 qca_mac_disable()
 {
-	qca_ar8216_mii_write(AR8327_REG_PAD0_CTRL, 0);
-	qca_ar8216_mii_write(AR8327_REG_PAD5_CTRL, 0);
-	qca_ar8216_mii_write(AR8327_REG_PAD6_CTRL, 0);
-	qca_ar8216_mii_write(AR8327_REG_PAD_SGMII_CTRL, AR8327_REG_PAD_SGMII_CTRL_HW_INIT);
-	qca_ar8216_mii_write(AR8327_REG_PORT_STATUS(0), 0);
-	qca_ar8216_mii_write(AR8327_REG_PORT_STATUS(1), 0);
-	qca_ar8216_mii_write(AR8327_REG_PORT_STATUS(2), 0);
-	qca_ar8216_mii_write(AR8327_REG_PORT_STATUS(3), 0);
-	qca_ar8216_mii_write(AR8327_REG_PORT_STATUS(4), 0);
-	qca_ar8216_mii_write(AR8327_REG_PORT_STATUS(5), 0);
-	qca_ar8216_mii_write(AR8327_REG_PORT_STATUS(6), 0);
+	hsl_api_t *p_api;
+
+	p_api = hsl_api_ptr_get (0);
+	if(p_api
+		&& p_api->interface_mac_pad_set
+		&& p_api->interface_mac_sgmii_set)
+	{
+		p_api->interface_mac_pad_set(0,0,0);
+		p_api->interface_mac_pad_set(0,5,0);
+		p_api->interface_mac_pad_set(0,6,0);
+		p_api->interface_mac_sgmii_set(0,AR8327_REG_PAD_SGMII_CTRL_HW_INIT);
+	}
+	else
+	{
+		printk("API not support \n");
+	}
 }
 
 
@@ -1792,13 +1797,7 @@ ssdk_init(a_uint32_t dev_id, ssdk_init_cfg * cfg)
 {
     sw_error_t rv;
 
-	#ifndef BOARD_AR71XX
-		if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_MDIO) {
-			qca_ar8327_phy_disable();
-			qca_mac_disable();
-			msleep(1000);
-		}
-	#endif
+
 
 #if (defined(KERNEL_MODULE) && defined(USER_MODE))
     rv = hsl_dev_init(dev_id, cfg);
@@ -1812,7 +1811,19 @@ ssdk_init(a_uint32_t dev_id, ssdk_init_cfg * cfg)
 #endif
 #endif
 
-    ssdk_phy_init(cfg);
+	ssdk_phy_init(cfg);
+
+
+#ifndef BOARD_AR71XX
+		if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_MDIO) {
+			qca_ar8327_phy_disable();
+			qca_mac_disable();
+			msleep(1000);
+		}
+#endif
+
+
+
 
 	if (cfg->chip_type == CHIP_DESS)
 		ssdk_psgmii_self_test();
