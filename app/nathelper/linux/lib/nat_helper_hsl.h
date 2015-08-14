@@ -140,7 +140,7 @@ nat_hw_prv_mask_get(void);
 a_int32_t
 nat_hw_prv_base_is_match(a_uint32_t ip);
 a_int32_t
-if_mac_add(uint8_t *mac, uint8_t vid, uint32_t ipv6);
+if_mac_add(uint8_t *mac, uint32_t vid, uint32_t ipv6);
 a_int32_t
 arp_hw_add(a_uint32_t port, a_uint32_t intf_id, a_uint8_t *ip, a_uint8_t *mac, int is_ipv6_entry);
 a_int32_t
