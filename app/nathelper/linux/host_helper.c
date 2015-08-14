@@ -102,8 +102,8 @@ char nat_wan_port = 0x20;
 #define NAT_LAN_DEV_VID 1
 #define NAT_WAN_DEV_VID 2
 
-char nat_lan_vid  = NAT_LAN_DEV_VID;
-char nat_wan_vid = NAT_WAN_DEV_VID;
+uint32_t nat_lan_vid  = NAT_LAN_DEV_VID;
+uint32_t nat_wan_vid = NAT_WAN_DEV_VID;
 
 
 static int wan_fid = 0xffff;

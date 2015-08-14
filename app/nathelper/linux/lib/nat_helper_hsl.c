@@ -237,7 +237,7 @@ _arp_hw_if_mac_add(fal_intf_mac_entry_t *if_mac_entry)
 }
 
 a_int32_t
-if_mac_add(a_uint8_t *mac, a_uint8_t vid, uint32_t ipv6)
+if_mac_add(a_uint8_t *mac, a_uint32_t vid, uint32_t ipv6)
 {
     /* support 4 different interfaces (or 4 VLANs) */
     static fal_intf_mac_entry_t if_mac_entry[MAX_INTF_NUM] = {{0}};
