@@ -21,6 +21,7 @@ extern "C" {
 #endif                          /* __cplusplus */
 
 #include "fal/fal_mirror.h"
+#define  MIRROR_ANALYZER_NONE  0xf
 
     sw_error_t dess_mirr_init(a_uint32_t dev_id);
 

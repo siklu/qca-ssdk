@@ -27,20 +27,19 @@
 static sw_error_t
 _isis_mirr_analysis_port_set(a_uint32_t dev_id, fal_port_t port_id)
 {
-    sw_error_t rv;
-    a_uint32_t val;
+	sw_error_t rv;
+	a_uint32_t val;
 
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    val = port_id;
-    HSL_REG_FIELD_SET(rv, dev_id, FORWARD_CTL0, 0, MIRROR_PORT_NUM,
+	HSL_DEV_ID_CHECK(dev_id);
+	if (port_id != MIRROR_ANALYZER_NONE) {
+		if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU)) {
+			return SW_BAD_PARAM;
+		}
+	}
+	val = port_id;
+	HSL_REG_FIELD_SET(rv, dev_id, FORWARD_CTL0, 0, MIRROR_PORT_NUM,
                       (a_uint8_t *) (&val), sizeof (a_uint32_t));
-    return rv;
+	return rv;
 }
 
 static sw_error_t
