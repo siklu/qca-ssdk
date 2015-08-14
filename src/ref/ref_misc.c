@@ -159,6 +159,11 @@ qca_ar8327_sw_reset_switch(struct switch_dev *dev)
 	if ((mac_mode == PORT_WRAPPER_SGMII0_RGMII4)
 		||(mac_mode == PORT_WRAPPER_SGMII1_RGMII4)
 		||(mac_mode == PORT_WRAPPER_SGMII4_RGMII4)) {
+		/*  fix channel4 will recieve packets when enable channel0 as SGMII */
+		if(mac_mode == PORT_WRAPPER_SGMII0_RGMII4) {
+			fal_port_txmac_status_set (0, 5, A_FALSE);
+			fal_port_rxmac_status_set (0, 5, A_FALSE);
+		}
 		fal_port_flowctrl_forcemode_set(0, 4, A_TRUE);
 		fal_port_flowctrl_set(0, 4, A_TRUE);
 	}
