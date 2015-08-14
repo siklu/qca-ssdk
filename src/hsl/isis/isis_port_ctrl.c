@@ -43,7 +43,7 @@ _isis_port_duplex_set(a_uint32_t dev_id, fal_port_t port_id,
                       fal_port_duplex_t duplex)
 {
     sw_error_t rv;
-    a_uint32_t phy_id, reg_save, reg_val, force;
+    a_uint32_t phy_id, reg_save, reg_val, force, tmp;
     hsl_phy_ops_t *phy_drv;
 
     HSL_DEV_ID_CHECK(dev_id);
@@ -64,6 +64,7 @@ _isis_port_duplex_set(a_uint32_t dev_id, fal_port_t port_id,
 
     HSL_REG_ENTRY_GET(rv, dev_id, PORT_STATUS, port_id,
                       (a_uint8_t *) (&reg_val), sizeof (a_uint32_t));
+	SW_GET_FIELD_BY_REG(PORT_STATUS, DUPLEX_MODE, tmp, reg_val);
 
     /* for those ports without PHY device we set MAC register */
     if (A_FALSE == _isis_port_phy_connected(dev_id, port_id))
@@ -71,10 +72,14 @@ _isis_port_duplex_set(a_uint32_t dev_id, fal_port_t port_id,
         SW_SET_REG_BY_FIELD(PORT_STATUS, LINK_EN, 0, reg_val);
         if (FAL_HALF_DUPLEX == duplex)
         {
+		if (tmp == 0)
+			return SW_OK;
             SW_SET_REG_BY_FIELD(PORT_STATUS, DUPLEX_MODE, 0, reg_val);
         }
         else
         {
+		if (tmp == 1)
+			return SW_OK;
             SW_SET_REG_BY_FIELD(PORT_STATUS, DUPLEX_MODE, 1, reg_val);
         }
         reg_save = reg_val;
@@ -82,6 +87,12 @@ _isis_port_duplex_set(a_uint32_t dev_id, fal_port_t port_id,
     else
     {
         /* hardware requirement: set mac be config by sw and turn off RX/TX MAC */
+		rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
+		SW_RTN_ON_ERROR(rv);
+		rv = phy_drv->phy_duplex_get (dev_id, phy_id, &tmp);
+		SW_RTN_ON_ERROR(rv);
+		if (tmp == duplex)
+			return SW_OK;
         reg_save = reg_val;
         SW_SET_REG_BY_FIELD(PORT_STATUS, LINK_EN, 0, reg_val);
         SW_SET_REG_BY_FIELD(PORT_STATUS, RXMAC_EN, 0, reg_val);
@@ -90,8 +101,6 @@ _isis_port_duplex_set(a_uint32_t dev_id, fal_port_t port_id,
         HSL_REG_ENTRY_SET(rv, dev_id, PORT_STATUS, port_id,
                           (a_uint8_t *) (&reg_val), sizeof (a_uint32_t));
 
-        rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
-        SW_RTN_ON_ERROR(rv);
 
         rv = phy_drv->phy_duplex_set (dev_id, phy_id, duplex);
         SW_RTN_ON_ERROR(rv);
@@ -149,7 +158,7 @@ _isis_port_speed_set(a_uint32_t dev_id, fal_port_t port_id,
                      fal_port_speed_t speed)
 {
     sw_error_t rv;
-    a_uint32_t phy_id, reg_save, reg_val, force;
+    a_uint32_t phy_id, reg_save, reg_val, force, tmp;
     hsl_phy_ops_t *phy_drv;
 
     HSL_DEV_ID_CHECK(dev_id);
@@ -170,6 +179,7 @@ _isis_port_speed_set(a_uint32_t dev_id, fal_port_t port_id,
 
     HSL_REG_ENTRY_GET(rv, dev_id, PORT_STATUS, port_id,
                       (a_uint8_t *) (&reg_val), sizeof (a_uint32_t));
+	SW_GET_FIELD_BY_REG(PORT_STATUS, SPEED_MODE, tmp, reg_val);
 
     /* for those ports without PHY device we set MAC register */
     if (A_FALSE == _isis_port_phy_connected(dev_id, port_id))
@@ -177,14 +187,20 @@ _isis_port_speed_set(a_uint32_t dev_id, fal_port_t port_id,
         SW_SET_REG_BY_FIELD(PORT_STATUS, LINK_EN, 0, reg_val);
         if (FAL_SPEED_10 == speed)
         {
+		if (tmp == 0)
+			return SW_OK;
             SW_SET_REG_BY_FIELD(PORT_STATUS, SPEED_MODE, 0, reg_val);
         }
         else if (FAL_SPEED_100 == speed)
         {
+		if (tmp == 1)
+			return SW_OK;
             SW_SET_REG_BY_FIELD(PORT_STATUS, SPEED_MODE, 1, reg_val);
         }
         else
         {
+		if (tmp == 2)
+			return SW_OK;
             SW_SET_REG_BY_FIELD(PORT_STATUS, SPEED_MODE, 2, reg_val);
         }
         reg_save = reg_val;
@@ -193,6 +209,12 @@ _isis_port_speed_set(a_uint32_t dev_id, fal_port_t port_id,
     else
     {
         /* hardware requirement: set mac be config by sw and turn off RX/TX MAC */
+		rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
+		SW_RTN_ON_ERROR(rv);
+		rv = phy_drv->phy_speed_get (dev_id, phy_id, &tmp);
+		SW_RTN_ON_ERROR(rv);
+		if (tmp == speed)
+			return SW_OK;
         reg_save = reg_val;
         SW_SET_REG_BY_FIELD(PORT_STATUS, LINK_EN,  0, reg_val);
         SW_SET_REG_BY_FIELD(PORT_STATUS, RXMAC_EN, 0, reg_val);
@@ -200,9 +222,6 @@ _isis_port_speed_set(a_uint32_t dev_id, fal_port_t port_id,
 
         HSL_REG_ENTRY_SET(rv, dev_id, PORT_STATUS, port_id,
                           (a_uint8_t *) (&reg_val), sizeof (a_uint32_t));
-
-        rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
-        SW_RTN_ON_ERROR(rv);
 
         rv = phy_drv->phy_speed_set (dev_id, phy_id, speed);
         SW_RTN_ON_ERROR(rv);
@@ -410,7 +429,7 @@ static sw_error_t
 _isis_port_flowctrl_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
     sw_error_t rv;
-    a_uint32_t val, force, reg;
+    a_uint32_t val, force, reg, tmp;
 
     if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
     {
@@ -440,10 +459,13 @@ _isis_port_flowctrl_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
         /* flow control isn't in force mode so can't set */
         return SW_DISABLE;
     }
+	tmp = reg;
 
     SW_SET_REG_BY_FIELD(PORT_STATUS, RX_FLOW_EN, val, reg);
     SW_SET_REG_BY_FIELD(PORT_STATUS, TX_FLOW_EN, val, reg);
     SW_SET_REG_BY_FIELD(PORT_STATUS, TX_HALF_FLOW_EN, val, reg);
+	if (tmp == reg)
+		return SW_OK;
 
     HSL_REG_ENTRY_SET(rv, dev_id, PORT_STATUS, port_id,
                       (a_uint8_t *) (&reg), sizeof (a_uint32_t));
@@ -485,7 +507,7 @@ _isis_port_flowctrl_forcemode_set(a_uint32_t dev_id, fal_port_t port_id,
                                   a_bool_t enable)
 {
     sw_error_t rv;
-    a_uint32_t reg;
+    a_uint32_t reg, tmp;
 
     if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
     {
@@ -495,9 +517,12 @@ _isis_port_flowctrl_forcemode_set(a_uint32_t dev_id, fal_port_t port_id,
     HSL_REG_ENTRY_GET(rv, dev_id, PORT_STATUS, port_id,
                       (a_uint8_t *) (&reg), sizeof (a_uint32_t));
     SW_RTN_ON_ERROR(rv);
+	SW_GET_FIELD_BY_REG(PORT_STATUS, FLOW_LINK_EN, tmp, reg);
 
     if (A_TRUE == enable)
     {
+		if (tmp == 0)
+			return SW_OK;
         SW_SET_REG_BY_FIELD(PORT_STATUS, FLOW_LINK_EN, 0, reg);
     }
     else if (A_FALSE == enable)
@@ -507,6 +532,8 @@ _isis_port_flowctrl_forcemode_set(a_uint32_t dev_id, fal_port_t port_id,
         {
             return SW_DISABLE;
         }
+		if (tmp == 1)
+			return SW_OK;
         SW_SET_REG_BY_FIELD(PORT_STATUS, FLOW_LINK_EN, 1, reg);
     }
     else
@@ -889,7 +916,7 @@ static sw_error_t
 _isis_port_txmac_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
     sw_error_t rv;
-    a_uint32_t reg, force, val;
+    a_uint32_t reg, force, val, tmp;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -914,6 +941,7 @@ _isis_port_txmac_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enab
     {
         return SW_BAD_PARAM;
     }
+	tmp = reg;
 
     /* for those ports without PHY device we set MAC register */
     if (A_FALSE == _isis_port_phy_connected(dev_id, port_id))
@@ -934,7 +962,8 @@ _isis_port_txmac_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enab
             SW_SET_REG_BY_FIELD(PORT_STATUS, TXMAC_EN, val, reg);
         }
     }
-
+	if (tmp == reg)
+		return SW_OK;
     HSL_REG_ENTRY_SET(rv, dev_id, PORT_STATUS, port_id,
                       (a_uint8_t *) (&reg), sizeof (a_uint32_t));
     return rv;
@@ -973,7 +1002,7 @@ static sw_error_t
 _isis_port_rxmac_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
     sw_error_t rv;
-    a_uint32_t reg, force, val;
+    a_uint32_t reg, force, val, tmp;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -998,6 +1027,7 @@ _isis_port_rxmac_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enab
     {
         return SW_BAD_PARAM;
     }
+	tmp = reg;
 
     /* for those ports without PHY device we set MAC register */
     if (A_FALSE == _isis_port_phy_connected(dev_id, port_id))
@@ -1018,7 +1048,8 @@ _isis_port_rxmac_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enab
             SW_SET_REG_BY_FIELD(PORT_STATUS, RXMAC_EN, val, reg);
         }
     }
-
+	if (tmp == reg)
+		return SW_OK;
     HSL_REG_ENTRY_SET(rv, dev_id, PORT_STATUS, port_id,
                       (a_uint8_t *) (&reg), sizeof (a_uint32_t));
     return rv;
@@ -1057,7 +1088,7 @@ static sw_error_t
 _isis_port_txfc_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
     sw_error_t rv;
-    a_uint32_t val, reg, force;
+    a_uint32_t val, reg, force, tmp;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1082,6 +1113,7 @@ _isis_port_txfc_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enabl
     HSL_REG_ENTRY_GET(rv, dev_id, PORT_STATUS, port_id,
                       (a_uint8_t *) (&reg), sizeof (a_uint32_t));
     SW_RTN_ON_ERROR(rv);
+	tmp = reg;
 
     /* for those ports without PHY device we set MAC register */
     if (A_FALSE == _isis_port_phy_connected(dev_id, port_id))
@@ -1102,7 +1134,8 @@ _isis_port_txfc_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enabl
             SW_SET_REG_BY_FIELD(PORT_STATUS, TX_FLOW_EN, val, reg);
         }
     }
-
+	if ( tmp == reg)
+		return SW_OK;
     HSL_REG_ENTRY_SET(rv, dev_id, PORT_STATUS, port_id,
                       (a_uint8_t *) (&reg), sizeof (a_uint32_t));
     return rv;
@@ -1141,7 +1174,7 @@ static sw_error_t
 _isis_port_rxfc_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
     sw_error_t rv;
-    a_uint32_t val, reg, force;
+    a_uint32_t val, reg, force, tmp;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1166,6 +1199,7 @@ _isis_port_rxfc_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enabl
     HSL_REG_ENTRY_GET(rv, dev_id, PORT_STATUS, port_id,
                       (a_uint8_t *) (&reg), sizeof (a_uint32_t));
     SW_RTN_ON_ERROR(rv);
+	tmp = reg;
 
     /* for those ports without PHY device we set MAC register */
     if (A_FALSE == _isis_port_phy_connected(dev_id, port_id))
@@ -1186,7 +1220,8 @@ _isis_port_rxfc_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enabl
             SW_SET_REG_BY_FIELD(PORT_STATUS, RX_FLOW_EN, val, reg);
         }
     }
-
+	if ( tmp == reg)
+		return SW_OK;
     HSL_REG_ENTRY_SET(rv, dev_id, PORT_STATUS, port_id,
                       (a_uint8_t *) (&reg), sizeof (a_uint32_t));
     return rv;
@@ -1225,7 +1260,7 @@ static sw_error_t
 _isis_port_bp_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val, tmp;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1246,7 +1281,10 @@ _isis_port_bp_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
     {
         return SW_BAD_PARAM;
     }
-
+	HSL_REG_FIELD_GET(rv, dev_id, PORT_STATUS, port_id, TX_HALF_FLOW_EN,
+                      (a_uint8_t *) (&tmp), sizeof (a_uint32_t));
+	if (tmp == val)
+		return SW_OK;
     HSL_REG_FIELD_SET(rv, dev_id, PORT_STATUS, port_id, TX_HALF_FLOW_EN,
                       (a_uint8_t *) (&val), sizeof (a_uint32_t));
     return rv;
@@ -1285,7 +1323,7 @@ static sw_error_t
 _isis_port_link_forcemode_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
     sw_error_t rv;
-    a_uint32_t reg;
+    a_uint32_t reg, tmp;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1297,13 +1335,18 @@ _isis_port_link_forcemode_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t en
     HSL_REG_ENTRY_GET(rv, dev_id, PORT_STATUS, port_id,
                       (a_uint8_t *) (&reg), sizeof (a_uint32_t));
     SW_RTN_ON_ERROR(rv);
+	SW_GET_FIELD_BY_REG(PORT_STATUS, LINK_EN, tmp, reg);
 
     if (A_TRUE == enable)
     {
+		if(tmp == 0)
+			return SW_OK;
         SW_SET_REG_BY_FIELD(PORT_STATUS, LINK_EN, 0, reg);
     }
     else if (A_FALSE == enable)
     {
+		if(tmp == 1)
+			return SW_OK;
         /* for those ports without PHY, it can't sync link status */
         if (A_FALSE == _isis_port_phy_connected(dev_id, port_id))
         {

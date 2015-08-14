@@ -465,7 +465,7 @@ _dess_port_flowctrl_set (a_uint32_t dev_id, fal_port_t port_id,
 			 a_bool_t enable)
 {
   sw_error_t rv;
-  a_uint32_t val, force, reg;
+  a_uint32_t val, force, reg, tmp;
 
   if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
     {
@@ -495,10 +495,13 @@ _dess_port_flowctrl_set (a_uint32_t dev_id, fal_port_t port_id,
       /* flow control isn't in force mode so can't set */
       return SW_DISABLE;
     }
+	tmp = reg;
 
   SW_SET_REG_BY_FIELD (PORT_STATUS, RX_FLOW_EN, val, reg);
   SW_SET_REG_BY_FIELD (PORT_STATUS, TX_FLOW_EN, val, reg);
   SW_SET_REG_BY_FIELD (PORT_STATUS, TX_HALF_FLOW_EN, val, reg);
+	if (reg == tmp)
+		return SW_OK;
 
   HSL_REG_ENTRY_SET (rv, dev_id, PORT_STATUS, port_id,
 		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
@@ -553,7 +556,7 @@ _dess_port_flowctrl_forcemode_set (a_uint32_t dev_id, fal_port_t port_id,
 				   a_bool_t enable)
 {
   sw_error_t rv;
-  a_uint32_t reg;
+  a_uint32_t reg, tmp;
 
   if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
     {
@@ -563,9 +566,12 @@ _dess_port_flowctrl_forcemode_set (a_uint32_t dev_id, fal_port_t port_id,
   HSL_REG_ENTRY_GET (rv, dev_id, PORT_STATUS, port_id,
 		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
   SW_RTN_ON_ERROR (rv);
+	SW_GET_FIELD_BY_REG(PORT_STATUS, FLOW_LINK_EN, tmp, reg);
 
   if (A_TRUE == enable)
     {
+		if (tmp== 0)
+			return SW_OK;
       SW_SET_REG_BY_FIELD (PORT_STATUS, FLOW_LINK_EN, 0, reg);
     }
   else if (A_FALSE == enable)
@@ -575,6 +581,8 @@ _dess_port_flowctrl_forcemode_set (a_uint32_t dev_id, fal_port_t port_id,
 	{
 	  return SW_DISABLE;
 	}
+	  if (tmp == 1)
+	  	return SW_OK;
       SW_SET_REG_BY_FIELD (PORT_STATUS, FLOW_LINK_EN, 1, reg);
     }
   else
@@ -961,7 +969,7 @@ _dess_port_txmac_status_set (a_uint32_t dev_id, fal_port_t port_id,
 			     a_bool_t enable)
 {
   sw_error_t rv;
-  a_uint32_t reg, force, val;
+  a_uint32_t reg, force, val, tmp;
 
   HSL_DEV_ID_CHECK (dev_id);
 
@@ -986,6 +994,7 @@ _dess_port_txmac_status_set (a_uint32_t dev_id, fal_port_t port_id,
     {
       return SW_BAD_PARAM;
     }
+	tmp = reg;
 
   /* for those ports without PHY device we set MAC register */
   if (A_FALSE == _dess_port_phy_connected (dev_id, port_id))
@@ -1006,7 +1015,8 @@ _dess_port_txmac_status_set (a_uint32_t dev_id, fal_port_t port_id,
 	  SW_SET_REG_BY_FIELD (PORT_STATUS, TXMAC_EN, val, reg);
 	}
     }
-
+	if (tmp == reg)
+		return SW_OK;
   HSL_REG_ENTRY_SET (rv, dev_id, PORT_STATUS, port_id,
 		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
   return rv;
@@ -1047,7 +1057,7 @@ _dess_port_rxmac_status_set (a_uint32_t dev_id, fal_port_t port_id,
 			     a_bool_t enable)
 {
   sw_error_t rv;
-  a_uint32_t reg, force, val;
+  a_uint32_t reg, force, val, tmp;
 
   HSL_DEV_ID_CHECK (dev_id);
 
@@ -1072,6 +1082,7 @@ _dess_port_rxmac_status_set (a_uint32_t dev_id, fal_port_t port_id,
     {
       return SW_BAD_PARAM;
     }
+	tmp = reg;
 
   /* for those ports without PHY device we set MAC register */
   if (A_FALSE == _dess_port_phy_connected (dev_id, port_id))
@@ -1092,7 +1103,8 @@ _dess_port_rxmac_status_set (a_uint32_t dev_id, fal_port_t port_id,
 	  SW_SET_REG_BY_FIELD (PORT_STATUS, RXMAC_EN, val, reg);
 	}
     }
-
+	if (tmp == reg)
+		return SW_OK;
   HSL_REG_ENTRY_SET (rv, dev_id, PORT_STATUS, port_id,
 		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
   return rv;
@@ -1133,7 +1145,7 @@ _dess_port_txfc_status_set (a_uint32_t dev_id, fal_port_t port_id,
 			    a_bool_t enable)
 {
   sw_error_t rv;
-  a_uint32_t val, reg, force;
+  a_uint32_t val, reg, force, tmp;
 
   HSL_DEV_ID_CHECK (dev_id);
 
@@ -1158,6 +1170,7 @@ _dess_port_txfc_status_set (a_uint32_t dev_id, fal_port_t port_id,
   HSL_REG_ENTRY_GET (rv, dev_id, PORT_STATUS, port_id,
 		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
   SW_RTN_ON_ERROR (rv);
+	tmp = reg;
 
   /* for those ports without PHY device we set MAC register */
   if (A_FALSE == _dess_port_phy_connected (dev_id, port_id))
@@ -1178,7 +1191,8 @@ _dess_port_txfc_status_set (a_uint32_t dev_id, fal_port_t port_id,
 	  SW_SET_REG_BY_FIELD (PORT_STATUS, TX_FLOW_EN, val, reg);
 	}
     }
-
+	if (tmp == reg)
+		return SW_OK;
   HSL_REG_ENTRY_SET (rv, dev_id, PORT_STATUS, port_id,
 		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
   return rv;
@@ -1219,7 +1233,7 @@ _dess_port_rxfc_status_set (a_uint32_t dev_id, fal_port_t port_id,
 			    a_bool_t enable)
 {
   sw_error_t rv;
-  a_uint32_t val, reg, force;
+  a_uint32_t val, reg, force, tmp;
 
   HSL_DEV_ID_CHECK (dev_id);
 
@@ -1244,6 +1258,7 @@ _dess_port_rxfc_status_set (a_uint32_t dev_id, fal_port_t port_id,
   HSL_REG_ENTRY_GET (rv, dev_id, PORT_STATUS, port_id,
 		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
   SW_RTN_ON_ERROR (rv);
+	tmp = reg;
 
   /* for those ports without PHY device we set MAC register */
   if (A_FALSE == _dess_port_phy_connected (dev_id, port_id))
@@ -1264,7 +1279,8 @@ _dess_port_rxfc_status_set (a_uint32_t dev_id, fal_port_t port_id,
 	  SW_SET_REG_BY_FIELD (PORT_STATUS, RX_FLOW_EN, val, reg);
 	}
     }
-
+	if (tmp == reg)
+		return SW_OK;
   HSL_REG_ENTRY_SET (rv, dev_id, PORT_STATUS, port_id,
 		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
   return rv;
@@ -1305,7 +1321,7 @@ _dess_port_bp_status_set (a_uint32_t dev_id, fal_port_t port_id,
 			  a_bool_t enable)
 {
   sw_error_t rv;
-  a_uint32_t val;
+  a_uint32_t val, tmp;
 
   HSL_DEV_ID_CHECK (dev_id);
 
@@ -1326,6 +1342,10 @@ _dess_port_bp_status_set (a_uint32_t dev_id, fal_port_t port_id,
     {
       return SW_BAD_PARAM;
     }
+	HSL_REG_FIELD_GET (rv, dev_id, PORT_STATUS, port_id, TX_HALF_FLOW_EN,
+		     (a_uint8_t *) (&tmp), sizeof (a_uint32_t));
+	if (tmp == val)
+		return SW_OK;
 
   HSL_REG_FIELD_SET (rv, dev_id, PORT_STATUS, port_id, TX_HALF_FLOW_EN,
 		     (a_uint8_t *) (&val), sizeof (a_uint32_t));
@@ -1367,7 +1387,7 @@ _dess_port_link_forcemode_set (a_uint32_t dev_id, fal_port_t port_id,
 			       a_bool_t enable)
 {
   sw_error_t rv;
-  a_uint32_t reg;
+  a_uint32_t reg, tmp;
 
   HSL_DEV_ID_CHECK (dev_id);
 
@@ -1379,13 +1399,18 @@ _dess_port_link_forcemode_set (a_uint32_t dev_id, fal_port_t port_id,
   HSL_REG_ENTRY_GET (rv, dev_id, PORT_STATUS, port_id,
 		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
   SW_RTN_ON_ERROR (rv);
+	SW_GET_FIELD_BY_REG(PORT_STATUS, LINK_EN, tmp, reg);
 
   if (A_TRUE == enable)
     {
+		if(tmp == 0)
+			return SW_OK;
       SW_SET_REG_BY_FIELD (PORT_STATUS, LINK_EN, 0, reg);
     }
   else if (A_FALSE == enable)
     {
+		if(tmp == 1)
+			return SW_OK;
       /* for those ports without PHY, it can't sync link status */
       if (A_FALSE == _dess_port_phy_connected (dev_id, port_id))
 	{
