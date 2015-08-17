@@ -115,38 +115,11 @@ qca_ar8327_sw_reset_switch(struct switch_dev *dev)
 	memset(priv->vlan_tagged, 0, sizeof(a_uint8_t) * AR8327_MAX_VLANS);
 	memset(priv->pvid, 0, sizeof(a_uint16_t) * AR8327_NUM_PORTS);
 
-	/*for (i = 0; i < AR8327_MAX_VLANS; i++)*/
-	/*    priv->vlan_id[i] = i;*/
-	#ifndef BOARD_AR71XX
-	if (priv->version == QCA_VER_AR8327 ||
-		priv->version == QCA_VER_AR8337) {
-		qca_ar8327_phy_disable();
-		msleep(1000);
-	/* init switch, not necessary for dess??*/
-	rv += ssdk_switch_init(0);
+	mutex_unlock(&priv->reg_mutex);
 
-	}
-	#endif
-
-    mutex_unlock(&priv->reg_mutex);
-
-    priv->init = true;
-    rv += qca_ar8327_sw_hw_apply(dev);
-    priv->init = false;
-	#ifndef BOARD_AR71XX
-	#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,14,0))
-	for (i = 0; i < AR8327_NUM_PORTS; i++) {
-		qca_ar8327_port_init(priv, i);
-	}
-	#endif
-	if (priv->version == QCA_VER_AR8327 ||
-		priv->version == QCA_VER_AR8337) {
-		fal_port_link_forcemode_set(0, 1, A_FALSE);
-		fal_port_link_forcemode_set(0, 2, A_FALSE);
-		fal_port_link_forcemode_set(0, 3, A_FALSE);
-		fal_port_link_forcemode_set(0, 4, A_FALSE);
-		fal_port_link_forcemode_set(0, 5, A_FALSE);
-	}
+	priv->init = true;
+	rv += qca_ar8327_sw_hw_apply(dev);
+	priv->init = false;
 
 	mac_mode = ssdk_dt_global_get_mac_mode();
 	/* set mac5 flowcontol force for RGMII */
@@ -167,8 +140,6 @@ qca_ar8327_sw_reset_switch(struct switch_dev *dev)
 		fal_port_flowctrl_forcemode_set(0, 4, A_TRUE);
 		fal_port_flowctrl_set(0, 4, A_TRUE);
 	}
-	qca_ar8327_phy_enable(priv);
-	#endif
 
 	return rv;
 }

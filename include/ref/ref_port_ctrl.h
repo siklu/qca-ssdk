@@ -23,6 +23,9 @@ int
 qca_ar8327_sw_get_port_link(struct switch_dev *dev, int port,
 			                        struct switch_port_link *link);
 
+void
+qca_ar8327_sw_mac_polling_task(struct switch_dev *dev);
+
 #ifdef __cplusplus
 }
 #endif                          /* __cplusplus */
