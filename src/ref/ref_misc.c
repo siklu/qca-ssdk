@@ -110,29 +110,12 @@ qca_ar8327_sw_reset_switch(struct switch_dev *dev)
     memset(priv->vlan_tagged, 0, sizeof(a_uint8_t) * AR8327_MAX_VLANS);
     memset(priv->pvid, 0, sizeof(a_uint16_t) * AR8327_NUM_PORTS);
 
-    /*for (i = 0; i < AR8327_MAX_VLANS; i++)*/
-    /*    priv->vlan_id[i] = i;*/
-#ifndef BOARD_AR71XX
-
-	qca_ar8327_phy_disable();
-	msleep(1000);
-
-#endif
-    /* init switch */
-    rv += ssdk_switch_init(0);
 
     mutex_unlock(&priv->reg_mutex);
 
     priv->init = true;
     rv += qca_ar8327_sw_hw_apply(dev);
     priv->init = false;
-	#ifndef BOARD_AR71XX
-	for (i = 0; i < AR8327_NUM_PORTS; i++) {
-		qca_ar8327_port_init(priv, i);
-    }
-	fal_port_link_forcemode_set(0, 5, A_FALSE);
-	qca_ar8327_phy_enable(priv);
-	#endif
     return rv;
 }
 
