@@ -579,6 +579,8 @@ struct cmd_des_t gcmd_des[] =
             {"phy", "set", "write phy register", "<ph_id> <reg_addr> <value>", SW_API_PHY_SET, NULL},
             {"reg", "get", "read switch register", "<reg_addr> <4>", SW_API_REG_GET, NULL},
             {"reg", "set", "write switch register", "<reg_addr> <value> <4>", SW_API_REG_SET, NULL},
+			{"reg", "dump", "dump switch register group", "<group id> <0-6>", SW_API_REG_DUMP, NULL},
+			{"dbgreg", "dump", "dump switch dbg register group", "", SW_API_DBG_REG_DUMP, NULL},
             {"field", "get", "read switch register field", "<reg_addr> <offset> <len> <4>", SW_API_REG_FIELD_GET, NULL},
             {"field", "set", "write switch register field", "<reg_addr> <offset> <len> <value> <4>", SW_API_REG_FIELD_SET, NULL},
             {"aclList", "dump", "dump all acl list", "", SW_API_ACL_LIST_DUMP, NULL},

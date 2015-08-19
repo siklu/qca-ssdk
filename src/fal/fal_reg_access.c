@@ -152,6 +152,38 @@ _fal_reg_field_set(a_uint32_t dev_id, a_uint32_t reg_addr,
     return rv;
 }
 
+static sw_error_t
+_fal_reg_dump(a_uint32_t dev_id, a_uint32_t reg_idx,fal_reg_dump_t *reg_dump)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->register_dump)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->register_dump(dev_id, reg_idx,reg_dump);
+    return rv;
+}
+
+
+static sw_error_t
+_fal_debug_reg_dump(a_uint32_t dev_id, fal_debug_reg_dump_t *reg_dump)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->debug_register_dump)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->debug_register_dump(dev_id, reg_dump);
+    return rv;
+}
+
+
 
 /**
   * fal_phy_get - get value of specific phy device
@@ -316,6 +348,47 @@ fal_reg_field_set(a_uint32_t dev_id, a_uint32_t reg_addr,
     FAL_API_UNLOCK;
     return rv;
 }
+
+/**
+ * @brief dump device register group
+ * @details   Comments:
+ *    The unit of packets size is byte.
+ * @param[in] dev_id device id
+ * @param[out] reg_dump dump out register group
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_reg_dump(a_uint32_t dev_id, a_uint32_t reg_idx,fal_reg_dump_t *reg_dump)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_reg_dump(dev_id, reg_idx,reg_dump);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief dump device debug register
+ * @details   Comments:
+ *    The unit of packets size is byte.
+ * @param[in] dev_id device id
+ * @param[out] reg_dump dump out debub register
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_debug_reg_dump(a_uint32_t dev_id, fal_debug_reg_dump_t *reg_dump)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_debug_reg_dump(dev_id,reg_dump);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+
+
 
 /**
  * @}
