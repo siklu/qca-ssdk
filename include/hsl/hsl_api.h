@@ -243,6 +243,14 @@ extern "C"
   typedef sw_error_t
     (*hsl_frame_crc_reserve_get) (a_uint32_t dev_id, a_bool_t * enable);
 
+
+  typedef sw_error_t
+    (*hsl_register_dump) (a_uint32_t dev_id,a_uint32_t register_idx, fal_reg_dump_t * reg_dump);
+
+  typedef sw_error_t
+    (*hsl_debug_register_dump) (a_uint32_t dev_id, fal_debug_reg_dump_t * reg_dump);
+
+
   /* Port Control */
 #define PORT_CONTROL_FUNC_PROTOTYPE_DEF
   typedef sw_error_t
@@ -2524,6 +2532,8 @@ typedef sw_error_t
     hsl_reg_entries_set reg_entries_set;
     hsl_psgmii_reg_get psgmii_reg_get;
     hsl_psgmii_reg_set psgmii_reg_set;
+	hsl_register_dump	register_dump;
+	hsl_debug_register_dump	debug_register_dump;
 
       /*INIT*/ hsl_dev_reset dev_reset;
     hsl_dev_clean dev_clean;
