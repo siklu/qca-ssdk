@@ -257,7 +257,7 @@ if_mac_add(a_uint8_t *mac, a_uint32_t vid, uint32_t ipv6)
 
     if(if_mac_count == MAX_INTF_NUM)
     {
-        HNAT_PRINTK("%s: reach mac count max\n", __func__);
+        HNAT_ERR_PRINTK("%s: reach mac count max\n", __func__);
         return -1;
     }
 
