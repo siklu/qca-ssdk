@@ -620,6 +620,8 @@ napt_hw_mode_init(void)
 void
 napt_hw_mode_cleanup(void)
 {
+	if (!DESS_CHIP(nat_chip_ver))
+		IP_ROUTE_STATUS_SET(0, A_FALSE);
     ACL_STATUS_SET(0, A_FALSE);
 }
 

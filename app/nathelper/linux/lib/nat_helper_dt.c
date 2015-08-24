@@ -534,6 +534,7 @@ void nat_helper_cookie_del(a_uint32_t hw_index)
         {
             napt_ct_buf_ct_info_clear(napt_ct);
         }
+		NAPT_CT_AGING_ENABLE(napt_ct_addr[hw_index]);
     }
 	napt_ct_addr[hw_index] = 0;
 	napt_cookie[hw_index*2] = 0;
