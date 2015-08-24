@@ -118,6 +118,7 @@ phy_identification_t phy_array[] =
 {
 	{0x0, 0x004DD0B0, malibu_phy_init},
 	{0x0, 0x004DD0B1, malibu_phy_init},
+	{0x0, 0x004DD0B2, malibu_phy_init},
 	{0x0, 0x004DD036, f1_phy_init},
 	{0x0, 0x004DD033, f1_phy_init},
 	{0x0, 0x004DD042, f2_phy_init}
@@ -1613,21 +1614,31 @@ ssdk_plat_exit(void)
 
 }
 
-int ssdk_phy_init(ssdk_init_cfg *cfg)
-{
 
-	int size = sizeof(phy_array)/sizeof(phy_identification_t);
+
+static int ssdk_phy_id_get(ssdk_init_cfg *cfg)
+{
 	a_uint32_t phy_id = 0;
 	a_uint16_t org_id = 0, rev_id = 0;
 	int i = 0;
 
+	cfg->reg_func.mdio_get(0, 0, 2, &org_id);
+	cfg->reg_func.mdio_get(0, 0, 3, &rev_id);
+	phy_id = (org_id<<16) | rev_id;
+	cfg->phy_id = phy_id;
+	printk("PHY ID is 0x%x\n",cfg->phy_id);
+
+	return SW_OK;;
+}
+int ssdk_phy_init(ssdk_init_cfg *cfg)
+{
+
+	int size = sizeof(phy_array)/sizeof(phy_identification_t);
+	int i = 0;
+
 	for(i=0;i<size;i++)
 	{
-		cfg->reg_func.mdio_get(0, phy_array[i].phy_addr, 2, &org_id);
-		cfg->reg_func.mdio_get(0, phy_array[i].phy_addr, 3, &rev_id);
-		phy_id = (org_id<<16) | rev_id;
-
-		if(phy_array[i].phy_id == phy_id)
+		if(phy_array[i].phy_id == cfg->phy_id)
 			return phy_array[i].init();
 	}
 
@@ -1829,7 +1840,7 @@ void clear_self_test_config()
 	int i = 0, phy = 0;
 	u32 value = 0;
 	/* disable EEE */
-	qca_phy_mmd_write(0, 0x1f, 0x7,  0x3c, 0x0);
+/*	qca_phy_mmd_write(0, 0x1f, 0x7,  0x3c, 0x0); */
 
 	/*disable phy internal loopback*/
 	qca_ar8327_phy_write(0, 0x1f, 0x10, 0x6860);
@@ -1844,18 +1855,19 @@ void clear_self_test_config()
 		qca_phy_mmd_write(0, phy, 7, 0x8028, 0x001f);
 	}
 }
-
 sw_error_t
 ssdk_init(a_uint32_t dev_id, ssdk_init_cfg * cfg)
 {
 	sw_error_t rv;
 
+
+
 	rv = fal_init(dev_id, cfg);
-    	if (rv != SW_OK)
+	if (rv != SW_OK)
 		printk("ssdk fal init failed \r\n");
 
 	ssdk_phy_init(cfg);
-    	if (rv != SW_OK)
+	if (rv != SW_OK)
 		printk("ssdk phy init failed \r\n");
 
 	return rv;
@@ -2165,7 +2177,7 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 		i++;
 	}
 	cfg->led_source_num = i;
-	printk("current dts led_source_num is =%d\n",cfg->led_source_num);
+	printk("current dts led_source_num is %d\n",cfg->led_source_num);
 	return SW_OK;
 }
 #endif
@@ -2803,6 +2815,8 @@ regi_init(void)
 
 	if(rv)
 		goto out;
+
+	ssdk_phy_id_get(&cfg);
 
 	rv = ssdk_init(0, &cfg);
 

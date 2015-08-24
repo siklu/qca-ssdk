@@ -47,6 +47,7 @@
 #include "dess_reg_access.h"
 #include "dess_reg.h"
 #include "dess_init.h"
+#include <malibu_phy.h>
 
 
 static ssdk_init_cfg * dess_cfg[SW_MAX_NR_DEV] = { 0 };
@@ -59,7 +60,7 @@ a_uint32_t dess_nat_global_status = 0;
 */
 
 
-a_uint32_t dess_pbmp[PORT_WRAPPER_MAX] = {
+a_uint32_t dess_pbmp_5[PORT_WRAPPER_MAX] = {
 	((1<<1) | (1<<2) | (1<<3) | (1<<4) | (1<<5)), /*PORT_WRAPPER_PSGMII*/
 	((1<<1) | (1<<2) | (1<<3) | (1<<4) | (1<<5)), /*PORT_WRAPPER_PSGMII_RGMII5*/
 	((1<<1) | (1<<5)),                            /*PORT_WRAPPER_SGMII0_RGMII5*/
@@ -73,6 +74,15 @@ a_uint32_t dess_pbmp[PORT_WRAPPER_MAX] = {
 	((1<<5) | (1<<4)),                            /*PORT_WRAPPER_SGMII4_RGMII4*/
 	};
 
+a_uint32_t dess_pbmp_2[PORT_WRAPPER_MAX] = {
+	((1<<4) | (1<<5)), 						/*PORT_WRAPPER_PSGMII*/
+	};
+
+a_uint32_t dess_get_port_phy_id(void)
+{
+	return dess_cfg[0]->phy_id;
+}
+
 enum ssdk_port_wrapper_cfg dess_get_port_config(void)
 {
 	return dess_cfg[0]->mac_mode;
@@ -82,9 +92,16 @@ a_bool_t dess_mac_port_valid_check(fal_port_t port_id)
 {
 	a_uint32_t bitmap = 0;
 	enum ssdk_port_wrapper_cfg cfg;
+	a_uint32_t phy_id;
 
 	cfg = dess_get_port_config();
-	bitmap = dess_pbmp[cfg];
+	phy_id = dess_get_port_phy_id();
+
+	if ((phy_id == MALIBU_1_0) ||(phy_id == MALIBU_1_1))
+		bitmap = dess_pbmp_5[cfg];
+
+	if (phy_id == MALIBU_1_1_2PORT)
+		bitmap = dess_pbmp_2[cfg];
 
 	return SW_IS_PBMP_MEMBER(bitmap, port_id);
 
@@ -98,15 +115,20 @@ dess_portproperty_init(a_uint32_t dev_id)
     fal_port_t port_id;
 	enum ssdk_port_wrapper_cfg cfg;
 	a_uint32_t bitmap = 0;
-
-
+	a_uint32_t phy_id;
 
     pdev = hsl_dev_ptr_get(dev_id);
     if (pdev == NULL)
         return SW_NOT_INITIALIZED;
 
 	cfg = dess_get_port_config();
-	bitmap = dess_pbmp[cfg];
+	phy_id = dess_get_port_phy_id();
+
+	if ((phy_id == MALIBU_1_0) ||(phy_id == MALIBU_1_1))
+		bitmap = dess_pbmp_5[cfg];
+
+	if (phy_id == MALIBU_1_1_2PORT)
+		bitmap = dess_pbmp_2[cfg];
 
     /* for port property set, SSDK should not generate some limitations */
     for (port_id = 0; port_id < pdev->nr_ports; port_id++)
