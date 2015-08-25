@@ -2808,7 +2808,7 @@ regi_init(void)
 
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
 		/*Do Malibu self test to fix packet drop issue firstly*/
-		if (cfg.chip_type == CHIP_DESS) {
+		if ((cfg.chip_type == CHIP_DESS) && (ssdk_dt_global.mac_mode == PORT_WRAPPER_PSGMII)) {
 			ssdk_psgmii_self_test();
 			clear_self_test_config();
 		}
