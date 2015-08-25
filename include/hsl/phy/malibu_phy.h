@@ -45,6 +45,7 @@ extern "C"
 
 #define MALIBU_1_0 0x004DD0B0
 #define MALIBU_1_1 0x004DD0B1
+#define MALIBU_1_1_2PORT 0x004DD0B2
 
 
   /* PHY Registers */
