@@ -67,10 +67,12 @@
 uint32_t get_aclrulemask(void);
 void set_aclrulemask(uint32_t acl_list);
 
-void droute_add_acl_rules(uint32_t local_ip, uint32_t gw_entry_id);
+void droute_add_acl_rules(uint32_t local_ip, uint32_t local_ip_mask, uint32_t gw_entry_id);
 void ipv6_droute_del_acl_rules(void);
 void ipv6_droute_add_acl_rules(struct in6_addr *local_ip, uint32_t gw_entry_id);
-void pppoe_add_acl_rules(uint32_t wan_ip, uint32_t local_ip, uint32_t gw_entry_id);
+void pppoe_add_acl_rules(
+	uint32_t wan_ip, uint32_t local_ip,
+	uint32_t local_ip_mask, uint32_t gw_entry_id);
 void ip_conflict_add_acl_rules(uint32_t wan_ip, uint32_t lan_ip, uint32_t gw_entry_id);
 void ipv6_snooping_solicted_node_add_acl_rules(void);
 void ipv6_snooping_nodeinfo_query_add_acl_rules(void);

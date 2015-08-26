@@ -112,7 +112,7 @@ static int wan_fid = 0xffff;
 static fal_pppoe_session_t pppoetbl = {0};
 static uint32_t pppoe_gwid = 0;
 static char nat_bridge_dev[IFNAMSIZ*4] = "br-lan";
-static uint8_t lanip[4] = {0}, wanip[4] = {0};
+static uint8_t lanip[4] = {0}, lanipmask[4] = {0}, wanip[4] = {0};
 static struct in6_addr wan6ip = IN6ADDR_ANY_INIT;
 static struct in6_addr lan6ip = IN6ADDR_ANY_INIT;
 
@@ -288,7 +288,7 @@ static void wan_nh_add(u_int8_t *host_ip , u_int8_t *host_mac, u_int32_t id)
             wan_nh_ent[i].entry_id = id;
             if ((wan_nh_ent[i].in_use) && !(wan_nh_ent[i].in_acl))
             {
-                droute_add_acl_rules(*(uint32_t *)&lanip, id);
+                droute_add_acl_rules(*(uint32_t *)&lanip, *(uint32_t *)&lanipmask, id);
                 /* set the in_acl flag */
                 wan_nh_ent[i].in_acl = 1;
             }
@@ -378,7 +378,7 @@ uint32_t napt_set_default_route(fal_ip4_addr_t dst_addr, fal_ip4_addr_t src_addr
                 else
                 {
                     if (wan_nh_get(next_hop) != -1)
-                        droute_add_acl_rules(*(uint32_t *)&lanip, arp_entry.entry_id);
+                        droute_add_acl_rules(*(uint32_t *)&lanip, *(uint32_t *)&lanipmask, arp_entry.entry_id);
                     else
                         printk("%s %d\n", __FUNCTION__, __LINE__);
                 }
@@ -811,6 +811,7 @@ static sw_error_t setup_interface_entry(char *list_if, int is_wan)
                 printk("Set private base 0x%08x for %s\n", (a_uint32_t)(in_device_lan->ifa_list->ifa_address), nat_dev->br_port->br->dev->name);
 #endif
                 memcpy(&lanip, (void *)&(in_device_lan->ifa_list->ifa_address), 4); /* copy Lan port IP. */
+		memcpy(&lanipmask, (void *)&(in_device_lan->ifa_list->ifa_mask), 4);
 #ifndef ISISC
                 redirect_internal_ip_packets_to_cpu_on_wan_add_acl_rules((a_uint32_t)(in_device_lan->ifa_list->ifa_address),
                                                                             (a_uint32_t)(in_device_lan->ifa_list->ifa_mask));
@@ -983,7 +984,8 @@ static void isis_pppoe_check_for_redial(void)
             memcpy(&wanip, (void *)&nf_athrs17_hnat_wan_ip, 4);
             aos_printk("Read the WAN IP back... %.8x\n", *(uint32_t *)&wanip);
             /* change the PPPoE ACL to ensure the packet is correctly forwarded by the HNAT engine */
-            pppoe_add_acl_rules(*(uint32_t *)&wanip, *(uint32_t *)&lanip, pppoe_gwid);
+            pppoe_add_acl_rules(*(uint32_t *)&wanip, *(uint32_t *)&lanip,
+            						*(uint32_t *)&lanipmask, pppoe_gwid);
         }
     }
 }
@@ -1080,15 +1082,12 @@ static int add_pppoe_host_entry(uint32_t sport, a_int32_t arp_entry_id)
         aos_printk("Cannot get the PPPoE mode\n");
         ena = 0;
     }
-#ifdef ISIS
-    if (!ena)
-#else /* For S17c only */
+
     memset(&nh_arp_entry, 0, sizeof(nh_arp_entry));
-    nh_arp_entry.ip4_addr = nf_athrs17_hnat_ppp_peer_ip;
+    nh_arp_entry.ip4_addr = ntohl(nf_athrs17_hnat_ppp_peer_ip);
     nh_arp_entry.flags = FAL_IP_IP4_ADDR;
     rv = IP_HOST_GET(0, FAL_IP_ENTRY_IPADDR_EN, &nh_arp_entry);
     if (SW_OK != rv)
-#endif
     {
         if ((!ena) && (PPPOE_STATUS_SET(0, A_TRUE) != SW_OK))
             aos_printk("Cannot enable the PPPoE mode\n");
@@ -1128,7 +1127,8 @@ static int add_pppoe_host_entry(uint32_t sport, a_int32_t arp_entry_id)
 
                 aos_printk("adding ACLs \n");
                 pppoe_gwid = a_entry_id;
-			pppoe_add_acl_rules(nf_athrs17_hnat_wan_ip, *(uint32_t *)&lanip, a_entry_id);
+			pppoe_add_acl_rules(nf_athrs17_hnat_wan_ip, *(uint32_t *)&lanip,
+								*(uint32_t *)&lanipmask, a_entry_id);
                 aos_printk("ACL creation okay... \n");
             } else {
 			HNAT_PRINTK("pppoe arp add fail!\n");
