@@ -65,7 +65,7 @@
 
 #define DESS_NAT_PORT_NUM                       255
 
-static aos_lock_t dess_nat_lock;
+aos_lock_t dess_nat_lock;
 static a_uint32_t dess_nat_snap[SW_MAX_NR_DEV] = { 0 };
 extern a_uint32_t dess_nat_global_status;
 

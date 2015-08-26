@@ -1646,9 +1646,11 @@ int ssdk_phy_init(ssdk_init_cfg *cfg)
 }
 
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-struct reset_control *ess_rst;
+struct reset_control *ess_rst = NULL;
 void ssdk_ess_reset()
 {
+	if (!ess_rst)
+		return;
 	reset_control_assert(ess_rst);
 	mdelay(10);
 	reset_control_deassert(ess_rst);
@@ -2724,6 +2726,10 @@ char ssdk_driver_name[] = "ess_ssdk";
 static int ssdk_probe(struct platform_device *pdev)
 {
 	ess_rst = devm_reset_control_get(&pdev->dev, "ess_rst");
+	if (!ess_rst) {
+		printk("ess rst fail!\n");
+		return -1;
+	}
 	reset_control_assert(ess_rst);
 	mdelay(10);
 	reset_control_deassert(ess_rst);
@@ -2757,7 +2763,6 @@ regi_init(void)
 	a_uint8_t chip_version = 0;
 	#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 	struct device dev;
-	struct reset_control *ess_rst = NULL;
 	#endif
 	#ifdef IN_RFS
 	memset(&rfs_dev, 0, sizeof(rfs_dev));
