@@ -23,7 +23,7 @@
 
 #include "nat_helper.h"
 
-char hnat_log_en = 0;
+char hnat_log_en = HNAT_LOG_LEVEL_DISABLE;
 
 void hnat_log_msg(int level, char *string, ...)
 {
@@ -31,7 +31,7 @@ void hnat_log_msg(int level, char *string, ...)
 	va_list   ptr;
 	char buffer[NAT_LOG_MAX_SIZE];
 
-	if(!hnat_log_en)
+	if(level < hnat_log_en)
 		return;
 	memset(buffer, 0, sizeof(buffer));
 	va_start(ptr,string);

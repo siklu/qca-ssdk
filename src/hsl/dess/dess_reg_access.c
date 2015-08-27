@@ -323,6 +323,119 @@ dess_reg_field_set(a_uint32_t dev_id, a_uint32_t reg_addr,
     return SW_OK;
 }
 
+static sw_error_t
+_dess_regsiter_dump(a_uint32_t dev_id,a_uint32_t register_idx, fal_reg_dump_t * reg_dump)
+{
+    sw_error_t rv;
+    a_uint32_t reg;
+	typedef struct {
+		a_uint32_t reg_base;
+		a_uint32_t reg_end;
+		char name[30];
+	} regdump;
+
+	regdump reg_dumps[8] =
+	{
+		{0x0, 0xE4, "0.Global control registers"},
+		{0x100, 0x168, "1.EEE control registers"},
+		{0x200, 0x270, "2.Parser control registers"},
+		{0x400, 0x474, "3.ACL control registers"},
+		{0x600, 0x718, "4.Lookup control registers"},
+		{0x800, 0xb70, "5.QM control registers"},
+		{0xc00, 0xc80, "6.PKT edit control registers"},
+		{0x820, 0x820, "7.QM debug registers"}
+	};
+
+	a_uint32_t dump_addr, reg_count, reg_val;
+	switch (register_idx)
+	{
+		case 0:
+		case 1:
+		case 2:
+		case 3:
+		case 4:
+		case 5:
+		case 6:
+			reg_count = 0;
+			for (dump_addr = reg_dumps[register_idx].reg_base; dump_addr <= reg_dumps[register_idx].reg_end; reg_count++)
+			{
+				rv = dess_reg_get(dev_id, dump_addr, (a_uint8_t *) & reg_val, sizeof (a_uint32_t));
+				reg_dump->reg_value[reg_count] = reg_val;
+				dump_addr += 4;
+			}
+			reg_dump->reg_count = reg_count;
+			reg_dump->reg_base = reg_dumps[register_idx].reg_base;
+			reg_dump->reg_end = reg_dumps[register_idx].reg_end;
+			snprintf(reg_dump->reg_name,sizeof(reg_dump->reg_name),"%s",reg_dumps[register_idx].name);
+			break;
+		default:
+			return SW_BAD_PARAM;
+	}
+
+    return rv;
+}
+
+static sw_error_t
+_dess_debug_regsiter_dump(a_uint32_t dev_id,fal_debug_reg_dump_t * dbg_reg_dump)
+{
+    sw_error_t rv;
+    a_uint32_t reg;
+	a_uint32_t  reg_count, reg_val;
+
+	reg_count = 0;
+
+	for(reg=0;reg<=0x1F;reg++)
+	{
+		dess_reg_set(dev_id, 0x820, (a_uint8_t *) & reg, sizeof (a_uint32_t));
+		rv = dess_reg_get(dev_id, 0x824, (a_uint8_t *) & reg_val, sizeof (a_uint32_t));
+		dbg_reg_dump->reg_value[reg_count] = reg_val;
+		dbg_reg_dump->reg_addr[reg_count] = reg;
+		reg_count++;
+	}
+	dbg_reg_dump->reg_count = reg_count;
+
+	snprintf(dbg_reg_dump->reg_name,sizeof(dbg_reg_dump->reg_name),"QM debug registers");
+
+    return rv;
+}
+
+
+/**
+ * @brief dump registers.
+ * @param[in] dev_id device id
+ * @param[in] register_idx register group id
+ * @param[out] reg_dump register dump result
+ * @return SW_OK or error code
+ */
+sw_error_t
+dess_regsiter_dump(a_uint32_t dev_id,a_uint32_t register_idx, fal_reg_dump_t * reg_dump)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _dess_regsiter_dump(dev_id,register_idx,reg_dump);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief dump registers.
+ * @param[in] dev_id device id
+ * @param[out] reg_dump debug register dump
+ * @return SW_OK or error code
+ */
+sw_error_t
+dess_debug_regsiter_dump(a_uint32_t dev_id, fal_debug_reg_dump_t * dbg_reg_dump)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _dess_debug_regsiter_dump(dev_id,dbg_reg_dump);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+
 sw_error_t
 dess_reg_access_init(a_uint32_t dev_id, hsl_access_mode mode)
 {
@@ -340,6 +453,9 @@ dess_reg_access_init(a_uint32_t dev_id, hsl_access_mode mode)
     p_api->reg_field_set = dess_reg_field_set;
     p_api->psgmii_reg_get = dess_psgmii_reg_get;
     p_api->psgmii_reg_set = dess_psgmii_reg_set;
+	p_api->register_dump = dess_regsiter_dump;
+	p_api->debug_register_dump = dess_debug_regsiter_dump;
+
 
     return SW_OK;
 }

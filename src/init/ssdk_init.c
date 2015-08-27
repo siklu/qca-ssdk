@@ -92,6 +92,13 @@ struct notifier_block ssdk_dev_notifier;
 #endif
 #endif
 
+extern ssdk_chip_type SSDK_CURRENT_CHIP_TYPE;
+
+#define AUTO_SWITCH_RECOVERY
+
+#define QCA_QM_WORK_DELAY	200
+#define QCA_QM_ITEM_NUMBER 41
+
 /*
  * Using ISIS's address as default
   */
@@ -111,6 +118,7 @@ phy_identification_t phy_array[] =
 {
 	{0x0, 0x004DD0B0, malibu_phy_init},
 	{0x0, 0x004DD0B1, malibu_phy_init},
+	{0x0, 0x004DD0B2, malibu_phy_init},
 	{0x0, 0x004DD036, f1_phy_init},
 	{0x0, 0x004DD033, f1_phy_init},
 	{0x0, 0x004DD042, f2_phy_init}
@@ -220,6 +228,118 @@ qca_ar8327_phy_fixup(struct qca_phy_priv *priv, int phy)
 	}
 }
 
+sw_error_t
+qca_switch_init(a_uint32_t dev_id)
+{
+	a_uint32_t nr = 0;
+	int i = 0;
+
+	/*fal_reset(dev_id);*/
+	/*enable cpu and disable mirror*/
+	fal_cpu_port_status_set(dev_id, A_TRUE);
+	/* setup MTU */
+	fal_frame_max_size_set(dev_id, 1518);
+	/* Enable MIB counters */
+	fal_mib_status_set(dev_id, A_TRUE);
+	fal_igmp_mld_rp_set(dev_id, 0);
+
+	/*enable pppoe for dakota to support RSS*/
+	if (SSDK_CURRENT_CHIP_TYPE == CHIP_DESS)
+		fal_pppoe_status_set(dev_id, A_TRUE);
+
+	for (i = 0; i < AR8327_NUM_PORTS; i++) {
+		/* forward multicast and broadcast frames to CPU */
+		fal_port_unk_uc_filter_set(dev_id, i, A_FALSE);
+		fal_port_unk_mc_filter_set(dev_id, i, A_FALSE);
+		fal_port_bc_filter_set(dev_id, i, A_FALSE);
+		fal_port_default_svid_set(dev_id, i, 0);
+		fal_port_default_cvid_set(dev_id, i, 0);
+		fal_port_1qmode_set(dev_id, i, FAL_1Q_DISABLE);
+		fal_port_egvlanmode_set(dev_id, i, FAL_EG_UNMODIFIED);
+
+		fal_fdb_port_learn_set(dev_id, i, A_TRUE);
+		fal_stp_port_state_set(dev_id, 0, i, FAL_STP_FARWARDING);
+		fal_port_vlan_propagation_set(dev_id, i, FAL_VLAN_PROPAGATION_REPLACE);
+
+		fal_port_igmps_status_set(dev_id, i, A_FALSE);
+		fal_port_igmp_mld_join_set(dev_id, i, A_FALSE);
+		fal_port_igmp_mld_leave_set(dev_id, i, A_FALSE);
+		fal_igmp_mld_entry_creat_set(dev_id, A_FALSE);
+		fal_igmp_mld_entry_v3_set(dev_id, A_FALSE);
+		if (SSDK_CURRENT_CHIP_TYPE == CHIP_SHIVA) {
+			return SW_OK;
+		} else if (SSDK_CURRENT_CHIP_TYPE == CHIP_DESS) {
+			fal_port_flowctrl_forcemode_set(dev_id, i, A_FALSE);
+
+			nr = 240; /*30*8*/
+			fal_qos_port_tx_buf_nr_set(dev_id, i, &nr);
+			nr = 48; /*6*8*/
+			fal_qos_port_rx_buf_nr_set(dev_id, i, &nr);
+			fal_qos_port_red_en_set(dev_id, i, A_TRUE);
+			nr = 32;
+			fal_qos_queue_tx_buf_nr_set(dev_id, i, 5, &nr);
+			fal_qos_queue_tx_buf_nr_set(dev_id, i, 4, &nr);
+			fal_qos_queue_tx_buf_nr_set(dev_id, i, 3, &nr);
+			fal_qos_queue_tx_buf_nr_set(dev_id, i, 2, &nr);
+			fal_qos_queue_tx_buf_nr_set(dev_id, i, 1, &nr);
+			fal_qos_queue_tx_buf_nr_set(dev_id, i, 0, &nr);
+		} else if (SSDK_CURRENT_CHIP_TYPE == CHIP_ISISC ||
+			SSDK_CURRENT_CHIP_TYPE == CHIP_ISIS) {
+			fal_port_3az_status_set(dev_id, i, A_FALSE);
+			fal_port_flowctrl_forcemode_set(dev_id, i, A_TRUE);
+			fal_port_flowctrl_set(dev_id, i, A_FALSE);
+
+			if (i != 0 && i != 6) {
+				fal_port_flowctrl_set(dev_id, i, A_TRUE);
+				fal_port_flowctrl_forcemode_set(dev_id, i, A_FALSE);
+			}
+			if (i == 0 || i == 5 || i == 6) {
+				nr = 240; /*30*8*/
+				fal_qos_port_tx_buf_nr_set(dev_id, i, &nr);
+				nr = 48; /*6*8*/
+				fal_qos_port_rx_buf_nr_set(dev_id, i, &nr);
+				fal_qos_port_red_en_set(dev_id, i, A_TRUE);
+				if (SSDK_CURRENT_CHIP_TYPE == CHIP_ISISC) {
+					nr = 64; /*8*8*/
+				} else if (SSDK_CURRENT_CHIP_TYPE == CHIP_ISIS) {
+					nr = 60;
+				}
+				fal_qos_queue_tx_buf_nr_set(dev_id, i, 5, &nr);
+				nr = 48; /*6*8*/
+				fal_qos_queue_tx_buf_nr_set(dev_id, i, 4, &nr);
+				nr = 32; /*4*8*/
+				fal_qos_queue_tx_buf_nr_set(dev_id, i, 3, &nr);
+				nr = 32; /*4*8*/
+				fal_qos_queue_tx_buf_nr_set(dev_id, i, 2, &nr);
+				nr = 32; /*4*8*/
+				fal_qos_queue_tx_buf_nr_set(dev_id, i, 1, &nr);
+				nr = 24; /*3*8*/
+				fal_qos_queue_tx_buf_nr_set(dev_id, i, 0, &nr);
+			} else {
+				nr = 200; /*25*8*/
+				fal_qos_port_tx_buf_nr_set(dev_id, i, &nr);
+				nr = 48; /*6*8*/
+				fal_qos_port_rx_buf_nr_set(dev_id, i, &nr);
+				fal_qos_port_red_en_set(dev_id, i, A_TRUE);
+				if (SSDK_CURRENT_CHIP_TYPE == CHIP_ISISC) {
+					nr = 64; /*8*8*/
+				} else if (SSDK_CURRENT_CHIP_TYPE == CHIP_ISIS) {
+					nr = 60;
+				}
+				fal_qos_queue_tx_buf_nr_set(dev_id, i, 3, &nr);
+				nr = 48; /*6*8*/
+				fal_qos_queue_tx_buf_nr_set(dev_id, i, 2, &nr);
+				nr = 32; /*4*8*/
+				fal_qos_queue_tx_buf_nr_set(dev_id, i, 1, &nr);
+				nr = 24; /*3*8*/
+				fal_qos_queue_tx_buf_nr_set(dev_id, i, 0, &nr);
+			}
+		}
+	}
+
+	return SW_OK;
+}
+
 void
 qca_ar8327_phy_disable()
 {
@@ -251,6 +371,32 @@ qca_mac_disable()
 	}
 }
 
+void
+qca_switch_mac_reset(struct qca_phy_priv *priv)
+{
+	a_uint32_t value, value0, i;
+	if (priv == NULL || (priv->mii_read == NULL) || (priv->mii_write == NULL)) {
+		printk("In qca_switch_mac_reset, private data is NULL!\r\n");
+		return;
+	}
+
+	for (i=0; i < AR8327_NUM_PORTS; ++i) {
+		/* b3:2=0,Tx/Rx Mac disable,
+		 b9=0,LINK_EN disable */
+		value0 = priv->mii_read(AR8327_REG_PORT_STATUS(i));
+		value = value0 & ~(AR8327_PORT_STATUS_LINK_AUTO |
+						AR8327_PORT_STATUS_TXMAC |
+						AR8327_PORT_STATUS_RXMAC);
+		priv->mii_write(AR8327_REG_PORT_STATUS(i), value);
+
+		/* Force speed to 1000M Full */
+		value = priv->mii_read(AR8327_REG_PORT_STATUS(i));
+		value &= ~(AR8327_PORT_STATUS_DUPLEX | AR8327_PORT_STATUS_SPEED);
+		value |= AR8327_PORT_SPEED_1000M | AR8327_PORT_STATUS_DUPLEX;
+		priv->mii_write(AR8327_REG_PORT_STATUS(i), value);
+	}
+	return;
+}
 
 void
 qca_ar8327_phy_enable(struct qca_phy_priv *priv)
@@ -286,11 +432,18 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 	if(!np)
 		return -EINVAL;
 
+	/*Before switch software reset, disable PHY and clear  MAC PAD*/
+	qca_ar8327_phy_disable();
+	qca_mac_disable();
+	msleep(1000);
+
 	/*First software reset S17 chip*/
 	value = priv->mii_read(AR8327_REG_CTRL);
 	value |= 0x80000000;
 	priv->mii_write(AR8327_REG_CTRL, value);
 
+	/*After switch software reset, need disable all ports' MAC with 1000M FULL*/
+	qca_switch_mac_reset(priv);
 	/* Configure switch register from DT information */
 	paddr = of_get_property(np, "qca,ar8327-initvals", &len);
 	if (!paddr || len < (2 * sizeof(*paddr))) {
@@ -355,17 +508,9 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 	value = 0x10001;
 	priv->mii_write(AR8327_REG_PORT_VLAN0(6), value);
 
-	for (i = 0; i < AR8327_NUM_PHYS; i++) {
-		qca_ar8327_phy_fixup(priv, i);
+	qca_switch_init(0);
 
-		/* start autoneg*/
-		priv->phy_write(0, i, MII_ADVERTISE, ADVERTISE_ALL |
-						     ADVERTISE_PAUSE_CAP | ADVERTISE_PAUSE_ASYM);
-		priv->phy_write(0, i, MII_CTRL1000, ADVERTISE_1000FULL);
-		priv->phy_write(0, i, MII_BMCR, BMCR_RESET | BMCR_ANENABLE);
-	}
-
-	msleep(1000);
+	qca_ar8327_phy_enable(priv);
 
 	return 0;
 }
@@ -596,6 +741,12 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 	if (plat_data == NULL) {
 		return -EINVAL;
 	}
+
+	/*Before switch software reset, disable PHY and clear MAC PAD*/
+	qca_ar8327_phy_disable();
+	qca_mac_disable();
+	msleep(1000);
+
 	/*First software reset S17 chip*/
 	value = priv->mii_read(AR8327_REG_CTRL);
 	value |= 0x80000000;
@@ -609,9 +760,9 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 		udelay(10);
 		value = priv->mii_read(0x20);
 	} while ((value & SSDK_GLOBAL_INITIALIZED_STATUS) != SSDK_GLOBAL_INITIALIZED_STATUS);
-	#ifndef BOARD_AR71XX
-	fal_port_link_forcemode_set(0, 5, A_TRUE);
-	#endif
+
+	/*After switch software reset, need disable all ports' MAC with 1000M FULL*/
+	qca_switch_mac_reset(priv);
 
 	value = priv->mii_read(AR8327_REG_PORT_LOOKUP(0));
 	value &= ~0x5e;
@@ -661,6 +812,8 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 
 	value = 0x10001;
 	priv->mii_write(AR8327_REG_PORT_VLAN0(6), value);
+
+	qca_switch_init(0);
 
 	value = qca_ar8327_get_pad_cfg(plat_data->pad0_cfg);
 	priv->mii_write(AR8327_REG_PAD0_CTRL, value);
@@ -714,31 +867,19 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 
 	priv->mii_write(AR8327_REG_POS, new_pos);
 
-#ifdef BOARD_AR71XX
-	for (i = 0; i < AR8327_NUM_PHYS; i++) {
-		qca_ar8327_phy_fixup(priv, i);
-
-		/* start autoneg*/
-		priv->phy_write(0, i, MII_ADVERTISE, ADVERTISE_ALL |
-						     ADVERTISE_PAUSE_CAP | ADVERTISE_PAUSE_ASYM);
-		priv->phy_write(0, i, MII_CTRL1000, ADVERTISE_1000FULL);
-		priv->phy_write(0, i, MII_BMCR, BMCR_RESET | BMCR_ANENABLE);
-	}
-#endif
-
 	if(priv->version == QCA_VER_AR8337) {
-        value = priv->mii_read(AR8327_REG_PAD5_CTRL);
-        value |= AR8327_PAD_CTRL_RGMII_RXCLK_DELAY_EN;
-        priv->mii_write(AR8327_REG_PAD5_CTRL, value);
-    }
+		value = priv->mii_read(AR8327_REG_PAD5_CTRL);
+		value |= AR8327_PAD_CTRL_RGMII_RXCLK_DELAY_EN;
+		priv->mii_write(AR8327_REG_PAD5_CTRL, value);
+	}
 
-#ifdef BOARD_AR71XX
 	msleep(1000);
 
 	for (i = 0; i < AR8327_NUM_PORTS; i++) {
 		qca_ar8327_port_init(priv, i);
-    }
-#endif
+	}
+
+	qca_ar8327_phy_enable(priv);
 
 	return 0;
 }
@@ -909,6 +1050,58 @@ qca_phy_mib_work_stop(struct qca_phy_priv *priv)
 	cancel_delayed_work_sync(&priv->mib_dwork);
 }
 
+#define SSDK_QM_CHANGE_WQ
+static void
+qm_err_check_work_task(struct work_struct *work)
+{
+	struct qca_phy_priv *priv = container_of(work, struct qca_phy_priv,
+                                            qm_dwork.work);
+
+	mutex_lock(&priv->qm_lock);
+
+	qca_ar8327_sw_mac_polling_task(&priv->sw_dev);
+
+	mutex_unlock(&priv->qm_lock);
+
+	#ifndef SSDK_QM_CHANGE_WQ
+	schedule_delayed_work(&priv->qm_dwork,
+							msecs_to_jiffies(QCA_QM_WORK_DELAY));
+	#else
+	queue_delayed_work_on(0, system_long_wq, &priv->qm_dwork,
+							msecs_to_jiffies(QCA_QM_WORK_DELAY));
+	#endif
+}
+
+int
+qm_err_check_work_start(struct qca_phy_priv *priv)
+{
+	/*Only valid for S17c chip*/
+	if (priv->version != QCA_VER_AR8337) return;
+
+	mutex_init(&priv->qm_lock);
+
+	INIT_DELAYED_WORK(&priv->qm_dwork, qm_err_check_work_task);
+
+	#ifndef SSDK_MIB_CHANGE_WQ
+	schedule_delayed_work(&priv->qm_dwork,
+							msecs_to_jiffies(QCA_QM_WORK_DELAY));
+	#else
+	queue_delayed_work_on(0, system_long_wq, &priv->qm_dwork,
+							msecs_to_jiffies(QCA_QM_WORK_DELAY));
+	#endif
+
+	return 0;
+}
+
+void
+qm_err_check_work_stop(struct qca_phy_priv *priv)
+{
+	/*Only valid for S17c chip*/
+	if (priv->version != QCA_VER_AR8337) return;
+
+	cancel_delayed_work_sync(&priv->qm_dwork);
+}
+
 int
 qca_phy_id_chip(struct qca_phy_priv *priv)
 {
@@ -983,6 +1176,10 @@ qca_phy_config_init(struct phy_device *pdev)
 
 	qca_phy_mib_work_start(priv);
 
+	#ifdef AUTO_SWITCH_RECOVERY
+	qm_err_check_work_start(priv);
+	#endif
+
 	return ret;
 }
 
@@ -1043,6 +1240,9 @@ static int ssdk_switch_register()
 static int ssdk_switch_unregister()
 {
 	qca_phy_mib_work_stop(qca_phy_priv_global);
+	#ifdef AUTO_SWITCH_RECOVERY
+	qm_err_check_work_stop(qca_phy_priv_global);
+	#endif
 	unregister_switch(&qca_phy_priv_global->sw_dev);
 	kfree(qca_phy_priv_global);
 	return 0;
@@ -1158,7 +1358,6 @@ struct ag71xx_mdio {
 };
 
 static struct mii_bus *miibus = NULL;
-extern ssdk_chip_type SSDK_CURRENT_CHIP_TYPE;
 
 #ifdef BOARD_IPQ806X
 #define IPQ806X_MDIO_BUS_NAME			"mdio-gpio"
@@ -1417,164 +1616,29 @@ ssdk_plat_exit(void)
 
 
 
-sw_error_t
-ssdk_switch_init(a_uint32_t dev_id)
+static int ssdk_phy_id_get(ssdk_init_cfg *cfg)
 {
-    a_uint32_t nr = 0;
-    a_uint32_t i;
-    hsl_dev_t *p_dev = NULL;
-
-    p_dev = hsl_dev_ptr_get(dev_id);
-    SW_RTN_ON_NULL(p_dev);
-
-    /*fal_reset(dev_id);*/
-    /*enable cpu and disable mirror*/
-    fal_cpu_port_status_set(dev_id, A_TRUE);
-    /* setup MTU */
-    fal_frame_max_size_set(dev_id, 1518);
-    /* Enable MIB counters */
-    fal_mib_status_set(dev_id, A_TRUE);
-    fal_igmp_mld_rp_set(dev_id, 0);
-	/*enable pppoe for dakota to support RSS*/
-	if (SSDK_CURRENT_CHIP_TYPE == CHIP_DESS)
-		fal_pppoe_status_set(dev_id, A_TRUE);
-
-    for (i = 0; i < p_dev->nr_ports; i++)
-    {
-#ifdef BOARD_AR71XX
-        if(i >= 6) {
-            break;
-        }
-#endif
-#ifdef BOARD_AR71XX
-        if (i  != 0) {
-            fal_port_link_forcemode_set(dev_id, i, A_FALSE);
-        }
-#endif
-        if (SSDK_CURRENT_CHIP_TYPE != CHIP_DESS) {
-            fal_port_rxhdr_mode_set(dev_id, i, FAL_NO_HEADER_EN);
-            fal_port_txhdr_mode_set(dev_id, i, FAL_NO_HEADER_EN);
-        }
-        fal_port_3az_status_set(dev_id, i, A_FALSE);
-        fal_port_flowctrl_forcemode_set(dev_id, i, A_TRUE);
-        fal_port_flowctrl_set(dev_id, i, A_FALSE);
-
-        if (i != 0 && i != 6) {
-            fal_port_flowctrl_set(dev_id, i, A_TRUE);
-            fal_port_flowctrl_forcemode_set(dev_id, i, A_FALSE);
-        }
-
-        fal_port_default_svid_set(dev_id, i, 0);
-        fal_port_default_cvid_set(dev_id, i, 0);
-        fal_port_1qmode_set(dev_id, i, FAL_1Q_DISABLE);
-        fal_port_egvlanmode_set(dev_id, i, FAL_EG_UNMODIFIED);
-
-        fal_fdb_port_learn_set(dev_id, i, A_TRUE);
-        fal_stp_port_state_set(dev_id, 0, i, FAL_STP_FARWARDING);
-        fal_port_vlan_propagation_set(dev_id, i, FAL_VLAN_PROPAGATION_REPLACE);
-
-        fal_port_igmps_status_set(dev_id, i, A_FALSE);
-        fal_port_igmp_mld_join_set(dev_id, i, A_FALSE);
-        fal_port_igmp_mld_leave_set(dev_id, i, A_FALSE);
-        fal_igmp_mld_entry_creat_set(dev_id, A_FALSE);
-        fal_igmp_mld_entry_v3_set(dev_id, A_FALSE);
-
-        /*make sure cpu port can communicate with
-        the other ports normally*/
-        if (i != 0)
-        {
-            fal_portvlan_member_add(dev_id, i, 0);
-            fal_portvlan_member_add(dev_id, 0, i);
-        }
-
-        /* forward multicast and broadcast frames to CPU */
-        fal_port_unk_uc_filter_set(dev_id, i, A_FALSE);
-        fal_port_unk_mc_filter_set(dev_id, i, A_FALSE);
-        fal_port_bc_filter_set(dev_id, i, A_FALSE);
-        if ((SSDK_CURRENT_CHIP_TYPE == CHIP_SHIVA))  continue;
-        /* Updating HOL registers and RGMII delay settings
-	    with the values suggested by QCA switch team */
-		/*Special setting for Dakota*/
-	if (SSDK_CURRENT_CHIP_TYPE == CHIP_DESS)
-	{
-		nr = 240; /*30*8*/
-		fal_qos_port_tx_buf_nr_set(dev_id, i, &nr);
-		nr = 48; /*6*8*/
-		fal_qos_port_rx_buf_nr_set(dev_id, i, &nr);
-		fal_qos_port_red_en_set(dev_id, i, A_TRUE);
-		nr = 32;
-		fal_qos_queue_tx_buf_nr_set(dev_id, i, 5, &nr);
-		fal_qos_queue_tx_buf_nr_set(dev_id, i, 4, &nr);
-		fal_qos_queue_tx_buf_nr_set(dev_id, i, 3, &nr);
-		fal_qos_queue_tx_buf_nr_set(dev_id, i, 2, &nr);
-		fal_qos_queue_tx_buf_nr_set(dev_id, i, 1, &nr);
-		fal_qos_queue_tx_buf_nr_set(dev_id, i, 0, &nr);
-		continue;
-	}
-
-        if (i == 0 || i == 5 || i == 6)
-        {
-            nr = 240; /*30*8*/
-            fal_qos_port_tx_buf_nr_set(dev_id, i, &nr);
-            nr = 48; /*6*8*/
-            fal_qos_port_rx_buf_nr_set(dev_id, i, &nr);
-            fal_qos_port_red_en_set(dev_id, i, A_TRUE);
-            if (SSDK_CURRENT_CHIP_TYPE == CHIP_ISISC)
-            nr = 64; /*8*8*/
-            else if (SSDK_CURRENT_CHIP_TYPE == CHIP_ISIS)
-            nr = 60;
-            fal_qos_queue_tx_buf_nr_set(dev_id, i, 5, &nr);
-            nr = 48; /*6*8*/
-            fal_qos_queue_tx_buf_nr_set(dev_id, i, 4, &nr);
-            nr = 32; /*4*8*/
-            fal_qos_queue_tx_buf_nr_set(dev_id, i, 3, &nr);
-            nr = 32; /*4*8*/
-            fal_qos_queue_tx_buf_nr_set(dev_id, i, 2, &nr);
-            nr = 32; /*4*8*/
-            fal_qos_queue_tx_buf_nr_set(dev_id, i, 1, &nr);
-            nr = 24; /*3*8*/
-            fal_qos_queue_tx_buf_nr_set(dev_id, i, 0, &nr);
-        }
-        else
-        {
-            nr = 200; /*25*8*/
-            fal_qos_port_tx_buf_nr_set(dev_id, i, &nr);
-            nr = 48; /*6*8*/
-            fal_qos_port_rx_buf_nr_set(dev_id, i, &nr);
-            fal_qos_port_red_en_set(dev_id, i, A_TRUE);
-            if (SSDK_CURRENT_CHIP_TYPE == CHIP_ISISC)
-            nr = 64; /*8*8*/
-            else if (SSDK_CURRENT_CHIP_TYPE == CHIP_ISIS)
-            nr = 60;
-            fal_qos_queue_tx_buf_nr_set(dev_id, i, 3, &nr);
-            nr = 48; /*6*8*/
-            fal_qos_queue_tx_buf_nr_set(dev_id, i, 2, &nr);
-            nr = 32; /*4*8*/
-            fal_qos_queue_tx_buf_nr_set(dev_id, i, 1, &nr);
-            nr = 24; /*3*8*/
-            fal_qos_queue_tx_buf_nr_set(dev_id, i, 0, &nr);
-        }
-    }
-    return SW_OK;
-}
-
-
-
-int ssdk_phy_init(ssdk_init_cfg *cfg)
-{
-
-	int size = sizeof(phy_array)/sizeof(phy_identification_t);
 	a_uint32_t phy_id = 0;
 	a_uint16_t org_id = 0, rev_id = 0;
 	int i = 0;
 
+	cfg->reg_func.mdio_get(0, 0, 2, &org_id);
+	cfg->reg_func.mdio_get(0, 0, 3, &rev_id);
+	phy_id = (org_id<<16) | rev_id;
+	cfg->phy_id = phy_id;
+	printk("PHY ID is 0x%x\n",cfg->phy_id);
+
+	return SW_OK;;
+}
+int ssdk_phy_init(ssdk_init_cfg *cfg)
+{
+
+	int size = sizeof(phy_array)/sizeof(phy_identification_t);
+	int i = 0;
+
 	for(i=0;i<size;i++)
 	{
-		cfg->reg_func.mdio_get(0, phy_array[i].phy_addr, 2, &org_id);
-		cfg->reg_func.mdio_get(0, phy_array[i].phy_addr, 3, &rev_id);
-		phy_id = (org_id<<16) | rev_id;
-
-		if(phy_array[i].phy_id == phy_id)
+		if(phy_array[i].phy_id == cfg->phy_id)
 			return phy_array[i].init();
 	}
 
@@ -1582,9 +1646,11 @@ int ssdk_phy_init(ssdk_init_cfg *cfg)
 }
 
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-struct reset_control *ess_rst;
+struct reset_control *ess_rst = NULL;
 void ssdk_ess_reset()
 {
+	if (!ess_rst)
+		return;
 	reset_control_assert(ess_rst);
 	mdelay(10);
 	reset_control_deassert(ess_rst);
@@ -1776,7 +1842,7 @@ void clear_self_test_config()
 	int i = 0, phy = 0;
 	u32 value = 0;
 	/* disable EEE */
-	qca_phy_mmd_write(0, 0x1f, 0x7,  0x3c, 0x0);
+/*	qca_phy_mmd_write(0, 0x1f, 0x7,  0x3c, 0x0); */
 
 	/*disable phy internal loopback*/
 	qca_ar8327_phy_write(0, 0x1f, 0x10, 0x6860);
@@ -1791,67 +1857,32 @@ void clear_self_test_config()
 		qca_phy_mmd_write(0, phy, 7, 0x8028, 0x001f);
 	}
 }
-
 sw_error_t
 ssdk_init(a_uint32_t dev_id, ssdk_init_cfg * cfg)
 {
-    sw_error_t rv;
+	sw_error_t rv;
 
 
 
-#if (defined(KERNEL_MODULE) && defined(USER_MODE))
-    rv = hsl_dev_init(dev_id, cfg);
-#else
-#ifdef HSL_STANDALONG
-    rv = hsl_dev_init(dev_id, cfg);
-#else
-    rv = fal_init(dev_id, cfg);
-    if (rv != SW_OK)
-	printk("ssdk fal init failed \r\n");
-#endif
-#endif
+	rv = fal_init(dev_id, cfg);
+	if (rv != SW_OK)
+		printk("ssdk fal init failed \r\n");
 
 	ssdk_phy_init(cfg);
+	if (rv != SW_OK)
+		printk("ssdk phy init failed \r\n");
 
-
-#ifndef BOARD_AR71XX
-		if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_MDIO) {
-			qca_ar8327_phy_disable();
-			qca_mac_disable();
-			msleep(1000);
-		}
-#endif
-
-
-
-
-	if (cfg->chip_type == CHIP_DESS)
-		ssdk_psgmii_self_test();
-    rv =  ssdk_switch_init(dev_id);
-    if (rv != SW_OK)
-	printk("ssdk switch init failed \r\n");
-	if (cfg->chip_type == CHIP_DESS)
-		clear_self_test_config();
-
-    return rv;
+	return rv;
 }
 
 sw_error_t
 ssdk_cleanup(void)
 {
-    sw_error_t rv;
+	sw_error_t rv;
 
-#if (defined(KERNEL_MODULE) && defined(USER_MODE))
-    rv = hsl_dev_cleanup();
-#else
-#ifdef HSL_STANDALONG
-    rv = hsl_dev_cleanup();
-#else
-    rv = fal_cleanup();
-#endif
-#endif
+	rv = fal_cleanup();
 
-    return rv;
+	return rv;
 }
 
 sw_error_t
@@ -2148,7 +2179,7 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 		i++;
 	}
 	cfg->led_source_num = i;
-	printk("current dts led_source_num is =%d\n",cfg->led_source_num);
+	printk("current dts led_source_num is %d\n",cfg->led_source_num);
 	return SW_OK;
 }
 #endif
@@ -2474,6 +2505,7 @@ qca_dess_hw_init(ssdk_init_cfg *cfg)
 	a_uint32_t reg_value;
 	hsl_api_t *p_api;
 
+	qca_switch_init(0);
 	ssdk_portvlan_init(cfg->port_cfg.cpu_bmp, cfg->port_cfg.lan_bmp, cfg->port_cfg.wan_bmp);
 
 	fal_port_rxhdr_mode_set(0, 0, FAL_ALL_TYPE_FRAME_EN);
@@ -2492,6 +2524,9 @@ qca_dess_hw_init(ssdk_init_cfg *cfg)
 	if (p_api && p_api->port_flowctrl_thresh_set)
 		p_api->port_flowctrl_thresh_set(0, 0, SSDK_PORT0_FC_THRESH_ON_DFLT,
 							SSDK_PORT0_FC_THRESH_OFF_DFLT);
+
+	if (p_api && p_api->ip_glb_lock_time_set)
+		p_api->ip_glb_lock_time_set(0, FAL_GLB_LOCK_TIME_100US);
 
 
 	/*config psgmii,sgmii or rgmii mode for Dakota*/
@@ -2691,6 +2726,10 @@ char ssdk_driver_name[] = "ess_ssdk";
 static int ssdk_probe(struct platform_device *pdev)
 {
 	ess_rst = devm_reset_control_get(&pdev->dev, "ess_rst");
+	if (!ess_rst) {
+		printk("ess rst fail!\n");
+		return -1;
+	}
 	reset_control_assert(ess_rst);
 	mdelay(10);
 	reset_control_deassert(ess_rst);
@@ -2724,7 +2763,6 @@ regi_init(void)
 	a_uint8_t chip_version = 0;
 	#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 	struct device dev;
-	struct reset_control *ess_rst = NULL;
 	#endif
 	#ifdef IN_RFS
 	memset(&rfs_dev, 0, sizeof(rfs_dev));
@@ -2783,9 +2821,17 @@ regi_init(void)
 	if(rv)
 		goto out;
 
+	ssdk_phy_id_get(&cfg);
+
 	rv = ssdk_init(0, &cfg);
 
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
+		/*Do Malibu self test to fix packet drop issue firstly*/
+		if ((cfg.chip_type == CHIP_DESS) && (ssdk_dt_global.mac_mode == PORT_WRAPPER_PSGMII)) {
+			ssdk_psgmii_self_test();
+			clear_self_test_config();
+		}
+
 		rv = ssdk_switch_register();
 		qca_dess_hw_init(&cfg);
 

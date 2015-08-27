@@ -257,7 +257,7 @@ if_mac_add(a_uint8_t *mac, a_uint32_t vid, uint32_t ipv6)
 
     if(if_mac_count == MAX_INTF_NUM)
     {
-        HNAT_PRINTK("%s: reach mac count max\n", __func__);
+        HNAT_ERR_PRINTK("%s: reach mac count max\n", __func__);
         return -1;
     }
 
@@ -620,6 +620,8 @@ napt_hw_mode_init(void)
 void
 napt_hw_mode_cleanup(void)
 {
+	if (!DESS_CHIP(nat_chip_ver))
+		IP_ROUTE_STATUS_SET(0, A_FALSE);
     ACL_STATUS_SET(0, A_FALSE);
 }
 

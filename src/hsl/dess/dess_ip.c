@@ -92,6 +92,8 @@ _dess_ip_host_route_set(a_uint32_t dev_id, a_uint32_t hroute_id, fal_host_route_
 static sw_error_t
 _dess_ip_host_route_get(a_uint32_t dev_id, a_uint32_t hroute_id, fal_host_route_t * entry);
 
+extern aos_lock_t dess_nat_lock;
+
 static a_int32_t
 _dess_ip_host_route_ip4_hw_add(fal_host_entry_t *arp_entry)
 {
@@ -779,16 +781,26 @@ _dess_ip_host_add(a_uint32_t dev_id, fal_host_entry_t * entry)
     rv = _dess_host_sw_to_hw(dev_id, entry, reg);
     SW_RTN_ON_ERROR(rv);
 
+	aos_lock_bh(&dess_nat_lock);
     rv = _dess_host_down_to_hw(dev_id, reg);
-    SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
 
     rv = _dess_host_entry_commit(dev_id, DESS_ENTRY_ARP, DESS_HOST_ENTRY_ADD);
-    SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
 
     HSL_REG_ENTRY_GET(rv, dev_id, HOST_ENTRY7, 0, (a_uint8_t *) (&reg[7]),
                       sizeof (a_uint32_t));
-    SW_RTN_ON_ERROR(rv);
-
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
+	aos_unlock_bh(&dess_nat_lock);
     SW_GET_FIELD_BY_REG(HOST_ENTRY7, TBL_IDX, entry->entry_id, reg[7]);
 	if(entry->flags == FAL_IP_IP4_ADDR) {
 		_dess_ip_host_route_ip4_hw_add(entry);
@@ -853,11 +865,15 @@ _dess_ip_host_del(a_uint32_t dev_id, a_uint32_t del_mode,
         SW_SET_REG_BY_FIELD(HOST_ENTRY7, SPEC_STATUS, 1, reg[7]);
         SW_SET_REG_BY_FIELD(HOST_ENTRY6, AGE_FLAG, entry->status, reg[6]);
     }
-
+	aos_lock_bh(&dess_nat_lock);
     rv = _dess_host_down_to_hw(dev_id, reg);
-    SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
 
     rv = _dess_host_entry_commit(dev_id, DESS_ENTRY_ARP, op);
+	aos_unlock_bh(&dess_nat_lock);
 	if(!rv) {
 		if(FAL_IP_IP4_ADDR & entry->flags)
 			_dess_ip_host_route_ip4_hw_del(entry);
@@ -896,29 +912,43 @@ _dess_ip_host_get(a_uint32_t dev_id, a_uint32_t get_mode,
         reg[3] = entry->ip6_addr.ul[0];
         SW_SET_REG_BY_FIELD(HOST_ENTRY6, IP_VER, 1, reg[6]);
     }
-
+	aos_lock_bh(&dess_nat_lock);
     rv = _dess_host_down_to_hw(dev_id, reg);
-    SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
 
     rv = _dess_host_entry_commit(dev_id, DESS_ENTRY_ARP,
                                  DESS_HOST_ENTRY_SEARCH);
-    SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
 
     rv = _dess_host_up_to_sw(dev_id, reg);
-    SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
 
     aos_mem_zero(entry, sizeof (fal_host_entry_t));
 
     rv = _dess_host_hw_to_sw(dev_id, reg, entry);
-    SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
 
     if (!(entry->status))
     {
+		aos_unlock_bh(&dess_nat_lock);
         return SW_NOT_FOUND;
     }
 
     HSL_REG_ENTRY_GET(rv, dev_id, HOST_ENTRY7, 0, (a_uint8_t *) (&reg[7]),
                       sizeof (a_uint32_t));
+	aos_unlock_bh(&dess_nat_lock);
     SW_RTN_ON_ERROR(rv);
 
     SW_GET_FIELD_BY_REG(HOST_ENTRY7, TBL_IDX, entry->entry_id, reg[7]);
@@ -977,13 +1007,21 @@ _dess_ip_host_next(a_uint32_t dev_id, a_uint32_t next_mode,
     }
 
     SW_SET_REG_BY_FIELD(HOST_ENTRY6, VRF_ID, entry->vrf_id, reg[6]);
+	aos_lock_bh(&dess_nat_lock);
     rv = _dess_host_down_to_hw(dev_id, reg);
-    SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
 
     rv = _dess_host_entry_commit(dev_id, DESS_ENTRY_ARP, DESS_HOST_ENTRY_NEXT);
-    SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
 
     rv = _dess_host_up_to_sw(dev_id, reg);
+	aos_unlock_bh(&dess_nat_lock);
     SW_RTN_ON_ERROR(rv);
 
     aos_mem_zero(entry, sizeof (fal_host_entry_t));
@@ -1080,14 +1118,21 @@ _dess_ip_host_pppoe_bind(a_uint32_t dev_id, a_uint32_t entry_id,
 
     tbl_idx = (entry_id - 1) & 0x7f;
     SW_SET_REG_BY_FIELD(HOST_ENTRY7, TBL_IDX, tbl_idx, reg[7]);
-
+	aos_lock_bh(&dess_nat_lock);
     rv = _dess_host_down_to_hw(dev_id, reg);
-    SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
 
     rv = _dess_host_entry_commit(dev_id, DESS_ENTRY_ARP, DESS_HOST_ENTRY_NEXT);
-    SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
 
     rv = _dess_host_up_to_sw(dev_id, reg);
+	aos_unlock_bh(&dess_nat_lock);
     if (SW_OK != rv)
     {
         return SW_NOT_FOUND;
@@ -1118,20 +1163,34 @@ _dess_ip_host_pppoe_bind(a_uint32_t dev_id, a_uint32_t entry_id,
     tbl[2] = reg[2];
     tbl[3] = reg[3];
     tbl[6] = (reg[6] >> 15) << 15;
+	aos_lock_bh(&dess_nat_lock);
     rv = _dess_host_down_to_hw(dev_id, tbl);
-    SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
 
     rv = _dess_host_entry_commit(dev_id, DESS_ENTRY_ARP, DESS_HOST_ENTRY_DEL);
-    SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
 
     reg[7] = 0x0;
     rv = _dess_host_down_to_hw(dev_id, reg);
-    SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
 
     rv = _dess_host_entry_commit(dev_id, DESS_ENTRY_ARP, DESS_HOST_ENTRY_ADD);
-    SW_RTN_ON_ERROR(rv);
+	if (rv != SW_OK) {
+		aos_unlock_bh(&dess_nat_lock);
+		return rv;
+	}
 
     rv = _dess_host_up_to_sw(dev_id, reg);
+	aos_unlock_bh(&dess_nat_lock);
     SW_RTN_ON_ERROR(rv);
 
     return SW_OK;

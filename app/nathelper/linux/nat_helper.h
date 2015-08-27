@@ -35,10 +35,13 @@ void hnat_log_msg(int level, char *string, ...);
 enum {
 	HNAT_LOG_LEVEL_DEBUG = 0,
 	HNAT_LOG_LEVEL_INFO,
-	HNAT_LOG_LEVEL_ERR
+	HNAT_LOG_LEVEL_ERR,
+	HNAT_LOG_LEVEL_DISABLE
 };
 #define HNAT_PRINTK(arg...)  \
 			hnat_log_msg(HNAT_LOG_LEVEL_DEBUG, arg)
+#define HNAT_INFO_PRINTK(arg...)  \
+			hnat_log_msg(HNAT_LOG_LEVEL_INFO, arg)
 #define HNAT_ERR_PRINTK(arg...)  \
 			hnat_log_msg(HNAT_LOG_LEVEL_ERR, arg)
 

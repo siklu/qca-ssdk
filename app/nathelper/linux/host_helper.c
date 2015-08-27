@@ -85,6 +85,8 @@
 
 #define ARP_ENTRY_MAX 128
 
+#define DESS_CHIP_VER	0x14
+
 /* P6 is used by loop dev. */
 #define S17_P6PAD_MODE_REG_VALUE 0x01000000
 
@@ -636,6 +638,9 @@ uint32_t napt_set_ipv6_default_route(void)
     struct in6_addr local_lan6ip = IN6ADDR_ANY_INIT;
     unsigned long  flags;
 
+	if (((nat_chip_ver&0xffff)>>8) == DESS_CHIP_VER)
+		return SW_OK;
+
     /* search for the next hop (s)*/
     if (NF_S17_WAN_TYPE_IP == nf_athrs17_hnat_wan_type)
     {
@@ -831,11 +836,6 @@ static sw_error_t setup_interface_entry(char *list_if, int is_wan)
         memcpy(if_mac_addr, devmac, MAC_LEN);
         devmac = if_mac_addr;
         dev_put(nat_dev);
-
-        HNAT_PRINTK("DMAC: 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n",
-                    devmac[0], devmac[1], devmac[2],
-                    devmac[3], devmac[4], devmac[5]);
-        HNAT_PRINTK("VLAN id: %d\n", vid);
 
         if(if_mac_add(devmac, vid, ipv6) != 0)
         {
@@ -1215,7 +1215,6 @@ dev_check(char *in_dev, char *dev_list)
     strcpy(temp, dev_list);
     list = temp;
 
-    HNAT_PRINTK("%s: list:%s\n", __func__, list);
     while ((list_dev = strsep(&list, " ")) != NULL)
     {
         HNAT_PRINTK("%s: strlen:%d list_dev:%s in_dev:%s\n",
@@ -1317,7 +1316,7 @@ arp_in_bg_handle(struct nat_helper_bg_msg *msg)
     }
     else
     {
-        HNAT_PRINTK("Not Support device: %s\n",  (char *)in->name);
+        HNAT_INFO_PRINTK("Not Support device: %s\n",  (char *)in->name);
         return 0;
     }
 

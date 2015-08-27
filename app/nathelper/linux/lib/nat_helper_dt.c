@@ -534,11 +534,12 @@ void nat_helper_cookie_del(a_uint32_t hw_index)
         {
             napt_ct_buf_ct_info_clear(napt_ct);
         }
+		NAPT_CT_AGING_ENABLE(napt_ct_addr[hw_index]);
     }
 	napt_ct_addr[hw_index] = 0;
 	napt_cookie[hw_index*2] = 0;
 	napt_cookie[hw_index*2+1] = 0;
-	printk("nat_helper_cookie_del for index 0x%x\n", hw_index);
+	HNAT_INFO_PRINTK("nat_helper_cookie_del for index 0x%x\n", hw_index);
 }
 
 
@@ -627,7 +628,6 @@ napt_ct_hw_aging(void)
     a_uint32_t ct_addr;
     napt_entry_t napt = {0};
 
-    HNAT_PRINTK("[aging_scan start]\n");
 
     if(napt_hw_first_by_age(&napt, NAPT_AGEOUT_STATUS) != 0)
     {
@@ -672,8 +672,6 @@ napt_ct_hw_aging(void)
         nat_hw_prv_base_update_enable();
     }
 #endif 
-
-    HNAT_PRINTK("[aging_scan end]\n");
 
     return;
 }
@@ -754,7 +752,7 @@ napt_ct_hw_sync(a_uint8_t napt_ct_valid[])
             a_uint32_t ct_addr = napt_ct_addr[hw_index];
             struct napt_ct *napt_ct = napt_ct_buf_ct_find(ct_addr);
 
-			HNAT_PRINTK("should hw clear for  %d\n", hw_index);
+			HNAT_INFO_PRINTK("should hw clear for  %d\n", hw_index);
 
             if(napt_ct_in_hw_sanity_check(napt_ct, hw_index) != 0)
             {
@@ -829,7 +827,7 @@ napt_ct_check_add_one(a_uint32_t ct_addr, a_uint8_t *napt_ct_valid)
 
     if(napt_ct_buf_deny_get(napt_ct) >= NAPT_CT_PERMANENT_DENY)
     {
-        HNAT_PRINTK("<napt_ct_scan> ct:%x is PERMANENT deny\n",
+        HNAT_INFO_PRINTK("<napt_ct_scan> ct:%x is PERMANENT deny\n",
                ct_addr);
         return -1;
 
@@ -843,7 +841,7 @@ napt_ct_check_add_one(a_uint32_t ct_addr, a_uint8_t *napt_ct_valid)
                 //printk("<napt_ct_scan> ct:%x* is exist\n", ct_addr);
 				if(nf_athrs17_hnat_sync_counter_en == 0)
 				{
-                	HNAT_PRINTK("<napt_ct_scan> ct:%x* is exist\n", ct_addr);
+                	HNAT_ERR_PRINTK("<napt_ct_scan> ct:%x* is exist\n", ct_addr);
                 	napt_ct_frag_hw_yield(napt_ct, hw_index);
 				}
             }
@@ -862,7 +860,7 @@ napt_ct_check_add_one(a_uint32_t ct_addr, a_uint8_t *napt_ct_valid)
                 }
             }
         } else {
-        	napt_ct_debug_info.thresh_low_cnt++;
+        	HNAT_INFO_PRINTK("can not reach thres for napt_ct=%p\n", napt_ct);
         }
 
         in_hw = napt_ct_buf_in_hw_get(napt_ct, &hw_index);
@@ -975,7 +973,7 @@ napt_ct_pkts_thres_calc(a_uint32_t cnt, a_uint32_t napt_ct_offload_cnt)
 
     //HNAT_ERR_PRINTK("###<%s> total:%lld cnt:%d avg:%lld  threshold:%lld###\n", __func__,
     //    packets_bdir_total, cnt, packets_bdir_avg, packets_bdir_thres);
-    HNAT_ERR_PRINTK("calc pkts avg:%lld offload_cnt:%d threshold:%lld\n",
+    HNAT_INFO_PRINTK("calc pkts avg:%lld offload_cnt:%d threshold:%lld\n",
                     packets_bdir_avg, napt_ct_offload_cnt, packets_bdir_thres);
 }
 
@@ -997,17 +995,12 @@ napt_ct_check_add(void)
     napt_ct_pkts_thres_calc_init();
 
     NAPT_CT_LIST_LOCK();
-	HNAT_PRINTK("lock enter!\n");
-	memset(&napt_ct_debug_info, 0, sizeof(napt_ct_debug_info));
     while((ct_addr = NAPT_CT_LIST_ITERATE(&hash, &iterate)))
     {
 		ct_cnt++;
-		napt_ct_debug_info.interate_cnt++;
         if (NAPT_CT_SHOULD_CARE(ct_addr))
         {
 			care_cnt++;
-			napt_ct_debug_info.care_cnt++;
-			HNAT_PRINTK("should care ct_addr=0x%x\n", ct_addr);
             if(napt_ct_check_add_one(ct_addr, napt_ct_valid) != -1)
             {
                 ct_buf_valid_cnt++;
@@ -1016,7 +1009,7 @@ napt_ct_check_add(void)
     }
 
     NAPT_CT_LIST_UNLOCK();
-	HNAT_PRINTK("ct_cnt=0x%x, care_cnt=0x%x\n", ct_cnt, care_cnt);
+	HNAT_INFO_PRINTK("ct_cnt=0x%x, care_cnt=0x%x\n", ct_cnt, care_cnt);
 
     a_uint32_t napt_ct_offload_cnt = napt_ct_hw_sync(napt_ct_valid);
 
@@ -1094,7 +1087,7 @@ napt_ct_buffer_hw_status_update(void)
 static void
 napt_ct_buffer_refresh(void)
 {
-    HNAT_PRINTK("napt_ct_buffer_refresh\n");
+    HNAT_INFO_PRINTK("napt_ct_buffer_refresh\n");
 
     napt_ct_buf_flush();
 
@@ -1106,7 +1099,7 @@ static void
 napt_ct_buffer_refresh_check(a_uint32_t ct_buf_valid_cnt)
 {
 #define NAPT_CT_BUF_REFRESH_THRES             1000
-    HNAT_ERR_PRINTK("ct_buffer_hash_cnt:%d cnt:%d max:%d\n",
+    HNAT_INFO_PRINTK("ct_buffer_hash_cnt:%d cnt:%d max:%d\n",
                     napt_ct_cnt_get(), ct_buf_valid_cnt/2, NAPT_CT_BUF_REFRESH_THRES);
 
     if((napt_ct_cnt_get() - ct_buf_valid_cnt/2) > NAPT_CT_BUF_REFRESH_THRES)
@@ -1155,7 +1148,7 @@ napt_ct_init(void)
 
     if(napt_ct_buf_init() != 0)
     {
-        HNAT_PRINTK("*****napt_ct_buf_init fail*******\n");
+        HNAT_ERR_PRINTK("*****napt_ct_buf_init fail*******\n");
         return -1;
     }
 
@@ -1185,7 +1178,6 @@ napt_ct_scan_thread(void *param)
 
     if(napt_ct_init() != 0)
     {
-        HNAT_PRINTK("*****napt_ct_init fail*******\n");
         return 0;
     }
 
@@ -1200,15 +1192,15 @@ napt_ct_scan_thread(void *param)
 
         if((--times) == 0)
         {
+		HNAT_PRINTK("[ct hw aging start]\n");
             napt_ct_hw_aging();
+		HNAT_PRINTK("[ct hw aging end]\n");
             times = (NAPT_CT_AGING_SEC/scan_period);
         }
 
         if((--arp_check_time) == 0)
         {
-		HNAT_PRINTK("[host check start]\n");
             host_check_aging();
-		HNAT_PRINTK("[host check end]\n");
             arp_check_time = (ARP_CHECK_AGING_SEC/scan_period);
         }
 

@@ -194,6 +194,10 @@ struct qca_phy_priv {
 	struct mutex reg_mutex;
 	struct mutex mib_lock;
 	struct delayed_work mib_dwork;
+	/*qm_err_check*/
+	struct mutex 	qm_lock;
+	struct delayed_work qm_dwork;
+	/*qm_err_check end*/
 	u64 *mib_counters;
 	/* dump buf */
 	a_uint8_t  buf[2048];
