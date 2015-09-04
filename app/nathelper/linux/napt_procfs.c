@@ -915,37 +915,37 @@ static ssize_t napt_log_show_get(struct device *dev,
 
 struct kobject *napt_sys = NULL;
 static const struct device_attribute napt_hnat_attr =
-	__ATTR(hnat, S_IWUGO | S_IRUGO, napt_hnat_get, napt_hnat_set);
+	__ATTR(hnat, 0660, napt_hnat_get, napt_hnat_set);
 static const struct device_attribute napt_wan_type_attr =
-	__ATTR(wan_type, S_IWUGO | S_IRUGO, napt_wan_type_get, napt_wan_type_set);
+	__ATTR(wan_type, 0660, napt_wan_type_get, napt_wan_type_set);
 static const struct device_attribute napt_ppp_id_attr =
-	__ATTR(ppp_id, S_IWUGO | S_IRUGO, napt_ppp_id_get, napt_ppp_id_set);
+	__ATTR(ppp_id, 0660, napt_ppp_id_get, napt_ppp_id_set);
 static const struct device_attribute napt_udp_thresh_attr =
-	__ATTR(udp_thresh, S_IWUGO | S_IRUGO, napt_udp_thresh_get, napt_udp_thresh_set);
+	__ATTR(udp_thresh, 0660, napt_udp_thresh_get, napt_udp_thresh_set);
 static const struct device_attribute napt_wan_ip_attr =
-	__ATTR(wan_ip, S_IWUGO | S_IRUGO, napt_wan_ip_get, napt_wan_ip_set);
+	__ATTR(wan_ip, 0660, napt_wan_ip_get, napt_wan_ip_set);
 static const struct device_attribute napt_ppp_peer_ip_attr =
-	__ATTR(peer_ip, S_IWUGO | S_IRUGO, napt_ppp_peer_ip_get, napt_ppp_peer_ip_set);
+	__ATTR(peer_ip, 0660, napt_ppp_peer_ip_get, napt_ppp_peer_ip_set);
 static const struct device_attribute napt_ppp_peer_mac_attr =
-	__ATTR(peer_mac, S_IWUGO | S_IRUGO, napt_peer_mac_get, napt_peer_mac_set);
+	__ATTR(peer_mac, 0660, napt_peer_mac_get, napt_peer_mac_set);
 static const struct device_attribute napt_wan_mac_attr =
-	__ATTR(wan_mac, S_IWUGO | S_IRUGO, napt_wan_mac_get, napt_wan_mac_set);
+	__ATTR(wan_mac, 0660, napt_wan_mac_get, napt_wan_mac_set);
 static const struct device_attribute napt_ppp_id2_attr =
-	__ATTR(ppp_id2, S_IWUGO | S_IRUGO, napt_ppp_id2_get, napt_ppp_id2_set);
+	__ATTR(ppp_id2, 0660, napt_ppp_id2_get, napt_ppp_id2_set);
 static const struct device_attribute napt_ppp_peer_mac2_attr =
-	__ATTR(peer_mac2, S_IWUGO | S_IRUGO, napt_peer_mac2_get, napt_peer_mac2_set);
+	__ATTR(peer_mac2, 0660, napt_peer_mac2_get, napt_peer_mac2_set);
 static const struct device_attribute napt_sync_counter_en_attr =
-	__ATTR(sync_counter_en, S_IWUGO | S_IRUGO, napt_sync_counter_en_get, napt_sync_counter_en_set);
+	__ATTR(sync_counter_en, 0660, napt_sync_counter_en_get, napt_sync_counter_en_set);
 static const struct device_attribute napt_log_en_attr =
-	__ATTR(log_en, S_IWUGO | S_IRUGO, napt_log_en_get, napt_log_en_set);
+	__ATTR(log_en, 0660, napt_log_en_get, napt_log_en_set);
 static const struct device_attribute napt_log_show_attr =
-	__ATTR(log_show, S_IWUGO | S_IRUGO, napt_log_show_get, NULL);
+	__ATTR(log_show, 0660, napt_log_show_get, NULL);
 static const struct device_attribute napt_scan_period_attr =
-	__ATTR(speriod, S_IWUGO | S_IRUGO, napt_scan_period_get, napt_scan_period_set);
+	__ATTR(speriod, 0660, napt_scan_period_get, napt_scan_period_set);
 static const struct device_attribute napt_scan_enable_attr =
-	__ATTR(scan_en, S_IWUGO | S_IRUGO, napt_scan_enable_get, napt_scan_enable_set);
+	__ATTR(scan_en, 0660, napt_scan_enable_get, napt_scan_enable_set);
 static const struct device_attribute napt_need_clean_attr =
-	__ATTR(napt_clean, S_IWUGO | S_IRUGO, napt_need_clean_get, napt_need_clean_set);
+	__ATTR(napt_clean, 0660, napt_need_clean_get, napt_need_clean_set);
 
 
 int napt_procfs_init(void)
