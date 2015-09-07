@@ -1087,7 +1087,7 @@ static int add_pppoe_host_entry(uint32_t sport, a_int32_t arp_entry_id)
     nh_arp_entry.ip4_addr = ntohl(nf_athrs17_hnat_ppp_peer_ip);
     nh_arp_entry.flags = FAL_IP_IP4_ADDR;
     rv = IP_HOST_GET(0, FAL_IP_ENTRY_IPADDR_EN, &nh_arp_entry);
-    if (SW_OK != rv)
+    if (SW_OK != rv || pppoetbl.session_id != nf_athrs17_hnat_ppp_id)
     {
         if ((!ena) && (PPPOE_STATUS_SET(0, A_TRUE) != SW_OK))
             aos_printk("Cannot enable the PPPoE mode\n");
@@ -1105,6 +1105,7 @@ static int add_pppoe_host_entry(uint32_t sport, a_int32_t arp_entry_id)
         {
             uint8_t mbuf[6], ibuf[4];
             a_int32_t a_entry_id = -1;
+			a_uint32_t index;
 
             PPPOE_SESSION_ID_SET(0, pppoetbl.entry_id, pppoetbl.session_id);
             aos_printk("pppoe session: %d, entry_id: %d\n", pppoetbl.session_id, pppoetbl.entry_id);
@@ -1129,6 +1130,7 @@ static int add_pppoe_host_entry(uint32_t sport, a_int32_t arp_entry_id)
                 pppoe_gwid = a_entry_id;
 			pppoe_add_acl_rules(nf_athrs17_hnat_wan_ip, *(uint32_t *)&lanip,
 								*(uint32_t *)&lanipmask, a_entry_id);
+			nat_hw_pub_ip_add(ntohl(nf_athrs17_hnat_wan_ip), &index);
                 aos_printk("ACL creation okay... \n");
             } else {
 			HNAT_PRINTK("pppoe arp add fail!\n");
@@ -1542,6 +1544,7 @@ static int qcaswitch_pppoe_ip_event(struct notifier_block *this,
                 del_pppoetbl.uni_session = 0;
                 del_pppoetbl.entry_id = 0;
                 PPPOE_SESSION_TABLE_DEL(0, &del_pppoetbl);
+		memset(&pppoetbl, 0, sizeof(pppoetbl));
                 nf_athrs17_hnat_wan_type = NF_S17_WAN_TYPE_IP;
                 nf_athrs17_hnat_wan_ip = 0;
                 nf_athrs17_hnat_ppp_peer_ip = 0;
@@ -1557,6 +1560,7 @@ static int qcaswitch_pppoe_ip_event(struct notifier_block *this,
                     del_pppoetbl.uni_session = 0;
                     del_pppoetbl.entry_id = 0;
                     PPPOE_SESSION_TABLE_DEL(0, &del_pppoetbl);
+			memset(&pppoetbl, 0, sizeof(pppoetbl));
                 }
                 nf_athrs17_hnat_ppp_id2 = 0;
                 memset(&nf_athrs17_hnat_ppp_peer_mac2, 0, ETH_ALEN);

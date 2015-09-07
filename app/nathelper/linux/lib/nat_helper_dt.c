@@ -76,6 +76,8 @@ static a_uint32_t ct_buf_ct_cnt = 0;
 static struct napt_debug_counter napt_ct_debug_info;
 
 int scan_period = NAPT_CT_POLLING_SEC;
+int scan_enable = 1;
+int napt_need_clean = 0;
 
 static a_int32_t
 napt_hash_buf_init(struct napt_ct **hash, struct nhlist_head **hash_head)
@@ -1186,35 +1188,42 @@ napt_ct_scan_thread(void *param)
 		if(!nat_sockopts_init) {
 			nat_ipt_sockopts_replace();
 		}
-	HNAT_PRINTK("[ct scan start]\n");
-        napt_ct_scan();
-	HNAT_PRINTK("[ct scan end]\n");
+		if (scan_enable) {
+			HNAT_PRINTK("[ct scan start]\n");
+			napt_ct_scan();
+			HNAT_PRINTK("[ct scan end]\n");
 
-        if((--times) == 0)
-        {
-		HNAT_PRINTK("[ct hw aging start]\n");
-            napt_ct_hw_aging();
-		HNAT_PRINTK("[ct hw aging end]\n");
-            times = (NAPT_CT_AGING_SEC/scan_period);
-        }
+			if((--times) == 0)
+			{
+				HNAT_PRINTK("[ct hw aging start]\n");
+				napt_ct_hw_aging();
+				HNAT_PRINTK("[ct hw aging end]\n");
+				times = (NAPT_CT_AGING_SEC/scan_period);
+			}
 
-        if((--arp_check_time) == 0)
-        {
-            host_check_aging();
-            arp_check_time = (ARP_CHECK_AGING_SEC/scan_period);
-        }
+			if((--arp_check_time) == 0)
+			{
+				host_check_aging();
+				arp_check_time = (ARP_CHECK_AGING_SEC/scan_period);
+			}
+		} else {
+			if (napt_need_clean) {
+				napt_need_clean = 0;
+				napt_ct_hw_exit();
+			}
+		}
 
 #ifdef ISISC /* only for S17c */
-        napt_set_ipv6_default_route();
+		napt_set_ipv6_default_route();
 #endif
         
-        if (NAPT_CT_TASK_SHOULD_STOP()) {
-		printk("should stop!\n");
-            break;
-	}
+		if (NAPT_CT_TASK_SHOULD_STOP()) {
+			printk("should stop!\n");
+			break;
+		}
 
-        NAPT_CT_TASK_SLEEP(scan_period);
-    }
+		NAPT_CT_TASK_SLEEP(scan_period);
+	}
 
     napt_ct_exit();
 
