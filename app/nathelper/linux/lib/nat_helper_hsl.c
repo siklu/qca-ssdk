@@ -480,18 +480,21 @@ arp_hw_add(a_uint32_t port, a_uint32_t intf_id, a_uint8_t *ip, a_uint8_t *mac, i
         arp_entry.counter_id = arp_hw_debug_counter_get();
     }
 
-    if(_arp_hw_add(&arp_entry) != 0)
-    {
-        printk("%s: fail\n", __func__);
-        return -1;
-    }
+	if (IP_HOST_GET(0, 0x10, &arp_entry)) {
+		HNAT_PRINTK("new arp for 0x%x\n", arp_entry.ip4_addr);
+		if(_arp_hw_add(&arp_entry) != 0)
+		{
+			HNAT_ERR_PRINTK("%s: fail\n", __func__);
+			return -1;
+		}
 
-	if(DESS_CHIP(nat_chip_ver)) {
-		if(_arp_host_route_hw_add(&arp_entry) != 0)
-	    {
-	        printk("%s: fail\n", __func__);
-	        return -1;
-	    }
+		if(DESS_CHIP(nat_chip_ver)) {
+			if(_arp_host_route_hw_add(&arp_entry) != 0)
+			{
+				HNAT_ERR_PRINTK("%s: fail\n", __func__);
+				return -1;
+			}
+		}
 	}
 
     if (0 == is_ipv6_entry)

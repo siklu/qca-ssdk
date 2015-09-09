@@ -69,7 +69,7 @@ unset_aclrulemask(uint32_t acl_list)
  * set the IPv4 default route (to the next hop)
  */
 void
-droute_add_acl_rules(uint32_t local_ip, uint32_t gw_entry_id)
+droute_add_acl_rules(uint32_t local_ip, uint32_t local_ip_mask, uint32_t gw_entry_id)
 {
     fal_acl_rule_t myacl;
     uint32_t rtnval;
@@ -85,7 +85,7 @@ droute_add_acl_rules(uint32_t local_ip, uint32_t gw_entry_id)
     memset(&myacl, 0, sizeof(fal_acl_rule_t));
     myacl.rule_type = FAL_ACL_RULE_IP4;
     myacl.dest_ip4_val = ntohl(local_ip);
-    myacl.dest_ip4_mask = ntohl(0xffffff00);
+    myacl.dest_ip4_mask = ntohl(local_ip_mask);
     /*
     IPv4 rule, with DIP field
     if DIP != Lan IP, force the ARP index redirect to the next hop
@@ -247,7 +247,9 @@ static int isis_pppoe_del_rule0(void)
  * Force ARP_INDEX_EN to the next hop for CPU port
  * Force SNAT and ARP_INDEX_EN to the next hop for LAN ports
  */
-void pppoe_add_acl_rules(uint32_t wan_ip, uint32_t local_ip, uint32_t gw_entry_id)
+void pppoe_add_acl_rules(
+		uint32_t wan_ip, uint32_t local_ip,
+		uint32_t local_ip_mask, uint32_t gw_entry_id)
 {
     fal_acl_rule_t myacl;
     uint32_t rtnval, cnt;
@@ -319,7 +321,7 @@ void pppoe_add_acl_rules(uint32_t wan_ip, uint32_t local_ip, uint32_t gw_entry_i
                 aos_printk("PPPoE adding rule #%d\n", S17_ACL_LIST_PPPOE+1);
                 myacl.rule_type = FAL_ACL_RULE_IP4;
                 myacl.dest_ip4_val = ntohl(local_ip);
-                myacl.dest_ip4_mask = 0xffffff00;
+                myacl.dest_ip4_mask = ntohl(local_ip_mask);
 
                 /*
                   IPv4 rule, with DIP field
