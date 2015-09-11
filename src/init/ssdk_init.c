@@ -2493,40 +2493,6 @@ static int ssdk_dess_mac_mode_init(a_uint32_t mac_mode)
 		  	/* config RGMII*/
 			reg_value = 0x400;
 			fal_reg_set(0, 0x4, (a_uint8_t *)&reg_value, 4);
-
-			/* enable mdc and mdio access*/
-			mdc_addr = ioremap_nocache(0x1006000, 0x2000);
-			if (!mdc_addr) {
-				printk("mdc_addr map fail!\n");
-				return 0;
-			} else {
-				printk("mdc_addr map success!\n");
-				writel(0x4806, mdc_addr+0x0000);
-				writel(0x4806, mdc_addr+0x1000);
-				iounmap(mdc_addr);
-			}
-
-			/* RGMII signal configuration*/
-			gpio_addr = ioremap_nocache(0x1016000, 0xd000);
-			if (!gpio_addr) {
-				printk("gpio_addr map fail!\n");
-				return 0;
-			} else {
-				printk("gpio_addr map success!\n");
-				writel(0x01c6, gpio_addr+0x0000);
-				writel(0x01ca, gpio_addr+0x1000);
-				writel(0x01ca, gpio_addr+0x2000);
-				writel(0x01ca, gpio_addr+0x3000);
-				writel(0x01ca, gpio_addr+0x4000);
-				writel(0x01ca, gpio_addr+0x5000);
-				writel(0x01ca, gpio_addr+0x6000);
-				writel(0x01ca, gpio_addr+0x7000);
-				writel(0x01ca, gpio_addr+0x8000);
-				writel(0x01ca, gpio_addr+0x9000);
-				writel(0x01ca, gpio_addr+0xa000);
-				writel(0x01c6, gpio_addr+0xb000);
-				iounmap(gpio_addr);
-			}
 			/* config mac5 RGMII*/
 			if ((mac_mode == PORT_WRAPPER_SGMII0_RGMII5)
 				||(mac_mode == PORT_WRAPPER_SGMII1_RGMII5)) {
