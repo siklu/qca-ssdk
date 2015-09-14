@@ -2421,6 +2421,10 @@ malibu_phy_hw_init(void)
 	malibu_phy_mmd_write(0, 4, MALIBU_PHY_MMD3_NUM,
 		MALIBU_PHY_MMD3_ADDR_REMOTE_LOOPBACK_CTRL, phy_data);
 
+	/* adjust psgmii serdes tx amp */
+	malibu_phy_reg_write(0, PSGMII_ID, MALIBU_PSGMII_TX_DRIVER_1_CTRL,
+		MALIBU_PHY_PSGMII_REDUCE_SERDES_TX_AMP);
+
 	return SW_OK;
 }
 
