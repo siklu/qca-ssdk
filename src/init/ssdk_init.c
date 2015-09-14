@@ -2367,6 +2367,9 @@ static int ssdk_dess_mac_mode_init(a_uint32_t mac_mode)
 			reg_value = 0x2200;
 			qca_psgmii_reg_write(0, DESS_PSGMII_MODE_CONTROL,
 								(a_uint8_t *)&reg_value, 4);
+			reg_value = 0x8380;
+			qca_psgmii_reg_write(0, DESS_PSGMIIPHY_TX_CONTROL,
+								(a_uint8_t *)&reg_value, 4);
 			break;
 		case PORT_WRAPPER_SGMII0_RGMII5:
 		case PORT_WRAPPER_SGMII1_RGMII5:
