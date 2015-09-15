@@ -97,12 +97,11 @@ a_bool_t dess_mac_port_valid_check(fal_port_t port_id)
 	cfg = dess_get_port_config();
 	phy_id = dess_get_port_phy_id();
 
-	if ((phy_id == MALIBU_1_0) ||(phy_id == MALIBU_1_1))
-		bitmap = dess_pbmp_5[cfg];
-
 	if (phy_id == MALIBU_1_1_2PORT)
 		bitmap = dess_pbmp_2[cfg];
-
+	else {
+		bitmap = dess_pbmp_5[cfg];
+	}
 	return SW_IS_PBMP_MEMBER(bitmap, port_id);
 
 }
@@ -124,11 +123,11 @@ dess_portproperty_init(a_uint32_t dev_id)
 	cfg = dess_get_port_config();
 	phy_id = dess_get_port_phy_id();
 
-	if ((phy_id == MALIBU_1_0) ||(phy_id == MALIBU_1_1))
-		bitmap = dess_pbmp_5[cfg];
-
 	if (phy_id == MALIBU_1_1_2PORT)
 		bitmap = dess_pbmp_2[cfg];
+	else {
+		bitmap = dess_pbmp_5[cfg];
+	}
 
     /* for port property set, SSDK should not generate some limitations */
     for (port_id = 0; port_id < pdev->nr_ports; port_id++)
