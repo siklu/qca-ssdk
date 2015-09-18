@@ -98,6 +98,7 @@ extern ssdk_chip_type SSDK_CURRENT_CHIP_TYPE;
 
 #define QCA_QM_WORK_DELAY	200
 #define QCA_QM_ITEM_NUMBER 41
+#define QCA_RGMII_WORK_DELAY	1000
 
 /*
  * Using ISIS's address as default
@@ -1103,6 +1104,39 @@ qm_err_check_work_stop(struct qca_phy_priv *priv)
 	cancel_delayed_work_sync(&priv->qm_dwork);
 }
 
+static void
+dess_rgmii_mac_work_task(struct work_struct *work)
+{
+	struct qca_phy_priv *priv = container_of(work, struct qca_phy_priv,
+                                            rgmii_dwork.work);
+
+	mutex_lock(&priv->rgmii_lock);
+
+	dess_rgmii_sw_mac_polling_task(&priv->sw_dev);
+
+	mutex_unlock(&priv->rgmii_lock);
+
+	schedule_delayed_work(&priv->rgmii_dwork, msecs_to_jiffies(QCA_RGMII_WORK_DELAY));
+}
+
+int
+dess_rgmii_mac_work_start(struct qca_phy_priv *priv)
+{
+	mutex_init(&priv->rgmii_lock);
+
+	INIT_DELAYED_WORK(&priv->rgmii_dwork, dess_rgmii_mac_work_task);
+
+	schedule_delayed_work(&priv->rgmii_dwork, msecs_to_jiffies(QCA_RGMII_WORK_DELAY));
+
+	return 0;
+}
+
+void
+dess_rgmii_mac_work_stop(struct qca_phy_priv *priv)
+{
+	cancel_delayed_work_sync(&priv->rgmii_dwork);
+}
+
 int
 qca_phy_id_chip(struct qca_phy_priv *priv)
 {
@@ -1232,6 +1266,17 @@ static int ssdk_switch_register(void)
 	if (ret != 0) {
 			printk("qca_phy_mib_work_start failed for %s\n", sw_dev->name);
 			return ret;
+	}
+	if ((ssdk_dt_global.mac_mode == PORT_WRAPPER_SGMII0_RGMII5)
+		||(ssdk_dt_global.mac_mode == PORT_WRAPPER_SGMII1_RGMII5)
+		||(ssdk_dt_global.mac_mode == PORT_WRAPPER_SGMII0_RGMII4)
+		||(ssdk_dt_global.mac_mode == PORT_WRAPPER_SGMII1_RGMII4)
+		||(ssdk_dt_global.mac_mode == PORT_WRAPPER_SGMII4_RGMII4)) {
+		ret = dess_rgmii_mac_work_start(priv);
+		if (ret != 0) {
+			printk("dess_rgmii_mac_work_start failed for %s\n", sw_dev->name);
+			return ret;
+		}
 	}
 
 	return 0;
@@ -2493,40 +2538,6 @@ static int ssdk_dess_mac_mode_init(a_uint32_t mac_mode)
 		  	/* config RGMII*/
 			reg_value = 0x400;
 			fal_reg_set(0, 0x4, (a_uint8_t *)&reg_value, 4);
-
-			/* enable mdc and mdio access*/
-			mdc_addr = ioremap_nocache(0x1006000, 0x2000);
-			if (!mdc_addr) {
-				printk("mdc_addr map fail!\n");
-				return 0;
-			} else {
-				printk("mdc_addr map success!\n");
-				writel(0x4806, mdc_addr+0x0000);
-				writel(0x4806, mdc_addr+0x1000);
-				iounmap(mdc_addr);
-			}
-
-			/* RGMII signal configuration*/
-			gpio_addr = ioremap_nocache(0x1016000, 0xd000);
-			if (!gpio_addr) {
-				printk("gpio_addr map fail!\n");
-				return 0;
-			} else {
-				printk("gpio_addr map success!\n");
-				writel(0x01c6, gpio_addr+0x0000);
-				writel(0x01ca, gpio_addr+0x1000);
-				writel(0x01ca, gpio_addr+0x2000);
-				writel(0x01ca, gpio_addr+0x3000);
-				writel(0x01ca, gpio_addr+0x4000);
-				writel(0x01ca, gpio_addr+0x5000);
-				writel(0x01ca, gpio_addr+0x6000);
-				writel(0x01ca, gpio_addr+0x7000);
-				writel(0x01ca, gpio_addr+0x8000);
-				writel(0x01ca, gpio_addr+0x9000);
-				writel(0x01ca, gpio_addr+0xa000);
-				writel(0x01c6, gpio_addr+0xb000);
-				iounmap(gpio_addr);
-			}
 			/* config mac5 RGMII*/
 			if ((mac_mode == PORT_WRAPPER_SGMII0_RGMII5)
 				||(mac_mode == PORT_WRAPPER_SGMII1_RGMII5)) {
