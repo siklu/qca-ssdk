@@ -92,6 +92,8 @@ struct notifier_block ssdk_dev_notifier;
 #endif
 #endif
 
+//#define PSGMII_DEBUG
+
 extern ssdk_chip_type SSDK_CURRENT_CHIP_TYPE;
 
 #define AUTO_SWITCH_RECOVERY
@@ -1870,9 +1872,11 @@ void ssdk_psgmii_self_test()
 			}
 			else
 			{
+#ifdef PSGMII_DEBUG
 				printk("tx_ok = 0x%x, rx_ok = 0x%x, tx_counter_error = 0x%x, rx_counter_error = 0x%x\n",
 						tx_ok, rx_ok, tx_counter_error, rx_counter_error);
 				printk("PHY %d single test PSGMII issue happen \n", phy);
+#endif
 				phy_t_status |= (1<<phy);
 			}
 
@@ -1928,13 +1932,17 @@ void ssdk_psgmii_self_test()
 			}
 			else
 			{
+#ifdef PSGMII_DEBUG
 				printk("tx_ok = 0x%x, rx_ok = 0x%x, tx_counter_error = 0x%x, rx_counter_error = 0x%x\n",
 						tx_ok, rx_ok, tx_counter_error, rx_counter_error);
 				printk("PHY %d PSGMII issue happen,Reset PSGMII!!!!!!\n", phy);
+#endif
 				phy_t_status |= (1<<(phy+8));
 			}
 		}
+#ifdef PSGMII_DEBUG
 		printk("PHY all test 0x%x \r\n",phy_t_status);
+#endif
 		if (phy_t_status)
 		{
 			qca_ar8327_phy_write(0, 5, 0x0, 0x005b);/*fix phy psgmii RX 20bit*/
@@ -1957,7 +1965,7 @@ void ssdk_psgmii_self_test()
 		}
 	}
 
-#if 1
+#ifdef PSGMII_DEBUG
 	if (i>=100)
 		printk("PSGMII cannot recover\n");
 	else
