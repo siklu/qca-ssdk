@@ -14,7 +14,8 @@
 
 
 #ifdef KVER32
-#include <linux/kconfig.h> 
+#include <linux/kconfig.h>
+#include <linux/version.h>
 #include <generated/autoconf.h>
 #else
 #include <linux/autoconf.h>
@@ -1478,6 +1479,7 @@ static int qcaswitch_pppoe_ip_event(struct notifier_block *this,
     switch (event)
     {
         case NETDEV_UP:
+	#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
             if (ppp_is_multilink(dev) == 0) {
                 /* not doing multilink: send it down the first channel */
 			channel_count = ppp_hold_channels(dev, ppp_chan, 1);
@@ -1527,6 +1529,7 @@ static int qcaswitch_pppoe_ip_event(struct notifier_block *this,
 				return NOTIFY_DONE;
 			}
 		}
+	#endif
 		break;
 
         case NETDEV_DOWN:
