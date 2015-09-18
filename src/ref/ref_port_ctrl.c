@@ -192,6 +192,22 @@ static int qca_switch_force_mac_1000M_full(struct switch_dev *dev, a_uint32_t po
 	return 0;
 }
 
+static int qca_switch_force_mac_status(struct switch_dev *dev, a_uint32_t port_id,a_uint32_t speed,a_uint32_t duplex)
+{
+	a_uint32_t reg, value;
+
+	if (port_id < 0 || port_id > 6)
+		return -1;
+
+	reg = AR8327_REG_PORT_STATUS(port_id);
+	qca_switch_reg_read(0,reg,(a_uint8_t*)&value,4);
+	value &= ~(BIT(6) | BITS(0,2));
+	value |= speed | (duplex?BIT(6):0);
+	qca_switch_reg_write(0,reg,(a_uint8_t*)&value,4);
+	return 0;
+}
+
+
 #define MDI_FROM_PHY_STATUS 1
 #define MDI_FROM_MANUAL 0
 #define PORT_LINK_UP 1
@@ -218,6 +234,8 @@ static a_uint32_t port_qm_buf[AR8327_NUM_PORTS] = {0, 0 ,0 ,0 , 0, 0, 0};
 static char speed_str[4][10] = {
 	"10M", "100M", "1000M", "Reserved" };
 
+static a_uint32_t phy_current_speed = 2;
+static a_uint32_t phy_current_duplex = 1;
 
 void
 qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
@@ -405,5 +423,42 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 	}
 
 	return 0;
+}
+
+void
+dess_rgmii_sw_mac_polling_task(struct switch_dev *dev)
+{
+	a_uint32_t mac_mode;
+	a_uint32_t phy_spec_status, phy_link_status;
+	a_uint32_t speed, duplex;
+
+	mac_mode = ssdk_dt_global_get_mac_mode();
+
+	if ((mac_mode == PORT_WRAPPER_SGMII0_RGMII5)
+		||(mac_mode == PORT_WRAPPER_SGMII1_RGMII5)
+		||(mac_mode == PORT_WRAPPER_SGMII0_RGMII4)
+		||(mac_mode == PORT_WRAPPER_SGMII1_RGMII4)
+		||(mac_mode == PORT_WRAPPER_SGMII4_RGMII4)) {
+		qca_ar8327_phy_read(0, 4, 0x11, &phy_spec_status);
+		phy_link_status = (a_uint32_t)((phy_spec_status & BIT(10)) >> 10);
+		if (phy_link_status == 1) {
+			speed = (a_uint32_t)((phy_spec_status >> 14) & 0x03);
+			duplex = (a_uint32_t)((phy_spec_status & BIT(13)) >> 13);
+			if ((speed != phy_current_speed) || (duplex != phy_current_duplex)) {
+				if ((mac_mode == PORT_WRAPPER_SGMII0_RGMII5)
+				||(mac_mode == PORT_WRAPPER_SGMII1_RGMII5))
+				qca_switch_force_mac_status(dev, 5,speed,duplex);
+
+				if ((mac_mode == PORT_WRAPPER_SGMII0_RGMII4)
+				||(mac_mode == PORT_WRAPPER_SGMII1_RGMII4)
+				||(mac_mode == PORT_WRAPPER_SGMII4_RGMII4))
+				qca_switch_force_mac_status(dev, 4,speed,duplex);
+			}
+			phy_current_speed = speed;
+			phy_current_duplex = duplex;
+		}
+	}
+
+	return;
 }
 
