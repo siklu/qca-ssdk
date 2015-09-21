@@ -1798,11 +1798,176 @@ static struct platform_driver ssdk_driver = {
 };
 #endif
 
+static u32 phy_t_status = 0;
+void ssdk_malibu_psgmii_and_dakota_dess_reset()
+{
+	int m = 0, n = 0;
+
+	/*reset Malibu PSGMII and Dakota ESS start*/
+	qca_ar8327_phy_write(0, 5, 0x0, 0x005b);/*fix phy psgmii RX 20bit*/
+	qca_ar8327_phy_write(0, 5, 0x0, 0x001b);/*reset phy psgmii*/
+	qca_ar8327_phy_write(0, 5, 0x0, 0x005b);/*release reset phy psgmii*/
+	/* mdelay(100); this 100ms be replaced with below malibu psgmii calibration process*/
+	/*check malibu psgmii calibration done start*/
+	n = 0;
+	while (n < 100) {
+		u16 status;
+		status = qca_phy_mmd_read(0, 5, 1, 0x28);
+		if (status & BIT(0))
+			break;
+		mdelay(10);
+		n++;
+	}
+#ifdef PSGMII_DEBUG
+	if (n >= 100)
+		printk("MALIBU PSGMII PLL_VCO_CALIB NOT READY\n");
+#endif
+	mdelay(50);
+	/*check malibu psgmii calibration done end..*/
+	qca_ar8327_phy_write(0, 5, 0x1a, 0x2230);/*freeze phy psgmii RX CDR*/
+
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0))
+	ssdk_ess_reset();
+	/*check dakota psgmii calibration done start*/
+	m = 0;
+	while (m < 100) {
+		u32 status;
+		qca_psgmii_reg_read(0, 0xa0, (a_uint8_t *)&status, 4);
+		if (status & BIT(0))
+			break;
+		mdelay(10);
+		m++;
+	}
+#ifdef PSGMII_DEBUG
+	if (m >= 100)
+		printk("DAKOTA PSGMII PLL_VCO_CALIB NOT READY\n");
+#endif
+	mdelay(50);
+	/*check dakota psgmii calibration done end..*/
+#endif
+	qca_ar8327_phy_write(0, 5, 0x1a, 0x3230);/*relesae phy psgmii RX CDR*/
+	qca_ar8327_phy_write(0, 5, 0x0, 0x005f);/*release phy psgmii RX 20bit*/
+	mdelay(200);
+	/*reset Malibu PSGMII and Dakota ESS end*/
+}
+
+void ssdk_psgmii_single_phy_testing(int phy)
+{
+	int j = 0;
+
+	u32 tx_counter_ok, tx_counter_error;
+	u32 rx_counter_ok, rx_counter_error;
+	u32 tx_counter_ok_high16;
+	u32 rx_counter_ok_high16;
+	u32 tx_ok, rx_ok;
+	qca_ar8327_phy_write(0, phy, 0x0, 0x9000);
+	qca_ar8327_phy_write(0, phy, 0x0, 0x4140);
+	j = 0;
+	while (j < 100) {
+		u16 status;
+		qca_ar8327_phy_read(0, phy, 0x11, &status);
+		if (status & (1 << 10))
+			break;
+		mdelay(10);
+		j++;
+	}
+
+	/*enable check*/
+	qca_phy_mmd_write(0, phy, 7, 0x8029, 0x0000);
+	qca_phy_mmd_write(0, phy, 7, 0x8029, 0x0003);
+
+	/*start traffic*/
+	qca_phy_mmd_write(0, phy, 7, 0x8020, 0xa000);
+	mdelay(200);
+
+	/*check counter*/
+	tx_counter_ok = qca_phy_mmd_read(0, phy, 7, 0x802e);
+	tx_counter_ok_high16 = qca_phy_mmd_read(0, phy, 7, 0x802d);
+	tx_counter_error = qca_phy_mmd_read(0, phy, 7, 0x802f);
+	rx_counter_ok = qca_phy_mmd_read(0, phy, 7, 0x802b);
+	rx_counter_ok_high16 = qca_phy_mmd_read(0, phy, 7, 0x802a);
+	rx_counter_error = qca_phy_mmd_read(0, phy, 7, 0x802c);
+	tx_ok = tx_counter_ok + (tx_counter_ok_high16<<16);
+	rx_ok = rx_counter_ok + (rx_counter_ok_high16<<16);
+	if( tx_ok== 0x3000 && tx_counter_error == 0) {
+		/*success*/
+		phy_t_status &= (~(1<<phy));
+	} else {
+#ifdef PSGMII_DEBUG
+				printk("tx_ok = 0x%x, rx_ok = 0x%x, tx_counter_error = 0x%x, rx_counter_error = 0x%x\n",
+						tx_ok, rx_ok, tx_counter_error, rx_counter_error);
+				printk("PHY %d single test PSGMII issue happen \n", phy);
+#endif
+				phy_t_status |= (1<<phy);
+			}
+
+			qca_ar8327_phy_write(0, phy, 0x0, 0x1840);
+		}
+
+void ssdk_psgmii_all_phy_testing()
+{
+	int phy = 0, j = 0;
+
+	qca_ar8327_phy_write(0, 0x1f, 0x0, 0x9000);
+	qca_ar8327_phy_write(0, 0x1f, 0x0, 0x4140);
+	j = 0;
+	while (j < 100) {
+		for(phy = 0; phy < 5; phy++) {
+			u16 status;
+			qca_ar8327_phy_read(0, phy, 0x11, &status);
+			if (!(status & (1 << 10)))
+				break;
+		}
+
+		if(phy >= 5)
+			break;
+		mdelay(10);
+		j++;
+	}
+	/*enable check*/
+	qca_phy_mmd_write(0, 0x1f, 7, 0x8029, 0x0000);
+	qca_phy_mmd_write(0, 0x1f, 7, 0x8029, 0x0003);
+
+	/*start traffic*/
+	qca_phy_mmd_write(0, 0x1f, 7, 0x8020, 0xa000);
+	mdelay(200);
+	for (phy = 0; phy < 5; phy++) {
+		u32 tx_counter_ok, tx_counter_error;
+		u32 rx_counter_ok, rx_counter_error;
+		u32 tx_counter_ok_high16;
+		u32 rx_counter_ok_high16;
+		u32 tx_ok, rx_ok;
+		/*check counter*/
+		tx_counter_ok = qca_phy_mmd_read(0, phy, 7, 0x802e);
+		tx_counter_ok_high16 = qca_phy_mmd_read(0, phy, 7, 0x802d);
+		tx_counter_error = qca_phy_mmd_read(0, phy, 7, 0x802f);
+		rx_counter_ok = qca_phy_mmd_read(0, phy, 7, 0x802b);
+		rx_counter_ok_high16 = qca_phy_mmd_read(0, phy, 7, 0x802a);
+		rx_counter_error = qca_phy_mmd_read(0, phy, 7, 0x802c);
+		tx_ok = tx_counter_ok + (tx_counter_ok_high16<<16);
+		rx_ok = rx_counter_ok + (rx_counter_ok_high16<<16);
+		if (tx_ok== 0x3000 && tx_counter_error == 0) {
+			/*success*/
+			phy_t_status &= (~(1<<(phy+8)));
+		} else {
+#ifdef PSGMII_DEBUG
+				printk("tx_ok = 0x%x, rx_ok = 0x%x, tx_counter_error = 0x%x, rx_counter_error = 0x%x\n",
+						tx_ok, rx_ok, tx_counter_error, rx_counter_error);
+				printk("PHY %d PSGMII issue happen,Reset PSGMII!!!!!!\n", phy);
+#endif
+				phy_t_status |= (1<<(phy+8));
+			}
+		}
+#ifdef PSGMII_DEBUG
+		printk("PHY all test 0x%x \r\n",phy_t_status);
+#endif
+}
 void ssdk_psgmii_self_test()
 {
-	int i = 0, phy = 0,j=0;
+	int i = 0, phy = 0,j = 0;
 	u32 value = 0;
-	u32 phy_t_status = 0;
+
+	ssdk_malibu_psgmii_and_dakota_dess_reset();
 
 	qca_ar8327_phy_write(0, 4, 0x1f, 0x8500);/*switch to access MII reg for copper*/
 	for(phy = 0; phy < 5; phy++) {
@@ -1820,144 +1985,22 @@ void ssdk_psgmii_self_test()
 	/*fix mdi status */
 	qca_ar8327_phy_write(0, 0x1f, 0x10, 0x6800);
 
-	for(i = 0; i < 100; i++)
-	{
+	for(i = 0; i < 100; i++) {
 		phy_t_status = 0;
 
 		for(phy = 0; phy < 5; phy++) {
-			value = readl(hw_addr+0x66c+phy*0xc);
-			writel((value|(1<<21)), (hw_addr+0x66c+phy*0xc));
+			value = readl(hw_addr + 0x66c + phy * 0xc);
+			writel((value|(1<<21)), (hw_addr + 0x66c + phy * 0xc));
 		}
 
-		for (phy = 0;phy < 5; phy++)
-		{
-			u32 tx_counter_ok, tx_counter_error;
-			u32 rx_counter_ok, rx_counter_error;
-			u32 tx_counter_ok_high16;
-			u32 rx_counter_ok_high16;
-			u32 tx_ok,rx_ok;
-			qca_ar8327_phy_write(0, phy, 0x0, 0x9000);
-			qca_ar8327_phy_write(0, phy, 0x0, 0x4140);
-			j=0;
-			while (j<100)
-			{
-				u16 status;
-				qca_ar8327_phy_read(0, phy, 0x11, &status);
-				if(status & (1 << 10))
-					break;
-				mdelay(10);
-				j++;
-			}
-
-			/*enable check*/
-			qca_phy_mmd_write(0, phy, 7, 0x8029, 0x0000);
-			qca_phy_mmd_write(0, phy, 7, 0x8029, 0x0003);
-
-			/*start traffic*/
-			qca_phy_mmd_write(0, phy, 7, 0x8020, 0xa000);
-			mdelay(200);
-
-			/*check counter*/
-			tx_counter_ok = qca_phy_mmd_read(0, phy, 7, 0x802e);
-			tx_counter_ok_high16 = qca_phy_mmd_read(0, phy, 7, 0x802d);
-			tx_counter_error = qca_phy_mmd_read(0, phy, 7, 0x802f);
-			rx_counter_ok = qca_phy_mmd_read(0, phy, 7, 0x802b);
-			rx_counter_ok_high16 = qca_phy_mmd_read(0, phy, 7, 0x802a);
-			rx_counter_error = qca_phy_mmd_read(0, phy, 7, 0x802c);
-			tx_ok = tx_counter_ok + (tx_counter_ok_high16<<16);
-			rx_ok = rx_counter_ok + (rx_counter_ok_high16<<16);
-			if( tx_ok== 0x3000 && tx_counter_error == 0)/*success*/
-			{
-				phy_t_status &= (~(1<<phy));
-			}
-			else
-			{
-#ifdef PSGMII_DEBUG
-				printk("tx_ok = 0x%x, rx_ok = 0x%x, tx_counter_error = 0x%x, rx_counter_error = 0x%x\n",
-						tx_ok, rx_ok, tx_counter_error, rx_counter_error);
-				printk("PHY %d single test PSGMII issue happen \n", phy);
-#endif
-				phy_t_status |= (1<<phy);
-			}
-
-			qca_ar8327_phy_write(0, phy, 0x0, 0x1840);
+		for (phy = 0;phy < 5; phy++) {
+			ssdk_psgmii_single_phy_testing(phy);
 		}
 
-		qca_ar8327_phy_write(0, 0x1f, 0x0, 0x9000);
+		ssdk_psgmii_all_phy_testing();
 
-		qca_ar8327_phy_write(0, 0x1f, 0x0, 0x4140);
-
-		j=0;
-		while(j < 100)
-		{
-			for(phy = 0; phy < 5; phy++)
-			{
-				u16 status;
-				qca_ar8327_phy_read(0, phy, 0x11, &status);
-				if(!(status & (1 << 10)))
-					break;
-			}
-
-			if(phy >= 5)
-				break;
-			mdelay(10);
-			j++;
-		}
-		/*enable check*/
-		qca_phy_mmd_write(0, 0x1f, 7, 0x8029, 0x0000);
-		qca_phy_mmd_write(0, 0x1f, 7, 0x8029, 0x0003);
-
-		/*start traffic*/
-		qca_phy_mmd_write(0, 0x1f, 7, 0x8020, 0xa000);
-		mdelay(200);
-		for(phy = 0; phy < 5; phy++)
-		{
-			u32 tx_counter_ok, tx_counter_error;
-			u32 rx_counter_ok, rx_counter_error;
-			u32 tx_counter_ok_high16;
-			u32 rx_counter_ok_high16;
-			u32 tx_ok,rx_ok;
-			/*check counter*/
-			tx_counter_ok = qca_phy_mmd_read(0, phy, 7, 0x802e);
-			tx_counter_ok_high16 = qca_phy_mmd_read(0, phy, 7, 0x802d);
-			tx_counter_error = qca_phy_mmd_read(0, phy, 7, 0x802f);
-			rx_counter_ok = qca_phy_mmd_read(0, phy, 7, 0x802b);
-			rx_counter_ok_high16 = qca_phy_mmd_read(0, phy, 7, 0x802a);
-			rx_counter_error = qca_phy_mmd_read(0, phy, 7, 0x802c);
-			tx_ok = tx_counter_ok + (tx_counter_ok_high16<<16);
-			rx_ok = rx_counter_ok + (rx_counter_ok_high16<<16);
-			if( tx_ok== 0x3000 && tx_counter_error == 0)/*success*/
-			{
-				phy_t_status &= (~(1<<(phy+8)));
-			}
-			else
-			{
-#ifdef PSGMII_DEBUG
-				printk("tx_ok = 0x%x, rx_ok = 0x%x, tx_counter_error = 0x%x, rx_counter_error = 0x%x\n",
-						tx_ok, rx_ok, tx_counter_error, rx_counter_error);
-				printk("PHY %d PSGMII issue happen,Reset PSGMII!!!!!!\n", phy);
-#endif
-				phy_t_status |= (1<<(phy+8));
-			}
-		}
-#ifdef PSGMII_DEBUG
-		printk("PHY all test 0x%x \r\n",phy_t_status);
-#endif
-		if (phy_t_status)
-		{
-			qca_ar8327_phy_write(0, 5, 0x0, 0x005b);/*fix phy psgmii RX 20bit*/
-			qca_ar8327_phy_write(0, 5, 0x0, 0x001b);/*reset phy psgmii*/
-			qca_ar8327_phy_write(0, 5, 0x0, 0x005b);/*release reset phy psgmii*/
-			mdelay(100);
-			qca_ar8327_phy_write(0, 5, 0x1a, 0x2230);/*freeze phy psgmii RX CDR*/
-
-			#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-			ssdk_ess_reset();
-			#endif
-
-			qca_ar8327_phy_write(0, 5, 0x1a, 0x3230);/*relesae phy psgmii RX CDR*/
-			qca_ar8327_phy_write(0, 5, 0x0, 0x005f);/*release phy psgmii RX 20bit*/
-			mdelay(200);
+		if (phy_t_status) {
+			ssdk_malibu_psgmii_and_dakota_dess_reset();
 		}
 		else
 		{
