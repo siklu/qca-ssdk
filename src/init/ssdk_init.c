@@ -1889,7 +1889,7 @@ void ssdk_psgmii_single_phy_testing(int phy)
 	rx_counter_error = qca_phy_mmd_read(0, phy, 7, 0x802c);
 	tx_ok = tx_counter_ok + (tx_counter_ok_high16<<16);
 	rx_ok = rx_counter_ok + (rx_counter_ok_high16<<16);
-	if( tx_ok== 0x3000 && tx_counter_error == 0) {
+	if (tx_ok== 0x3000 && tx_counter_error == 0) {
 		/*success*/
 		phy_t_status &= (~(1<<phy));
 	} else {
@@ -1912,14 +1912,14 @@ void ssdk_psgmii_all_phy_testing()
 	qca_ar8327_phy_write(0, 0x1f, 0x0, 0x4140);
 	j = 0;
 	while (j < 100) {
-		for(phy = 0; phy < 5; phy++) {
+		for (phy = 0; phy < 5; phy++) {
 			u16 status;
 			qca_ar8327_phy_read(0, phy, 0x11, &status);
 			if (!(status & (1 << 10)))
 				break;
 		}
 
-		if(phy >= 5)
+		if (phy >= 5)
 			break;
 		mdelay(10);
 		j++;
@@ -1993,7 +1993,7 @@ void ssdk_psgmii_self_test()
 			writel((value|(1<<21)), (hw_addr + 0x66c + phy * 0xc));
 		}
 
-		for (phy = 0;phy < 5; phy++) {
+		for (phy = 0; phy < 5; phy++) {
 			ssdk_psgmii_single_phy_testing(phy);
 		}
 
@@ -2043,6 +2043,9 @@ void clear_self_test_config()
 		/*diable phy mdio broadcast write*/
 		qca_phy_mmd_write(0, phy, 7, 0x8028, 0x001f);
 	}
+
+	/* clear fdb entry */
+	fal_fdb_del_all(0,1);
 }
 
 
