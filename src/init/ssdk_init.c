@@ -2142,6 +2142,16 @@ ssdk_plat_exit(void)
 	#endif
 	}
 
+	if (ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
+		release_mem_region(ssdk_dt_global.switchreg_base_addr,
+					ssdk_dt_global.switchreg_size);
+		release_mem_region(ssdk_dt_global.psgmiireg_base_addr,
+					ssdk_dt_global.psgmiireg_size);
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+		platform_driver_unregister(&ssdk_driver);
+#endif
+	}
+
 }
 
 sw_error_t
