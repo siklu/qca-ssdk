@@ -164,7 +164,44 @@ qca_phy_read_port_link(struct qca_phy_priv *priv, int port,
 }
 
 #ifndef BOARD_AR71XX
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,14,0)
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+static void
+ssdk_phy_rgmii_set(struct qca_phy_priv *priv)
+{
+	struct device_node *np = NULL;
+	u32 rgmii_en = 0, tx_delay = 0, rx_delay = 0;
+
+	np = priv->phy->dev.of_node;
+	if (!np)
+		return;
+
+	if (!of_property_read_u32(np, "phy_rgmii_en", &rgmii_en)) {
+		a_uint16_t val = 0;
+		/*enable RGMII  mode */
+		qca_ar8327_phy_dbg_read(0, AR8327_PORT5_PHY_ADDR,
+				AR8327_PHY_REG_MODE_SEL, &val);
+		val |= AR8327_PHY_RGMII_MODE;
+		qca_ar8327_phy_dbg_write(0, AR8327_PORT5_PHY_ADDR,
+				AR8327_PHY_REG_MODE_SEL, val);
+		if (!of_property_read_u32(np, "txclk_delay_en", &tx_delay)
+				&& tx_delay == 1) {
+			qca_ar8327_phy_dbg_read(0, AR8327_PORT5_PHY_ADDR,
+					AR8327_PHY_REG_SYS_CTRL, &val);
+			val |= AR8327_PHY_RGMII_TX_DELAY;
+			qca_ar8327_phy_dbg_write(0, AR8327_PORT5_PHY_ADDR,
+					AR8327_PHY_REG_SYS_CTRL, val);
+		}
+		if (!of_property_read_u32(np, "rxclk_delay_en", &rx_delay)
+				&& rx_delay == 1) {
+			qca_ar8327_phy_dbg_read(0, AR8327_PORT5_PHY_ADDR,
+					AR8327_PHY_REG_TEST_CTRL, &val);
+			val |= AR8327_PHY_RGMII_RX_DELAY;
+			qca_ar8327_phy_dbg_write(0, AR8327_PORT5_PHY_ADDR,
+					AR8327_PHY_REG_TEST_CTRL, val);
+		}
+	}
+}
+#else
 static void
 ssdk_phy_rgmii_set(struct qca_phy_priv *priv)
 {
@@ -406,9 +443,7 @@ qca_ar8327_phy_enable(struct qca_phy_priv *priv)
 {
 	int i = 0;
 	#ifndef BOARD_AR71XX
-        #if LINUX_VERSION_CODE < KERNEL_VERSION(3,14,0)
         ssdk_phy_rgmii_set(priv);
-        #endif
         #endif
 	for (i = 0; i < AR8327_NUM_PHYS; i++) {
 		if (priv->version == QCA_VER_AR8327)
@@ -1176,6 +1211,9 @@ qca_phy_config_init(struct phy_device *pdev)
 	if (pdev->addr != 0) {
         pdev->supported |= SUPPORTED_1000baseT_Full;
         pdev->advertising |= ADVERTISED_1000baseT_Full;
+		#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+		ssdk_phy_rgmii_set(priv);
+		#endif
 		return 0;
 	}
 
