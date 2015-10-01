@@ -123,6 +123,8 @@
 #define DESS_PSGMII_MODE_CONTROL	0x1b4
 #define   DESS_PSGMII_ATHR_CSCO_MODE_25M	BIT(0)
 
+#define DESS_PSGMIIPHY_TX_CONTROL	 0x288
+
 #define DESS_PSGMII_PLL_VCO_RELATED_CONTROL_1	0x78c
 #define   DESS_PSGMII_MII_REG_UPHY_PLL_LCKDT_EN	BIT(0)
 
@@ -198,6 +200,10 @@ struct qca_phy_priv {
 	struct mutex 	qm_lock;
 	struct delayed_work qm_dwork;
 	/*qm_err_check end*/
+	/*dess_rgmii_mac*/
+	struct mutex rgmii_lock;
+	struct delayed_work rgmii_dwork;
+	/*dess_rgmii_mac end*/
 	u64 *mib_counters;
 	/* dump buf */
 	a_uint8_t  buf[2048];
