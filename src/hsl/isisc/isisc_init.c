@@ -209,6 +209,8 @@ _isisc_reset(a_uint32_t dev_id)
 sw_error_t
 isisc_cleanup(a_uint32_t dev_id)
 {
+    sw_error_t rv;
+
     if (isisc_cfg[dev_id])
     {
 #if defined(IN_NAT_HELPER)
@@ -218,6 +220,10 @@ isisc_cleanup(a_uint32_t dev_id)
 			isisc_nat_global_status = 0;
         }
 #endif
+
+        ISISC_ACL_CLEANUP(rv, dev_id);
+
+        SW_RTN_ON_ERROR(hsl_port_prop_cleanup_by_dev(dev_id));
 
         aos_mem_free(isisc_cfg[dev_id]);
         isisc_cfg[dev_id] = NULL;
