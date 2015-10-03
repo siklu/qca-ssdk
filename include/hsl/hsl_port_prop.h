@@ -68,6 +68,9 @@ extern "c" {
     hsl_port_prop_init_by_dev(a_uint32_t dev_id);
 
     sw_error_t
+    hsl_port_prop_cleanup_by_dev(a_uint32_t dev_id);
+
+    sw_error_t
     hsl_port_prop_init(void);
 
 #ifdef __cplusplus

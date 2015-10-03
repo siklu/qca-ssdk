@@ -290,7 +290,11 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 					port_qm_buf[i] = QM_EMPTY;
 					if ((port_old_speed[i] == AR8327_PORT_SPEED_100M)
 							|| (port_old_speed[i] == AR8327_PORT_SPEED_10M)) {
+						a_uint16_t phy_ctrl_reg[AR8327_NUM_PORTS];
+
 						phy_addr = i - 1;
+
+						qca_ar8327_phy_read(0, phy_addr, F1_PHY_CONTROL, &phy_ctrl_reg[i]);
 
 						/* Force MDI/MDIX  */
 						mdi = 0x0;
@@ -319,7 +323,10 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 						phy_reg = F1_PHY_CONTROL;
 						data_mask = F1_CTRL_FULL_DUPLEX | F1_CTRL_SPEED_MASK
 								| F1_CTRL_AUTONEGOTIATION_ENABLE | F1_CTRL_SOFTWARE_RESET;
-						phy_val = F1_CTRL_AUTONEGOTIATION_ENABLE | F1_CTRL_SOFTWARE_RESET;
+						if(phy_ctrl_reg[i] & F1_CTRL_AUTONEGOTIATION_ENABLE)
+							phy_val = F1_CTRL_AUTONEGOTIATION_ENABLE | F1_CTRL_SOFTWARE_RESET;
+						else
+							phy_val = phy_ctrl_reg[i] | F1_CTRL_SOFTWARE_RESET;
 						qca_phy_mutex_write(0, phy_addr, phy_reg, data_mask, &phy_val);
 					}
 					else {

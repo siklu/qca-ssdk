@@ -262,6 +262,8 @@ dess_dev_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 sw_error_t
 dess_cleanup(a_uint32_t dev_id)
 {
+    sw_error_t rv;
+
     if (dess_cfg[dev_id])
     {
 #if defined(IN_NAT_HELPER)
@@ -269,6 +271,10 @@ dess_cleanup(a_uint32_t dev_id)
         if(dess_nat_global_status)
             DESS_NAT_HELPER_CLEANUP(rv, dev_id);
 #endif
+
+        DESS_ACL_CLEANUP(rv, dev_id);
+
+        SW_RTN_ON_ERROR(hsl_port_prop_cleanup_by_dev(dev_id));
 
         aos_mem_free(dess_cfg[dev_id]);
         dess_cfg[dev_id] = NULL;
