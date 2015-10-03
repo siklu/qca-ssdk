@@ -30,6 +30,7 @@ extern "C" {
 
     sw_error_t dess_acl_reset(a_uint32_t dev_id);
 
+    sw_error_t dess_acl_cleanup(a_uint32_t dev_id);
 
 
 #ifdef IN_ACL
@@ -44,9 +45,15 @@ extern "C" {
         rv = dess_acl_reset(dev_id); \
         SW_RTN_ON_ERROR(rv); \
     }
+#define DESS_ACL_CLEANUP(rv, dev_id) \
+    { \
+        rv = dess_acl_cleanup(dev_id); \
+        SW_RTN_ON_ERROR(rv); \
+    }
 #else
 #define DESS_ACL_INIT(rv, dev_id)
 #define DESS_ACL_RESET(rv, dev_id)
+#define DESS_ACL_CLEANUP(rv, dev_id)
 #endif
 
 #ifdef HSL_STANDALONG
