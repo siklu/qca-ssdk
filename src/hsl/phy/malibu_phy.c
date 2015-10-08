@@ -465,11 +465,7 @@ sw_error_t
 malibu_phy_set_8023az(a_uint32_t dev_id, a_uint32_t phy_id, a_bool_t enable)
 {
 	a_uint16_t phy_data;
-	a_uint16_t org_id =0, rev_id=0;
-	a_uint32_t malibu_id = 0;
 
-	malibu_phy_get_phy_id(dev_id, phy_id, &org_id, &rev_id);
-	malibu_id = ((org_id << 16) |rev_id);
 	if (phy_id == COMBO_PHY_ID) {
 		if (MALIBU_PHY_MEDIUM_COPPER !=
 		    __phy_active_medium_get(dev_id, phy_id))
@@ -483,22 +479,11 @@ malibu_phy_set_8023az(a_uint32_t dev_id, a_uint32_t phy_id, a_bool_t enable)
 
 		malibu_phy_mmd_write(dev_id, phy_id, MALIBU_PHY_MMD7_NUM,
 			     MALIBU_PHY_MMD7_ADDR_8023AZ_EEE_CTRL, phy_data);
-		if (malibu_id == MALIBU_1_0) {
-			/*workaround to avoid packet loss and < 10m cable 1000M link not stable under az enable*/
-			malibu_phy_mmd_write(dev_id, phy_id, MALIBU_PHY_MMD3_NUM,
-			     MALIBU_PHY_MMD3_ADDR_8023AZ_TIMER_CTRL, AZ_TIMER_CTRL_ADJUST_VALUE);
-			malibu_phy_mmd_write(dev_id, phy_id, MALIBU_PHY_MMD3_NUM,
-			     MALIBU_PHY_MMD3_ADDR_8023AZ_CLD_CTRL, AZ_CLD_CTRL_ADJUST_VALUE);
-		}
 	} else {
 		phy_data &= ~0x0006;
 
 		malibu_phy_mmd_write(dev_id, phy_id, MALIBU_PHY_MMD7_NUM,
 			     MALIBU_PHY_MMD7_ADDR_8023AZ_EEE_CTRL, phy_data);
-		if (malibu_id == MALIBU_1_0) {
-			malibu_phy_mmd_write(dev_id, phy_id, MALIBU_PHY_MMD3_NUM,
-			     MALIBU_PHY_MMD3_ADDR_8023AZ_TIMER_CTRL, AZ_TIMER_CTRL_DEFAULT_VALUE);
-		}
 	}
 
 	malibu_phy_restart_autoneg(dev_id, phy_id);
@@ -2386,21 +2371,13 @@ malibu_phy_hw_init(void)
 
 	malibu_phy_get_phy_id(0, 0, &org_id, &rev_id);
 	malibu_id = ((org_id << 16) |rev_id);
-	if (malibu_id == MALIBU_1_0) {
-	/* workaroud to avoid packet crc error*/
-	phy_data = malibu_phy_mmd_read(0, PSGMII_ID, MALIBU_PHY_MMD1_NUM,
-				       MALIBU_PSGMII_FIFI_CTRL);
-	phy_data &= 0xbfff;
-	malibu_phy_mmd_write(0, PSGMII_ID, MALIBU_PHY_MMD1_NUM,
-			     MALIBU_PSGMII_FIFI_CTRL, phy_data);
-	}
 
 	/*workaround to enable AZ transmitting ability*/
 	malibu_phy_mmd_write(0, PSGMII_ID, MALIBU_PHY_MMD1_NUM,
 			     MALIBU_PSGMII_MODE_CTRL, MALIBU_PHY_PSGMII_MODE_CTRL_ADJUST_VALUE);
 
 	/*enable phy power saving function by default */
-	if ((malibu_id == MALIBU_1_0) ||(malibu_id == MALIBU_1_1) ) {
+	if (malibu_id == MALIBU_1_1) {
 		for (phy_id = 0; phy_id < 5; phy_id++) {
 			malibu_phy_set_8023az(dev_id, phy_id, A_TRUE);
 			malibu_phy_set_powersave(dev_id, phy_id, A_TRUE);
