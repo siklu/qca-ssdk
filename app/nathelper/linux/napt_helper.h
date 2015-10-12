@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -49,9 +49,13 @@ napt_ct_pkts_get(uint32_t ct_addr);
 int
 napt_ct_type_is_nat(uint32_t ct_addr);
 int
+napt_ct_type_is_nat_alg(uint32_t ct_addr);
+int
 napt_ct_status_is_estab(uint32_t ct_addr);
 uint32_t
 napt_ct_priv_ip_get(uint32_t ct_addr);
+int
+napt_ct_intf_is_expected(uint32_t ct_addr);
 
 
 
@@ -73,6 +77,8 @@ napt_ct_priv_ip_get(uint32_t ct_addr);
 #define NAPT_CT_PRIV_IP_GET         napt_ct_priv_ip_get
 #define NAPT_CT_PKTS_GET            napt_ct_pkts_get
 #define NAPT_CT_TO_HW_ENTRY         napt_ct_to_hw_entry
+#define NAPT_CT_TYPE_IS_NAT_ALG     napt_ct_type_is_nat_alg
+#define NAPT_CT_INTF_EXPECTED       napt_ct_intf_is_expected
 
 
 #else
@@ -81,12 +87,5 @@ napt_ct_priv_ip_get(uint32_t ct_addr);
 
 #endif
 
-//#define HNAT_DEBUG 1
-
-#ifdef HNAT_DEBUG
-#define HNAT_PRINTK(x...) aos_printk(x)
-#else
-#define HNAT_PRINTK(x...)
-#endif
 
 #endif

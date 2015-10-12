@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -25,7 +25,12 @@
 #ifdef KVER32
 #include <linux/rcupdate.h>
 #endif
+#include <linux/if_arp.h>
+#include <linux/if_vlan.h>
+#include <linux/inetdevice.h>
+#include <linux/string.h>
 #include <net/netfilter/nf_conntrack_acct.h>
+#include <net/netfilter/nf_conntrack_helper.h>
 #include <net/netfilter/nf_conntrack.h>
 #include "nat_helper.h"
 #include "napt_acl.h"
@@ -47,6 +52,9 @@ extern unsigned int nf_conntrack_htable_size;
 void
 napt_ct_aging_disable(uint32_t ct_addr)
 {
+	if(nf_athrs17_hnat_sync_counter_en)
+		return;
+
     if(!ct_addr)
     {
         return;
@@ -68,6 +76,9 @@ napt_ct_aging_is_enable(uint32_t ct_addr)
         return 0;
     }
 
+	if(nf_athrs17_hnat_sync_counter_en)
+		return 0;
+
     struct nf_conn *ct = (struct nf_conn *)ct_addr;
 
     return timer_pending(&(((struct nf_conn *)ct)->timeout));
@@ -76,6 +87,9 @@ napt_ct_aging_is_enable(uint32_t ct_addr)
 void
 napt_ct_aging_enable(uint32_t ct_addr)
 {
+	if(nf_athrs17_hnat_sync_counter_en)
+		return;
+
     if(!ct_addr)
     {
         return;
@@ -191,6 +205,48 @@ napt_ct_type_is_nat(uint32_t ct_addr)
     struct nf_conn *ct = (struct nf_conn *)ct_addr;
 
     return ((IPS_NAT_MASK & (ct)->status)?1:0);
+}
+
+int
+napt_ct_type_is_nat_alg(uint32_t ct_addr)
+{
+	if(!ct_addr)
+	{
+		return 0;
+	}
+	struct nf_conn *ct = (struct nf_conn *)ct_addr;
+	return ((nfct_help(ct))?1:0);
+}
+
+int
+napt_ct_intf_is_expected(uint32_t ct_addr)
+{
+	struct nf_conn *ct = (struct nf_conn *)ct_addr;
+	struct nf_conntrack_tuple *rep_tuple;
+	uint32_t dst_ip;
+	struct net_device *dev = NULL;
+
+	if(!ct_addr)
+	{
+		return 0;
+	}
+
+	if ((ct->status & IPS_NAT_MASK) == IPS_SRC_NAT)
+		rep_tuple = &(ct->tuplehash[IP_CT_DIR_REPLY].tuple);
+	else
+		rep_tuple = &(ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple);
+	dst_ip = rep_tuple->dst.u3.ip;
+	dev = ip_dev_find(&init_net, dst_ip);
+	if(dev) {
+		if(dev->type == ARPHRD_ETHER) {
+			if(strstr(dev->name, "eth0"))
+				return 1;
+		} else if (dev->type == ARPHRD_PPP) {
+			return 1;
+		}
+	}
+
+	return 0;
 }
 
 int

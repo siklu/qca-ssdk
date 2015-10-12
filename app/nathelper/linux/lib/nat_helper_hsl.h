@@ -24,6 +24,8 @@
 #endif
 
 #include <linux/if_ether.h>
+#include "fal_nat.h"
+
 
 #define NAT_HW_NUM 32
 #define NAT_HW_PORT_RANGE_MAX 255
@@ -54,9 +56,16 @@ extern a_uint32_t nf_athrs17_hnat_wan_ip;
 extern a_uint32_t nf_athrs17_hnat_ppp_peer_ip;
 extern unsigned char nf_athrs17_hnat_ppp_peer_mac[ETH_ALEN];
 extern unsigned char nf_athrs17_hnat_wan_mac[ETH_ALEN];
+extern int nf_athrs17_hnat_sync_counter_en;
 
 extern int nf_athrs17_hnat_ppp_id2;
 extern unsigned char nf_athrs17_hnat_ppp_peer_mac2[ETH_ALEN];
+
+enum {
+	NAT_CHIP_VER_8327 = 0x12,
+	NAT_CHIP_VER_8337 = 0x13,
+	NAT_CHIP_VER_DESS = 0x14,
+};
 
 typedef struct
 {
@@ -79,6 +88,10 @@ typedef struct
     a_uint16_t dst_port;
     a_uint32_t trans_addr;
     a_uint16_t trans_port;
+    a_uint32_t ingress_packet;
+    a_uint32_t ingress_byte;
+    a_uint32_t egress_packet;
+    a_uint32_t egress_byte;
 } napt_entry_t;
 
 #if defined (__BIG_ENDIAN)
@@ -133,7 +146,9 @@ nat_hw_prv_mask_get(void);
 a_int32_t
 nat_hw_prv_base_is_match(a_uint32_t ip);
 a_int32_t
-if_mac_add(uint8_t *mac, uint8_t vid, uint32_t ipv6);
+if_mac_add(uint8_t *mac, uint32_t vid, uint32_t ipv6);
+a_int32_t
+if_mac_cleanup(void);
 a_int32_t
 arp_hw_add(a_uint32_t port, a_uint32_t intf_id, a_uint8_t *ip, a_uint8_t *mac, int is_ipv6_entry);
 a_int32_t
@@ -148,6 +163,12 @@ a_int32_t
 nat_hw_pub_ip_del(a_uint32_t index);
 a_int32_t
 napt_hw_add(napt_entry_t *napt_entry);
+a_int32_t
+napt_hw_get(napt_entry_t *napt, fal_napt_entry_t *entry);
+a_int32_t
+napt_hw_dnat_cookie_add(napt_entry_t *napt, a_uint32_t cookie);
+a_int32_t
+napt_hw_snat_cookie_add(napt_entry_t *napt, a_uint32_t cookie);
 a_int32_t
 napt_hw_del(napt_entry_t *napt_entry);
 a_int32_t

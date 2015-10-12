@@ -18,9 +18,29 @@
 #else
 #include <linux/autoconf.h>
 #endif
+#include <linux/string.h>
+
 
 #include "nat_helper.h"
 
+char hnat_log_en = HNAT_LOG_LEVEL_DISABLE;
+
+int nf_athrs17_hnat_sync_counter_en = 0;
+
+void hnat_log_msg(int level, char *string, ...)
+{
+
+	va_list   ptr;
+	char buffer[NAT_LOG_MAX_SIZE];
+
+	if(level < hnat_log_en)
+		return;
+	memset(buffer, 0, sizeof(buffer));
+	va_start(ptr,string);
+	vsprintf(buffer , string, ptr);
+	va_end(ptr);
+	aos_printk("%s\n", buffer);
+}
 
 
 sw_error_t

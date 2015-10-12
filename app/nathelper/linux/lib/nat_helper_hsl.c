@@ -37,15 +37,33 @@
 
 int nat_chip_ver = 0;
 
-#define DESS_CHIP(ver) ((((ver)&0xffff)>>8) == 0x14)
+/* support 4 different interfaces (or 4 VLANs) */
+static fal_intf_mac_entry_t global_if_mac_entry[MAX_INTF_NUM] = {{0}};
+static a_uint8_t if_mac_count = 0;
+
+extern int setup_wan_if;
+extern int setup_lan_if;
+
+#define DESS_CHIP(ver) ((((ver)&0xffff)>>8) == NAT_CHIP_VER_DESS)
+
+#define ARP_HW_COUNTER_OFFSET  8
 
 static a_uint8_t
-hw_debug_counter_get(void)
+nat_hw_debug_counter_get(void)
 {
-    static a_uint32_t debug_counter = 0;
+    static a_uint32_t nat_debug_counter = 0;
 
-    return ((debug_counter++) & 0x7);
+    return ((nat_debug_counter++) & 0x7);
 }
+
+static a_uint8_t
+arp_hw_debug_counter_get(void)
+{
+    static a_uint32_t ip_debug_counter = 0;
+
+    return ((ip_debug_counter++) & 0x7) + ARP_HW_COUNTER_OFFSET;
+}
+
 
 a_int32_t
 nat_hw_add(nat_entry_t *nat)
@@ -58,7 +76,7 @@ nat_hw_add(nat_entry_t *nat)
     hw_nat.port_num = nat->port_num;
     hw_nat.port_range = nat->port_range;
     hw_nat.counter_en = 1;
-    hw_nat.counter_id = hw_debug_counter_get();
+    hw_nat.counter_id = nat_hw_debug_counter_get();
 
     if(NAT_ADD(0, &hw_nat) != 0)
     {
@@ -131,14 +149,15 @@ static a_uint32_t private_net_mask = 0xffffff00;
 a_int32_t
 nat_hw_prv_base_set(a_uint32_t ip)
 {
-#define PRIVATE_IP_MASK 0xfffff000
+#define PRIVATE_IP_MASK 0xffffff00
 
     ip = ntohl(ip);
-#ifdef ISIS
-    private_ip_base = ip & PRIVATE_IP_MASK;
-#else
-    private_ip_base = ip & nat_hw_prv_mask_get();
-#endif
+
+	if (((nat_chip_ver & 0xffff) >> 8) == NAT_CHIP_VER_8327)
+    		private_ip_base = ip & PRIVATE_IP_MASK;
+	else
+		private_ip_base = ip & nat_hw_prv_mask_get();
+
 
 	if(DESS_CHIP(nat_chip_ver)) {
 		if (IP_PRV_BASE_ADDR_SET(0, 0, (fal_ip4_addr_t)ip) != 0)
@@ -164,7 +183,7 @@ nat_hw_prv_base_get(void)
     return private_ip_base;
 }
 
-#ifdef ISISC
+
 a_int32_t
 nat_hw_prv_mask_set(a_uint32_t ipmask)
 {
@@ -175,7 +194,7 @@ nat_hw_prv_mask_set(a_uint32_t ipmask)
 	    {
 	        return -1;
 	    }
-	} else {
+	} else if (((nat_chip_ver & 0xffff)>>8) == NAT_CHIP_VER_8337) {
 	    if (NAT_PRV_BASE_MASK_SET(0, (fal_ip4_addr_t)ipmask) != 0)
 	    {
 	        return -1;
@@ -193,25 +212,24 @@ nat_hw_prv_mask_get(void)
 {
     return private_net_mask;
 }
-#endif
+
 
 a_int32_t
 nat_hw_prv_base_is_match(a_uint32_t ip)
 {
-#define PRIVATE_IP_MASK 0xfffff000
+#define PRIVATE_IP_MASK 0xffffff00
 
     a_uint32_t prv_base = private_ip_base;
     a_uint32_t prv_mask;
 
-#ifdef ISIS
-    if((prv_base & PRIVATE_IP_MASK) == (ip & PRIVATE_IP_MASK))
-#else
-    prv_mask = nat_hw_prv_mask_get();
-    if((prv_base & prv_mask) == (ip & prv_mask))
-#endif
-    {
-        return 1;
-    }
+	if (((nat_chip_ver & 0xffff)>>8) == NAT_CHIP_VER_8327) {
+    		if((prv_base & PRIVATE_IP_MASK) == (ip & PRIVATE_IP_MASK))
+				return 1;
+	} else {
+		prv_mask = nat_hw_prv_mask_get();
+		if((prv_base & prv_mask) == (ip & prv_mask))
+        		return 1;
+	}
 
     HNAT_PRINTK("%s: private_ip_base:%x usaddr:%x mismatch\n",
                 __func__, prv_base, ip);
@@ -225,63 +243,87 @@ _arp_hw_if_mac_add(fal_intf_mac_entry_t *if_mac_entry)
     return IP_INTF_ENTRY_ADD(0, if_mac_entry);
 }
 
-a_int32_t
-if_mac_add(a_uint8_t *mac, a_uint8_t vid, uint32_t ipv6)
+static a_int32_t
+_arp_hw_if_mac_del(fal_intf_mac_entry_t *if_mac_entry)
 {
-    /* support 4 different interfaces (or 4 VLANs) */
-    static fal_intf_mac_entry_t if_mac_entry[MAX_INTF_NUM] = {{0}};
-    static a_uint8_t if_mac_count = 0;
+    return IP_INTF_ENTRY_DEL(0, FAL_IP_ENTRY_ID_EN, if_mac_entry);
+}
+
+a_int32_t
+if_mac_cleanup(void)
+{
+	a_uint8_t i = 0;
+
+	if_mac_count = 0;
+	for(i = 0; i < MAX_INTF_NUM; i++)
+	{
+		if(_arp_hw_if_mac_del(&global_if_mac_entry[i]) != 0) {
+			printk("mac del fail!\n");
+			return -1;
+		}
+		memset(&global_if_mac_entry[i], 0, sizeof(fal_intf_mac_entry_t));
+	}
+
+	setup_wan_if = 0;
+	setup_lan_if = 0;
+
+	return 0;
+}
+
+a_int32_t
+if_mac_add(a_uint8_t *mac, a_uint32_t vid, uint32_t ipv6)
+{
     a_uint8_t i = 0;
 
     for(i = 0; i < if_mac_count; i++)
     {
-        if((!memcmp(if_mac_entry[i].mac_addr.uc, mac, 6)) &&
-                (if_mac_entry[i].vid_low == vid))
+        if((!memcmp(global_if_mac_entry[i].mac_addr.uc, mac, 6)) &&
+                (global_if_mac_entry[i].vid_low == vid))
         {
             HNAT_PRINTK("%s: mac exist id:%d\n", __func__,
-                        if_mac_entry[if_mac_count].entry_id);
+                        global_if_mac_entry[if_mac_count].entry_id);
             return 0;
         }
     }
 
     if(if_mac_count == MAX_INTF_NUM)
     {
-        HNAT_PRINTK("%s: reach mac count max\n", __func__);
+        HNAT_ERR_PRINTK("%s: reach mac count max\n", __func__);
         return -1;
     }
 
-    memset(&if_mac_entry[if_mac_count], 0, sizeof(fal_intf_mac_entry_t));
-    memcpy(if_mac_entry[if_mac_count].mac_addr.uc, mac, 6);
+    memset(&global_if_mac_entry[if_mac_count], 0, sizeof(fal_intf_mac_entry_t));
+    memcpy(global_if_mac_entry[if_mac_count].mac_addr.uc, mac, 6);
 
-    if_mac_entry[if_mac_count].entry_id = if_mac_count;
+    global_if_mac_entry[if_mac_count].entry_id = if_mac_count;
     if (1 == ipv6)
     {
-        if_mac_entry[if_mac_count].ip6_route = 1;
+        global_if_mac_entry[if_mac_count].ip6_route = 1;
     }
     else
     {
-        if_mac_entry[if_mac_count].ip6_route = 0;
+        global_if_mac_entry[if_mac_count].ip6_route = 0;
     }
-    if_mac_entry[if_mac_count].ip4_route = 1;
+    global_if_mac_entry[if_mac_count].ip4_route = 1;
 
     if (vid == 0)
     {
-        if_mac_entry[if_mac_count].vid_low = 0;
-        if_mac_entry[if_mac_count].vid_high = 511;
+        global_if_mac_entry[if_mac_count].vid_low = 0;
+        global_if_mac_entry[if_mac_count].vid_high = 511;
     }
     else
     {
-        if_mac_entry[if_mac_count].vid_low = vid;
-        if_mac_entry[if_mac_count].vid_high = vid;
+        global_if_mac_entry[if_mac_count].vid_low = vid;
+        global_if_mac_entry[if_mac_count].vid_high = vid;
     }
 
-    if(_arp_hw_if_mac_add(&if_mac_entry[if_mac_count])!= 0)
+    if(_arp_hw_if_mac_add(&global_if_mac_entry[if_mac_count])!= 0)
     {
         return -1;
     }
 
     HNAT_PRINTK("%s: count:%d index:%d vid:%d  mac:%02x-%02x-%02x-%02x-%02x-%02x\n",
-                __func__, if_mac_count, if_mac_entry[if_mac_count].entry_id, vid,
+                __func__, if_mac_count, global_if_mac_entry[if_mac_count].entry_id, vid,
                 mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
     if_mac_count ++;
 
@@ -466,21 +508,24 @@ arp_hw_add(a_uint32_t port, a_uint32_t intf_id, a_uint8_t *ip, a_uint8_t *mac, i
     }
     else
     {
-        arp_entry.counter_id = hw_debug_counter_get();
+        arp_entry.counter_id = arp_hw_debug_counter_get();
     }
 
-    if(_arp_hw_add(&arp_entry) != 0)
-    {
-        printk("%s: fail\n", __func__);
-        return -1;
-    }
+	if (IP_HOST_GET(0, 0x10, &arp_entry)) {
+		HNAT_PRINTK("new arp for 0x%x\n", arp_entry.ip4_addr);
+		if(_arp_hw_add(&arp_entry) != 0)
+		{
+			HNAT_ERR_PRINTK("%s: fail\n", __func__);
+			return -1;
+		}
 
-	if(DESS_CHIP(nat_chip_ver)) {
-		if(_arp_host_route_hw_add(&arp_entry) != 0)
-	    {
-	        printk("%s: fail\n", __func__);
-	        return -1;
-	    }
+		if(DESS_CHIP(nat_chip_ver)) {
+			if(_arp_host_route_hw_add(&arp_entry) != 0)
+			{
+				HNAT_ERR_PRINTK("%s: fail\n", __func__);
+				return -1;
+			}
+		}
 	}
 
     if (0 == is_ipv6_entry)
@@ -583,7 +628,7 @@ napt_hw_mode_init(void)
     /* age_speedup+age_thres_1/4+age_step_4+age_timer_28s*1+
        stop_age_when1+overwrite_disable */
     /* Also set NAT mode Port strict mode/symmetric mode */
-    a_uint32_t entry = 0x5F01CB;
+    a_uint32_t entry = 0x15F01CB;
 
     HSL_REG_ENTRY_SET(rv, 0, NAT_CTRL, 0, (a_uint8_t *) (&entry),
                       sizeof (a_uint32_t));
@@ -609,15 +654,8 @@ napt_hw_mode_init(void)
 void
 napt_hw_mode_cleanup(void)
 {
-    sw_error_t rv;
-    a_uint32_t entry = 0;
-
-    HSL_REG_ENTRY_GET(rv, 0, MOD_ENABLE, 0,
-                      (a_uint8_t *) (&entry), sizeof (a_uint32_t));
-    SW_SET_REG_BY_FIELD(MOD_ENABLE, L3_EN, 0, entry);
-    HSL_REG_ENTRY_SET(rv, 0, MOD_ENABLE, 0,
-                      (a_uint8_t *) (&entry), sizeof (a_uint32_t));
-
+	if (!DESS_CHIP(nat_chip_ver))
+		IP_ROUTE_STATUS_SET(0, A_FALSE);
     ACL_STATUS_SET(0, A_FALSE);
 }
 
@@ -662,6 +700,10 @@ nat_hw_pub_ip_del(a_uint32_t index)
     (to)->dst_port = (from)->dst_port; \
     (to)->trans_addr = (from)->trans_addr; \
     (to)->trans_port = (from)->trans_port; \
+    (to)->ingress_packet = (from)->ingress_packet; \
+    (to)->ingress_byte = (from)->ingress_byte; \
+    (to)->egress_packet = (from)->egress_packet; \
+    (to)->egress_byte = (from)->egress_byte; \
 }
 
 a_int32_t
@@ -669,19 +711,91 @@ napt_hw_add(napt_entry_t *napt)
 {
     a_int32_t ret = 0;
     fal_napt_entry_t fal_napt = {0};
+	fal_host_entry_t host_entry = {0};
 
     napt_entry_cp(&fal_napt, napt);
 
     fal_napt.flags |= FAL_NAT_ENTRY_TRANS_IPADDR_INDEX;
     fal_napt.counter_en = 1;
-    fal_napt.counter_id = hw_debug_counter_get();
+    fal_napt.counter_id = nat_hw_debug_counter_get();
     fal_napt.action = FAL_MAC_FRWRD;
+
+	/*check arp entry*/
+	host_entry.flags = FAL_IP_IP4_ADDR;
+	host_entry.ip4_addr = fal_napt.src_addr;
+	ret = IP_HOST_GET(0, FAL_IP_ENTRY_IPADDR_EN, &host_entry);
+	if (ret) {
+		printk("can not find src host entry!\n");
+		return ret;
+	}
+	if (nf_athrs17_hnat_wan_type != NF_S17_WAN_TYPE_PPPOE) {
+		host_entry.ip4_addr = fal_napt.dst_addr;
+		ret = IP_HOST_GET(0, FAL_IP_ENTRY_IPADDR_EN, &host_entry);
+		if (ret) {
+			printk("can not find dst host entry!\n");
+			return ret;
+		}
+	}
 
     ret = NAPT_ADD(0, &fal_napt);
 
     napt->entry_id = fal_napt.entry_id;
     return ret;
 }
+
+a_int32_t
+napt_hw_get(napt_entry_t *napt, fal_napt_entry_t *entry)
+{
+	a_int32_t ret = 0;
+	fal_napt_entry_t fal_napt = {0};
+
+	napt_entry_cp(&fal_napt, napt);
+
+	ret = NAPT_GET(0, 0, &fal_napt);
+
+	if(!ret)
+		*entry = fal_napt;
+	return ret;
+}
+
+a_int32_t
+napt_hw_dnat_cookie_add(napt_entry_t *napt, a_uint32_t cookie)
+{
+	a_int32_t ret = 0;
+	fal_napt_entry_t fal_napt = {0};
+	fal_napt.flags = napt->flags | 0x10;
+	fal_napt.status = 0xf;
+	fal_napt.dst_addr = napt->dst_addr;
+	fal_napt.dst_port = napt->dst_port;
+	fal_napt.trans_addr = napt->trans_addr;
+	fal_napt.trans_port = napt->trans_port;
+	fal_napt.src_port = napt->src_port;
+	fal_napt.action = FAL_MAC_RDT_TO_CPU;
+	fal_napt.flow_cookie = cookie;
+	ret = NAPT_ADD(0, &fal_napt);
+	return ret;
+}
+
+a_int32_t
+napt_hw_snat_cookie_add(napt_entry_t *napt, a_uint32_t cookie)
+{
+	a_int32_t ret = 0;
+	fal_napt_entry_t fal_napt = {0};
+	fal_napt.flags = napt->flags | 0x10;
+	fal_napt.status = 0xf;
+	fal_napt.dst_addr = napt->dst_addr;
+	fal_napt.dst_port = napt->dst_port;
+	fal_napt.src_addr = napt->src_addr;
+	fal_napt.src_port = napt->src_port;
+	fal_napt.trans_port = napt->trans_port;
+	fal_napt.action = FAL_MAC_RDT_TO_CPU;
+	fal_napt.flow_cookie = cookie;
+	ret = NAPT_ADD(0, &fal_napt);
+	return ret;
+}
+
+
+
 
 a_int32_t
 napt_hw_del(napt_entry_t *napt)
@@ -691,6 +805,7 @@ napt_hw_del(napt_entry_t *napt)
     fal_napt_entry_t fal_napt = {0};
 
     napt_entry_cp(&fal_napt, napt);
+	napt_ct_counter_decrease();
 
     ret = NAPT_DEL(0, FAL_NAT_ENTRY_KEY_EN, &fal_napt);
 

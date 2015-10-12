@@ -21,9 +21,14 @@
 #ifdef ISISC
 #include "isisc_acl.h"
 #include "isisc_reg.h"
-#else
+#endif
+#ifdef ISIS
 #include "isis_acl.h"
 #include "isis_reg.h"
+#endif
+#ifdef DESS
+#include "dess_acl.h"
+#include "dess_reg.h"
 #endif
 
 #define MAX_PPPOE_PASSTHROUGH_NUM 4
@@ -56,6 +61,8 @@
 #define S17_WAN_PORT    5
 #define S17_CPU_PORT    0
 
+#define S17_CPU_PORT_W    6
+
 #define S17_LAN_PORT0   1
 #define S17_LAN_PORT1   2
 #define S17_LAN_PORT2   3
@@ -67,15 +74,20 @@
 uint32_t get_aclrulemask(void);
 void set_aclrulemask(uint32_t acl_list);
 
-void droute_add_acl_rules(uint32_t local_ip, uint32_t gw_entry_id);
+void droute_add_acl_rules(uint32_t local_ip, uint32_t local_ip_mask, uint32_t gw_entry_id);
+void droute_del_acl_rules(void);
 void ipv6_droute_del_acl_rules(void);
 void ipv6_droute_add_acl_rules(struct in6_addr *local_ip, uint32_t gw_entry_id);
-void pppoe_add_acl_rules(uint32_t wan_ip, uint32_t local_ip, uint32_t gw_entry_id);
+void pppoe_add_acl_rules(
+	uint32_t wan_ip, uint32_t local_ip,
+	uint32_t local_ip_mask, uint32_t gw_entry_id);
+void pppoe_del_acl_rules(void);
 void ip_conflict_add_acl_rules(uint32_t wan_ip, uint32_t lan_ip, uint32_t gw_entry_id);
 void ipv6_snooping_solicted_node_add_acl_rules(void);
 void ipv6_snooping_nodeinfo_query_add_acl_rules(void);
 void ipv6_snooping_sextuple0_group_add_acl_rules(void);
 void ipv6_snooping_quintruple0_1_group_add_acl_rules ( void );
+void ip_conflict_del_acl_rules(void);
 void upnp_ssdp_add_acl_rules(void);
 unsigned int isis_set_pppoe_passthrough(int enable);
 unsigned int isis_enable_pppoe_discovery_acl(void);

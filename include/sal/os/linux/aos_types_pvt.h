@@ -66,11 +66,10 @@ typedef   s64             __a_int64_t;
 
 #define aos_printk        printk
 
-// #define AUTO_UPDATE_PPPOE_INFO 1
+#define AUTO_UPDATE_PPPOE_INFO 1
+#if 0
 #undef AUTO_UPDATE_PPPOE_INFO
-
-#ifdef AUTO_UPDATE_PPPOE_INFO
-#include "lib/ppp_generic.h"
 #endif
+
 
 #endif

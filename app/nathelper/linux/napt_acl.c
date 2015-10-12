@@ -23,10 +23,12 @@
 #include <linux/netdevice.h>
 
 #include "napt_acl.h"
+#include "nat_helper.h"
 #include "lib/nat_helper_hsl.h"
 #include "hsl_shared_api.h"
 
 static uint32_t aclrulemask = 0;
+extern int nat_chip_ver;
 
 uint32_t
 get_aclrulemask(void)
@@ -69,7 +71,7 @@ unset_aclrulemask(uint32_t acl_list)
  * set the IPv4 default route (to the next hop)
  */
 void
-droute_add_acl_rules(uint32_t local_ip, uint32_t gw_entry_id)
+droute_add_acl_rules(uint32_t local_ip, uint32_t local_ip_mask, uint32_t gw_entry_id)
 {
     fal_acl_rule_t myacl;
     uint32_t rtnval;
@@ -85,7 +87,7 @@ droute_add_acl_rules(uint32_t local_ip, uint32_t gw_entry_id)
     memset(&myacl, 0, sizeof(fal_acl_rule_t));
     myacl.rule_type = FAL_ACL_RULE_IP4;
     myacl.dest_ip4_val = ntohl(local_ip);
-    myacl.dest_ip4_mask = ntohl(0xffffff00);
+    myacl.dest_ip4_mask = ntohl(local_ip_mask);
     /*
     IPv4 rule, with DIP field
     if DIP != Lan IP, force the ARP index redirect to the next hop
@@ -129,6 +131,27 @@ droute_add_acl_rules(uint32_t local_ip, uint32_t gw_entry_id)
     }
 
     set_aclrulemask(S17_ACL_LIST_DROUTE);
+}
+void
+droute_del_acl_rules(void)
+{
+
+	if (!(get_aclrulemask() & (1 << S17_ACL_LIST_DROUTE)))
+		return;
+
+	HNAT_PRINTK("IPv4 default route del rule #%d\n", S17_ACL_LIST_DROUTE);
+
+	ACL_LIST_UNBIND(0, S17_ACL_LIST_DROUTE, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, S17_LAN_PORT0);
+	ACL_LIST_UNBIND(0, S17_ACL_LIST_DROUTE, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, S17_LAN_PORT1);
+	ACL_LIST_UNBIND(0, S17_ACL_LIST_DROUTE, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, S17_LAN_PORT2);
+	ACL_LIST_UNBIND(0, S17_ACL_LIST_DROUTE, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, S17_LAN_PORT3);
+
+	ACL_RULE_DEL(0, S17_ACL_LIST_DROUTE, 0, 1);
+
+
+	ACL_LIST_DESTROY(0, S17_ACL_LIST_DROUTE);
+
+	unset_aclrulemask(S17_ACL_LIST_DROUTE);
 }
 
 /*
@@ -203,7 +226,7 @@ ipv6_droute_add_acl_rules(struct in6_addr *local_ip, uint32_t gw_entry_id)
  */
 void ipv6_droute_del_acl_rules(void)
 {
-    printk("IPv6 default route del rule #%d\n", S17_ACL_LIST_IPV6DROUTE);
+    HNAT_PRINTK("IPv6 default route del rule #%d\n", S17_ACL_LIST_IPV6DROUTE);
 
     if (!(get_aclrulemask() & (1 << S17_ACL_LIST_IPV6DROUTE)))
         return;
@@ -221,7 +244,7 @@ void ipv6_droute_del_acl_rules(void)
     unset_aclrulemask(S17_ACL_LIST_IPV6DROUTE);
 }
 
-#ifdef ISIS
+
 static int isis_pppoe_del_rule0(void)
 {
     int rtnval;
@@ -240,14 +263,16 @@ static int isis_pppoe_del_rule0(void)
 
     return rtnval;
 }
-#endif
+
 
 /*
  * PPPoE ACL rules
  * Force ARP_INDEX_EN to the next hop for CPU port
  * Force SNAT and ARP_INDEX_EN to the next hop for LAN ports
  */
-void pppoe_add_acl_rules(uint32_t wan_ip, uint32_t local_ip, uint32_t gw_entry_id)
+void pppoe_add_acl_rules(
+		uint32_t wan_ip, uint32_t local_ip,
+		uint32_t local_ip_mask, uint32_t gw_entry_id)
 {
     fal_acl_rule_t myacl;
     uint32_t rtnval, cnt;
@@ -261,7 +286,9 @@ void pppoe_add_acl_rules(uint32_t wan_ip, uint32_t local_ip, uint32_t gw_entry_i
         switch (cnt)
         {
             case 0:
-#ifdef ISIS
+			if (((nat_chip_ver & 0xffff)>>8) != NAT_CHIP_VER_8327)
+				break;
+
                 aos_printk("PPPoE adding rule #%d\n", S17_ACL_LIST_PPPOE);
                 myacl.rule_type = FAL_ACL_RULE_IP4;
                 myacl.src_ip4_val = wan_ip;
@@ -311,15 +338,15 @@ void pppoe_add_acl_rules(uint32_t wan_ip, uint32_t local_ip, uint32_t gw_entry_i
                     break;
                 }
 
-                ACL_LIST_BIND(0, S17_ACL_LIST_PPPOE, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, S17_CPU_PORT);
-#endif
+                ACL_LIST_BIND(0, S17_ACL_LIST_PPPOE, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, S17_CPU_PORT_W);
+
                 break;
 
             case 1:
                 aos_printk("PPPoE adding rule #%d\n", S17_ACL_LIST_PPPOE+1);
                 myacl.rule_type = FAL_ACL_RULE_IP4;
-                myacl.dest_ip4_val = local_ip;
-                myacl.dest_ip4_mask = 0xffffff00;
+                myacl.dest_ip4_val = ntohl(local_ip);
+                myacl.dest_ip4_mask = ntohl(local_ip_mask);
 
                 /*
                   IPv4 rule, with DIP field
@@ -434,6 +461,36 @@ void pppoe_add_acl_rules(uint32_t wan_ip, uint32_t local_ip, uint32_t gw_entry_i
     }
 }
 
+static void pppoe_del_acl_rule1(void)
+{
+	    ACL_LIST_UNBIND(0, S17_ACL_LIST_PPPOE+1, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, S17_LAN_PORT0);
+	    ACL_LIST_UNBIND(0, S17_ACL_LIST_PPPOE+1, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, S17_LAN_PORT1);
+	    ACL_LIST_UNBIND(0, S17_ACL_LIST_PPPOE+1, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, S17_LAN_PORT2);
+	    ACL_LIST_UNBIND(0, S17_ACL_LIST_PPPOE+1, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, S17_LAN_PORT3);
+
+	    ACL_RULE_DEL(0, S17_ACL_LIST_PPPOE+1, 0, 1);
+
+	    ACL_LIST_DESTROY(0, S17_ACL_LIST_PPPOE+1);
+}
+
+static void pppoe_del_acl_rule2(void)
+{
+	    ACL_LIST_UNBIND(0, S17_ACL_LIST_PPPOE+2, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, S17_CPU_PORT);
+	    ACL_LIST_UNBIND(0, S17_ACL_LIST_PPPOE+2, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, S17_LAN_PORT1);
+	    ACL_LIST_UNBIND(0, S17_ACL_LIST_PPPOE+2, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, S17_LAN_PORT2);
+	    ACL_LIST_UNBIND(0, S17_ACL_LIST_PPPOE+2, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, S17_LAN_PORT3);
+
+	    ACL_RULE_DEL(0, S17_ACL_LIST_PPPOE+2, 0, 1);
+
+	    ACL_LIST_DESTROY(0, S17_ACL_LIST_PPPOE+2);
+}
+void pppoe_del_acl_rules(void)
+{
+	if (((nat_chip_ver & 0xffff)>>8) == NAT_CHIP_VER_8327)
+		isis_pppoe_del_rule0();
+	pppoe_del_acl_rule1();
+	pppoe_del_acl_rule2();
+}
 /*
  * When LAN & WAN IPs are too close, apply this ACL
  * ex: WAN 192.168.1.x, LAN 192.168.0.x
@@ -551,6 +608,33 @@ ip_conflict_add_acl_rules(uint32_t wan_ip, uint32_t lan_ip, uint32_t gw_entry_id
         }
     }
 }
+
+void ip_conflict_del_acl_rules(void)
+{
+	if (!(get_aclrulemask() & (1 << S17_ACL_LIST_IPCONF)))
+		return;
+
+	ACL_LIST_UNBIND(0, S17_ACL_LIST_IPCONF, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, S17_LAN_PORT0);
+	ACL_LIST_UNBIND(0, S17_ACL_LIST_IPCONF, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, S17_LAN_PORT1);
+	ACL_LIST_UNBIND(0, S17_ACL_LIST_IPCONF, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, S17_LAN_PORT2);
+	ACL_LIST_UNBIND(0, S17_ACL_LIST_IPCONF, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, S17_LAN_PORT3);
+
+	ACL_RULE_DEL(0, S17_ACL_LIST_IPCONF, 0, 1);
+
+	ACL_LIST_DESTROY(0, S17_ACL_LIST_IPCONF);
+
+	ACL_LIST_UNBIND(0, S17_ACL_LIST_IPCONF+1, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, S17_LAN_PORT0);
+	ACL_LIST_UNBIND(0, S17_ACL_LIST_IPCONF+1, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, S17_LAN_PORT1);
+	ACL_LIST_UNBIND(0, S17_ACL_LIST_IPCONF+1, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, S17_LAN_PORT2);
+	ACL_LIST_UNBIND(0, S17_ACL_LIST_IPCONF+1, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, S17_LAN_PORT3);
+
+	ACL_RULE_DEL(0, S17_ACL_LIST_IPCONF+1, 0, 1);
+
+	ACL_LIST_DESTROY(0, S17_ACL_LIST_IPCONF+1);
+
+	unset_aclrulemask(S17_ACL_LIST_IPCONF);
+}
+
 
 /*
 solicted_node address

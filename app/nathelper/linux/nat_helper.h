@@ -30,23 +30,20 @@ void nat_ipt_helper_exit(void);
 void nat_helper_bg_task_init(void);
 void nat_helper_bg_task_exit(void);
 
-
-//#define HNAT_DEBUG 1
-
-#ifdef HNAT_DEBUG
-#define HNAT_PRINTK(x...) aos_printk(x)
-#else
-#define HNAT_PRINTK(x...)
-#endif
-
-//#define HNAT_ERR_DEBUG 1
-
-#ifdef HNAT_ERR_DEBUG
-#define HNAT_ERR_PRINTK(x...) aos_printk(x)
-#else
-#define HNAT_ERR_PRINTK(x...)
-#endif
-
+void hnat_log_msg(int level, char *string, ...);
+#define NAT_LOG_MAX_SIZE 1024
+enum {
+	HNAT_LOG_LEVEL_DEBUG = 0,
+	HNAT_LOG_LEVEL_INFO,
+	HNAT_LOG_LEVEL_ERR,
+	HNAT_LOG_LEVEL_DISABLE
+};
+#define HNAT_PRINTK(arg...)  \
+			hnat_log_msg(HNAT_LOG_LEVEL_DEBUG, arg)
+#define HNAT_INFO_PRINTK(arg...)  \
+			hnat_log_msg(HNAT_LOG_LEVEL_INFO, arg)
+#define HNAT_ERR_PRINTK(arg...)  \
+			hnat_log_msg(HNAT_LOG_LEVEL_ERR, arg)
 
 
 #endif
