@@ -61,6 +61,12 @@ extern int nf_athrs17_hnat_sync_counter_en;
 extern int nf_athrs17_hnat_ppp_id2;
 extern unsigned char nf_athrs17_hnat_ppp_peer_mac2[ETH_ALEN];
 
+enum {
+	NAT_CHIP_VER_8327 = 0x12,
+	NAT_CHIP_VER_8337 = 0x13,
+	NAT_CHIP_VER_DESS = 0x14,
+};
+
 typedef struct
 {
     a_uint32_t entry_id;
@@ -141,6 +147,8 @@ a_int32_t
 nat_hw_prv_base_is_match(a_uint32_t ip);
 a_int32_t
 if_mac_add(uint8_t *mac, uint32_t vid, uint32_t ipv6);
+a_int32_t
+if_mac_cleanup(void);
 a_int32_t
 arp_hw_add(a_uint32_t port, a_uint32_t intf_id, a_uint8_t *ip, a_uint8_t *mac, int is_ipv6_entry);
 a_int32_t

@@ -39,6 +39,7 @@ extern int nat_sockopts_init;
 extern uint32_t napt_set_default_route(fal_ip4_addr_t dst_addr, fal_ip4_addr_t src_addr);
 extern uint32_t napt_set_ipv6_default_route(void);
 extern void nat_ipt_sockopts_replace(void);
+extern void qcaswitch_hostentry_flush(void);
 
 #define NAPT_BUFFER_HASH_SIZE        (NAPT_TABLE_SIZE)
 #define NAPT_BUFFER_SIZE             ((NAPT_BUFFER_HASH_SIZE)*8)
@@ -46,6 +47,9 @@ extern void nat_ipt_sockopts_replace(void);
 static a_uint32_t napt_buffer_hash_size = NAPT_TABLE_SIZE;
 static a_uint32_t napt_buffer_size = (NAPT_BUFFER_HASH_SIZE)*8;
 static a_uint32_t napt_ct_hw_cnt = 0;
+static a_uint8_t napt_thread_pending = 0;
+
+extern int nat_chip_ver;
 
 struct napt_ct
 {
@@ -78,6 +82,9 @@ static struct napt_debug_counter napt_ct_debug_info;
 int scan_period = NAPT_CT_POLLING_SEC;
 int scan_enable = 1;
 int napt_need_clean = 0;
+/*pppoe dhcp siwtch pre-handle*/
+int wan_switch = 0;
+
 
 static a_int32_t
 napt_hash_buf_init(struct napt_ct **hash, struct nhlist_head **hash_head)
@@ -459,13 +466,15 @@ napt_ct_hw_add(a_uint32_t ct_addr, a_uint16_t *hw_index)
         HNAT_ERR_PRINTK("####%s##nat_hw_pub_ip_add fail!\n", __func__);
         return -1;
     }
-	ret = napt_dnat_flow_find_del(&napt, &entry);
-	if(!ret) {
-		dcookie = entry.flow_cookie;
-	}
-	ret = napt_snat_flow_find_del(&napt, &entry);
-	if(!ret) {
-		scookie = entry.flow_cookie;
+	if (((nat_chip_ver & 0xffff)>>8) == NAT_CHIP_VER_DESS) {
+		ret = napt_dnat_flow_find_del(&napt, &entry);
+		if(!ret) {
+			dcookie = entry.flow_cookie;
+		}
+		ret = napt_snat_flow_find_del(&napt, &entry);
+		if(!ret) {
+			scookie = entry.flow_cookie;
+		}
 	}
     sw_error_t rv = napt_hw_add(&napt);
 
@@ -485,9 +494,11 @@ napt_ct_hw_add(a_uint32_t ct_addr, a_uint16_t *hw_index)
             *hw_index = napt.entry_id;
             // Added from 1.0.7 for default route.
             napt_set_default_route(napt.dst_addr, napt.src_addr);
-			i = napt.entry_id;
-			napt_cookie[i*2] = dcookie;
-			napt_cookie[i*2+1] = scookie;
+			if (((nat_chip_ver & 0xffff)>>8) == NAT_CHIP_VER_DESS) {
+				i = napt.entry_id;
+				napt_cookie[i*2] = dcookie;
+				napt_cookie[i*2+1] = scookie;
+			}
 		napt_ct_hw_cnt++;
 
             return 0;
@@ -1131,6 +1142,26 @@ napt_ct_scan(void)
     napt_ct_buffer_refresh_check(ct_buf_valid_cnt);
 }
 
+void napt_wan_switch_prehandle()
+{
+	if (wan_switch) {
+		napt_thread_pending = 1;
+		napt_l3_status_set(0, A_FALSE);
+		napt_ct_hw_exit();
+		napt_hw_flush();
+		qcaswitch_hostentry_flush();
+		droute_del_acl_rules();
+		ipv6_droute_del_acl_rules();
+		if (nf_athrs17_hnat_wan_type == NF_S17_WAN_TYPE_PPPOE)
+			pppoe_del_acl_rules();
+		#ifdef MULTIROUTE_WR
+		ip_conflict_del_acl_rules();
+		#endif
+		if_mac_cleanup();
+		napt_l3_status_set(0, A_TRUE);
+		napt_thread_pending = 0;
+	}
+}
 
 static a_int32_t
 napt_ct_init(void)
@@ -1188,6 +1219,11 @@ napt_ct_scan_thread(void *param)
 		if(!nat_sockopts_init) {
 			nat_ipt_sockopts_replace();
 		}
+		if (napt_thread_pending) {
+			NAPT_CT_TASK_SLEEP(scan_period);
+			continue;
+		}
+
 		if (scan_enable) {
 			HNAT_PRINTK("[ct scan start]\n");
 			napt_ct_scan();

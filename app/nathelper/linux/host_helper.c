@@ -100,7 +100,8 @@ char nat_lan_dev_list[IFNAMSIZ*4] = "br-lan eth0.1";
 char nat_wan_dev_list[IFNAMSIZ*4] = "eth0.2";
 
 char nat_wan_port = 0x20;
-
+int setup_wan_if = 0;
+int setup_lan_if=0;
 
 #define NAT_LAN_DEV_VID 1
 #define NAT_WAN_DEV_VID 2
@@ -299,7 +300,7 @@ static void wan_nh_add(u_int8_t *host_ip , u_int8_t *host_mac, u_int32_t id)
             /* set the in_use flag */
             wan_nh_ent[i].in_use = 1;
         }
-        aos_printk("%s: ip %08x (%d)\n" ,__func__, wan_nh_ent[i].host_ip, i);
+        HNAT_PRINTK("%s: ip %08x (%d)\n" ,__func__, wan_nh_ent[i].host_ip, i);
     }
 }
 
@@ -401,7 +402,7 @@ uint32_t napt_set_default_route(fal_ip4_addr_t dst_addr, fal_ip4_addr_t src_addr
 }
 #endif /* MULTIROUTE_WR */
 
-static void qcaswitch_hostentry_flush(void)
+void qcaswitch_hostentry_flush(void)
 {
     fal_host_entry_t hostentry;
     sw_error_t ret;
@@ -720,7 +721,6 @@ static sw_error_t setup_interface_entry(char *list_if, int is_wan)
     uint32_t vid = 0;
     sw_error_t setup_error;
     uint32_t ipv6 = 0;
-    static int setup_lan_if=0;
 
     memcpy(temp, list_if, strlen(list_if)+1);
     list_all = temp;
@@ -820,6 +820,7 @@ static sw_error_t setup_interface_entry(char *list_if, int is_wan)
             }
 
             if(setup_lan_if) {
+			dev_put(nat_dev);
                 return SW_OK;
             } else {
                 setup_lan_if = 1;
@@ -881,7 +882,6 @@ static void setup_dev_list(void)
 
 static int setup_all_interface_entry(void)
 {
-    static int setup_wan_if = 0;
     //static int setup_lan_if=0;
     static int setup_default_vid = 0;
     int i = 0;
@@ -921,21 +921,21 @@ static int setup_all_interface_entry(void)
             setup_wan_if = 1; /* setup WAN interface entry success */
         }
     }
-#ifndef ISISC /* For S17c only */
-    if ((nf_athrs17_hnat_wan_type == NF_S17_WAN_TYPE_PPPOE) ||
-            (nf_athrs17_hnat_wan_type == NF_S17_WAN_TYPE_PPPOEV6))
-    {
-        uint8_t buf[6];
+	if (((nat_chip_ver&0xffff)>>8) == NAT_CHIP_VER_8327) {
+		if ((nf_athrs17_hnat_wan_type == NF_S17_WAN_TYPE_PPPOE) ||
+			(nf_athrs17_hnat_wan_type == NF_S17_WAN_TYPE_PPPOEV6))
+		{
+			uint8_t buf[6];
 
-        memcpy(buf, nf_athrs17_hnat_ppp_peer_mac, ETH_ALEN);
-        HNAT_PRINTK("Peer MAC: %s ", buf);
-        /* add the peer interface with VID */
-        if_mac_add(buf, wan_fid, 0);
-        HNAT_PRINTK(" --> (%.2x-%.2x-%.2x-%.2x-%.2x-%.2x)\n", \
-                    buf[0], buf[1], buf[2], buf[3], buf[4], buf[5]);
-        memcpy(&wanip, (void *)&nf_athrs17_hnat_wan_ip, 4);
-    }
-#endif
+			memcpy(buf, nf_athrs17_hnat_ppp_peer_mac, ETH_ALEN);
+			HNAT_PRINTK("Peer MAC: %s ", buf);
+			/* add the peer interface with VID */
+			if_mac_add(buf, wan_fid, 0);
+			HNAT_PRINTK(" --> (%.2x-%.2x-%.2x-%.2x-%.2x-%.2x)\n", \
+				buf[0], buf[1], buf[2], buf[3], buf[4], buf[5]);
+			memcpy(&wanip, (void *)&nf_athrs17_hnat_wan_ip, 4);
+		}
+	}
 
     return 1;
 }
@@ -964,7 +964,10 @@ static void isis_pppoe_check_for_redial(void)
                 /* force PPPoE parser for multi- and uni-cast packets; for v1.0.7+ */
                 pppoetbl.session_id = nf_athrs17_hnat_ppp_id;
                 pppoetbl.multi_session = 1;
-                pppoetbl.uni_session = 0;
+			if (((nat_chip_ver & 0xffff)>>8) == NAT_CHIP_VER_8327)
+				pppoetbl.uni_session = 1;
+			else
+                		pppoetbl.uni_session = 0;
                 pppoetbl.entry_id = 0;
                 /* set the PPPoE edit reg (0x2200), and PPPoE session reg (0x5f000) */
                 if (PPPOE_SESSION_TABLE_ADD(0, &pppoetbl) == SW_OK)
@@ -1097,7 +1100,10 @@ static int add_pppoe_host_entry(uint32_t sport, a_int32_t arp_entry_id)
 
         pppoetbl.session_id = nf_athrs17_hnat_ppp_id;
         pppoetbl.multi_session = 1;
-        pppoetbl.uni_session = 0;
+		if (((nat_chip_ver & 0xffff)>>8) == NAT_CHIP_VER_8327)
+			pppoetbl.uni_session = 1;
+		else
+        		pppoetbl.uni_session = 0;
         pppoetbl.entry_id = 0;
 
         /* set the PPPoE edit reg (0x2200), and PPPoE session reg (0x5f000) */
@@ -1291,10 +1297,8 @@ arp_in_bg_handle(struct nat_helper_bg_msg *msg)
     uint8_t *sip, *dip, *smac, *dmac;
     uint8_t dev_is_lan = 0;
     uint32_t sport = 0, vid = 0;
-#ifdef ISIS
-    uint32_t lan_netmask = 0;
     a_bool_t prvbasemode = 1;
-#endif
+
     a_int32_t arp_entry_id = -1;
 	struct net_device *in = msg->arp_in.in;
 	struct sk_buff *skb = msg->arp_in.skb;
@@ -1369,7 +1373,7 @@ arp_in_bg_handle(struct nat_helper_bg_msg *msg)
     arp_entry_id = arp_hw_add(sport, vid, sip, smac, 0);
     if(arp_entry_id < 0)
     {
-        printk("ARP entry error!!\n");
+        HNAT_ERR_PRINTK("ARP entry error!!\n");
         return 0;
     }
 
@@ -1397,7 +1401,9 @@ arp_in_bg_handle(struct nat_helper_bg_msg *msg)
         add_pppoe_host_entry(sport, arp_entry_id);
     }
 
-#ifdef ISIS
+	if (((nat_chip_ver & 0xffff)>>8) != NAT_CHIP_VER_8327)
+		return 1;
+
     /* check for SIP and DIP range */
     if ((lanip[0] != 0) && (wanip[0] != 0))
     {
@@ -1434,7 +1440,6 @@ arp_in_bg_handle(struct nat_helper_bg_msg *msg)
             ;; /* do nothing */
         }
     }
-#endif /* ifdef ISIS */
 
     return 1;
 }
@@ -1452,13 +1457,87 @@ static struct
 };
 
 #ifdef AUTO_UPDATE_PPPOE_INFO
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,14,0))
+struct prv_ppp_file {
+	int		k;
+	struct sk_buff_head xmitq;
+	struct sk_buff_head recvq;
+	wait_queue_head_t wait;
+	atomic_t	cnt;
+	int		hlen;
+	int		idx;
+	int		d;
+};
+struct prv_ppp {
+	struct prv_ppp_file	file;
+	char	*o;
+	struct list_head channels;
+	int		n_channels;
+	spinlock_t	rlock;
+	spinlock_t	wlock;
+	int		m;
+	unsigned int	flags;
+	unsigned int	xmitstate;
+	unsigned int	recvstate;
+	int		d;
+	char *vj;
+	int	mode[6];
+	struct sk_buff	*xpending;
+	char *xcmp;
+	void		*xstate;
+	char *rcmp;
+	void		*rstate;
+	unsigned long	l_xmit;
+	unsigned long	l_recv;
+	struct net_device *dev;
+	int		resv1;
+#ifdef CONFIG_PPP_MULTILINK
+	int		resv2;
+	u32		resv3;
+	int		resv4;
+	u32		resv5;
+	u32		resv6;
+	struct sk_buff_head rq;
+#endif /* CONFIG_PPP_MULTILINK */
+#ifdef CONFIG_PPP_FILTER
+	char *p_filter;
+	char *a_filter;
+	unsigned p_len, a_len;
+#endif /* CONFIG_PPP_FILTER */
+	char	*pnet;
+};
+
+struct prv_channel {
+	struct prv_ppp_file	file;
+	struct list_head list;
+	struct ppp_channel *chan;
+	struct rw_semaphore sem;
+	spinlock_t	downlock;
+	struct prv_ppp	*ppp;
+	char	*cnet;
+	struct list_head clist;
+	rwlock_t	uplock;
+#ifdef CONFIG_PPP_MULTILINK
+	u8		resv1;
+	u8		resv2;
+	u32		resv3;
+	int		resv4;
+#endif
+};
+#endif
+
 static int qcaswitch_pppoe_ip_event(struct notifier_block *this,
                                     unsigned long event, void *ptr)
 {
     struct in_ifaddr *ifa = (struct in_ifaddr *)ptr;
     struct net_device *dev = (struct net_device *)ifa->ifa_dev->dev;
     struct list_head *list;
+	#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
     struct channel *pch;
+	#else
+	struct prv_channel *pch;
+	struct prv_ppp *ppp = netdev_priv(dev);
+	#endif
     struct sock *sk;
     struct pppox_sock *po;
     unsigned long  flags;
@@ -1529,6 +1608,44 @@ static int qcaswitch_pppoe_ip_event(struct notifier_block *this,
 				return NOTIFY_DONE;
 			}
 		}
+	#else
+		//struct prv_ppp *ppp = netdev_priv(dev);
+		//struct prv_channel *pch;
+		list = &ppp->channels;
+		if (list_empty(list))
+                return NOTIFY_DONE;
+		if ((ppp->flags & SC_MULTILINK) == 0) {
+			list = list->next;
+			pch = list_entry(list, struct prv_channel, clist);
+			if (pch->chan)
+			{
+				if (pch->chan->private) {
+					if (ifa->ifa_local == ifa->ifa_address)
+						return NOTIFY_DONE;
+					sk = (struct sock *)pch->chan->private;
+					po = (struct pppox_sock*)sk;
+					connection_count++;
+					if (((NF_S17_WAN_TYPE_PPPOE == nf_athrs17_hnat_wan_type) &&
+						(0 != nf_athrs17_hnat_ppp_id)))
+					{
+						nf_athrs17_hnat_ppp_id2 = po->num;
+						memcpy(nf_athrs17_hnat_ppp_peer_mac2, po->pppoe_pa.remote, ETH_ALEN);
+					}
+					else
+					{
+						nf_athrs17_hnat_wan_type = NF_S17_WAN_TYPE_PPPOE;
+						nf_athrs17_hnat_wan_ip = ifa->ifa_local;
+		                            nf_athrs17_hnat_ppp_peer_ip = ifa->ifa_address;
+		                            memcpy(nf_athrs17_hnat_ppp_peer_mac, po->pppoe_pa.remote, ETH_ALEN);
+		                            nf_athrs17_hnat_ppp_id = ntohs(po->pppoe_pa.sid);
+					}
+				}
+			}
+			else
+			{
+				return NOTIFY_DONE;
+			}
+		}
 	#endif
 		break;
 
@@ -1544,7 +1661,10 @@ static int qcaswitch_pppoe_ip_event(struct notifier_block *this,
                 ipv6_droute_del_acl_rules();
                 del_pppoetbl.session_id = nf_athrs17_hnat_ppp_id;
                 del_pppoetbl.multi_session = 1;
-                del_pppoetbl.uni_session = 0;
+			if (((nat_chip_ver & 0xffff)>>8) == NAT_CHIP_VER_8327)
+				del_pppoetbl.uni_session = 1;
+			else
+                		del_pppoetbl.uni_session = 0;
                 del_pppoetbl.entry_id = 0;
                 PPPOE_SESSION_TABLE_DEL(0, &del_pppoetbl);
 		memset(&pppoetbl, 0, sizeof(pppoetbl));
@@ -1560,7 +1680,10 @@ static int qcaswitch_pppoe_ip_event(struct notifier_block *this,
                 {
                     del_pppoetbl.session_id = nf_athrs17_hnat_ppp_id2;
                     del_pppoetbl.multi_session = 1;
-                    del_pppoetbl.uni_session = 0;
+				if (((nat_chip_ver & 0xffff)>>8) == NAT_CHIP_VER_8327)
+					del_pppoetbl.uni_session = 1;
+				else
+                    		del_pppoetbl.uni_session = 0;
                     del_pppoetbl.entry_id = 0;
                     PPPOE_SESSION_TABLE_DEL(0, &del_pppoetbl);
 			memset(&pppoetbl, 0, sizeof(pppoetbl));
@@ -1962,36 +2085,39 @@ void host_helper_wan_port_init()
 
 void host_helper_init(void)
 {
-    int i;
-    sw_error_t rv;
-    a_uint32_t entry;
+	int i;
+	sw_error_t rv;
+	a_uint32_t entry;
 
-    /* header len 4 with type 0xaaaa */
-    HEADER_TYPE_SET(0, A_TRUE, 0xaaaa);
-#ifdef ISISC
-    /* For S17c (ISISC), it is not necessary to make all frame with header */
-    printk("host_helper_init start\n");
-    //PORT_TXHDR_MODE_SET(0, 0, FAL_ONLY_MANAGE_FRAME_EN);
-    /* Fix tag disappear problem, set TO_CPU_VID_CHG_EN, 0xc00 bit1 */
-    CPU_VID_EN_SET(0, A_TRUE);
-    /* set RM_RTD_PPPOE_EN, 0xc00 bit0 */
-    RTD_PPPOE_EN_SET(0, A_TRUE);
-    /* Enable ARP ack frame as management frame. */
-    for (i=1; i<6; i++)
-    {
-        PORT_ARP_ACK_STATUS_SET(0, i, A_TRUE);
-    }
-    MISC_ARP_CMD_SET(0, FAL_MAC_FRWRD);
-    /* Avoid ARP response storm for HUB, now this fix only apply on PORT5 */
-#if 0
-    MISC_ARP_SP_NOT_FOUND_SET(0, FAL_MAC_RDT_TO_CPU);
-    MISC_ARP_GUARD_SET(0, S17_WAN_PORT, FAL_MAC_IP_PORT_GUARD);
-#endif
-    /* set VLAN_TRANS_TEST register bit, to block packets from WAN port has private dip */
-    NETISOLATE_SET(0, A_TRUE);
-#else
-    PORT_TXHDR_MODE_SET(0, 0, FAL_ALL_TYPE_FRAME_EN);
-#endif
+	REG_GET(0, 0, &nat_chip_ver, 4);
+
+	/* header len 4 with type 0xaaaa */
+	HEADER_TYPE_SET(0, A_TRUE, 0xaaaa);
+	if (((nat_chip_ver & 0xffff)>>8) == NAT_CHIP_VER_8337 ||
+		((nat_chip_ver & 0xffff)>>8) == NAT_CHIP_VER_DESS) {
+		/* For S17c (ISISC), it is not necessary to make all frame with header */
+		printk("host_helper_init start\n");
+		//PORT_TXHDR_MODE_SET(0, 0, FAL_ONLY_MANAGE_FRAME_EN);
+		/* Fix tag disappear problem, set TO_CPU_VID_CHG_EN, 0xc00 bit1 */
+		CPU_VID_EN_SET(0, A_TRUE);
+		/* set RM_RTD_PPPOE_EN, 0xc00 bit0 */
+		RTD_PPPOE_EN_SET(0, A_TRUE);
+		/* Enable ARP ack frame as management frame. */
+		for (i=1; i<6; i++)
+		{
+			PORT_ARP_ACK_STATUS_SET(0, i, A_TRUE);
+		}
+		MISC_ARP_CMD_SET(0, FAL_MAC_FRWRD);
+		/* Avoid ARP response storm for HUB, now this fix only apply on PORT5 */
+		#if 0
+		MISC_ARP_SP_NOT_FOUND_SET(0, FAL_MAC_RDT_TO_CPU);
+		MISC_ARP_GUARD_SET(0, S17_WAN_PORT, FAL_MAC_IP_PORT_GUARD);
+		#endif
+		/* set VLAN_TRANS_TEST register bit, to block packets from WAN port has private dip */
+		NETISOLATE_SET(0, A_TRUE);
+	} else {
+		PORT_TXHDR_MODE_SET(0, 0, FAL_ALL_TYPE_FRAME_EN);
+	}
     CPU_PORT_STATUS_SET(0, A_TRUE);
     IP_ROUTE_STATUS_SET(0, A_TRUE);
 
@@ -2021,7 +2147,6 @@ void host_helper_init(void)
     ipv6_snooping_sextuple0_group_add_acl_rules();
     ipv6_snooping_quintruple0_1_group_add_acl_rules();
 
-	REG_GET(0, 0, &nat_chip_ver, 4);
 	napt_helper_hsl_init();
 	host_helper_wan_port_init();
 }
