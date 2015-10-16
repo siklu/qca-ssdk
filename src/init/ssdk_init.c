@@ -119,7 +119,6 @@ a_uint32_t ssdk_dt_global_get_mac_mode(void)
 static struct mutex switch_mdio_lock;
 phy_identification_t phy_array[] =
 {
-	{0x0, 0x004DD0B0, malibu_phy_init},
 	{0x0, 0x004DD0B1, malibu_phy_init},
 	{0x0, 0x004DD0B2, malibu_phy_init},
 	{0x0, 0x004DD036, f1_phy_init},
