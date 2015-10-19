@@ -51,8 +51,6 @@
 #include <linux/string.h>
 #include "ref_uci.h"
 
-#define DEBUG 1
-
 #define MOD_NAME_MAX_LEN	32
 #define COMMAND_NAME_MAX_LEN	128
 #define	COMMAND_LINE_MAX_LEN	1024
