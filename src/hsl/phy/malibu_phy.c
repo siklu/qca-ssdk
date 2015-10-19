@@ -2368,6 +2368,7 @@ malibu_phy_hw_init(void)
 	a_uint32_t phy_id = 0;
 	a_uint16_t org_id =0, rev_id=0;
 	a_uint32_t malibu_id = 0;
+	a_uint16_t dac_value;
 
 	malibu_phy_get_phy_id(0, 0, &org_id, &rev_id);
 	malibu_id = ((org_id << 16) |rev_id);
@@ -2376,22 +2377,26 @@ malibu_phy_hw_init(void)
 	malibu_phy_mmd_write(0, PSGMII_ID, MALIBU_PHY_MMD1_NUM,
 			     MALIBU_PSGMII_MODE_CTRL, MALIBU_PHY_PSGMII_MODE_CTRL_ADJUST_VALUE);
 
-	/*enable phy power saving function by default */
 	if (malibu_id == MALIBU_1_1) {
-		for (phy_id = 0; phy_id < 5; phy_id++) {
-			malibu_phy_set_8023az(dev_id, phy_id, A_TRUE);
-			malibu_phy_set_powersave(dev_id, phy_id, A_TRUE);
-			malibu_phy_set_hibernate(dev_id, phy_id, A_TRUE);
-		}
+		phy_id = 0;
 	}
 	if (malibu_id == MALIBU_1_1_2PORT) {
-		for (phy_id = 3; phy_id < 5; phy_id++) {
-			malibu_phy_set_8023az(dev_id, phy_id, A_TRUE);
-			malibu_phy_set_powersave(dev_id, phy_id, A_TRUE);
-			malibu_phy_set_hibernate(dev_id, phy_id, A_TRUE);
-		}
+		phy_id = 3;
 	}
-	/*workaround to co-work with psgmii self_test*/
+	for (; phy_id < 5; phy_id++) {
+		/*enable phy power saving function by default */
+		malibu_phy_set_8023az(dev_id, phy_id, A_TRUE);
+		malibu_phy_set_powersave(dev_id, phy_id, A_TRUE);
+		malibu_phy_set_hibernate(dev_id, phy_id, A_TRUE);
+		/*change malibu control_dac[2:0] of MMD7 0x801A bit[9:7] from 111 to 101*/
+		dac_value = malibu_phy_mmd_read(dev_id, phy_id, MALIBU_PHY_MMD7_NUM,
+			MALIBU_PHY_MMD7_DAC_CTRL);
+		dac_value &= ~MALIBU_DAC_CTRL_MASK;
+		dac_value |= MALIBU_DAC_CTRL_VALUE;
+		malibu_phy_mmd_write(dev_id, phy_id, MALIBU_PHY_MMD7_NUM,
+			MALIBU_PHY_MMD7_DAC_CTRL, dac_value);
+	}
+	/* to avoid psgmii module goes into hibernation, work with psgmii self test*/
 	phy_data = malibu_phy_mmd_read(0, 4, MALIBU_PHY_MMD3_NUM,
 		MALIBU_PHY_MMD3_ADDR_REMOTE_LOOPBACK_CTRL);
 	phy_data &= (~(1<<1));
