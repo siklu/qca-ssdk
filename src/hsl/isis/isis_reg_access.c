@@ -36,6 +36,8 @@ static aos_lock_t mdio_lock;
 static a_uint32_t mdio_base_addr = 0xffffffff;
 #endif
 
+uint32_t qca_ar8216_mii_read(int reg);
+void qca_ar8216_mii_write(int reg, uint32_t val);
 
 
 
@@ -134,11 +136,15 @@ static sw_error_t
 _isis_mdio_reg_get(a_uint32_t dev_id, a_uint32_t reg_addr,
                    a_uint8_t value[], a_uint32_t value_len)
 {
+#if 0
     a_uint32_t reg_word_addr;
     a_uint32_t phy_addr, reg_val;
     a_uint16_t phy_val, tmp_val;
     a_uint8_t phy_reg;
     sw_error_t rv;
+#else
+	a_uint32_t reg_val;
+#endif
 
     if (value_len != sizeof (a_uint32_t))
         return SW_BAD_LEN;
@@ -195,11 +201,15 @@ static sw_error_t
 _isis_mdio_reg_set(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t value[],
                    a_uint32_t value_len)
 {
+#if 0
     a_uint32_t reg_word_addr;
     a_uint32_t phy_addr, reg_val;
     a_uint16_t phy_val;
     a_uint8_t phy_reg;
     sw_error_t rv;
+#else
+	a_uint32_t reg_val = 0;
+#endif
 
     if (value_len != sizeof (a_uint32_t))
         return SW_BAD_LEN;
@@ -282,7 +292,6 @@ isis_reg_get(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t value[],
              a_uint32_t value_len)
 {
     sw_error_t rv;
-    unsigned long flags;
 
     MDIO_LOCKER_LOCK;
     if (HSL_MDIO == reg_mode)
@@ -303,7 +312,6 @@ isis_reg_set(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t value[],
              a_uint32_t value_len)
 {
     sw_error_t rv;
-    unsigned long flags;
 
     MDIO_LOCKER_LOCK;
     if (HSL_MDIO == reg_mode)

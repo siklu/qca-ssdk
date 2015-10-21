@@ -45,15 +45,22 @@ static aos_lock_t mdio_lock;
 static a_uint32_t mdio_base_addr = 0xffffffff;
 #endif
 
+uint32_t qca_ar8216_mii_read(int reg);
+void qca_ar8216_mii_write(int reg, uint32_t val);
+
 static sw_error_t
 _dess_mdio_reg_get(a_uint32_t dev_id, a_uint32_t reg_addr,
                    a_uint8_t value[], a_uint32_t value_len)
 {
-    a_uint32_t reg_word_addr;
-    a_uint32_t phy_addr, reg_val;
-    a_uint16_t phy_val, tmp_val;
-    a_uint8_t phy_reg;
-    sw_error_t rv;
+#if 0
+	 a_uint32_t reg_word_addr;
+	 a_uint32_t phy_addr, reg_val;
+	 a_uint16_t phy_val, tmp_val;
+	 a_uint8_t phy_reg;
+	 sw_error_t rv;
+#else
+	a_uint32_t reg_val;
+#endif
 
     if (value_len != sizeof (a_uint32_t))
         return SW_BAD_LEN;
@@ -109,11 +116,16 @@ static sw_error_t
 _dess_mdio_reg_set(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t value[],
                    a_uint32_t value_len)
 {
-    a_uint32_t reg_word_addr;
-    a_uint32_t phy_addr, reg_val;
-    a_uint16_t phy_val;
-    a_uint8_t phy_reg;
-    sw_error_t rv;
+#if 0
+	 a_uint32_t reg_word_addr;
+	 a_uint32_t phy_addr, reg_val;
+	 a_uint16_t phy_val;
+	 a_uint8_t phy_reg;
+	 sw_error_t rv;
+#else
+	a_uint32_t reg_val;
+#endif
+
 
     if (value_len != sizeof (a_uint32_t))
         return SW_BAD_LEN;
@@ -195,7 +207,6 @@ dess_reg_get(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t value[],
              a_uint32_t value_len)
 {
     sw_error_t rv;
-    unsigned long flags;
 
     MDIO_LOCKER_LOCK;
     if (HSL_MDIO == reg_mode)
@@ -216,6 +227,7 @@ dess_reg_set(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t value[],
              a_uint32_t value_len)
 {
     sw_error_t rv;
+#if 0
     unsigned long flags;
 
     struct file *filp;
@@ -224,10 +236,13 @@ dess_reg_set(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t value[],
     a_uint32_t write_flag = 0;
     char s[20]= {0};
     a_uint32_t tmp_val = *((a_uint32_t *) value);
+#else
+	a_uint32_t rt_value = 0;
+#endif
 
     /*get MODULE_EN reg rsv */
     SW_RTN_ON_ERROR(dess_reg_get(dev_id, 0x30,(void *)&rt_value,4));
-    write_flag = (rt_value>>15) & 0x1;
+//    write_flag = (rt_value>>15) & 0x1;
 
     MDIO_LOCKER_LOCK;
     if (HSL_MDIO == reg_mode)

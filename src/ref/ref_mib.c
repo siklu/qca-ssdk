@@ -237,7 +237,7 @@ qca_ar8327_sw_get_port_mib(struct switch_dev *dev,
     int pos = 0;
 
     struct qca_phy_priv *priv = qca_phy_priv_get(dev);
-    char *buf = priv->buf;
+    char *buf = (char *)(priv->buf);
 
     port = val->port_vlan;
     if (port >= dev->ports)

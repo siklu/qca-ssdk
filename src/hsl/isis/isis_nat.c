@@ -2374,7 +2374,7 @@ isis_nat_unk_session_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd)
 HSL_LOCAL sw_error_t
 isis_nat_global_set(a_uint32_t dev_id, a_bool_t enable)
 {
-    sw_error_t rv;
+    sw_error_t rv = SW_OK;
 
     HSL_API_LOCK;
     printk("enable:%d\n", enable);
