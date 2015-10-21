@@ -2138,7 +2138,7 @@ dess_port_mac_vlan_xlt_get(a_uint32_t dev_id, fal_port_t port_id,
     HSL_API_UNLOCK;
     return rv;
 }
-
+#if 0
 HSL_LOCAL sw_error_t
 dess_port_route_defv_set(a_uint32_t dev_id, fal_port_t port_id)
 {
@@ -2149,7 +2149,7 @@ dess_port_route_defv_set(a_uint32_t dev_id, fal_port_t port_id)
     HSL_API_UNLOCK;
     return rv;
 }
-
+#endif
 /**
  * @brief Set NET_ISOLATE_EN
  * @param[in] dev_id device id
