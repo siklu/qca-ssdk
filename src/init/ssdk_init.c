@@ -2396,7 +2396,7 @@ static int chip_ver_get(ssdk_init_cfg* cfg)
 	else if(chip_ver == 0x14)
 		cfg->chip_type = CHIP_DESS;
 	else
-		rv = -100;
+		rv = -ENODEV;
 
 	return rv;
 }
@@ -2964,8 +2964,11 @@ static int __init regi_init(void)
 out:
 	if (rv == 0)
 		printk("qca-ssdk module init succeeded!\n");
-	else
+	else {
 		printk("qca-ssdk module init failed! (code: %d)\n", rv);
+		if (rv == -ENODEV)
+			rv = 0;
+	}
 
 	return rv;
 }
