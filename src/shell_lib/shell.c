@@ -429,9 +429,6 @@ cmd_parse(char *cmd_str, int *cmd_index, int *cmd_index_sub)
         rtn_code = cmd_parse_api(tmp_str, arg_val);
 
     }
-    else if (arg_val[0] > SW_API_MAX)
-    {
-    }
     else
     {
         rtn_code = SW_BAD_PARAM;

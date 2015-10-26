@@ -1222,7 +1222,7 @@ qca_phy_config_init(struct phy_device *pdev)
 	priv->phy = pdev;
 	ret = qca_phy_id_chip(priv);
 	if (ret != 0) {
-	        return ret;
+		return ret;
 	}
 
 	priv->mii_read = qca_ar8216_mii_read;
@@ -1249,7 +1249,7 @@ qca_phy_config_init(struct phy_device *pdev)
 
 	ret = qca_ar8327_hw_init(priv);
 	if (ret != 0) {
-	        return ret;
+		return ret;
 	}
 
 	qca_phy_mib_work_start(priv);
@@ -1342,7 +1342,7 @@ qca_phy_read_status(struct phy_device *pdev)
 {
 	struct qca_phy_priv *priv = pdev->priv;
 	struct switch_port_link port_link;
-	int ret;
+	int ret = 0;
 
 	if (pdev->addr != 0) {
 		mutex_lock(&priv->reg_mutex);
@@ -1360,22 +1360,22 @@ qca_phy_read_status(struct phy_device *pdev)
 		return 0;
 
 	if(port_link.speed == SWITCH_PORT_SPEED_10) {
-        pdev->speed = SPEED_10;
-    } else if (port_link.speed == SWITCH_PORT_SPEED_100) {
-        pdev->speed = SPEED_100;
-    } else if (port_link.speed == SWITCH_PORT_SPEED_1000) {
-        pdev->speed = SPEED_1000;
-    } else {
-        pdev->speed = 0;
-    }
+		pdev->speed = SPEED_10;
+	} else if (port_link.speed == SWITCH_PORT_SPEED_100) {
+		pdev->speed = SPEED_100;
+	} else if (port_link.speed == SWITCH_PORT_SPEED_1000) {
+		pdev->speed = SPEED_1000;
+	} else {
+		pdev->speed = 0;
+	}
 
-    if(port_link.duplex) {
-       pdev->duplex = DUPLEX_FULL;
-    } else {
-       pdev->duplex = DUPLEX_HALF;
-    }
+	if(port_link.duplex) {
+		pdev->duplex = DUPLEX_FULL;
+	} else {
+		pdev->duplex = DUPLEX_HALF;
+	}
 
-    pdev->state = PHY_RUNNING;
+	pdev->state = PHY_RUNNING;
 	netif_carrier_on(pdev->attached_dev);
 	pdev->adjust_link(pdev->attached_dev);
 
@@ -1724,7 +1724,7 @@ static int miibus_get(void)
 	struct ag71xx_mdio *am;
 #endif
 	struct device *miidev;
-	uint8_t busid[MII_BUS_ID_SIZE];
+	char busid[MII_BUS_ID_SIZE];
 	snprintf(busid, MII_BUS_ID_SIZE, "%s.%d",
 		IPQ806X_MDIO_BUS_NAME, IPQ806X_MDIO_BUS_NUM);
 

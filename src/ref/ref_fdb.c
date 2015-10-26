@@ -49,7 +49,9 @@
 
 
 int
-qca_ar8327_sw_atu_flush(struct qca_phy_priv *priv)
+qca_ar8327_sw_atu_flush(struct switch_dev *dev,
+				const struct switch_attr *attr,
+				struct switch_val *val)
 {
 	/* 0: dynamic 1:dynamic, static */
 	fal_fdb_del_all(0, 1);
@@ -97,7 +99,7 @@ qca_ar8327_sw_atu_dump(struct switch_dev *dev,
 			rv = fal_fdb_extend_next(0, &option, &entry);
     }
 
-	val->value.s = priv->buf;
+	val->value.s = (char*)(priv->buf);
 	val->len = len;
 
 	return 0;
