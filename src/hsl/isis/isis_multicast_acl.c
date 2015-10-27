@@ -400,7 +400,7 @@ HSL_LOCAL sw_error_t isis_multicast_acl_update( int list_id, int acl_index, fal_
     //a_uint32_t list_pos;
     a_uint32_t rule_pos;
     a_uint32_t list_pri;
-    sw_error_t rv;
+    sw_error_t rv = SW_OK;
 
     //if(entry->port_map < 1 || acl_index<0)
     if(acl_index<0)

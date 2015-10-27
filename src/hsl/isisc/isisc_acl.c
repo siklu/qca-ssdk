@@ -165,6 +165,7 @@ _isisc_filter_valid_set(a_uint32_t dev_id, a_uint32_t flt_idx, a_uint32_t flag)
     filter.msk[4] |= (flag & 0x7);
 
     _isisc_filter_down_to_hw(dev_id, &filter, flt_idx);
+    return SW_OK;
 #else
     sw_error_t rv;
     a_uint32_t addr, data = 0;
