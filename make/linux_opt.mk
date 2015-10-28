@@ -1,3 +1,6 @@
+MODULE_CFLAG :=
+LOCAL_CFLAGS :=
+
 ifeq (TRUE, $(IN_ACL))
   MODULE_CFLAG += -DIN_ACL
 endif
@@ -305,4 +308,4 @@ ifneq (TRUE, $(KERNEL_MODE))
   endif
 endif
 
-CFLAGS += $(MODULE_INC) $(MODULE_CFLAG)
+LOCAL_CFLAGS += $(MODULE_INC) $(MODULE_CFLAG)
