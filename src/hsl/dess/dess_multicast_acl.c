@@ -261,7 +261,7 @@ HSL_LOCAL sw_error_t multi_portmap_aclreg_set_all(a_uint32_t pos, fal_igmp_sg_en
     a_uint32_t i, base, addr;
     a_uint32_t dev_id=0;
     a_uint32_t msk_valid=0;
-    sw_error_t rv;
+    sw_error_t rv = SW_OK;
 
     /*  2'b00:start; 2'b01:continue; 2'b10:end; 2'b11:start&end*/
     for(i=pos; i<pos+4; i++)
@@ -316,7 +316,7 @@ HSL_LOCAL sw_error_t multi_portmap_aclreg_set(a_uint32_t pos, fal_igmp_sg_entry_
     act[1] |= (pm&0x7)<<29;  //the low 3 bits of pm means redirect port 0,1,2
 
     /* New modification: update acl ACTION register from DENY to redirect */
-    if((act[2]>>6)&0x7 == 0x7 ) //DENY mode
+    if (((act[2]>>6)&0x7) == 0x7) //DENY mode
     {
         if(pm)
         {
@@ -324,7 +324,7 @@ HSL_LOCAL sw_error_t multi_portmap_aclreg_set(a_uint32_t pos, fal_igmp_sg_entry_
             act[2] |= (0x1<<4); //DES_PORT_EN set 1, enable
         }
     }
-    else if((act[2]>>4)&0x1 == 0x1) //redirect mode
+    else if (((act[2]>>4)&0x1) == 0x1) //redirect mode
     {
         if(pm==0)
         {
@@ -399,6 +399,7 @@ HSL_LOCAL int multi_acl_bind()
             else
                 continue;
     }
+	return 0;
 }
 /*
 ** Only update the related portmap from the privious input.
@@ -409,7 +410,7 @@ HSL_LOCAL sw_error_t dess_multicast_acl_update( int list_id, int acl_index, fal_
     //a_uint32_t list_pos;
     a_uint32_t rule_pos;
     a_uint32_t list_pri;
-    sw_error_t rv;
+    sw_error_t rv = SW_OK;
 
     //if(entry->port_map < 1 || acl_index<0)
     if(acl_index<0)
@@ -473,6 +474,7 @@ HSL_LOCAL sw_error_t dess_multicast_acl_del(int list_id, int index)
 
     rv = ACL_RULE_DEL(0, list_id, rule_id, 1);
     multi_acl_bind(); //Here need extra bind since IGMP join/leave would happen
+	return rv;
 }
 
 /*
@@ -700,17 +702,15 @@ HSL_LOCAL int portmap_clear_type(int count, int index, fal_pbmp_t portmap)
 
         return 2; //Normal update
     }
-    ;
+    return 0;
 }
 sw_error_t dess_igmp_sg_entry_set(a_uint32_t dev_id, fal_igmp_sg_entry_t * entry)
 {
     HSL_API_LOCK;
     int number, count;
     int new_index=0;
-    int tmp_index=0;
     sw_error_t rv;
     int action = MULT_ACTION_SET;
-    fal_igmp_sg_entry_t tmp_entry[1]= {};
     int i=0;
 
     (void)dess_multicast_init(0);

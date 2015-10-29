@@ -157,18 +157,20 @@ static int qca_switch_get_qm_status(struct switch_dev *dev, a_uint32_t port_id, 
 	a_uint32_t qm_val;
 	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 
-	if (port_id < 0 || port_id > 6)
+	if (port_id < 0 || port_id > 6) {
+		*qm_buffer_err = 0;
 		return -1;
+	}
 	if (port_id < 4) {
 		reg = 0x1D;
 		priv->mii_write(0x820, reg);
 		qm_val = priv->mii_read(0x824);
-		qm_buffer_err = (qm_val >> (port_id * 8)) & 0xFF;
+		*qm_buffer_err = (qm_val >> (port_id * 8)) & 0xFF;
 	} else {
 		reg = 0x1E;
 		priv->mii_write(0x820, reg);
 		qm_val = priv->mii_read(0x824);
-		qm_buffer_err = (qm_val >> ((port_id-4) * 8)) & 0xFF;
+		*qm_buffer_err = (qm_val >> ((port_id-4) * 8)) & 0xFF;
 	}
 
 	return 0;
@@ -229,11 +231,8 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 	a_uint32_t phy_addr;
 	a_uint32_t phy_reg;
 	a_uint16_t phy_val;
-	a_uint32_t qm_val;
 	a_uint32_t qm_buffer_err;
 	a_uint16_t port_phy_status[AR8327_NUM_PORTS];
-	static a_uint32_t qm_err_flag = 0;
-	static a_uint32_t qm_err_step = 300;
 	static a_uint32_t mac_err_flag[AR8327_NUM_PORTS] = {0,0,0,0,0,0,0};
 	static a_uint32_t qm_err_cnt[AR8327_NUM_PORTS] = {0,0,0,0,0,0,0};
 
@@ -323,12 +322,13 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 					else
 						mac_err_flag[i] = 0;
 				}
-
+#if 0
 				/* Check Queue Buffer */
 				qca_switch_get_qm_status(dev, i, &qm_buffer_err);
 				if (qm_buffer_err) {
 					qm_err_flag = qm_val;
 				}
+#endif
 				/* Change port status */
 				reg = AR8327_REG_PORT_STATUS(i);
 				value = priv->mii_read(reg);
@@ -404,6 +404,6 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 		}
 	}
 
-	return 0;
+	return ;
 }
 

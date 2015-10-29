@@ -21,7 +21,9 @@ extern "C" {
 
 
 int
-qca_ar8327_sw_atu_flush(struct qca_phy_priv *priv);
+	qca_ar8327_sw_atu_flush(struct switch_dev *dev,
+					const struct switch_attr *attr,
+					struct switch_val *val);
 
 int
 qca_ar8327_sw_atu_dump(struct switch_dev *dev,
