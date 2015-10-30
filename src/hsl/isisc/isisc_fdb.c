@@ -577,7 +577,7 @@ _isisc_fdb_del_all(a_uint32_t dev_id, a_uint32_t flag)
 
     return rv;
 }
-
+#ifndef IN_FDB_MINI
 static sw_error_t
 _isisc_fdb_del_by_port(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t flag)
 {
@@ -660,7 +660,7 @@ _isisc_fdb_find(a_uint32_t dev_id, fal_fdb_entry_t * entry)
     rv = _isisc_fdb_get(dev_id, &option, entry, ARL_FIND_ENTRY);
     return rv;
 }
-
+#endif
 static sw_error_t
 _isisc_fdb_extend_next(a_uint32_t dev_id, fal_fdb_op_t * option,
                       fal_fdb_entry_t * entry)
@@ -680,7 +680,7 @@ _isisc_fdb_extend_first(a_uint32_t dev_id, fal_fdb_op_t * option,
     rv = _isisc_fdb_get(dev_id, option, entry, ARL_FIRST_ENTRY);
     return rv;
 }
-
+#ifndef IN_FDB_MINI
 static sw_error_t
 _isisc_fdb_transfer(a_uint32_t dev_id, fal_port_t old_port, fal_port_t new_port,
                    a_uint32_t fid, fal_fdb_op_t * option)
@@ -727,7 +727,7 @@ _isisc_fdb_transfer(a_uint32_t dev_id, fal_port_t old_port, fal_port_t new_port,
     rv = _isisc_fdb_commit(dev_id, ARL_TRANSFER_ENTRY);
     return rv;
 }
-
+#endif
 static sw_error_t
 _isisc_fdb_port_learn_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
@@ -758,7 +758,7 @@ _isisc_fdb_port_learn_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable
                       (a_uint8_t *) (&data), sizeof (a_uint32_t));
     return rv;
 }
-
+#ifndef IN_FDB_MINI
 static sw_error_t
 _isisc_fdb_port_learn_get(a_uint32_t dev_id, fal_port_t port_id,
                          a_bool_t * enable)
@@ -1638,7 +1638,7 @@ isisc_fdb_add(a_uint32_t dev_id, const fal_fdb_entry_t * entry)
     HSL_API_UNLOCK;
     return rv;
 }
-
+#endif
 /**
  * @brief Delete all Fdb entries
  *   @details   Comments:
@@ -1658,7 +1658,7 @@ isisc_fdb_del_all(a_uint32_t dev_id, a_uint32_t flag)
     HSL_API_UNLOCK;
     return rv;
 }
-
+#ifndef IN_FDB_MINI
 /**
  * @brief Delete Fdb entries on a particular port
  *   @details   Comments:
@@ -1719,7 +1719,7 @@ isisc_fdb_find(a_uint32_t dev_id, fal_fdb_entry_t * entry)
     HSL_API_UNLOCK;
     return rv;
 }
-
+#endif
 /**
  * @brief Get next Fdb entry from a particular device
  * @param[in] dev_id device id
@@ -1757,7 +1757,7 @@ isisc_fdb_extend_first(a_uint32_t dev_id, fal_fdb_op_t * option,
     HSL_API_UNLOCK;
     return rv;
 }
-
+#ifndef IN_FDB_MINI
 /**
  * @brief Transfer fdb entries port information on a particular device.
  * @param[in] dev_id device id
@@ -1778,7 +1778,7 @@ isisc_fdb_transfer(a_uint32_t dev_id, fal_port_t old_port, fal_port_t new_port,
     HSL_API_UNLOCK;
     return rv;
 }
-
+#endif
 /**
  * @brief Set dynamic address learning status on a particular port.
  *    @details  Comments:
@@ -1799,7 +1799,7 @@ isisc_fdb_port_learn_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
     HSL_API_UNLOCK;
     return rv;
 }
-
+#ifndef IN_FDB_MINI
 /**
  * @brief Get dynamic address learning status on a particular port.
  * @param[in] dev_id device id
@@ -2225,7 +2225,7 @@ isisc_fdb_port_del(a_uint32_t dev_id, a_uint32_t fid, fal_mac_addr_t * addr, fal
     HSL_API_UNLOCK;
     return rv;
 }
-
+#endif
 sw_error_t
 isisc_fdb_init(a_uint32_t dev_id)
 {
@@ -2236,13 +2236,17 @@ isisc_fdb_init(a_uint32_t dev_id)
         hsl_api_t *p_api;
 
         SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
-
+#ifndef IN_FDB_MINI
         p_api->fdb_add = isisc_fdb_add;
+#endif
         p_api->fdb_del_all = isisc_fdb_del_all;
+#ifndef IN_FDB_MINI
         p_api->fdb_del_by_port = isisc_fdb_del_by_port;
         p_api->fdb_del_by_mac = isisc_fdb_del_by_mac;
         p_api->fdb_find = isisc_fdb_find;
+#endif
         p_api->port_learn_set = isisc_fdb_port_learn_set;
+#ifndef IN_FDB_MINI
         p_api->port_learn_get = isisc_fdb_port_learn_get;
         p_api->age_ctrl_set = isisc_fdb_age_ctrl_set;
         p_api->age_ctrl_get = isisc_fdb_age_ctrl_get;
@@ -2250,8 +2254,10 @@ isisc_fdb_init(a_uint32_t dev_id)
         p_api->vlan_ivl_svl_get = isisc_fdb_vlan_ivl_svl_get;
         p_api->age_time_set = isisc_fdb_age_time_set;
         p_api->age_time_get = isisc_fdb_age_time_get;
+#endif
         p_api->fdb_extend_next  = isisc_fdb_extend_next;
         p_api->fdb_extend_first = isisc_fdb_extend_first;
+#ifndef IN_FDB_MINI
         p_api->fdb_transfer     = isisc_fdb_transfer;
         p_api->port_fdb_learn_limit_set = isisc_port_fdb_learn_limit_set;
         p_api->port_fdb_learn_limit_get = isisc_port_fdb_learn_limit_get;
@@ -2269,6 +2275,7 @@ isisc_fdb_init(a_uint32_t dev_id)
         p_api->fdb_port_learn_static_get = isisc_fdb_port_learn_static_get;
         p_api->fdb_port_add = isisc_fdb_port_add;
         p_api->fdb_port_del = isisc_fdb_port_del;
+#endif
     }
 #endif
 

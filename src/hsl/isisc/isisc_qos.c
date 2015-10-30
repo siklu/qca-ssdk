@@ -38,6 +38,29 @@
 #define ISISC_MAX_EH_QUEUE       5
 
 static sw_error_t
+_isisc_qos_port_queue_check(fal_port_t port_id, fal_queue_t queue_id)
+{
+    if ((0 == port_id) || (5 == port_id) || (6 == port_id))
+    {
+        if (ISISC_MAX_EH_QUEUE < queue_id)
+        {
+            return SW_BAD_PARAM;
+        }
+    }
+    else
+    {
+        if (ISISC_MAX_QUEUE < queue_id)
+        {
+            return SW_BAD_PARAM;
+        }
+    }
+
+    return SW_OK;
+}
+
+
+#ifndef IN_QOS_MINI
+static sw_error_t
 _isisc_qos_queue_tx_buf_status_set(a_uint32_t dev_id, fal_port_t port_id,
                                   a_bool_t enable)
 {
@@ -153,34 +176,6 @@ _isisc_qos_port_tx_buf_status_get(a_uint32_t dev_id, fal_port_t port_id,
     return SW_OK;
 }
 
-static sw_error_t
-_isisc_qos_port_red_en_set(a_uint32_t dev_id, fal_port_t port_id,
-                          a_bool_t enable)
-{
-    a_uint32_t val = 0;
-    sw_error_t rv;
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
-    {
-        return SW_BAD_PARAM;
-    }
-    if (A_TRUE == enable)
-    {
-        val = 1;
-    }
-    else if (A_FALSE == enable)
-    {
-        val = 0;
-    }
-    else
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_FIELD_SET(rv, dev_id, PORT_HOL_CTL1, port_id, PORT_RED_EN,
-                      (a_uint8_t *) (&val), sizeof (a_uint32_t));
-    return rv;
-}
 
 
 
@@ -214,25 +209,101 @@ _isisc_qos_port_red_en_get(a_uint32_t dev_id, fal_port_t port_id,
 
 
 
+
+
 static sw_error_t
-_isisc_qos_port_queue_check(fal_port_t port_id, fal_queue_t queue_id)
+_isisc_qos_queue_tx_buf_nr_get(a_uint32_t dev_id, fal_port_t port_id,
+                              fal_queue_t queue_id, a_uint32_t * number)
 {
-    if ((0 == port_id) || (5 == port_id) || (6 == port_id))
+    a_uint32_t data, val = 0;
+    sw_error_t rv;
+
+    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
     {
-        if (ISISC_MAX_EH_QUEUE < queue_id)
-        {
-            return SW_BAD_PARAM;
-        }
+        return SW_BAD_PARAM;
+    }
+
+    rv = _isisc_qos_port_queue_check(port_id, queue_id);
+    SW_RTN_ON_ERROR(rv);
+
+    HSL_REG_ENTRY_GET(rv, dev_id, PORT_HOL_CTL0, port_id, (a_uint8_t *) (&data),
+                      sizeof (a_uint32_t));
+    SW_RTN_ON_ERROR(rv);
+
+    val = (data >> (queue_id << 2)) & 0xf;
+    *number = val << ISISC_QOS_HOL_MOD;
+    return SW_OK;
+}
+
+
+static sw_error_t
+_isisc_qos_port_tx_buf_nr_get(a_uint32_t dev_id, fal_port_t port_id,
+                             a_uint32_t * number)
+{
+    a_uint32_t val = 0;
+    sw_error_t rv;
+
+    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
+    {
+        return SW_BAD_PARAM;
+    }
+
+    HSL_REG_FIELD_GET(rv, dev_id, PORT_HOL_CTL0, port_id, PORT_DESC_NR,
+                      (a_uint8_t *) (&val), sizeof (a_uint32_t));
+    SW_RTN_ON_ERROR(rv);
+
+    *number = val << ISISC_QOS_HOL_MOD;
+    return SW_OK;
+}
+
+
+static sw_error_t
+_isisc_qos_port_rx_buf_nr_get(a_uint32_t dev_id, fal_port_t port_id,
+                             a_uint32_t * number)
+{
+    a_uint32_t val = 0;
+    sw_error_t rv;
+
+    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
+    {
+        return SW_BAD_PARAM;
+    }
+
+    HSL_REG_FIELD_GET(rv, dev_id, PORT_HOL_CTL1, port_id, PORT_IN_DESC_EN,
+                      (a_uint8_t *) (&val), sizeof (a_uint32_t));
+    SW_RTN_ON_ERROR(rv);
+
+    *number = val << ISISC_QOS_HOL_MOD;
+    return SW_OK;
+}
+#endif
+static sw_error_t
+_isisc_qos_port_red_en_set(a_uint32_t dev_id, fal_port_t port_id,
+                          a_bool_t enable)
+{
+    a_uint32_t val = 0;
+    sw_error_t rv;
+
+    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
+    {
+        return SW_BAD_PARAM;
+    }
+    if (A_TRUE == enable)
+    {
+        val = 1;
+    }
+    else if (A_FALSE == enable)
+    {
+        val = 0;
     }
     else
     {
-        if (ISISC_MAX_QUEUE < queue_id)
-        {
-            return SW_BAD_PARAM;
-        }
+        return SW_BAD_PARAM;
     }
 
-    return SW_OK;
+    HSL_REG_FIELD_SET(rv, dev_id, PORT_HOL_CTL1, port_id, PORT_RED_EN,
+                      (a_uint8_t *) (&val), sizeof (a_uint32_t));
+    return rv;
 }
 
 static sw_error_t
@@ -273,30 +344,6 @@ _isisc_qos_queue_tx_buf_nr_set(a_uint32_t dev_id, fal_port_t port_id,
 }
 
 static sw_error_t
-_isisc_qos_queue_tx_buf_nr_get(a_uint32_t dev_id, fal_port_t port_id,
-                              fal_queue_t queue_id, a_uint32_t * number)
-{
-    a_uint32_t data, val = 0;
-    sw_error_t rv;
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    rv = _isisc_qos_port_queue_check(port_id, queue_id);
-    SW_RTN_ON_ERROR(rv);
-
-    HSL_REG_ENTRY_GET(rv, dev_id, PORT_HOL_CTL0, port_id, (a_uint8_t *) (&data),
-                      sizeof (a_uint32_t));
-    SW_RTN_ON_ERROR(rv);
-
-    val = (data >> (queue_id << 2)) & 0xf;
-    *number = val << ISISC_QOS_HOL_MOD;
-    return SW_OK;
-}
-
-static sw_error_t
 _isisc_qos_port_tx_buf_nr_set(a_uint32_t dev_id, fal_port_t port_id,
                              a_uint32_t * number)
 {
@@ -321,26 +368,6 @@ _isisc_qos_port_tx_buf_nr_set(a_uint32_t dev_id, fal_port_t port_id,
 }
 
 static sw_error_t
-_isisc_qos_port_tx_buf_nr_get(a_uint32_t dev_id, fal_port_t port_id,
-                             a_uint32_t * number)
-{
-    a_uint32_t val = 0;
-    sw_error_t rv;
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_FIELD_GET(rv, dev_id, PORT_HOL_CTL0, port_id, PORT_DESC_NR,
-                      (a_uint8_t *) (&val), sizeof (a_uint32_t));
-    SW_RTN_ON_ERROR(rv);
-
-    *number = val << ISISC_QOS_HOL_MOD;
-    return SW_OK;
-}
-
-static sw_error_t
 _isisc_qos_port_rx_buf_nr_set(a_uint32_t dev_id, fal_port_t port_id,
                              a_uint32_t * number)
 {
@@ -362,26 +389,6 @@ _isisc_qos_port_rx_buf_nr_set(a_uint32_t dev_id, fal_port_t port_id,
     HSL_REG_FIELD_SET(rv, dev_id, PORT_HOL_CTL1, port_id, PORT_IN_DESC_EN,
                       (a_uint8_t *) (&val), sizeof (a_uint32_t));
     return rv;
-}
-
-static sw_error_t
-_isisc_qos_port_rx_buf_nr_get(a_uint32_t dev_id, fal_port_t port_id,
-                             a_uint32_t * number)
-{
-    a_uint32_t val = 0;
-    sw_error_t rv;
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_FIELD_GET(rv, dev_id, PORT_HOL_CTL1, port_id, PORT_IN_DESC_EN,
-                      (a_uint8_t *) (&val), sizeof (a_uint32_t));
-    SW_RTN_ON_ERROR(rv);
-
-    *number = val << ISISC_QOS_HOL_MOD;
-    return SW_OK;
 }
 
 static sw_error_t
@@ -480,7 +487,7 @@ _isisc_qos_port_mode_get(a_uint32_t dev_id, fal_port_t port_id,
 
     return SW_OK;
 }
-
+#ifndef IN_QOS_MINI
 static sw_error_t
 _isisc_qos_port_mode_pri_set(a_uint32_t dev_id, fal_port_t port_id,
                             fal_qos_mode_t mode, a_uint32_t pri)
@@ -1007,24 +1014,7 @@ isisc_qos_port_tx_buf_status_get(a_uint32_t dev_id, fal_port_t port_id,
     return rv;
 }
 
-/**
- * @brief Set status of port red on one particular port.
- * @param[in] dev_id device id
- * @param[in] port_id port id
- * @param[in] enable A_TRUE or A_FALSE
- * @return SW_OK or error code
- */
-HSL_LOCAL sw_error_t
-isisc_qos_port_red_en_set(a_uint32_t dev_id, fal_port_t port_id,
-                         a_bool_t enable)
-{
-    sw_error_t rv;
 
-    HSL_API_LOCK;
-    rv = _isisc_qos_port_red_en_set(dev_id, port_id, enable);
-    HSL_API_UNLOCK;
-    return rv;
-}
 
 /**
  * @brief Set status of port red on one particular port.
@@ -1046,6 +1036,88 @@ isisc_qos_port_red_en_get(a_uint32_t dev_id, fal_port_t port_id,
 }
 
 
+
+
+/**
+ * @brief Get max occupied buffer number of transmitting queue on one particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[in] queue_id queue id
+ * @param[out] number buffer number
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+isisc_qos_queue_tx_buf_nr_get(a_uint32_t dev_id, fal_port_t port_id,
+                             fal_queue_t queue_id, a_uint32_t * number)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _isisc_qos_queue_tx_buf_nr_get(dev_id, port_id, queue_id, number);
+    HSL_API_UNLOCK;
+    return rv;
+}
+
+
+
+/**
+ * @brief Get max occupied buffer number of transmitting port on one particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] number buffer number
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+isisc_qos_port_tx_buf_nr_get(a_uint32_t dev_id, fal_port_t port_id,
+                            a_uint32_t * number)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _isisc_qos_port_tx_buf_nr_get(dev_id, port_id, number);
+    HSL_API_UNLOCK;
+    return rv;
+}
+
+
+
+/**
+ * @brief Get max occupied buffer number of receiving port on one particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] number buffer number
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+isisc_qos_port_rx_buf_nr_get(a_uint32_t dev_id, fal_port_t port_id,
+                            a_uint32_t * number)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _isisc_qos_port_rx_buf_nr_get(dev_id, port_id, number);
+    HSL_API_UNLOCK;
+    return rv;
+}
+#endif
+/**
+ * @brief Set status of port red on one particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[in] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+isisc_qos_port_red_en_set(a_uint32_t dev_id, fal_port_t port_id,
+                         a_bool_t enable)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _isisc_qos_port_red_en_set(dev_id, port_id, enable);
+    HSL_API_UNLOCK;
+    return rv;
+}
 /**
  * @brief Set max occupied buffer number of transmitting queue on one particular port.
  *   @details   Comments:
@@ -1070,27 +1142,6 @@ isisc_qos_queue_tx_buf_nr_set(a_uint32_t dev_id, fal_port_t port_id,
     HSL_API_UNLOCK;
     return rv;
 }
-
-/**
- * @brief Get max occupied buffer number of transmitting queue on one particular port.
- * @param[in] dev_id device id
- * @param[in] port_id port id
- * @param[in] queue_id queue id
- * @param[out] number buffer number
- * @return SW_OK or error code
- */
-HSL_LOCAL sw_error_t
-isisc_qos_queue_tx_buf_nr_get(a_uint32_t dev_id, fal_port_t port_id,
-                             fal_queue_t queue_id, a_uint32_t * number)
-{
-    sw_error_t rv;
-
-    HSL_API_LOCK;
-    rv = _isisc_qos_queue_tx_buf_nr_get(dev_id, port_id, queue_id, number);
-    HSL_API_UNLOCK;
-    return rv;
-}
-
 /**
  * @brief Set max occupied buffer number of transmitting port on one particular port.
  *   @details   Comments:
@@ -1113,26 +1164,6 @@ isisc_qos_port_tx_buf_nr_set(a_uint32_t dev_id, fal_port_t port_id,
     HSL_API_UNLOCK;
     return rv;
 }
-
-/**
- * @brief Get max occupied buffer number of transmitting port on one particular port.
- * @param[in] dev_id device id
- * @param[in] port_id port id
- * @param[out] number buffer number
- * @return SW_OK or error code
- */
-HSL_LOCAL sw_error_t
-isisc_qos_port_tx_buf_nr_get(a_uint32_t dev_id, fal_port_t port_id,
-                            a_uint32_t * number)
-{
-    sw_error_t rv;
-
-    HSL_API_LOCK;
-    rv = _isisc_qos_port_tx_buf_nr_get(dev_id, port_id, number);
-    HSL_API_UNLOCK;
-    return rv;
-}
-
 /**
  * @brief Set max occupied buffer number of receiving port on one particular port.
  *   @details   Comments:
@@ -1155,26 +1186,6 @@ isisc_qos_port_rx_buf_nr_set(a_uint32_t dev_id, fal_port_t port_id,
     HSL_API_UNLOCK;
     return rv;
 }
-
-/**
- * @brief Get max occupied buffer number of receiving port on one particular port.
- * @param[in] dev_id device id
- * @param[in] port_id port id
- * @param[out] number buffer number
- * @return SW_OK or error code
- */
-HSL_LOCAL sw_error_t
-isisc_qos_port_rx_buf_nr_get(a_uint32_t dev_id, fal_port_t port_id,
-                            a_uint32_t * number)
-{
-    sw_error_t rv;
-
-    HSL_API_LOCK;
-    rv = _isisc_qos_port_rx_buf_nr_get(dev_id, port_id, number);
-    HSL_API_UNLOCK;
-    return rv;
-}
-
 /**
  * @brief Set port qos mode on a particular port.
  * @param[in] dev_id device id
@@ -1195,6 +1206,8 @@ isisc_qos_port_mode_set(a_uint32_t dev_id, fal_port_t port_id,
     return rv;
 }
 
+
+#ifndef IN_QOS_MINI
 /**
  * @brief Get port qos mode on a particular port.
  * @param[in] dev_id device id
@@ -1214,7 +1227,6 @@ isisc_qos_port_mode_get(a_uint32_t dev_id, fal_port_t port_id,
     HSL_API_UNLOCK;
     return rv;
 }
-
 /**
  * @brief Set priority of one particular qos mode on one particular port.
  *   @details   Comments:
@@ -1493,7 +1505,7 @@ isisc_qos_queue_remark_table_get(a_uint32_t dev_id, fal_port_t port_id,
     HSL_API_UNLOCK;
     return rv;
 }
-
+#endif
 sw_error_t
 isisc_qos_init(a_uint32_t dev_id)
 {
@@ -1504,21 +1516,24 @@ isisc_qos_init(a_uint32_t dev_id)
         hsl_api_t *p_api;
 
         SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
-
+		p_api->qos_queue_tx_buf_nr_set = isisc_qos_queue_tx_buf_nr_set;
+		p_api->qos_port_red_en_set = isisc_qos_port_red_en_set;
+		p_api->qos_port_tx_buf_nr_set = isisc_qos_port_tx_buf_nr_set;
+		p_api->qos_port_rx_buf_nr_set = isisc_qos_port_rx_buf_nr_set;
+	#ifndef IN_QOS_MINI
         p_api->qos_queue_tx_buf_status_set = isisc_qos_queue_tx_buf_status_set;
         p_api->qos_queue_tx_buf_status_get = isisc_qos_queue_tx_buf_status_get;
         p_api->qos_port_tx_buf_status_set = isisc_qos_port_tx_buf_status_set;
         p_api->qos_port_tx_buf_status_get = isisc_qos_port_tx_buf_status_get;
-        p_api->qos_port_red_en_set = isisc_qos_port_red_en_set;
         p_api->qos_port_red_en_get = isisc_qos_port_red_en_get;
-        p_api->qos_queue_tx_buf_nr_set = isisc_qos_queue_tx_buf_nr_set;
         p_api->qos_queue_tx_buf_nr_get = isisc_qos_queue_tx_buf_nr_get;
-        p_api->qos_port_tx_buf_nr_set = isisc_qos_port_tx_buf_nr_set;
         p_api->qos_port_tx_buf_nr_get = isisc_qos_port_tx_buf_nr_get;
-        p_api->qos_port_rx_buf_nr_set = isisc_qos_port_rx_buf_nr_set;
         p_api->qos_port_rx_buf_nr_get = isisc_qos_port_rx_buf_nr_get;
+	#endif
         p_api->qos_port_mode_set = isisc_qos_port_mode_set;
-        p_api->qos_port_mode_get = isisc_qos_port_mode_get;
+        
+	#ifndef IN_QOS_MINI
+	p_api->qos_port_mode_get = isisc_qos_port_mode_get;
         p_api->qos_port_mode_pri_set = isisc_qos_port_mode_pri_set;
         p_api->qos_port_mode_pri_get = isisc_qos_port_mode_pri_get;
         p_api->qos_port_sch_mode_set = isisc_qos_port_sch_mode_set;
@@ -1533,6 +1548,7 @@ isisc_qos_init(a_uint32_t dev_id)
         p_api->qos_port_force_cpri_status_get = isisc_qos_port_force_cpri_status_get;
         p_api->qos_queue_remark_table_set = isisc_qos_queue_remark_table_set;
         p_api->qos_queue_remark_table_get = isisc_qos_queue_remark_table_get;
+	#endif
     }
 #endif
 

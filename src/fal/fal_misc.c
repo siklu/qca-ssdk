@@ -22,6 +22,7 @@
 #include "fal_misc.h"
 #include "hsl_api.h"
 
+#ifndef IN_MISC_MINI
 static sw_error_t
 _fal_arp_status_set(a_uint32_t dev_id, a_bool_t enable)
 {
@@ -52,7 +53,7 @@ _fal_arp_status_get(a_uint32_t dev_id, a_bool_t * enable)
     rv = p_api->arp_status_get(dev_id, enable);
     return rv;
 }
-
+#endif
 
 static sw_error_t
 _fal_frame_max_size_set(a_uint32_t dev_id, a_uint32_t size)
@@ -102,24 +103,6 @@ _fal_port_unk_sa_cmd_set(a_uint32_t dev_id, fal_port_t port_id,
     return rv;
 }
 
-
-static sw_error_t
-_fal_port_unk_sa_cmd_get(a_uint32_t dev_id, fal_port_t port_id,
-                         fal_fwd_cmd_t * cmd)
-{
-    sw_error_t rv;
-    hsl_api_t *p_api;
-
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
-
-    if (NULL == p_api->port_unk_sa_cmd_get)
-        return SW_NOT_SUPPORTED;
-
-    rv = p_api->port_unk_sa_cmd_get(dev_id, port_id, cmd);
-    return rv;
-}
-
-
 static sw_error_t
 _fal_port_unk_uc_filter_set(a_uint32_t dev_id, fal_port_t port_id,
                             a_bool_t enable)
@@ -133,6 +116,70 @@ _fal_port_unk_uc_filter_set(a_uint32_t dev_id, fal_port_t port_id,
         return SW_NOT_SUPPORTED;
 
     rv = p_api->port_unk_uc_filter_set(dev_id, port_id, enable);
+    return rv;
+}
+
+static sw_error_t
+_fal_port_unk_mc_filter_set(a_uint32_t dev_id, fal_port_t port_id,
+                            a_bool_t enable)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->port_unk_mc_filter_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->port_unk_mc_filter_set(dev_id, port_id, enable);
+    return rv;
+}
+
+static sw_error_t
+_fal_port_bc_filter_set(a_uint32_t dev_id, fal_port_t port_id,
+                        a_bool_t enable)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->port_bc_filter_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->port_bc_filter_set(dev_id, port_id, enable);
+    return rv;
+}
+
+static sw_error_t
+_fal_cpu_port_status_set(a_uint32_t dev_id, a_bool_t enable)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->cpu_port_status_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->cpu_port_status_set(dev_id, enable);
+    return rv;
+}
+
+#ifndef IN_MISC_MINI
+static sw_error_t
+_fal_port_unk_sa_cmd_get(a_uint32_t dev_id, fal_port_t port_id,
+                         fal_fwd_cmd_t * cmd)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->port_unk_sa_cmd_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->port_unk_sa_cmd_get(dev_id, port_id, cmd);
     return rv;
 }
 
@@ -155,23 +202,6 @@ _fal_port_unk_uc_filter_get(a_uint32_t dev_id, fal_port_t port_id,
 
 
 static sw_error_t
-_fal_port_unk_mc_filter_set(a_uint32_t dev_id, fal_port_t port_id,
-                            a_bool_t enable)
-{
-    sw_error_t rv;
-    hsl_api_t *p_api;
-
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
-
-    if (NULL == p_api->port_unk_mc_filter_set)
-        return SW_NOT_SUPPORTED;
-
-    rv = p_api->port_unk_mc_filter_set(dev_id, port_id, enable);
-    return rv;
-}
-
-
-static sw_error_t
 _fal_port_unk_mc_filter_get(a_uint32_t dev_id, fal_port_t port_id,
                             a_bool_t * enable)
 {
@@ -184,23 +214,6 @@ _fal_port_unk_mc_filter_get(a_uint32_t dev_id, fal_port_t port_id,
         return SW_NOT_SUPPORTED;
 
     rv = p_api->port_unk_mc_filter_get(dev_id, port_id, enable);
-    return rv;
-}
-
-
-static sw_error_t
-_fal_port_bc_filter_set(a_uint32_t dev_id, fal_port_t port_id,
-                        a_bool_t enable)
-{
-    sw_error_t rv;
-    hsl_api_t *p_api;
-
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
-
-    if (NULL == p_api->port_bc_filter_set)
-        return SW_NOT_SUPPORTED;
-
-    rv = p_api->port_bc_filter_set(dev_id, port_id, enable);
     return rv;
 }
 
@@ -220,23 +233,6 @@ _fal_port_bc_filter_get(a_uint32_t dev_id, fal_port_t port_id,
     rv = p_api->port_bc_filter_get(dev_id, port_id, enable);
     return rv;
 }
-
-
-static sw_error_t
-_fal_cpu_port_status_set(a_uint32_t dev_id, a_bool_t enable)
-{
-    sw_error_t rv;
-    hsl_api_t *p_api;
-
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
-
-    if (NULL == p_api->cpu_port_status_set)
-        return SW_NOT_SUPPORTED;
-
-    rv = p_api->cpu_port_status_set(dev_id, enable);
-    return rv;
-}
-
 
 static sw_error_t
 _fal_cpu_port_status_get(a_uint32_t dev_id, a_bool_t * enable)
@@ -407,6 +403,7 @@ _fal_arp_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd)
     rv = p_api->arp_cmd_get(dev_id, cmd);
     return rv;
 }
+#endif
 
 static sw_error_t
 _fal_eapol_cmd_set(a_uint32_t dev_id, fal_fwd_cmd_t cmd)
@@ -423,6 +420,7 @@ _fal_eapol_cmd_set(a_uint32_t dev_id, fal_fwd_cmd_t cmd)
     return rv;
 }
 
+#ifndef IN_MISC_MINI
 static sw_error_t
 _fal_eapol_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd)
 {
@@ -482,6 +480,7 @@ _fal_pppoe_session_get(a_uint32_t dev_id, a_uint32_t session_id, a_bool_t * stri
     rv = p_api->pppoe_session_get(dev_id, session_id, strip_hdr);
     return rv;
 }
+#endif
 
 static sw_error_t
 _fal_eapol_status_set(a_uint32_t dev_id, a_uint32_t port_id, a_bool_t enable)
@@ -498,6 +497,7 @@ _fal_eapol_status_set(a_uint32_t dev_id, a_uint32_t port_id, a_bool_t enable)
     return rv;
 }
 
+#ifndef IN_MISC_MINI
 static sw_error_t
 _fal_eapol_status_get(a_uint32_t dev_id, a_uint32_t port_id, a_bool_t * enable)
 {
@@ -1044,6 +1044,7 @@ fal_arp_status_get(a_uint32_t dev_id, a_bool_t * enable)
     FAL_API_UNLOCK;
     return rv;
 }
+#endif
 
 /**
  * @brief Set max frame size which device can received on a particular device.
@@ -1105,25 +1106,6 @@ fal_port_unk_sa_cmd_set(a_uint32_t dev_id, fal_port_t port_id,
 }
 
 /**
- * @brief Get forwarding command for packets which source address is unknown on a particular port.
- * @param[in] dev_id device id
- * @param[in] port_id port id
- * @param[out] cmd forwarding command
- * @return SW_OK or error code
- */
-sw_error_t
-fal_port_unk_sa_cmd_get(a_uint32_t dev_id, fal_port_t port_id,
-                        fal_fwd_cmd_t * cmd)
-{
-    sw_error_t rv;
-
-    FAL_API_LOCK;
-    rv = _fal_port_unk_sa_cmd_get(dev_id, port_id, cmd);
-    FAL_API_UNLOCK;
-    return rv;
-}
-
-/**
  * @brief Set flooding status of unknown unicast packets on a particular port.
  * @details  Comments:
  *   If enable unknown unicast packets filter on one port then unknown
@@ -1141,25 +1123,6 @@ fal_port_unk_uc_filter_set(a_uint32_t dev_id, fal_port_t port_id,
 
     FAL_API_LOCK;
     rv = _fal_port_unk_uc_filter_set(dev_id, port_id, enable);
-    FAL_API_UNLOCK;
-    return rv;
-}
-
-/**
- * @brief Get flooding status of unknown unicast packets on a particular port.
- * @param[in] dev_id device id
- * @param[in] port_id port id
- * @param[out] enable A_TRUE or A_FALSE
- * @return SW_OK or error code
- */
-sw_error_t
-fal_port_unk_uc_filter_get(a_uint32_t dev_id, fal_port_t port_id,
-                           a_bool_t * enable)
-{
-    sw_error_t rv;
-
-    FAL_API_LOCK;
-    rv = _fal_port_unk_uc_filter_get(dev_id, port_id, enable);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -1187,25 +1150,6 @@ fal_port_unk_mc_filter_set(a_uint32_t dev_id, fal_port_t port_id,
 }
 
 /**
- * @brief Get flooding status of unknown multicast packets on a particular port.
- * @param[in] dev_id device id
- * @param[in] port_id port id
- * @param[out] enable A_TRUE or A_FALSE
- * @return SW_OK or error code
- */
-sw_error_t
-fal_port_unk_mc_filter_get(a_uint32_t dev_id, fal_port_t port_id,
-                           a_bool_t * enable)
-{
-    sw_error_t rv;
-
-    FAL_API_LOCK;
-    rv = _fal_port_unk_mc_filter_get(dev_id, port_id, enable);
-    FAL_API_UNLOCK;
-    return rv;
-}
-
-/**
  * @brief Set flooding status of broadcast packets on a particular port.
  * @details  Comments:
  *   If enable unknown multicast packets filter on one port then unknown
@@ -1228,6 +1172,85 @@ fal_port_bc_filter_set(a_uint32_t dev_id, fal_port_t port_id,
 }
 
 /**
+ * @brief Set cpu port status on a particular device.
+ * @param[in] dev_id device id
+ * @param[in] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_cpu_port_status_set(a_uint32_t dev_id, a_bool_t enable)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_cpu_port_status_set(dev_id, enable);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+#ifndef IN_MISC_MINI
+/**
+ * @brief Get forwarding command for packets which source address is unknown on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] cmd forwarding command
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_unk_sa_cmd_get(a_uint32_t dev_id, fal_port_t port_id,
+                        fal_fwd_cmd_t * cmd)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_port_unk_sa_cmd_get(dev_id, port_id, cmd);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Get flooding status of unknown unicast packets on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_unk_uc_filter_get(a_uint32_t dev_id, fal_port_t port_id,
+                           a_bool_t * enable)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_port_unk_uc_filter_get(dev_id, port_id, enable);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+
+
+/**
+ * @brief Get flooding status of unknown multicast packets on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_unk_mc_filter_get(a_uint32_t dev_id, fal_port_t port_id,
+                           a_bool_t * enable)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_port_unk_mc_filter_get(dev_id, port_id, enable);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+
+
+/**
  * @brief Get flooding status of broadcast packets on a particular port.
  * @param[in] dev_id device id
  * @param[in] port_id port id
@@ -1242,23 +1265,6 @@ fal_port_bc_filter_get(a_uint32_t dev_id, fal_port_t port_id,
 
     FAL_API_LOCK;
     rv = _fal_port_bc_filter_get(dev_id, port_id, enable);
-    FAL_API_UNLOCK;
-    return rv;
-}
-
-/**
- * @brief Set cpu port status on a particular device.
- * @param[in] dev_id device id
- * @param[in] enable A_TRUE or A_FALSE
- * @return SW_OK or error code
- */
-sw_error_t
-fal_cpu_port_status_set(a_uint32_t dev_id, a_bool_t enable)
-{
-    sw_error_t rv;
-
-    FAL_API_LOCK;
-    rv = _fal_cpu_port_status_set(dev_id, enable);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -1458,7 +1464,7 @@ fal_arp_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd)
     FAL_API_UNLOCK;
     return rv;
 }
-
+#endif
 /**
  * @brief Set eapol packets forwarding command on a particular device.
  * @details    Comments:
@@ -1479,6 +1485,7 @@ fal_eapol_cmd_set(a_uint32_t dev_id, fal_fwd_cmd_t cmd)
     return rv;
 }
 
+#ifndef IN_MISC_MINI
 /**
  * @brief Get eapol packets forwarding command on a particular device.
  * @param[in] dev_id device id
@@ -1548,7 +1555,7 @@ fal_pppoe_session_get(a_uint32_t dev_id, a_uint32_t session_id, a_bool_t * strip
     FAL_API_UNLOCK;
     return rv;
 }
-
+#endif
 /**
  * @brief Set eapol packets hardware acknowledgement on a particular port.
  * @details    Comments:
@@ -1569,7 +1576,7 @@ fal_eapol_status_set(a_uint32_t dev_id, a_uint32_t port_id, a_bool_t enable)
     FAL_API_UNLOCK;
     return rv;
 }
-
+#ifndef IN_MISC_MINI
 /**
  * @brief Get eapol packets hardware acknowledgement on a particular port.
  * @param[in] dev_id device id
@@ -2157,7 +2164,7 @@ fal_frame_crc_reserve_get(a_uint32_t dev_id, a_bool_t * enable)
     FAL_API_UNLOCK;
     return rv;
 }
-
+#endif
 
 
 

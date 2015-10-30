@@ -17,7 +17,7 @@
 #include "shell_config.h"
 #include "shell_sw.h"
 
-
+#if 0
 /*cmdline tree descript*/
 struct cmd_des_t gcmd_des[] =
 {
@@ -608,4 +608,647 @@ struct cmd_des_t gcmd_des[] =
 
     {NULL, NULL, {{NULL, NULL, NULL, NULL, (int)NULL, NULL}}} /*end of desc*/
 };
+#else
+
+#ifdef IN_PORTCONTROL
+struct sub_cmd_des_t g_port_des[] = 
+{
+	#ifndef IN_PORTCONTROL_MINI
+	{"duplex", "set",   SW_API_PT_DUPLEX_SET, NULL},
+	{"speed", "set",   SW_API_PT_SPEED_SET, NULL},
+	{"autoAdv", "set",   SW_API_PT_AN_ADV_SET, NULL},
+	{"autoNeg", "enable",   SW_API_PT_AN_ENABLE, NULL},
+	{"autoNeg", "restart",   SW_API_PT_AN_RESTART, NULL},
+	{"autoNegenable", "set",   SW_API_PT_AN_ENABLE, NULL},
+	{"autoNegrestart", "set",   SW_API_PT_AN_RESTART, NULL},
+	{"header", "set",   SW_API_PT_HDR_SET, NULL},
+	#endif
+	{"txhdr", "set",   SW_API_PT_TXHDR_SET, NULL},
+	{"rxhdr", "set",   SW_API_PT_RXHDR_SET, NULL},
+	{"hdrtype", "set",   SW_API_HEADER_TYPE_SET, NULL},
+	#ifndef IN_PORTCONTROL_MINI
+	{"flowCtrl", "set",   SW_API_PT_FLOWCTRL_SET, NULL},
+	{"flowCtrlforcemode", "set",   SW_API_PT_FLOWCTRL_MODE_SET, NULL},
+	{"powersave", "set",   SW_API_PT_POWERSAVE_SET, NULL},
+	{"hibernate", "set",   SW_API_PT_HIBERNATE_SET, NULL},
+	{"cdt", "run",   SW_API_PT_CDT, NULL},
+	{"txmacstatus", "set",   SW_API_TXMAC_STATUS_SET, NULL},
+	{"rxmacstatus", "set",   SW_API_RXMAC_STATUS_SET, NULL},
+	{"txfcstatus", "set",   SW_API_TXFC_STATUS_SET, NULL},
+	{"rxfcstatus", "set",   SW_API_RXFC_STATUS_SET, NULL},
+	{"bpstatus", "set",   SW_API_BP_STATUS_SET, NULL},
+	{"linkforcemode", "set",   SW_API_PT_LINK_MODE_SET, NULL},
+	{"macLoopback", "set",   SW_API_PT_MAC_LOOPBACK_SET, NULL},
+	{"congedrop", "set",   SW_API_PT_CONGESTION_DROP_SET, NULL},
+	{"ringfcthresh", "set",   SW_API_PT_RING_FLOW_CTRL_THRES_SET, NULL},
+	{"Ieee8023az", "set",   SW_API_PT_8023AZ_SET, NULL},
+	{"crossover", "set",   SW_API_PT_MDIX_SET, NULL},
+	{"preferMedium", "set",   SW_API_PT_COMBO_PREFER_MEDIUM_SET, NULL},
+	{"fiberMode", "set",   SW_API_PT_COMBO_FIBER_MODE_SET, NULL},
+	{"localLoopback", "set",   SW_API_PT_LOCAL_LOOPBACK_SET, NULL},
+	{"remoteLoopback", "set",   SW_API_PT_REMOTE_LOOPBACK_SET, NULL},
+	{"reset", "set",   SW_API_PT_RESET, NULL},
+	{"poweroff", "set",   SW_API_PT_POWER_OFF, NULL},
+	{"poweron", "set",   SW_API_PT_POWER_ON, NULL},
+	{"magicFrameMac", "set",   SW_API_PT_MAGIC_FRAME_MAC_SET, NULL},
+	{"wolstatus", "set",   SW_API_PT_WOL_STATUS_SET, NULL},
+	{"interfaceMode", "set",   SW_API_PT_INTERFACE_MODE_SET, NULL},
+	{"counter", "set",   SW_API_PT_COUNTER_SET, NULL},
+	#endif
+	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
+};
+#endif
+
+#ifdef IN_VLAN
+struct sub_cmd_des_t g_vlan_des[] = 
+{
+	{"entry", "set",   SW_API_VLAN_ADD, NULL},
+	{"entry", "create",   SW_API_VLAN_ADD, NULL},
+	{"entry", "del",   SW_API_VLAN_DEL, NULL},
+	{"entry", "update",   SW_API_VLAN_MEM_UPDATE, NULL},
+	{"entry", "append",   SW_API_VLAN_APPEND, NULL},
+	{"entry", "flush",  SW_API_VLAN_FLUSH, NULL},
+	{"fid", "set",  SW_API_VLAN_FID_SET, NULL},
+	{"member", "set",  SW_API_VLAN_MEMBER_ADD, NULL},
+	{"member", "add",  SW_API_VLAN_MEMBER_ADD, NULL},
+	{"member", "del",  SW_API_VLAN_MEMBER_DEL, NULL},
+	#ifndef IN_VLAN_MINI
+	{"learnsts", "set",  SW_API_VLAN_LEARN_STATE_SET, NULL},
+	#endif
+	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
+};
+#endif
+
+#ifdef IN_PORTVLAN
+struct sub_cmd_des_t g_portvlan_des[] =
+{
+	{"ingress", "set",   SW_API_PT_ING_MODE_SET, NULL},
+	{"egress", "set",   SW_API_PT_EG_MODE_SET, NULL},
+	{"member", "set",   SW_API_PT_VLAN_MEM_UPDATE, NULL},
+	{"member", "add",   SW_API_PT_VLAN_MEM_ADD, NULL},
+	{"member", "del",   SW_API_PT_VLAN_MEM_DEL, NULL},
+	{"member", "update",   SW_API_PT_VLAN_MEM_UPDATE, NULL},
+	{"defaultVid", "set",   SW_API_PT_DEF_VID_SET, NULL},
+	{"forceVid", "set",   SW_API_PT_FORCE_DEF_VID_SET, NULL},
+	{"forceMode", "set",   SW_API_PT_FORCE_PORTVLAN_SET, NULL},
+	{"nestVlan", "set",   SW_API_PT_NESTVLAN_SET, NULL},
+	{"sVlanTPID", "set",   SW_API_NESTVLAN_TPID_SET, NULL},
+	{"invlan", "set",   SW_API_PT_IN_VLAN_MODE_SET, NULL},
+	#ifndef IN_PORTVLAN_MINI
+	{"tlsMode", "set",   SW_API_PT_TLS_SET, NULL},
+	{"priPropagation", "set",   SW_API_PT_PRI_PROPAGATION_SET, NULL},
+	#endif
+	{"defaultSVid", "set",   SW_API_PT_DEF_SVID_SET, NULL},
+	{"defaultCVid", "set",   SW_API_PT_DEF_CVID_SET, NULL},
+	#ifndef IN_PORTVLAN_MINI
+	{"vlanPropagation", "set",   SW_API_PT_VLAN_PROPAGATION_SET, NULL},
+	{"translation", "set",   SW_API_PT_VLAN_TRANS_ADD, NULL},
+	{"translation", "add",   SW_API_PT_VLAN_TRANS_ADD, NULL},
+	{"translation", "del",   SW_API_PT_VLAN_TRANS_DEL, NULL},
+	{"qinqMode", "set",   SW_API_QINQ_MODE_SET, NULL},
+	{"qinqRole", "set",   SW_API_PT_QINQ_ROLE_SET, NULL},
+	{"macvlanxlt", "set",   SW_API_PT_MAC_VLAN_XLT_SET, NULL},
+	{"netiso", "set",   SW_API_NETISOLATE_SET, NULL},
+	{"egbypass", "set",   SW_API_EG_FLTR_BYPASS_EN_SET, NULL},
+	{"ptvrfid", "set",   SW_API_PT_VRF_ID_SET, NULL},
+	#endif
+	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
+};
+#endif
+
+#ifdef IN_FDB
+struct sub_cmd_des_t g_fdb_des[] =
+{
+#ifndef IN_FDB_MINI
+	{"entry", "set",   SW_API_FDB_ADD, NULL},
+	{"entry", "add",   SW_API_FDB_ADD, NULL},
+	{"entry", "del",   SW_API_FDB_DELMAC, NULL},
+	{"entry", "flush",   SW_API_FDB_DELALL, NULL},
+	{"entry", "transfer",   SW_API_FDB_TRANSFER, NULL},
+	{"portEntry", "flush",   SW_API_FDB_DELPORT, NULL},
+	{"firstEntry", "find",   SW_API_FDB_FIRST, NULL},
+	{"nextEntry", "find",   SW_API_FDB_NEXT, NULL},
+#endif
+	{"portLearn", "set",   SW_API_FDB_PT_LEARN_SET, NULL},
+#ifndef IN_FDB_MINI
+	{"ageCtrl", "set",   SW_API_FDB_AGE_CTRL_SET, NULL},
+	{"vlansmode", "set",   SW_API_FDB_VLAN_IVL_SVL_SET, NULL},
+	{"ageTime", "set",   SW_API_FDB_AGE_TIME_SET, NULL},
+	{"ptlearnlimit", "set",   SW_API_PT_FDB_LEARN_LIMIT_SET, NULL},
+	{"ptlearnexceedcmd", "set",   SW_API_PT_FDB_LEARN_EXCEED_CMD_SET, NULL},
+	{"learnlimit", "set",   SW_API_FDB_LEARN_LIMIT_SET, NULL},
+	{"learnexceedcmd", "set",   SW_API_FDB_LEARN_EXCEED_CMD_SET, NULL},
+	{"resventry", "set",   SW_API_FDB_RESV_ADD, NULL},
+	{"resventry", "add",   SW_API_FDB_RESV_ADD, NULL},
+	{"resventry", "del",   SW_API_FDB_RESV_DEL, NULL},
+	{"ptLearnstatic", "set",   SW_API_FDB_PT_LEARN_STATIC_SET, NULL},
+	{"port", "add",   SW_API_FDB_PORT_ADD, NULL},
+	{"port", "del",   SW_API_FDB_PORT_DEL, NULL},
+#endif
+	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
+};
+#endif
+
+#ifdef IN_ACL
+struct sub_cmd_des_t g_acl_des[] =
+{
+	{"list", "create",   SW_API_ACL_LIST_CREAT, NULL},
+	{"list", "destroy",   SW_API_ACL_LIST_DESTROY, NULL},
+	{"list", "bind",   SW_API_ACL_LIST_BIND, NULL},
+	{"list", "unbind",   SW_API_ACL_LIST_UNBIND, NULL},
+	{"rule", "add",   SW_API_ACL_RULE_ADD, NULL},
+	{"rule", "del",   SW_API_ACL_RULE_DELETE, NULL},
+	{"rule", "active",   SW_API_ACL_RULE_ACTIVE, NULL},
+	{"rule", "deactive",   SW_API_ACL_RULE_DEACTIVE, NULL},
+	{"srcfiltersts", "set",   SW_API_ACL_RULE_SRC_FILTER_STS_SET, NULL},
+	{"status", "set",   SW_API_ACL_STATUS_SET, NULL},
+	{"udfprofile", "set",   SW_API_ACL_PT_UDF_PROFILE_SET, NULL},
+	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
+};
+#endif
+
+#ifdef IN_QOS
+struct sub_cmd_des_t g_qos_des[] =
+{
+#ifndef IN_QOS_MINI
+#ifndef ISISC
+	{"schMode", "set", SW_API_QOS_SCH_MODE_SET, NULL},
+#endif
+	{"qTxBufSts", "set",  SW_API_QOS_QU_TX_BUF_ST_SET, NULL},
+#ifdef ISISC
+	{"qTxBufNr", "set",   SW_API_QOS_QU_TX_BUF_NR_SET, NULL},
+#else
+	{"qTxBufNr", "set",  SW_API_QOS_QU_TX_BUF_NR_SET, NULL},
+#endif
+	{"ptTxBufSts", "set",   SW_API_QOS_PT_TX_BUF_ST_SET, NULL},
+	{"ptRedEn", "set",   SW_API_QOS_PT_RED_EN_SET, NULL},
+#ifdef ISISC
+	{"ptTxBufNr", "set",   SW_API_QOS_PT_TX_BUF_NR_SET, NULL},
+#else
+	{"ptTxBufNr", "set", SW_API_QOS_PT_TX_BUF_NR_SET, NULL},
+#endif
+#ifdef ISISC
+	{"ptRxBufNr", "set",   SW_API_QOS_PT_RX_BUF_NR_SET, NULL},
+#else
+	{"ptRxBufNr", "set", SW_API_QOS_PT_RX_BUF_NR_SET, NULL},
+#endif
+#ifndef ISISC
+	{"up2q", "set", SW_API_COSMAP_UP_QU_SET, NULL},
+	{"dscp2q", "set", SW_API_COSMAP_DSCP_QU_SET, NULL},
+#endif
+#endif
+#ifdef ISISC
+	{"ptMode", "set",   SW_API_QOS_PT_MODE_SET, NULL},
+	{"ptModePri", "set",   SW_API_QOS_PT_MODE_PRI_SET, NULL},
+#else
+	{"ptMode", "set", SW_API_QOS_PT_MODE_SET, NULL},
+	{"ptModePri", "set", SW_API_QOS_PT_MODE_PRI_SET, NULL},
+#endif
+#ifndef IN_QOS_MINI
+#ifndef ISISC
+	{"ptDefaultUp", "set",   SW_API_QOS_PORT_DEF_UP_SET, NULL},
+#endif
+	{"ptschMode", "set",   SW_API_QOS_PORT_SCH_MODE_SET, NULL},
+	{"ptDefaultSpri", "set",   SW_API_QOS_PT_DEF_SPRI_SET, NULL},
+	{"ptDefaultCpri", "set",   SW_API_QOS_PT_DEF_CPRI_SET, NULL},
+	{"ptFSpriSts", "set",   SW_API_QOS_PT_FORCE_SPRI_ST_SET, NULL},
+	{"ptFCpriSts", "set",   SW_API_QOS_PT_FORCE_CPRI_ST_SET, NULL},
+	{"ptQuRemark", "set",   SW_API_QOS_QUEUE_REMARK_SET, NULL},
+#endif
+	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
+};
+#endif
+
+#ifdef IN_IGMP
+struct sub_cmd_des_t g_igmp_des[] =
+{
+	{"mode", "set", SW_API_PT_IGMPS_MODE_SET, NULL},
+	{"cmd", "set", SW_API_IGMP_MLD_CMD_SET, NULL},
+	{"portJoin", "set", SW_API_IGMP_PT_JOIN_SET, NULL},
+	{"portLeave", "set", SW_API_IGMP_PT_LEAVE_SET, NULL},
+	{"rp", "set", SW_API_IGMP_RP_SET, NULL},
+	{"createStatus", "set", SW_API_IGMP_ENTRY_CREAT_SET, NULL},
+	{"static", "set", SW_API_IGMP_ENTRY_STATIC_SET, NULL},
+	{"leaky", "set", SW_API_IGMP_ENTRY_LEAKY_SET, NULL},
+	{"version3", "set", SW_API_IGMP_ENTRY_V3_SET, NULL},
+	{"queue", "set", SW_API_IGMP_ENTRY_QUEUE_SET, NULL},
+	{"ptlearnlimit", "set", SW_API_PT_IGMP_LEARN_LIMIT_SET, NULL},
+	{"ptlearnexceedcmd", "set", SW_API_PT_IGMP_LEARN_EXCEED_CMD_SET, NULL},
+	{"multi", "set", SW_API_IGMP_SG_ENTRY_SET, NULL},
+	{"multi", "clear", SW_API_IGMP_SG_ENTRY_CLEAR, NULL},
+	{"multi", "show", SW_API_IGMP_SG_ENTRY_SHOW, NULL},
+	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
+};
+#endif
+
+#ifdef IN_LEAKY
+struct sub_cmd_des_t g_leaky_des[] =
+{
+	{"ucMode", "set", SW_API_UC_LEAKY_MODE_SET, NULL},
+	{"mcMode", "set", SW_API_MC_LEAKY_MODE_SET, NULL},
+	{"arpMode", "set", SW_API_ARP_LEAKY_MODE_SET, NULL},
+	{"ptUcMode", "set", SW_API_PT_UC_LEAKY_MODE_SET, NULL},
+	{"ptMcMode", "set", SW_API_PT_MC_LEAKY_MODE_SET, NULL},
+	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
+};
+#endif
+
+#ifdef IN_MIRROR
+struct sub_cmd_des_t g_mirror_des[] =
+{
+	{"analyPt", "set", SW_API_MIRROR_ANALY_PT_SET, NULL},
+	{"ptIngress", "set", SW_API_MIRROR_IN_PT_SET, NULL},
+	{"ptEgress", "set", SW_API_MIRROR_EG_PT_SET, NULL},
+	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
+};
+#endif
+
+#ifdef IN_RATE
+struct sub_cmd_des_t g_rate_des[] =      
+{
+#ifndef ISISC
+	{"qEgress", "set", SW_API_RATE_QU_EGRL_SET, NULL},
+	{"ptEgress", "set", SW_API_RATE_PT_EGRL_SET, NULL},
+	{"ptIngress", "set", SW_API_RATE_PT_INRL_SET, NULL},
+	{"stormCtrl", "set", SW_API_STORM_CTRL_FRAME_SET, NULL},
+	{"stormCtrlRate", SW_API_STORM_CTRL_RATE_SET, NULL},
+#endif
+	{"portpolicer", "set", SW_API_RATE_PORT_POLICER_SET, NULL},
+	{"portshaper", "set", SW_API_RATE_PORT_SHAPER_SET, NULL},
+	{"queueshaper", "set", SW_API_RATE_QUEUE_SHAPER_SET, NULL},
+	{"aclpolicer", "set", SW_API_RATE_ACL_POLICER_SET, NULL},
+	{"ptAddRateByte", SW_API_RATE_PT_ADDRATEBYTE_SET, NULL},
+	{"ptgolflowen", "set", SW_API_RATE_PT_GOL_FLOW_EN_SET, NULL},
+	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
+};
+#endif
+
+#ifdef IN_SEC
+#ifdef ISISC
+struct sub_cmd_des_t g_sec_des[] = 
+{
+	{"mac", "set", SW_API_SEC_MAC_SET, NULL},
+	{"ip", "set", SW_API_SEC_IP_SET, NULL},
+	{"ip4", "set", SW_API_SEC_IP4_SET, NULL},
+	{"ip6", "set", SW_API_SEC_IP6_SET, NULL},
+	{"tcp", "set", SW_API_SEC_TCP_SET, NULL},
+	{"udp", "set", SW_API_SEC_UDP_SET, NULL},
+	{"icmp4", "set", SW_API_SEC_ICMP4_SET, NULL},
+	{"icmp6", "set", SW_API_SEC_ICMP6_SET, NULL},
+	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
+};
+#endif
+#endif
+
+#ifdef IN_STP
+struct sub_cmd_des_t g_stp_des[] = 
+{
+	{"portState", "set", SW_API_STP_PT_STATE_SET, NULL},
+	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
+};
+#endif
+
+#ifdef IN_MIB
+struct sub_cmd_des_t g_mib_des[] =
+{
+	{"status", "set",    SW_API_MIB_STATUS_SET, NULL},
+            {"counters",  "flush",   SW_API_PT_MIB_FLUSH_COUNTERS, NULL},
+            {"cpuKeep", "set",    SW_API_MIB_CPU_KEEP_SET, NULL},
+            {NULL, NULL,  (int)NULL, NULL},/*end of desc*/
+};
+#endif
+
+#ifdef IN_LED
+struct sub_cmd_des_t g_led_des[] =
+{
+	{"ctrlpattern", "set", SW_API_LED_PATTERN_SET, NULL},
+	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
+};
+#endif
+
+		
+#ifdef IN_COSMAP
+struct sub_cmd_des_t g_cosmap_des[] =
+{
+#ifndef IN_COSMAP_MINI
+	{"dscp2pri", "set",   SW_API_COSMAP_DSCP_TO_PRI_SET, NULL},
+	{"dscp2dp", "set",   SW_API_COSMAP_DSCP_TO_DP_SET, NULL},
+	{"up2pri", "set",   SW_API_COSMAP_UP_TO_PRI_SET, NULL},
+	{"up2dp", "set",   SW_API_COSMAP_UP_TO_DP_SET, NULL},
+	{"dscp2ehpri", "set",   SW_API_COSMAP_DSCP_TO_EHPRI_SET, NULL},
+	{"dscp2ehdp", "set",   SW_API_COSMAP_DSCP_TO_EHDP_SET, NULL},
+
+	{"up2ehpri", "set",   SW_API_COSMAP_UP_TO_EHPRI_SET, NULL},
+	{"up2ehdp", "set",   SW_API_COSMAP_UP_TO_EHDP_SET, NULL},
+#endif
+	{"pri2q", "set",   SW_API_COSMAP_PRI_TO_QU_SET, NULL},
+	{"pri2ehq", "set",   SW_API_COSMAP_PRI_TO_EHQU_SET, NULL},
+#ifndef IN_COSMAP_MINI
+	{"egRemark", "set",   SW_API_COSMAP_EG_REMARK_SET, NULL},
+#endif
+	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
+};
+#endif
+
+#ifdef IN_MISC
+struct sub_cmd_des_t g_misc_des[] =
+{
+#ifndef ISISC
+	{"arp", "set",   SW_API_ARP_STATUS_SET, NULL},
+#endif
+	{"frameMaxSize", "set",   SW_API_FRAME_MAX_SIZE_SET, NULL},
+#ifndef ISISC
+	{"ptUnkSaCmd", "set", SW_API_PT_UNK_SA_CMD_SET, NULL},
+#endif
+	{"ptUnkUcFilter", "set",   SW_API_PT_UNK_UC_FILTER_SET, NULL},
+	{"ptUnkMcFilter", "set",   SW_API_PT_UNK_MC_FILTER_SET, NULL},
+	{"ptBcFilter", "set",   SW_API_PT_BC_FILTER_SET, NULL},
+	{"cpuPort", "set",   SW_API_CPU_PORT_STATUS_SET, NULL},
+#ifndef ISISC
+	{"bctoCpu", "set", SW_API_BC_TO_CPU_PORT_SET, NULL},
+#endif
+#ifdef ISISC
+#ifndef IN_MISC_MINI
+	{"PppoeCmd", "set",   SW_API_PPPOE_CMD_SET, NULL},
+#endif
+#else
+	{"PppoeCmd", "set",   SW_API_PPPOE_CMD_SET, NULL},
+#endif
+#ifndef IN_MISC_MINI
+	{"Pppoe", "set",   SW_API_PPPOE_STATUS_SET, NULL},
+	{"ptDhcp", "set",   SW_API_PT_DHCP_SET, NULL},
+#ifdef ISISC
+	{"arpcmd", "set",   SW_API_ARP_CMD_SET, NULL},
+#else
+	{"arpcmd", "set", SW_API_ARP_CMD_SET, NULL},
+#endif
+#endif
+	{"eapolcmd", "set",   SW_API_EAPOL_CMD_SET, NULL},
+	{"eapolstatus", "set",   SW_API_EAPOL_STATUS_SET, NULL},
+#ifndef IN_MISC_MINI
+#ifndef ISISC
+	{"pppoesession", "add", SW_API_PPPOE_SESSION_ADD, NULL},
+	{"pppoesession", "del", SW_API_PPPOE_SESSION_DEL, NULL},
+#endif
+	{"rip", "set",   SW_API_RIPV1_STATUS_SET, NULL},
+	{"ptarpreq", "set",   SW_API_PT_ARP_REQ_STATUS_SET, NULL},
+	{"ptarpack", "set",   SW_API_PT_ARP_ACK_STATUS_SET, NULL},
+	{"extendpppoe", "set",   SW_API_PPPOE_SESSION_TABLE_ADD, NULL},
+	{"extendpppoe", "add",   SW_API_PPPOE_SESSION_TABLE_ADD, NULL},
+	{"extendpppoe", "del",   SW_API_PPPOE_SESSION_TABLE_DEL, NULL},
+	{"pppoeid", "set",   SW_API_PPPOE_SESSION_ID_SET, NULL},
+	{"intrmask", "set",   SW_API_INTR_MASK_SET, NULL},
+	{"intrstatus", "clear",   SW_API_INTR_STATUS_CLEAR, NULL},
+	{"intrportlinkmask", "set",   SW_API_INTR_PORT_LINK_MASK_SET, NULL},
+	{"intrmaskmaclinkchg", "set",   SW_API_INTR_MASK_MAC_LINKCHG_SET, NULL},
+	{"intrstatusmaclinkchg", "clear",   SW_API_INTR_STATUS_MAC_LINKCHG_CLEAR, NULL},
+	{"cpuVid", "set",   SW_API_CPU_VID_EN_SET, NULL},
+	{"rtdPppoe", "set",   SW_API_RTD_PPPOE_EN_SET, NULL},
+	{"glomacaddr", "set",   SW_API_GLOBAL_MACADDR_SET, NULL},
+	{"lldp", "set",   SW_API_LLDP_STATUS_SET, NULL},
+	{"framecrc", "set",   SW_API_FRAME_CRC_RESERVE_SET, NULL},
+#endif
+	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
+};
+#endif
+
+#ifdef IN_IP
+struct sub_cmd_des_t g_ip_des[] =
+{
+	{"hostentry", "set", SW_API_IP_HOST_ADD, NULL},
+	{"hostentry", "add", SW_API_IP_HOST_ADD, NULL},
+	{"hostentry", "del", SW_API_IP_HOST_DEL, NULL},
+	{"hostentry", "next", SW_API_IP_HOST_NEXT, NULL},
+	{"hostentry", "bindcnt", SW_API_IP_HOST_COUNTER_BIND, NULL},
+	{"hostentry", "bindpppoe", SW_API_IP_HOST_PPPOE_BIND, NULL},
+	{"ptarplearn", "set", SW_API_IP_PT_ARP_LEARN_SET, NULL},
+	{"arplearn",   "set", SW_API_IP_ARP_LEARN_SET, NULL},
+	{"ptipsrcguard",   "set", SW_API_IP_SOURCE_GUARD_SET, NULL},
+	{"ptarpsrcguard",  "set", SW_API_IP_ARP_GUARD_SET, NULL},
+	{"routestatus", "set", SW_API_IP_ROUTE_STATUS_SET, NULL},
+	{"intfentry", "set", SW_API_IP_INTF_ENTRY_ADD, NULL},
+	{"intfentry", "add", SW_API_IP_INTF_ENTRY_ADD, NULL},
+	{"intfentry", "del", SW_API_IP_INTF_ENTRY_DEL, NULL},
+	{"ipunksrc", "set", SW_API_IP_UNK_SOURCE_CMD_SET, NULL},
+	{"arpunksrc", "set", SW_API_ARP_UNK_SOURCE_CMD_SET, NULL},
+	{"ipagetime", "set", SW_API_IP_AGE_TIME_SET, NULL},
+	{"wcmphashmode", "set", SW_API_WCMP_HASH_MODE_SET, NULL},
+	{"wcmpentry", "set", SW_API_IP_WCMP_ENTRY_SET, NULL},
+	{"vrfbaseaddr", "set", SW_API_IP_VRF_BASE_ADDR_SET, NULL},
+	{"vrfbasemask", "set", SW_API_IP_VRF_BASE_MASK_SET, NULL},
+	{"defaultroute", "set", SW_API_IP_DEFAULT_ROUTE_SET, NULL},
+	{"hostroute", "set", SW_API_IP_HOST_ROUTE_SET, NULL},
+	{"rfsip4", "set", SW_API_IP_RFS_IP4_SET, NULL},
+	{"rfsip6", "set", SW_API_IP_RFS_IP6_SET, NULL},
+	{"defaultflowcmd", "set", SW_API_IP_DEFAULT_FLOW_CMD_SET, NULL},
+	{"defaultrtflowcmd", "set", SW_API_IP_DEFAULT_RT_FLOW_CMD_SET, NULL},
+	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
+};
+#endif
+
+#ifdef IN_NAT
+struct sub_cmd_des_t g_nat_des[] =
+{
+	{"natentry", "set", SW_API_NAT_ADD, NULL},
+	{"natentry", "add", SW_API_NAT_ADD, NULL},
+	{"natentry", "del", SW_API_NAT_DEL, NULL},
+	{"natentry", "next", SW_API_NAT_NEXT, NULL},
+	{"natentry", "bindcnt", SW_API_NAT_COUNTER_BIND, NULL},
+	{"naptentry", "set", SW_API_NAPT_ADD, NULL},
+	{"naptentry", "add", SW_API_NAPT_ADD, NULL},
+	{"naptentry", "del", SW_API_NAPT_DEL, NULL},
+	{"naptentry", "next", SW_API_NAPT_NEXT, NULL},
+	{"naptentry", "bindcnt", SW_API_NAPT_COUNTER_BIND, NULL},
+	{"natstatus", "set", SW_API_NAT_STATUS_SET, NULL},
+	{"naptstatus", "set", SW_API_NAPT_STATUS_SET, NULL},
+	{"nathash", "set", SW_API_NAT_HASH_MODE_SET, NULL},
+	{"naptmode", "set", SW_API_NAPT_MODE_SET, NULL},
+	{"prvbaseaddr", "set", SW_API_PRV_BASE_ADDR_SET, NULL},
+	{"prvaddrmode", "set", SW_API_PRV_ADDR_MODE_SET, NULL},
+	{"pubaddr", "set", SW_API_PUB_ADDR_ENTRY_ADD, NULL},
+	{"pubaddr", "add", SW_API_PUB_ADDR_ENTRY_ADD, NULL},
+	{"pubaddr", "del", SW_API_PUB_ADDR_ENTRY_DEL, NULL},
+	{"natunksess", "set", SW_API_NAT_UNK_SESSION_CMD_SET, NULL},
+	{"prvbasemask", "set", SW_API_PRV_BASE_MASK_SET, NULL},
+	{"global", "set", SW_API_NAT_GLOBAL_SET, NULL},
+	{"flowentry", "set", SW_API_FLOW_ADD, NULL},
+	{"flowentry", "add", SW_API_FLOW_ADD, NULL},
+	{"flowentry", "del", SW_API_FLOW_DEL, NULL},
+	{"flowentry", "next", SW_API_FLOW_NEXT, NULL},
+	{"flowcookie", "set", SW_API_FLOW_COOKIE_SET, NULL},
+	{"flowrfs", "set", SW_API_FLOW_RFS_SET, NULL},
+	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
+};
+#endif
+
+#ifdef IN_TRUNK
+struct sub_cmd_des_t g_trunk_des[] =
+{
+	{"group", "set", SW_API_TRUNK_GROUP_SET, NULL},
+	{"hashmode", "set", SW_API_TRUNK_HASH_SET, NULL},
+	{"mansa", "set", SW_API_TRUNK_MAN_SA_SET, NULL},
+	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
+};
+#endif
+
+#ifdef IN_INTERFACECONTROL
+struct sub_cmd_des_t g_interfacecontrol_des[] =
+{
+	{"macmode", "set",   SW_API_MAC_MODE_SET, NULL},
+	{"pt3azstatus", "set",   SW_API_PORT_3AZ_STATUS_SET, NULL},
+	{"phymode", "set",   SW_API_PHY_MODE_SET, NULL},
+	{"fx100ctrl", "set",   SW_API_FX100_CTRL_SET, NULL},
+	{"mac06exch", "set",   SW_API_MAC06_EXCH_SET, NULL},
+	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
+};
+#endif
+
+struct cmd_des_t gcmd_des[] =
+{
+    /*port ctrl*/
+#ifdef IN_PORTCONTROL
+    {
+        "port", g_port_des,
+    },
+#endif
+
+    /*vlan*/
+#ifdef IN_VLAN
+    {
+        "vlan", g_vlan_des,
+    },
+#endif
+
+    /*portvlan*/
+#ifdef IN_PORTVLAN
+    {
+        "portVlan", g_portvlan_des,
+    },
+#endif
+
+    /*fdb*/
+#ifdef IN_FDB
+    {
+        "fdb", g_fdb_des,
+    },
+#endif
+
+    /*acl*/
+#ifdef IN_ACL
+    {
+        "acl", g_acl_des,
+    },
+#endif
+
+    /*qos*/
+#ifdef IN_QOS
+    {
+        "qos", g_qos_des,
+    },
+#endif
+
+    /*igmp*/
+#ifdef IN_IGMP
+    {
+        "igmp", g_igmp_des,
+    },
+#endif
+
+    /*leaky*/
+#ifdef IN_LEAKY
+    {
+        "leaky", g_leaky_des,
+    },
+#endif
+
+    /*mirror*/
+#ifdef IN_MIRROR
+    {
+        "mirror", g_mirror_des,
+    },
+#endif
+
+    /*rate*/
+#ifdef IN_RATE
+    {
+        "rate", g_rate_des,
+    },
+#endif
+
+#ifdef IN_SEC
+#ifdef ISISC
+    {
+        "sec", g_sec_des,
+    },
+#endif
+#endif
+
+    /*stp*/
+#ifdef IN_STP
+    {
+        "stp", g_stp_des,
+    },
+#endif
+
+    /*mib*/
+#ifdef IN_MIB
+    {
+        "mib", g_mib_des,
+    },
+#endif
+
+    /* led */
+#ifdef IN_LED
+    {
+        "led", g_led_des,
+    },
+#endif
+
+    /* cosmap */
+#ifdef IN_COSMAP
+    {
+        "cosmap", g_cosmap_des,
+    },
+#endif
+
+    /*misc*/
+#ifdef IN_MISC
+    {
+        "misc", g_misc_des,
+    },
+#endif
+
+    /* IP */
+#ifdef IN_IP
+    {
+        "ip", g_ip_des,
+    },
+#endif
+
+    /* NAT */
+#ifdef IN_NAT
+    {
+        "nat", g_nat_des,
+    },
+#endif
+
+    /*Trunk*/
+#ifdef IN_TRUNK
+    {
+        "trunk", g_trunk_des,
+    },
+#endif
+
+    /*Interface Control*/
+#ifdef IN_INTERFACECONTROL
+    {
+        "interface", g_interfacecontrol_des,
+    },
+#endif
+
+    {NULL, NULL} /*end of desc*/
+};
+
+
+#endif
 

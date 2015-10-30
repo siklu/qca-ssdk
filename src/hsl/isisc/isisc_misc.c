@@ -204,36 +204,6 @@ _isisc_port_unk_uc_filter_set(a_uint32_t dev_id, fal_port_t port_id,
     return rv;
 }
 
-static sw_error_t
-_isisc_port_unk_uc_filter_get(a_uint32_t dev_id, fal_port_t port_id,
-                             a_bool_t * enable)
-{
-    sw_error_t rv;
-    a_uint32_t reg, field;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_FIELD_GET(rv, dev_id, FORWARD_CTL1, 0, UNI_FLOOD_DP,
-                      (a_uint8_t *) (&reg), sizeof (a_uint32_t));
-    SW_RTN_ON_ERROR(rv);
-
-    field = reg & (0x1 << port_id);
-    if (field)
-    {
-        *enable = A_FALSE;
-    }
-    else
-    {
-        *enable = A_TRUE;
-    }
-
-    return SW_OK;
-}
 
 static sw_error_t
 _isisc_port_unk_mc_filter_set(a_uint32_t dev_id, fal_port_t port_id,
@@ -271,36 +241,6 @@ _isisc_port_unk_mc_filter_set(a_uint32_t dev_id, fal_port_t port_id,
     return rv;
 }
 
-static sw_error_t
-_isisc_port_unk_mc_filter_get(a_uint32_t dev_id, fal_port_t port_id,
-                             a_bool_t * enable)
-{
-    sw_error_t rv;
-    a_uint32_t reg, field;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_FIELD_GET(rv, dev_id, FORWARD_CTL1, 0, MUL_FLOOD_DP,
-                      (a_uint8_t *) (&reg), sizeof (a_uint32_t));
-    SW_RTN_ON_ERROR(rv);
-
-    field = reg & (0x1 << port_id);
-    if (field)
-    {
-        *enable = A_FALSE;
-    }
-    else
-    {
-        *enable = A_TRUE;
-    }
-
-    return SW_OK;
-}
 
 static sw_error_t
 _isisc_port_bc_filter_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
@@ -338,6 +278,33 @@ _isisc_port_bc_filter_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable
 }
 
 static sw_error_t
+_isisc_cpu_port_status_set(a_uint32_t dev_id, a_bool_t enable)
+{
+    sw_error_t rv;
+    a_uint32_t val;
+
+    HSL_DEV_ID_CHECK(dev_id);
+
+    if (A_TRUE == enable)
+    {
+        val = 1;
+    }
+    else if (A_FALSE == enable)
+    {
+        val = 0;
+    }
+    else
+    {
+        return SW_BAD_PARAM;
+    }
+
+    HSL_REG_FIELD_SET(rv, dev_id, FORWARD_CTL0, 0, CPU_PORT_EN,
+                      (a_uint8_t *) (&val), sizeof (a_uint32_t));
+    return rv;
+}
+
+#ifndef IN_MISC_MINI
+static sw_error_t
 _isisc_port_bc_filter_get(a_uint32_t dev_id, fal_port_t port_id,
                          a_bool_t * enable)
 {
@@ -369,29 +336,65 @@ _isisc_port_bc_filter_get(a_uint32_t dev_id, fal_port_t port_id,
 }
 
 static sw_error_t
-_isisc_cpu_port_status_set(a_uint32_t dev_id, a_bool_t enable)
+_isisc_port_unk_uc_filter_get(a_uint32_t dev_id, fal_port_t port_id,
+                             a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t reg, field;
 
     HSL_DEV_ID_CHECK(dev_id);
 
-    if (A_TRUE == enable)
-    {
-        val = 1;
-    }
-    else if (A_FALSE == enable)
-    {
-        val = 0;
-    }
-    else
+    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
     {
         return SW_BAD_PARAM;
     }
 
-    HSL_REG_FIELD_SET(rv, dev_id, FORWARD_CTL0, 0, CPU_PORT_EN,
-                      (a_uint8_t *) (&val), sizeof (a_uint32_t));
-    return rv;
+    HSL_REG_FIELD_GET(rv, dev_id, FORWARD_CTL1, 0, UNI_FLOOD_DP,
+                      (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+    SW_RTN_ON_ERROR(rv);
+
+    field = reg & (0x1 << port_id);
+    if (field)
+    {
+        *enable = A_FALSE;
+    }
+    else
+    {
+        *enable = A_TRUE;
+    }
+
+    return SW_OK;
+}
+
+static sw_error_t
+_isisc_port_unk_mc_filter_get(a_uint32_t dev_id, fal_port_t port_id,
+                             a_bool_t * enable)
+{
+    sw_error_t rv;
+    a_uint32_t reg, field;
+
+    HSL_DEV_ID_CHECK(dev_id);
+
+    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
+    {
+        return SW_BAD_PARAM;
+    }
+
+    HSL_REG_FIELD_GET(rv, dev_id, FORWARD_CTL1, 0, MUL_FLOOD_DP,
+                      (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+    SW_RTN_ON_ERROR(rv);
+
+    field = reg & (0x1 << port_id);
+    if (field)
+    {
+        *enable = A_FALSE;
+    }
+    else
+    {
+        *enable = A_TRUE;
+    }
+
+    return SW_OK;
 }
 
 static sw_error_t
@@ -676,6 +679,7 @@ _isisc_arp_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd)
 
     return SW_OK;
 }
+#endif
 
 static sw_error_t
 _isisc_eapol_cmd_set(a_uint32_t dev_id, fal_fwd_cmd_t cmd)
@@ -703,6 +707,7 @@ _isisc_eapol_cmd_set(a_uint32_t dev_id, fal_fwd_cmd_t cmd)
     return rv;
 }
 
+#ifndef IN_MISC_MINI
 static sw_error_t
 _isisc_eapol_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd)
 {
@@ -1240,7 +1245,7 @@ _isisc_intr_status_mac_linkchg_clear(a_uint32_t dev_id)
     return rv;
 
 }
-
+#endif
 
 /**
  * @brief Set max frame size which device can received on a particular device.
@@ -1303,25 +1308,6 @@ isisc_port_unk_uc_filter_set(a_uint32_t dev_id, fal_port_t port_id,
 }
 
 /**
- * @brief Get flooding status of unknown unicast packets on a particular port.
- * @param[in] dev_id device id
- * @param[in] port_id port id
- * @param[out] enable A_TRUE or A_FALSE
- * @return SW_OK or error code
- */
-HSL_LOCAL sw_error_t
-isisc_port_unk_uc_filter_get(a_uint32_t dev_id, fal_port_t port_id,
-                            a_bool_t * enable)
-{
-    sw_error_t rv;
-
-    HSL_API_LOCK;
-    rv = _isisc_port_unk_uc_filter_get(dev_id, port_id, enable);
-    HSL_API_UNLOCK;
-    return rv;
-}
-
-/**
  * @brief Set flooding status of unknown multicast packets on a particular port.
  * @details  Comments:
  *   If enable unknown multicast packets filter on one port then unknown
@@ -1339,24 +1325,6 @@ isisc_port_unk_mc_filter_set(a_uint32_t dev_id, fal_port_t port_id,
 
     HSL_API_LOCK;
     rv = _isisc_port_unk_mc_filter_set(dev_id, port_id, enable);
-    HSL_API_UNLOCK;
-    return rv;
-}
-
-/** @brief Get flooding status of unknown multicast packets on a particular port.
- * @param[in] dev_id device id
- * @param[in] port_id port id
- * @param[out] enable A_TRUE or A_FALSE
- * @return SW_OK or error code
- */
-HSL_LOCAL sw_error_t
-isisc_port_unk_mc_filter_get(a_uint32_t dev_id, fal_port_t port_id,
-                            a_bool_t * enable)
-{
-    sw_error_t rv;
-
-    HSL_API_LOCK;
-    rv = _isisc_port_unk_mc_filter_get(dev_id, port_id, enable);
     HSL_API_UNLOCK;
     return rv;
 }
@@ -1382,6 +1350,61 @@ isisc_port_bc_filter_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
     return rv;
 }
 
+/**
+ * @brief Set cpu port status on a particular device.
+ * @param[in] dev_id device id
+ * @param[in] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+isisc_cpu_port_status_set(a_uint32_t dev_id, a_bool_t enable)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _isisc_cpu_port_status_set(dev_id, enable);
+    HSL_API_UNLOCK;
+    return rv;
+}
+
+#ifndef IN_MISC_MINI
+/**
+ * @brief Get flooding status of unknown unicast packets on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+isisc_port_unk_uc_filter_get(a_uint32_t dev_id, fal_port_t port_id,
+                            a_bool_t * enable)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _isisc_port_unk_uc_filter_get(dev_id, port_id, enable);
+    HSL_API_UNLOCK;
+    return rv;
+}
+
+/** @brief Get flooding status of unknown multicast packets on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+isisc_port_unk_mc_filter_get(a_uint32_t dev_id, fal_port_t port_id,
+                            a_bool_t * enable)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _isisc_port_unk_mc_filter_get(dev_id, port_id, enable);
+    HSL_API_UNLOCK;
+    return rv;
+}
+
 /** @brief Get flooding status of broadcast packets on a particular port.
  * @param[in] dev_id device id
  * @param[in] port_id port id
@@ -1396,23 +1419,6 @@ isisc_port_bc_filter_get(a_uint32_t dev_id, fal_port_t port_id,
 
     HSL_API_LOCK;
     rv = _isisc_port_bc_filter_get(dev_id, port_id, enable);
-    HSL_API_UNLOCK;
-    return rv;
-}
-
-/**
- * @brief Set cpu port status on a particular device.
- * @param[in] dev_id device id
- * @param[in] enable A_TRUE or A_FALSE
- * @return SW_OK or error code
- */
-HSL_LOCAL sw_error_t
-isisc_cpu_port_status_set(a_uint32_t dev_id, a_bool_t enable)
-{
-    sw_error_t rv;
-
-    HSL_API_LOCK;
-    rv = _isisc_cpu_port_status_set(dev_id, enable);
     HSL_API_UNLOCK;
     return rv;
 }
@@ -1579,6 +1585,7 @@ isisc_arp_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd)
     HSL_API_UNLOCK;
     return rv;
 }
+#endif
 
 /**
  * @brief Set eapol packets forwarding command on a particular device.
@@ -1601,6 +1608,7 @@ isisc_eapol_cmd_set(a_uint32_t dev_id, fal_fwd_cmd_t cmd)
     return rv;
 }
 
+#ifndef IN_MISC_MINI
 /**
  * @brief Get eapol packets forwarding command on a particular device.
  * @param[in] dev_id device id
@@ -1712,6 +1720,7 @@ isisc_pppoe_session_id_get(a_uint32_t dev_id, a_uint32_t index,
     HSL_API_UNLOCK;
     return rv;
 }
+#endif
 
 /**
  * @brief Set eapol packets hardware acknowledgement status on a particular port.
@@ -1731,6 +1740,7 @@ isisc_eapol_status_set(a_uint32_t dev_id, a_uint32_t port_id, a_bool_t enable)
     return rv;
 }
 
+#ifndef IN_MISC_MINI
 /**
  * @brief Get eapol packets hardware acknowledgement status on a particular port.
  * @param[in] dev_id device id
@@ -2116,6 +2126,7 @@ isisc_intr_status_mac_linkchg_clear(a_uint32_t dev_id)
     FAL_API_UNLOCK;
     return rv;
 }
+#endif
 
 sw_error_t
 isisc_misc_init(a_uint32_t dev_id)
@@ -2131,12 +2142,13 @@ isisc_misc_init(a_uint32_t dev_id)
         p_api->frame_max_size_set = isisc_frame_max_size_set;
         p_api->frame_max_size_get = isisc_frame_max_size_get;
         p_api->port_unk_uc_filter_set = isisc_port_unk_uc_filter_set;
-        p_api->port_unk_uc_filter_get = isisc_port_unk_uc_filter_get;
         p_api->port_unk_mc_filter_set = isisc_port_unk_mc_filter_set;
-        p_api->port_unk_mc_filter_get = isisc_port_unk_mc_filter_get;
         p_api->port_bc_filter_set = isisc_port_bc_filter_set;
+	p_api->cpu_port_status_set = isisc_cpu_port_status_set;
+#ifndef IN_MISC_MINI
+	p_api->port_unk_uc_filter_get = isisc_port_unk_uc_filter_get;
+	p_api->port_unk_mc_filter_get = isisc_port_unk_mc_filter_get;
         p_api->port_bc_filter_get = isisc_port_bc_filter_get;
-        p_api->cpu_port_status_set = isisc_cpu_port_status_set;
         p_api->cpu_port_status_get = isisc_cpu_port_status_get;
         p_api->pppoe_cmd_set = isisc_pppoe_cmd_set;
         p_api->pppoe_cmd_get = isisc_pppoe_cmd_get;
@@ -2146,14 +2158,18 @@ isisc_misc_init(a_uint32_t dev_id)
         p_api->port_dhcp_get = isisc_port_dhcp_get;
         p_api->arp_cmd_set = isisc_arp_cmd_set;
         p_api->arp_cmd_get = isisc_arp_cmd_get;
+#endif
         p_api->eapol_cmd_set = isisc_eapol_cmd_set;
+#ifndef IN_MISC_MINI
         p_api->eapol_cmd_get = isisc_eapol_cmd_get;
         p_api->pppoe_session_table_add = isisc_pppoe_session_table_add;
         p_api->pppoe_session_table_del = isisc_pppoe_session_table_del;
         p_api->pppoe_session_table_get = isisc_pppoe_session_table_get;
         p_api->pppoe_session_id_set = isisc_pppoe_session_id_set;
         p_api->pppoe_session_id_get = isisc_pppoe_session_id_get;
+#endif
         p_api->eapol_status_set = isisc_eapol_status_set;
+#ifndef IN_MISC_MINI
         p_api->eapol_status_get = isisc_eapol_status_get;
         p_api->ripv1_status_set = isisc_ripv1_status_set;
         p_api->ripv1_status_get = isisc_ripv1_status_get;
@@ -2176,6 +2192,7 @@ isisc_misc_init(a_uint32_t dev_id)
         p_api->rtd_pppoe_en_set = isisc_rtd_pppoe_en_set;
         p_api->rtd_pppoe_en_get = isisc_rtd_pppoe_en_get;
         p_api->intr_status_mac_linkchg_clear = isisc_intr_status_mac_linkchg_clear;
+#endif
 
     }
 #endif

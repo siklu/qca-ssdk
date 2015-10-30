@@ -30,7 +30,7 @@ extern "C" {
 #define IOCTL_BUF_SIZE 2048
 #define CMDSTR_BUF_SIZE 1024
 #define CMDSTR_ARGS_MAX 128
-#define dprintf cmd_print
+#define dprintf 
 
 int cmd_run_one(char *cmd_str);
 extern void cmd_print(char *fmt, ...);

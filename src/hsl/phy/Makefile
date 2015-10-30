@@ -27,9 +27,15 @@ ifeq (ISISC, $(CHIP_TYPE))
   SRC_LIST = f1_phy.c
 endif
 
-ifeq (ALL_CHIP, $(CHIP_TYPE))
-     SRC_LIST = f1_phy.c f2_phy.c hsl_phy.c malibu_phy.c
+ifeq (TRUE, $(IN_MALIBU_PHY))
+  SRC_LIST = malibu_phy.c
 endif
+
+ifeq (ALL_CHIP, $(CHIP_TYPE))
+     SRC_LIST = f1_phy.c f2_phy.c malibu_phy.c
+endif
+
+SRC_LIST += hsl_phy.c
 
 ifeq (linux, $(OS))
 	ifeq (KSLIB, $(MODULE_TYPE))

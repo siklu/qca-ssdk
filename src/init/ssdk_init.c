@@ -16,15 +16,33 @@
 #include "sw.h"
 #include "ssdk_init.h"
 #include "fal_init.h"
+#ifdef IN_MISC
 #include "fal_misc.h"
+#endif
+#ifdef IN_MIB
 #include "fal_mib.h"
+#endif
+#ifdef IN_PORTCONTROL
 #include "fal_port_ctrl.h"
+#endif
+#ifdef IN_PORTVLAN
 #include "fal_portvlan.h"
+#endif
+#ifdef IN_FDB
 #include "fal_fdb.h"
+#endif
+#ifdef IN_STP
 #include "fal_stp.h"
+#endif
+#ifdef IN_IGMP
 #include "fal_igmp.h"
+#endif
+#ifdef IN_QOS
 #include "fal_qos.h"
+#endif
+#ifdef IN_LED
 #include "fal_led.h"
+#endif
 #include "hsl.h"
 #include "hsl_dev.h"
 #include "ssdk_init.h"
@@ -43,9 +61,15 @@
 #include <linux/clk.h>
 #include <linux/delay.h>
 #include <linux/string.h>
+#if defined(ISIS) ||defined(ISISC) ||defined(GARUDA)
 #include <f1_phy.h>
+#endif
+#if defined(ATHENA) ||defined(SHIVA) ||defined(HORUS)
 #include <f2_phy.h>
+#endif
+#ifdef IN_MALIBU_PHY
 #include <malibu_phy.h>
+#endif
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 #include <linux/switch.h>
 #include <linux/of.h>
@@ -66,9 +90,11 @@
 #include "ssdk_uci.h"
 #endif
 
+#ifdef IN_IP
 #if defined (CONFIG_NF_FLOW_COOKIE)
 #include "fal_flowcookie.h"
 #include <shortcut-fe/sfe.h>
+#endif
 #endif
 
 #ifdef IN_RFS
@@ -76,7 +102,9 @@
 #include <linux/if_vlan.h>
 #endif
 #include <qca-rfs/rfs_dev.h>
+#ifdef IN_IP
 #include "fal_rfs.h"
+#endif
 #endif
 
 #define ISIS_CHIP_ID 0x18
@@ -119,11 +147,17 @@ a_uint32_t ssdk_dt_global_get_mac_mode(void)
 static struct mutex switch_mdio_lock;
 phy_identification_t phy_array[] =
 {
+	#ifdef IN_MALIBU_PHY
 	{0x0, 0x004DD0B1, malibu_phy_init},
 	{0x0, 0x004DD0B2, malibu_phy_init},
+	#endif
+	#if defined(ISIS) ||defined(ISISC) ||defined(GARUDA)
 	{0x0, 0x004DD036, f1_phy_init},
 	{0x0, 0x004DD033, f1_phy_init},
+	#endif
+	#if defined(ATHENA) ||defined(SHIVA) ||defined(HORUS)
 	{0x0, 0x004DD042, f2_phy_init}
+	#endif
 };
 
 static void
@@ -275,41 +309,65 @@ qca_switch_init(a_uint32_t dev_id)
 
 	/*fal_reset(dev_id);*/
 	/*enable cpu and disable mirror*/
+	#ifdef IN_MISC
 	fal_cpu_port_status_set(dev_id, A_TRUE);
 	/* setup MTU */
 	fal_frame_max_size_set(dev_id, 1518);
+	#endif
+	#ifdef IN_MIB
 	/* Enable MIB counters */
 	fal_mib_status_set(dev_id, A_TRUE);
+	#endif
+	#ifdef IN_IGMP
 	fal_igmp_mld_rp_set(dev_id, 0);
+	#endif
 
 	/*enable pppoe for dakota to support RSS*/
 	if (SSDK_CURRENT_CHIP_TYPE == CHIP_DESS)
+		#ifdef DESS
+		#ifdef IN_MISC
 		fal_pppoe_status_set(dev_id, A_TRUE);
+		#endif
+		#endif
 
 	for (i = 0; i < AR8327_NUM_PORTS; i++) {
 		/* forward multicast and broadcast frames to CPU */
+		#ifdef IN_MISC
 		fal_port_unk_uc_filter_set(dev_id, i, A_FALSE);
 		fal_port_unk_mc_filter_set(dev_id, i, A_FALSE);
 		fal_port_bc_filter_set(dev_id, i, A_FALSE);
+		#endif
+		#ifdef IN_PORTVLAN
 		fal_port_default_svid_set(dev_id, i, 0);
 		fal_port_default_cvid_set(dev_id, i, 0);
 		fal_port_1qmode_set(dev_id, i, FAL_1Q_DISABLE);
 		fal_port_egvlanmode_set(dev_id, i, FAL_EG_UNMODIFIED);
+		#endif
 
+		#ifdef IN_FDB
 		fal_fdb_port_learn_set(dev_id, i, A_TRUE);
+		#endif
+		#ifdef IN_STP
 		fal_stp_port_state_set(dev_id, 0, i, FAL_STP_FARWARDING);
+		#endif
+		#ifdef IN_PORTVLAN
 		fal_port_vlan_propagation_set(dev_id, i, FAL_VLAN_PROPAGATION_REPLACE);
-
+		#endif
+		#ifdef IN_IGMP
 		fal_port_igmps_status_set(dev_id, i, A_FALSE);
 		fal_port_igmp_mld_join_set(dev_id, i, A_FALSE);
 		fal_port_igmp_mld_leave_set(dev_id, i, A_FALSE);
 		fal_igmp_mld_entry_creat_set(dev_id, A_FALSE);
 		fal_igmp_mld_entry_v3_set(dev_id, A_FALSE);
+		#endif
 		if (SSDK_CURRENT_CHIP_TYPE == CHIP_SHIVA) {
 			return SW_OK;
 		} else if (SSDK_CURRENT_CHIP_TYPE == CHIP_DESS) {
+			#ifdef DESS
+			#ifdef IN_PORTCONTROL
 			fal_port_flowctrl_forcemode_set(dev_id, i, A_FALSE);
-
+			#endif
+			#ifdef IN_QOS
 			nr = 240; /*30*8*/
 			fal_qos_port_tx_buf_nr_set(dev_id, i, &nr);
 			nr = 48; /*6*8*/
@@ -322,9 +380,15 @@ qca_switch_init(a_uint32_t dev_id)
 			fal_qos_queue_tx_buf_nr_set(dev_id, i, 2, &nr);
 			fal_qos_queue_tx_buf_nr_set(dev_id, i, 1, &nr);
 			fal_qos_queue_tx_buf_nr_set(dev_id, i, 0, &nr);
+			#endif
+			#endif
 		} else if (SSDK_CURRENT_CHIP_TYPE == CHIP_ISISC ||
 			SSDK_CURRENT_CHIP_TYPE == CHIP_ISIS) {
+			#if defined(ISISC) || defined(ISIS)
+			#ifdef IN_INTERFACECONTROL
 			fal_port_3az_status_set(dev_id, i, A_FALSE);
+			#endif
+			#ifdef IN_PORTCONTROL
 			fal_port_flowctrl_forcemode_set(dev_id, i, A_TRUE);
 			fal_port_flowctrl_set(dev_id, i, A_FALSE);
 
@@ -332,7 +396,9 @@ qca_switch_init(a_uint32_t dev_id)
 				fal_port_flowctrl_set(dev_id, i, A_TRUE);
 				fal_port_flowctrl_forcemode_set(dev_id, i, A_FALSE);
 			}
+			#endif
 			if (i == 0 || i == 5 || i == 6) {
+				#ifdef IN_QOS
 				nr = 240; /*30*8*/
 				fal_qos_port_tx_buf_nr_set(dev_id, i, &nr);
 				nr = 48; /*6*8*/
@@ -354,7 +420,9 @@ qca_switch_init(a_uint32_t dev_id)
 				fal_qos_queue_tx_buf_nr_set(dev_id, i, 1, &nr);
 				nr = 24; /*3*8*/
 				fal_qos_queue_tx_buf_nr_set(dev_id, i, 0, &nr);
+				#endif
 			} else {
+				#ifdef IN_QOS
 				nr = 200; /*25*8*/
 				fal_qos_port_tx_buf_nr_set(dev_id, i, &nr);
 				nr = 48; /*6*8*/
@@ -372,7 +440,9 @@ qca_switch_init(a_uint32_t dev_id)
 				fal_qos_queue_tx_buf_nr_set(dev_id, i, 1, &nr);
 				nr = 24; /*3*8*/
 				fal_qos_queue_tx_buf_nr_set(dev_id, i, 0, &nr);
+				#endif
 			}
+			#endif
 		}
 	}
 
@@ -1143,7 +1213,7 @@ qm_err_check_work_stop(struct qca_phy_priv *priv)
 
 	cancel_delayed_work_sync(&priv->qm_dwork);
 }
-
+#ifdef DESS
 static void
 dess_rgmii_mac_work_task(struct work_struct *work)
 {
@@ -1176,7 +1246,7 @@ dess_rgmii_mac_work_stop(struct qca_phy_priv *priv)
 {
 	cancel_delayed_work_sync(&priv->rgmii_dwork);
 }
-
+#endif
 int
 qca_phy_id_chip(struct qca_phy_priv *priv)
 {
@@ -1310,6 +1380,7 @@ static int ssdk_switch_register(void)
 			printk("qca_phy_mib_work_start failed for %s\n", sw_dev->name);
 			return ret;
 	}
+	#ifdef DESS
 	if ((ssdk_dt_global.mac_mode == PORT_WRAPPER_SGMII0_RGMII5)
 		||(ssdk_dt_global.mac_mode == PORT_WRAPPER_SGMII1_RGMII5)
 		||(ssdk_dt_global.mac_mode == PORT_WRAPPER_SGMII0_RGMII4)
@@ -1321,6 +1392,7 @@ static int ssdk_switch_register(void)
 			return ret;
 		}
 	}
+	#endif
 
 	return 0;
 
@@ -1840,7 +1912,7 @@ static struct platform_driver ssdk_driver = {
         .probe    = ssdk_probe,
 };
 #endif
-
+#ifdef DESS
 static u32 phy_t_status = 0;
 void ssdk_malibu_psgmii_and_dakota_dess_reset()
 {
@@ -2090,7 +2162,7 @@ void clear_self_test_config()
 	/* clear fdb entry */
 	fal_fdb_del_all(0,1);
 }
-
+#endif
 
 int
 ssdk_plat_init(ssdk_init_cfg *cfg)
@@ -2104,6 +2176,7 @@ ssdk_plat_init(ssdk_init_cfg *cfg)
 	if(miibus_get())
 		return -ENODEV;
 
+	#ifdef DESS
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
 		/* Enable ess clock here */
 		if(!IS_ERR(ssdk_dt_global.ess_clk))
@@ -2149,6 +2222,7 @@ ssdk_plat_init(ssdk_init_cfg *cfg)
 		cfg->reg_func.psgmii_reg_set = qca_psgmii_reg_write;
 		cfg->reg_func.psgmii_reg_get = qca_psgmii_reg_read;
 	}
+	#endif
 
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_MDIO) {
 		if(driver_find(qca_phy_driver.name, &mdio_bus_type)){
@@ -2236,6 +2310,7 @@ ssdk_hsl_access_mode_set(a_uint32_t dev_id, hsl_access_mode reg_mode)
 
 void switch_cpuport_setup(void)
 {
+	#ifdef IN_PORTCONTROL
 	//According to HW suggestion, enable CPU port flow control for Dakota
 	fal_port_flowctrl_forcemode_set(0, 0, A_TRUE);
 	fal_port_flowctrl_set(0, 0, A_TRUE);
@@ -2244,6 +2319,7 @@ void switch_cpuport_setup(void)
 	fal_port_speed_set(0, 0, FAL_SPEED_1000);
 	fal_port_txmac_status_set(0, 0, A_TRUE);
 	fal_port_rxmac_status_set(0, 0, A_TRUE);
+	#endif
 }
 
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
@@ -2409,7 +2485,9 @@ static int ssdk_flow_default_act_init()
 	{
 		for(type = FAL_FLOW_LAN_TO_LAN; type <= FAL_FLOW_WAN_TO_WAN; type++)
 		{
+			#ifdef IN_IP
 			fal_default_flow_cmd_set(0, vrf_id, type, FAL_DEFAULT_FLOW_ADMIT_ALL);
+			#endif
 		}
 	}
 
@@ -2422,19 +2500,26 @@ static ssdk_portvlan_init(a_uint32_t cpu_bmp, a_uint32_t lan_bmp, a_uint32_t wan
 	{
 		if(cpu_bmp & (1 << port))
 		{
+			#ifdef IN_PORTVLAN
 			fal_portvlan_member_update(0, 0, lan_bmp|wan_bmp);
+			#endif
 		}
 		if(lan_bmp & (1 << port))
 		{
+			#ifdef IN_PORTVLAN
 			fal_portvlan_member_update(0, port, (lan_bmp|cpu_bmp)&(~(1<<port)));
+			#endif
 		}
 		if(wan_bmp & (1 << port))
 		{
+			#ifdef IN_PORTVLAN
 			fal_portvlan_member_update(0, port, (wan_bmp|cpu_bmp)&(~(1<<port)));
+			#endif
 		}
 	}
 	return 0;
 }
+#ifdef DESS
 static int ssdk_dess_led_init(ssdk_init_cfg *cfg)
 {
 	a_uint32_t i,led_num, led_source_id,source_id;
@@ -2448,7 +2533,9 @@ static int ssdk_dess_led_init(ssdk_init_cfg *cfg)
 			pattern.mode = cfg->led_source_cfg[i].led_pattern.mode;
 			pattern.map = cfg->led_source_cfg[i].led_pattern.map;
 			pattern.freq = cfg->led_source_cfg[i].led_pattern.freq;
+			#ifdef IN_LED
 			fal_led_source_pattern_set(0, led_source_id,&pattern);
+			#endif
 			led_num = ((led_source_id-1)/3) + 3;
 			source_id = led_source_id%3;
 		#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
@@ -2681,8 +2768,12 @@ qca_dess_hw_init(ssdk_init_cfg *cfg)
 	qca_switch_init(0);
 	ssdk_portvlan_init(cfg->port_cfg.cpu_bmp, cfg->port_cfg.lan_bmp, cfg->port_cfg.wan_bmp);
 
+	#ifdef IN_PORTVLAN
 	fal_port_rxhdr_mode_set(0, 0, FAL_ALL_TYPE_FRAME_EN);
+	#endif
+	#ifdef IN_IP
 	fal_ip_route_status_set(0, A_TRUE);
+	#endif
 
 	ssdk_flow_default_act_init();
 
@@ -2691,7 +2782,9 @@ qca_dess_hw_init(ssdk_init_cfg *cfg)
 	reg_value = (reg_value|0x1000000|0x8);
 	reg_value &= ~2;
 	qca_switch_reg_write(0, 0x0e38, (a_uint8_t *)&reg_value, 4);
+	#ifdef IN_IP
 	fal_ip_vrf_base_addr_set(0, 0, 0);
+	#endif
 
 	p_api = hsl_api_ptr_get (0);
 	if (p_api && p_api->port_flowctrl_thresh_set)
@@ -2710,6 +2803,7 @@ qca_dess_hw_init(ssdk_init_cfg *cfg)
 
 	return 0;
 }
+#endif
 
 static void ssdk_cfg_default_init(ssdk_init_cfg *cfg)
 {
@@ -2801,7 +2895,9 @@ void ssdk_intf_set(struct net_device *dev, char op)
 		if (op) {
 			if (!ssdk_intf_search(if_mac_entry, 8, &intf_entry, &index)) {
 				if (index != 0xffffffff) {
+					#ifdef IN_IP
 					rv = fal_ip_intf_entry_add(0, &intf_entry);
+					#endif
 					if (SW_OK == rv) {
 						if_mac_entry[index] = intf_entry;
 					}
@@ -2811,7 +2907,9 @@ void ssdk_intf_set(struct net_device *dev, char op)
 		else {
 			if (ssdk_intf_search(if_mac_entry, 8, &intf_entry, &index)) {
 				intf_entry.entry_id = if_mac_entry[index].entry_id;
+				#ifdef IN_IP
 				fal_ip_intf_entry_del(0, 1, &intf_entry);
+				#endif
 				memset(&if_mac_entry[index], 0, sizeof(fal_intf_mac_entry_t));
 			}
 		}
@@ -2821,7 +2919,9 @@ void ssdk_intf_set(struct net_device *dev, char op)
 	}
 	#endif
 	while(1) {
+		#ifdef IN_VLAN
 		if (SW_OK != fal_vlan_next(0, tmp_vid, &entry))
+		#endif
 			break;
 		tmp_vid = entry.vid;
 		if (tmp_vid != 0) {
@@ -2832,7 +2932,9 @@ void ssdk_intf_set(struct net_device *dev, char op)
 					if (op) {
 						if (!ssdk_intf_search(if_mac_entry, 8, &intf_entry, &index)) {
 							if (index != 0xffffffff) {
+								#ifdef IN_IP
 								rv = fal_ip_intf_entry_add(0, &intf_entry);
+								#endif
 								if (SW_OK == rv) {
 									if_mac_entry[index] = intf_entry;
 								}
@@ -2842,7 +2944,9 @@ void ssdk_intf_set(struct net_device *dev, char op)
 					else {
 						if (ssdk_intf_search(if_mac_entry, 8, &intf_entry, &index)) {
 							intf_entry.entry_id = if_mac_entry[index].entry_id;
+							#ifdef IN_IP
 							fal_ip_intf_entry_del(0, 1, &intf_entry);
+							#endif
 							memset(&if_mac_entry[index], 0, sizeof(fal_intf_mac_entry_t));
 						}
 					}
@@ -2854,7 +2958,9 @@ void ssdk_intf_set(struct net_device *dev, char op)
 					if (op) {
 						if (!ssdk_intf_search(if_mac_entry, 8, &intf_entry, &index)) {
 							if (index != 0xffffffff) {
+								#ifdef IN_IP
 								rv = fal_ip_intf_entry_add(0, &intf_entry);
+								#endif
 								if (SW_OK == rv) {
 									if_mac_entry[index] = intf_entry;
 								}
@@ -2864,7 +2970,9 @@ void ssdk_intf_set(struct net_device *dev, char op)
 					else {
 						if (ssdk_intf_search(if_mac_entry, 8, &intf_entry, &index)) {
 							intf_entry.entry_id = if_mac_entry[index].entry_id;
+							#ifdef IN_IP
 							fal_ip_intf_entry_del(0, 1, &intf_entry);
+							#endif
 							memset(&if_mac_entry[index], 0, sizeof(fal_intf_mac_entry_t));
 						}
 					}
@@ -2926,6 +3034,7 @@ static int __init regi_init(void)
 	if(rv)
 		goto out;
 
+	#ifdef DESS
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
 		/*Do Malibu self test to fix packet drop issue firstly*/
 		if ((cfg.chip_type == CHIP_DESS) && (ssdk_dt_global.mac_mode == PORT_WRAPPER_PSGMII)) {
@@ -2937,15 +3046,21 @@ static int __init regi_init(void)
 		qca_dess_hw_init(&cfg);
 
 		#if defined (CONFIG_NF_FLOW_COOKIE)
+		#ifdef IN_NAT
 		sfe_register_flow_cookie_cb(ssdk_flow_cookie_set);
+		#endif
 		#endif
 
 		#ifdef IN_RFS
 		memset(&rfs_dev, 0, sizeof(rfs_dev));
 		rfs_dev.name = NULL;
+		#ifdef IN_FDB
 		rfs_dev.mac_rule_cb = ssdk_rfs_mac_rule_set;
+		#endif
+		#ifdef IN_IP
 		rfs_dev.ip4_rule_cb = ssdk_rfs_ip4_rule_set;
 		rfs_dev.ip6_rule_cb = ssdk_rfs_ip6_rule_set;
+		#endif
 		rfs_ess_device_register(&rfs_dev);
 		#if defined(CONFIG_RFS_ACCEL)
 		ssdk_dev_notifier.notifier_call = ssdk_dev_event;
@@ -2960,6 +3075,7 @@ static int __init regi_init(void)
 		/* Setup Cpu port for Dakota platform. */
 		switch_cpuport_setup();
 	}
+	#endif
 
 out:
 	if (rv == 0)
@@ -2984,15 +3100,19 @@ regi_exit(void)
 		printk("qca-ssdk module exit failed! (code: %d)\n", rv);
 
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS){
+		#ifdef DESS
 		ssdk_switch_unregister();
 		#if defined (CONFIG_NF_FLOW_COOKIE)
+		#ifdef IN_NAT
 		sfe_unregister_flow_cookie_cb(ssdk_flow_cookie_set);
+		#endif
 		#endif
 		#ifdef IN_RFS
 		rfs_ess_device_unregister(&rfs_dev);
 		unregister_inetaddr_notifier(&ssdk_inet_notifier);
 		#if defined(CONFIG_RFS_ACCEL)
 		unregister_netdevice_notifier(&ssdk_dev_notifier);
+		#endif
 		#endif
 		#endif
 

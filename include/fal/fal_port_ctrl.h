@@ -244,7 +244,7 @@ typedef struct {
 	 sw_error_t
 	    fal_port_speed_get(a_uint32_t dev_id, fal_port_t port_id,
 			       fal_port_speed_t * pspeed);
-
+#ifndef IN_PORTCONTROL_MINI
 	 sw_error_t
 	    fal_port_autoneg_status_get(a_uint32_t dev_id, fal_port_t port_id,
 					a_bool_t * status);
@@ -272,17 +272,8 @@ typedef struct {
 				    a_bool_t * enable);
 
 	 sw_error_t
-	    fal_port_flowctrl_set(a_uint32_t dev_id, fal_port_t port_id,
-				  a_bool_t enable);
-
-	 sw_error_t
 	    fal_port_flowctrl_get(a_uint32_t dev_id, fal_port_t port_id,
 				  a_bool_t * enable);
-
-	 sw_error_t
-	    fal_port_flowctrl_forcemode_set(a_uint32_t dev_id,
-					    fal_port_t port_id,
-					    a_bool_t enable);
 
 	 sw_error_t
 	    fal_port_flowctrl_forcemode_get(a_uint32_t dev_id,
@@ -309,7 +300,16 @@ typedef struct {
 	    fal_port_cdt(a_uint32_t dev_id, fal_port_t port_id,
 			 a_uint32_t mdi_pair, fal_cable_status_t * cable_status,
 			 a_uint32_t * cable_len);
+#endif
 
+	sw_error_t
+	fal_port_flowctrl_set(a_uint32_t dev_id, fal_port_t port_id,
+				  a_bool_t enable);
+
+	sw_error_t
+	fal_port_flowctrl_forcemode_set(a_uint32_t dev_id,
+					    fal_port_t port_id,
+					    a_bool_t enable);
 	 sw_error_t
 	    fal_port_rxhdr_mode_set(a_uint32_t dev_id, fal_port_t port_id,
 				    fal_port_header_mode_t mode);
@@ -366,6 +366,10 @@ typedef struct {
 	    fal_port_rxfc_status_get(a_uint32_t dev_id, fal_port_t port_id,
 				     a_bool_t * enable);
 
+	sw_error_t
+	fal_port_link_status_get(a_uint32_t dev_id, fal_port_t port_id,
+				     a_bool_t * status);
+#ifndef IN_PORTCONTROL_MINI
 	 sw_error_t
 	    fal_port_bp_status_set(a_uint32_t dev_id, fal_port_t port_id,
 				   a_bool_t enable);
@@ -381,10 +385,6 @@ typedef struct {
 	 sw_error_t
 	    fal_port_link_forcemode_get(a_uint32_t dev_id, fal_port_t port_id,
 					a_bool_t * enable);
-
-	 sw_error_t
-	    fal_port_link_status_get(a_uint32_t dev_id, fal_port_t port_id,
-				     a_bool_t * status);
 
 	 sw_error_t
 	    fal_ports_link_status_get(a_uint32_t dev_id, a_uint32_t * status);
@@ -519,6 +519,7 @@ sw_error_t
 sw_error_t
    fal_port_counter_show (a_uint32_t dev_id, fal_port_t port_id,
 				 fal_port_counter_info_t * counter_info);
+#endif
 
 #ifdef __cplusplus
 }

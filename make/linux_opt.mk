@@ -9,6 +9,10 @@ ifeq (TRUE, $(IN_FDB))
   MODULE_CFLAG += -DIN_FDB
 endif
 
+ifeq (TRUE, $(IN_FDB_MINI))
+  MODULE_CFLAG += -DIN_FDB_MINI
+endif
+
 ifeq (TRUE, $(IN_IGMP))
   MODULE_CFLAG += -DIN_IGMP
 endif
@@ -33,16 +37,32 @@ ifeq (TRUE, $(IN_MISC))
   MODULE_CFLAG += -DIN_MISC
 endif
 
+ifeq (TRUE, $(IN_MISC_MINI))
+  MODULE_CFLAG += -DIN_MISC_MINI
+endif
+
 ifeq (TRUE, $(IN_PORTCONTROL))
   MODULE_CFLAG += -DIN_PORTCONTROL
+endif
+
+ifeq (TRUE, $(IN_PORTCONTROL_MINI))
+  MODULE_CFLAG += -DIN_PORTCONTROL_MINI
 endif
 
 ifeq (TRUE, $(IN_PORTVLAN))
   MODULE_CFLAG += -DIN_PORTVLAN
 endif
 
+ifeq (TRUE, $(IN_PORTVLAN_MINI))
+  MODULE_CFLAG += -DIN_PORTVLAN_MINI
+endif
+
 ifeq (TRUE, $(IN_QOS))
   MODULE_CFLAG += -DIN_QOS
+endif
+
+ifeq (TRUE, $(IN_QOS_MINI))
+  MODULE_CFLAG += -DIN_QOS_MINI
 endif
 
 ifeq (TRUE, $(IN_RATE))
@@ -57,12 +77,20 @@ ifeq (TRUE, $(IN_VLAN))
   MODULE_CFLAG += -DIN_VLAN
 endif
 
+ifeq (TRUE, $(IN_VLAN_MINI))
+  MODULE_CFLAG += -DIN_VLAN_MINI
+endif
+
 ifeq (TRUE, $(IN_REDUCED_ACL))
   MODULE_CFLAG += -DIN_REDUCED_ACL
 endif
 
 ifeq (TRUE, $(IN_COSMAP))
   MODULE_CFLAG += -DIN_COSMAP
+endif
+
+ifeq (TRUE, $(IN_COSMAP_MINI))
+  MODULE_CFLAG += -DIN_COSMAP_MINI
 endif
 
 ifeq (TRUE, $(IN_IP))
@@ -95,6 +123,10 @@ endif
 
 ifeq (TRUE, $(IN_RFS))
   MODULE_CFLAG += -DIN_RFS
+endif
+
+ifeq (TRUE, $(IN_MALIBU_PHY))
+  MODULE_CFLAG += -DIN_MALIBU_PHY
 endif
 
 ifneq (TRUE, $(FAL))

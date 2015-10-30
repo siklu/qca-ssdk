@@ -120,7 +120,7 @@ cmd_api_func(sw_api_func_t *fp, a_uint32_t nr_param, a_uint32_t * args)
 
     return rv;
 }
-
+#if 0
 static sw_error_t
 cmd_api_output(sw_api_param_t *pp, a_uint32_t nr_param, a_uint32_t * args)
 {
@@ -170,7 +170,7 @@ cmd_api_output(sw_api_param_t *pp, a_uint32_t nr_param, a_uint32_t * args)
     }
     return SW_OK;
 }
-
+#endif
 void
 cmd_strtol(char *str, a_uint32_t * arg_val)
 {
@@ -274,8 +274,10 @@ cmd_exec_api(a_uint32_t *arg_val)
     rv = cmd_api_func(sw_api.api_fp, sw_api.api_nr, arg_val);
     SW_RTN_ON_ERROR(rv);
 
+	#if 0
     rv = cmd_api_output(sw_api.api_pp, sw_api.api_nr, arg_val);
     SW_RTN_ON_ERROR(rv);
+	#endif
 
     return rv;
 }
@@ -284,6 +286,7 @@ cmd_exec_api(a_uint32_t *arg_val)
 void
 cmd_print_usage (int cmd_index, int cmd_index_sub)
 {
+	#if 0
     if(GCMD_NAME(cmd_index))
         dprintf("usage: %s", GCMD_NAME(cmd_index));
 
@@ -293,6 +296,7 @@ cmd_print_usage (int cmd_index, int cmd_index_sub)
     if(GCMD_SUB_ACT(cmd_index, cmd_index_sub) && GCMD_SUB_USAGE(cmd_index, cmd_index_sub))
         dprintf(" %s %s\n\n", GCMD_SUB_ACT(cmd_index, cmd_index_sub),
                 GCMD_SUB_USAGE(cmd_index, cmd_index_sub));
+	#endif
 }
 /*
     main function

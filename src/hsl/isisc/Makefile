@@ -6,7 +6,7 @@ include $(PRJ_PATH)/make/config.mk
 SRC_LIST=isisc_reg_access.c isisc_init.c
 
 ifeq (TRUE, $(IN_ACL))
-  SRC_LIST += isisc_acl.c isisc_acl_parse.c isisc_multicast_acl.c
+  SRC_LIST += isisc_acl.c isisc_acl_parse.c
 endif
 
 ifeq (TRUE, $(IN_FDB))
@@ -15,6 +15,9 @@ endif
 
 ifeq (TRUE, $(IN_IGMP))
   SRC_LIST += isisc_igmp.c
+	ifeq (TRUE, $(IN_ACL))
+		SRC_LIST += isisc_multicast_acl.c
+	endif
 endif
 
 ifeq (TRUE, $(IN_LEAKY))

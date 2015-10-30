@@ -38,6 +38,68 @@ _fal_port_duplex_set (a_uint32_t dev_id, fal_port_t port_id,
   return rv;
 }
 
+static sw_error_t
+_fal_port_speed_set (a_uint32_t dev_id, fal_port_t port_id,
+		     fal_port_speed_t speed)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_speed_set)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_speed_set (dev_id, port_id, speed);
+  return rv;
+}
+
+static sw_error_t
+_fal_port_flowctrl_set (a_uint32_t dev_id, fal_port_t port_id,
+			a_bool_t enable)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_flowctrl_set)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_flowctrl_set (dev_id, port_id, enable);
+  return rv;
+}
+
+static sw_error_t
+_fal_port_flowctrl_forcemode_set (a_uint32_t dev_id, fal_port_t port_id,
+				  a_bool_t enable)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_flowctrl_forcemode_set)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_flowctrl_forcemode_set (dev_id, port_id, enable);
+  return rv;
+}
+static sw_error_t
+_fal_port_speed_get (a_uint32_t dev_id, fal_port_t port_id,
+		     fal_port_speed_t * pspeed)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_speed_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_speed_get (dev_id, port_id, pspeed);
+  return rv;
+}
 
 static sw_error_t
 _fal_port_duplex_get (a_uint32_t dev_id, fal_port_t port_id,
@@ -56,38 +118,9 @@ _fal_port_duplex_get (a_uint32_t dev_id, fal_port_t port_id,
 }
 
 
-static sw_error_t
-_fal_port_speed_set (a_uint32_t dev_id, fal_port_t port_id,
-		     fal_port_speed_t speed)
-{
-  sw_error_t rv;
-  hsl_api_t *p_api;
-
-  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
-
-  if (NULL == p_api->port_speed_set)
-    return SW_NOT_SUPPORTED;
-
-  rv = p_api->port_speed_set (dev_id, port_id, speed);
-  return rv;
-}
+#ifndef IN_PORTCONTROL_MINI
 
 
-static sw_error_t
-_fal_port_speed_get (a_uint32_t dev_id, fal_port_t port_id,
-		     fal_port_speed_t * pspeed)
-{
-  sw_error_t rv;
-  hsl_api_t *p_api;
-
-  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
-
-  if (NULL == p_api->port_speed_get)
-    return SW_NOT_SUPPORTED;
-
-  rv = p_api->port_speed_get (dev_id, port_id, pspeed);
-  return rv;
-}
 
 
 static sw_error_t
@@ -205,24 +238,6 @@ _fal_port_hdr_status_get (a_uint32_t dev_id, fal_port_t port_id,
   return rv;
 }
 
-
-static sw_error_t
-_fal_port_flowctrl_set (a_uint32_t dev_id, fal_port_t port_id,
-			a_bool_t enable)
-{
-  sw_error_t rv;
-  hsl_api_t *p_api;
-
-  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
-
-  if (NULL == p_api->port_flowctrl_set)
-    return SW_NOT_SUPPORTED;
-
-  rv = p_api->port_flowctrl_set (dev_id, port_id, enable);
-  return rv;
-}
-
-
 static sw_error_t
 _fal_port_flowctrl_get (a_uint32_t dev_id, fal_port_t port_id,
 			a_bool_t * enable)
@@ -239,22 +254,6 @@ _fal_port_flowctrl_get (a_uint32_t dev_id, fal_port_t port_id,
   return rv;
 }
 
-
-static sw_error_t
-_fal_port_flowctrl_forcemode_set (a_uint32_t dev_id, fal_port_t port_id,
-				  a_bool_t enable)
-{
-  sw_error_t rv;
-  hsl_api_t *p_api;
-
-  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
-
-  if (NULL == p_api->port_flowctrl_forcemode_set)
-    return SW_NOT_SUPPORTED;
-
-  rv = p_api->port_flowctrl_forcemode_set (dev_id, port_id, enable);
-  return rv;
-}
 
 
 static sw_error_t
@@ -354,7 +353,51 @@ _fal_port_cdt (a_uint32_t dev_id, fal_port_t port_id, a_uint32_t mdi_pair,
   rv = p_api->port_cdt (dev_id, port_id, mdi_pair, cable_status, cable_len);
   return rv;
 }
+static sw_error_t
+_fal_port_rxhdr_mode_get (a_uint32_t dev_id, fal_port_t port_id,
+			  fal_port_header_mode_t * mode)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_rxhdr_mode_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_rxhdr_mode_get (dev_id, port_id, mode);
+  return rv;
+}
+static sw_error_t
+_fal_port_txhdr_mode_get (a_uint32_t dev_id, fal_port_t port_id,
+			  fal_port_header_mode_t * mode)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_txhdr_mode_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_txhdr_mode_get (dev_id, port_id, mode);
+  return rv;
+}
+static sw_error_t
+_fal_header_type_get (a_uint32_t dev_id, a_bool_t * enable, a_uint32_t * type)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->header_type_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->header_type_get (dev_id, enable, type);
+  return rv;
+}
+#endif
 static sw_error_t
 _fal_port_rxhdr_mode_set (a_uint32_t dev_id, fal_port_t port_id,
 			  fal_port_header_mode_t mode)
@@ -371,21 +414,7 @@ _fal_port_rxhdr_mode_set (a_uint32_t dev_id, fal_port_t port_id,
   return rv;
 }
 
-static sw_error_t
-_fal_port_rxhdr_mode_get (a_uint32_t dev_id, fal_port_t port_id,
-			  fal_port_header_mode_t * mode)
-{
-  sw_error_t rv;
-  hsl_api_t *p_api;
 
-  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
-
-  if (NULL == p_api->port_rxhdr_mode_get)
-    return SW_NOT_SUPPORTED;
-
-  rv = p_api->port_rxhdr_mode_get (dev_id, port_id, mode);
-  return rv;
-}
 
 static sw_error_t
 _fal_port_txhdr_mode_set (a_uint32_t dev_id, fal_port_t port_id,
@@ -403,21 +432,7 @@ _fal_port_txhdr_mode_set (a_uint32_t dev_id, fal_port_t port_id,
   return rv;
 }
 
-static sw_error_t
-_fal_port_txhdr_mode_get (a_uint32_t dev_id, fal_port_t port_id,
-			  fal_port_header_mode_t * mode)
-{
-  sw_error_t rv;
-  hsl_api_t *p_api;
 
-  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
-
-  if (NULL == p_api->port_txhdr_mode_get)
-    return SW_NOT_SUPPORTED;
-
-  rv = p_api->port_txhdr_mode_get (dev_id, port_id, mode);
-  return rv;
-}
 
 static sw_error_t
 _fal_header_type_set (a_uint32_t dev_id, a_bool_t enable, a_uint32_t type)
@@ -434,20 +449,7 @@ _fal_header_type_set (a_uint32_t dev_id, a_bool_t enable, a_uint32_t type)
   return rv;
 }
 
-static sw_error_t
-_fal_header_type_get (a_uint32_t dev_id, a_bool_t * enable, a_uint32_t * type)
-{
-  sw_error_t rv;
-  hsl_api_t *p_api;
 
-  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
-
-  if (NULL == p_api->header_type_get)
-    return SW_NOT_SUPPORTED;
-
-  rv = p_api->header_type_get (dev_id, enable, type);
-  return rv;
-}
 
 static sw_error_t
 _fal_port_txmac_status_set (a_uint32_t dev_id, fal_port_t port_id,
@@ -465,21 +467,7 @@ _fal_port_txmac_status_set (a_uint32_t dev_id, fal_port_t port_id,
   return rv;
 }
 
-static sw_error_t
-_fal_port_txmac_status_get (a_uint32_t dev_id, fal_port_t port_id,
-			    a_bool_t * enable)
-{
-  sw_error_t rv;
-  hsl_api_t *p_api;
 
-  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
-
-  if (NULL == p_api->port_txmac_status_get)
-    return SW_NOT_SUPPORTED;
-
-  rv = p_api->port_txmac_status_get (dev_id, port_id, enable);
-  return rv;
-}
 
 static sw_error_t
 _fal_port_rxmac_status_set (a_uint32_t dev_id, fal_port_t port_id,
@@ -497,21 +485,7 @@ _fal_port_rxmac_status_set (a_uint32_t dev_id, fal_port_t port_id,
   return rv;
 }
 
-static sw_error_t
-_fal_port_rxmac_status_get (a_uint32_t dev_id, fal_port_t port_id,
-			    a_bool_t * enable)
-{
-  sw_error_t rv;
-  hsl_api_t *p_api;
 
-  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
-
-  if (NULL == p_api->port_rxmac_status_get)
-    return SW_NOT_SUPPORTED;
-
-  rv = p_api->port_rxmac_status_get (dev_id, port_id, enable);
-  return rv;
-}
 
 static sw_error_t
 _fal_port_txfc_status_set (a_uint32_t dev_id, fal_port_t port_id,
@@ -529,21 +503,7 @@ _fal_port_txfc_status_set (a_uint32_t dev_id, fal_port_t port_id,
   return rv;
 }
 
-static sw_error_t
-_fal_port_txfc_status_get (a_uint32_t dev_id, fal_port_t port_id,
-			   a_bool_t * enable)
-{
-  sw_error_t rv;
-  hsl_api_t *p_api;
 
-  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
-
-  if (NULL == p_api->port_txfc_status_get)
-    return SW_NOT_SUPPORTED;
-
-  rv = p_api->port_txfc_status_get (dev_id, port_id, enable);
-  return rv;
-}
 
 static sw_error_t
 _fal_port_rxfc_status_set (a_uint32_t dev_id, fal_port_t port_id,
@@ -560,7 +520,21 @@ _fal_port_rxfc_status_set (a_uint32_t dev_id, fal_port_t port_id,
   rv = p_api->port_rxfc_status_set (dev_id, port_id, enable);
   return rv;
 }
+static sw_error_t
+_fal_port_txfc_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			   a_bool_t * enable)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
 
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_txfc_status_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_txfc_status_get (dev_id, port_id, enable);
+  return rv;
+}
 static sw_error_t
 _fal_port_rxfc_status_get (a_uint32_t dev_id, fal_port_t port_id,
 			   a_bool_t * enable)
@@ -574,6 +548,52 @@ _fal_port_rxfc_status_get (a_uint32_t dev_id, fal_port_t port_id,
     return SW_NOT_SUPPORTED;
 
   rv = p_api->port_rxfc_status_get (dev_id, port_id, enable);
+  return rv;
+}
+static sw_error_t
+_fal_port_link_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			   a_bool_t * status)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_link_status_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_link_status_get (dev_id, port_id, status);
+  return rv;
+}
+#ifndef IN_PORTCONTROL_MINI
+static sw_error_t
+_fal_port_txmac_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			    a_bool_t * enable)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_txmac_status_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_txmac_status_get (dev_id, port_id, enable);
+  return rv;
+}
+static sw_error_t
+_fal_port_rxmac_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			    a_bool_t * enable)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_rxmac_status_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_rxmac_status_get (dev_id, port_id, enable);
   return rv;
 }
 
@@ -641,21 +661,7 @@ _fal_port_link_forcemode_get (a_uint32_t dev_id, fal_port_t port_id,
   return rv;
 }
 
-static sw_error_t
-_fal_port_link_status_get (a_uint32_t dev_id, fal_port_t port_id,
-			   a_bool_t * status)
-{
-  sw_error_t rv;
-  hsl_api_t *p_api;
 
-  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
-
-  if (NULL == p_api->port_link_status_get)
-    return SW_NOT_SUPPORTED;
-
-  rv = p_api->port_link_status_get (dev_id, port_id, status);
-  return rv;
-}
 
 static sw_error_t
 _fal_ports_link_status_get (a_uint32_t dev_id, a_uint32_t * status)
@@ -1205,7 +1211,7 @@ _fal_port_counter_show (a_uint32_t dev_id, fal_port_t port_id, fal_port_counter_
   rv = p_api->port_counter_show (dev_id, port_id, counter_info);
   return rv;
 }
-
+#endif
 /**
  * @brief Set duplex mode on a particular port.
  * @param[in] dev_id device id
@@ -1225,24 +1231,7 @@ fal_port_duplex_set (a_uint32_t dev_id, fal_port_t port_id,
   return rv;
 }
 
-/**
- * @brief Get duplex mode on a particular port.
- * @param[in] dev_id device id
- * @param[in] port_id port id
- * @param[out] duplex duplex mode
- * @return SW_OK or error code
- */
-sw_error_t
-fal_port_duplex_get (a_uint32_t dev_id, fal_port_t port_id,
-		     fal_port_duplex_t * pduplex)
-{
-  sw_error_t rv;
 
-  FAL_API_LOCK;
-  rv = _fal_port_duplex_get (dev_id, port_id, pduplex);
-  FAL_API_UNLOCK;
-  return rv;
-}
 
 /**
  * @brief Set speed on a particular port.
@@ -1259,6 +1248,24 @@ fal_port_speed_set (a_uint32_t dev_id, fal_port_t port_id,
 
   FAL_API_LOCK;
   rv = _fal_port_speed_set (dev_id, port_id, speed);
+  FAL_API_UNLOCK;
+  return rv;
+}
+/**
+ * @brief Get duplex mode on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] duplex duplex mode
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_duplex_get (a_uint32_t dev_id, fal_port_t port_id,
+		     fal_port_duplex_t * pduplex)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_duplex_get (dev_id, port_id, pduplex);
   FAL_API_UNLOCK;
   return rv;
 }
@@ -1281,6 +1288,7 @@ fal_port_speed_get (a_uint32_t dev_id, fal_port_t port_id,
   FAL_API_UNLOCK;
   return rv;
 }
+#ifndef IN_PORTCONTROL_MINI
 
 /**
  * @brief Get auto negotiation status on a particular port.
@@ -1414,23 +1422,6 @@ fal_port_hdr_status_get (a_uint32_t dev_id, fal_port_t port_id,
   return rv;
 }
 
-/**
- * @brief Set flow control status on a particular port.
- * @param[in] dev_id device id
- * @param[in] port_id port id
- * @param[in] enable A_TRUE or A_FALSE
- * @return SW_OK or error code
- */
-sw_error_t
-fal_port_flowctrl_set (a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
-{
-  sw_error_t rv;
-
-  FAL_API_LOCK;
-  rv = _fal_port_flowctrl_set (dev_id, port_id, enable);
-  FAL_API_UNLOCK;
-  return rv;
-}
 
 /**
  * @brief Get flow control status on a particular port.
@@ -1451,24 +1442,7 @@ fal_port_flowctrl_get (a_uint32_t dev_id, fal_port_t port_id,
   return rv;
 }
 
-/**
- * @brief Set flow control force mode on a particular port.
- * @param[in] dev_id device id
- * @param[in] port_id port id
- * @param[in] enable A_TRUE or A_FALSE
- * @return SW_OK or error code
- */
-sw_error_t
-fal_port_flowctrl_forcemode_set (a_uint32_t dev_id, fal_port_t port_id,
-				 a_bool_t enable)
-{
-  sw_error_t rv;
 
-  FAL_API_LOCK;
-  rv = _fal_port_flowctrl_forcemode_set (dev_id, port_id, enable);
-  FAL_API_UNLOCK;
-  return rv;
-}
 
 /**
  * @brief Get flow control force mode on a particular port.
@@ -1585,6 +1559,133 @@ fal_port_cdt (a_uint32_t dev_id, fal_port_t port_id, a_uint32_t mdi_pair,
   FAL_API_UNLOCK;
   return rv;
 }
+/**
+ * @brief Get status of Atheros header packets parsed on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_rxhdr_mode_get (a_uint32_t dev_id, fal_port_t port_id,
+			 fal_port_header_mode_t * mode)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_rxhdr_mode_get (dev_id, port_id, mode);
+  FAL_API_UNLOCK;
+  return rv;
+}
+/**
+ * @brief Get status of Atheros header packets parsed on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_txhdr_mode_get (a_uint32_t dev_id, fal_port_t port_id,
+			 fal_port_header_mode_t * mode)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_txhdr_mode_get (dev_id, port_id, mode);
+  FAL_API_UNLOCK;
+  return rv;
+}
+/**
+ * @brief Get status of Atheros header type value on a particular device.
+ * @param[in] dev_id device id
+ * @param[out] enable A_TRUE or A_FALSE
+ * @param[out] type header type value
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_header_type_get (a_uint32_t dev_id, a_bool_t * enable, a_uint32_t * type)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_header_type_get (dev_id, enable, type);
+  FAL_API_UNLOCK;
+  return rv;
+}
+/**
+ * @brief Get status of txmac on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_txmac_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			   a_bool_t * enable)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_txmac_status_get (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
+}
+/**
+ * @brief Get status of rxmac on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_rxmac_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			   a_bool_t * enable)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_rxmac_status_get (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
+}
+#endif
+
+/**
+ * @brief Set flow control status on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[in] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_flowctrl_set (a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_flowctrl_set (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Set flow control force mode on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[in] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_flowctrl_forcemode_set (a_uint32_t dev_id, fal_port_t port_id,
+				 a_bool_t enable)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_flowctrl_forcemode_set (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
+}
 
 /**
  * @brief Set status of Atheros header packets parsed on a particular port.
@@ -1605,24 +1706,7 @@ fal_port_rxhdr_mode_set (a_uint32_t dev_id, fal_port_t port_id,
   return rv;
 }
 
-/**
- * @brief Get status of Atheros header packets parsed on a particular port.
- * @param[in] dev_id device id
- * @param[in] port_id port id
- * @param[out] enable A_TRUE or A_FALSE
- * @return SW_OK or error code
- */
-sw_error_t
-fal_port_rxhdr_mode_get (a_uint32_t dev_id, fal_port_t port_id,
-			 fal_port_header_mode_t * mode)
-{
-  sw_error_t rv;
 
-  FAL_API_LOCK;
-  rv = _fal_port_rxhdr_mode_get (dev_id, port_id, mode);
-  FAL_API_UNLOCK;
-  return rv;
-}
 
 /**
  * @brief Set status of Atheros header packets parsed on a particular port.
@@ -1643,24 +1727,7 @@ fal_port_txhdr_mode_set (a_uint32_t dev_id, fal_port_t port_id,
   return rv;
 }
 
-/**
- * @brief Get status of Atheros header packets parsed on a particular port.
- * @param[in] dev_id device id
- * @param[in] port_id port id
- * @param[out] enable A_TRUE or A_FALSE
- * @return SW_OK or error code
- */
-sw_error_t
-fal_port_txhdr_mode_get (a_uint32_t dev_id, fal_port_t port_id,
-			 fal_port_header_mode_t * mode)
-{
-  sw_error_t rv;
 
-  FAL_API_LOCK;
-  rv = _fal_port_txhdr_mode_get (dev_id, port_id, mode);
-  FAL_API_UNLOCK;
-  return rv;
-}
 
 /**
  * @brief Set status of Atheros header type value on a particular device.
@@ -1679,23 +1746,7 @@ fal_header_type_set (a_uint32_t dev_id, a_bool_t enable, a_uint32_t type)
   return rv;
 }
 
-/**
- * @brief Get status of Atheros header type value on a particular device.
- * @param[in] dev_id device id
- * @param[out] enable A_TRUE or A_FALSE
- * @param[out] type header type value
- * @return SW_OK or error code
- */
-sw_error_t
-fal_header_type_get (a_uint32_t dev_id, a_bool_t * enable, a_uint32_t * type)
-{
-  sw_error_t rv;
 
-  FAL_API_LOCK;
-  rv = _fal_header_type_get (dev_id, enable, type);
-  FAL_API_UNLOCK;
-  return rv;
-}
 
 /**
  * @brief Set status of txmac on a particular port.
@@ -1715,24 +1766,7 @@ fal_port_txmac_status_set (a_uint32_t dev_id, fal_port_t port_id,
   return rv;
 }
 
-/**
- * @brief Get status of txmac on a particular port.
- * @param[in] dev_id device id
- * @param[in] port_id port id
- * @param[out] enable A_TRUE or A_FALSE
- * @return SW_OK or error code
- */
-sw_error_t
-fal_port_txmac_status_get (a_uint32_t dev_id, fal_port_t port_id,
-			   a_bool_t * enable)
-{
-  sw_error_t rv;
 
-  FAL_API_LOCK;
-  rv = _fal_port_txmac_status_get (dev_id, port_id, enable);
-  FAL_API_UNLOCK;
-  return rv;
-}
 
 /**
  * @brief Set status of rxmac on a particular port.
@@ -1752,24 +1786,7 @@ fal_port_rxmac_status_set (a_uint32_t dev_id, fal_port_t port_id,
   return rv;
 }
 
-/**
- * @brief Get status of rxmac on a particular port.
- * @param[in] dev_id device id
- * @param[in] port_id port id
- * @param[out] enable A_TRUE or A_FALSE
- * @return SW_OK or error code
- */
-sw_error_t
-fal_port_rxmac_status_get (a_uint32_t dev_id, fal_port_t port_id,
-			   a_bool_t * enable)
-{
-  sw_error_t rv;
 
-  FAL_API_LOCK;
-  rv = _fal_port_rxmac_status_get (dev_id, port_id, enable);
-  FAL_API_UNLOCK;
-  return rv;
-}
 
 /**
  * @brief Set status of tx flow control on a particular port.
@@ -1789,24 +1806,7 @@ fal_port_txfc_status_set (a_uint32_t dev_id, fal_port_t port_id,
   return rv;
 }
 
-/**
- * @brief Get status of tx flow control on a particular port.
- * @param[in] dev_id device id
- * @param[in] port_id port id
- * @param[out] enable A_TRUE or A_FALSE
- * @return SW_OK or error code
- */
-sw_error_t
-fal_port_txfc_status_get (a_uint32_t dev_id, fal_port_t port_id,
-			  a_bool_t * enable)
-{
-  sw_error_t rv;
 
-  FAL_API_LOCK;
-  rv = _fal_port_txfc_status_get (dev_id, port_id, enable);
-  FAL_API_UNLOCK;
-  return rv;
-}
 
 /**
  * @brief Set status of rx flow control on a particular port.
@@ -1826,7 +1826,6 @@ fal_port_rxfc_status_set (a_uint32_t dev_id, fal_port_t port_id,
   FAL_API_UNLOCK;
   return rv;
 }
-
 /**
  * @brief Set status of rx flow control on a particular port.
  * @param[in] dev_id device id
@@ -1845,6 +1844,44 @@ fal_port_rxfc_status_get (a_uint32_t dev_id, fal_port_t port_id,
   FAL_API_UNLOCK;
   return rv;
 }
+/**
+ * @brief Get status of tx flow control on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_txfc_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			  a_bool_t * enable)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_txfc_status_get (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
+}
+/**
+ * @brief Get link status on particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] status link status up (A_TRUE) or down (A_FALSE)
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_link_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			  a_bool_t * status)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_link_status_get (dev_id, port_id, status);
+  FAL_API_UNLOCK;
+  return rv;
+}
+
+#ifndef IN_PORTCONTROL_MINI
 
 /**
  * @brief Set status of back pressure on a particular port.
@@ -1922,24 +1959,7 @@ fal_port_link_forcemode_get (a_uint32_t dev_id, fal_port_t port_id,
   return rv;
 }
 
-/**
- * @brief Get link status on particular port.
- * @param[in] dev_id device id
- * @param[in] port_id port id
- * @param[out] status link status up (A_TRUE) or down (A_FALSE)
- * @return SW_OK or error code
- */
-sw_error_t
-fal_port_link_status_get (a_uint32_t dev_id, fal_port_t port_id,
-			  a_bool_t * status)
-{
-  sw_error_t rv;
 
-  FAL_API_LOCK;
-  rv = _fal_port_link_status_get (dev_id, port_id, status);
-  FAL_API_UNLOCK;
-  return rv;
-}
 
 /**
  * @brief Get link status on all ports.
@@ -2591,7 +2611,7 @@ fal_port_counter_show (a_uint32_t dev_id, fal_port_t port_id, fal_port_counter_i
   FAL_API_UNLOCK;
   return rv;
 }
-
+#endif
 /**
  * @}
  */

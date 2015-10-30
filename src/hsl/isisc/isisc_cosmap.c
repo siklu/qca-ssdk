@@ -39,6 +39,7 @@
 #define ISISC_EGRESS_REAMRK_ADDR      0x5ae00
 #define ISISC_EGRESS_REAMRK_NUM       16
 
+#ifndef IN_COSMAP_MINI
 static sw_error_t
 _isisc_cosmap_dscp_to_pri_dp_set(a_uint32_t dev_id, a_uint32_t mode,
                                 a_uint32_t dscp, a_uint32_t val)
@@ -183,6 +184,7 @@ _isisc_cosmap_up_to_pri_dp_get(a_uint32_t dev_id, a_uint32_t mode, a_uint32_t up
 
     return SW_OK;
 }
+#endif
 
 static sw_error_t
 _isisc_cosmap_pri_to_queue_set(a_uint32_t dev_id, a_uint32_t pri,
@@ -209,26 +211,6 @@ _isisc_cosmap_pri_to_queue_set(a_uint32_t dev_id, a_uint32_t pri,
 }
 
 static sw_error_t
-_isisc_cosmap_pri_to_queue_get(a_uint32_t dev_id, a_uint32_t pri,
-                              a_uint32_t * queue)
-{
-    sw_error_t rv;
-    a_uint32_t data;
-
-    if (ISISC_MAX_PRI < pri)
-    {
-        return SW_BAD_PARAM;
-    }
-
-    HSL_REG_ENTRY_GET(rv, dev_id, PRI_TO_QUEUE, 0, (a_uint8_t *) (&data),
-                      sizeof (a_uint32_t));
-    SW_RTN_ON_ERROR(rv);
-
-    *queue = (data >> (pri << 2)) & 0x3;
-    return SW_OK;
-}
-
-static sw_error_t
 _isisc_cosmap_pri_to_ehqueue_set(a_uint32_t dev_id, a_uint32_t pri,
                                 a_uint32_t queue)
 {
@@ -250,6 +232,27 @@ _isisc_cosmap_pri_to_ehqueue_set(a_uint32_t dev_id, a_uint32_t pri,
     HSL_REG_ENTRY_SET(rv, dev_id, PRI_TO_EHQUEUE, 0, (a_uint8_t *) (&data),
                       sizeof (a_uint32_t));
     return rv;
+}
+
+#ifndef IN_COSMAP_MINI
+static sw_error_t
+_isisc_cosmap_pri_to_queue_get(a_uint32_t dev_id, a_uint32_t pri,
+                              a_uint32_t * queue)
+{
+    sw_error_t rv;
+    a_uint32_t data;
+
+    if (ISISC_MAX_PRI < pri)
+    {
+        return SW_BAD_PARAM;
+    }
+
+    HSL_REG_ENTRY_GET(rv, dev_id, PRI_TO_QUEUE, 0, (a_uint8_t *) (&data),
+                      sizeof (a_uint32_t));
+    SW_RTN_ON_ERROR(rv);
+
+    *queue = (data >> (pri << 2)) & 0x3;
+    return SW_OK;
 }
 
 static sw_error_t
@@ -477,6 +480,7 @@ isisc_cosmap_up_to_dp_get(a_uint32_t dev_id, a_uint32_t up, a_uint32_t * dp)
     HSL_API_UNLOCK;
     return rv;
 }
+#endif
 
 /**
  * @brief Set internal priority to queue mapping on one particular device.
@@ -500,27 +504,6 @@ isisc_cosmap_pri_to_queue_set(a_uint32_t dev_id, a_uint32_t pri,
 }
 
 /**
- * @brief Get internal priority to queue mapping on one particular device.
- * @details  Comments:
- * This function is for port 1/2/3/4 which have four egress queues
- * @param[in] dev_id device id
- * @param[in] pri internal priority
- * @param[out] queue queue id
- * @return SW_OK or error code
- */
-HSL_LOCAL sw_error_t
-isisc_cosmap_pri_to_queue_get(a_uint32_t dev_id, a_uint32_t pri,
-                             a_uint32_t * queue)
-{
-    sw_error_t rv;
-
-    HSL_API_LOCK;
-    rv = _isisc_cosmap_pri_to_queue_get(dev_id, pri, queue);
-    HSL_API_UNLOCK;
-    return rv;
-}
-
-/**
  * @brief Set internal priority to queue mapping on one particular device.
  * @details  Comments:
  * This function is for port 0/5/6 which have six egress queues
@@ -537,6 +520,28 @@ isisc_cosmap_pri_to_ehqueue_set(a_uint32_t dev_id, a_uint32_t pri,
 
     HSL_API_LOCK;
     rv = _isisc_cosmap_pri_to_ehqueue_set(dev_id, pri, queue);
+    HSL_API_UNLOCK;
+    return rv;
+}
+
+#ifndef IN_COSMAP_MINI
+/**
+ * @brief Get internal priority to queue mapping on one particular device.
+ * @details  Comments:
+ * This function is for port 1/2/3/4 which have four egress queues
+ * @param[in] dev_id device id
+ * @param[in] pri internal priority
+ * @param[out] queue queue id
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+isisc_cosmap_pri_to_queue_get(a_uint32_t dev_id, a_uint32_t pri,
+                             a_uint32_t * queue)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _isisc_cosmap_pri_to_queue_get(dev_id, pri, queue);
     HSL_API_UNLOCK;
     return rv;
 }
@@ -599,6 +604,7 @@ isisc_cosmap_egress_remark_get(a_uint32_t dev_id, a_uint32_t tbl_id,
     HSL_API_UNLOCK;
     return rv;
 }
+#endif
 
 sw_error_t
 isisc_cosmap_init(a_uint32_t dev_id)
@@ -611,6 +617,7 @@ isisc_cosmap_init(a_uint32_t dev_id)
 
         SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
+#ifndef IN_COSMAP_MINI
         p_api->cosmap_dscp_to_pri_set = isisc_cosmap_dscp_to_pri_set;
         p_api->cosmap_dscp_to_pri_get = isisc_cosmap_dscp_to_pri_get;
         p_api->cosmap_dscp_to_dp_set = isisc_cosmap_dscp_to_dp_set;
@@ -619,12 +626,15 @@ isisc_cosmap_init(a_uint32_t dev_id)
         p_api->cosmap_up_to_pri_get = isisc_cosmap_up_to_pri_get;
         p_api->cosmap_up_to_dp_set = isisc_cosmap_up_to_dp_set;
         p_api->cosmap_up_to_dp_get = isisc_cosmap_up_to_dp_get;
+#endif
         p_api->cosmap_pri_to_queue_set = isisc_cosmap_pri_to_queue_set;
+	p_api->cosmap_pri_to_ehqueue_set = isisc_cosmap_pri_to_ehqueue_set;
+#ifndef IN_COSMAP_MINI
         p_api->cosmap_pri_to_queue_get = isisc_cosmap_pri_to_queue_get;
-        p_api->cosmap_pri_to_ehqueue_set = isisc_cosmap_pri_to_ehqueue_set;
         p_api->cosmap_pri_to_ehqueue_get = isisc_cosmap_pri_to_ehqueue_get;
         p_api->cosmap_egress_remark_set = isisc_cosmap_egress_remark_set;
         p_api->cosmap_egress_remark_get = isisc_cosmap_egress_remark_get;
+#endif
     }
 #endif
 

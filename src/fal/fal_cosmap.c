@@ -21,7 +21,7 @@
 #include "fal_cosmap.h"
 #include "hsl_api.h"
 
-
+#ifndef IN_COSMAP_MINI
 static sw_error_t
 _fal_cosmap_dscp_to_pri_set(a_uint32_t dev_id, a_uint32_t dscp, a_uint32_t pri)
 {
@@ -263,6 +263,7 @@ _fal_cosmap_up_to_ehdp_get(a_uint32_t dev_id, a_uint32_t up, a_uint32_t * dp)
     rv = p_api->cosmap_up_to_ehdp_get(dev_id, up, dp);
     return rv;
 }
+#endif
 
 static sw_error_t
 _fal_cosmap_pri_to_queue_set(a_uint32_t dev_id, a_uint32_t pri,
@@ -281,22 +282,6 @@ _fal_cosmap_pri_to_queue_set(a_uint32_t dev_id, a_uint32_t pri,
 }
 
 static sw_error_t
-_fal_cosmap_pri_to_queue_get(a_uint32_t dev_id, a_uint32_t pri,
-                             a_uint32_t * queue)
-{
-    sw_error_t rv;
-    hsl_api_t *p_api;
-
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
-
-    if (NULL == p_api->cosmap_pri_to_queue_get)
-        return SW_NOT_SUPPORTED;
-
-    rv = p_api->cosmap_pri_to_queue_get(dev_id, pri, queue);
-    return rv;
-}
-
-static sw_error_t
 _fal_cosmap_pri_to_ehqueue_set(a_uint32_t dev_id, a_uint32_t pri,
                                a_uint32_t queue)
 {
@@ -309,6 +294,23 @@ _fal_cosmap_pri_to_ehqueue_set(a_uint32_t dev_id, a_uint32_t pri,
         return SW_NOT_SUPPORTED;
 
     rv = p_api->cosmap_pri_to_ehqueue_set(dev_id, pri, queue);
+    return rv;
+}
+
+#ifndef IN_COSMAP_MINI
+static sw_error_t
+_fal_cosmap_pri_to_queue_get(a_uint32_t dev_id, a_uint32_t pri,
+                             a_uint32_t * queue)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->cosmap_pri_to_queue_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->cosmap_pri_to_queue_get(dev_id, pri, queue);
     return rv;
 }
 
@@ -649,6 +651,7 @@ fal_cosmap_up_to_ehdp_get(a_uint32_t dev_id, a_uint32_t up, a_uint32_t * dp)
     FAL_API_UNLOCK;
     return rv;
 }
+#endif
 
 /**
  * @brief Set internal priority to queue mapping on one particular device.
@@ -672,27 +675,6 @@ fal_cosmap_pri_to_queue_set(a_uint32_t dev_id, a_uint32_t pri,
 }
 
 /**
- * @brief Get internal priority to queue mapping on one particular device.
- * @details  Comments:
- * This function is for port 1/2/3/4 which have four egress queues
- * @param[in] dev_id device id
- * @param[in] pri internal priority
- * @param[out] queue queue id
- * @return SW_OK or error code
- */
-sw_error_t
-fal_cosmap_pri_to_queue_get(a_uint32_t dev_id, a_uint32_t pri,
-                            a_uint32_t * queue)
-{
-    sw_error_t rv;
-
-    FAL_API_LOCK;
-    rv = _fal_cosmap_pri_to_queue_get(dev_id, pri, queue);
-    FAL_API_UNLOCK;
-    return rv;
-}
-
-/**
  * @brief Set internal priority to queue mapping on one particular device.
  * @details  Comments:
  * This function is for port 0/5/6 which have six egress queues
@@ -709,6 +691,28 @@ fal_cosmap_pri_to_ehqueue_set(a_uint32_t dev_id, a_uint32_t pri,
 
     FAL_API_LOCK;
     rv = _fal_cosmap_pri_to_ehqueue_set(dev_id, pri, queue);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+#ifndef IN_COSMAP_MINI
+/**
+ * @brief Get internal priority to queue mapping on one particular device.
+ * @details  Comments:
+ * This function is for port 1/2/3/4 which have four egress queues
+ * @param[in] dev_id device id
+ * @param[in] pri internal priority
+ * @param[out] queue queue id
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_cosmap_pri_to_queue_get(a_uint32_t dev_id, a_uint32_t pri,
+                            a_uint32_t * queue)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_cosmap_pri_to_queue_get(dev_id, pri, queue);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -771,7 +775,7 @@ fal_cosmap_egress_remark_get(a_uint32_t dev_id, a_uint32_t tbl_id,
     FAL_API_UNLOCK;
     return rv;
 }
-
+#endif
 
 /**
  * @}

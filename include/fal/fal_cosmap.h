@@ -40,6 +40,7 @@ extern "C" {
         a_uint8_t y_dei;
     } fal_egress_remark_table_t;
 
+#ifndef IN_COSMAP_MINI
     sw_error_t
     fal_cosmap_dscp_to_pri_set(a_uint32_t dev_id, a_uint32_t dscp,
                                a_uint32_t pri);
@@ -103,18 +104,18 @@ extern "C" {
     sw_error_t
     fal_cosmap_up_to_ehdp_get(a_uint32_t dev_id, a_uint32_t up,
                             a_uint32_t * dp);
-
+#endif
     sw_error_t
     fal_cosmap_pri_to_queue_set(a_uint32_t dev_id, a_uint32_t pri,
                                 a_uint32_t queue);
 
+	sw_error_t
+	fal_cosmap_pri_to_ehqueue_set(a_uint32_t dev_id, a_uint32_t pri,
+                                  a_uint32_t queue);
+#ifndef IN_COSMAP_MINI
     sw_error_t
     fal_cosmap_pri_to_queue_get(a_uint32_t dev_id, a_uint32_t pri,
                                 a_uint32_t * queue);
-
-    sw_error_t
-    fal_cosmap_pri_to_ehqueue_set(a_uint32_t dev_id, a_uint32_t pri,
-                                  a_uint32_t queue);
 
     sw_error_t
     fal_cosmap_pri_to_ehqueue_get(a_uint32_t dev_id, a_uint32_t pri,
@@ -127,6 +128,7 @@ extern "C" {
     sw_error_t
     fal_cosmap_egress_remark_get(a_uint32_t dev_id, a_uint32_t tbl_id,
                                  fal_egress_remark_table_t * tbl);
+#endif
 #ifdef __cplusplus
 }
 #endif                          /* __cplusplus */

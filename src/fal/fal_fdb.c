@@ -25,7 +25,7 @@
 #include <linux/module.h>
 
 
-
+#ifndef IN_FDB_MINI
 static sw_error_t
 _fal_fdb_add(a_uint32_t dev_id, const fal_fdb_entry_t * entry)
 {
@@ -40,7 +40,7 @@ _fal_fdb_add(a_uint32_t dev_id, const fal_fdb_entry_t * entry)
     rv = p_api->fdb_add(dev_id, entry);
     return rv;
 }
-
+#endif
 
 static sw_error_t
 _fal_fdb_del_all(a_uint32_t dev_id, a_uint32_t flag)
@@ -57,7 +57,7 @@ _fal_fdb_del_all(a_uint32_t dev_id, a_uint32_t flag)
     return rv;
 }
 
-
+#ifndef IN_FDB_MINI
 static sw_error_t
 _fal_fdb_del_by_port(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t flag)
 {
@@ -88,7 +88,7 @@ _fal_fdb_del_by_mac(a_uint32_t dev_id, const fal_fdb_entry_t * entry)
     rv = p_api->fdb_del_by_mac(dev_id, entry);
     return rv;
 }
-
+#endif
 
 static sw_error_t
 _fal_fdb_first(a_uint32_t dev_id, fal_fdb_entry_t * entry)
@@ -105,7 +105,7 @@ _fal_fdb_first(a_uint32_t dev_id, fal_fdb_entry_t * entry)
     return rv;
 }
 
-
+#ifndef IN_FDB_MINI
 static sw_error_t
 _fal_fdb_next(a_uint32_t dev_id, fal_fdb_entry_t * entry)
 {
@@ -136,7 +136,7 @@ _fal_fdb_find(a_uint32_t dev_id, fal_fdb_entry_t * entry)
     rv = p_api->fdb_find(dev_id, entry);
     return rv;
 }
-
+#endif
 
 static sw_error_t
 _fal_fdb_port_learn_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
@@ -153,7 +153,7 @@ _fal_fdb_port_learn_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
     return rv;
 }
 
-
+#ifndef IN_FDB_MINI
 static sw_error_t
 _fal_fdb_port_learn_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
 {
@@ -260,6 +260,7 @@ _fal_fdb_age_time_get(a_uint32_t dev_id, a_uint32_t * time)
     rv = p_api->age_time_get(dev_id, time);
     return rv;
 }
+#endif
 
 static sw_error_t
 _fal_fdb_iterate(a_uint32_t dev_id, a_uint32_t * iterator, fal_fdb_entry_t * entry)
@@ -308,6 +309,7 @@ _fal_fdb_extend_first(a_uint32_t dev_id, fal_fdb_op_t * option,
     return rv;
 }
 
+#ifndef IN_FDB_MINI
 static sw_error_t
 _fal_fdb_transfer(a_uint32_t dev_id, fal_port_t old_port, fal_port_t new_port,
                   a_uint32_t fid, fal_fdb_op_t * option)
@@ -618,6 +620,7 @@ fal_fdb_add(a_uint32_t dev_id, const fal_fdb_entry_t * entry)
     FAL_API_UNLOCK;
     return rv;
 }
+#endif
 
 /**
  * @brief Delete all Fdb entries
@@ -639,6 +642,7 @@ fal_fdb_del_all(a_uint32_t dev_id, a_uint32_t flag)
     return rv;
 }
 
+#ifndef IN_FDB_MINI
 /**
  * @brief Delete Fdb entries on a particular port
  *   @details   Comments:
@@ -679,6 +683,7 @@ fal_fdb_del_by_mac(a_uint32_t dev_id, const fal_fdb_entry_t * entry)
     FAL_API_UNLOCK;
     return rv;
 }
+#endif
 
 /**
  * @brief Get first Fdb entry from particular device
@@ -697,6 +702,7 @@ fal_fdb_first(a_uint32_t dev_id, fal_fdb_entry_t * entry)
     return rv;
 }
 
+#ifndef IN_FDB_MINI
 /**
  * @brief Get next Fdb entry from particular device
  *   @details   Comments:
@@ -735,6 +741,7 @@ fal_fdb_find(a_uint32_t dev_id, fal_fdb_entry_t * entry)
     FAL_API_UNLOCK;
     return rv;
 }
+#endif
 
 /**
  * @brief Set dynamic address learning status on a particular port.
@@ -757,6 +764,7 @@ fal_fdb_port_learn_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
     return rv;
 }
 
+#ifndef IN_FDB_MINI
 /**
  * @brief Get dynamic address learning status on a particular port.
  * @param[in] dev_id device id
@@ -886,6 +894,7 @@ fal_fdb_age_time_get(a_uint32_t dev_id, a_uint32_t * time)
     FAL_API_UNLOCK;
     return rv;
 }
+#endif
 
 /**
  * @brief Iterate all fdb entries on a particular device.
@@ -944,6 +953,7 @@ fal_fdb_extend_first(a_uint32_t dev_id, fal_fdb_op_t * option,
     return rv;
 }
 
+#ifndef IN_FDB_MINI
 /**
  * @brief Transfer fdb entries port information on a particular device.
  * @param[in] dev_id device id
@@ -1292,6 +1302,7 @@ int ssdk_rfs_mac_rule_set(u16 vid, u8* mac, u8 ldb, int is_set)
 	else
 		return fal_fdb_rfs_del(0, &entry);
 }
+#endif
 
 #if 0
 int ssdk_rfs_mac_rule_set(ssdk_fdb_rfs_t *rfs)

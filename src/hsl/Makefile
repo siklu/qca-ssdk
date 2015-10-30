@@ -6,7 +6,15 @@ include $(PRJ_PATH)/make/config.mk
 SRC_LIST=hsl_dev.c hsl_port_prop.c hsl_api.c
 
 ifeq (TRUE, $(IN_ACL))
-  SRC_LIST += hsl_acl.c
+	ifeq (SHIVA, $(CHIP_TYPE))
+		SRC_LIST += hsl_acl.c
+	endif
+	ifeq (GARUDA, $(CHIP_TYPE))
+		SRC_LIST += hsl_acl.c
+	endif
+	ifeq (ALL_CHIP, $(CHIP_TYPE))
+		SRC_LIST += hsl_acl.c
+	endif
 endif
 
 ifeq (linux, $(OS))

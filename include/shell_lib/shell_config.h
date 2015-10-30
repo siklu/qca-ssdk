@@ -37,22 +37,19 @@ extern "C" {
 #define SW_CMD_FLOW_SHOW       (SW_API_MAX + 10)
 #define SW_CMD_MAX             (SW_API_MAX + 11)
 
-#define MAX_SUB_CMD_DES_NUM  80
+#define MAX_SUB_CMD_DES_NUM  40
 
     struct sub_cmd_des_t
     {
         char *sub_name;
         char *sub_act;
-        char *sub_memo;
-        char *sub_usage;
         int   sub_api;
         sw_error_t (*sub_func) ();
     };
     struct cmd_des_t
     {
         char *name;
-        char *memo;
-        struct sub_cmd_des_t sub_cmd_des[MAX_SUB_CMD_DES_NUM];
+        struct sub_cmd_des_t *sub_cmd_des;
     };
     extern struct cmd_des_t gcmd_des[];
 

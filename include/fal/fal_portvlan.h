@@ -118,24 +118,24 @@ extern "C" {
                         fal_pt_1qmode_t port_1qmode);
 
 
-
+#ifndef IN_PORTVLAN_MINI
     sw_error_t
     fal_port_1qmode_get(a_uint32_t dev_id, fal_port_t port_id,
                         fal_pt_1qmode_t * pport_1qmode);
 
-
+#endif
 
     sw_error_t
     fal_port_egvlanmode_set(a_uint32_t dev_id, fal_port_t port_id,
                             fal_pt_1q_egmode_t port_egvlanmode);
 
 
-
+#ifndef IN_PORTVLAN_MINI
     sw_error_t
     fal_port_egvlanmode_get(a_uint32_t dev_id, fal_port_t port_id,
                             fal_pt_1q_egmode_t * pport_egvlanmode);
 
-
+#endif
 
     sw_error_t
     fal_portvlan_member_add(a_uint32_t dev_id, fal_port_t port_id,
@@ -154,11 +154,11 @@ extern "C" {
                                fal_pbmp_t mem_port_map);
 
 
-
+#ifndef IN_PORTVLAN_MINI
     sw_error_t
     fal_portvlan_member_get(a_uint32_t dev_id, fal_port_t port_id,
                             fal_pbmp_t * mem_port_map);
-
+#endif
 
 
     sw_error_t
@@ -166,23 +166,23 @@ extern "C" {
                              a_uint32_t vid);
 
 
-
+#ifndef IN_PORTVLAN_MINI
     sw_error_t
     fal_port_default_vid_get(a_uint32_t dev_id, fal_port_t port_id,
                              a_uint32_t * vid);
 
-
+#endif
 
     sw_error_t
     fal_port_force_default_vid_set(a_uint32_t dev_id, fal_port_t port_id,
                                    a_bool_t enable);
 
 
-
+#ifndef IN_PORTVLAN_MINI
     sw_error_t
     fal_port_force_default_vid_get(a_uint32_t dev_id, fal_port_t port_id,
                                    a_bool_t * enable);
-
+#endif
 
 
     sw_error_t
@@ -190,47 +190,48 @@ extern "C" {
                                 a_bool_t enable);
 
 
-
+#ifndef IN_PORTVLAN_MINI
     sw_error_t
     fal_port_force_portvlan_get(a_uint32_t dev_id, fal_port_t port_id,
                                 a_bool_t * enable);
 
-
+#endif
 
     sw_error_t
     fal_port_nestvlan_set(a_uint32_t dev_id, fal_port_t port_id,
                           a_bool_t enable);
 
 
-
+#ifndef IN_PORTVLAN_MINI
     sw_error_t
     fal_port_nestvlan_get(a_uint32_t dev_id, fal_port_t port_id,
                           a_bool_t * enable);
-
+#endif
 
 
     sw_error_t
     fal_nestvlan_tpid_set(a_uint32_t dev_id, a_uint32_t tpid);
 
 
-
+#ifndef IN_PORTVLAN_MINI
     sw_error_t
     fal_nestvlan_tpid_get(a_uint32_t dev_id, a_uint32_t * tpid);
-
+#endif
 
     sw_error_t
     fal_port_invlan_mode_set(a_uint32_t dev_id, fal_port_t port_id,
                              fal_pt_invlan_mode_t mode);
 
-
+#ifndef IN_PORTVLAN_MINI
     sw_error_t
     fal_port_invlan_mode_get(a_uint32_t dev_id, fal_port_t port_id,
                              fal_pt_invlan_mode_t * mode);
-
-
-    sw_error_t
+#endif
+ sw_error_t
     fal_port_tls_set(a_uint32_t dev_id, fal_port_t port_id,
                      a_bool_t enable);
+#ifndef IN_PORTVLAN_MINI
+   
 
 
     sw_error_t
@@ -246,31 +247,33 @@ extern "C" {
     sw_error_t
     fal_port_pri_propagation_get(a_uint32_t dev_id, fal_port_t port_id,
                                  a_bool_t * enable);
-
+#endif
 
     sw_error_t
     fal_port_default_svid_set(a_uint32_t dev_id, fal_port_t port_id,
                               a_uint32_t vid);
 
-
+#ifndef IN_PORTVLAN_MINI
     sw_error_t
     fal_port_default_svid_get(a_uint32_t dev_id, fal_port_t port_id,
                               a_uint32_t * vid);
-
+#endif
 
     sw_error_t
     fal_port_default_cvid_set(a_uint32_t dev_id, fal_port_t port_id,
                               a_uint32_t vid);
 
-
+#ifndef IN_PORTVLAN_MINI
     sw_error_t
     fal_port_default_cvid_get(a_uint32_t dev_id, fal_port_t port_id,
                               a_uint32_t * vid);
-
-
-    sw_error_t
+#endif
+	sw_error_t
     fal_port_vlan_propagation_set(a_uint32_t dev_id, fal_port_t port_id,
                                   fal_vlan_propagation_mode_t mode);
+
+#ifndef IN_PORTVLAN_MINI
+    
 
 
     sw_error_t
@@ -339,7 +342,7 @@ extern "C" {
     sw_error_t
     fal_port_vrf_id_get(a_uint32_t dev_id, fal_port_t port_id,
                               a_uint32_t * vrf_id);
-
+#endif
 #ifdef __cplusplus
 }
 #endif                          /* __cplusplus */

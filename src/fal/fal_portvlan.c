@@ -39,21 +39,7 @@ _fal_port_1qmode_set(a_uint32_t dev_id, fal_port_t port_id,
 }
 
 
-static sw_error_t
-_fal_port_1qmode_get(a_uint32_t dev_id, fal_port_t port_id,
-                     fal_pt_1qmode_t * pport_1qmode)
-{
-    sw_error_t rv;
-    hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
-
-    if (NULL == p_api->port_1qmode_get)
-        return SW_NOT_SUPPORTED;
-
-    rv = p_api->port_1qmode_get(dev_id, port_id, pport_1qmode);
-    return rv;
-}
 
 
 static sw_error_t
@@ -73,21 +59,6 @@ _fal_port_egvlanmode_set(a_uint32_t dev_id, fal_port_t port_id,
 }
 
 
-static sw_error_t
-_fal_port_egvlanmode_get(a_uint32_t dev_id, fal_port_t port_id,
-                         fal_pt_1q_egmode_t * pport_egvlanmode)
-{
-    sw_error_t rv;
-    hsl_api_t *p_api;
-
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
-
-    if (NULL == p_api->port_egvlanmode_get)
-        return SW_NOT_SUPPORTED;
-
-    rv = p_api->port_egvlanmode_get(dev_id, port_id, pport_egvlanmode);
-    return rv;
-}
 
 static sw_error_t
 _fal_portvlan_member_add(a_uint32_t dev_id, fal_port_t port_id,
@@ -140,22 +111,6 @@ _fal_portvlan_member_update(a_uint32_t dev_id, fal_port_t port_id,
 }
 
 
-static sw_error_t
-_fal_portvlan_member_get(a_uint32_t dev_id, fal_port_t port_id,
-                         fal_pbmp_t * mem_port_map)
-{
-    sw_error_t rv;
-    hsl_api_t *p_api;
-
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
-
-    if (NULL == p_api->portvlan_member_get)
-        return SW_NOT_SUPPORTED;
-
-    rv = p_api->portvlan_member_get(dev_id, port_id, mem_port_map);
-    return rv;
-}
-
 
 static sw_error_t
 _fal_port_default_vid_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vid)
@@ -173,21 +128,6 @@ _fal_port_default_vid_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vid)
 }
 
 
-static sw_error_t
-_fal_port_default_vid_get(a_uint32_t dev_id, fal_port_t port_id,
-                          a_uint32_t * vid)
-{
-    sw_error_t rv;
-    hsl_api_t *p_api;
-
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
-
-    if (NULL == p_api->port_default_vid_get)
-        return SW_NOT_SUPPORTED;
-
-    rv = p_api->port_default_vid_get(dev_id, port_id, vid);
-    return rv;
-}
 
 static sw_error_t
 _fal_port_force_default_vid_set(a_uint32_t dev_id, fal_port_t port_id,
@@ -205,21 +145,6 @@ _fal_port_force_default_vid_set(a_uint32_t dev_id, fal_port_t port_id,
     return rv;
 }
 
-static sw_error_t
-_fal_port_force_default_vid_get(a_uint32_t dev_id, fal_port_t port_id,
-                                a_bool_t * enable)
-{
-    sw_error_t rv;
-    hsl_api_t *p_api;
-
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
-
-    if (NULL == p_api->port_force_default_vid_get)
-        return SW_NOT_SUPPORTED;
-
-    rv = p_api->port_force_default_vid_get(dev_id, port_id, enable);
-    return rv;
-}
 
 static sw_error_t
 _fal_port_force_portvlan_set(a_uint32_t dev_id, fal_port_t port_id,
@@ -238,21 +163,7 @@ _fal_port_force_portvlan_set(a_uint32_t dev_id, fal_port_t port_id,
 }
 
 
-static sw_error_t
-_fal_port_force_portvlan_get(a_uint32_t dev_id, fal_port_t port_id,
-                             a_bool_t * enable)
-{
-    sw_error_t rv;
-    hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
-
-    if (NULL == p_api->port_force_portvlan_get)
-        return SW_NOT_SUPPORTED;
-
-    rv = p_api->port_force_portvlan_get(dev_id, port_id, enable);
-    return rv;
-}
 
 static sw_error_t
 _fal_port_nestvlan_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
@@ -270,20 +181,7 @@ _fal_port_nestvlan_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 }
 
 
-static sw_error_t
-_fal_port_nestvlan_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
-{
-    sw_error_t rv;
-    hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
-
-    if (NULL == p_api->port_nestvlan_get)
-        return SW_NOT_SUPPORTED;
-
-    rv = p_api->port_nestvlan_get(dev_id, port_id, enable);
-    return rv;
-}
 
 
 static sw_error_t
@@ -301,20 +199,7 @@ _fal_nestvlan_tpid_set(a_uint32_t dev_id, a_uint32_t tpid)
     return rv;
 }
 
-static sw_error_t
-_fal_nestvlan_tpid_get(a_uint32_t dev_id, a_uint32_t * tpid)
-{
-    sw_error_t rv;
-    hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
-
-    if (NULL == p_api->nestvlan_tpid_get)
-        return SW_NOT_SUPPORTED;
-
-    rv = p_api->nestvlan_tpid_get(dev_id, tpid);
-    return rv;
-}
 
 static sw_error_t
 _fal_port_invlan_mode_set(a_uint32_t dev_id, fal_port_t port_id,
@@ -331,23 +216,6 @@ _fal_port_invlan_mode_set(a_uint32_t dev_id, fal_port_t port_id,
     rv = p_api->port_invlan_mode_set(dev_id, port_id, mode);
     return rv;
 }
-
-static sw_error_t
-_fal_port_invlan_mode_get(a_uint32_t dev_id, fal_port_t port_id,
-                          fal_pt_invlan_mode_t * mode)
-{
-    sw_error_t rv;
-    hsl_api_t *p_api;
-
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
-
-    if (NULL == p_api->port_invlan_mode_get)
-        return SW_NOT_SUPPORTED;
-
-    rv = p_api->port_invlan_mode_get(dev_id, port_id, mode);
-    return rv;
-}
-
 static sw_error_t
 _fal_port_tls_set(a_uint32_t dev_id, fal_port_t port_id,
                   a_bool_t enable)
@@ -363,6 +231,146 @@ _fal_port_tls_set(a_uint32_t dev_id, fal_port_t port_id,
     rv = p_api->port_tls_set(dev_id, port_id, enable);
     return rv;
 }
+
+#ifndef IN_PORTVLAN_MINI
+static sw_error_t
+_fal_port_invlan_mode_get(a_uint32_t dev_id, fal_port_t port_id,
+                          fal_pt_invlan_mode_t * mode)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->port_invlan_mode_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->port_invlan_mode_get(dev_id, port_id, mode);
+    return rv;
+}
+static sw_error_t
+_fal_nestvlan_tpid_get(a_uint32_t dev_id, a_uint32_t * tpid)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->nestvlan_tpid_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->nestvlan_tpid_get(dev_id, tpid);
+    return rv;
+}
+static sw_error_t
+_fal_port_nestvlan_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->port_nestvlan_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->port_nestvlan_get(dev_id, port_id, enable);
+    return rv;
+}
+static sw_error_t
+_fal_port_force_portvlan_get(a_uint32_t dev_id, fal_port_t port_id,
+                             a_bool_t * enable)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->port_force_portvlan_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->port_force_portvlan_get(dev_id, port_id, enable);
+    return rv;
+}
+static sw_error_t
+_fal_port_force_default_vid_get(a_uint32_t dev_id, fal_port_t port_id,
+                                a_bool_t * enable)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->port_force_default_vid_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->port_force_default_vid_get(dev_id, port_id, enable);
+    return rv;
+}
+
+static sw_error_t
+_fal_port_default_vid_get(a_uint32_t dev_id, fal_port_t port_id,
+                          a_uint32_t * vid)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->port_default_vid_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->port_default_vid_get(dev_id, port_id, vid);
+    return rv;
+}
+
+static sw_error_t
+_fal_port_1qmode_get(a_uint32_t dev_id, fal_port_t port_id,
+                     fal_pt_1qmode_t * pport_1qmode)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->port_1qmode_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->port_1qmode_get(dev_id, port_id, pport_1qmode);
+    return rv;
+}
+static sw_error_t
+_fal_port_egvlanmode_get(a_uint32_t dev_id, fal_port_t port_id,
+                         fal_pt_1q_egmode_t * pport_egvlanmode)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->port_egvlanmode_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->port_egvlanmode_get(dev_id, port_id, pport_egvlanmode);
+    return rv;
+}
+
+static sw_error_t
+_fal_portvlan_member_get(a_uint32_t dev_id, fal_port_t port_id,
+                         fal_pbmp_t * mem_port_map)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->portvlan_member_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->portvlan_member_get(dev_id, port_id, mem_port_map);
+    return rv;
+}
+
+
 
 static sw_error_t
 _fal_port_tls_get(a_uint32_t dev_id, fal_port_t port_id,
@@ -411,7 +419,7 @@ _fal_port_pri_propagation_get(a_uint32_t dev_id, fal_port_t port_id,
     rv = p_api->port_pri_propagation_get(dev_id, port_id, enable);
     return rv;
 }
-
+#endif
 static sw_error_t
 _fal_port_default_svid_set(a_uint32_t dev_id, fal_port_t port_id,
                            a_uint32_t vid)
@@ -428,21 +436,7 @@ _fal_port_default_svid_set(a_uint32_t dev_id, fal_port_t port_id,
     return rv;
 }
 
-static sw_error_t
-_fal_port_default_svid_get(a_uint32_t dev_id, fal_port_t port_id,
-                           a_uint32_t * vid)
-{
-    sw_error_t rv;
-    hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
-
-    if (NULL == p_api->port_default_svid_get)
-        return SW_NOT_SUPPORTED;
-
-    rv = p_api->port_default_svid_get(dev_id, port_id, vid);
-    return rv;
-}
 
 static sw_error_t
 _fal_port_default_cvid_set(a_uint32_t dev_id, fal_port_t port_id,
@@ -460,6 +454,24 @@ _fal_port_default_cvid_set(a_uint32_t dev_id, fal_port_t port_id,
     return rv;
 }
 
+
+
+static sw_error_t
+_fal_port_vlan_propagation_set(a_uint32_t dev_id, fal_port_t port_id,
+                               fal_vlan_propagation_mode_t mode)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->port_vlan_propagation_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->port_vlan_propagation_set(dev_id, port_id, mode);
+    return rv;
+}
+#ifndef IN_PORTVLAN_MINI
 static sw_error_t
 _fal_port_default_cvid_get(a_uint32_t dev_id, fal_port_t port_id,
                            a_uint32_t * vid)
@@ -475,20 +487,19 @@ _fal_port_default_cvid_get(a_uint32_t dev_id, fal_port_t port_id,
     rv = p_api->port_default_cvid_get(dev_id, port_id, vid);
     return rv;
 }
-
 static sw_error_t
-_fal_port_vlan_propagation_set(a_uint32_t dev_id, fal_port_t port_id,
-                               fal_vlan_propagation_mode_t mode)
+_fal_port_default_svid_get(a_uint32_t dev_id, fal_port_t port_id,
+                           a_uint32_t * vid)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
-    if (NULL == p_api->port_vlan_propagation_set)
+    if (NULL == p_api->port_default_svid_get)
         return SW_NOT_SUPPORTED;
 
-    rv = p_api->port_vlan_propagation_set(dev_id, port_id, mode);
+    rv = p_api->port_default_svid_get(dev_id, port_id, vid);
     return rv;
 }
 
@@ -752,7 +763,7 @@ _fal_port_vrf_id_get(a_uint32_t dev_id, fal_port_t port_id,
     rv = p_api->port_vrf_id_get(dev_id, port_id, vrf_id);
     return rv;
 }
-
+#endif
 /**
  * @brief Set 802.1q work mode on a particular port.
  * @param[in] dev_id device id
@@ -771,7 +782,7 @@ fal_port_1qmode_set(a_uint32_t dev_id, fal_port_t port_id,
     FAL_API_UNLOCK;
     return rv;
 }
-
+#ifndef IN_PORTVLAN_MINI
 /**
  * @brief Get 802.1q work mode on a particular port.
  * @param[in] dev_id device id
@@ -790,7 +801,7 @@ fal_port_1qmode_get(a_uint32_t dev_id, fal_port_t port_id,
     FAL_API_UNLOCK;
     return rv;
 }
-
+#endif
 /**
  * @brief Set packets transmitted out vlan tagged mode on a particular port.
  * @param[in] dev_id device id
@@ -809,7 +820,7 @@ fal_port_egvlanmode_set(a_uint32_t dev_id, fal_port_t port_id,
     FAL_API_UNLOCK;
     return rv;
 }
-
+#ifndef IN_PORTVLAN_MINI
 /**
  * @brief Get packets transmitted out vlan tagged mode on a particular port.
  * @param[in] dev_id device id
@@ -828,7 +839,7 @@ fal_port_egvlanmode_get(a_uint32_t dev_id, fal_port_t port_id,
     FAL_API_UNLOCK;
     return rv;
 }
-
+#endif
 /**
  * @brief Add member of port based vlan on a particular port.
  * @param[in] dev_id device id
@@ -885,7 +896,7 @@ fal_portvlan_member_update(a_uint32_t dev_id, fal_port_t port_id,
     FAL_API_UNLOCK;
     return rv;
 }
-
+#ifndef IN_PORTVLAN_MINI
 /**
  * @brief Get member of port based vlan on a particular port.
  * @param[in] dev_id device id
@@ -904,7 +915,7 @@ fal_portvlan_member_get(a_uint32_t dev_id, fal_port_t port_id,
     FAL_API_UNLOCK;
     return rv;
 }
-
+#endif
 /**
  * @brief Set default vlan id on a particular port.
  * @param[in] dev_id device id
@@ -922,7 +933,7 @@ fal_port_default_vid_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vid)
     FAL_API_UNLOCK;
     return rv;
 }
-
+#ifndef IN_PORTVLAN_MINI
 /**
  * @brief Get default vlan id on a particular port.
  * @param[in] dev_id device id
@@ -941,7 +952,7 @@ fal_port_default_vid_get(a_uint32_t dev_id, fal_port_t port_id,
     FAL_API_UNLOCK;
     return rv;
 }
-
+#endif
 /**
  * @brief Set force default vlan id status on a particular port.
  * @param[in] dev_id device id
@@ -960,7 +971,7 @@ fal_port_force_default_vid_set(a_uint32_t dev_id, fal_port_t port_id,
     FAL_API_UNLOCK;
     return rv;
 }
-
+#ifndef IN_PORTVLAN_MINI
 /**
  * @brief Get force default vlan id status on a particular port.
  * @param[in] dev_id device id
@@ -979,7 +990,7 @@ fal_port_force_default_vid_get(a_uint32_t dev_id, fal_port_t port_id,
     FAL_API_UNLOCK;
     return rv;
 }
-
+#endif
 /**
  * @brief Set force port based vlan status on a particular port.
  * @param[in] dev_id device id
@@ -998,7 +1009,7 @@ fal_port_force_portvlan_set(a_uint32_t dev_id, fal_port_t port_id,
     FAL_API_UNLOCK;
     return rv;
 }
-
+#ifndef IN_PORTVLAN_MINI
 /**
  * @brief Get force port based vlan status on a particular port.
  * @param[in] dev_id device id
@@ -1017,7 +1028,7 @@ fal_port_force_portvlan_get(a_uint32_t dev_id, fal_port_t port_id,
     FAL_API_UNLOCK;
     return rv;
 }
-
+#endif
 /**
  * @brief Set nest vlan feature status on a particular port.
  * @param[in] dev_id device id
@@ -1035,7 +1046,7 @@ fal_port_nestvlan_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
     FAL_API_UNLOCK;
     return rv;
 }
-
+#ifndef IN_PORTVLAN_MINI
 /**
  * @brief Get nest vlan feature status on a particular port.
  * @param[in] dev_id device id
@@ -1053,7 +1064,7 @@ fal_port_nestvlan_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
     FAL_API_UNLOCK;
     return rv;
 }
-
+#endif
 /**
  * @brief Set nest vlan tpid on a particular device.
  * @param[in] dev_id device id
@@ -1070,7 +1081,7 @@ fal_nestvlan_tpid_set(a_uint32_t dev_id, a_uint32_t tpid)
     FAL_API_UNLOCK;
     return rv;
 }
-
+#ifndef IN_PORTVLAN_MINI
 /**
  * @brief Get nest vlan tpid on a particular device.
  * @param[in] dev_id device id
@@ -1087,7 +1098,7 @@ fal_nestvlan_tpid_get(a_uint32_t dev_id, a_uint32_t * tpid)
     FAL_API_UNLOCK;
     return rv;
 }
-
+#endif
 /**
  * @brief Set ingress vlan mode mode on a particular port.
  * @param[in] dev_id device id
@@ -1106,7 +1117,7 @@ fal_port_invlan_mode_set(a_uint32_t dev_id, fal_port_t port_id,
     FAL_API_UNLOCK;
     return rv;
 }
-
+#ifndef IN_PORTVLAN_MINI
 /**
  * @brief Get ingress vlan mode mode on a particular port.
  * @param[in] dev_id device id
@@ -1125,7 +1136,7 @@ fal_port_invlan_mode_get(a_uint32_t dev_id, fal_port_t port_id,
     FAL_API_UNLOCK;
     return rv;
 }
-
+#endif
 /**
  * @brief Set tls status on a particular port.
  * @param[in] dev_id device id
@@ -1144,6 +1155,8 @@ fal_port_tls_set(a_uint32_t dev_id, fal_port_t port_id,
     FAL_API_UNLOCK;
     return rv;
 }
+#ifndef IN_PORTVLAN_MINI
+
 
 /**
  * @brief Get tls status on a particular port.
@@ -1201,7 +1214,7 @@ fal_port_pri_propagation_get(a_uint32_t dev_id, fal_port_t port_id,
     FAL_API_UNLOCK;
     return rv;
 }
-
+#endif
 /**
  * @brief Set default s-vid on a particular port.
  * @param[in] dev_id device id
@@ -1220,7 +1233,7 @@ fal_port_default_svid_set(a_uint32_t dev_id, fal_port_t port_id,
     FAL_API_UNLOCK;
     return rv;
 }
-
+#ifndef IN_PORTVLAN_MINI
 /**
  * @brief Get default s-vid on a particular port.
  * @param[in] dev_id device id
@@ -1239,7 +1252,7 @@ fal_port_default_svid_get(a_uint32_t dev_id, fal_port_t port_id,
     FAL_API_UNLOCK;
     return rv;
 }
-
+#endif
 /**
  * @brief Set default c-vid on a particular port.
  * @param[in] dev_id device id
@@ -1258,7 +1271,7 @@ fal_port_default_cvid_set(a_uint32_t dev_id, fal_port_t port_id,
     FAL_API_UNLOCK;
     return rv;
 }
-
+#ifndef IN_PORTVLAN_MINI
 /**
  * @brief Get default c-vid on a particular port.
  * @param[in] dev_id device id
@@ -1277,7 +1290,7 @@ fal_port_default_cvid_get(a_uint32_t dev_id, fal_port_t port_id,
     FAL_API_UNLOCK;
     return rv;
 }
-
+#endif
 /**
  * @brief Set vlan propagation status on a particular port.
  * @param[in] dev_id device id
@@ -1296,6 +1309,8 @@ fal_port_vlan_propagation_set(a_uint32_t dev_id, fal_port_t port_id,
     FAL_API_UNLOCK;
     return rv;
 }
+#ifndef IN_PORTVLAN_MINI
+
 
 /**
  * @brief Get vlan propagation status on a particular port.
@@ -1605,7 +1620,7 @@ fal_port_vrf_id_get(a_uint32_t dev_id, fal_port_t port_id,
     FAL_API_UNLOCK;
     return rv;
 }
-
+#endif
 
 /**
  * @}

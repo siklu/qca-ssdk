@@ -108,7 +108,7 @@ _isisc_port_1qmode_set(a_uint32_t dev_id, fal_port_t port_id,
                       (a_uint8_t *) (&data), sizeof (a_uint32_t));
     return rv;
 }
-
+#ifndef IN_PORTVLAN_MINI
 static sw_error_t
 _isisc_port_1qmode_get(a_uint32_t dev_id, fal_port_t port_id,
                       fal_pt_1qmode_t * pport_1qmode)
@@ -137,7 +137,7 @@ _isisc_port_1qmode_get(a_uint32_t dev_id, fal_port_t port_id,
 
     return SW_OK;
 }
-
+#endif
 static sw_error_t
 _isisc_port_egvlanmode_set(a_uint32_t dev_id, fal_port_t port_id,
                           fal_pt_1q_egmode_t port_egvlanmode)
@@ -175,7 +175,7 @@ _isisc_port_egvlanmode_set(a_uint32_t dev_id, fal_port_t port_id,
                       (a_uint8_t *) (&data), sizeof (a_uint32_t));
     return rv;
 }
-
+#ifndef IN_PORTVLAN_MINI
 static sw_error_t
 _isisc_port_egvlanmode_get(a_uint32_t dev_id, fal_port_t port_id,
                           fal_pt_1q_egmode_t * pport_egvlanmode)
@@ -204,7 +204,7 @@ _isisc_port_egvlanmode_get(a_uint32_t dev_id, fal_port_t port_id,
 
     return SW_OK;
 }
-
+#endif
 static sw_error_t
 _isisc_portvlan_member_add(a_uint32_t dev_id, fal_port_t port_id,
                           a_uint32_t mem_port_id)
@@ -297,7 +297,7 @@ _isisc_portvlan_member_update(a_uint32_t dev_id, fal_port_t port_id,
 
     return rv;
 }
-
+#ifndef IN_PORTVLAN_MINI
 static sw_error_t
 _isisc_portvlan_member_get(a_uint32_t dev_id, fal_port_t port_id,
                           fal_pbmp_t * mem_port_map)
@@ -320,7 +320,7 @@ _isisc_portvlan_member_get(a_uint32_t dev_id, fal_port_t port_id,
 
     return SW_OK;
 }
-
+#endif
 static sw_error_t
 _isisc_port_force_default_vid_set(a_uint32_t dev_id, fal_port_t port_id,
                                  a_bool_t enable)
@@ -352,7 +352,7 @@ _isisc_port_force_default_vid_set(a_uint32_t dev_id, fal_port_t port_id,
                       FORCE_DEF_VID, (a_uint8_t *) (&val), sizeof (a_uint32_t));
     return rv;
 }
-
+#ifndef IN_PORTVLAN_MINI
 static sw_error_t
 _isisc_port_force_default_vid_get(a_uint32_t dev_id, fal_port_t port_id,
                                  a_bool_t * enable)
@@ -382,7 +382,7 @@ _isisc_port_force_default_vid_get(a_uint32_t dev_id, fal_port_t port_id,
 
     return SW_OK;
 }
-
+#endif
 static sw_error_t
 _isisc_port_force_portvlan_set(a_uint32_t dev_id, fal_port_t port_id,
                               a_bool_t enable)
@@ -414,7 +414,7 @@ _isisc_port_force_portvlan_set(a_uint32_t dev_id, fal_port_t port_id,
                       FORCE_PVLAN, (a_uint8_t *) (&val), sizeof (a_uint32_t));
     return rv;
 }
-
+#ifndef IN_PORTVLAN_MINI
 static sw_error_t
 _isisc_port_force_portvlan_get(a_uint32_t dev_id, fal_port_t port_id,
                               a_bool_t * enable)
@@ -444,7 +444,7 @@ _isisc_port_force_portvlan_get(a_uint32_t dev_id, fal_port_t port_id,
 
     return SW_OK;
 }
-
+#endif
 static sw_error_t
 _isisc_nestvlan_tpid_set(a_uint32_t dev_id, a_uint32_t tpid)
 {
@@ -458,7 +458,7 @@ _isisc_nestvlan_tpid_set(a_uint32_t dev_id, a_uint32_t tpid)
                       TAG_VALUE, (a_uint8_t *) (&val), sizeof (a_uint32_t));
     return rv;
 }
-
+#ifndef IN_PORTVLAN_MINI
 static sw_error_t
 _isisc_nestvlan_tpid_get(a_uint32_t dev_id, a_uint32_t * tpid)
 {
@@ -474,7 +474,7 @@ _isisc_nestvlan_tpid_get(a_uint32_t dev_id, a_uint32_t * tpid)
     *tpid = val;
     return SW_OK;
 }
-
+#endif
 static sw_error_t
 _isisc_port_invlan_mode_set(a_uint32_t dev_id, fal_port_t port_id,
                            fal_pt_invlan_mode_t mode)
@@ -498,7 +498,7 @@ _isisc_port_invlan_mode_set(a_uint32_t dev_id, fal_port_t port_id,
                       (a_uint8_t *) (&regval[mode]), sizeof (a_uint32_t));
     return rv;
 }
-
+#ifndef IN_PORTVLAN_MINI
 static sw_error_t
 _isisc_port_invlan_mode_get(a_uint32_t dev_id, fal_port_t port_id,
                            fal_pt_invlan_mode_t * mode)
@@ -531,6 +531,7 @@ _isisc_port_invlan_mode_get(a_uint32_t dev_id, fal_port_t port_id,
 
     return rv;
 }
+#endif
 
 static sw_error_t
 _isisc_port_tls_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
@@ -562,7 +563,7 @@ _isisc_port_tls_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
                       TLS_EN, (a_uint8_t *) (&val), sizeof (a_uint32_t));
     return rv;
 }
-
+#ifndef IN_PORTVLAN_MINI
 static sw_error_t
 _isisc_port_tls_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
 {
@@ -655,7 +656,7 @@ _isisc_port_pri_propagation_get(a_uint32_t dev_id, fal_port_t port_id,
 
     return SW_OK;
 }
-
+#endif
 static sw_error_t
 _isisc_port_default_svid_set(a_uint32_t dev_id, fal_port_t port_id,
                             a_uint32_t vid)
@@ -684,7 +685,7 @@ _isisc_port_default_svid_set(a_uint32_t dev_id, fal_port_t port_id,
     rv = _isisc_port_route_defv_set(dev_id, port_id);
     return rv;
 }
-
+#ifndef IN_PORTVLAN_MINI
 static sw_error_t
 _isisc_port_default_svid_get(a_uint32_t dev_id, fal_port_t port_id,
                             a_uint32_t * vid)
@@ -705,7 +706,7 @@ _isisc_port_default_svid_get(a_uint32_t dev_id, fal_port_t port_id,
     *vid = val & 0xfff;
     return rv;
 }
-
+#endif
 static sw_error_t
 _isisc_port_default_cvid_set(a_uint32_t dev_id, fal_port_t port_id,
                             a_uint32_t vid)
@@ -734,7 +735,7 @@ _isisc_port_default_cvid_set(a_uint32_t dev_id, fal_port_t port_id,
     rv = _isisc_port_route_defv_set(dev_id, port_id);
     return rv;
 }
-
+#ifndef IN_PORTVLAN_MINI
 static sw_error_t
 _isisc_port_default_cvid_get(a_uint32_t dev_id, fal_port_t port_id,
                             a_uint32_t * vid)
@@ -755,7 +756,7 @@ _isisc_port_default_cvid_get(a_uint32_t dev_id, fal_port_t port_id,
     *vid = val & 0xfff;
     return rv;
 }
-
+#endif
 static sw_error_t
 _isisc_port_vlan_propagation_set(a_uint32_t dev_id, fal_port_t port_id,
                                 fal_vlan_propagation_mode_t mode)
@@ -801,6 +802,55 @@ _isisc_port_vlan_propagation_set(a_uint32_t dev_id, fal_port_t port_id,
                       (a_uint8_t *) (&reg), sizeof (a_uint32_t));
     return rv;
 }
+static sw_error_t
+_isisc_vlan_trans_write(a_uint32_t dev_id, a_uint32_t entry_idx, fal_pbmp_t pbmp,
+                       fal_vlan_trans_entry_t entry)
+{
+    sw_error_t rv;
+    a_uint32_t i, addr, table[2] = { 0 };
+
+    addr = ISISC_VLAN_TRANS_ADDR + (entry_idx << 3);
+
+    if (0 != pbmp)
+    {
+        table[0] = entry.o_vid & 0xfff;
+        table[0] |= ((entry.s_vid & 0xfff) << 12);
+        table[0] |= ((entry.c_vid & 0xff) << 24);
+        table[1] = (entry.c_vid >> 8) & 0xf;
+
+        if (A_TRUE == entry.bi_dir)
+        {
+            table[1] |= (0x3 << 4);
+        }
+
+        if (A_TRUE == entry.forward_dir)
+        {
+            table[1] |= (0x1 << 4);
+        }
+
+        if (A_TRUE == entry.reverse_dir)
+        {
+            table[1] |= (0x1 << 5);
+        }
+
+        table[1] |= (pbmp << 6);
+        table[1] |= ((0x1UL & entry.o_vid_is_cvid) << 13);
+        table[1] |= ((0x1UL & entry.s_vid_enable) << 14);
+        table[1] |= ((0x1UL & entry.c_vid_enable) << 15);
+        table[1] |= ((0x1UL & entry.one_2_one_vlan) << 16);
+    }
+
+    /* set vlan trans table */
+    for (i = 0; i < 2; i++)
+    {
+        HSL_REG_ENTRY_GEN_SET(rv, dev_id, addr + (i << 2), sizeof (a_uint32_t),
+                              (a_uint8_t *) (&(table[i])), sizeof (a_uint32_t));
+        SW_RTN_ON_ERROR(rv);
+    }
+
+    return SW_OK;
+}
+#ifndef IN_PORTVLAN_MINI
 
 static sw_error_t
 _isisc_port_vlan_propagation_get(a_uint32_t dev_id, fal_port_t port_id,
@@ -907,54 +957,7 @@ _isisc_vlan_trans_read(a_uint32_t dev_id, a_uint32_t entry_idx,
     return SW_OK;
 }
 
-static sw_error_t
-_isisc_vlan_trans_write(a_uint32_t dev_id, a_uint32_t entry_idx, fal_pbmp_t pbmp,
-                       fal_vlan_trans_entry_t entry)
-{
-    sw_error_t rv;
-    a_uint32_t i, addr, table[2] = { 0 };
 
-    addr = ISISC_VLAN_TRANS_ADDR + (entry_idx << 3);
-
-    if (0 != pbmp)
-    {
-        table[0] = entry.o_vid & 0xfff;
-        table[0] |= ((entry.s_vid & 0xfff) << 12);
-        table[0] |= ((entry.c_vid & 0xff) << 24);
-        table[1] = (entry.c_vid >> 8) & 0xf;
-
-        if (A_TRUE == entry.bi_dir)
-        {
-            table[1] |= (0x3 << 4);
-        }
-
-        if (A_TRUE == entry.forward_dir)
-        {
-            table[1] |= (0x1 << 4);
-        }
-
-        if (A_TRUE == entry.reverse_dir)
-        {
-            table[1] |= (0x1 << 5);
-        }
-
-        table[1] |= (pbmp << 6);
-        table[1] |= ((0x1UL & entry.o_vid_is_cvid) << 13);
-        table[1] |= ((0x1UL & entry.s_vid_enable) << 14);
-        table[1] |= ((0x1UL & entry.c_vid_enable) << 15);
-        table[1] |= ((0x1UL & entry.one_2_one_vlan) << 16);
-    }
-
-    /* set vlan trans table */
-    for (i = 0; i < 2; i++)
-    {
-        HSL_REG_ENTRY_GEN_SET(rv, dev_id, addr + (i << 2), sizeof (a_uint32_t),
-                              (a_uint8_t *) (&(table[i])), sizeof (a_uint32_t));
-        SW_RTN_ON_ERROR(rv);
-    }
-
-    return SW_OK;
-}
 
 static sw_error_t
 _isisc_port_vlan_trans_convert(fal_vlan_trans_entry_t * entry,
@@ -1416,7 +1419,7 @@ _isisc_eg_trans_filter_bypass_en_get(a_uint32_t dev_id, a_uint32_t * enable)
     *enable = val;
     return SW_OK;
 }
-
+#endif
 
 
 /**
@@ -1437,7 +1440,7 @@ isisc_port_1qmode_set(a_uint32_t dev_id, fal_port_t port_id,
     HSL_API_UNLOCK;
     return rv;
 }
-
+#ifndef IN_PORTVLAN_MINI
 /**
  * @brief Get 802.1q work mode on a particular port.
  * @param[in] dev_id device id
@@ -1456,7 +1459,7 @@ isisc_port_1qmode_get(a_uint32_t dev_id, fal_port_t port_id,
     HSL_API_UNLOCK;
     return rv;
 }
-
+#endif
 /**
  * @brief Set packets transmitted out vlan tagged mode on a particular port.
  * @param[in] dev_id device id
@@ -1475,7 +1478,7 @@ isisc_port_egvlanmode_set(a_uint32_t dev_id, fal_port_t port_id,
     HSL_API_UNLOCK;
     return rv;
 }
-
+#ifndef IN_PORTVLAN_MINI
 /**
  * @brief Get packets transmitted out vlan tagged mode on a particular port.
  * @param[in] dev_id device id
@@ -1494,7 +1497,7 @@ isisc_port_egvlanmode_get(a_uint32_t dev_id, fal_port_t port_id,
     HSL_API_UNLOCK;
     return rv;
 }
-
+#endif
 /**
  * @brief Add member of port based vlan on a particular port.
  * @param[in] dev_id device id
@@ -1551,7 +1554,7 @@ isisc_portvlan_member_update(a_uint32_t dev_id, fal_port_t port_id,
     HSL_API_UNLOCK;
     return rv;
 }
-
+#ifndef IN_PORTVLAN_MINI
 /**
  * @brief Get member of port based vlan on a particular port.
  * @param[in] dev_id device id
@@ -1570,7 +1573,7 @@ isisc_portvlan_member_get(a_uint32_t dev_id, fal_port_t port_id,
     HSL_API_UNLOCK;
     return rv;
 }
-
+#endif
 /**
  * @brief Set force default vlan id status on a particular port.
  * @param[in] dev_id device id
@@ -1589,7 +1592,7 @@ isisc_port_force_default_vid_set(a_uint32_t dev_id, fal_port_t port_id,
     HSL_API_UNLOCK;
     return rv;
 }
-
+#ifndef IN_PORTVLAN_MINI
 /**
  * @brief Get force default vlan id status on a particular port.
  * @param[in] dev_id device id
@@ -1608,7 +1611,7 @@ isisc_port_force_default_vid_get(a_uint32_t dev_id, fal_port_t port_id,
     HSL_API_UNLOCK;
     return rv;
 }
-
+#endif
 /**
  * @brief Set force port based vlan status on a particular port.
  * @param[in] dev_id device id
@@ -1627,7 +1630,7 @@ isisc_port_force_portvlan_set(a_uint32_t dev_id, fal_port_t port_id,
     HSL_API_UNLOCK;
     return rv;
 }
-
+#ifndef IN_PORTVLAN_MINI
 /**
  * @brief Get force port based vlan status on a particular port.
  * @param[in] dev_id device id
@@ -1646,7 +1649,7 @@ isisc_port_force_portvlan_get(a_uint32_t dev_id, fal_port_t port_id,
     HSL_API_UNLOCK;
     return rv;
 }
-
+#endif
 /**
  * @brief Set nest vlan tpid on a particular device.
  * @param[in] dev_id device id
@@ -1663,7 +1666,7 @@ isisc_nestvlan_tpid_set(a_uint32_t dev_id, a_uint32_t tpid)
     HSL_API_UNLOCK;
     return rv;
 }
-
+#ifndef IN_PORTVLAN_MINI
 /**
  * @brief Get nest vlan tpid on a particular device.
  * @param[in] dev_id device id
@@ -1680,7 +1683,7 @@ isisc_nestvlan_tpid_get(a_uint32_t dev_id, a_uint32_t * tpid)
     HSL_API_UNLOCK;
     return rv;
 }
-
+#endif
 /**
  * @brief Set ingress vlan mode mode on a particular port.
  * @param[in] dev_id device id
@@ -1699,7 +1702,7 @@ isisc_port_invlan_mode_set(a_uint32_t dev_id, fal_port_t port_id,
     HSL_API_UNLOCK;
     return rv;
 }
-
+#ifndef IN_PORTVLAN_MINI
 /**
  * @brief Get ingress vlan mode mode on a particular port.
  * @param[in] dev_id device id
@@ -1718,7 +1721,7 @@ isisc_port_invlan_mode_get(a_uint32_t dev_id, fal_port_t port_id,
     HSL_API_UNLOCK;
     return rv;
 }
-
+#endif
 /**
  * @brief Set tls status on a particular port.
  * @param[in] dev_id device id
@@ -1736,6 +1739,8 @@ isisc_port_tls_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
     HSL_API_UNLOCK;
     return rv;
 }
+#ifndef IN_PORTVLAN_MINI
+
 
 /**
  * @brief Get tls status on a particular port.
@@ -1792,7 +1797,7 @@ isisc_port_pri_propagation_get(a_uint32_t dev_id, fal_port_t port_id,
     HSL_API_UNLOCK;
     return rv;
 }
-
+#endif
 /**
  * @brief Set default s-vid on a particular port.
  * @param[in] dev_id device id
@@ -1811,7 +1816,7 @@ isisc_port_default_svid_set(a_uint32_t dev_id, fal_port_t port_id,
     HSL_API_UNLOCK;
     return rv;
 }
-
+#ifndef IN_PORTVLAN_MINI
 /**
  * @brief Get default s-vid on a particular port.
  * @param[in] dev_id device id
@@ -1830,7 +1835,7 @@ isisc_port_default_svid_get(a_uint32_t dev_id, fal_port_t port_id,
     HSL_API_UNLOCK;
     return rv;
 }
-
+#endif
 /**
  * @brief Set default c-vid on a particular port.
  * @param[in] dev_id device id
@@ -1849,7 +1854,7 @@ isisc_port_default_cvid_set(a_uint32_t dev_id, fal_port_t port_id,
     HSL_API_UNLOCK;
     return rv;
 }
-
+#ifndef IN_PORTVLAN_MINI
 /**
  * @brief Get default c-vid on a particular port.
  * @param[in] dev_id device id
@@ -1868,7 +1873,7 @@ isisc_port_default_cvid_get(a_uint32_t dev_id, fal_port_t port_id,
     HSL_API_UNLOCK;
     return rv;
 }
-
+#endif
 /**
  * @brief Set vlan propagation status on a particular port.
  * @param[in] dev_id device id
@@ -1887,6 +1892,8 @@ isisc_port_vlan_propagation_set(a_uint32_t dev_id, fal_port_t port_id,
     HSL_API_UNLOCK;
     return rv;
 }
+#ifndef IN_PORTVLAN_MINI
+
 
 /**
  * @brief Get vlan propagation status on a particular port.
@@ -2174,7 +2181,7 @@ isisc_eg_trans_filter_bypass_en_get(a_uint32_t dev_id, a_bool_t* enable)
     HSL_API_UNLOCK;
     return rv;
 }
-
+#endif
 
 
 sw_error_t
@@ -2199,31 +2206,34 @@ isisc_portvlan_init(a_uint32_t dev_id)
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
-    p_api->port_1qmode_get = isisc_port_1qmode_get;
-    p_api->port_1qmode_set = isisc_port_1qmode_set;
-    p_api->port_egvlanmode_get = isisc_port_egvlanmode_get;
-    p_api->port_egvlanmode_set = isisc_port_egvlanmode_set;
-    p_api->portvlan_member_add = isisc_portvlan_member_add;
-    p_api->portvlan_member_del = isisc_portvlan_member_del;
-    p_api->portvlan_member_update = isisc_portvlan_member_update;
-    p_api->portvlan_member_get = isisc_portvlan_member_get;
-    p_api->port_force_default_vid_set = isisc_port_force_default_vid_set;
-    p_api->port_force_default_vid_get = isisc_port_force_default_vid_get;
-    p_api->port_force_portvlan_set = isisc_port_force_portvlan_set;
-    p_api->port_force_portvlan_get = isisc_port_force_portvlan_get;
-    p_api->nestvlan_tpid_set = isisc_nestvlan_tpid_set;
-    p_api->nestvlan_tpid_get = isisc_nestvlan_tpid_get;
-    p_api->port_invlan_mode_set = isisc_port_invlan_mode_set;
-    p_api->port_invlan_mode_get = isisc_port_invlan_mode_get;
-    p_api->port_tls_set = isisc_port_tls_set;
-    p_api->port_tls_get = isisc_port_tls_get;
-    p_api->port_pri_propagation_set = isisc_port_pri_propagation_set;
-    p_api->port_pri_propagation_get = isisc_port_pri_propagation_get;
-    p_api->port_default_svid_set = isisc_port_default_svid_set;
-    p_api->port_default_svid_get = isisc_port_default_svid_get;
-    p_api->port_default_cvid_set = isisc_port_default_cvid_set;
-    p_api->port_default_cvid_get = isisc_port_default_cvid_get;
-    p_api->port_vlan_propagation_set = isisc_port_vlan_propagation_set;
+	p_api->port_1qmode_set = isisc_port_1qmode_set;
+	p_api->port_egvlanmode_set = isisc_port_egvlanmode_set;
+	p_api->portvlan_member_add = isisc_portvlan_member_add;
+	p_api->portvlan_member_del = isisc_portvlan_member_del;
+	p_api->portvlan_member_update = isisc_portvlan_member_update;
+	p_api->port_force_default_vid_set = isisc_port_force_default_vid_set;
+	p_api->port_force_portvlan_set = isisc_port_force_portvlan_set;
+	p_api->nestvlan_tpid_set = isisc_nestvlan_tpid_set;
+	p_api->port_invlan_mode_set = isisc_port_invlan_mode_set;
+	p_api->port_tls_set = isisc_port_tls_set;
+	#ifndef IN_PORTVLAN_MINI
+	p_api->port_1qmode_get = isisc_port_1qmode_get;
+	p_api->port_egvlanmode_get = isisc_port_egvlanmode_get;
+	p_api->portvlan_member_get = isisc_portvlan_member_get;
+	p_api->port_force_default_vid_get = isisc_port_force_default_vid_get;
+	p_api->port_force_portvlan_get = isisc_port_force_portvlan_get;
+	p_api->nestvlan_tpid_get = isisc_nestvlan_tpid_get;
+	p_api->port_invlan_mode_get = isisc_port_invlan_mode_get;
+	p_api->port_tls_get = isisc_port_tls_get;
+	p_api->port_pri_propagation_set = isisc_port_pri_propagation_set;
+	p_api->port_pri_propagation_get = isisc_port_pri_propagation_get;
+	#endif
+	p_api->port_default_svid_set = isisc_port_default_svid_set;
+	p_api->port_default_cvid_set = isisc_port_default_cvid_set;
+	p_api->port_vlan_propagation_set = isisc_port_vlan_propagation_set;
+	#ifndef IN_PORTVLAN_MINI
+	p_api->port_default_cvid_get = isisc_port_default_cvid_get;
+	p_api->port_default_svid_get = isisc_port_default_svid_get;
     p_api->port_vlan_propagation_get = isisc_port_vlan_propagation_get;
     p_api->port_vlan_trans_add = isisc_port_vlan_trans_add;
     p_api->port_vlan_trans_del = isisc_port_vlan_trans_del;
@@ -2239,6 +2249,7 @@ isisc_portvlan_init(a_uint32_t dev_id)
     p_api->netisolate_get = isisc_netisolate_get;
     p_api->eg_trans_filter_bypass_en_set = isisc_eg_trans_filter_bypass_en_set;
     p_api->eg_trans_filter_bypass_en_get = isisc_eg_trans_filter_bypass_en_get;
+	#endif
 #endif
 
     return SW_OK;

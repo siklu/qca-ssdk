@@ -42,6 +42,73 @@ extern "C" {
         hsl_acl_addr_update   acl_addr_update;
     } hsl_acl_func_t;
 
+#if 1
+extern sw_error_t reduce_hsl_reg_entry_get(a_uint32_t dev,a_uint32_t reg,a_uint8_t* value,a_uint8_t val_len);
+#define HSL_REG_ENTRY_GET(rv, dev, reg, index, value, val_len) \
+	rv = reduce_hsl_reg_entry_get(dev,reg##_OFFSET + ((a_uint32_t)index) * reg##_E_OFFSET,value,val_len);
+
+
+extern sw_error_t reduce_hsl_reg_entry_set(a_uint32_t dev,a_uint32_t reg,a_uint8_t* value,a_uint8_t val_len);
+#define HSL_REG_ENTRY_SET(rv, dev, reg, index, value, val_len) \
+	rv = reduce_hsl_reg_entry_set(dev,reg##_OFFSET + ((a_uint32_t)index) * reg##_E_OFFSET,value,val_len);
+
+extern sw_error_t reduce_hsl_reg_field_get(a_uint32_t dev,a_uint32_t reg,a_uint32_t reg_offset,
+						a_uint32_t reg_offset_len,a_uint8_t* value,a_uint8_t val_len);
+#define HSL_REG_FIELD_GET(rv, dev, reg, index, field, value, val_len) \
+	rv = reduce_hsl_reg_field_get(dev,reg##_OFFSET + ((a_uint32_t)index) * reg##_E_OFFSET,\
+	reg##_##field##_BOFFSET, \
+	reg##_##field##_BLEN,value,val_len);
+
+extern sw_error_t reduce_hsl_reg_field_set(a_uint32_t dev,a_uint32_t reg,a_uint32_t reg_offset,
+						a_uint32_t reg_offset_len,a_uint8_t* value,a_uint8_t val_len);
+
+#define HSL_REG_FIELD_SET(rv, dev, reg, index, field, value, val_len) \
+		rv = reduce_hsl_reg_field_set(dev,reg##_OFFSET + ((a_uint32_t)index) * reg##_E_OFFSET,\
+		reg##_##field##_BOFFSET, \
+		reg##_##field##_BLEN,value,val_len);
+
+
+
+extern sw_error_t reduce_hsl_reg_entry_gen_get(a_uint32_t dev,a_uint32_t addr,a_uint8_t* value,a_uint8_t val_len);
+#define HSL_REG_ENTRY_GEN_GET(rv, dev, addr, reg_len, value, val_len) \
+		rv = reduce_hsl_reg_entry_gen_get(dev,addr,(a_uint8_t*)value,val_len);
+
+
+extern sw_error_t reduce_hsl_reg_entry_gen_set(a_uint32_t dev,a_uint32_t addr,a_uint8_t* value,a_uint8_t val_len);
+#define HSL_REG_ENTRY_GEN_SET(rv, dev, addr, reg_len, value, val_len) \
+		rv = reduce_hsl_reg_entry_gen_set(dev,addr,(a_uint8_t*)value,val_len);
+
+
+
+
+extern sw_error_t reduce_hsl_reg_field_gen_get(a_uint32_t dev,a_uint32_t reg_addr,
+						a_uint32_t bitoffset, a_uint32_t field_len, a_uint8_t* value,a_uint8_t val_len);
+#define HSL_REG_FIELD_GEN_GET(rv, dev, regaddr, bitlength, bitoffset, value, val_len) \
+	rv = reduce_hsl_reg_field_gen_get(dev, regaddr, bitoffset, bitlength, (a_uint8_t*)value, val_len);
+
+extern sw_error_t reduce_hsl_reg_field_gen_set(a_uint32_t dev,a_uint32_t regaddr,a_uint32_t bitoffset,
+						a_uint32_t bitlength,a_uint8_t* value,a_uint8_t val_len);
+
+#define HSL_REG_FIELD_GEN_SET(rv, dev, regaddr, bitlength, bitoffset, value, val_len) \
+		rv = reduce_hsl_reg_field_gen_set(dev,regaddr,bitoffset,bitlength, (a_uint8_t*)value,val_len);
+
+
+
+extern sw_error_t reduce_hsl_phy_get(a_uint32_t dev,a_uint32_t phy_addr,a_uint32_t reg,a_uint8_t* value);
+#define HSL_PHY_GET(rv, dev, phy_addr, reg, value) \
+		rv = reduce_hsl_phy_get(dev,phy_addr,reg,(a_uint8_t*)value);
+
+
+extern sw_error_t reduce_hsl_phy_set(a_uint32_t dev,a_uint32_t phy_addr,a_uint32_t reg,a_uint8_t* value);
+#define HSL_PHY_SET(rv, dev, phy_addr, reg, value) \
+		rv = reduce_hsl_phy_set(dev,phy_addr,reg,(a_uint8_t*)value);
+
+
+
+
+
+
+#else
 #define HSL_REG_ENTRY_GET(rv, dev, reg, index, value, val_len) \
 do { \
     hsl_api_t *p_api = hsl_api_ptr_get(dev); \
@@ -149,6 +216,7 @@ do { \
         rv = SW_NOT_INITIALIZED; \
     } \
 } while (0);
+#endif
 
 #if (defined(API_LOCK) \
 && (defined(HSL_STANDALONG) || (defined(KERNEL_MODULE) && defined(USER_MODE))))

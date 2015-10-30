@@ -100,40 +100,81 @@ static sw_data_type_t sw_data_type[] =
     SW_TYPE_DEF(SW_INT32, NULL, NULL),
     SW_TYPE_DEF(SW_UINT64, NULL, NULL),
     SW_TYPE_DEF(SW_INT64, NULL, NULL),
+	#ifdef IN_PORTCONTROL
+	#ifndef IN_PORTCONTROL_MINI
     SW_TYPE_DEF(SW_CAP, cmd_data_check_capable, NULL),
     SW_TYPE_DEF(SW_DUPLEX, cmd_data_check_duplex, NULL),
     SW_TYPE_DEF(SW_SPEED, cmd_data_check_speed, NULL),
+	#endif
+	#endif
+	#ifdef IN_PORTVLAN
     SW_TYPE_DEF(SW_1QMODE, cmd_data_check_1qmode, NULL),
     SW_TYPE_DEF(SW_EGMODE, cmd_data_check_egmode, NULL),
+	#endif
+	#ifdef IN_MIB
     SW_TYPE_DEF(SW_MIB, NULL, NULL),
+	#endif
+	#ifdef IN_VLAN
     SW_TYPE_DEF(SW_VLAN, cmd_data_check_vlan, NULL),
+	#endif
     SW_TYPE_DEF(SW_PBMP, cmd_data_check_pbmp, NULL),
     SW_TYPE_DEF(SW_ENABLE, cmd_data_check_enable, NULL),
     SW_TYPE_DEF(SW_MACADDR, cmd_data_check_macaddr, NULL),
+	#ifdef IN_FDB
     SW_TYPE_DEF(SW_FDBENTRY, cmd_data_check_fdbentry, NULL),
+	#endif
+	#ifdef IN_QOS
+	#ifndef IN_QOS_MINI
     SW_TYPE_DEF(SW_SCH, cmd_data_check_qos_sch, NULL),
     SW_TYPE_DEF(SW_QOS, cmd_data_check_qos_pt, NULL),
-    SW_TYPE_DEF(SW_STORM, cmd_data_check_storm, NULL),
+	#endif
+	#endif
+	#ifdef IN_RATE
+	SW_TYPE_DEF(SW_STORM, cmd_data_check_storm, NULL),
+	#endif
+	#ifdef IN_STP
     SW_TYPE_DEF(SW_STP, cmd_data_check_stp_state, NULL),
+	#endif
+	#ifdef IN_LEAKY
     SW_TYPE_DEF(SW_LEAKY, cmd_data_check_leaky, NULL),
+	#endif
     SW_TYPE_DEF(SW_MACCMD, cmd_data_check_maccmd, NULL),
+	#ifdef IN_IP
     SW_TYPE_DEF(SW_FLOWCMD, cmd_data_check_flowcmd, NULL),
     SW_TYPE_DEF(SW_FLOWTYPE, cmd_data_check_flowtype, NULL),
+	#endif
     SW_TYPE_DEF(SW_UINT_A, cmd_data_check_uinta, NULL),
+	#ifdef IN_ACL
     SW_TYPE_DEF(SW_ACLRULE, NULL, NULL),
+	#endif
+	#ifdef IN_LED
     SW_TYPE_DEF(SW_LEDPATTERN, cmd_data_check_ledpattern, NULL),
+	#endif
+	#ifdef IN_PORTVLAN
     SW_TYPE_DEF(SW_INVLAN, cmd_data_check_invlan_mode, NULL),
+	#ifndef IN_PORTVLAN_MINI
     SW_TYPE_DEF(SW_VLANPROPAGATION, cmd_data_check_vlan_propagation, NULL),
     SW_TYPE_DEF(SW_VLANTRANSLATION, cmd_data_check_vlan_translation, NULL),
     SW_TYPE_DEF(SW_QINQMODE, cmd_data_check_qinq_mode, NULL),
     SW_TYPE_DEF(SW_QINQROLE, cmd_data_check_qinq_role, NULL),
+	#endif
+	#endif
     SW_TYPE_DEF(SW_CABLESTATUS, NULL, NULL),
     SW_TYPE_DEF(SW_CABLELEN, NULL, NULL),
     SW_TYPE_DEF(SW_SSDK_CFG, NULL, NULL),
+	#ifdef IN_PORTCONTROL
     SW_TYPE_DEF(SW_HDRMODE, cmd_data_check_hdrmode, NULL),
+	#endif
+	#ifdef IN_FDB
     SW_TYPE_DEF(SW_FDBOPRATION, cmd_data_check_fdboperation, NULL),
+	#endif
+	#ifdef IN_MISC
+	#ifndef IN_MISC_MINI
     SW_TYPE_DEF(SW_PPPOE, cmd_data_check_pppoe, NULL),
+	#endif
+	#endif
     SW_TYPE_DEF(SW_ACL_UDF_TYPE, NULL, NULL),
+	#if defined(IN_IP) || defined(IN_NAT)
     SW_TYPE_DEF(SW_IP_HOSTENTRY, cmd_data_check_host_entry, NULL),
     SW_TYPE_DEF(SW_ARP_LEARNMODE, cmd_data_check_arp_learn_mode, NULL),
     SW_TYPE_DEF(SW_IP_GUARDMODE, cmd_data_check_ip_guard_mode, NULL),
@@ -147,14 +188,22 @@ static sw_data_type_t sw_data_type[] =
     SW_TYPE_DEF(SW_IP6ADDR, cmd_data_check_ip6addr, NULL),
     SW_TYPE_DEF(SW_INTFMACENTRY, cmd_data_check_intf_mac_entry, NULL),
     SW_TYPE_DEF(SW_PUBADDRENTRY, cmd_data_check_pub_addr_entry, NULL),
+	#endif
+	#ifdef IN_RATE
     SW_TYPE_DEF(SW_INGPOLICER, cmd_data_check_port_policer, NULL),
     SW_TYPE_DEF(SW_EGSHAPER, cmd_data_check_egress_shaper, NULL),
     SW_TYPE_DEF(SW_ACLPOLICER, cmd_data_check_acl_policer, NULL),
+	#endif
     SW_TYPE_DEF(SW_MACCONFIG, NULL, NULL),
     SW_TYPE_DEF(SW_PHYCONFIG, NULL, NULL),
+	#ifdef IN_FDB
     SW_TYPE_DEF(SW_FDBSMODE, cmd_data_check_fdb_smode, NULL),
+	#endif
     SW_TYPE_DEF(SW_FX100CONFIG, NULL, NULL),
+	#ifdef IN_IGMP
     SW_TYPE_DEF(SW_SGENTRY, cmd_data_check_multi, NULL),
+	#endif
+	#ifdef IN_SEC
     SW_TYPE_DEF(SW_SEC_MAC, cmd_data_check_sec_mac, NULL),
     SW_TYPE_DEF(SW_SEC_IP, cmd_data_check_sec_ip, NULL),
     SW_TYPE_DEF(SW_SEC_IP4, cmd_data_check_sec_ip4, NULL),
@@ -163,16 +212,27 @@ static sw_data_type_t sw_data_type[] =
     SW_TYPE_DEF(SW_SEC_UDP, cmd_data_check_sec_udp, NULL),
     SW_TYPE_DEF(SW_SEC_ICMP4, cmd_data_check_sec_icmp4, NULL),
     SW_TYPE_DEF(SW_SEC_ICMP6, cmd_data_check_sec_icmp6, NULL),
+	#endif
+	#ifdef IN_COSMAP
     SW_TYPE_DEF(SW_REMARKENTRY, cmd_data_check_remark_entry, NULL),
+	#endif
+	#ifdef IN_IP
     SW_TYPE_DEF(SW_DEFAULT_ROUTE_ENTRY, cmd_data_check_default_route_entry, NULL),
     SW_TYPE_DEF(SW_HOST_ROUTE_ENTRY, cmd_data_check_host_route_entry, NULL),
     SW_TYPE_DEF(SW_IP_RFS_IP4, cmd_data_check_ip4_rfs_entry, NULL),
 	SW_TYPE_DEF(SW_IP_RFS_IP6, cmd_data_check_ip6_rfs_entry, NULL),
+	#endif
+	#ifdef IN_PORTCONTROL
+	#ifndef IN_PORTCONTROL_MINI
     SW_TYPE_DEF(SW_CROSSOVER_MODE, cmd_data_check_crossover_mode, NULL),
     SW_TYPE_DEF(SW_CROSSOVER_STATUS, cmd_data_check_crossover_status, NULL),
     SW_TYPE_DEF(SW_PREFER_MEDIUM, cmd_data_check_prefer_medium, NULL),
     SW_TYPE_DEF(SW_FIBER_MODE, cmd_data_check_fiber_mode, NULL),
+	#endif
+	#endif
+	#ifdef IN_INTERFACECONTROL
     SW_TYPE_DEF(SW_INTERFACE_MODE, cmd_data_check_interface_mode, NULL),
+	#endif
     SW_TYPE_DEF(SW_COUNTER_INFO, NULL, NULL),
 };
 
@@ -381,7 +441,8 @@ cmd_data_check_enable(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
 
     return SW_OK;
 }
-
+#ifdef IN_PORTCONTROL
+#ifndef IN_PORTCONTROL_MINI
 /*port ctrl*/
 sw_error_t
 cmd_data_check_duplex(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
@@ -514,7 +575,9 @@ cmd_data_check_fiber_mode(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
 
     return SW_OK;
 }
-
+#endif
+#endif
+#ifdef IN_INTERFACECONTROL
 sw_error_t
 cmd_data_check_interface_mode(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
 {
@@ -539,7 +602,9 @@ cmd_data_check_interface_mode(char *cmd_str, a_uint32_t * arg_val, a_uint32_t si
 
     return SW_OK;
 }
+#endif
 /*portvlan*/
+#ifdef IN_PORTVLAN
 sw_error_t
 cmd_data_check_1qmode(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
 {
@@ -607,8 +672,9 @@ cmd_data_check_egmode(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
 
     return SW_OK;
 }
-
+#endif
 /*vlan*/
+#ifdef IN_VLAN
 sw_error_t
 cmd_data_check_vlan(char *cmdstr, fal_vlan_t * val, a_uint32_t size)
 {
@@ -695,8 +761,10 @@ cmd_data_check_vlan(char *cmdstr, fal_vlan_t * val, a_uint32_t size)
     *val = entry;
     return SW_OK;
 }
-
+#endif
 /*qos*/
+#ifdef IN_QOS
+#ifndef IN_QOS_MINI
 sw_error_t
 cmd_data_check_qos_sch(char *cmdstr, fal_sch_mode_t * val, a_uint32_t size)
 {
@@ -761,9 +829,11 @@ cmd_data_check_qos_pt(char *cmdstr, fal_qos_mode_t * val, a_uint32_t size)
 
     return SW_OK;
 }
-
+#endif
+#endif
 
 /*rate*/
+#ifdef IN_RATE
 sw_error_t
 cmd_data_check_storm(char *cmdstr, fal_storm_type_t * val, a_uint32_t size)
 {
@@ -789,9 +859,10 @@ cmd_data_check_storm(char *cmdstr, fal_storm_type_t * val, a_uint32_t size)
 
     return SW_OK;
 }
-
+#endif
 
 /*stp*/
+#ifdef IN_STP
 sw_error_t
 cmd_data_check_stp_state(char *cmdstr, fal_stp_state_t * val, a_uint32_t size)
 {
@@ -825,9 +896,9 @@ cmd_data_check_stp_state(char *cmdstr, fal_stp_state_t * val, a_uint32_t size)
 
     return SW_OK;
 }
+#endif
 
-
-
+#ifdef IN_LEAKY
 /*general*/
 sw_error_t
 cmd_data_check_leaky(char *cmdstr, fal_leaky_ctrl_mode_t * val, a_uint32_t size)
@@ -850,7 +921,7 @@ cmd_data_check_leaky(char *cmdstr, fal_leaky_ctrl_mode_t * val, a_uint32_t size)
 
     return SW_OK;
 }
-
+#endif
 
 sw_error_t
 cmd_data_check_uinta(char *cmdstr, a_uint32_t * val, a_uint32_t size)
@@ -922,6 +993,7 @@ cmd_data_check_maccmd(char *cmdstr, fal_fwd_cmd_t * val, a_uint32_t size)
 }
 
 /*flow*/
+#ifdef IN_IP
 sw_error_t
 cmd_data_check_flowcmd(char *cmdstr, fal_default_flow_cmd_t * val, a_uint32_t size)
 {
@@ -990,7 +1062,7 @@ cmd_data_check_flowtype(char *cmd_str, fal_flow_type_t * arg_val,
 
     return SW_OK;
 }
-
+#endif
 sw_error_t
 cmd_data_check_confirm(char *cmdstr, a_bool_t def, a_bool_t * val,
                        a_uint32_t size)
@@ -1108,7 +1180,7 @@ cmd_data_check_macaddr(char *cmdstr, void *val, a_uint32_t size)
     *(fal_mac_addr_t *) val = mac;
     return SW_OK;
 }
-
+#ifdef IN_FDB
 sw_error_t
 cmd_data_check_fdbentry(char *info, void *val, a_uint32_t size)
 {
@@ -1235,7 +1307,7 @@ cmd_data_check_fdbentry(char *info, void *val, a_uint32_t size)
 
     return SW_OK;
 }
-
+#endif
 sw_error_t
 cmd_data_check_integer(char *cmd_str, a_uint32_t * arg_val, a_uint32_t max_val,
                        a_uint32_t min_val)
@@ -1282,7 +1354,7 @@ cmd_data_check_integer(char *cmd_str, a_uint32_t * arg_val, a_uint32_t max_val,
     *arg_val = tmp;
     return SW_OK;
 }
-
+#ifdef IN_ACL
 sw_error_t
 cmd_data_check_ruletype(char *cmd_str, fal_acl_rule_type_t * arg_val,
                         a_uint32_t size)
@@ -1315,7 +1387,7 @@ cmd_data_check_ruletype(char *cmd_str, fal_acl_rule_type_t * arg_val,
 
     return SW_OK;
 }
-
+#endif
 sw_error_t
 cmd_data_check_ip4addr(char *cmdstr, void * val, a_uint32_t size)
 {
@@ -1395,7 +1467,7 @@ cmd_data_check_ip4addr(char *cmdstr, void * val, a_uint32_t size)
     return SW_OK;
 }
 
-
+#ifdef IN_IGMP
 sw_error_t
 cmd_data_check_multi(char *info, void *val, a_uint32_t size)
 {
@@ -1475,6 +1547,7 @@ cmd_data_check_multi(char *info, void *val, a_uint32_t size)
 
     return SW_OK;
 }
+#endif
 
 sw_error_t
 cmd_data_check_ip6addr(char *cmdstr, void * val, a_uint32_t size)
@@ -1681,7 +1754,7 @@ cmd_data_check_patternmode(char *cmd_str, led_pattern_mode_t * arg_val,
 
     return SW_OK;
 }
-
+#ifdef IN_LED
 sw_error_t
 cmd_data_check_blinkfreq(char *cmd_str, led_blink_freq_t * arg_val,
                          a_uint32_t size)
@@ -1868,9 +1941,10 @@ cmd_data_check_ledpattern(char *info, void * val, a_uint32_t size)
 
     return SW_OK;
 }
-
+#endif
 
 /*Shiva*/
+#ifdef IN_PORTVLAN
 sw_error_t
 cmd_data_check_invlan_mode(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
 {
@@ -1897,7 +1971,7 @@ cmd_data_check_invlan_mode(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
 
     return SW_OK;
 }
-
+#ifndef IN_PORTVLAN_MINI
 sw_error_t
 cmd_data_check_vlan_propagation(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
 {
@@ -2055,8 +2129,10 @@ cmd_data_check_qinq_role(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
 
     return SW_OK;
 }
+#endif
+#endif
 
-
+#ifdef IN_PORTCONTROL
 sw_error_t
 cmd_data_check_hdrmode(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
 {
@@ -2083,7 +2159,8 @@ cmd_data_check_hdrmode(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
 
     return SW_OK;
 }
-
+#endif
+#ifdef IN_FDB
 sw_error_t
 cmd_data_check_fdboperation(char *cmd_str, void * val, a_uint32_t size)
 {
@@ -2116,7 +2193,9 @@ cmd_data_check_fdboperation(char *cmd_str, void * val, a_uint32_t size)
     *(fal_fdb_op_t *) val = entry;
     return SW_OK;
 }
-
+#endif
+#ifdef IN_MISC
+#ifndef IN_MISC_MINI
 sw_error_t
 cmd_data_check_pppoe(char *cmd_str, void * val, a_uint32_t size)
 {
@@ -2163,8 +2242,10 @@ cmd_data_check_pppoe(char *cmd_str, void * val, a_uint32_t size)
     *(fal_pppoe_session_t*)val = entry;
     return SW_OK;
 }
+#endif
+#endif
 
-
+#if defined(IN_IP) || defined(IN_NAT)
 sw_error_t
 cmd_data_check_host_entry(char *cmd_str, void * val, a_uint32_t size)
 {
@@ -2881,8 +2962,9 @@ cmd_data_check_pub_addr_entry(char *cmd_str, void * val, a_uint32_t size)
     *(fal_nat_pub_addr_t *)val = entry;
     return SW_OK;
 }
+#endif
 
-
+#ifdef IN_RATE
 sw_error_t
 cmd_data_check_egress_shaper(char *cmd_str, void * val, a_uint32_t size)
 {
@@ -3190,8 +3272,8 @@ cmd_data_check_port_policer(char *cmd_str, void * val, a_uint32_t size)
     *(fal_port_policer_t *)val = entry;
     return SW_OK;
 }
-
-
+#endif
+#if 0
 sw_error_t
 cmd_data_check_mac_mode(char *cmd_str, fal_interface_mac_mode_t * arg_val,
                         a_uint32_t size)
@@ -3270,8 +3352,8 @@ cmd_data_check_clock_mode(char *cmd_str, fal_interface_clock_mode_t * arg_val,
 
     return SW_OK;
 }
-
-
+#endif
+#ifdef IN_FDB
 sw_error_t
 cmd_data_check_fdb_smode(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
 {
@@ -3289,8 +3371,8 @@ cmd_data_check_fdb_smode(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
 
     return SW_OK;
 }
-
-
+#endif
+#ifdef IN_SEC
 sw_error_t
 cmd_data_check_sec_mac(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
 {
@@ -3515,7 +3597,8 @@ cmd_data_check_sec_icmp6(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
 
     return SW_OK;
 }
-
+#endif
+#ifdef IN_COSMAP
 sw_error_t
 cmd_data_check_remark_entry(char *info, void *val, a_uint32_t size)
 {
@@ -3608,7 +3691,8 @@ cmd_data_check_remark_entry(char *info, void *val, a_uint32_t size)
 */
     return SW_OK;
 }
-
+#endif
+#ifdef IN_IP
 sw_error_t
 cmd_data_check_default_route_entry(char *cmd_str, void * val, a_uint32_t size)
 {
@@ -3910,7 +3994,8 @@ cmd_data_check_ip4_rfs_entry(char *cmd_str, void * val, a_uint32_t size)
 	*(fal_ip4_rfs_t *)val = entry;
 	return SW_OK;
 }
-
+#endif
+#if 0
 sw_error_t
 cmd_data_check_fdb_rfs(char *cmd_str, void * val, a_uint32_t size)
 {
@@ -3948,8 +4033,8 @@ cmd_data_check_fdb_rfs(char *cmd_str, void * val, a_uint32_t size)
 	*(fal_fdb_rfs_t *)val = entry;
 	return SW_OK;
 }
-
-
+#endif
+#ifdef IN_NAT
 sw_error_t
 cmd_data_check_flow_cookie(char *cmd_str, void * val, a_uint32_t size)
 {
@@ -4065,7 +4150,8 @@ cmd_data_check_flow_rfs(char *cmd_str, void * val, a_uint32_t size)
 	*(fal_flow_rfs_t *)val = entry;
 	return SW_OK;
 }
-
+#endif
+#ifdef IN_IP
 sw_error_t
 cmd_data_check_ip6_rfs_entry(char *cmd_str, void * val, a_uint32_t size)
 {
@@ -4108,3 +4194,4 @@ cmd_data_check_ip6_rfs_entry(char *cmd_str, void * val, a_uint32_t size)
 	*(fal_ip6_rfs_t *)val = entry;
 	return SW_OK;
 }
+#endif

@@ -58,7 +58,7 @@ extern "C" {
 #define FAL_DSCP_MIN     0
 #define FAL_DSCP_MAX     63
 
-
+#ifndef IN_QOS_MINI
     sw_error_t
     fal_qos_sch_mode_set(a_uint32_t dev_id,
                          fal_sch_mode_t mode, const a_uint32_t weight[]);
@@ -83,12 +83,6 @@ extern "C" {
 
 
     sw_error_t
-    fal_qos_queue_tx_buf_nr_set(a_uint32_t dev_id, fal_port_t port_id,
-                                fal_queue_t queue_id, a_uint32_t * number);
-
-
-
-    sw_error_t
     fal_qos_queue_tx_buf_nr_get(a_uint32_t dev_id, fal_port_t port_id,
                                 fal_queue_t queue_id, a_uint32_t * number);
 
@@ -104,9 +98,7 @@ extern "C" {
     fal_qos_port_tx_buf_status_get(a_uint32_t dev_id, fal_port_t port_id,
                                    a_bool_t * enable);
 
-    sw_error_t
-    fal_qos_port_red_en_set(a_uint32_t dev_id, fal_port_t port_id,
-                            a_bool_t enable);
+    
 
 
     sw_error_t
@@ -114,18 +106,12 @@ extern "C" {
                             a_bool_t * enable);
 
 
-    sw_error_t
-    fal_qos_port_tx_buf_nr_set(a_uint32_t dev_id, fal_port_t port_id,
-                               a_uint32_t * number);
+    
 
 
 
     sw_error_t
     fal_qos_port_tx_buf_nr_get(a_uint32_t dev_id, fal_port_t port_id,
-                               a_uint32_t * number);
-
-    sw_error_t
-    fal_qos_port_rx_buf_nr_set(a_uint32_t dev_id, fal_port_t port_id,
                                a_uint32_t * number);
 
 
@@ -155,31 +141,45 @@ extern "C" {
     sw_error_t
     fal_cosmap_dscp_queue_get(a_uint32_t dev_id, a_uint32_t dscp,
                               fal_queue_t * queue);
+#endif
 
+	sw_error_t
+    fal_qos_port_rx_buf_nr_set(a_uint32_t dev_id, fal_port_t port_id,
+                               a_uint32_t * number);
 
-
+	sw_error_t
+    fal_qos_port_red_en_set(a_uint32_t dev_id, fal_port_t port_id,
+                            a_bool_t enable);
     sw_error_t
     fal_qos_port_mode_set(a_uint32_t dev_id, fal_port_t port_id,
                           fal_qos_mode_t mode, a_bool_t enable);
 
+	sw_error_t
+    fal_qos_port_tx_buf_nr_set(a_uint32_t dev_id, fal_port_t port_id,
+                               a_uint32_t * number);
 
+    
 
-    sw_error_t
+	sw_error_t
+    fal_qos_queue_tx_buf_nr_set(a_uint32_t dev_id, fal_port_t port_id,
+                                fal_queue_t queue_id, a_uint32_t * number);
+
+#ifndef IN_QOS_MINI
+sw_error_t
     fal_qos_port_mode_get(a_uint32_t dev_id, fal_port_t port_id,
                           fal_qos_mode_t mode, a_bool_t * enable);
-
-
+#endif
 
     sw_error_t
     fal_qos_port_mode_pri_set(a_uint32_t dev_id, fal_port_t port_id,
                               fal_qos_mode_t mode, a_uint32_t pri);
 
 
-
+#ifndef IN_QOS_MINI
     sw_error_t
     fal_qos_port_mode_pri_get(a_uint32_t dev_id, fal_port_t port_id,
                               fal_qos_mode_t mode, a_uint32_t * pri);
-
+#endif
 
 
     sw_error_t
@@ -187,66 +187,69 @@ extern "C" {
                                 a_uint32_t up);
 
 
-
+#ifndef IN_QOS_MINI
     sw_error_t
     fal_qos_port_default_up_get(a_uint32_t dev_id, fal_port_t port_id,
                                 a_uint32_t * up);
-
+#endif
 
     sw_error_t
     fal_qos_port_sch_mode_set(a_uint32_t dev_id, a_uint32_t port_id,
                               fal_sch_mode_t mode, const a_uint32_t weight[]);
 
-
+#ifndef IN_QOS_MINI
     sw_error_t
     fal_qos_port_sch_mode_get(a_uint32_t dev_id, a_uint32_t port_id,
                               fal_sch_mode_t * mode, a_uint32_t weight[]);
-
+#endif
 
     sw_error_t
     fal_qos_port_default_spri_set(a_uint32_t dev_id, fal_port_t port_id,
                                   a_uint32_t spri);
 
-
+#ifndef IN_QOS_MINI
     sw_error_t
     fal_qos_port_default_spri_get(a_uint32_t dev_id, fal_port_t port_id,
                                   a_uint32_t * spri);
-
+#endif
 
     sw_error_t
     fal_qos_port_default_cpri_set(a_uint32_t dev_id, fal_port_t port_id,
                                   a_uint32_t cpri);
 
-
+#ifndef IN_QOS_MINI
     sw_error_t
     fal_qos_port_default_cpri_get(a_uint32_t dev_id, fal_port_t port_id,
                                   a_uint32_t * cpri);
+#endif
 
     sw_error_t
     fal_qos_port_force_spri_status_set(a_uint32_t dev_id, fal_port_t port_id,
                                        a_bool_t enable);
-
+#ifndef IN_QOS_MINI
     sw_error_t
     fal_qos_port_force_spri_status_get(a_uint32_t dev_id, fal_port_t port_id,
                                        a_bool_t* enable);
+#endif
 
     sw_error_t
     fal_qos_port_force_cpri_status_set(a_uint32_t dev_id, fal_port_t port_id,
                                        a_bool_t enable);
-
+#ifndef IN_QOS_MINI
     sw_error_t
     fal_qos_port_force_cpri_status_get(a_uint32_t dev_id, fal_port_t port_id,
                                        a_bool_t* enable);
+#endif
 
     sw_error_t
     fal_qos_queue_remark_table_set(a_uint32_t dev_id, fal_port_t port_id,
                                    fal_queue_t queue_id, a_uint32_t tbl_id, a_bool_t enable);
 
-
+#ifndef IN_QOS_MINI
     sw_error_t
     fal_qos_queue_remark_table_get(a_uint32_t dev_id, fal_port_t port_id,
                                    fal_queue_t queue_id, a_uint32_t * tbl_id, a_bool_t * enable);
-
+#endif
 
 #ifdef __cplusplus
 }

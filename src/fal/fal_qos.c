@@ -21,7 +21,7 @@
 #include "fal_qos.h"
 #include "hsl_api.h"
 
-
+#ifndef IN_QOS_MINI
 static sw_error_t
 _fal_qos_sch_mode_set(a_uint32_t dev_id,
                       fal_sch_mode_t mode, const a_uint32_t weight[])
@@ -90,21 +90,6 @@ _fal_qos_queue_tx_buf_status_get(a_uint32_t dev_id, fal_port_t port_id,
 }
 
 
-static sw_error_t
-_fal_qos_queue_tx_buf_nr_set(a_uint32_t dev_id, fal_port_t port_id,
-                             fal_queue_t queue_id, a_uint32_t * number)
-{
-    sw_error_t rv;
-    hsl_api_t *p_api;
-
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
-
-    if (NULL == p_api->qos_queue_tx_buf_nr_set)
-        return SW_NOT_SUPPORTED;
-
-    rv = p_api->qos_queue_tx_buf_nr_set(dev_id, port_id, queue_id, number);
-    return rv;
-}
 
 
 static sw_error_t
@@ -158,21 +143,7 @@ _fal_qos_port_tx_buf_status_get(a_uint32_t dev_id, fal_port_t port_id,
 }
 
 
-static sw_error_t
-_fal_qos_port_red_en_set(a_uint32_t dev_id, fal_port_t port_id,
-                         a_bool_t enable)
-{
-    sw_error_t rv;
-    hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
-
-    if (NULL == p_api->qos_port_red_en_set)
-        return SW_NOT_SUPPORTED;
-
-    rv = p_api->qos_port_red_en_set(dev_id, port_id, enable);
-    return rv;
-}
 
 
 static sw_error_t
@@ -191,21 +162,7 @@ _fal_qos_port_red_en_get(a_uint32_t dev_id, fal_port_t port_id,
     return rv;
 }
 
-static sw_error_t
-_fal_qos_port_tx_buf_nr_set(a_uint32_t dev_id, fal_port_t port_id,
-                            a_uint32_t * number)
-{
-    sw_error_t rv;
-    hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
-
-    if (NULL == p_api->qos_port_tx_buf_nr_set)
-        return SW_NOT_SUPPORTED;
-
-    rv = p_api->qos_port_tx_buf_nr_set(dev_id, port_id, number);
-    return rv;
-}
 
 
 static sw_error_t
@@ -224,21 +181,7 @@ _fal_qos_port_tx_buf_nr_get(a_uint32_t dev_id, fal_port_t port_id,
     return rv;
 }
 
-static sw_error_t
-_fal_qos_port_rx_buf_nr_set(a_uint32_t dev_id, fal_port_t port_id,
-                            a_uint32_t * number)
-{
-    sw_error_t rv;
-    hsl_api_t *p_api;
 
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
-
-    if (NULL == p_api->qos_port_rx_buf_nr_set)
-        return SW_NOT_SUPPORTED;
-
-    rv = p_api->qos_port_rx_buf_nr_set(dev_id, port_id, number);
-    return rv;
-}
 
 
 static sw_error_t
@@ -322,7 +265,67 @@ _fal_cosmap_dscp_queue_get(a_uint32_t dev_id, a_uint32_t dscp,
     rv = p_api->cosmap_dscp_queue_get(dev_id, dscp, queue);
     return rv;
 }
+#endif
+static sw_error_t
+_fal_qos_port_red_en_set(a_uint32_t dev_id, fal_port_t port_id,
+                         a_bool_t enable)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
 
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->qos_port_red_en_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->qos_port_red_en_set(dev_id, port_id, enable);
+    return rv;
+}
+static sw_error_t
+_fal_qos_queue_tx_buf_nr_set(a_uint32_t dev_id, fal_port_t port_id,
+                             fal_queue_t queue_id, a_uint32_t * number)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->qos_queue_tx_buf_nr_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->qos_queue_tx_buf_nr_set(dev_id, port_id, queue_id, number);
+    return rv;
+}
+static sw_error_t
+_fal_qos_port_rx_buf_nr_set(a_uint32_t dev_id, fal_port_t port_id,
+                            a_uint32_t * number)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->qos_port_rx_buf_nr_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->qos_port_rx_buf_nr_set(dev_id, port_id, number);
+    return rv;
+}
+static sw_error_t
+_fal_qos_port_tx_buf_nr_set(a_uint32_t dev_id, fal_port_t port_id,
+                            a_uint32_t * number)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->qos_port_tx_buf_nr_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->qos_port_tx_buf_nr_set(dev_id, port_id, number);
+    return rv;
+}
 
 static sw_error_t
 _fal_qos_port_mode_set(a_uint32_t dev_id, fal_port_t port_id,
@@ -341,6 +344,9 @@ _fal_qos_port_mode_set(a_uint32_t dev_id, fal_port_t port_id,
 }
 
 
+
+
+#ifndef IN_QOS_MINI
 static sw_error_t
 _fal_qos_port_mode_get(a_uint32_t dev_id, fal_port_t port_id,
                        fal_qos_mode_t mode, a_bool_t * enable)
@@ -356,8 +362,6 @@ _fal_qos_port_mode_get(a_uint32_t dev_id, fal_port_t port_id,
     rv = p_api->qos_port_mode_get(dev_id, port_id, mode, enable);
     return rv;
 }
-
-
 static sw_error_t
 _fal_qos_port_mode_pri_set(a_uint32_t dev_id, fal_port_t port_id,
                            fal_qos_mode_t mode, a_uint32_t pri)
@@ -702,28 +706,7 @@ fal_qos_queue_tx_buf_status_get(a_uint32_t dev_id, fal_port_t port_id,
     return rv;
 }
 
-/**
- * @brief Set max occupied buffer number of transmitting queue on one particular port.
- *   @details  Comments:
- *    Because different device has differnet hardware granularity
- *    function will return actual buffer numbers in hardware.
- * @param[in] dev_id device id
- * @param[in] port_id port id
- * @param[in] queue_id queue id
- * @param number buffer number
- * @return SW_OK or error code
- */
-sw_error_t
-fal_qos_queue_tx_buf_nr_set(a_uint32_t dev_id, fal_port_t port_id,
-                            fal_queue_t queue_id, a_uint32_t * number)
-{
-    sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_qos_queue_tx_buf_nr_set(dev_id, port_id, queue_id, number);
-    FAL_API_UNLOCK;
-    return rv;
-}
 
 /**
  * @brief Get max occupied buffer number of transmitting queue on one particular port.
@@ -787,24 +770,7 @@ fal_qos_port_tx_buf_status_get(a_uint32_t dev_id, fal_port_t port_id,
     return rv;
 }
 
-/**
- * @brief Set status of port red on one particular port.
- * @param[in] dev_id device id
- * @param[in] port_id port id
- * @param[in] enable A_TRUE or A_FALSE
- * @return SW_OK or error code
- */
-sw_error_t
-fal_qos_port_red_en_set(a_uint32_t dev_id, fal_port_t port_id,
-                        a_bool_t enable)
-{
-    sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_qos_port_red_en_set(dev_id, port_id, enable);
-    FAL_API_UNLOCK;
-    return rv;
-}
 
 /**
  * @brief Set status of port red on one particular port.
@@ -826,27 +792,7 @@ fal_qos_port_red_en_get(a_uint32_t dev_id, fal_port_t port_id,
 }
 
 
-/**
- * @brief Set max occupied buffer number of transmitting port on one particular port.
- *   @details   Comments:
- *    Because different device has differnet hardware granularity
- *    function will return actual buffer number in hardware.
- * @param[in] dev_id device id
- * @param[in] port_id port id
- * @param number buffer number
- * @return SW_OK or error code
- */
-sw_error_t
-fal_qos_port_tx_buf_nr_set(a_uint32_t dev_id, fal_port_t port_id,
-                           a_uint32_t * number)
-{
-    sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_qos_port_tx_buf_nr_set(dev_id, port_id, number);
-    FAL_API_UNLOCK;
-    return rv;
-}
 
 /**
  * @brief Get max occupied buffer number of transmitting port on one particular port.
@@ -867,27 +813,7 @@ fal_qos_port_tx_buf_nr_get(a_uint32_t dev_id, fal_port_t port_id,
     return rv;
 }
 
-/**
- * @brief Set max reserved buffer number of receiving port on one particular port.
- *   @details   Comments:
- *    Because different device has differnet hardware granularity
- *    function will return actual buffer number in hardware.
- * @param[in] dev_id device id
- * @param[in] port_id port id
- * @param number buffer number
- * @return SW_OK or error code
- */
-sw_error_t
-fal_qos_port_rx_buf_nr_set(a_uint32_t dev_id, fal_port_t port_id,
-                           a_uint32_t * number)
-{
-    sw_error_t rv;
 
-    FAL_API_LOCK;
-    rv = _fal_qos_port_rx_buf_nr_set(dev_id, port_id, number);
-    FAL_API_UNLOCK;
-    return rv;
-}
 
 /**
  * @brief Get max reserved buffer number of receiving port on one particular port.
@@ -981,7 +907,89 @@ fal_cosmap_dscp_queue_get(a_uint32_t dev_id, a_uint32_t dscp,
     FAL_API_UNLOCK;
     return rv;
 }
+#endif
+/**
+ * @brief Set max occupied buffer number of transmitting queue on one particular port.
+ *   @details  Comments:
+ *    Because different device has differnet hardware granularity
+ *    function will return actual buffer numbers in hardware.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[in] queue_id queue id
+ * @param number buffer number
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_qos_queue_tx_buf_nr_set(a_uint32_t dev_id, fal_port_t port_id,
+                            fal_queue_t queue_id, a_uint32_t * number)
+{
+    sw_error_t rv;
 
+    FAL_API_LOCK;
+    rv = _fal_qos_queue_tx_buf_nr_set(dev_id, port_id, queue_id, number);
+    FAL_API_UNLOCK;
+    return rv;
+}
+/**
+ * @brief Set status of port red on one particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[in] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_qos_port_red_en_set(a_uint32_t dev_id, fal_port_t port_id,
+                        a_bool_t enable)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_qos_port_red_en_set(dev_id, port_id, enable);
+    FAL_API_UNLOCK;
+    return rv;
+}
+/**
+ * @brief Set max occupied buffer number of transmitting port on one particular port.
+ *   @details   Comments:
+ *    Because different device has differnet hardware granularity
+ *    function will return actual buffer number in hardware.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param number buffer number
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_qos_port_tx_buf_nr_set(a_uint32_t dev_id, fal_port_t port_id,
+                           a_uint32_t * number)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_qos_port_tx_buf_nr_set(dev_id, port_id, number);
+    FAL_API_UNLOCK;
+    return rv;
+}
+/**
+ * @brief Set max reserved buffer number of receiving port on one particular port.
+ *   @details   Comments:
+ *    Because different device has differnet hardware granularity
+ *    function will return actual buffer number in hardware.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param number buffer number
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_qos_port_rx_buf_nr_set(a_uint32_t dev_id, fal_port_t port_id,
+                           a_uint32_t * number)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_qos_port_rx_buf_nr_set(dev_id, port_id, number);
+    FAL_API_UNLOCK;
+    return rv;
+}
 /**
  * @brief Set port qos mode on one particular port.
  * @param[in] dev_id device id
@@ -1002,6 +1010,8 @@ fal_qos_port_mode_set(a_uint32_t dev_id, fal_port_t port_id,
     return rv;
 }
 
+
+#ifndef IN_QOS_MINI
 /**
  * @brief Get port qos mode on one particular port.
  * @param[in] dev_id device id
@@ -1021,7 +1031,6 @@ fal_qos_port_mode_get(a_uint32_t dev_id, fal_port_t port_id,
     FAL_API_UNLOCK;
     return rv;
 }
-
 /**
  * @brief Set priority of one particular qos mode on one particular port.
  *   @details   Comments:
@@ -1339,7 +1348,7 @@ fal_qos_queue_remark_table_get(a_uint32_t dev_id, fal_port_t port_id,
     FAL_API_UNLOCK;
     return rv;
 }
-
+#endif
 
 /**
  * @}

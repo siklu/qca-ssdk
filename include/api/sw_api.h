@@ -139,7 +139,6 @@ extern "C" {
         a_uint16_t data_size;
         a_uint8_t  data_type;
         a_uint8_t  param_type;
-        a_uint8_t param_name[20];
     } sw_api_param_t;
 
     typedef struct
