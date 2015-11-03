@@ -1449,6 +1449,7 @@ struct ag71xx_mdio {
 };
 
 static struct mii_bus *miibus = NULL;
+static int phy_address[5] = {0,1,2,3,4};
 
 #ifdef BOARD_IPQ806X
 #define IPQ806X_MDIO_BUS_NAME			"mdio-gpio"
@@ -1515,32 +1516,79 @@ qca_ar8216_mii_write(int reg, uint32_t val)
         mutex_unlock(&switch_mdio_lock);
 }
 
+a_bool_t
+phy_addr_validation_check(a_uint32_t phy_addr)
+{
+
+	if (phy_addr  == PHY_BCAST_ID)
+		return A_TRUE;
+	else if ((phy_addr > PSGMII_ID) || (phy_addr < PHY_MIN_ID))
+		return A_FALSE;
+	else
+		return A_TRUE;
+}
 
 sw_error_t
 qca_ar8327_phy_read(a_uint32_t dev_id, a_uint32_t phy_addr,
                            a_uint32_t reg, a_uint16_t* data)
-{
-        struct mii_bus *bus = miibus;
-        *data = mdiobus_read(bus, phy_addr, reg);
-        return 0;
+{	
+	struct mii_bus *bus = miibus;
+	int phy_dest_addr;
+	if (A_TRUE != phy_addr_validation_check (phy_addr))
+	{
+		return SW_BAD_PARAM;
+	}
+	if (phy_addr == PSGMII_ID)
+		phy_dest_addr = phy_address[phy_addr -1] + 1;
+	else if (phy_addr == PHY_BCAST_ID)
+		phy_dest_addr = PHY_BCAST_ID;
+	else
+		phy_dest_addr = phy_address[phy_addr];
+
+	*data = mdiobus_read(bus, phy_dest_addr, reg);
+	return 0;
 }
 
 sw_error_t
 qca_ar8327_phy_write(a_uint32_t dev_id, a_uint32_t phy_addr,
                             a_uint32_t reg, a_uint16_t data)
-{
-        struct mii_bus *bus = miibus;
-        mdiobus_write(bus, phy_addr, reg, data);
-        return 0;
+{	
+	struct mii_bus *bus = miibus;
+	int phy_dest_addr;
+	if (A_TRUE != phy_addr_validation_check (phy_addr))
+	{
+		return SW_BAD_PARAM;
+	}
+	if (phy_addr == PSGMII_ID)
+		phy_dest_addr = phy_address[phy_addr -1] + 1;
+	else if (phy_addr == PHY_BCAST_ID)
+		phy_dest_addr = PHY_BCAST_ID;
+	else
+		phy_dest_addr = phy_address[phy_addr];
+
+	mdiobus_write(bus, phy_dest_addr, reg, data);
+	return 0;
 }
 
 void
 qca_ar8327_phy_dbg_write(a_uint32_t dev_id, a_uint32_t phy_addr,
                                 a_uint16_t dbg_addr, a_uint16_t dbg_data)
 {
-        struct mii_bus *bus = miibus;
-        mdiobus_write(bus, phy_addr, QCA_MII_DBG_ADDR, dbg_addr);
-        mdiobus_write(bus, phy_addr, QCA_MII_DBG_DATA, dbg_data);
+	struct mii_bus *bus = miibus;
+	int phy_dest_addr;
+	if (A_TRUE != phy_addr_validation_check (phy_addr))
+	{
+		return SW_BAD_PARAM;
+	}
+	if (phy_addr == PSGMII_ID)
+		phy_dest_addr = phy_address[phy_addr -1] + 1;
+	else if (phy_addr == PHY_BCAST_ID)
+		phy_dest_addr = PHY_BCAST_ID;
+	else
+		phy_dest_addr = phy_address[phy_addr];
+
+	mdiobus_write(bus, phy_dest_addr, QCA_MII_DBG_ADDR, dbg_addr);
+	mdiobus_write(bus, phy_dest_addr, QCA_MII_DBG_DATA, dbg_data);
 }
 
 void
@@ -1548,9 +1596,20 @@ qca_ar8327_phy_dbg_read(a_uint32_t dev_id, a_uint32_t phy_addr,
 		                a_uint16_t dbg_addr, a_uint16_t *dbg_data)
 {
 	struct mii_bus *bus = miibus;
+	int phy_dest_addr;
+	if (A_TRUE != phy_addr_validation_check (phy_addr))
+	{
+		return SW_BAD_PARAM;
+	}
+	if (phy_addr == PSGMII_ID)
+		phy_dest_addr = phy_address[phy_addr -1] + 1;
+	else if (phy_addr == PHY_BCAST_ID)
+		phy_dest_addr = PHY_BCAST_ID;
+	else
+		phy_dest_addr = phy_address[phy_addr];
 
-	mdiobus_write(bus, phy_addr, QCA_MII_DBG_ADDR, dbg_addr);
-	*dbg_data = mdiobus_read(bus, phy_addr, QCA_MII_DBG_DATA);
+	mdiobus_write(bus, phy_dest_addr, QCA_MII_DBG_ADDR, dbg_addr);
+	*dbg_data = mdiobus_read(bus, phy_dest_addr, QCA_MII_DBG_DATA);
 }
 
 
@@ -1558,9 +1617,21 @@ void
 qca_ar8327_mmd_write(a_uint32_t dev_id, a_uint32_t phy_addr,
                           a_uint16_t addr, a_uint16_t data)
 {
-        struct mii_bus *bus = miibus;
-        mdiobus_write(bus, phy_addr, QCA_MII_MMD_ADDR, addr);
-        mdiobus_write(bus, phy_addr, QCA_MII_MMD_DATA, data);
+	struct mii_bus *bus = miibus;
+	int phy_dest_addr;
+	if (A_TRUE != phy_addr_validation_check (phy_addr))
+	{
+		return SW_BAD_PARAM;
+	}
+	if (phy_addr == PSGMII_ID)
+		phy_dest_addr = phy_address[phy_addr -1] + 1;
+	else if (phy_addr == PHY_BCAST_ID)
+		phy_dest_addr = PHY_BCAST_ID;
+	else
+		phy_dest_addr = phy_address[phy_addr];
+
+	mdiobus_write(bus, phy_dest_addr, QCA_MII_MMD_ADDR, addr);
+	mdiobus_write(bus, phy_dest_addr, QCA_MII_MMD_DATA, data);
 }
 
 void qca_phy_mmd_write(u32 dev_id, u32 phy_id,
@@ -2249,11 +2320,11 @@ void switch_cpuport_setup(void)
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 {
-	struct device_node *switch_node = NULL;
+	struct device_node *switch_node = NULL,*mdio_node = NULL;
 	struct device_node *psgmii_node = NULL;
 	struct device_node *child = NULL;
-	a_uint32_t len = 0,i = 0;
-	const __be32 *reg_cfg, *mac_mode,*led_source,*led_mode, *led_speed, *led_freq;
+	a_uint32_t len = 0,i = 0,j = 0;
+	const __be32 *reg_cfg, *mac_mode,*led_source,*led_mode, *led_speed, *led_freq, *phy_addr;
 	a_uint8_t *led_str;
 
 
@@ -2371,6 +2442,23 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 	}
 	cfg->led_source_num = i;
 	printk("current dts led_source_num is %d\n",cfg->led_source_num);
+
+	mdio_node = of_find_node_by_name(NULL, "mdio");
+	if (!mdio_node) {
+		printk("cannot find mdio node\n");
+		return SW_BAD_PARAM;
+	}
+	printk("mdio DT exist!\n");
+
+	for_each_available_child_of_node(mdio_node, child) {
+
+		phy_addr = of_get_property(child, "reg", &len);
+		if (phy_addr)
+			phy_address[j] = be32_to_cpup(phy_addr);
+		j++;
+		if (j >= 5)
+			break;
+	}
 	return SW_OK;
 }
 #endif
