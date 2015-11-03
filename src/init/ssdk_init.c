@@ -956,6 +956,10 @@ qca_phy_mib_work_start(struct qca_phy_priv *priv)
 void
 qca_phy_mib_work_stop(struct qca_phy_priv *priv)
 {
+	if(!priv)
+		return;
+	if(priv->mib_counters)
+		kfree(priv->mib_counters);
 	cancel_delayed_work_sync(&priv->mib_dwork);
 }
 
@@ -1221,9 +1225,8 @@ qca_phy_remove(struct phy_device *pdev)
 {
 	struct qca_phy_priv *priv = pdev->priv;
 
-	if ((pdev->addr == 0) && priv) {
-        qca_phy_mib_work_stop(priv);
-		kfree(priv->mib_counters);
+	if ((pdev->addr == 0) && priv && (priv->sw_dev.name != NULL)) {
+		qca_phy_mib_work_stop(priv);
 		unregister_switch(&priv->sw_dev);
 	}
 
@@ -1235,7 +1238,7 @@ qca_phy_remove(struct phy_device *pdev)
 static struct phy_driver qca_phy_driver = {
     .name		= "QCA AR8216 AR8236 AR8316 AR8327 AR8337",
 	.phy_id		= 0x004d0000,
-    .phy_id_mask= 0xffff0000,
+	.phy_id_mask= 0xffff0000,
 	.probe		= qca_phy_probe,
 	.remove		= qca_phy_remove,
 	.config_init= &qca_phy_config_init,
