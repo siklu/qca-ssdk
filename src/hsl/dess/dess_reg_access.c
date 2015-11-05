@@ -341,7 +341,7 @@ dess_reg_field_set(a_uint32_t dev_id, a_uint32_t reg_addr,
 static sw_error_t
 _dess_regsiter_dump(a_uint32_t dev_id,a_uint32_t register_idx, fal_reg_dump_t * reg_dump)
 {
-    sw_error_t rv;
+    sw_error_t rv = SW_OK;
     a_uint32_t reg;
 	typedef struct {
 		a_uint32_t reg_base;
