@@ -323,12 +323,13 @@ qca_switch_init(a_uint32_t dev_id)
 	#endif
 
 	/*enable pppoe for dakota to support RSS*/
-	if (SSDK_CURRENT_CHIP_TYPE == CHIP_DESS)
+	if (SSDK_CURRENT_CHIP_TYPE == CHIP_DESS) {
 		#ifdef DESS
 		#ifdef IN_MISC
 		fal_pppoe_status_set(dev_id, A_TRUE);
 		#endif
 		#endif
+	}
 
 	for (i = 0; i < AR8327_NUM_PORTS; i++) {
 		/* forward multicast and broadcast frames to CPU */
