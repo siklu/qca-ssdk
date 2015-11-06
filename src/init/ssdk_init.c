@@ -1836,7 +1836,7 @@ static int miibus_get(void)
 		mdio_node = of_find_compatible_node(NULL, NULL, "virtual,mdio-gpio");
 
 	if (!mdio_node) {
-		printk("getting virtual,mdio-gpio failed\n");
+		printk("No MDIO node found in DTS!\n");
 		return 1;
 	}
 
@@ -3170,9 +3170,11 @@ out:
 	if (rv == 0)
 		printk("qca-ssdk module init succeeded!\n");
 	else {
-		printk("qca-ssdk module init failed! (code: %d)\n", rv);
-		if (rv == -ENODEV)
+		if (rv == -ENODEV) {
 			rv = 0;
+			printk("qca-ssdk module init, no device found!\n");
+		} else
+			printk("qca-ssdk module init failed! (code: %d)\n", rv);
 	}
 
 	return rv;
