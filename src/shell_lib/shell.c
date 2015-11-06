@@ -369,7 +369,7 @@ cmd_parse(char *cmd_str, int *cmd_index, int *cmd_index_sub)
     int cmd_nr = 0;
     a_uint32_t *arg_val = ioctl_argp;
     char *tmp_str[CMDSTR_ARGS_MAX];
-    int rtn_code;
+    int rtn_code = 0;
 
     if (cmd_str == NULL)
         return NULL;
@@ -451,7 +451,7 @@ static int
 cmd_exec(a_uint32_t *arg_val, int cmd_index, int cmd_index_sub)
 {
     a_uint32_t api_id = arg_val[0];
-    sw_error_t rtn;
+    sw_error_t rtn = SW_OK;
 
     if( api_id < SW_API_MAX )
     {

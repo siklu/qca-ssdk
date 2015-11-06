@@ -2203,7 +2203,7 @@ _dess_nat_unk_session_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd)
 a_uint8_t _dess_snat_matched(a_uint32_t dev_id, fal_ip4_addr_t addr)
 {
 	a_bool_t nat_enable = 0, napt_enable = 0;
-	fal_ip4_addr_t mask, base;
+	fal_ip4_addr_t mask = 0, base = 0;
 	a_uint32_t reg_addr;
 	sw_error_t rv;
 

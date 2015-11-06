@@ -153,8 +153,8 @@ static int qca_phy_mdi_update(a_uint32_t dev_id, a_uint32_t phy_addr, a_uint32_t
 
 static int qca_switch_get_qm_status(struct switch_dev *dev, a_uint32_t port_id, a_uint32_t *qm_buffer_err)
 {
-	a_uint32_t reg;
-	a_uint32_t qm_val;
+	a_uint32_t reg = 0;
+	a_uint32_t qm_val = 0;
 	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 
 	if (port_id < 0 || port_id > 6) {
@@ -249,7 +249,7 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 	a_uint32_t phy_addr;
 	a_uint32_t phy_reg;
 	a_uint16_t phy_val;
-	a_uint32_t qm_buffer_err;
+	a_uint32_t qm_buffer_err = 0;
 	a_uint16_t port_phy_status[AR8327_NUM_PORTS];
 	static a_uint32_t mac_err_flag[AR8327_NUM_PORTS] = {0,0,0,0,0,0,0};
 	static a_uint32_t qm_err_cnt[AR8327_NUM_PORTS] = {0,0,0,0,0,0,0};
