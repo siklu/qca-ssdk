@@ -838,7 +838,7 @@ sw_error_t isisc_igmp_sg_entry_clear(a_uint32_t dev_id, fal_igmp_sg_entry_t * en
     HSL_API_LOCK;
     a_uint32_t number, count;
     int new_index=0;
-    sw_error_t rv;
+    sw_error_t rv = SW_OK;
     int action= MULT_ACTION_CLEAR;
     int i=0;
     int pm_type;
