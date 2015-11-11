@@ -30,6 +30,12 @@ do { \
         return SW_OUT_OF_RANGE; \
 } while (0)
 
+#define HSL_PORT_ID_CHECK(port_id) \
+do { \
+    if (port_id >= SW_MAX_NR_PORT) \
+        return SW_OUT_OF_RANGE; \
+} while (0)
+
     typedef struct
     {
         a_uint32_t dev_id;

@@ -643,6 +643,8 @@ nat_ipt_set_ctl(struct sock *sk, int cmd, void __user * user, unsigned int len)
 {
     struct ipt_replace ireplace;
 
+	memset(&ireplace, 0, sizeof(ireplace));
+
     HNAT_PRINTK("NAT set hook\n");
 
     if (cmd != IPT_SO_SET_REPLACE)

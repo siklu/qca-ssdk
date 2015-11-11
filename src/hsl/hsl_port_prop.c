@@ -141,6 +141,7 @@ hsl_port_prop_get_phyid(a_uint32_t dev_id, fal_port_t port_id,
                         a_uint32_t * phy_id)
 {
     HSL_DEV_ID_CHECK(dev_id);
+	HSL_PORT_ID_CHECK(port_id);
 
     if (A_FALSE == hsl_port_validity_check(dev_id, port_id))
     {
@@ -156,6 +157,7 @@ sw_error_t
 hsl_port_prop_set_phyid(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t phy_id)
 {
     HSL_DEV_ID_CHECK(dev_id);
+	HSL_PORT_ID_CHECK(port_id);
 
     if (A_FALSE == hsl_port_validity_check(dev_id, port_id))
     {
