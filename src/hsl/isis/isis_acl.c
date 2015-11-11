@@ -1856,39 +1856,6 @@ isis_acl_init(a_uint32_t dev_id)
     return SW_OK;
 }
 
-sw_error_t
-isis_acl_cleanup(a_uint32_t dev_id)
-{
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (NULL != sw_list_ent[dev_id])
-    {
-        aos_mem_free(sw_list_ent[dev_id]);
-    }
-
-    if (NULL != sw_rule_ent[dev_id])
-    {
-        aos_mem_free(sw_rule_ent[dev_id]);
-    }
-
-    if (NULL != hw_rule_tmp[dev_id])
-    {
-        aos_mem_free(hw_rule_tmp[dev_id]);
-    }
-
-    if (NULL != sw_rule_tmp[dev_id])
-    {
-        aos_mem_free(sw_rule_tmp[dev_id]);
-    }
-#ifdef DESS_SW_ENTRY
-    if (NULL != sw_filter_mem)
-    {
-        aos_mem_free(sw_filter_mem);
-    }
-#endif
-
-    return SW_OK;
-}
 /**
  * @}
  */

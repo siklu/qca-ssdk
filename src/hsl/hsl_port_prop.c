@@ -197,20 +197,6 @@ hsl_port_prop_init_by_dev(a_uint32_t dev_id)
 }
 
 sw_error_t
-hsl_port_prop_cleanup_by_dev(a_uint32_t dev_id)
-{
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (p_port_info[dev_id] != NULL)
-        aos_mem_free((void *)p_port_info[dev_id]);
-
-    p_port_info[dev_id] = NULL;
-
-    return SW_OK;
-}
-
-
-sw_error_t
 hsl_port_prop_init(void)
 {
     a_uint32_t i;
