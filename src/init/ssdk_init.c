@@ -1593,9 +1593,9 @@ a_bool_t
 phy_addr_validation_check(a_uint32_t phy_addr)
 {
 
-	if (phy_addr  == PHY_BCAST_ID)
+	if (phy_addr  == SSDK_PHY_BCAST_ID)
 		return A_TRUE;
-	else if ((phy_addr > PSGMII_ID) || (phy_addr < PHY_MIN_ID))
+	else if ((phy_addr > SSDK_PSGMII_ID) || (phy_addr < SSDK_PHY_MIN_ID))
 		return A_FALSE;
 	else
 		return A_TRUE;
@@ -1611,10 +1611,10 @@ qca_ar8327_phy_read(a_uint32_t dev_id, a_uint32_t phy_addr,
 	{
 		return SW_BAD_PARAM;
 	}
-	if (phy_addr == PSGMII_ID)
+	if (phy_addr == SSDK_PSGMII_ID)
 		phy_dest_addr = phy_address[phy_addr -1] + 1;
-	else if (phy_addr == PHY_BCAST_ID)
-		phy_dest_addr = PHY_BCAST_ID;
+	else if (phy_addr == SSDK_PHY_BCAST_ID)
+		phy_dest_addr = SSDK_PHY_BCAST_ID;
 	else
 		phy_dest_addr = phy_address[phy_addr];
 
@@ -1632,10 +1632,10 @@ qca_ar8327_phy_write(a_uint32_t dev_id, a_uint32_t phy_addr,
 	{
 		return SW_BAD_PARAM;
 	}
-	if (phy_addr == PSGMII_ID)
+	if (phy_addr == SSDK_PSGMII_ID)
 		phy_dest_addr = phy_address[phy_addr -1] + 1;
-	else if (phy_addr == PHY_BCAST_ID)
-		phy_dest_addr = PHY_BCAST_ID;
+	else if (phy_addr == SSDK_PHY_BCAST_ID)
+		phy_dest_addr = SSDK_PHY_BCAST_ID;
 	else
 		phy_dest_addr = phy_address[phy_addr];
 
@@ -1653,10 +1653,10 @@ qca_ar8327_phy_dbg_write(a_uint32_t dev_id, a_uint32_t phy_addr,
 	{
 		return SW_BAD_PARAM;
 	}
-	if (phy_addr == PSGMII_ID)
+	if (phy_addr == SSDK_PSGMII_ID)
 		phy_dest_addr = phy_address[phy_addr -1] + 1;
-	else if (phy_addr == PHY_BCAST_ID)
-		phy_dest_addr = PHY_BCAST_ID;
+	else if (phy_addr == SSDK_PHY_BCAST_ID)
+		phy_dest_addr = SSDK_PHY_BCAST_ID;
 	else
 		phy_dest_addr = phy_address[phy_addr];
 
@@ -1674,10 +1674,10 @@ qca_ar8327_phy_dbg_read(a_uint32_t dev_id, a_uint32_t phy_addr,
 	{
 		return SW_BAD_PARAM;
 	}
-	if (phy_addr == PSGMII_ID)
+	if (phy_addr == SSDK_PSGMII_ID)
 		phy_dest_addr = phy_address[phy_addr -1] + 1;
-	else if (phy_addr == PHY_BCAST_ID)
-		phy_dest_addr = PHY_BCAST_ID;
+	else if (phy_addr == SSDK_PHY_BCAST_ID)
+		phy_dest_addr = SSDK_PHY_BCAST_ID;
 	else
 		phy_dest_addr = phy_address[phy_addr];
 
@@ -1696,10 +1696,10 @@ qca_ar8327_mmd_write(a_uint32_t dev_id, a_uint32_t phy_addr,
 	{
 		return SW_BAD_PARAM;
 	}
-	if (phy_addr == PSGMII_ID)
+	if (phy_addr == SSDK_PSGMII_ID)
 		phy_dest_addr = phy_address[phy_addr -1] + 1;
-	else if (phy_addr == PHY_BCAST_ID)
-		phy_dest_addr = PHY_BCAST_ID;
+	else if (phy_addr == SSDK_PHY_BCAST_ID)
+		phy_dest_addr = SSDK_PHY_BCAST_ID;
 	else
 		phy_dest_addr = phy_address[phy_addr];
 

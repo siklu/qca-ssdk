@@ -117,29 +117,6 @@ _fal_port_duplex_get (a_uint32_t dev_id, fal_port_t port_id,
   return rv;
 }
 
-
-#ifndef IN_PORTCONTROL_MINI
-
-
-
-
-static sw_error_t
-_fal_port_autoneg_status_get (a_uint32_t dev_id, fal_port_t port_id,
-			      a_bool_t * status)
-{
-  sw_error_t rv;
-  hsl_api_t *p_api;
-
-  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
-
-  if (NULL == p_api->port_autoneg_status_get)
-    return SW_NOT_SUPPORTED;
-
-  rv = p_api->port_autoneg_status_get (dev_id, port_id, status);
-  return rv;
-}
-
-
 static sw_error_t
 _fal_port_autoneg_enable (a_uint32_t dev_id, fal_port_t port_id)
 {
@@ -154,7 +131,6 @@ _fal_port_autoneg_enable (a_uint32_t dev_id, fal_port_t port_id)
   rv = p_api->port_autoneg_enable (dev_id, port_id);
   return rv;
 }
-
 
 static sw_error_t
 _fal_port_autoneg_restart (a_uint32_t dev_id, fal_port_t port_id)
@@ -189,6 +165,22 @@ _fal_port_autoneg_adv_set (a_uint32_t dev_id, fal_port_t port_id,
 }
 
 static sw_error_t
+_fal_port_autoneg_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			      a_bool_t * status)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_autoneg_status_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_autoneg_status_get (dev_id, port_id, status);
+  return rv;
+}
+
+static sw_error_t
 _fal_port_autoneg_adv_get (a_uint32_t dev_id, fal_port_t port_id,
 			   a_uint32_t * autoadv)
 {
@@ -204,7 +196,7 @@ _fal_port_autoneg_adv_get (a_uint32_t dev_id, fal_port_t port_id,
   return rv;
 }
 
-
+#ifndef IN_PORTCONTROL_MINI
 static sw_error_t
 _fal_port_hdr_status_set (a_uint32_t dev_id, fal_port_t port_id,
 			  a_bool_t enable)
@@ -565,6 +557,69 @@ _fal_port_link_status_get (a_uint32_t dev_id, fal_port_t port_id,
   rv = p_api->port_link_status_get (dev_id, port_id, status);
   return rv;
 }
+
+static sw_error_t
+_fal_port_power_off (a_uint32_t dev_id, fal_port_t port_id)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_power_off)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_power_off (dev_id, port_id);
+  return rv;
+}
+
+static sw_error_t
+_fal_port_power_on (a_uint32_t dev_id, fal_port_t port_id)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_power_on)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_power_on (dev_id, port_id);
+  return rv;
+}
+
+static sw_error_t
+_fal_port_link_forcemode_set (a_uint32_t dev_id, fal_port_t port_id,
+			      a_bool_t enable)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_link_forcemode_set)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_link_forcemode_set (dev_id, port_id, enable);
+  return rv;
+}
+
+static sw_error_t
+_fal_port_link_forcemode_get (a_uint32_t dev_id, fal_port_t port_id,
+			      a_bool_t * enable)
+{
+  sw_error_t rv;
+  hsl_api_t *p_api;
+
+  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
+
+  if (NULL == p_api->port_link_forcemode_get)
+    return SW_NOT_SUPPORTED;
+
+  rv = p_api->port_link_forcemode_get (dev_id, port_id, enable);
+  return rv;
+}
+
 #ifndef IN_PORTCONTROL_MINI
 static sw_error_t
 _fal_port_txmac_status_get (a_uint32_t dev_id, fal_port_t port_id,
@@ -628,40 +683,6 @@ _fal_port_bp_status_get (a_uint32_t dev_id, fal_port_t port_id,
   rv = p_api->port_bp_status_get (dev_id, port_id, enable);
   return rv;
 }
-
-static sw_error_t
-_fal_port_link_forcemode_set (a_uint32_t dev_id, fal_port_t port_id,
-			      a_bool_t enable)
-{
-  sw_error_t rv;
-  hsl_api_t *p_api;
-
-  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
-
-  if (NULL == p_api->port_link_forcemode_set)
-    return SW_NOT_SUPPORTED;
-
-  rv = p_api->port_link_forcemode_set (dev_id, port_id, enable);
-  return rv;
-}
-
-static sw_error_t
-_fal_port_link_forcemode_get (a_uint32_t dev_id, fal_port_t port_id,
-			      a_bool_t * enable)
-{
-  sw_error_t rv;
-  hsl_api_t *p_api;
-
-  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
-
-  if (NULL == p_api->port_link_forcemode_get)
-    return SW_NOT_SUPPORTED;
-
-  rv = p_api->port_link_forcemode_get (dev_id, port_id, enable);
-  return rv;
-}
-
-
 
 static sw_error_t
 _fal_ports_link_status_get (a_uint32_t dev_id, a_uint32_t * status)
@@ -1015,35 +1036,6 @@ _fal_port_reset (a_uint32_t dev_id, fal_port_t port_id)
   return rv;
 }
 
-static sw_error_t
-_fal_port_power_off (a_uint32_t dev_id, fal_port_t port_id)
-{
-  sw_error_t rv;
-  hsl_api_t *p_api;
-
-  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
-
-  if (NULL == p_api->port_power_off)
-    return SW_NOT_SUPPORTED;
-
-  rv = p_api->port_power_off (dev_id, port_id);
-  return rv;
-}
-
-static sw_error_t
-_fal_port_power_on (a_uint32_t dev_id, fal_port_t port_id)
-{
-  sw_error_t rv;
-  hsl_api_t *p_api;
-
-  SW_RTN_ON_NULL (p_api = hsl_api_ptr_get (dev_id));
-
-  if (NULL == p_api->port_power_on)
-    return SW_NOT_SUPPORTED;
-
-  rv = p_api->port_power_on (dev_id, port_id);
-  return rv;
-}
 
 static sw_error_t
 _fal_port_phy_id_get (a_uint32_t dev_id, fal_port_t port_id,a_uint16_t * org_id, a_uint16_t * rev_id)
@@ -1288,26 +1280,6 @@ fal_port_speed_get (a_uint32_t dev_id, fal_port_t port_id,
   FAL_API_UNLOCK;
   return rv;
 }
-#ifndef IN_PORTCONTROL_MINI
-
-/**
- * @brief Get auto negotiation status on a particular port.
- * @param[in] dev_id device id
- * @param[in] port_id port id
- * @param[out] status A_TRUE or A_FALSE
- * @return SW_OK or error code
- */
-sw_error_t
-fal_port_autoneg_status_get (a_uint32_t dev_id, fal_port_t port_id,
-			     a_bool_t * status)
-{
-  sw_error_t rv;
-
-  FAL_API_LOCK;
-  rv = _fal_port_autoneg_status_get (dev_id, port_id, status);
-  FAL_API_UNLOCK;
-  return rv;
-}
 
 /**
  * @brief Enable auto negotiation status on a particular port.
@@ -1366,6 +1338,25 @@ fal_port_autoneg_adv_set (a_uint32_t dev_id, fal_port_t port_id,
 }
 
 /**
+ * @brief Get auto negotiation status on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] status A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_autoneg_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			     a_bool_t * status)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_autoneg_status_get (dev_id, port_id, status);
+  FAL_API_UNLOCK;
+  return rv;
+}
+
+/**
  * @brief Get auto negotiation advtisement ability on a particular port.
  * @param[in] dev_id device id
  * @param[in] port_id port id
@@ -1384,6 +1375,7 @@ fal_port_autoneg_adv_get (a_uint32_t dev_id, fal_port_t port_id,
   return rv;
 }
 
+#ifndef IN_PORTCONTROL_MINI
 /**
  * @brief Set status of Atheros header packets parsed on a particular port.
  * @param[in] dev_id device id
@@ -1881,42 +1873,38 @@ fal_port_link_status_get (a_uint32_t dev_id, fal_port_t port_id,
   return rv;
 }
 
-#ifndef IN_PORTCONTROL_MINI
-
 /**
- * @brief Set status of back pressure on a particular port.
+ * @brief power off on a particular port.
  * @param[in] dev_id device id
  * @param[in] port_id port id
- * @param[in] enable A_TRUE or A_FALSE
+ * @param[out]
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_bp_status_set (a_uint32_t dev_id, fal_port_t port_id,
-			a_bool_t enable)
+fal_port_power_off (a_uint32_t dev_id, fal_port_t port_id)
 {
   sw_error_t rv;
 
   FAL_API_LOCK;
-  rv = _fal_port_bp_status_set (dev_id, port_id, enable);
+  rv = _fal_port_power_off (dev_id, port_id);
   FAL_API_UNLOCK;
   return rv;
 }
 
 /**
- * @brief Set status of back pressure on a particular port.
+ * @brief power on on a particular port.
  * @param[in] dev_id device id
  * @param[in] port_id port id
- * @param[out] enable A_TRUE or A_FALSE
+ * @param[out]
  * @return SW_OK or error code
  */
 sw_error_t
-fal_port_bp_status_get (a_uint32_t dev_id, fal_port_t port_id,
-			a_bool_t * enable)
+fal_port_power_on (a_uint32_t dev_id, fal_port_t port_id)
 {
   sw_error_t rv;
 
   FAL_API_LOCK;
-  rv = _fal_port_bp_status_get (dev_id, port_id, enable);
+  rv = _fal_port_power_on (dev_id, port_id);
   FAL_API_UNLOCK;
   return rv;
 }
@@ -1959,7 +1947,45 @@ fal_port_link_forcemode_get (a_uint32_t dev_id, fal_port_t port_id,
   return rv;
 }
 
+#ifndef IN_PORTCONTROL_MINI
 
+/**
+ * @brief Set status of back pressure on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[in] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_bp_status_set (a_uint32_t dev_id, fal_port_t port_id,
+			a_bool_t enable)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_bp_status_set (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
+}
+
+/**
+ * @brief Set status of back pressure on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_port_bp_status_get (a_uint32_t dev_id, fal_port_t port_id,
+			a_bool_t * enable)
+{
+  sw_error_t rv;
+
+  FAL_API_LOCK;
+  rv = _fal_port_bp_status_get (dev_id, port_id, enable);
+  FAL_API_UNLOCK;
+  return rv;
+}
 
 /**
  * @brief Get link status on all ports.
@@ -2374,42 +2400,6 @@ fal_port_reset (a_uint32_t dev_id, fal_port_t port_id)
 
   FAL_API_LOCK;
   rv = _fal_port_reset (dev_id, port_id);
-  FAL_API_UNLOCK;
-  return rv;
-}
-
-/**
- * @brief power off on a particular port.
- * @param[in] dev_id device id
- * @param[in] port_id port id
- * @param[out]
- * @return SW_OK or error code
- */
-sw_error_t
-fal_port_power_off (a_uint32_t dev_id, fal_port_t port_id)
-{
-  sw_error_t rv;
-
-  FAL_API_LOCK;
-  rv = _fal_port_power_off (dev_id, port_id);
-  FAL_API_UNLOCK;
-  return rv;
-}
-
-/**
- * @brief power on on a particular port.
- * @param[in] dev_id device id
- * @param[in] port_id port id
- * @param[out]
- * @return SW_OK or error code
- */
-sw_error_t
-fal_port_power_on (a_uint32_t dev_id, fal_port_t port_id)
-{
-  sw_error_t rv;
-
-  FAL_API_LOCK;
-  rv = _fal_port_power_on (dev_id, port_id);
   FAL_API_UNLOCK;
   return rv;
 }

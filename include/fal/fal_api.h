@@ -179,22 +179,34 @@ extern "C" {
 #define PORTCONTROL_API \
     SW_API_DEF(SW_API_PT_DUPLEX_SET, fal_port_duplex_set), \
     SW_API_DEF(SW_API_PT_SPEED_SET, fal_port_speed_set), \
+    SW_API_DEF(SW_API_PT_AN_ENABLE, fal_port_autoneg_enable), \
+    SW_API_DEF(SW_API_PT_AN_RESTART, fal_port_autoneg_restart), \
+    SW_API_DEF(SW_API_PT_AN_ADV_SET, fal_port_autoneg_adv_set), \
+    SW_API_DEF(SW_API_PT_LINK_MODE_SET, fal_port_link_forcemode_set),   \
     SW_API_DEF(SW_API_PT_TXHDR_SET, fal_port_txhdr_mode_set), \
     SW_API_DEF(SW_API_PT_RXHDR_SET, fal_port_rxhdr_mode_set), \
     SW_API_DEF(SW_API_HEADER_TYPE_SET, fal_header_type_set),  \
     SW_API_DEF(SW_API_TXMAC_STATUS_SET, fal_port_txmac_status_set), \
     SW_API_DEF(SW_API_RXMAC_STATUS_SET, fal_port_rxmac_status_set), \
+    SW_API_DEF(SW_API_PT_POWER_OFF, fal_port_power_off), \
+    SW_API_DEF(SW_API_PT_POWER_ON, fal_port_power_on), \
     SW_API_DEF(SW_API_TXFC_STATUS_SET, fal_port_txfc_status_set),   \
     SW_API_DEF(SW_API_RXFC_STATUS_SET, fal_port_rxfc_status_set),
 
 #define PORTCONTROL_API_PARAM \
     SW_API_DESC(SW_API_PT_DUPLEX_SET) \
     SW_API_DESC(SW_API_PT_SPEED_SET)  \
+    SW_API_DESC(SW_API_PT_AN_ENABLE) \
+    SW_API_DESC(SW_API_PT_AN_RESTART) \
+    SW_API_DESC(SW_API_PT_AN_ADV_SET) \
+    SW_API_DESC(SW_API_PT_LINK_MODE_SET) \
     SW_API_DESC(SW_API_PT_TXHDR_SET) \
     SW_API_DESC(SW_API_PT_RXHDR_SET) \
     SW_API_DESC(SW_API_HEADER_TYPE_SET) \
     SW_API_DESC(SW_API_TXMAC_STATUS_SET) \
     SW_API_DESC(SW_API_RXMAC_STATUS_SET) \
+    SW_API_DESC(SW_API_PT_POWER_OFF) \
+    SW_API_DESC(SW_API_PT_POWER_ON) \
     SW_API_DESC(SW_API_TXFC_STATUS_SET) \
     SW_API_DESC(SW_API_RXFC_STATUS_SET)
 #endif

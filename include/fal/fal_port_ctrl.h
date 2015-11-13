@@ -244,10 +244,6 @@ typedef struct {
 	 sw_error_t
 	    fal_port_speed_get(a_uint32_t dev_id, fal_port_t port_id,
 			       fal_port_speed_t * pspeed);
-#ifndef IN_PORTCONTROL_MINI
-	 sw_error_t
-	    fal_port_autoneg_status_get(a_uint32_t dev_id, fal_port_t port_id,
-					a_bool_t * status);
 
 	 sw_error_t
 	    fal_port_autoneg_enable(a_uint32_t dev_id, fal_port_t port_id);
@@ -260,9 +256,14 @@ typedef struct {
 				     a_uint32_t autoadv);
 
 	 sw_error_t
+	    fal_port_autoneg_status_get(a_uint32_t dev_id, fal_port_t port_id,
+					a_bool_t * status);
+
+	 sw_error_t
 	    fal_port_autoneg_adv_get(a_uint32_t dev_id, fal_port_t port_id,
 				     a_uint32_t * autoadv);
 
+#ifndef IN_PORTCONTROL_MINI
 	 sw_error_t
 	    fal_port_hdr_status_set(a_uint32_t dev_id, fal_port_t port_id,
 				    a_bool_t enable);
@@ -369,6 +370,20 @@ typedef struct {
 	sw_error_t
 	fal_port_link_status_get(a_uint32_t dev_id, fal_port_t port_id,
 				     a_bool_t * status);
+
+	sw_error_t
+	    fal_port_power_off(a_uint32_t dev_id, fal_port_t port_id);
+
+	 sw_error_t
+	    fal_port_power_on(a_uint32_t dev_id, fal_port_t port_id);
+
+	 sw_error_t
+	    fal_port_link_forcemode_set(a_uint32_t dev_id, fal_port_t port_id,
+					a_bool_t enable);
+	 sw_error_t
+	    fal_port_link_forcemode_get(a_uint32_t dev_id, fal_port_t port_id,
+					a_bool_t * enable);
+
 #ifndef IN_PORTCONTROL_MINI
 	 sw_error_t
 	    fal_port_bp_status_set(a_uint32_t dev_id, fal_port_t port_id,
@@ -377,14 +392,6 @@ typedef struct {
 	 sw_error_t
 	    fal_port_bp_status_get(a_uint32_t dev_id, fal_port_t port_id,
 				   a_bool_t * enable);
-
-	 sw_error_t
-	    fal_port_link_forcemode_set(a_uint32_t dev_id, fal_port_t port_id,
-					a_bool_t enable);
-
-	 sw_error_t
-	    fal_port_link_forcemode_get(a_uint32_t dev_id, fal_port_t port_id,
-					a_bool_t * enable);
 
 	 sw_error_t
 	    fal_ports_link_status_get(a_uint32_t dev_id, a_uint32_t * status);
@@ -469,12 +476,6 @@ typedef struct {
 
 	 sw_error_t
 	    fal_port_reset(a_uint32_t dev_id, fal_port_t port_id);
-
-	 sw_error_t
-	    fal_port_power_off(a_uint32_t dev_id, fal_port_t port_id);
-
-	 sw_error_t
-	    fal_port_power_on(a_uint32_t dev_id, fal_port_t port_id);
 
     sw_error_t
     fal_port_magic_frame_mac_set (a_uint32_t dev_id, fal_port_t port_id,

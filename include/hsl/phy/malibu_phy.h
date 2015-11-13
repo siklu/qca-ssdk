@@ -38,8 +38,6 @@ extern "C"
 #define BIT_0                    0
 #define COMBO_PHY_ID 4
 #define PSGMII_ID 5
-#define PHY_BCAST_ID 0x1f
-#define PHY_MIN_ID 0x0
 
 #define MALIBU_COMMON_CTRL  0x1040
 #define MALIBU_10M_LOOPBACK  0x4100

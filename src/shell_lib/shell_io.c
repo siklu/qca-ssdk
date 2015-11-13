@@ -101,11 +101,9 @@ static sw_data_type_t sw_data_type[] =
     SW_TYPE_DEF(SW_UINT64, NULL, NULL),
     SW_TYPE_DEF(SW_INT64, NULL, NULL),
 	#ifdef IN_PORTCONTROL
-	#ifndef IN_PORTCONTROL_MINI
-    SW_TYPE_DEF(SW_CAP, cmd_data_check_capable, NULL),
-    SW_TYPE_DEF(SW_DUPLEX, cmd_data_check_duplex, NULL),
+	SW_TYPE_DEF(SW_DUPLEX, cmd_data_check_duplex, NULL),
     SW_TYPE_DEF(SW_SPEED, cmd_data_check_speed, NULL),
-	#endif
+    SW_TYPE_DEF(SW_CAP, cmd_data_check_capable, NULL),
 	#endif
 	#ifdef IN_PORTVLAN
     SW_TYPE_DEF(SW_1QMODE, cmd_data_check_1qmode, NULL),
@@ -442,7 +440,6 @@ cmd_data_check_enable(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
     return SW_OK;
 }
 #ifdef IN_PORTCONTROL
-#ifndef IN_PORTCONTROL_MINI
 /*port ctrl*/
 sw_error_t
 cmd_data_check_duplex(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
@@ -484,7 +481,6 @@ cmd_data_check_speed(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
     return SW_OK;
 }
 
-
 sw_error_t
 cmd_data_check_capable(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
 {
@@ -500,6 +496,8 @@ cmd_data_check_capable(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
 
     return SW_OK;
 }
+
+#ifndef IN_PORTCONTROL_MINI
 
 sw_error_t
 cmd_data_check_crossover_mode(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)

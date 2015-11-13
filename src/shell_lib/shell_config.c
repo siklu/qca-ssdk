@@ -613,19 +613,21 @@ struct cmd_des_t gcmd_des[] =
 #ifdef IN_PORTCONTROL
 struct sub_cmd_des_t g_port_des[] = 
 {
-	#ifndef IN_PORTCONTROL_MINI
 	{"duplex", "set",   SW_API_PT_DUPLEX_SET, NULL},
 	{"speed", "set",   SW_API_PT_SPEED_SET, NULL},
-	{"autoAdv", "set",   SW_API_PT_AN_ADV_SET, NULL},
 	{"autoNeg", "enable",   SW_API_PT_AN_ENABLE, NULL},
+	{"autoAdv", "set",   SW_API_PT_AN_ADV_SET, NULL},
 	{"autoNeg", "restart",   SW_API_PT_AN_RESTART, NULL},
 	{"autoNegenable", "set",   SW_API_PT_AN_ENABLE, NULL},
 	{"autoNegrestart", "set",   SW_API_PT_AN_RESTART, NULL},
+	#ifndef IN_PORTCONTROL_MINI
 	{"header", "set",   SW_API_PT_HDR_SET, NULL},
 	#endif
 	{"txhdr", "set",   SW_API_PT_TXHDR_SET, NULL},
 	{"rxhdr", "set",   SW_API_PT_RXHDR_SET, NULL},
 	{"hdrtype", "set",   SW_API_HEADER_TYPE_SET, NULL},
+	{"poweroff", "set",   SW_API_PT_POWER_OFF, NULL},
+	{"poweron", "set",   SW_API_PT_POWER_ON, NULL},
 	#ifndef IN_PORTCONTROL_MINI
 	{"flowCtrl", "set",   SW_API_PT_FLOWCTRL_SET, NULL},
 	{"flowCtrlforcemode", "set",   SW_API_PT_FLOWCTRL_MODE_SET, NULL},
@@ -648,8 +650,6 @@ struct sub_cmd_des_t g_port_des[] =
 	{"localLoopback", "set",   SW_API_PT_LOCAL_LOOPBACK_SET, NULL},
 	{"remoteLoopback", "set",   SW_API_PT_REMOTE_LOOPBACK_SET, NULL},
 	{"reset", "set",   SW_API_PT_RESET, NULL},
-	{"poweroff", "set",   SW_API_PT_POWER_OFF, NULL},
-	{"poweron", "set",   SW_API_PT_POWER_ON, NULL},
 	{"magicFrameMac", "set",   SW_API_PT_MAGIC_FRAME_MAC_SET, NULL},
 	{"wolstatus", "set",   SW_API_PT_WOL_STATUS_SET, NULL},
 	{"interfaceMode", "set",   SW_API_PT_INTERFACE_MODE_SET, NULL},

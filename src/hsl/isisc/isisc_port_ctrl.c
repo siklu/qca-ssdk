@@ -383,64 +383,6 @@ _isisc_port_duplex_get(a_uint32_t dev_id, fal_port_t port_id,
     return SW_OK;
 }
 
-#ifndef IN_PORTCONTROL_MINI
-
-
-
-
-
-static sw_error_t
-_isisc_port_autoneg_status_get(a_uint32_t dev_id, fal_port_t port_id,
-                              a_bool_t * status)
-{
-    a_uint32_t phy_id;
-    sw_error_t rv;
-    hsl_phy_ops_t *phy_drv;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_PHY))
-    {
-        return SW_BAD_PARAM;
-    }
-
-    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
-    if (NULL == phy_drv->phy_autoneg_status_get)
-        return SW_NOT_SUPPORTED;
-
-    rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
-    SW_RTN_ON_ERROR(rv);
-
-    *status = phy_drv->phy_autoneg_status_get (dev_id, phy_id);
-
-    return SW_OK;
-}
-
-static sw_error_t
-_isisc_port_autoneg_enable(a_uint32_t dev_id, fal_port_t port_id)
-{
-    sw_error_t rv;
-    a_uint32_t phy_id;
-    hsl_phy_ops_t *phy_drv;
-
-    HSL_DEV_ID_CHECK(dev_id);
-
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_PHY))
-    {
-        return SW_BAD_PARAM;
-    }
-
-   SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
-   if (NULL == phy_drv->phy_autoneg_enable_set)
-       return SW_NOT_SUPPORTED;
-
-    rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
-    SW_RTN_ON_ERROR(rv);
-
-    rv = phy_drv->phy_autoneg_enable_set (dev_id, phy_id);
-    return rv;
-}
-
 static sw_error_t
 _isisc_port_autoneg_restart(a_uint32_t dev_id, fal_port_t port_id)
 {
@@ -495,6 +437,59 @@ _isisc_port_autoneg_adv_set(a_uint32_t dev_id, fal_port_t port_id,
 }
 
 static sw_error_t
+_isisc_port_autoneg_status_get(a_uint32_t dev_id, fal_port_t port_id,
+                              a_bool_t * status)
+{
+    a_uint32_t phy_id;
+    sw_error_t rv;
+    hsl_phy_ops_t *phy_drv;
+
+    HSL_DEV_ID_CHECK(dev_id);
+
+    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_PHY))
+    {
+        return SW_BAD_PARAM;
+    }
+
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+    if (NULL == phy_drv->phy_autoneg_status_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
+    SW_RTN_ON_ERROR(rv);
+
+    *status = phy_drv->phy_autoneg_status_get (dev_id, phy_id);
+
+    return SW_OK;
+}
+
+static sw_error_t
+_isisc_port_autoneg_enable(a_uint32_t dev_id, fal_port_t port_id)
+{
+    sw_error_t rv;
+    a_uint32_t phy_id;
+    hsl_phy_ops_t *phy_drv;
+
+    HSL_DEV_ID_CHECK(dev_id);
+
+    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_PHY))
+    {
+        return SW_BAD_PARAM;
+    }
+
+   SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+   if (NULL == phy_drv->phy_autoneg_enable_set)
+       return SW_NOT_SUPPORTED;
+
+    rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
+    SW_RTN_ON_ERROR(rv);
+
+    rv = phy_drv->phy_autoneg_enable_set (dev_id, phy_id);
+    return rv;
+}
+
+
+static sw_error_t
 _isisc_port_autoneg_adv_get(a_uint32_t dev_id, fal_port_t port_id,
                            a_uint32_t * autoadv)
 {
@@ -524,7 +519,7 @@ _isisc_port_autoneg_adv_get(a_uint32_t dev_id, fal_port_t port_id,
 }
 
 
-
+#ifndef IN_PORTCONTROL_MINI
 static sw_error_t
 _isisc_port_flowctrl_get(a_uint32_t dev_id, fal_port_t port_id,
                         a_bool_t * enable)
@@ -1306,69 +1301,56 @@ _isisc_port_link_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * st
     return SW_OK;
 }
 
-#ifndef IN_PORTCONTROL_MINI
 static sw_error_t
-_isisc_port_bp_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+_isisc_port_power_off (a_uint32_t dev_id, fal_port_t port_id)
 {
-    sw_error_t rv;
-    a_uint32_t val, tmp;
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
 
-    HSL_DEV_ID_CHECK(dev_id);
+  HSL_DEV_ID_CHECK (dev_id);
 
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
     {
-        return SW_BAD_PARAM;
+      return SW_BAD_PARAM;
     }
 
-    if (A_TRUE == enable)
-    {
-        val = 1;
-    }
-    else if (A_FALSE == enable)
-    {
-        val = 0;
-    }
-    else
-    {
-        return SW_BAD_PARAM;
-    }
-	HSL_REG_FIELD_GET(rv, dev_id, PORT_STATUS, port_id, TX_HALF_FLOW_EN,
-                      (a_uint8_t *) (&tmp), sizeof (a_uint32_t));
-	if (tmp == val)
-		return SW_OK;
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_power_off)
+    return SW_NOT_SUPPORTED;
 
-    HSL_REG_FIELD_SET(rv, dev_id, PORT_STATUS, port_id, TX_HALF_FLOW_EN,
-                      (a_uint8_t *) (&val), sizeof (a_uint32_t));
-    return rv;
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
+
+  rv = phy_drv->phy_power_off(dev_id, phy_id);
+
+  return rv;
 }
 
 static sw_error_t
-_isisc_port_bp_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
+_isisc_port_power_on (a_uint32_t dev_id, fal_port_t port_id)
 {
-    sw_error_t rv;
-    a_uint32_t val;
+  sw_error_t rv;
+  a_uint32_t phy_id = 0;
+  hsl_phy_ops_t *phy_drv;
 
-    HSL_DEV_ID_CHECK(dev_id);
+  HSL_DEV_ID_CHECK (dev_id);
 
-    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
     {
-        return SW_BAD_PARAM;
+      return SW_BAD_PARAM;
     }
 
-    HSL_REG_FIELD_GET(rv, dev_id, PORT_STATUS, port_id, TX_HALF_FLOW_EN,
-                      (a_uint8_t *) (&val), sizeof (a_uint32_t));
-    SW_RTN_ON_ERROR(rv);
+  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+  if (NULL == phy_drv->phy_power_on)
+    return SW_NOT_SUPPORTED;
 
-    if (val)
-    {
-        *enable = A_TRUE;
-    }
-    else
-    {
-        *enable = A_FALSE;
-    }
+  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+  SW_RTN_ON_ERROR (rv);
 
-    return SW_OK;
+  rv = phy_drv->phy_power_on(dev_id, phy_id);
+
+  return rv;
 }
 
 static sw_error_t
@@ -1437,6 +1419,71 @@ _isisc_port_link_forcemode_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *
     SW_RTN_ON_ERROR(rv);
 
     if (0 == val)
+    {
+        *enable = A_TRUE;
+    }
+    else
+    {
+        *enable = A_FALSE;
+    }
+
+    return SW_OK;
+}
+
+#ifndef IN_PORTCONTROL_MINI
+static sw_error_t
+_isisc_port_bp_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+{
+    sw_error_t rv;
+    a_uint32_t val, tmp;
+
+    HSL_DEV_ID_CHECK(dev_id);
+
+    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
+    {
+        return SW_BAD_PARAM;
+    }
+
+    if (A_TRUE == enable)
+    {
+        val = 1;
+    }
+    else if (A_FALSE == enable)
+    {
+        val = 0;
+    }
+    else
+    {
+        return SW_BAD_PARAM;
+    }
+	HSL_REG_FIELD_GET(rv, dev_id, PORT_STATUS, port_id, TX_HALF_FLOW_EN,
+                      (a_uint8_t *) (&tmp), sizeof (a_uint32_t));
+	if (tmp == val)
+		return SW_OK;
+
+    HSL_REG_FIELD_SET(rv, dev_id, PORT_STATUS, port_id, TX_HALF_FLOW_EN,
+                      (a_uint8_t *) (&val), sizeof (a_uint32_t));
+    return rv;
+}
+
+static sw_error_t
+_isisc_port_bp_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
+{
+    sw_error_t rv;
+    a_uint32_t val;
+
+    HSL_DEV_ID_CHECK(dev_id);
+
+    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
+    {
+        return SW_BAD_PARAM;
+    }
+
+    HSL_REG_FIELD_GET(rv, dev_id, PORT_STATUS, port_id, TX_HALF_FLOW_EN,
+                      (a_uint8_t *) (&val), sizeof (a_uint32_t));
+    SW_RTN_ON_ERROR(rv);
+
+    if (val)
     {
         *enable = A_TRUE;
     }
@@ -1629,27 +1676,6 @@ isisc_port_speed_get(a_uint32_t dev_id, fal_port_t port_id,
     HSL_API_UNLOCK;
     return rv;
 }
-#ifndef IN_PORTCONTROL_MINI
-
-
-/**
- * @brief Get auto negotiation status on a particular port.
- * @param[in] dev_id device id
- * @param[in] port_id port id
- * @param[out] status A_TRUE or A_FALSE
- * @return SW_OK or error code
- */
-HSL_LOCAL sw_error_t
-isisc_port_autoneg_status_get(a_uint32_t dev_id, fal_port_t port_id,
-                             a_bool_t * status)
-{
-    sw_error_t rv;
-
-    HSL_API_LOCK;
-    rv = _isisc_port_autoneg_status_get(dev_id, port_id, status);
-    HSL_API_UNLOCK;
-    return rv;
-}
 
 /**
  * @brief Enable auto negotiation status on a particular port.
@@ -1708,6 +1734,26 @@ isisc_port_autoneg_adv_set(a_uint32_t dev_id, fal_port_t port_id,
 }
 
 /**
+ * @brief Get auto negotiation status on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] status A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+isisc_port_autoneg_status_get(a_uint32_t dev_id, fal_port_t port_id,
+                             a_bool_t * status)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _isisc_port_autoneg_status_get(dev_id, port_id, status);
+    HSL_API_UNLOCK;
+    return rv;
+}
+
+
+/**
  * @brief Get auto negotiation advtisement ability on a particular port.
  * @param[in] dev_id device id
  * @param[in] port_id port id
@@ -1726,6 +1772,7 @@ isisc_port_autoneg_adv_get(a_uint32_t dev_id, fal_port_t port_id,
     return rv;
 }
 
+#ifndef IN_PORTCONTROL_MINI
 /**
  * @brief Get flow control status on a particular port.
  * @param[in] dev_id device id
@@ -2166,40 +2213,38 @@ isisc_port_link_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * sta
     return rv;
 }
 
-#ifndef IN_PORTCONTROL_MINI
 /**
- * @brief Set status of back pressure on a particular port.
+ * @brief phy power off on a particular port.
  * @param[in] dev_id device id
  * @param[in] port_id port id
- * @param[in] enable A_TRUE or A_FALSE
+ * @param[in]
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-isisc_port_bp_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+isisc_port_power_off (a_uint32_t dev_id, fal_port_t port_id)
 {
-    sw_error_t rv;
-    HSL_API_LOCK;
-    rv = _isisc_port_bp_status_set(dev_id, port_id, enable);
-    HSL_API_UNLOCK;
-    return rv;
+  sw_error_t rv;
+  HSL_API_LOCK;
+  rv = _isisc_port_power_off (dev_id, port_id);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
- * @brief Set status of back pressure on a particular port.
+ * @brief phy power on on a particular port.
  * @param[in] dev_id device id
  * @param[in] port_id port id
- * @param[out] enable A_TRUE or A_FALSE
+ * @param[in]
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-isisc_port_bp_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
+isisc_port_power_on (a_uint32_t dev_id, fal_port_t port_id)
 {
-    sw_error_t rv;
-
-    HSL_API_LOCK;
-    rv = _isisc_port_bp_status_get(dev_id, port_id, enable);
-    HSL_API_UNLOCK;
-    return rv;
+  sw_error_t rv;
+  HSL_API_LOCK;
+  rv = _isisc_port_power_on (dev_id, port_id);
+  HSL_API_UNLOCK;
+  return rv;
 }
 
 /**
@@ -2237,6 +2282,41 @@ isisc_port_link_forcemode_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * 
     return rv;
 }
 
+#ifndef IN_PORTCONTROL_MINI
+/**
+ * @brief Set status of back pressure on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[in] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+isisc_port_bp_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+{
+    sw_error_t rv;
+    HSL_API_LOCK;
+    rv = _isisc_port_bp_status_set(dev_id, port_id, enable);
+    HSL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Set status of back pressure on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+isisc_port_bp_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _isisc_port_bp_status_get(dev_id, port_id, enable);
+    HSL_API_UNLOCK;
+    return rv;
+}
 
 /**
  * @brief Get link status on all ports.
@@ -2307,12 +2387,12 @@ isisc_port_ctrl_init(a_uint32_t dev_id)
 	p_api->port_flowctrl_forcemode_set = isisc_port_flowctrl_forcemode_set;
 	p_api->port_duplex_get = isisc_port_duplex_get;
 	p_api->port_speed_get = isisc_port_speed_get;
-#ifndef IN_PORTCONTROL_MINI
+	p_api->port_autoneg_enable = isisc_port_autoneg_enable;
+	p_api->port_autoneg_restart = isisc_port_autoneg_restart;
+	p_api->port_autoneg_adv_set = isisc_port_autoneg_adv_set;
         p_api->port_autoneg_status_get = isisc_port_autoneg_status_get;
-        p_api->port_autoneg_enable = isisc_port_autoneg_enable;
-        p_api->port_autoneg_restart = isisc_port_autoneg_restart;
         p_api->port_autoneg_adv_get = isisc_port_autoneg_adv_get;
-        p_api->port_autoneg_adv_set = isisc_port_autoneg_adv_set;
+#ifndef IN_PORTCONTROL_MINI
         p_api->port_flowctrl_get = isisc_port_flowctrl_get;
         p_api->port_flowctrl_forcemode_get = isisc_port_flowctrl_forcemode_get;
         p_api->port_powersave_set = isisc_port_powersave_set;
@@ -2337,11 +2417,13 @@ isisc_port_ctrl_init(a_uint32_t dev_id)
 	p_api->port_rxfc_status_set = isisc_port_rxfc_status_set;
 	p_api->port_link_status_get = isisc_port_link_status_get;
 	p_api->port_rxfc_status_get = isisc_port_rxfc_status_get;
+	p_api->port_power_off = isisc_port_power_off;
+	p_api->port_power_on = isisc_port_power_on;
+	p_api->port_link_forcemode_set = isisc_port_link_forcemode_set;
+	p_api->port_link_forcemode_get = isisc_port_link_forcemode_get;
 #ifndef IN_PORTCONTROL_MINI
         p_api->port_bp_status_set = isisc_port_bp_status_set;
         p_api->port_bp_status_get = isisc_port_bp_status_get;
-        p_api->port_link_forcemode_set = isisc_port_link_forcemode_set;
-        p_api->port_link_forcemode_get = isisc_port_link_forcemode_get;
         p_api->ports_link_status_get = isisc_ports_link_status_get;
         p_api->port_mac_loopback_set=isisc_port_mac_loopback_set;
         p_api->port_mac_loopback_get=isisc_port_mac_loopback_get;
