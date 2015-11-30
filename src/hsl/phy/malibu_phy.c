@@ -2368,7 +2368,7 @@ malibu_phy_hw_init(void)
 	a_uint32_t phy_id = 0;
 	a_uint16_t org_id =0, rev_id=0;
 	a_uint32_t malibu_id = 0;
-	a_uint16_t dac_value;
+	a_uint16_t dac_value,led_status;
 
 	malibu_phy_get_phy_id(0, 0, &org_id, &rev_id);
 	malibu_id = ((org_id << 16) |rev_id);
@@ -2395,6 +2395,14 @@ malibu_phy_hw_init(void)
 		dac_value |= MALIBU_DAC_CTRL_VALUE;
 		malibu_phy_mmd_write(dev_id, phy_id, MALIBU_PHY_MMD7_NUM,
 			MALIBU_PHY_MMD7_DAC_CTRL, dac_value);
+
+		/* add 10M and 100M link LED behavior for QFN board*/
+		led_status = malibu_phy_mmd_read(dev_id, phy_id, MALIBU_PHY_MMD7_NUM,
+			MALIBU_PHY_MMD7_LED_1000_CTRL1);
+		led_status &= ~MALIBU_LED_1000_CTRL1_100_10_MASK;
+		led_status |= MALIBU_LED_1000_CTRL1_100_10_MASK;
+		malibu_phy_mmd_write(dev_id, phy_id, MALIBU_PHY_MMD7_NUM,
+			MALIBU_PHY_MMD7_LED_1000_CTRL1, led_status);
 	}
 	/* to avoid psgmii module goes into hibernation, work with psgmii self test*/
 	phy_data = malibu_phy_mmd_read(0, 4, MALIBU_PHY_MMD3_NUM,
