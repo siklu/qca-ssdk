@@ -56,13 +56,13 @@ endif
   #pb45
   #TOOL_PATH=/disk/pb45/sw/build/gcc-3.4.4-2.16.1/build_mips_nofpu/bin
   #SYS_PATH=/disk/pb45/sw/linux/kernels/mips-linux-2.6.15
-	
+
   #ap81
 # compatiable with OpenWRT
-ifndef  TOOL_PATH 
+ifndef  TOOL_PATH
 TOOL_PATH=/disk/ap81fus/sw/build/gcc-3.4.4-2.16.1/build_mips/bin
 endif
-ifndef SYS_PATH 
+ifndef SYS_PATH
 SYS_PATH=/disk/ap81fus/sw/linux/kernels/mips-linux-2.6.15
 endif
 ifeq ($(ARCH), mips)
@@ -183,3 +183,8 @@ endif
 IN_INTERFACECONTROL=TRUE
 IN_MACBLOCK=FALSE
 IN_MALIBU_PHY=TRUE
+ifeq ($(SFE_FEATURE), enable)
+IN_SFE=TRUE
+else
+IN_SFE=FALSE
+endif

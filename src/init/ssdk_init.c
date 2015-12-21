@@ -93,7 +93,9 @@
 #ifdef IN_IP
 #if defined (CONFIG_NF_FLOW_COOKIE)
 #include "fal_flowcookie.h"
+#ifdef IN_SFE
 #include <shortcut-fe/sfe.h>
+#endif
 #endif
 #endif
 
@@ -3136,7 +3138,9 @@ static int __init regi_init(void)
 
 		#if defined (CONFIG_NF_FLOW_COOKIE)
 		#ifdef IN_NAT
+		#ifdef IN_SFE
 		sfe_register_flow_cookie_cb(ssdk_flow_cookie_set);
+		#endif
 		#endif
 		#endif
 
@@ -3195,7 +3199,9 @@ regi_exit(void)
 		ssdk_switch_unregister();
 		#if defined (CONFIG_NF_FLOW_COOKIE)
 		#ifdef IN_NAT
+		#ifdef IN_SFE
 		sfe_unregister_flow_cookie_cb(ssdk_flow_cookie_set);
+		#endif
 		#endif
 		#endif
 		#ifdef IN_RFS
