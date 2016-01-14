@@ -288,7 +288,14 @@ ifeq (KSLIB, $(MODULE_TYPE))
 	    -I$(SYS_PATH)/arch/mips/include/asm/mach-ar7240 \
 	    -I$(SYS_PATH)/arch/mips/include/asm/mach-generic \
 		-I$(SYS_PATH)/arch/mips/include/asm/mach-ar7 \
-	    -I$(SYS_PATH)/usr/include
+	    -I$(SYS_PATH)/usr/include \
+	    -I${KERN_SRC_PATH} \
+            -I${KERN_SRC_PATH}/include \
+            -I$(KERN_SRC_PATH)/arch/mips/include \
+            -I$(KERN_SRC_PATH)/arch/mips/include/asm/mach-ar7240 \
+            -I$(KERN_SRC_PATH)/arch/mips/include/asm/mach-generic \
+            -I$(KERN_SRC_PATH)/arch/mips/include/asm/mach-ar7 \
+            -I$(KERN_SRC_PATH)/usr/include
 
 	    #CPU_CFLAG    = -G 0 -mno-abicalls -fno-pic -pipe -mabi=32 -march=mips32r2
           ifndef CPU_CFLAG
