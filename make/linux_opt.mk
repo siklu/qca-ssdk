@@ -101,6 +101,10 @@ ifeq (TRUE, $(IN_NAT))
   MODULE_CFLAG += -DIN_NAT
 endif
 
+ifeq (TRUE, $(IN_SFE))
+  MODULE_CFLAG += -DIN_SFE
+endif
+
 ifeq (TRUE, $(IN_TRUNK))
   MODULE_CFLAG += -DIN_TRUNK
 endif
