@@ -117,40 +117,6 @@ qca_ar8327_sw_get_port_link(struct switch_dev *dev, int port,
 	return 0;
 }
 
-void qca_phy_mutex_write(a_uint32_t dev_id, a_uint32_t phy_addr,
-                           a_uint32_t reg, a_uint16_t data_mask, a_uint16_t *data)
-{
-	a_uint16_t phy_val;
-
-	qca_ar8327_phy_read(0, phy_addr, reg, &phy_val);
-
-	phy_val &= ~data_mask;
-	phy_val |= (*data & data_mask);
-
-	qca_ar8327_phy_write(0, phy_addr, reg, phy_val );
-
-	*data = phy_val;
-}
-
-static int qca_phy_mdi_update(a_uint32_t dev_id, a_uint32_t phy_addr, a_uint32_t *mdi, ulong from_status)
-{
-	ushort val;
-
-	if(from_status){
-		qca_ar8327_phy_read(0, phy_addr, F1_PHY_SPEC_STATUS, &val);
-		*mdi = (val & BIT(6)) >> 6;
-	}
-
-	qca_ar8327_phy_read(0, phy_addr, F1_PHY_SPEC_CONTROL, &val);
-
-	val = (val & ~(BITS(5,2))) | ((*mdi & 0x3) << 5);
-
-	qca_ar8327_phy_write(0, phy_addr, F1_PHY_SPEC_CONTROL, val);
-	*mdi = val;
-
-	return 0;
-}
-
 static int qca_switch_get_qm_status(struct switch_dev *dev, a_uint32_t port_id, a_uint32_t *qm_buffer_err)
 {
 	a_uint32_t reg = 0;
@@ -218,6 +184,10 @@ static int qca_switch_force_mac_status(struct switch_dev *dev, a_uint32_t port_i
 #define QM_NOT_EMPTY  1
 #define QM_EMPTY  0
 
+static a_uint32_t port_link_down[AR8327_NUM_PORTS] = {0, 0 ,0 ,0 , 0, 0, 0};
+
+static a_uint32_t port_link_up[AR8327_NUM_PORTS] = {0, 0 ,0 ,0 , 0, 0, 0};
+
 static a_uint32_t port_old_link[AR8327_NUM_PORTS] = {0, 0 ,0 ,0 , 0, 0, 0};
 static a_uint32_t port_old_speed[AR8327_NUM_PORTS] = {AR8327_PORT_SPEED_10M,
 	AR8327_PORT_SPEED_10M,
@@ -231,10 +201,7 @@ static a_uint32_t port_old_duplex[AR8327_NUM_PORTS] = {0, 0 ,0 ,0 , 0, 0, 0};
 static a_uint32_t port_old_phy_status[AR8327_NUM_PORTS] = {0, 0 ,0 ,0 , 0, 0, 0};
 
 
-static a_uint32_t port_qm_buf[AR8327_NUM_PORTS] = {0, 0 ,0 ,0 , 0, 0, 0};
-
-static char speed_str[4][10] = {
-	"10M", "100M", "1000M", "Reserved" };
+static a_uint32_t port_qm_buf[AR8327_NUM_PORTS] = {QM_EMPTY, QM_EMPTY ,QM_EMPTY ,QM_EMPTY , QM_EMPTY, QM_EMPTY, QM_EMPTY};
 
 static a_uint32_t phy_current_speed = 2;
 static a_uint32_t phy_current_duplex = 1;
@@ -244,11 +211,8 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 {
 	static int task_count = 0;
 	a_uint32_t i;
-	a_uint32_t reg, value;
-	a_uint32_t link, speed, duplex, mdi;
-	a_uint32_t phy_addr;
-	a_uint32_t phy_reg;
-	a_uint16_t phy_val;
+	a_uint32_t value;
+	a_uint32_t link, speed, duplex;
 	a_uint32_t qm_buffer_err = 0;
 	a_uint16_t port_phy_status[AR8327_NUM_PORTS];
 	static a_uint32_t mac_err_flag[AR8327_NUM_PORTS] = {0,0,0,0,0,0,0};
@@ -256,7 +220,6 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 
 	static a_uint32_t link_cnt[AR8327_NUM_PORTS] = {0,0,0,0,0,0,0};
 
-	a_uint16_t data_mask;
 	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 
 	/*Only valid for S17c chip*/
@@ -274,61 +237,22 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 			++link_cnt[i];
 			/* Up --> Down */
 			if ((port_old_link[i] == PORT_LINK_UP) && (link == PORT_LINK_DOWN)) {
-				/* MAC Tx/Rx disable */
-				fal_port_txmac_status_set(0, i, A_FALSE);
-				fal_port_rxmac_status_set(0, i, A_FALSE);
-
-				/* Check queue buffer */
-				qm_err_cnt[i] = 0;
-				qca_switch_get_qm_status(dev, i, &qm_buffer_err);
-
-				if (qm_buffer_err) {
-					port_qm_buf[i] = QM_NOT_EMPTY;
+				if (port_link_down[i] < 1) {
+					++port_link_down[i];
 				}
-				else {
-					port_qm_buf[i] = QM_EMPTY;
-					if ((port_old_speed[i] == AR8327_PORT_SPEED_100M)
-							|| (port_old_speed[i] == AR8327_PORT_SPEED_10M)) {
-						a_uint16_t phy_ctrl_reg[AR8327_NUM_PORTS];
+				else{
+					fal_port_link_forcemode_set(0, i, A_TRUE);
+					port_link_down[i]=0;
+					/* Check queue buffer */
+					qm_err_cnt[i] = 0;
+					qca_switch_get_qm_status(dev, i, &qm_buffer_err);
 
-						phy_addr = i - 1;
-
-						qca_ar8327_phy_read(0, phy_addr, F1_PHY_CONTROL, &phy_ctrl_reg[i]);
-
-						/* Force MDI/MDIX  */
-						mdi = 0x0;
-						qca_phy_mdi_update(0, phy_addr, &mdi, MDI_FROM_PHY_STATUS);
-
-						/* Disable phy auto-neg, force 100M, duplex, */
-						phy_reg = F1_PHY_CONTROL;
-						data_mask = F1_CTRL_AUTONEGOTIATION_ENABLE | F1_CTRL_SPEED_MASK
-								| F1_CTRL_FULL_DUPLEX | F1_CTRL_SOFTWARE_RESET;
-
-						if (port_old_speed[i] == AR8327_PORT_SPEED_100M)
-							phy_val = F1_CTRL_SPEED_100;
-						else
-							phy_val = F1_CTRL_SPEED_10;
-						phy_val |= F1_CTRL_FULL_DUPLEX | F1_CTRL_SOFTWARE_RESET ;
-						qca_phy_mutex_write(0, phy_addr, phy_reg, data_mask, &phy_val);
-						udelay(1000);
-
-						/* Force MAC 1000M Full before auto negotiation */
-						qca_switch_force_mac_1000M_full(dev, i);
-						/* Force MDI/MDIX auto-crossover */
-						mdi = F1_CTL_AUTO_X_MODE >> 5;
-						qca_phy_mdi_update(0, phy_addr, &mdi, MDI_FROM_MANUAL);
-
-						/* Enable phy auto-neg, do soft reset */
-						phy_reg = F1_PHY_CONTROL;
-						data_mask = F1_CTRL_FULL_DUPLEX | F1_CTRL_SPEED_MASK
-								| F1_CTRL_AUTONEGOTIATION_ENABLE | F1_CTRL_SOFTWARE_RESET;
-						if(phy_ctrl_reg[i] & F1_CTRL_AUTONEGOTIATION_ENABLE)
-							phy_val = F1_CTRL_AUTONEGOTIATION_ENABLE | F1_CTRL_SOFTWARE_RESET;
-						else
-							phy_val = phy_ctrl_reg[i] | F1_CTRL_SOFTWARE_RESET;
-						qca_phy_mutex_write(0, phy_addr, phy_reg, data_mask, &phy_val);
+					if (qm_buffer_err) {
+						port_qm_buf[i] = QM_NOT_EMPTY;
 					}
 					else {
+						port_qm_buf[i] = QM_EMPTY;
+
 						/* Force MAC 1000M Full before auto negotiation */
 						qca_switch_force_mac_1000M_full(dev, i);
 					}
@@ -347,32 +271,23 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 					else
 						mac_err_flag[i] = 0;
 				}
-#if 0
-				/* Check Queue Buffer */
-				qca_switch_get_qm_status(dev, i, &qm_buffer_err);
-				if (qm_buffer_err) {
-					qm_err_flag = qm_val;
+				if (port_link_up[i] < 1) {
+					++port_link_up[i];
 				}
-#endif
-				/* Change port status */
-				reg = AR8327_REG_PORT_STATUS(i);
-				value = priv->mii_read(reg);
-				/* Speed change */
-				value &= ~(BIT(6) | BITS(0,2));
-				value |= speed | (duplex << 6);
-				priv->mii_write(reg, value);
-				udelay(200);
-
-				/* Tx/Rx mac enable */
-				fal_port_txmac_status_set(0, i, A_TRUE);
-				fal_port_rxmac_status_set(0, i, A_TRUE);
+				else{
+					port_link_up[i]=0;
+					fal_port_link_forcemode_set(0, i, A_FALSE);
+					udelay(100);
+				}
 			}
-
-			/* Save the current status */
-			port_old_speed[i] = speed;
-			port_old_link[i] = link;
-			port_old_duplex[i] = duplex;
-			port_old_phy_status[i] = port_phy_status[i];
+			if ((port_link_down[i] == 0)
+				&& (port_link_up[i] == 0)){
+				/* Save the current status */
+				port_old_speed[i] = speed;
+				port_old_link[i] = link;
+				port_old_duplex[i] = duplex;
+				port_old_phy_status[i] = port_phy_status[i];
+			}
 		}
 
 		if (port_qm_buf[i] == QM_NOT_EMPTY) {
@@ -386,49 +301,11 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 				port_qm_buf[i] = QM_EMPTY;
 				qm_err_cnt[i] = 0;
 
-				if ((port_old_speed[i] == AR8327_PORT_SPEED_100M)
-					|| (port_old_speed[i] == AR8327_PORT_SPEED_10M)) {
-					phy_addr = i - 1;
-					/* Force MDI/MDIX  */
-					mdi = 0x0;
-					qca_phy_mdi_update(0, phy_addr, &mdi, MDI_FROM_PHY_STATUS);
-
-					/* Disable phy auto-neg, force 100M, duplex, */
-					phy_reg = F1_PHY_CONTROL;
-					data_mask = F1_CTRL_AUTONEGOTIATION_ENABLE | F1_CTRL_SPEED_MASK
-							| F1_CTRL_FULL_DUPLEX | F1_CTRL_SOFTWARE_RESET;
-
-					if (port_old_speed[i] == AR8327_PORT_SPEED_100M)
-						phy_val = F1_CTRL_SPEED_100;
-					else
-						phy_val = F1_CTRL_SPEED_10;
-					phy_val |= F1_CTRL_FULL_DUPLEX | F1_CTRL_SOFTWARE_RESET;
-					qca_phy_mutex_write(0, phy_addr, phy_reg, data_mask, &phy_val);
-					udelay(1000);
-
-					/* Force MAC 1000M Full before auto negotiation */
-					qca_switch_force_mac_1000M_full(dev, i);
-
-					/* Force MDI/MDIX auto-crossover   */
-					mdi = F1_CTL_AUTO_X_MODE >> 5;
-					qca_phy_mdi_update(0, phy_addr, &mdi, MDI_FROM_MANUAL);
-
-					/* Enable phy auto-neg, do soft reset */
-					phy_reg = F1_PHY_CONTROL;
-					data_mask = F1_CTRL_FULL_DUPLEX | F1_CTRL_SPEED_MASK
-							| F1_CTRL_AUTONEGOTIATION_ENABLE | F1_CTRL_SOFTWARE_RESET;
-
-					phy_val = F1_CTRL_AUTONEGOTIATION_ENABLE | F1_CTRL_SOFTWARE_RESET;
-					qca_phy_mutex_write(0, phy_addr, phy_reg, data_mask, &phy_val);
-				}
-				else {
-					/* Force MAC 1000M Full before auto negotiation */
-					qca_switch_force_mac_1000M_full(dev, i);
-				}
+				/* Force MAC 1000M Full before auto negotiation */
+				qca_switch_force_mac_1000M_full(dev, i);
 			}
 		}
 	}
-
 	return ;
 }
 
