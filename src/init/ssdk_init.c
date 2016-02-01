@@ -452,13 +452,25 @@ qca_switch_init(a_uint32_t dev_id)
 	return SW_OK;
 }
 
-void
-qca_ar8327_phy_disable(void)
+static void qca_ar8327_phy_linkdown()
 {
-	int i = 0;
+	int i;
+	a_uint16_t phy_val;
+
 	for (i = 0; i < AR8327_NUM_PHYS; i++) {
-		/* power down all phy*/
-		qca_ar8327_phy_write(0, i, MII_BMCR, BMCR_PDOWN);
+		qca_ar8327_phy_write(0, i, 0x0, 0x0800);	// phy powerdown
+
+		qca_ar8327_phy_dbg_read(0, i, 0x3d, &phy_val);
+		phy_val &= ~0x0040;
+		qca_ar8327_phy_dbg_write(0, i, 0x3d, phy_val);
+
+		/*PHY will stop the tx clock for a while when link is down
+			1. en_anychange  debug port 0xb bit13 = 0  //speed up link down tx_clk
+			2. sel_rst_80us  debug port 0xb bit10 = 0  //speed up speed mode change to 2'b10 tx_clk
+		*/
+		qca_ar8327_phy_dbg_read(0, i, 0xb, &phy_val);
+		phy_val &= ~0x2400;
+		qca_ar8327_phy_dbg_write(0, i, 0xb, phy_val);
 	}
 }
 
@@ -524,7 +536,9 @@ qca_ar8327_phy_enable(struct qca_phy_priv *priv)
 		/* start autoneg*/
 		priv->phy_write(0, i, MII_ADVERTISE, ADVERTISE_ALL |
 						     ADVERTISE_PAUSE_CAP | ADVERTISE_PAUSE_ASYM);
-		priv->phy_write(0, i, MII_CTRL1000, ADVERTISE_1000FULL);
+		//phy reg 0x9, b10,1 = Prefer multi-port device (master)
+		priv->phy_write(0, i, MII_CTRL1000, (0x0400|ADVERTISE_1000FULL));
+
 		priv->phy_write(0, i, MII_BMCR, BMCR_RESET | BMCR_ANENABLE);
 	}
 }
@@ -543,7 +557,7 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 		return -EINVAL;
 
 	/*Before switch software reset, disable PHY and clear  MAC PAD*/
-	qca_ar8327_phy_disable();
+	qca_ar8327_phy_linkdown();
 	qca_mac_disable();
 	msleep(1000);
 
@@ -853,7 +867,7 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 	}
 
 	/*Before switch software reset, disable PHY and clear MAC PAD*/
-	qca_ar8327_phy_disable();
+	qca_ar8327_phy_linkdown();
 	qca_mac_disable();
 	msleep(1000);
 
@@ -1606,7 +1620,7 @@ phy_addr_validation_check(a_uint32_t phy_addr)
 sw_error_t
 qca_ar8327_phy_read(a_uint32_t dev_id, a_uint32_t phy_addr,
                            a_uint32_t reg, a_uint16_t* data)
-{	
+{
 	struct mii_bus *bus = miibus;
 	int phy_dest_addr;
 	if (A_TRUE != phy_addr_validation_check (phy_addr))
@@ -1627,7 +1641,7 @@ qca_ar8327_phy_read(a_uint32_t dev_id, a_uint32_t phy_addr,
 sw_error_t
 qca_ar8327_phy_write(a_uint32_t dev_id, a_uint32_t phy_addr,
                             a_uint32_t reg, a_uint16_t data)
-{	
+{
 	struct mii_bus *bus = miibus;
 	int phy_dest_addr;
 	if (A_TRUE != phy_addr_validation_check (phy_addr))
