@@ -119,7 +119,7 @@ static int procfile_read_int(char *page, char **start, off_t off, int count,  in
     int ret;
     int *prv_data = (int *)data;
 
-	ret = snprintf(page, sizeof(int), "%d\n", *prv_data);
+	ret = snprintf(page, count, "%d\n", *prv_data);
 
     return ret;
 }
@@ -129,7 +129,7 @@ static int procfile_read_ip(char *page, char **start, off_t off, int count, int 
 	int ret;
 	unsigned char *prv_data = (unsigned char *)data;
 
-	ret = snprintf(page, sizeof(a_uint32_t), "%d.%d.%d.%d\n", prv_data[0], prv_data[1], prv_data[2], prv_data[3]);
+	ret = snprintf(page, count, "%d.%d.%d.%d\n", prv_data[0], prv_data[1], prv_data[2], prv_data[3]);
 
 	return ret;
 }
@@ -140,7 +140,7 @@ static int procfile_read_mac(char *page, char **start, off_t off, int count, int
 	unsigned char *prv_data = (unsigned char *)data;
 	unsigned long long *ptr_ull;
 
-	ret = snprintf(page, sizeof(unsigned char)*ETH_ALEN, "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x\n",
+	ret = snprintf(page, count, "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x\n",
 				prv_data[0], prv_data[1], prv_data[2], prv_data[3], prv_data[4], prv_data[5]);
 
 	ptr_ull = (unsigned long long *)prv_data;
