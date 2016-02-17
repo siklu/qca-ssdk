@@ -1204,7 +1204,8 @@ int
 qm_err_check_work_start(struct qca_phy_priv *priv)
 {
 	/*Only valid for S17c chip*/
-	if (priv->version != QCA_VER_AR8337)
+	if (priv->version != QCA_VER_AR8337 &&
+		priv->version != QCA_VER_AR8327)
 		return -1;
 
 	mutex_init(&priv->qm_lock);
@@ -1226,7 +1227,8 @@ void
 qm_err_check_work_stop(struct qca_phy_priv *priv)
 {
 	/*Only valid for S17c chip*/
-	if (priv->version != QCA_VER_AR8337) return;
+	if (priv->version != QCA_VER_AR8337 &&
+		priv->version != QCA_VER_AR8327) return;
 
 	cancel_delayed_work_sync(&priv->qm_dwork);
 }

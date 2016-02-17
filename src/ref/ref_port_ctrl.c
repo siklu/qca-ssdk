@@ -223,7 +223,9 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 
 	/*Only valid for S17c chip*/
-	if (priv->version != QCA_VER_AR8337) return;
+	if (priv->version != QCA_VER_AR8337 &&
+		priv->version != QCA_VER_AR8327)
+		return;
 
 	++task_count;
 
