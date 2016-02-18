@@ -70,7 +70,10 @@
 #ifdef IN_MALIBU_PHY
 #include <malibu_phy.h>
 #endif
-#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
+#include <linux/switch.h>
+#include <linux/of.h>
+#elif defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 #include <linux/switch.h>
 #include <linux/of.h>
 #include <drivers/leds/leds-ipq40xx.h>
@@ -2598,7 +2601,7 @@ static int ssdk_flow_default_act_init()
 
 	return 0;
 }
-static ssdk_portvlan_init(a_uint32_t cpu_bmp, a_uint32_t lan_bmp, a_uint32_t wan_bmp)
+static int ssdk_portvlan_init(a_uint32_t cpu_bmp, a_uint32_t lan_bmp, a_uint32_t wan_bmp)
 {
 	a_uint32_t port = 0;
 	for(port = 0; port < SSDK_MAX_PORT_NUM; port++)
@@ -2643,7 +2646,7 @@ static int ssdk_dess_led_init(ssdk_init_cfg *cfg)
 			#endif
 			led_num = ((led_source_id-1)/3) + 3;
 			source_id = led_source_id%3;
-		#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+		#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) && (LINUX_VERSION_CODE <= KERNEL_VERSION(4,0,0))
 			if (source_id == 1) {
 				if (led_source_id == 1) {
 					ipq40xx_led_source_select(led_num, LAN0_1000_LNK_ACTIVITY);
