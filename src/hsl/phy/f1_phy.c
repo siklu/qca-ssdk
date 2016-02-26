@@ -436,6 +436,8 @@ f1_phy_cdt(a_uint32_t dev_id, a_uint32_t phy_id, a_uint32_t mdi_pair,
 {
     a_uint16_t status = 0;
     a_uint16_t ii = 100;
+    a_uint16_t org_debug_value;
+    a_uint16_t cable_delta_time;
 
     if(!cable_status || !cable_len)
     {
@@ -448,7 +450,7 @@ f1_phy_cdt(a_uint32_t dev_id, a_uint32_t phy_id, a_uint32_t mdi_pair,
         return SW_BAD_PARAM;
     }
 
-    a_uint16_t org_debug_value = f1_phy_debug_read(dev_id, phy_id, 0x3f);
+    org_debug_value = f1_phy_debug_read(dev_id, phy_id, 0x3f);
 
     /*disable clock gating*/
     f1_phy_debug_write(dev_id, phy_id, 0x3f, 0);
@@ -474,7 +476,7 @@ f1_phy_cdt(a_uint32_t dev_id, a_uint32_t phy_id, a_uint32_t mdi_pair,
     }
 
     /* the actual cable length equals to CableDeltaTime * 0.824*/
-    a_uint16_t cable_delta_time = status & 0xff;
+     cable_delta_time = status & 0xff;
     *cable_len = (cable_delta_time * 824) /1000;
 
     /*restore debug port value*/

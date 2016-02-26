@@ -55,7 +55,7 @@ _dess_port_duplex_set (a_uint32_t dev_id, fal_port_t port_id,
 		       fal_port_duplex_t duplex)
 {
   sw_error_t rv;
-  a_uint32_t phy_id, reg_save, reg_val, force;
+  a_uint32_t phy_id;
   hsl_phy_ops_t *phy_drv;
 
   HSL_DEV_ID_CHECK (dev_id);
@@ -140,7 +140,7 @@ _dess_port_duplex_get (a_uint32_t dev_id, fal_port_t port_id,
 		       fal_port_duplex_t * pduplex)
 {
   sw_error_t rv = SW_OK;
-  a_uint32_t phy_id,reg, field;
+  a_uint32_t phy_id;
   hsl_phy_ops_t *phy_drv;
 
   HSL_DEV_ID_CHECK (dev_id);
@@ -183,7 +183,7 @@ _dess_port_speed_set (a_uint32_t dev_id, fal_port_t port_id,
 		      fal_port_speed_t speed)
 {
   sw_error_t rv;
-  a_uint32_t phy_id, reg_save, reg_val, force;
+  a_uint32_t phy_id;
   hsl_phy_ops_t *phy_drv;
 
   HSL_DEV_ID_CHECK (dev_id);
@@ -278,7 +278,7 @@ _dess_port_speed_get (a_uint32_t dev_id, fal_port_t port_id,
 		      fal_port_speed_t * pspeed)
 {
   sw_error_t rv = SW_OK;
-  a_uint32_t phy_id,reg, field;
+  a_uint32_t phy_id;
   hsl_phy_ops_t *phy_drv;
 
   HSL_DEV_ID_CHECK (dev_id);

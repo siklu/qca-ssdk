@@ -220,6 +220,7 @@ f2_phy_cdt(a_uint32_t dev_id, a_uint32_t phy_id, a_uint32_t mdi_pair,
 {
     a_uint16_t status = 0;
     a_uint16_t ii = 100;
+    a_uint16_t cable_delta_time;
 
     if(!cable_status || !cable_len)
     {
@@ -245,7 +246,7 @@ f2_phy_cdt(a_uint32_t dev_id, a_uint32_t phy_id, a_uint32_t mdi_pair,
     *cable_status = (status & 0x300) >> 8;//(00:normal  01:short 10:opened 11:invalid)
 
     /*the actual cable length equals to CableDeltaTime * 0.824*/
-    a_uint16_t cable_delta_time = status & 0xff;
+    cable_delta_time = status & 0xff;
     *cable_len = (cable_delta_time * 824) /1000;
 
     /*workaround*/
@@ -851,7 +852,7 @@ f2_phy_set_duplex(a_uint32_t dev_id, a_uint32_t phy_id,
 *
 */
 static sw_error_t
-f2_phy_get_phy_id(a_uint32_t dev_id, int phy_id,
+f2_phy_get_phy_id(a_uint32_t dev_id, a_uint32_t phy_id,
                   a_uint16_t * org_id, a_uint16_t * rev_id)
 {
     *org_id = f2_phy_reg_read(dev_id, phy_id, F2_PHY_ID1);

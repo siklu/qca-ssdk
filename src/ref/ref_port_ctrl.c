@@ -315,7 +315,7 @@ void
 dess_rgmii_sw_mac_polling_task(struct switch_dev *dev)
 {
 	a_uint32_t mac_mode;
-	a_uint32_t phy_spec_status, phy_link_status;
+	a_uint16_t phy_spec_status, phy_link_status;
 	a_uint32_t speed, duplex;
 
 	mac_mode = ssdk_dt_global_get_mac_mode();
@@ -326,7 +326,7 @@ dess_rgmii_sw_mac_polling_task(struct switch_dev *dev)
 		||(mac_mode == PORT_WRAPPER_SGMII1_RGMII4)
 		||(mac_mode == PORT_WRAPPER_SGMII4_RGMII4)) {
 		qca_ar8327_phy_read(0, 4, 0x11, &phy_spec_status);
-		phy_link_status = (a_uint32_t)((phy_spec_status & BIT(10)) >> 10);
+		phy_link_status = (a_uint16_t)((phy_spec_status & BIT(10)) >> 10);
 		if (phy_link_status == 1) {
 			speed = (a_uint32_t)((phy_spec_status >> 14) & 0x03);
 			duplex = (a_uint32_t)((phy_spec_status & BIT(13)) >> 13);
