@@ -373,7 +373,6 @@ static sw_error_t
 _isis_regsiter_dump(a_uint32_t dev_id,a_uint32_t register_idx, fal_reg_dump_t * reg_dump)
 {
     sw_error_t rv = SW_OK;
-    a_uint32_t reg;
 	typedef struct {
 		a_uint32_t reg_base;
 		a_uint32_t reg_end;

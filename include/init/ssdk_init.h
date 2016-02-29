@@ -285,9 +285,9 @@ sw_error_t qca_ar8327_phy_read(a_uint32_t dev_id, a_uint32_t phy_addr,
 sw_error_t qca_ar8327_phy_write(a_uint32_t dev_id, a_uint32_t phy_addr,
                             a_uint32_t reg, a_uint16_t data);
 
-uint32_t qca_switch_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr,
+sw_error_t qca_switch_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr,
 			a_uint8_t * reg_data, a_uint32_t len);
-uint32_t qca_switch_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr,
+sw_error_t qca_switch_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr,
 			a_uint8_t * reg_data, a_uint32_t len);
 
     sw_error_t

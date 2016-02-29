@@ -214,7 +214,6 @@ isis_cleanup(a_uint32_t dev_id)
     if (isis_cfg[dev_id])
     {
 #if defined(IN_NAT_HELPER)
-        sw_error_t rv;
 		if(isis_nat_global_status) {
         	ISIS_NAT_HELPER_CLEANUP(rv, dev_id);
 			isis_nat_global_status = 0;

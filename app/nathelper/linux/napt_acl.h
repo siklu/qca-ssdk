@@ -18,18 +18,17 @@
 #include "hsl_api.h"
 #include "hsl.h"
 
-#ifdef ISISC
+#if defined(DESS)
+#include "dess_acl.h"
+#include "dess_reg.h"
+#elif defined(ISISC)
 #include "isisc_acl.h"
 #include "isisc_reg.h"
-#endif
-#ifdef ISIS
+#else
 #include "isis_acl.h"
 #include "isis_reg.h"
 #endif
-#ifdef DESS
-#include "dess_acl.h"
-#include "dess_reg.h"
-#endif
+
 
 #define MAX_PPPOE_PASSTHROUGH_NUM 4
 /* ACL list priority */

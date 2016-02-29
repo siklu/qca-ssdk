@@ -49,12 +49,13 @@ extern "C" {
                        a_uint32_t bit_offset, a_uint32_t field_len,
                        const a_uint8_t value[], a_uint32_t value_len);
 
+#if 0
 	HSL_LOCAL sw_error_t
 	isisc_regsiter_dump(a_uint32_t dev_id,a_uint32_t register_idx, fal_reg_dump_t * reg_dump);
 
 	HSL_LOCAL sw_error_t
 	isisc_debug_regsiter_dump(a_uint32_t dev_id, fal_debug_reg_dump_t * reg_dump);
-
+#endif
 
     sw_error_t
     isisc_reg_access_init(a_uint32_t dev_id, hsl_access_mode mode);

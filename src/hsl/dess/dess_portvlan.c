@@ -2262,6 +2262,7 @@ dess_portvlan_init(a_uint32_t dev_id)
     a_uint32_t i;
     sw_error_t rv;
     fal_vlan_trans_entry_t entry_init;
+    hsl_api_t *p_api;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -2274,7 +2275,6 @@ dess_portvlan_init(a_uint32_t dev_id)
     }
 
 #ifndef HSL_STANDALONG
-    hsl_api_t *p_api;
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 

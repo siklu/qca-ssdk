@@ -1416,6 +1416,7 @@ _isis_nat_prv_base_addr_get(a_uint32_t dev_id, fal_ip4_addr_t * addr)
     return SW_OK;
 }
 
+#if 0
 static sw_error_t
 _isis_nat_psr_prv_base_addr_set(a_uint32_t dev_id, fal_ip4_addr_t addr)
 {
@@ -1475,6 +1476,7 @@ _isis_nat_psr_prv_base_addr_get(a_uint32_t dev_id, fal_ip4_addr_t * addr)
 
     return SW_OK;
 }
+#endif
 
 static sw_error_t
 _isis_nat_prv_addr_mode_set(a_uint32_t dev_id, a_bool_t map_en)
@@ -2200,6 +2202,7 @@ isis_nat_prv_base_addr_get(a_uint32_t dev_id, fal_ip4_addr_t * addr)
     return rv;
 }
 
+#if 0
 /**
  * @brief Set IP4 private base address on a particular device
  *   @details Comments:
@@ -2235,7 +2238,7 @@ isis_nat_psr_prv_base_addr_get(a_uint32_t dev_id, fal_ip4_addr_t * addr)
     HSL_API_UNLOCK;
     return rv;
 }
-
+#endif
 
 /**
  * @brief Set IP4 private base address mode on a particular device

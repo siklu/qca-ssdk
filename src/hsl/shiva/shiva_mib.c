@@ -639,11 +639,12 @@ shiva_mib_status_get(a_uint32_t dev_id, a_bool_t * enable)
 sw_error_t
 shiva_mib_init(a_uint32_t dev_id)
 {
+#ifndef HSL_STANDALONG
+    hsl_api_t *p_api;
+#endif
     HSL_DEV_ID_CHECK(dev_id);
 
 #ifndef HSL_STANDALONG
-    hsl_api_t *p_api;
-
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
     p_api->get_mib_info   = shiva_get_mib_info;

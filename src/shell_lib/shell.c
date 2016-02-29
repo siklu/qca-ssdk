@@ -72,46 +72,97 @@ cmd_api_func(sw_api_func_t *fp, a_uint32_t nr_param, a_uint32_t * args)
 {
     a_uint32_t *p = &args[2];
     sw_error_t rv;
-    sw_error_t(*func) ();
-
-    func = fp->func;
 
     switch (nr_param)
     {
         case 0:
+	{
+            sw_error_t(*func) (void);
+            func = fp->func;
             rv = (func) ();
             break;
+	}
         case 1:
-            rv = (func) (p[0]);
+	{
+            sw_error_t(*func1) (a_uint32_t);
+            func1 = fp->func;
+            rv = (func1) (p[0]);
             break;
+	}
         case 2:
-            rv = (func) (p[0], p[1]);
+	{
+            sw_error_t(*func2) (a_uint32_t, a_uint32_t);
+            func2 = fp->func;
+            rv = (func2) (p[0], p[1]);
             break;
+	}
         case 3:
-            rv = (func) (p[0], p[1], p[2]);
+	{
+            sw_error_t(*func3) (a_uint32_t, a_uint32_t, a_uint32_t);
+            func3 = fp->func;
+            rv = (func3) (p[0], p[1], p[2]);
             break;
+	}
         case 4:
-            rv = (func) (p[0], p[1], p[2], p[3]);
+	{
+            sw_error_t(*func4) (a_uint32_t, a_uint32_t, a_uint32_t, \
+			a_uint32_t);
+            func4 = fp->func;
+            rv = (func4) (p[0], p[1], p[2], p[3]);
             break;
+	}
         case 5:
-            rv = (func) (p[0], p[1], p[2], p[3], p[4]);
+	{
+            sw_error_t(*func5) (a_uint32_t, a_uint32_t, a_uint32_t, \
+			a_uint32_t, a_uint32_t);
+            func5 = fp->func;
+            rv = (func5) (p[0], p[1], p[2], p[3], p[4]);
             break;
+	}
         case 6:
-            rv = (func) (p[0], p[1], p[2], p[3], p[4], p[5]);
+	{
+            sw_error_t(*func6) (a_uint32_t, a_uint32_t, a_uint32_t, \
+			a_uint32_t, a_uint32_t, a_uint32_t);
+            func6 = fp->func;
+            rv = (func6) (p[0], p[1], p[2], p[3], p[4], p[5]);
             break;
+	}
         case 7:
-            rv = (func) (p[0], p[1], p[2], p[3], p[4], p[5], p[6]);
+	{
+            sw_error_t(*func7) (a_uint32_t, a_uint32_t, a_uint32_t, \
+			a_uint32_t, a_uint32_t, a_uint32_t, a_uint32_t);
+            func7 = fp->func;
+            rv = (func7) (p[0], p[1], p[2], p[3], p[4], p[5], p[6]);
             break;
+	}
         case 8:
-            rv = (func) (p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7]);
+	{
+            sw_error_t(*func8) (a_uint32_t, a_uint32_t, a_uint32_t, \
+			a_uint32_t, a_uint32_t, a_uint32_t, a_uint32_t, \
+			a_uint32_t);
+            func8 = fp->func;
+            rv = (func8) (p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7]);
             break;
+	}
         case 9:
-            rv = (func) (p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8]);
+	{
+            sw_error_t(*func9) (a_uint32_t, a_uint32_t, a_uint32_t, \
+			a_uint32_t, a_uint32_t, a_uint32_t, a_uint32_t, \
+			a_uint32_t, a_uint32_t);
+            func9 = fp->func;
+            rv = (func9) (p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8]);
             break;
+	}
         case 10:
-            rv = (func) (p[0], p[1], p[2], p[3], p[4], p[5],
+	{
+            sw_error_t(*func10) (a_uint32_t, a_uint32_t, a_uint32_t, \
+			a_uint32_t, a_uint32_t, a_uint32_t, a_uint32_t, \
+			a_uint32_t, a_uint32_t, a_uint32_t);
+            func10 = fp->func;
+            rv = (func10) (p[0], p[1], p[2], p[3], p[4], p[5],
                          p[6], p[7], p[8], p[9]);
             break;
+	}
         default:
             rv = SW_OUT_OF_RANGE;
     }
@@ -191,6 +242,7 @@ cmd_parse_api(char **cmd_str, a_uint32_t * arg_val)
     sw_api_param_t *pptmp = NULL;
     sw_api_t sw_api;
     a_uint32_t ignorecnt = 0;
+    sw_data_type_t *data_type;
     sw_api.api_id = arg_val[0];
     SW_RTN_ON_ERROR(sw_api_get(&sw_api));
 
@@ -216,7 +268,6 @@ cmd_parse_api(char **cmd_str, a_uint32_t * arg_val)
         }
         temp = &arg_val[arg_start + arg_index];
 
-        sw_data_type_t *data_type;
         if (!(data_type = cmd_data_type_find(pptmp->data_type)))
             return SW_NO_SUCH;
 
@@ -241,7 +292,7 @@ cmd_parse_api(char **cmd_str, a_uint32_t * arg_val)
             /*check and convert input param */
             if (data_type->param_check != NULL)
             {
-                if (data_type->param_check(tmp_str, pentry, pptmp->data_size) != SW_OK)
+                if (data_type->param_check(tmp_str, (a_uint32_t *)pentry, (a_uint32_t)pptmp->data_size) != SW_OK)
                     return SW_BAD_PARAM;
             }
         }
@@ -374,6 +425,7 @@ cmd_parse(char *cmd_str, int *cmd_index, int *cmd_index_sub)
     a_uint32_t *arg_val = ioctl_argp;
     char *tmp_str[CMDSTR_ARGS_MAX];
     int rtn_code = 0;
+    int cmd_depth;
 
     if (cmd_str == NULL)
         return NULL;
@@ -387,7 +439,6 @@ cmd_parse(char *cmd_str, int *cmd_index, int *cmd_index_sub)
     /*handle help */
     if (!strcasecmp(tmp_str[cmd_nr], "help"))
     {
-        dprintf("input ? get help\n\n");
         return NULL;
     }
 
@@ -400,11 +451,10 @@ cmd_parse(char *cmd_str, int *cmd_index, int *cmd_index_sub)
     }
 
     /*commond string lookup */
-    int cmd_depth = cmd_lookup(tmp_str, cmd_index, cmd_index_sub);
+    cmd_depth = cmd_lookup(tmp_str, cmd_index, cmd_index_sub);
 
     if (*cmd_index == GCMD_DESC_NO_MATCH || *cmd_index_sub == GCMD_DESC_NO_MATCH)
     {
-        dprintf("invalid or incomplete command.\n\n");
         return NULL;
     }
 
@@ -472,8 +522,6 @@ cmd_exec(a_uint32_t *arg_val, int cmd_index, int cmd_index_sub)
 
     if(rtn != SW_OK)
         cmd_print_error(rtn);
-    else
-        dprintf("\noperate done.\n\n");
 
     return 0;
 }

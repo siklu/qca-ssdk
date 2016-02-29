@@ -214,7 +214,6 @@ isisc_cleanup(a_uint32_t dev_id)
     if (isisc_cfg[dev_id])
     {
 #if defined(IN_NAT_HELPER)
-        sw_error_t rv;
         if(isisc_nat_global_status) {
             ISISC_NAT_HELPER_CLEANUP(rv, dev_id);
 			isisc_nat_global_status = 0;

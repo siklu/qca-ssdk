@@ -1950,11 +1950,11 @@ typedef sw_error_t
 
   typedef sw_error_t
     (*hsl_psgmii_reg_get) (a_uint32_t dev_id, a_uint32_t reg_addr,
-		    a_uint8_t value[], a_uint32_t value_len);
+		    a_uint8_t *value, a_uint32_t value_len);
 
   typedef sw_error_t
     (*hsl_psgmii_reg_set) (a_uint32_t dev_id, a_uint32_t reg_addr,
-		    a_uint8_t value[], a_uint32_t value_len);
+		    a_uint8_t *value, a_uint32_t value_len);
 
   typedef sw_error_t
     (*hsl_reg_field_get) (a_uint32_t dev_id, a_uint32_t reg_addr,

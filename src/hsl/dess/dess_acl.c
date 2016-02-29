@@ -53,9 +53,9 @@ _dess_filter_write(a_uint32_t dev_id, a_uint32_t reg[], a_uint32_t flt_idx,
 #endif
 #endif
 
-static sw_error_t
-_dess_filter_read(a_uint32_t dev_id, a_uint32_t reg[], a_uint32_t flt_idx,
-                  a_uint32_t op);
+//static sw_error_t
+//_dess_filter_read(a_uint32_t dev_id, a_uint32_t reg[], a_uint32_t flt_idx,
+//                  a_uint32_t op);
 
 static sw_error_t
 _dess_filter_down_to_hw(a_uint32_t dev_id, hw_filter_t * filter,

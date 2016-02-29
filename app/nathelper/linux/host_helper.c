@@ -892,7 +892,7 @@ static int setup_all_interface_entry(void)
     {
         for (i=0; i<7; i++) /* For AR8327/AR8337, only 7 port */
         {
-#if NAT_TODO /* need to implement here */
+#ifdef NAT_TODO /* need to implement here */
             PORTVLAN_ROUTE_DEFV_SET(0, i);
 #endif
         }
@@ -1041,6 +1041,7 @@ static void pppoev6_remove_parser(uint32_t entry_id)
 					entry_id, (a_uint8_t *) (&entry), sizeof (a_uint32_t));
 }
 
+#if 0
 static void pppoev6_mac6_stop_learning(void)
 {
     /* do not disable this port if some other registers are already filled in
@@ -1067,6 +1068,7 @@ static void pppoev6_mac6_stop_learning(void)
 	entry = 0x10;
 	HSL_REG_ENTRY_SET(rv, 0, PORT_HDR_CTL, 6, (a_uint8_t *) (&entry), sizeof (a_uint32_t));
 }
+#endif
 #endif // ifdef ISIS
 
 static int add_pppoe_host_entry(uint32_t sport, a_int32_t arp_entry_id)
@@ -1274,7 +1276,7 @@ arp_in(unsigned int hook,
 		memset(&msg, 0, sizeof(msg));
 		msg.msg_type = NAT_HELPER_ARP_IN_MSG;
 		msg.arp_in.skb = new_skb;
-		msg.arp_in.in = in;
+		msg.arp_in.in = (struct net_device *)in;
 
 		/*send msg to background task*/
 		/*spin_lock_irqsave(&task_cb.bg_lock, flags);*/
@@ -1302,6 +1304,7 @@ arp_in_bg_handle(struct nat_helper_bg_msg *msg)
     a_int32_t arp_entry_id = -1;
 	struct net_device *in = msg->arp_in.in;
 	struct sk_buff *skb = msg->arp_in.skb;
+	fal_fdb_entry_t entry;
 
 
     /* check for PPPoE redial here, to reduce overheads */
@@ -1344,7 +1347,7 @@ arp_in_bg_handle(struct nat_helper_bg_msg *msg)
          vid = nat_wan_vid;
     }
 
-    fal_fdb_entry_t entry = {0};
+	memset(&entry, 0, sizeof(entry));
 
     entry.fid = vid;
 
@@ -1449,7 +1452,7 @@ arp_in_bg_handle(struct nat_helper_bg_msg *msg)
 static struct
         nf_hook_ops arpinhook =
 {
-    .hook = arp_in,
+    .hook = (nf_hookfn *)arp_in,
     .hooknum = NF_ARP_IN,
     .owner = THIS_MODULE,
     .pf = NFPROTO_ARP,
@@ -1531,16 +1534,13 @@ static int qcaswitch_pppoe_ip_event(struct notifier_block *this,
 {
     struct in_ifaddr *ifa = (struct in_ifaddr *)ptr;
     struct net_device *dev = (struct net_device *)ifa->ifa_dev->dev;
-    struct list_head *list;
-	#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-    struct channel *pch;
-	#else
+	#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,14,0))
+	struct list_head *list;
 	struct prv_channel *pch;
 	struct prv_ppp *ppp = netdev_priv(dev);
 	#endif
     struct sock *sk;
     struct pppox_sock *po;
-    unsigned long  flags;
     static int connection_count = 0;
     fal_pppoe_session_t del_pppoetbl;
 	int channel_count;
@@ -1809,7 +1809,7 @@ struct icmpv6_option
     __u8 len;
     __u8 mac[MAC_LEN];
 };
-
+#if 0
 static unsigned int ipv6_handle(unsigned   int   hooknum,
                                 struct   sk_buff   *skb,
                                 const   struct   net_device   *in,
@@ -1828,7 +1828,7 @@ static unsigned int ipv6_handle(unsigned   int   hooknum,
 		memset(&msg, 0, sizeof(msg));
 		msg.msg_type = NAT_HELPER_IPV6_MSG;
 		msg.ipv6.skb = new_skb;
-		msg.ipv6.in = in;
+		msg.ipv6.in = (struct net_device *)in;
 
 		/*send msgto background task*/
 		/*spin_lock_irqsave(&task_cb.bg_lock, flags);*/
@@ -1840,7 +1840,7 @@ static unsigned int ipv6_handle(unsigned   int   hooknum,
 	return NF_ACCEPT;
 	
 }
-
+#endif
 
 #ifdef NAT_BACKGROUND_TASK
 
@@ -1885,6 +1885,7 @@ static unsigned int ipv6_bg_handle(struct nat_helper_bg_msg *msg)
     {
         if(NEIGHBOUR_AD == icmp6->icmp6_type)
         {
+			fal_fdb_entry_t entry;
             if (__ipv6_addr_type((struct in6_addr*)sip) & IPV6_ADDR_LINKLOCAL)
                 return 0;
 
@@ -1906,7 +1907,7 @@ static unsigned int ipv6_bg_handle(struct nat_helper_bg_msg *msg)
                  vid = NAT_WAN_DEV_VID;
             }
 
-            fal_fdb_entry_t entry = {0};
+            memset(&entry, 0, sizeof(entry));
 
             entry.fid = vid;
             smac = skb_mac_header(skb) + MAC_LEN;
@@ -1951,7 +1952,7 @@ static unsigned int ipv6_bg_handle(struct nat_helper_bg_msg *msg)
                 arp_hw_add(sport, vid, sip, sa, 1);
             }
 
-#if NAT_TODO /* should be ok */
+#ifdef NAT_TODO /* should be ok */
             if ((NULL != in->ip6_ptr) && (NULL != ((struct inet6_dev *)in->ip6_ptr)->addr_list))
 #else
             if (NULL != in->ip6_ptr)
@@ -1986,6 +1987,7 @@ static unsigned int ipv6_bg_handle(struct nat_helper_bg_msg *msg)
 }
 #endif
 
+#if 0
 static struct nf_hook_ops ipv6_inhook =
 {
     .hook = ipv6_handle,
@@ -1994,6 +1996,7 @@ static struct nf_hook_ops ipv6_inhook =
     .hooknum = NF_INET_PRE_ROUTING,
     .priority = NF_IP6_PRI_CONNTRACK,
 };
+#endif
 #endif /* CONFIG_IPV6_HWACCEL */
 
 #ifdef NAT_BACKGROUND_TASK
@@ -2077,7 +2080,7 @@ extern int napt_procfs_init(void);
 extern void napt_procfs_exit(void);
 extern a_uint32_t hsl_dev_wan_port_get(a_uint32_t dev_id);
 
-void host_helper_wan_port_init()
+void host_helper_wan_port_init(void)
 {
 	nat_wan_port = hsl_dev_wan_port_get(0);
 	printk("nat wan port is %d\n", nat_wan_port);
@@ -2089,7 +2092,7 @@ void host_helper_init(void)
 	sw_error_t rv;
 	a_uint32_t entry;
 
-	REG_GET(0, 0, &nat_chip_ver, 4);
+	REG_GET(0, 0, (a_uint8_t *)&nat_chip_ver, 4);
 
 	/* header len 4 with type 0xaaaa */
 	HEADER_TYPE_SET(0, A_TRUE, 0xaaaa);

@@ -137,12 +137,6 @@ extern "C" {
     dess_nat_unk_session_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd);
 
     HSL_LOCAL sw_error_t
-    dess_nat_psr_prv_base_addr_set(a_uint32_t dev_id, fal_ip4_addr_t addr);
-
-    HSL_LOCAL sw_error_t
-    dess_nat_psr_prv_base_addr_get(a_uint32_t dev_id, fal_ip4_addr_t * addr);
-
-    HSL_LOCAL sw_error_t
     dess_nat_global_set(a_uint32_t dev_id, a_bool_t enable);
 
 #endif

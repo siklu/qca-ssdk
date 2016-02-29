@@ -962,6 +962,7 @@ _shiva_ripv1_status_get(a_uint32_t dev_id, a_bool_t *enable)
     return SW_OK;
 }
 
+#if 0
 static sw_error_t
 _shiva_loop_check_status_set(a_uint32_t dev_id, fal_loop_check_time_t time, a_bool_t enable)
 {
@@ -1064,6 +1065,7 @@ _shiva_loop_check_info_get(a_uint32_t dev_id, a_uint32_t * old_port_id, a_uint32
 
     return SW_OK;
 }
+#endif
 
 /**
  * @brief Set arp packets hardware acknowledgement status on a particular device.
@@ -1639,6 +1641,7 @@ shiva_ripv1_status_get(a_uint32_t dev_id, a_bool_t *enable)
     return rv;
 }
 
+#if 0
 /**
  * @brief Set loopback checking status on a particular device.
  * @param[in] dev_id device id
@@ -1690,6 +1693,7 @@ shiva_loop_check_info_get(a_uint32_t dev_id, a_uint32_t * old_port_id, a_uint32_
     HSL_API_UNLOCK;
     return rv;
 }
+#endif
 
 sw_error_t
 shiva_misc_init(a_uint32_t dev_id)

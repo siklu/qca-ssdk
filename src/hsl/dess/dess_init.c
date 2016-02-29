@@ -267,7 +267,6 @@ dess_cleanup(a_uint32_t dev_id)
     if (dess_cfg[dev_id])
     {
 #if defined(IN_NAT_HELPER)
-        sw_error_t rv;
         if(dess_nat_global_status)
             DESS_NAT_HELPER_CLEANUP(rv, dev_id);
 #endif

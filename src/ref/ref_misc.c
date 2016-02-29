@@ -88,7 +88,6 @@ int
 qca_ar8327_sw_reset_switch(struct switch_dev *dev)
 {
 	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
-	int i;
 	int rv = 0;
 	a_uint32_t mac_mode;
 

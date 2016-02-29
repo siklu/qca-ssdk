@@ -1427,6 +1427,7 @@ _isisc_nat_prv_base_mask_set(a_uint32_t dev_id, fal_ip4_addr_t mask)
     return rv;
 }
 
+#if 0
 static sw_error_t
 _isisc_nat_psr_prv_base_addr_set(a_uint32_t dev_id, fal_ip4_addr_t addr)
 {
@@ -1490,6 +1491,7 @@ _isisc_nat_psr_prv_base_addr_get(a_uint32_t dev_id, fal_ip4_addr_t * addr)
 #endif
     return SW_OK;
 }
+#endif
 
 static sw_error_t
 _isisc_nat_prv_base_mask_get(a_uint32_t dev_id, fal_ip4_addr_t * mask)
@@ -2211,6 +2213,7 @@ isisc_nat_prv_base_mask_get(a_uint32_t dev_id, fal_ip4_addr_t * mask)
     return rv;
 }
 
+#if 0
 /**
  * @brief Set IP4 private base address on a particular device
  *   @details Comments:
@@ -2246,7 +2249,6 @@ isisc_nat_psr_prv_base_addr_get(a_uint32_t dev_id, fal_ip4_addr_t * addr)
     HSL_API_UNLOCK;
     return rv;
 }
-
 
 /**
  * @brief Set IP4 private base address mode on a particular device
@@ -2284,6 +2286,7 @@ isisc_nat_prv_addr_mode_get(a_uint32_t dev_id, a_bool_t * map_en)
     HSL_API_UNLOCK;
     return rv;
 }
+#endif
 
 /**
  * @brief Add one public address entry to one particular device.

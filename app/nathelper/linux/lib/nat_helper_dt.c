@@ -26,6 +26,7 @@
 
 #include "../nat_helper.h"
 #include "../napt_helper.h"
+#include "../napt_acl.h"
 
 #include "fal_type.h"
 #include "fal_nat.h"
@@ -319,7 +320,6 @@ static void
 napt_ct_buf_ct_info_clear(struct napt_ct *napt_ct)
 {
 	a_uint32_t hash_index = napt_ct_hash(napt_ct->ct_addr);
-	a_uint32_t i = 0;
 	struct nhlist_head *head = 0;
 	struct napt_ct *entry = 0, *last = 0;
 
@@ -450,6 +450,7 @@ napt_ct_hw_add(a_uint32_t ct_addr, a_uint16_t *hw_index)
     a_uint32_t index, i, dcookie = 0, scookie = 0;
 	fal_napt_entry_t entry;
 	a_uint8_t ret = 0;
+	sw_error_t rv = SW_OK;
 
     if (!ct_addr)
         return -1;
@@ -476,7 +477,7 @@ napt_ct_hw_add(a_uint32_t ct_addr, a_uint16_t *hw_index)
 			scookie = entry.flow_cookie;
 		}
 	}
-    sw_error_t rv = napt_hw_add(&napt);
+	rv = napt_hw_add(&napt);
 
     if(rv == 0)
     {
@@ -608,6 +609,7 @@ napt_ct_del_by_index (struct napt_ct *napt_ct, a_uint16_t hw_index)
 static a_int32_t
 napt_ct_in_hw_sanity_check(struct napt_ct *napt_ct, a_uint16_t hw_index)
 {
+	a_uint16_t ct_hw_index = 0;
     if(!napt_ct)
     {
         HNAT_ERR_PRINTK("<%s>hw_index:%d error napt_ct can't find\n",
@@ -615,7 +617,6 @@ napt_ct_in_hw_sanity_check(struct napt_ct *napt_ct, a_uint16_t hw_index)
         return -1;
     }
 
-    a_uint16_t ct_hw_index;
     if(napt_ct_buf_in_hw_get(napt_ct, &ct_hw_index) == 0)
     {
         HNAT_ERR_PRINTK("<%s>hw_index:%d in_hw:0 error\n",
@@ -650,9 +651,8 @@ napt_ct_hw_aging(void)
     do
     {
         a_uint16_t hw_index = napt.entry_id;
+		struct napt_ct *napt_ct = NULL;
         ct_addr = napt_ct_addr[hw_index];
-
-        struct napt_ct *napt_ct = NULL;
 
         if(ct_addr)
         {
@@ -703,10 +703,10 @@ napt_ct_counter_sync(a_uint32_t hw_index)
 		return -1;
 
 	ct = (struct nf_conn *)napt_ct_addr[hw_index];
-	cct = nf_conn_acct_find(ct);
+	cct = (struct nf_conn_counter *)nf_conn_acct_find(ct);
 	napt_ct = napt_ct_buf_ct_find(ct_addr);
 	if (napt_ct) {
-		now_jiffies = get_jiffies_64();
+		now_jiffies = (a_uint64_t)get_jiffies_64();
 		delta_jiffies = now_jiffies - napt_ct->last_jiffies;
 		napt_ct->last_jiffies = now_jiffies;
 	}
@@ -827,7 +827,6 @@ napt_ct_check_add_one(a_uint32_t ct_addr, a_uint8_t *napt_ct_valid)
     struct napt_ct *napt_ct = NULL;
     a_uint16_t hw_index;
     a_uint8_t in_hw;
-    struct nf_conn *ct = (struct nf_conn *)ct_addr;
 
     if((napt_ct = napt_ct_buf_ct_find(ct_addr)) == NULL)
     {
@@ -867,7 +866,7 @@ napt_ct_check_add_one(a_uint32_t ct_addr, a_uint8_t *napt_ct_valid)
 				napt_ct->last_jiffies = get_jiffies_64();
 			}
                     napt_ct_buf_in_hw_set(napt_ct, hw_index);
-#if NAT_TODO
+#ifdef NAT_TODO
                     ct->in_hnat = 1; /* contrack in HNAT now. */
 #endif
                 }
@@ -997,14 +996,16 @@ napt_ct_pkts_thres_calc(a_uint32_t cnt, a_uint32_t napt_ct_offload_cnt)
                                   NAPT_CT_STATUS_IS_ESTAB(ct) &&\
                                   nat_hw_prv_base_is_match( \
                                             NAPT_CT_PRIV_IP_GET(ct)))
+a_uint8_t napt_ct_valid_tbl[NAPT_TABLE_SIZE] = {0};
 static a_int32_t
 napt_ct_check_add(void)
 {
     a_uint32_t ct_addr = 0;
     a_uint32_t ct_buf_valid_cnt = 0, care_cnt = 0, ct_cnt = 0;
     a_uint32_t hash = 0, iterate = 0;
-    a_uint8_t napt_ct_valid[NAPT_TABLE_SIZE] = {0};
+	a_uint32_t napt_ct_offload_cnt = 0;
 
+	memset(napt_ct_valid_tbl, 0, NAPT_TABLE_SIZE);
     napt_ct_pkts_thres_calc_init();
 
     NAPT_CT_LIST_LOCK();
@@ -1014,7 +1015,7 @@ napt_ct_check_add(void)
         if (NAPT_CT_SHOULD_CARE(ct_addr))
         {
 			care_cnt++;
-            if(napt_ct_check_add_one(ct_addr, napt_ct_valid) != -1)
+            if(napt_ct_check_add_one(ct_addr, napt_ct_valid_tbl) != -1)
             {
                 ct_buf_valid_cnt++;
             }
@@ -1024,7 +1025,7 @@ napt_ct_check_add(void)
     NAPT_CT_LIST_UNLOCK();
 	HNAT_INFO_PRINTK("ct_cnt=0x%x, care_cnt=0x%x\n", ct_cnt, care_cnt);
 
-    a_uint32_t napt_ct_offload_cnt = napt_ct_hw_sync(napt_ct_valid);
+	napt_ct_offload_cnt = napt_ct_hw_sync(napt_ct_valid_tbl);
 
     napt_ct_pkts_thres_calc(ct_buf_valid_cnt, napt_ct_offload_cnt);
 
@@ -1142,7 +1143,7 @@ napt_ct_scan(void)
     napt_ct_buffer_refresh_check(ct_buf_valid_cnt);
 }
 
-void napt_wan_switch_prehandle()
+void napt_wan_switch_prehandle(void)
 {
 	if (wan_switch) {
 		napt_thread_pending = 1;

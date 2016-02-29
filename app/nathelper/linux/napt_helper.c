@@ -52,6 +52,7 @@ extern unsigned int nf_conntrack_htable_size;
 void
 napt_ct_aging_disable(uint32_t ct_addr)
 {
+	struct nf_conn *ct = NULL;
 	if(nf_athrs17_hnat_sync_counter_en)
 		return;
 
@@ -60,7 +61,7 @@ napt_ct_aging_disable(uint32_t ct_addr)
         return;
     }
 
-    struct nf_conn *ct = (struct nf_conn *)ct_addr;
+	ct = (struct nf_conn *)ct_addr;
 
     if (timer_pending(&ct->timeout))
     {
@@ -71,6 +72,7 @@ napt_ct_aging_disable(uint32_t ct_addr)
 int
 napt_ct_aging_is_enable(uint32_t ct_addr)
 {
+	struct nf_conn *ct = NULL;
     if(!ct_addr)
     {
         return 0;
@@ -79,7 +81,7 @@ napt_ct_aging_is_enable(uint32_t ct_addr)
 	if(nf_athrs17_hnat_sync_counter_en)
 		return 0;
 
-    struct nf_conn *ct = (struct nf_conn *)ct_addr;
+	ct = (struct nf_conn *)ct_addr;
 
     return timer_pending(&(((struct nf_conn *)ct)->timeout));
 }
@@ -87,6 +89,9 @@ napt_ct_aging_is_enable(uint32_t ct_addr)
 void
 napt_ct_aging_enable(uint32_t ct_addr)
 {
+	struct nf_conn *ct = NULL;
+	uint16_t l3num = 0;
+	uint8_t protonum = 0;
 	if(nf_athrs17_hnat_sync_counter_en)
 		return;
 
@@ -100,9 +105,9 @@ napt_ct_aging_enable(uint32_t ct_addr)
         return;
     }
 
-    struct nf_conn *ct = (struct nf_conn *)ct_addr;
-    uint16_t l3num = ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple.src.l3num;
-    uint8_t protonum = ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple.dst.protonum;
+	ct = (struct nf_conn *)ct_addr;
+	l3num = ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple.src.l3num;
+	protonum = ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple.dst.protonum;
 
     ct->timeout.expires = jiffies+10*HZ;
 
@@ -113,9 +118,7 @@ napt_ct_aging_enable(uint32_t ct_addr)
             ct->timeout.expires = jiffies+(5*24*60*60*HZ);
         }
     }
-#if NAT_TODO
-    ct->in_hnat = 0; /* once timmer is enabled, contrack not in HNAT anymore. */
-#endif
+
     HNAT_PRINTK("<aging> ct:[%x] add timeout again\n",  ct_addr);
     add_timer(&ct->timeout);
 }
@@ -123,6 +126,10 @@ napt_ct_aging_enable(uint32_t ct_addr)
 void
 napt_ct_to_hw_entry(uint32_t ct_addr, napt_entry_t *napt)
 {
+	struct nf_conn *ct = NULL;
+	struct nf_conntrack_tuple *org_tuple, *rep_tuple;
+	uint8_t protonum = 0;
+
     if(!ct_addr)
     {
         return;
@@ -130,8 +137,7 @@ napt_ct_to_hw_entry(uint32_t ct_addr, napt_entry_t *napt)
 
 #define NAPT_AGE   0xe
 
-    struct nf_conn *ct = (struct nf_conn *)ct_addr;
-    struct nf_conntrack_tuple *org_tuple, *rep_tuple;
+	ct = (struct nf_conn *)ct_addr;
 
     if ((ct->status & IPS_NAT_MASK) == IPS_SRC_NAT)     //snat
     {
@@ -145,7 +151,7 @@ napt_ct_to_hw_entry(uint32_t ct_addr, napt_entry_t *napt)
         rep_tuple = &(ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple);
     }
 
-    uint8_t protonum = org_tuple->dst.protonum;
+	protonum = org_tuple->dst.protonum;
 
     if(org_tuple->src.l3num == AF_INET)
     {
@@ -175,13 +181,15 @@ napt_ct_to_hw_entry(uint32_t ct_addr, napt_entry_t *napt)
 uint64_t
 napt_ct_pkts_get(uint32_t ct_addr)
 {
+	struct nf_conn *ct = NULL;
+	struct nf_conn_counter *cct = NULL;
     if(!ct_addr)
     {
         return 0;
     }
 
-    struct nf_conn *ct = (struct nf_conn *)ct_addr;
-    struct nf_conn_counter *cct = nf_conn_acct_find(ct);
+	ct = (struct nf_conn *)ct_addr;
+	cct = (struct nf_conn_counter *)nf_conn_acct_find(ct);
 
     if(cct)
     {
@@ -197,12 +205,13 @@ napt_ct_pkts_get(uint32_t ct_addr)
 int
 napt_ct_type_is_nat(uint32_t ct_addr)
 {
+	struct nf_conn *ct = NULL;
     if(!ct_addr)
     {
         return 0;
     }
 
-    struct nf_conn *ct = (struct nf_conn *)ct_addr;
+	ct = (struct nf_conn *)ct_addr;
 
     return ((IPS_NAT_MASK & (ct)->status)?1:0);
 }
@@ -210,11 +219,12 @@ napt_ct_type_is_nat(uint32_t ct_addr)
 int
 napt_ct_type_is_nat_alg(uint32_t ct_addr)
 {
+	struct nf_conn *ct = NULL;
 	if(!ct_addr)
 	{
 		return 0;
 	}
-	struct nf_conn *ct = (struct nf_conn *)ct_addr;
+	ct = (struct nf_conn *)ct_addr;
 	return ((nfct_help(ct))?1:0);
 }
 
@@ -252,14 +262,18 @@ napt_ct_intf_is_expected(uint32_t ct_addr)
 int
 napt_ct_status_is_estab(uint32_t ct_addr)
 {
+	struct nf_conn *ct = NULL;
+	uint16_t l3num = 0;
+	uint8_t protonum = 0;
+
     if(!ct_addr)
     {
         return 0;
     }
 
-    struct nf_conn *ct = (struct nf_conn *)ct_addr;
-    uint16_t l3num = ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple.src.l3num;
-    uint8_t protonum = ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple.dst.protonum;
+	ct = (struct nf_conn *)ct_addr;
+	l3num = ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple.src.l3num;
+	protonum = ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple.dst.protonum;
 
     if ((l3num == AF_INET) && (protonum == IPPROTO_TCP))
     {
@@ -279,13 +293,15 @@ napt_ct_status_is_estab(uint32_t ct_addr)
 uint32_t
 napt_ct_priv_ip_get(uint32_t ct_addr)
 {
+	struct nf_conn *ct = NULL;
+	uint32_t usaddr = 0;
+
     if(!ct_addr)
     {
         return 0;
     }
 
-    struct nf_conn *ct = (struct nf_conn *)ct_addr;
-    uint32_t usaddr;
+	ct = (struct nf_conn *)ct_addr;
 
     if ((ct->status & IPS_NAT_MASK) == IPS_SRC_NAT)     //snat
     {
