@@ -233,17 +233,6 @@ HSL_LOCAL a_uint32_t isis_multicast_acl_total_n(a_uint32_t list_id)
     return 0;
 }
 
-HSL_LOCAL a_uint32_t isis_acl_multigroup_cmp(fal_igmp_sg_addr_t *group, fal_acl_rule_t* rule)
-{
-    if(group->type == FAL_ADDR_IPV4)
-        return memcmp(&group->u.ip4_addr, &rule->dest_ip4_val, sizeof(rule->dest_ip4_val));
-    else if(group->type == FAL_ADDR_IPV6)
-        return memcmp(group->u.ip6_addr.ul, rule->dest_ip6_val.ul, sizeof(rule->dest_ip6_val));
-
-    return -1;
-}
-
-
 #define ISIS_FILTER_ACT_ADDR    0x5a000
 #define ISIS_FILTER_MSK_ADDR    0x59000
 HSL_LOCAL sw_error_t multi_portmap_aclreg_set_all(a_uint32_t pos, fal_igmp_sg_entry_t * entry)
@@ -338,7 +327,7 @@ HSL_LOCAL sw_error_t multi_portmap_aclreg_set(a_uint32_t pos, fal_igmp_sg_entry_
     return rv;
 }
 
-HSL_LOCAL int multi_get_dp()
+HSL_LOCAL int multi_get_dp(void)
 {
     a_uint32_t addr;
     a_uint32_t dev_id=0;
@@ -354,7 +343,7 @@ HSL_LOCAL int multi_get_dp()
     return val;
 }
 static int old_bind_p=-1;
-HSL_LOCAL int multi_acl_bind()
+HSL_LOCAL int multi_acl_bind(void)
 {
     int bind_p;
     int i;
@@ -430,30 +419,6 @@ HSL_LOCAL sw_error_t isis_multicast_acl_update( int list_id, int acl_index, fal_
     multi_acl_bind(); //Here need extra bind since IGMP join/leave would happen
     return rv;
 }
-
-HSL_LOCAL sw_error_t sw_multicast_acl_update( int list_id, int acl_index, fal_igmp_sg_entry_t * entry, int action)
-{
-    a_uint32_t dev_id=0;
-    a_uint32_t rule_pos;
-    a_uint32_t list_pri;
-
-    if(list_id == FAL_ACL_LIST_MULTICAST) //Update all matched group based acl_rule->source
-        list_pri=FAL_MULTICAST_PRI;
-    else if(list_id == FAL_ACL_LIST_MULTICAST+1) //only update the specific (G,*)entry
-        list_pri=FAL_MULTICAST_PRI+1;
-
-    rule_pos = ACL_RULE_GET_OFFSET(dev_id, list_id, multi_acl_group[acl_index].index);
-
-    MULTI_DEBUG("SW update: rule_pos=%d, index=%d, old portmap=%x\n",
-                rule_pos, acl_index, multi_acl_group[acl_index].entry.port_map);
-    if(MULT_ACTION_SET == action)
-        entry->port_map |= multi_acl_group[acl_index].entry.port_map;
-    else if(MULT_ACTION_CLEAR == action)
-        entry->port_map &= ~multi_acl_group[acl_index].entry.port_map;
-
-    return SW_OK;
-}
-
 
 HSL_LOCAL sw_error_t isis_multicast_acl_del(int list_id, int index)
 {
@@ -688,15 +653,13 @@ HSL_LOCAL int portmap_clear_type(int count, int index, fal_pbmp_t portmap)
 }
 sw_error_t isis_igmp_sg_entry_set(a_uint32_t dev_id, fal_igmp_sg_entry_t * entry)
 {
-    HSL_API_LOCK;
     int number, count;
     int new_index=0;
-    int tmp_index=0;
     sw_error_t rv;
     int action = MULT_ACTION_SET;
-    fal_igmp_sg_entry_t tmp_entry[1]= {};
     int i=0;
 
+    HSL_API_LOCK;
     (void)isis_multicast_init(0);
     aos_mem_zero(multi_acl_info, FAL_IGMP_SG_ENTRY_MAX * sizeof (multi_acl_info_t));
     aos_mem_zero(multi_acl_group, FAL_IGMP_SG_ENTRY_MAX * sizeof (multi_acl_info_t));
@@ -817,7 +780,6 @@ sw_error_t isis_igmp_sg_entry_set(a_uint32_t dev_id, fal_igmp_sg_entry_t * entry
 
 sw_error_t isis_igmp_sg_entry_clear(a_uint32_t dev_id, fal_igmp_sg_entry_t * entry)
 {
-    HSL_API_LOCK;
     a_uint32_t number, count;
     int new_index=0;
     sw_error_t rv = SW_OK;
@@ -825,6 +787,7 @@ sw_error_t isis_igmp_sg_entry_clear(a_uint32_t dev_id, fal_igmp_sg_entry_t * ent
     int i=0;
     int pm_type;
 
+    HSL_API_LOCK;
     (void)isis_multicast_init(0);
     aos_mem_zero(multi_acl_info, FAL_IGMP_SG_ENTRY_MAX * sizeof (multi_acl_info_t));
     aos_mem_zero(multi_acl_group, FAL_IGMP_SG_ENTRY_MAX * sizeof (multi_acl_info_t));
@@ -964,10 +927,10 @@ print_ip6addr(char * param_name, a_uint32_t * buf,
 }
 sw_error_t isis_igmp_sg_entry_show(a_uint32_t dev_id)
 {
-    HSL_API_LOCK;
     a_uint32_t number;
     int i;
 
+    HSL_API_LOCK;
     (void)isis_multicast_init(0);
     aos_mem_zero(multi_acl_info, FAL_IGMP_SG_ENTRY_MAX * sizeof (multi_acl_info_t));
     aos_mem_zero(multi_acl_group, FAL_IGMP_SG_ENTRY_MAX * sizeof (multi_acl_info_t));

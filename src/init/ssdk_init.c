@@ -74,6 +74,8 @@
 #include <linux/switch.h>
 #include <linux/of.h>
 #include <drivers/leds/leds-ipq40xx.h>
+#include <linux/of_platform.h>
+#include <linux/reset.h>
 #else
 #include <net/switch.h>
 #include <linux/ar8216_platform.h>
@@ -123,7 +125,7 @@ struct notifier_block ssdk_dev_notifier;
 #endif
 
 extern ssdk_chip_type SSDK_CURRENT_CHIP_TYPE;
-
+extern a_uint32_t hsl_dev_wan_port_get(a_uint32_t dev_id);
 //#define PSGMII_DEBUG
 
 #define AUTO_SWITCH_RECOVERY
@@ -452,7 +454,7 @@ qca_switch_init(a_uint32_t dev_id)
 	return SW_OK;
 }
 
-static void qca_ar8327_phy_linkdown()
+static void qca_ar8327_phy_linkdown(void)
 {
 	int i;
 	a_uint16_t phy_val;
@@ -1566,8 +1568,8 @@ split_addr(uint32_t regaddr, uint16_t *r1, uint16_t *r2, uint16_t *page)
 	*page = regaddr & 0x3ff;
 }
 
-uint32_t
-qca_ar8216_mii_read(int reg)
+a_uint32_t
+qca_ar8216_mii_read(a_uint32_t reg)
 {
         struct mii_bus *bus = miibus;
         uint16_t r1, r2, page;
@@ -1584,7 +1586,7 @@ qca_ar8216_mii_read(int reg)
 }
 
 void
-qca_ar8216_mii_write(int reg, uint32_t val)
+qca_ar8216_mii_write(a_uint32_t reg, a_uint32_t val)
 {
         struct mii_bus *bus = miibus;
         uint16_t r1, r2, r3;
@@ -1669,7 +1671,7 @@ qca_ar8327_phy_dbg_write(a_uint32_t dev_id, a_uint32_t phy_addr,
 	int phy_dest_addr;
 	if (A_TRUE != phy_addr_validation_check (phy_addr))
 	{
-		return SW_BAD_PARAM;
+		return ;
 	}
 	if (phy_addr == SSDK_PSGMII_ID)
 		phy_dest_addr = phy_address[phy_addr -1] + 1;
@@ -1690,7 +1692,7 @@ qca_ar8327_phy_dbg_read(a_uint32_t dev_id, a_uint32_t phy_addr,
 	int phy_dest_addr;
 	if (A_TRUE != phy_addr_validation_check (phy_addr))
 	{
-		return SW_BAD_PARAM;
+		return ;
 	}
 	if (phy_addr == SSDK_PSGMII_ID)
 		phy_dest_addr = phy_address[phy_addr -1] + 1;
@@ -1712,7 +1714,7 @@ qca_ar8327_mmd_write(a_uint32_t dev_id, a_uint32_t phy_addr,
 	int phy_dest_addr;
 	if (A_TRUE != phy_addr_validation_check (phy_addr))
 	{
-		return SW_BAD_PARAM;
+		return ;
 	}
 	if (phy_addr == SSDK_PSGMII_ID)
 		phy_dest_addr = phy_address[phy_addr -1] + 1;
@@ -1755,7 +1757,7 @@ u16 qca_phy_mmd_read(u32 dev_id, u32 phy_id,
 	return value;
 }
 
-uint32_t
+sw_error_t
 qca_switch_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
 {
 	uint32_t reg_val = 0;
@@ -1772,7 +1774,7 @@ qca_switch_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data
 	return 0;
 }
 
-uint32_t
+sw_error_t
 qca_switch_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
 {
 	uint32_t reg_val = 0;
@@ -1787,7 +1789,7 @@ qca_switch_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_dat
 	return 0;
 }
 
-uint32_t
+sw_error_t
 qca_psgmii_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
 {
 	uint32_t reg_val = 0;
@@ -1807,7 +1809,7 @@ qca_psgmii_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data
 	return 0;
 }
 
-uint32_t
+sw_error_t
 qca_psgmii_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
 {
 	uint32_t reg_val = 0;
@@ -1825,7 +1827,7 @@ qca_psgmii_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_dat
 	return 0;
 }
 
-
+#if 0
 static uint32_t switch_chip_id_adjuest(void)
 {
 	uint32_t chip_version = 0;
@@ -1840,6 +1842,7 @@ static uint32_t switch_chip_id_adjuest(void)
 	printk("chip_version:0x%x\n", chip_version);
 	return 1;
 }
+#endif
 
 static int miibus_get(void)
 {
@@ -2004,7 +2007,7 @@ static struct platform_driver ssdk_driver = {
 #endif
 #ifdef DESS
 static u32 phy_t_status = 0;
-void ssdk_malibu_psgmii_and_dakota_dess_reset()
+void ssdk_malibu_psgmii_and_dakota_dess_reset(void)
 {
 	int m = 0, n = 0;
 
@@ -2109,7 +2112,7 @@ void ssdk_psgmii_single_phy_testing(int phy)
 			qca_ar8327_phy_write(0, phy, 0x0, 0x1840);
 		}
 
-void ssdk_psgmii_all_phy_testing()
+void ssdk_psgmii_all_phy_testing(void)
 {
 	int phy = 0, j = 0;
 
@@ -2167,9 +2170,9 @@ void ssdk_psgmii_all_phy_testing()
 		printk("PHY all test 0x%x \r\n",phy_t_status);
 #endif
 }
-void ssdk_psgmii_self_test()
+void ssdk_psgmii_self_test(void)
 {
-	int i = 0, phy = 0,j = 0;
+	int i = 0, phy = 0;
 	u32 value = 0;
 
 	ssdk_malibu_psgmii_and_dakota_dess_reset();
@@ -2229,7 +2232,7 @@ void ssdk_psgmii_self_test()
 }
 
 
-void clear_self_test_config()
+void clear_self_test_config(void)
 {
 	int phy = 0;
 	u32 value = 0;
@@ -2419,7 +2422,7 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 	struct device_node *psgmii_node = NULL;
 	struct device_node *child = NULL;
 	a_uint32_t len = 0,i = 0,j = 0;
-	const __be32 *reg_cfg, *mac_mode,*led_source,*led_mode, *led_speed, *led_freq, *phy_addr;
+	const __be32 *reg_cfg, *mac_mode,*led_source,*phy_addr;
 	a_uint8_t *led_str;
 
 
@@ -2442,7 +2445,7 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 	ssdk_dt_global.switchreg_base_addr = be32_to_cpup(reg_cfg);
 	ssdk_dt_global.switchreg_size = be32_to_cpup(reg_cfg + 1);
 
-	if (of_property_read_string(switch_node, "switch_access_mode", &ssdk_dt_global.reg_access_mode)) {
+	if (of_property_read_string(switch_node, "switch_access_mode", (const char **)&ssdk_dt_global.reg_access_mode)) {
 		printk("%s: error reading device node properties for switch_access_mode\n", switch_node->name);
 		return SW_BAD_PARAM;
 	}
@@ -2482,7 +2485,7 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 
 	ssdk_dt_global.psgmiireg_base_addr = be32_to_cpup(reg_cfg);
 	ssdk_dt_global.psgmiireg_size = be32_to_cpup(reg_cfg + 1);
-	if (of_property_read_string(psgmii_node, "psgmii_access_mode", &ssdk_dt_global.psgmii_reg_access_str)) {
+	if (of_property_read_string(psgmii_node, "psgmii_access_mode", (const char **)&ssdk_dt_global.psgmii_reg_access_str)) {
 		printk("%s: error reading device node properties for psmgii_access_mode\n", psgmii_node->name);
 		return SW_BAD_PARAM;
 	}
@@ -2503,7 +2506,7 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 		led_source = of_get_property(child, "source", &len);
 		if (led_source)
 			cfg->led_source_cfg[i].led_source_id = be32_to_cpup(led_source);
-		if (!of_property_read_string(child, "mode", &led_str)) {
+		if (!of_property_read_string(child, "mode", (const char **)&led_str)) {
 			if (!strcmp(led_str, "normal"))
 			cfg->led_source_cfg[i].led_pattern.mode = LED_PATTERN_MAP_EN;
 			if (!strcmp(led_str, "on"))
@@ -2513,7 +2516,7 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 			if (!strcmp(led_str, "off"))
 			cfg->led_source_cfg[i].led_pattern.mode = LED_ALWAYS_OFF;
 		}
-		if (!of_property_read_string(child, "speed", &led_str)) {
+		if (!of_property_read_string(child, "speed", (const char **)&led_str)) {
 			if (!strcmp(led_str, "10M"))
 			cfg->led_source_cfg[i].led_pattern.map = LED_MAP_10M_SPEED;
 			if (!strcmp(led_str, "100M"))
@@ -2523,7 +2526,7 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 			if (!strcmp(led_str, "all"))
 			cfg->led_source_cfg[i].led_pattern.map = LED_MAP_ALL_SPEED;
 		}
-		if (!of_property_read_string(child, "freq", &led_str)) {
+		if (!of_property_read_string(child, "freq", (const char **)&led_str)) {
 			if (!strcmp(led_str, "2Hz"))
 			cfg->led_source_cfg[i].led_pattern.freq = LED_BLINK_2HZ;
 			if (!strcmp(led_str, "4Hz"))
@@ -2584,7 +2587,7 @@ static int chip_ver_get(ssdk_init_cfg* cfg)
 	return rv;
 }
 
-static int ssdk_flow_default_act_init()
+static int ssdk_flow_default_act_init(void)
 {
 	a_uint32_t vrf_id = 0;
 	fal_flow_type_t type = 0;
@@ -2600,7 +2603,7 @@ static int ssdk_flow_default_act_init()
 
 	return 0;
 }
-static ssdk_portvlan_init(a_uint32_t cpu_bmp, a_uint32_t lan_bmp, a_uint32_t wan_bmp)
+static int ssdk_portvlan_init(a_uint32_t cpu_bmp, a_uint32_t lan_bmp, a_uint32_t wan_bmp)
 {
 	a_uint32_t port = 0;
 	for(port = 0; port < SSDK_MAX_PORT_NUM; port++)
@@ -2630,7 +2633,6 @@ static ssdk_portvlan_init(a_uint32_t cpu_bmp, a_uint32_t lan_bmp, a_uint32_t wan
 static int ssdk_dess_led_init(ssdk_init_cfg *cfg)
 {
 	a_uint32_t i,led_num, led_source_id,source_id;
-	a_uint32_t len = 0;
 	led_ctrl_pattern_t  pattern;
 
 	if(cfg->led_source_num != 0) {
@@ -2707,8 +2709,6 @@ static int ssdk_dess_mac_mode_init(a_uint32_t mac_mode)
 {
 	a_uint32_t reg_value;
 	u8  __iomem      *gcc_addr = NULL;
-	u8  __iomem      *gpio_addr = NULL;
-	u8  __iomem      *mdc_addr = NULL;
 
 	switch(mac_mode) {
 		case PORT_WRAPPER_PSGMII:
@@ -2980,7 +2980,7 @@ void ssdk_intf_set(struct net_device *dev, char op)
 	fal_vlan_t entry;
 	a_uint32_t tmp_vid = 0xffffffff;
 	fal_intf_mac_entry_t intf_entry;
-	char wan_port = 0;
+	a_uint32_t wan_port = 0;
 	sw_error_t rv;
 	static fal_intf_mac_entry_t if_mac_entry[8] = {{0}};
 	int index = 0xffffffff;
@@ -3116,7 +3116,6 @@ static int __init regi_init(void)
 	garuda_init_spec_cfg chip_spec_cfg;
 	ssdk_dt_global.switch_reg_access_mode = HSL_REG_MDIO;
 	ssdk_dt_global.psgmii_reg_access_mode = HSL_REG_MDIO;
-	a_uint8_t chip_version = 0;
 
 	ssdk_cfg_default_init(&cfg);
 

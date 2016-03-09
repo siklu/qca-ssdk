@@ -237,7 +237,7 @@ qca_ar8327_sw_set_ports(struct switch_dev *dev, struct switch_val *val)
 {
     struct qca_phy_priv *priv = qca_phy_priv_get(dev);
     a_uint8_t *vt = &priv->vlan_table[val->port_vlan];
-    int i, j;
+    int i;
 
 #ifdef BOARD_AR71XX
 	if(SSDK_CURRENT_CHIP_TYPE == CHIP_SHIVA) {

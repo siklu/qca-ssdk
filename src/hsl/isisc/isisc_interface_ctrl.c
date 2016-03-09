@@ -1610,9 +1610,9 @@ _isisc_interface_phy_mode_set(a_uint32_t dev_id, a_uint32_t phy_id, fal_phy_conf
 {
     sw_error_t rv;
     a_uint16_t data;
-    a_uint32_t reg, rgmii_mode, tx_delay = 2;;
     a_bool_t tx_delay_cmd, rx_delay_cmd;
     hsl_phy_ops_t *phy_drv;
+    a_uint32_t reg, rgmii_mode, tx_delay = 2;;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1729,7 +1729,7 @@ _isisc_interface_phy_mode_get(a_uint32_t dev_id, a_uint32_t phy_id, fal_phy_conf
 {
     sw_error_t rv;
     a_uint16_t data;
-    a_uint32_t reg, rgmii, gmii, mii;
+    a_uint32_t reg, rgmii;
     hsl_phy_ops_t *phy_drv;
 
     HSL_DEV_ID_CHECK(dev_id);

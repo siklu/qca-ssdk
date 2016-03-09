@@ -32,6 +32,7 @@
 #include "hsl.h"
 #include "hsl_shared_api.h"
 #include "../nat_helper.h"
+#include "nat_helper_dt.h"
 #include "nat_helper_hsl.h"
 #include "../napt_acl.h"
 
@@ -354,7 +355,8 @@ struct host_route_ip6 host_route_ip6_table[HOST_ROUTE_NUM];
 static a_int32_t
 _arp_host_route_ip4_hw_add(fal_host_entry_t *arp_entry)
 {
-	char exist = 0, idx = HOST_ROUTE_NUM+1, i = 0;
+	char exist = 0;
+	unsigned char i = 0, idx = HOST_ROUTE_NUM+1;
 	fal_ip4_addr_t ip = arp_entry->ip4_addr;
 
 	ip = ip & 0xffff0000;
@@ -394,7 +396,8 @@ _arp_host_route_ip4_hw_add(fal_host_entry_t *arp_entry)
 static a_int32_t
 _arp_host_route_ip6_hw_add(fal_host_entry_t *arp_entry)
 {
-	char exist = 0, idx = HOST_ROUTE_NUM+1, i = 0;
+	char exist = 0;
+	unsigned char idx = HOST_ROUTE_NUM+1, i = 0;
 	fal_ip6_addr_t ip = arp_entry->ip6_addr;
 
 	ip.ul[1] = 0;
@@ -436,9 +439,6 @@ _arp_host_route_ip6_hw_add(fal_host_entry_t *arp_entry)
 static a_int32_t
 _arp_host_route_hw_add(fal_host_entry_t *arp_entry)
 {
-	fal_host_route_t entry;
-	char exist = 0, idx = 0, i = 0;
-
 	if(arp_entry->flags == FAL_IP_IP4_ADDR) {
 		return _arp_host_route_ip4_hw_add(arp_entry);
 	} else {
@@ -548,12 +548,13 @@ arp_hw_add(a_uint32_t port, a_uint32_t intf_id, a_uint8_t *ip, a_uint8_t *mac, i
 a_int32_t
 arp_if_info_get(void *data, a_uint32_t *sport, a_uint32_t *vid)
 {
+	aos_header_t *athr_header = NULL;
     if((data==0) || (sport==0) || (vid==0))
     {
         return -1;
     }
 
-    aos_header_t *athr_header = (aos_header_t *)data;
+	athr_header = (aos_header_t *)data;
 
 #if 0
     /*atheros header magic check*/
@@ -585,6 +586,7 @@ nat_hw_pub_ip_add(a_uint32_t ip, a_uint32_t *index)
     sw_error_t rv;
     a_uint32_t hw_index;
     a_uint32_t i;
+	fal_nat_pub_addr_t ip_entry;
 
     for(i=0; i<MAX_PUBLIC_IP_CNT; i++)
     {
@@ -601,7 +603,7 @@ nat_hw_pub_ip_add(a_uint32_t ip, a_uint32_t *index)
         return -1;
     }
 
-    fal_nat_pub_addr_t ip_entry = {0};
+	memset(&ip_entry, 0, sizeof(ip_entry));
     ip_entry.pub_addr = ip;
     rv = NAT_PUB_ADDR_ADD(0,&ip_entry);
     if(rv != 0)
@@ -669,10 +671,9 @@ nat_hw_pub_ip_del(a_uint32_t index)
         public_ip_shadow[index].use_cnt--;
         if(public_ip_shadow[index].use_cnt == 0)
         {
+			fal_nat_pub_addr_t ip_entry;
             HNAT_PRINTK("%s: public_ip_cnt:%d index:%d ip:0x%x\n",
                         __func__, public_ip_cnt, index, public_ip_shadow[index].ip);
-
-            fal_nat_pub_addr_t ip_entry;
             memset(&ip_entry,0,sizeof(ip_entry));
             ip_entry.pub_addr = public_ip_shadow[index].ip;
             rv = NAT_PUB_ADDR_DEL(0, 1, &ip_entry);
@@ -861,6 +862,7 @@ a_int32_t
 napt_hw_get_by_index(napt_entry_t *napt, a_uint16_t hw_index)
 {
     fal_napt_entry_t fal_napt = {0};
+	sw_error_t rv;
 
     if(hw_index == 0)
     {
@@ -870,7 +872,7 @@ napt_hw_get_by_index(napt_entry_t *napt, a_uint16_t hw_index)
     {
         fal_napt.entry_id = hw_index - 1;
     }
-    sw_error_t rv;
+
     if((rv = NAPT_NEXT(0, 0, &fal_napt)) != 0)
     {
         HNAT_ERR_PRINTK("<napt_hw_get_by_index>[rv:%d] error hw:%x sw:%x\n",
@@ -955,6 +957,7 @@ sw_error_t napt_helper_hsl_init()
 {
 	memset(host_route_ip4_table, 0, sizeof(host_route_ip4_table));
 	memset(host_route_ip6_table, 0, sizeof(host_route_ip6_table));
+	return SW_OK;
 }
 
 

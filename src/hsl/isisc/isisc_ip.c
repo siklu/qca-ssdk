@@ -1689,6 +1689,7 @@ _isisc_ip_intf_entry_next(a_uint32_t dev_id, a_uint32_t next_mode,
 #define ISISC_WCMP_HASH_TBL_ADDR   0x0e10
 #define ISISC_WCMP_NHOP_TBL_ADDR   0x0e20
 
+#if 0
 static sw_error_t
 _isisc_ip_wcmp_entry_set(a_uint32_t dev_id, a_uint32_t wcmp_id, fal_ip_wcmp_t * wcmp)
 {
@@ -1817,6 +1818,7 @@ _isisc_ip_wcmp_entry_get(a_uint32_t dev_id, a_uint32_t wcmp_id, fal_ip_wcmp_t * 
 
     return SW_OK;
 }
+#endif
 
 static sw_error_t
 _isisc_ip_wcmp_hash_mode_set(a_uint32_t dev_id, a_uint32_t hash_mode)
@@ -2422,6 +2424,7 @@ isisc_ip_age_time_get(a_uint32_t dev_id, a_uint32_t * time)
     return rv;
 }
 
+#if 0
 /**
  * @brief Set IP WCMP table one particular device.
  *   @details Comments:
@@ -2461,6 +2464,7 @@ isisc_ip_wcmp_entry_get(a_uint32_t dev_id, a_uint32_t wcmp_id, fal_ip_wcmp_t * w
     HSL_API_UNLOCK;
     return rv;
 }
+#endif
 
 /**
  * @brief Set IP WCMP hash key mode.

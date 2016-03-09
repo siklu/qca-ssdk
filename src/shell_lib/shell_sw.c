@@ -25,7 +25,6 @@ cmd_set_devid(a_uint32_t *arg_val)
 {
     if (arg_val[1] >= SW_MAX_NR_DEV)
     {
-        dprintf("dev_id should be less than <%d>\n", SW_MAX_NR_DEV);
         return SW_FAIL;
     }
     sw_devid = arg_val[1];

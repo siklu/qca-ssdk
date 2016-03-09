@@ -24,20 +24,20 @@
 #include "nat_helper.h"
 
 char hnat_log_en = HNAT_LOG_LEVEL_DISABLE;
+char hnat_log_buffer[NAT_LOG_MAX_SIZE];
 
 void hnat_log_msg(int level, char *string, ...)
 {
 
 	va_list   ptr;
-	char buffer[NAT_LOG_MAX_SIZE];
 
 	if(level < hnat_log_en)
 		return;
-	memset(buffer, 0, sizeof(buffer));
+	memset(hnat_log_buffer, 0, sizeof(hnat_log_buffer));
 	va_start(ptr,string);
-	vsprintf(buffer , string, ptr);
+	vsprintf(hnat_log_buffer , string, ptr);
 	va_end(ptr);
-	aos_printk("%s\n", buffer);
+	aos_printk("%s\n", hnat_log_buffer);
 }
 
 

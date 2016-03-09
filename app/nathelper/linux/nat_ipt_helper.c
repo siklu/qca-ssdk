@@ -120,10 +120,10 @@ nat_ipt_del(struct ipt_replace ireplace)
     struct nf_nat_ipv4_multi_range_compat *grange = NULL;
     struct nf_nat_ipv4_multi_range_compat *srange = NULL;
     uint8_t *gptr, *sptr;
+	unsigned int oldnum = ireplace.num_counters;
+	unsigned int seq = 1;
     gptr = gbuffer;
     sptr = sbuffer;
-    unsigned int oldnum = ireplace.num_counters;
-    unsigned int seq = 1;
 
     HNAT_PRINTK("into nat_ipt_del\n");
     for (i = oldnum; i >= 0; i--)//NF_NAT_INIT_ENTRIES_NUM; i--)
@@ -254,6 +254,7 @@ nat_ipt_to_hw_entry(struct ipt_entry *e,
 static int
 nat_ipt_hw_add(nat_entry_t *nat)
 {
+	uint32_t index = 0;
     if(nat_hw_add(nat) != 0)
     {
         return -1;
@@ -271,7 +272,6 @@ nat_ipt_hw_add(nat_entry_t *nat)
         nat_hw_prv_base_update_disable();
     }
 
-    uint32_t index;
     if(nat_hw_pub_ip_add(nat->trans_addr, &index)!= 0)
     {
         return -1;
@@ -386,9 +386,8 @@ nat_ipt_check_matches(struct ipt_entry_match *m,
     else if(strcmp(m->u.user.name, "multiport") == 0)
     {
         struct xt_multiport xport_data = {0};
+		struct ipt_entry_target *t = ipt_get_target(e);
         xport = &xport_data;
-
-        struct ipt_entry_target *t = ipt_get_target(e);
 
         if(t->u.user.revision == 0)
         {
@@ -436,6 +435,7 @@ nat_ipt_find_check_entry(struct ipt_entry *e, unsigned int underflow,
 {
     int ret = 0;
     static uint16_t next_offset = 0;
+	struct ipt_entry_target *t = ipt_get_target(e);
 
     if(*i == 0)
     {
@@ -446,8 +446,6 @@ nat_ipt_find_check_entry(struct ipt_entry *e, unsigned int underflow,
     {
         next_offset += e->next_offset;
     }
-
-    struct ipt_entry_target *t = ipt_get_target(e);
 
     if (!strcmp(t->u.user.name, "SNAT"))
     {

@@ -425,7 +425,6 @@ qca_ar8327_sw_get_port_mib(struct switch_dev *dev,
 void
 qca_ar8327_sw_mib_task(struct switch_dev *dev)
 {
-	int i = 0;
 	static int loop = 0;
 	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 

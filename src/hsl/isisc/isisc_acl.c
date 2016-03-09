@@ -45,6 +45,7 @@ static sw_error_t
 _isisc_filter_ports_bind(a_uint32_t dev_id, a_uint32_t flt_idx,
                         a_uint32_t ports);
 
+#ifdef ISISC_SW_ENTRY
 static sw_error_t
 _isisc_filter_write(a_uint32_t dev_id, a_uint32_t reg[], a_uint32_t flt_idx,
                    a_uint32_t op);
@@ -52,6 +53,7 @@ _isisc_filter_write(a_uint32_t dev_id, a_uint32_t reg[], a_uint32_t flt_idx,
 static sw_error_t
 _isisc_filter_read(a_uint32_t dev_id, a_uint32_t reg[], a_uint32_t flt_idx,
                   a_uint32_t op);
+#endif
 
 static sw_error_t
 _isisc_filter_down_to_hw(a_uint32_t dev_id, hw_filter_t * filter,
@@ -262,6 +264,7 @@ _isisc_filter_ports_bind(a_uint32_t dev_id, a_uint32_t flt_idx, a_uint32_t ports
 #endif
 }
 
+#ifdef ISISC_SW_ENTRY
 static sw_error_t
 _isisc_filter_write(a_uint32_t dev_id, a_uint32_t reg[], a_uint32_t flt_idx,
                    a_uint32_t op)
@@ -320,6 +323,7 @@ _isisc_filter_read(a_uint32_t dev_id, a_uint32_t reg[], a_uint32_t flt_idx,
 
     return SW_OK;
 }
+#endif
 
 static sw_error_t
 _isisc_filter_down_to_hw(a_uint32_t dev_id, hw_filter_t * filter,

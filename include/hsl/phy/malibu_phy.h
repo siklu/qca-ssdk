@@ -625,6 +625,18 @@ extern "C"
   malibu_phy_show_counter (a_uint32_t dev_id, a_uint32_t phy_id,
 			 fal_port_counter_info_t * counter_info);
 
+  sw_error_t
+  malibu_phy_get_8023az(a_uint32_t dev_id, a_uint32_t phy_id,
+			a_bool_t * enable);
+
+  sw_error_t
+  malibu_phy_set_8023az(a_uint32_t dev_id, a_uint32_t phy_id,
+			a_bool_t enable);
+
+  sw_error_t
+  malibu_phy_get_phy_id(a_uint32_t dev_id, a_uint32_t phy_id,
+			a_uint16_t * org_id, a_uint16_t * rev_id);
+
   int malibu_phy_init(void);
 
 #ifdef __cplusplus

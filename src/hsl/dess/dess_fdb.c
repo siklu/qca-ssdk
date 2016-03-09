@@ -1632,7 +1632,7 @@ _dess_fdb_port_update(a_uint32_t dev_id, a_uint32_t fid, fal_mac_addr_t * addr, 
 #define FDB_RFS_ADD  1
 #define FDB_RFS_DEL  2
 static sw_error_t
-_dess_fdb_rfs_update(fal_fdb_rfs_t *rfs, fal_fdb_entry_t *entry, char op)
+_dess_fdb_rfs_update(const fal_fdb_rfs_t *rfs, fal_fdb_entry_t *entry, char op)
 {
 	_dess_fdb_del_by_mac(0, entry);
 	if(FDB_RFS_ADD == op) {
@@ -1648,7 +1648,7 @@ _dess_fdb_rfs_update(fal_fdb_rfs_t *rfs, fal_fdb_entry_t *entry, char op)
 
 
 static sw_error_t
-_dess_fdb_rfs_set(a_uint32_t dev_id, fal_fdb_rfs_t *rfs)
+_dess_fdb_rfs_set(a_uint32_t dev_id, const fal_fdb_rfs_t *rfs)
 {
 
 	fal_fdb_entry_t entry;
@@ -1674,7 +1674,7 @@ _dess_fdb_rfs_set(a_uint32_t dev_id, fal_fdb_rfs_t *rfs)
 }
 
 static sw_error_t
-_dess_fdb_rfs_del(a_uint32_t dev_id, fal_fdb_rfs_t *rfs)
+_dess_fdb_rfs_del(a_uint32_t dev_id, const fal_fdb_rfs_t *rfs)
 {
 
 	fal_fdb_entry_t entry;
@@ -2317,7 +2317,7 @@ dess_fdb_port_del(a_uint32_t dev_id, a_uint32_t fid, fal_mac_addr_t * addr, fal_
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_fdb_rfs_set(a_uint32_t dev_id, fal_fdb_rfs_t *rfs)
+dess_fdb_rfs_set(a_uint32_t dev_id, const fal_fdb_rfs_t *rfs)
 {
     sw_error_t rv;
 
@@ -2334,7 +2334,7 @@ dess_fdb_rfs_set(a_uint32_t dev_id, fal_fdb_rfs_t *rfs)
  * @return SW_OK or error code
  */
 HSL_LOCAL sw_error_t
-dess_fdb_rfs_del(a_uint32_t dev_id, fal_fdb_rfs_t *rfs)
+dess_fdb_rfs_del(a_uint32_t dev_id, const fal_fdb_rfs_t *rfs)
 {
     sw_error_t rv;
 

@@ -44,7 +44,7 @@ extern "C" {
         char *sub_name;
         char *sub_act;
         int   sub_api;
-        sw_error_t (*sub_func) ();
+        sw_error_t (*sub_func) (void);
     };
     struct cmd_des_t
     {

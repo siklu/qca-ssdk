@@ -545,7 +545,7 @@ _isis_qos_port_sch_mode_set(a_uint32_t dev_id, a_uint32_t port_id,
         w[i] = weight[i];
     }
 
-    HSL_REG_ENTRY_GET(rv, dev_id, WRR_CTRL, port_id, (a_uint32_t *) (&reg),
+    HSL_REG_ENTRY_GET(rv, dev_id, WRR_CTRL, port_id, (a_uint8_t *) (&reg),
                       sizeof (a_uint32_t));
     SW_RTN_ON_ERROR(rv);
 
@@ -571,7 +571,7 @@ _isis_qos_port_sch_mode_get(a_uint32_t dev_id, a_uint32_t port_id,
 
     HSL_DEV_ID_CHECK(dev_id);
 
-    HSL_REG_ENTRY_GET(rv, dev_id, WRR_CTRL, port_id, (a_uint32_t *) (&val),
+    HSL_REG_ENTRY_GET(rv, dev_id, WRR_CTRL, port_id, (a_uint8_t *) (&val),
                       sizeof (a_uint32_t));
     SW_RTN_ON_ERROR(rv);
 

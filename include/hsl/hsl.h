@@ -94,14 +94,14 @@ extern sw_error_t reduce_hsl_reg_field_gen_set(a_uint32_t dev,a_uint32_t regaddr
 
 
 
-extern sw_error_t reduce_hsl_phy_get(a_uint32_t dev,a_uint32_t phy_addr,a_uint32_t reg,a_uint8_t* value);
+extern sw_error_t reduce_hsl_phy_get(a_uint32_t dev,a_uint32_t phy_addr,a_uint32_t reg,a_uint16_t* value);
 #define HSL_PHY_GET(rv, dev, phy_addr, reg, value) \
-		rv = reduce_hsl_phy_get(dev,phy_addr,reg,(a_uint8_t*)value);
+		rv = reduce_hsl_phy_get(dev,phy_addr,reg,value);
 
 
-extern sw_error_t reduce_hsl_phy_set(a_uint32_t dev,a_uint32_t phy_addr,a_uint32_t reg,a_uint8_t* value);
+extern sw_error_t reduce_hsl_phy_set(a_uint32_t dev,a_uint32_t phy_addr,a_uint32_t reg,a_uint16_t value);
 #define HSL_PHY_SET(rv, dev, phy_addr, reg, value) \
-		rv = reduce_hsl_phy_set(dev,phy_addr,reg,(a_uint8_t*)value);
+		rv = reduce_hsl_phy_set(dev,phy_addr,reg,value);
 
 
 

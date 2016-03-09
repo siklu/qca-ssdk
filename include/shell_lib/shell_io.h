@@ -22,11 +22,17 @@
 #include "fal.h"
 
 #define SW_TYPE_DEF(type, parser, show) {type, parser, show}
+typedef sw_error_t
+	(*param_check_t)(char *, a_uint32_t *, a_uint32_t);
+typedef sw_error_t
+	(*param_check_range_t)(char *, a_uint32_t *, a_uint32_t, a_uint32_t);
+typedef sw_error_t
+	(*param_check_boolean_t)(char *, a_bool_t, a_bool_t *, a_uint32_t);
 typedef struct
 {
     sw_data_type_e data_type;
-    sw_error_t(*param_check) ();
-    void (*show_func) ();
+    param_check_t param_check;
+    void (*show_func) (void);
 } sw_data_type_t;
 
 void  set_talk_mode(int mode);
@@ -34,7 +40,8 @@ int get_talk_mode(void);
 void set_full_cmdstrp(char **cmdstrp);
 sw_data_type_t * cmd_data_type_find(sw_data_type_e type);
 void  cmd_strtol(char *str, a_uint32_t * arg_val);
-
+sw_error_t cmd_data_check_udf_element(char *cmdstr, a_uint8_t * val, a_uint32_t * len);
+sw_error_t cmd_data_check_ruletype(char *cmd_str, fal_acl_rule_type_t * arg_val, a_uint32_t size);
 sw_error_t cmd_data_check_portmap(char *cmdstr, fal_pbmp_t * val, a_uint32_t size);
 sw_error_t cmd_data_check_confirm(char *cmdstr, a_bool_t def, a_bool_t * val, a_uint32_t size);
 

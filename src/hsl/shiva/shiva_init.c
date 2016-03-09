@@ -166,6 +166,7 @@ shiva_hw_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
     return SW_OK;
 }
 
+#if 0
 static sw_error_t
 shiva_bist_test(a_uint32_t dev_id)
 {
@@ -272,6 +273,7 @@ shiva_bist_test(a_uint32_t dev_id)
     return SW_OK;
 }
 #endif
+#endif
 
 static sw_error_t
 shiva_dev_init(a_uint32_t dev_id, hsl_init_mode cpu_mode)
@@ -358,6 +360,7 @@ shiva_reset(a_uint32_t dev_id)
 sw_error_t
 shiva_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 {
+    sw_error_t rv;
     HSL_DEV_ID_CHECK(dev_id);
 
     if (NULL == shiva_cfg[dev_id])
@@ -378,8 +381,6 @@ shiva_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 
 #if !(defined(KERNEL_MODULE) && defined(USER_MODE))
     {
-        a_uint32_t i, entry;
-        sw_error_t rv;
 /*
         if(HSL_MDIO == cfg->reg_mode)
         {

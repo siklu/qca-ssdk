@@ -2103,6 +2103,7 @@ isisc_port_mac_vlan_xlt_get(a_uint32_t dev_id, fal_port_t port_id,
     return rv;
 }
 
+#ifdef HSL_STANDALONG
 HSL_LOCAL sw_error_t
 isisc_port_route_defv_set(a_uint32_t dev_id, fal_port_t port_id)
 {
@@ -2113,6 +2114,7 @@ isisc_port_route_defv_set(a_uint32_t dev_id, fal_port_t port_id)
     HSL_API_UNLOCK;
     return rv;
 }
+#endif
 
 /**
  * @brief Set NET_ISOLATE_EN
@@ -2190,6 +2192,7 @@ isisc_portvlan_init(a_uint32_t dev_id)
     a_uint32_t i;
     sw_error_t rv;
     fal_vlan_trans_entry_t entry_init;
+    hsl_api_t *p_api;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -2202,7 +2205,6 @@ isisc_portvlan_init(a_uint32_t dev_id)
     }
 
 #ifndef HSL_STANDALONG
-    hsl_api_t *p_api;
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 

@@ -70,11 +70,12 @@ extern int scan_period;
 extern int scan_enable;
 extern int napt_need_clean;
 extern int wan_switch;
-extern void napt_wan_switch_prehandle();
+extern void napt_wan_switch_prehandle(void);
 /* for IPv6 over PPPoE (only for S17c)*/
 int nf_athrs17_hnat_ppp_id2 = 0;
 unsigned char nf_athrs17_hnat_ppp_peer_mac2[ETH_ALEN] = {0};
 
+#if 0
 static void setup_proc_entry(void)
 {
     nf_athrs17_hnat = 1;
@@ -89,8 +90,6 @@ static void setup_proc_entry(void)
     memset(&nf_athrs17_hnat_ppp_peer_mac2, 0, ETH_ALEN);
 	nf_athrs17_hnat_sync_counter_en = 0;
 }
-
-#if 0
 
 /**
  * This structure hold information about the /proc file

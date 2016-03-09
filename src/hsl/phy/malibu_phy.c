@@ -434,7 +434,6 @@ malibu_phy_get_powersave(a_uint32_t dev_id, a_uint32_t phy_id,
 {
 	a_uint16_t phy_data;
 	a_uint16_t phy_data1;
-	a_bool_t  status;
 
 	if (phy_id == COMBO_PHY_ID) {
 		if (MALIBU_PHY_MEDIUM_COPPER !=
@@ -804,7 +803,6 @@ malibu_phy_set_local_loopback(a_uint32_t dev_id, a_uint32_t phy_id,
 {
 	a_uint16_t phy_data;
 	fal_port_speed_t old_speed;
-	fal_port_duplex_t old_duplex;
 
        if (enable == A_TRUE) {
 	     if (phy_id == COMBO_PHY_ID) {
@@ -1000,10 +998,6 @@ malibu_phy_cdt_get(a_uint32_t dev_id, a_uint32_t phy_id,
 {
 	a_uint16_t status = 0;
 	a_uint16_t cable_delta_time = 0;
-	a_uint16_t org_debug_value = 0;
-	int ii = 100;
-	a_bool_t link_st = A_FALSE;
-	a_uint16_t reg806e = 0;
 	int i;
 
 	if ((!port_cdt) || (phy_id > 4)) {
@@ -1707,9 +1701,6 @@ malibu_phy_set_speed(a_uint32_t dev_id, a_uint32_t phy_id,
 		     fal_port_speed_t speed)
 {
 	a_uint16_t phy_data = 0;
-	a_uint16_t phy_status = 0;
-
-	a_uint32_t autoneg, oldneg;
 	fal_port_duplex_t old_duplex;
 
 	if (phy_id == COMBO_PHY_ID) {
@@ -1781,9 +1772,7 @@ malibu_phy_set_duplex(a_uint32_t dev_id, a_uint32_t phy_id,
 		      fal_port_duplex_t duplex)
 {
 	a_uint16_t phy_data = 0;
-	a_uint16_t phy_status = 0;
 	fal_port_speed_t old_speed;
-	a_uint32_t oldneg, autoneg;
 
 	if (phy_id == COMBO_PHY_ID) {
 
