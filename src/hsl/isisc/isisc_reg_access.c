@@ -401,7 +401,7 @@ _isisc_debug_regsiter_dump(a_uint32_t dev_id,fal_debug_reg_dump_t * dbg_reg_dump
  * @param[out] reg_dump register dump result
  * @return SW_OK or error code
  */
-HSL_LOCAL sw_error_t
+sw_error_t
 isisc_regsiter_dump(a_uint32_t dev_id,a_uint32_t register_idx, fal_reg_dump_t * reg_dump)
 {
     sw_error_t rv;
@@ -418,7 +418,7 @@ isisc_regsiter_dump(a_uint32_t dev_id,a_uint32_t register_idx, fal_reg_dump_t * 
  * @param[out] reg_dump debug register dump
  * @return SW_OK or error code
  */
-HSL_LOCAL sw_error_t
+sw_error_t
 isisc_debug_regsiter_dump(a_uint32_t dev_id, fal_debug_reg_dump_t * dbg_reg_dump)
 {
     sw_error_t rv;
