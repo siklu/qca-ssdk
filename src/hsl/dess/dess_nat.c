@@ -2156,6 +2156,8 @@ a_uint8_t _dess_snat_matched(a_uint32_t dev_id, fal_ip4_addr_t addr)
 	reg_addr = DESS_NAT_VRF_ENTRY_TBL_ADDR;
 	HSL_REG_ENTRY_GEN_GET(rv, dev_id, reg_addr, sizeof (a_uint32_t),
                           (a_uint8_t *) (&base), sizeof (a_uint32_t));
+	if (rv)
+		return 0;
 	if((mask&addr) == (mask&base)) {
 		return 1;
 	}
