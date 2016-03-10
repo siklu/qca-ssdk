@@ -1827,7 +1827,7 @@ qca_psgmii_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_dat
 	return 0;
 }
 
-#if 0
+#ifdef BOARD_AR71XX
 static uint32_t switch_chip_id_adjuest(void)
 {
 	uint32_t chip_version = 0;
