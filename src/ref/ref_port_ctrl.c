@@ -206,6 +206,155 @@ static a_uint32_t port_qm_buf[AR8327_NUM_PORTS] = {QM_EMPTY, QM_EMPTY ,QM_EMPTY 
 static a_uint32_t phy_current_speed = 2;
 static a_uint32_t phy_current_duplex = 1;
 
+int qca_ar8327_sw_enable_vlan0(a_bool_t enable, a_uint8_t portmap);
+int qca_ar8327_vlan_recovery(struct switch_dev *dev)
+{
+	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
+	fal_pbmp_t portmask[AR8327_NUM_PORTS];
+	int i, j;
+	a_uint32_t reg, val;
+	u8 mask ;
+
+	mutex_lock(&priv->reg_mutex);
+
+	memset(portmask, 0, sizeof(portmask));
+	if (!priv->init) {
+		/*Handle VLAN 0 entry*/
+		if (priv->vlan_id[0] == 0 && priv->vlan_table[0] == 0) {
+			qca_ar8327_sw_enable_vlan0(A_FALSE, 0);
+		}
+
+		/* calculate the port destination masks and load vlans
+		 * into the vlan translation unit */
+		for (j = 0; j < AR8327_MAX_VLANS; j++) {
+			/*
+			//############################# VLAN -1 #########################
+			//## VID=1 VLAN member : P1-t,P2-t,P3-t,P4-t,P5-t, P6-t
+			or 610 000AAAB0
+			or 614 80010002
+			*/
+			if (priv->vlan_id[j]) {
+				/* reg 0x610 VLAN_TABLE_FUNC0_OFFSET*/
+				reg = 0x610;
+				val = 0x00180000;
+				for (i = 0; i < dev->ports; ++i) {
+					mask = (1 << i);
+					if (mask & priv->vlan_table[j])
+					{
+						val |= ((mask & priv->vlan_tagged[j])? FAL_EG_TAGGED : FAL_EG_UNTAGGED) << ((i << 1) + 4);
+					}
+					else
+						val |= (0x3) << ((i << 1) + 4);	// not member.
+				}
+				priv->mii_write(reg, val);
+
+				/* reg 0x614 VLAN_TABLE_FUNC1_OFFSET*/
+				reg = 0x614;
+				val = 0x80000002;	// load en entry
+				val |= priv->vlan_id[j] << 16;
+				priv->mii_write(reg, val);
+			}
+		}
+
+		/*Hanlde VLAN 0 entry*/
+		if (priv->vlan_id[0] == 0 && priv->vlan_table[0]) {
+			qca_ar8327_sw_enable_vlan0(A_TRUE, priv->vlan_table[0]);
+		}
+
+	} else {
+		/* vlan disabled:
+		 * isolate all ports, but connect them to the cpu port */
+		for (i = 0; i < dev->ports; i++) {
+			if (i == AR8327_PORT_CPU)
+				continue;
+
+			portmask[i] = 1 << AR8327_PORT_CPU;
+			portmask[AR8327_PORT_CPU] |= (1 << i);
+		}
+	}
+
+	/* update the port destination mask registers and tag settings */
+	for (i = 0; i < dev->ports; i++) {
+		int pvid;
+		fal_pt_1qmode_t ingressMode;
+		fal_pt_1q_egmode_t egressMode;
+
+		if (priv->vlan) {
+			pvid = priv->vlan_id[priv->pvid[i]];
+			if (priv->vlan_tagged[priv->pvid[i]] & (1 << i)) {
+				egressMode = FAL_EG_TAGGED;
+			} else {
+				egressMode = FAL_EG_UNTAGGED;
+			}
+
+			ingressMode = FAL_1Q_SECURE;
+		} else {
+			pvid = i;
+			egressMode = FAL_EG_UNTOUCHED;
+			ingressMode = FAL_1Q_DISABLE;
+		}
+
+		/*If VLAN 0 existes, change member port
+		   *egress mode as UNTOUCHED*/
+		if (priv->vlan_id[0] == 0 &&
+			  priv->vlan_table[0] &&
+			  ((0x1 << i) & priv->vlan_table[0]) &&
+			  priv->vlan) {
+			egressMode = FAL_EG_UNTOUCHED;
+		}
+
+		fal_port_1qmode_set(0, i, ingressMode);
+		fal_port_egvlanmode_set(0, i, egressMode);
+		fal_port_default_cvid_set(0, i, pvid);
+		fal_portvlan_member_update(0, i, portmask[i]);
+	}
+
+	mutex_unlock(&priv->reg_mutex);
+
+	return 0;
+}
+
+int qca_qm_error_check(struct qca_phy_priv *priv)
+{
+	a_uint32_t value, qm_err_int=0;
+
+	value = priv->mii_read(0x24);
+	qm_err_int = value & BIT(14);	// b14-QM_ERR_INT
+
+	if(qm_err_int)
+		return 1;
+
+	priv->mii_write(0x820, 0x0);
+	value = priv->mii_read(0x824);
+
+	return value;
+}
+
+void qca_ar8327_phy_linkdown(void);
+int qca_ar8327_hw_init(struct qca_phy_priv *priv);
+
+int qca_qm_err_recovery(struct qca_phy_priv *priv)
+{
+	memset(port_link_down, 0, sizeof(port_link_down));
+	memset(port_link_up, 0, sizeof(port_link_up));
+	memset(port_old_link, 0, sizeof(port_old_link));
+	memset(port_old_speed, 0, sizeof(port_old_speed));
+	memset(port_old_duplex, 0, sizeof(port_old_duplex));
+	memset(port_old_phy_status, 0, sizeof(port_old_phy_status));
+	memset(port_qm_buf, 0, sizeof(port_qm_buf));
+
+	/* in soft reset recovery procedure */
+	qca_ar8327_phy_linkdown();
+
+	qca_ar8327_hw_init(priv);
+
+	qca_ar8327_vlan_recovery(&priv->sw_dev);
+
+	/*To add customerized recovery codes*/
+
+	return 1;
+}
+
 void
 qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 {
@@ -227,6 +376,13 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 		priv->version != QCA_VER_AR8327)
 		return;
 
+	value = qca_qm_error_check(priv);
+	if(value)
+	{
+		qca_qm_err_recovery(priv);
+		return;
+	}
+
 	++task_count;
 
 	for (i = 1; i < AR8327_NUM_PORTS-1; ++i) {
@@ -239,25 +395,26 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 			++link_cnt[i];
 			/* Up --> Down */
 			if ((port_old_link[i] == PORT_LINK_UP) && (link == PORT_LINK_DOWN)) {
-				if (port_link_down[i] < 1) {
-					++port_link_down[i];
+				fal_port_link_forcemode_set(0, i, A_TRUE);
+				port_link_down[i]=0;
+				/* Check queue buffer */
+				qm_err_cnt[i] = 0;
+				qca_switch_get_qm_status(dev, i, &qm_buffer_err);
+
+				if (qm_buffer_err) {
+					port_qm_buf[i] = QM_NOT_EMPTY;
 				}
-				else{
-					fal_port_link_forcemode_set(0, i, A_TRUE);
-					port_link_down[i]=0;
-					/* Check queue buffer */
-					qm_err_cnt[i] = 0;
-					qca_switch_get_qm_status(dev, i, &qm_buffer_err);
+				else {
+					a_uint16_t value = 0;
+					port_qm_buf[i] = QM_EMPTY;
 
-					if (qm_buffer_err) {
-						port_qm_buf[i] = QM_NOT_EMPTY;
-					}
-					else {
-						port_qm_buf[i] = QM_EMPTY;
+					/* Force MAC 1000M Full before auto negotiation */
+					qca_switch_force_mac_1000M_full(dev, i);
+					mdelay(10);
 
-						/* Force MAC 1000M Full before auto negotiation */
-						qca_switch_force_mac_1000M_full(dev, i);
-					}
+					qca_ar8327_phy_dbg_read(0, i-1, 0, &value);
+					value &= (~(1<<12));
+					qca_ar8327_phy_dbg_write(0, i-1, 0, value);
 				}
 			}
 			/* Down --> Up */
@@ -275,11 +432,24 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 				}
 				if (port_link_up[i] < 1) {
 					++port_link_up[i];
+					qca_switch_get_qm_status(dev, i, &qm_buffer_err);
+					if (qm_buffer_err) {
+						qca_qm_err_recovery(priv);
+						return;
+					}
 				}
 				else{
 					port_link_up[i]=0;
 					fal_port_link_forcemode_set(0, i, A_FALSE);
 					udelay(100);
+
+					if(speed == 0x01)/*PHY is link up 100M*/
+					{
+						a_uint16_t value = 0;
+						qca_ar8327_phy_dbg_read(0, i-1, 0, &value);
+						value |= (1<<12);
+						qca_ar8327_phy_dbg_write(0, i-1, 0, value);
+					}
 				}
 			}
 			if ((port_link_down[i] == 0)
