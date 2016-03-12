@@ -55,6 +55,7 @@
 #include <linux/types.h>
 //#include <asm/mach-types.h>
 #include <generated/autoconf.h>
+#include <linux/if_arp.h>
 #include <linux/inetdevice.h>
 #include <linux/netdevice.h>
 #include <linux/phy.h>
@@ -119,10 +120,12 @@
 #ifdef IN_RFS
 struct rfs_device rfs_dev;
 struct notifier_block ssdk_inet_notifier;
-#if defined(CONFIG_RFS_ACCEL)
+#endif
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 struct notifier_block ssdk_dev_notifier;
 #endif
-#endif
+
 
 extern ssdk_chip_type SSDK_CURRENT_CHIP_TYPE;
 extern a_uint32_t hsl_dev_wan_port_get(a_uint32_t dev_id);
@@ -2938,23 +2941,6 @@ int ssdk_netdev_rfs_cb(
 	return ssdk_rfs_ipct_rule_set(src, dst, sport, dport,
 							proto, rxq_index, action);
 }
-
-static int ssdk_dev_event(struct notifier_block *this, unsigned long event, void *ptr)
-{
-	struct net_device *dev = netdev_notifier_info_to_dev(ptr);
-
-	switch (event) {
-		case NETDEV_UP:
-			if (strstr(dev->name, "eth")) {
-				if (dev->netdev_ops && dev->netdev_ops->ndo_register_rfs_filter) {
-					dev->netdev_ops->ndo_register_rfs_filter(dev,
-						ssdk_netdev_rfs_cb);
-				}
-			}
-			break;
-	}
-	return NOTIFY_DONE;
-}
 #endif
 int ssdk_intf_search(
 	fal_intf_mac_entry_t *exist_entry, int num,
@@ -3109,6 +3095,35 @@ static int ssdk_inet_event(struct notifier_block *this, unsigned long event, voi
 }
 #endif
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+static int ssdk_dev_event(struct notifier_block *this, unsigned long event, void *ptr)
+{
+	struct net_device *dev = netdev_notifier_info_to_dev(ptr);
+
+	switch (event) {
+#ifdef IN_RFS
+#if defined(CONFIG_RFS_ACCEL)
+		case NETDEV_UP:
+			if (strstr(dev->name, "eth")) {
+				if (dev->netdev_ops && dev->netdev_ops->ndo_register_rfs_filter) {
+					dev->netdev_ops->ndo_register_rfs_filter(dev,
+						ssdk_netdev_rfs_cb);
+				}
+			}
+			break;
+#endif
+#endif
+
+		case NETDEV_CHANGEMTU:
+			if(dev->type == ARPHRD_ETHER) {
+				fal_frame_max_size_set(0, dev->mtu + 18);
+			}
+			break;
+                }
+	return NOTIFY_DONE;
+}
+#endif
+
 static int __init regi_init(void)
 {
 	ssdk_init_cfg cfg;
@@ -3158,7 +3173,12 @@ static int __init regi_init(void)
 		#endif
 		#endif
 		#endif
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 
+		ssdk_dev_notifier.notifier_call = ssdk_dev_event;
+		ssdk_dev_notifier.priority = 1;
+		register_netdevice_notifier(&ssdk_dev_notifier);
+#endif
 		#ifdef IN_RFS
 		memset(&rfs_dev, 0, sizeof(rfs_dev));
 		rfs_dev.name = NULL;
@@ -3171,9 +3191,6 @@ static int __init regi_init(void)
 		#endif
 		rfs_ess_device_register(&rfs_dev);
 		#if defined(CONFIG_RFS_ACCEL)
-		ssdk_dev_notifier.notifier_call = ssdk_dev_event;
-		ssdk_dev_notifier.priority = 1;
-		register_netdevice_notifier(&ssdk_dev_notifier);
 		#endif
 		ssdk_inet_notifier.notifier_call = ssdk_inet_event;
 		ssdk_inet_notifier.priority = 1;
