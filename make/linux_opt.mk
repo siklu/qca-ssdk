@@ -213,6 +213,11 @@ ifneq (,$(findstring DESS, $(SUPPORT_CHIP)))
   MODULE_CFLAG += -DDESS
 endif
 
+ifneq (,$(findstring HPPE, $(SUPPORT_CHIP)))
+  MODULE_INC   += -I$(PRJ_PATH)/include/hsl/hppe
+  MODULE_CFLAG += -DHPPE
+endif
+
 # check for GCC version
 ifeq (4, $(GCC_VER))
   MODULE_CFLAG += -DGCCV4
