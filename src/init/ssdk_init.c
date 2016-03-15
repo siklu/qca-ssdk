@@ -61,6 +61,10 @@
 #include <linux/clk.h>
 #include <linux/delay.h>
 #include <linux/string.h>
+#if 1
+#include <linux/pci.h>
+#include <linux/netdevice.h>
+#endif
 #if defined(ISIS) ||defined(ISISC) ||defined(GARUDA)
 #include <f1_phy.h>
 #endif
@@ -143,6 +147,41 @@ static int switch_chip_reg = ISIS_CHIP_REG;
 ssdk_dt_cfg ssdk_dt_global = {0};
 u8  __iomem      *hw_addr = NULL;
 u8  __iomem      *psgmii_hw_addr = NULL;
+
+#define ESS_ONLY_FPGA
+
+#ifdef ESS_ONLY_FPGA
+
+#define PCI_DEVICE_ID_DAKOTA 0xabcd
+#define PCI_VENDOR_DAKOTA    0x168c
+
+#define BIT_MASK_U32(nr) (~(0xFFFFFFFF << (nr)))
+#define BIT_MASK_NOT_U32(nr) (0xFFFFFFFF << (nr))
+#define MEM_ACCESS_AVA_BIT 20
+#define PCIE_MEM_ACCESS_BASE_ADDR_REG 0x4
+
+char atl1c_driver_name[] = "atl1c";
+static struct pci_device_id atl1c_pci_tbl[] = {
+	{PCI_VENDOR_DAKOTA, PCI_DEVICE_ID_DAKOTA, ~0,~0, 0, 0, 0},
+	/* required last entry */
+	{ 0 }
+};
+
+static int atl1c_probe(struct pci_dev *pdev,
+				 const struct pci_device_id *ent);
+static void atl1c_remove(struct pci_dev *pdev);
+static void atl1c_shutdown(struct pci_dev *pdev);
+
+
+
+static struct pci_driver atl1c_driver = {
+	.name     = atl1c_driver_name,
+	.id_table = atl1c_pci_tbl,
+	.probe    = atl1c_probe,
+	.remove   = atl1c_remove,
+	.shutdown = atl1c_shutdown,
+};
+#endif
 
 a_uint32_t ssdk_dt_global_get_mac_mode(void)
 {
@@ -1295,7 +1334,9 @@ qca_phy_config_init(struct phy_device *pdev)
 {
 	struct qca_phy_priv *priv = pdev->priv;
 	struct switch_dev *sw_dev;
-	int ret;
+	int ret = 0;
+
+	#ifndef ESS_ONLY_FPGA
 
 	if (pdev->addr != 0) {
         pdev->supported |= SUPPORTED_1000baseT_Full;
@@ -1346,6 +1387,8 @@ qca_phy_config_init(struct phy_device *pdev)
 
 	#ifdef AUTO_SWITCH_RECOVERY
 	qm_err_check_work_start(priv);
+	#endif
+
 	#endif
 
 	return ret;
@@ -1554,6 +1597,72 @@ static int phy_address[5] = {0,1,2,3,4};
 #define MDIO_BUS_1						1
 #define IPQ806X_MDIO_BUS_NUM			MDIO_BUS_0
 
+#ifdef ESS_ONLY_FPGA
+static int atl1c_probe(struct pci_dev *pdev,
+				 const struct pci_device_id *ent)
+{
+	int err = 0;
+	u32 tmp = 0;
+
+	printk("drive is enter!\n");
+
+
+	err = pci_enable_device_mem(pdev);
+	if (err) {
+		dev_err(&pdev->dev, "cannot enable PCI device\n");
+		return err;
+	}
+	if ((pci_set_dma_mask(pdev, DMA_BIT_MASK(32)) != 0) ||
+	    (pci_set_consistent_dma_mask(pdev, DMA_BIT_MASK(32)) != 0)) {
+		dev_err(&pdev->dev, "No usable DMA configuration,aborting\n");
+		goto err_dma;
+	}
+	err = pci_request_regions(pdev, atl1c_driver_name);
+	if (err) {
+		dev_err(&pdev->dev, "cannot obtain PCI resources\n");
+		goto err_pci_reg;
+	}
+
+	pci_set_master(pdev);
+	hw_addr = ioremap(pci_resource_start(pdev, 0), pci_resource_len(pdev, 0));
+	printk("bar0 len %d, bar1 len %d, addr 0x%x\n",
+		pci_resource_len(pdev, 0),pci_resource_len(pdev, 1),
+		hw_addr);
+	#if 0
+	tmp = readl(hw_addr+0x30);
+	printk("tmp:0x%x\n,", tmp);
+
+	writel(0x4e, hw_addr+0x80);
+	writel(0x4e, hw_addr+0x84);
+	writel(0x4e, hw_addr+0x88);
+	writel(0x4e, hw_addr+0x8c);
+	writel(0x4e, hw_addr+0x90);
+	//tmp = readl(hw_addr+0x30);
+	//printk("tmp:0x%x\n,", tmp);
+	#endif
+
+	return 0;
+
+err_pci_reg:
+err_dma:
+	pci_disable_device(pdev);
+	return err;
+
+}
+
+static void atl1c_remove(struct pci_dev *pdev)
+{
+	iounmap(hw_addr);
+	pci_release_regions(pdev);
+	pci_disable_device(pdev);
+}
+
+static void atl1c_shutdown(struct pci_dev *pdev)
+{
+}
+#endif
+
+
 static inline void
 split_addr(uint32_t regaddr, uint16_t *r1, uint16_t *r2, uint16_t *page)
 {
@@ -1567,9 +1676,16 @@ split_addr(uint32_t regaddr, uint16_t *r1, uint16_t *r2, uint16_t *page)
 	*page = regaddr & 0x3ff;
 }
 
+#ifdef ESS_ONLY_FPGA
+uint32_t
+qca_switch_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len);
+uint32_t
+qca_switch_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len);
+#endif
 uint32_t
 qca_ar8216_mii_read(int reg)
 {
+	#ifndef ESS_ONLY_FPGA
         struct mii_bus *bus = miibus;
         uint16_t r1, r2, page;
         uint16_t lo, hi;
@@ -1582,11 +1698,17 @@ qca_ar8216_mii_read(int reg)
         hi = mdiobus_read(bus, 0x10 | r2, r1 + 1);
         mutex_unlock(&switch_mdio_lock);
         return (hi << 16) | lo;
+	#else
+	uint32_t val = 0;
+	qca_switch_reg_read(0, (a_uint32_t)reg, (a_uint8_t*)&val, sizeof(val));
+	return val;
+	#endif
 }
 
 void
 qca_ar8216_mii_write(int reg, uint32_t val)
 {
+	#ifndef ESS_ONLY_FPGA
         struct mii_bus *bus = miibus;
         uint16_t r1, r2, r3;
         uint16_t lo, hi;
@@ -1606,6 +1728,9 @@ qca_ar8216_mii_write(int reg, uint32_t val)
             mdiobus_write(bus, 0x10 | r2, r1, lo);
         }
         mutex_unlock(&switch_mdio_lock);
+	#else
+	qca_switch_reg_write(0, (a_uint32_t)reg, (a_uint8_t*)&val, sizeof(val));
+	#endif
 }
 
 a_bool_t
@@ -1760,6 +1885,9 @@ uint32_t
 qca_switch_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
 {
 	uint32_t reg_val = 0;
+	#ifdef ESS_ONLY_FPGA
+	uint32_t new_addr = 0, base_addr_val = 0;
+	#endif
 
 	if (len != sizeof (a_uint32_t))
         return SW_BAD_LEN;
@@ -1767,7 +1895,15 @@ qca_switch_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data
 	if ((reg_addr%4)!= 0)
 	return SW_BAD_PARAM;
 
+	#ifndef ESS_ONLY_FPGA
+
 	reg_val = readl(hw_addr + reg_addr);
+	#else
+	new_addr = (reg_addr & BIT_MASK_U32(MEM_ACCESS_AVA_BIT)) | 0x100000;
+	base_addr_val = (reg_addr & BIT_MASK_NOT_U32(MEM_ACCESS_AVA_BIT)) | 1;
+	writel(base_addr_val, hw_addr + PCIE_MEM_ACCESS_BASE_ADDR_REG);
+	reg_val = readl(hw_addr + new_addr);
+	#endif
 
 	aos_mem_copy(reg_data, &reg_val, sizeof (a_uint32_t));
 	return 0;
@@ -1777,14 +1913,24 @@ uint32_t
 qca_switch_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
 {
 	uint32_t reg_val = 0;
+	#ifdef ESS_ONLY_FPGA
+	uint32_t new_addr = 0, base_addr_val = 0;
+	#endif
 	if (len != sizeof (a_uint32_t))
         return SW_BAD_LEN;
 
 	if ((reg_addr%4)!= 0)
 	return SW_BAD_PARAM;
 
+	#ifndef ESS_ONLY_FPGA
 	aos_mem_copy(&reg_val, reg_data, sizeof (a_uint32_t));
 	writel(reg_val, hw_addr + reg_addr);
+	#else
+	new_addr = (reg_addr & BIT_MASK_U32(MEM_ACCESS_AVA_BIT)) | 0x100000;
+	base_addr_val = (reg_addr & BIT_MASK_NOT_U32(MEM_ACCESS_AVA_BIT)) | 1;
+	writel(base_addr_val, hw_addr + PCIE_MEM_ACCESS_BASE_ADDR_REG);
+	writel(*(a_uint32_t *)reg_data, hw_addr + new_addr);
+	#endif
 	return 0;
 }
 
@@ -2264,6 +2410,7 @@ ssdk_plat_init(ssdk_init_cfg *cfg)
 	printk("ssdk_plat_init start\n");
 	mutex_init(&switch_mdio_lock);
 
+	#ifndef ESS_ONLY_FPGA
 	if(miibus_get())
 		return -ENODEV;
 
@@ -2332,6 +2479,12 @@ ssdk_plat_init(ssdk_init_cfg *cfg)
 		#endif
 	} else
 		return 0;
+	#endif
+	#ifdef ESS_ONLY_FPGA
+	printk("register pci driver\n");
+	pci_register_driver(&atl1c_driver);
+	#endif
+	return 0;
 
 }
 
@@ -2339,7 +2492,12 @@ void
 ssdk_plat_exit(void)
 {
     printk("ssdk_plat_exit\n");
+	#ifdef ESS_ONLY_FPGA
+		printk("unregister pci driver\n");
+		pci_unregister_driver(&atl1c_driver);
+	#endif
 
+	#ifndef ESS_ONLY_FPGA
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_MDIO) {
 #ifndef BOARD_AR71XX
 		phy_driver_unregister(&qca_phy_driver);
@@ -2361,6 +2519,7 @@ ssdk_plat_exit(void)
 		platform_driver_unregister(&ssdk_driver);
 #endif
 	}
+	#endif
 
 }
 
@@ -2373,9 +2532,13 @@ ssdk_init(a_uint32_t dev_id, ssdk_init_cfg * cfg)
 	if (rv != SW_OK)
 		printk("ssdk fal init failed \r\n");
 
+	#ifndef ESS_ONLY_FPGA
+
 	ssdk_phy_init(cfg);
 	if (rv != SW_OK)
 		printk("ssdk phy init failed \r\n");
+
+	#endif
 
 	return rv;
 }
@@ -2579,6 +2742,8 @@ static int chip_ver_get(ssdk_init_cfg* cfg)
 		cfg->chip_type = CHIP_ISIS;
 	else if(chip_ver == 0x14)
 		cfg->chip_type = CHIP_DESS;
+	else if(chip_ver == 0x15)
+		cfg->chip_type = CHIP_HPPE;
 	else
 		rv = -ENODEV;
 
@@ -2868,6 +3033,12 @@ static int ssdk_dess_mac_mode_init(a_uint32_t mac_mode)
 }
 
 static int
+qca_hppe_hw_init(ssdk_init_cfg *cfg)
+{
+	return 0;
+}
+
+static int
 qca_dess_hw_init(ssdk_init_cfg *cfg)
 {
 	a_uint32_t reg_value;
@@ -3121,27 +3292,37 @@ static int __init regi_init(void)
 
 	ssdk_cfg_default_init(&cfg);
 
+	#ifndef ESS_ONLY_FPGA
 	#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 	ssdk_dt_parse(&cfg);
+	#endif
 	#endif
 
 	rv = ssdk_plat_init(&cfg);
 	if(rv)
 		goto out;
 
+	#ifndef ESS_ONLY_FPGA
 	rv = chip_ver_get(&cfg);
 	if(rv)
 		goto out;
 
 	ssdk_phy_id_get(&cfg);
+	#endif
 
 	memset(&chip_spec_cfg, 0, sizeof(garuda_init_spec_cfg));
 	cfg.chip_spec_cfg = &chip_spec_cfg;
+
+	cfg.chip_type = CHIP_ISISC;
 
 	rv = ssdk_init(0, &cfg);
 	if(rv)
 		goto out;
 
+	/*fixme*/
+	qca_hppe_hw_init(&cfg);
+
+	#ifndef ESS_ONLY_FPGA
 	#ifdef DESS
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
 		/*Do Malibu self test to fix packet drop issue firstly*/
@@ -3185,6 +3366,7 @@ static int __init regi_init(void)
 		/* Setup Cpu port for Dakota platform. */
 		switch_cpuport_setup();
 	}
+	#endif
 	#endif
 
 out:

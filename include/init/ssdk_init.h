@@ -115,6 +115,7 @@ enum ssdk_port_wrapper_cfg {
         CHIP_ISIS,
         CHIP_ISISC,
         CHIP_DESS,
+        CHIP_HPPE,
     } ssdk_chip_type;
 
 	typedef struct

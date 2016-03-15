@@ -18,24 +18,38 @@
  * @{
  */
 #include "sw.h"
+extern uint32_t
+qca_switch_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len);
+extern uint32_t
+qca_switch_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len);
 
 sw_error_t hppe_reg_get(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint32_t *val)
 {
+	qca_switch_reg_read(dev_id, reg_addr, (a_uint8_t *)val, 4);
 	return SW_OK;
 }
 
 sw_error_t hppe_reg_set(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint32_t val) 
 {
+	qca_switch_reg_write(dev_id, reg_addr, (a_uint8_t *)&val, 4);
 	return SW_OK; 
 }
 
 sw_error_t hppe_reg_tbl_get(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint32_t *val, a_uint32_t num)   
-{      
-        return SW_OK;
+{
+	a_uint32_t i = 0;
+	for(i = 0; i < num; i++) {
+		hppe_reg_get(dev_id, (reg_addr + i *4), &val[i]);
+	}
+	return SW_OK;
 }
 
 sw_error_t hppe_reg_tbl_set(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint32_t *val, a_uint32_t num)   
-{  
-        return SW_OK;   
+{
+	a_uint32_t i = 0;
+	for(i = 0; i < num; i++) {
+		hppe_reg_set(dev_id, (reg_addr + i *4), val[i]);
+	}
+	return SW_OK;   
 } 
 

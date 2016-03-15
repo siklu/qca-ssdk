@@ -23,7 +23,7 @@
 #include "hsl_dev.h"
 #include "hsl_api.h"
 
-
+#define ESS_ONLY_FPGA
 /**
  * @brief Init fal layer.
  * @details Comments:
@@ -44,10 +44,12 @@ fal_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
     rv = hsl_dev_init(dev_id, cfg);
     SW_RTN_ON_ERROR(rv);
 
+	#ifndef ESS_ONLY_FPGA
 #ifdef IN_VLAN
     rv = fal_vlan_init(dev_id);
     SW_RTN_ON_ERROR(rv);
 #endif
+	#endif
 
     return rv;
 }

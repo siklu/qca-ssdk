@@ -141,6 +141,7 @@ isisc_hw_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 
 #endif
 
+#define ESS_ONLY_FPGA
 static sw_error_t
 isisc_dev_init(a_uint32_t dev_id, hsl_init_mode cpu_mode)
 {
@@ -152,9 +153,12 @@ isisc_dev_init(a_uint32_t dev_id, hsl_init_mode cpu_mode)
     if (pdev == NULL)
         return SW_NOT_INITIALIZED;
 
+	#ifndef ESS_ONLY_FPGA
+
     HSL_REG_FIELD_GET(rv, dev_id, MASK_CTL, 0, DEVICE_ID,
                       (a_uint8_t *) (&entry), sizeof (a_uint32_t));
     SW_RTN_ON_ERROR(rv);
+	#endif
 
     if (S17C_DEVICE_ID == entry)
     {
@@ -279,6 +283,7 @@ isisc_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 
     SW_RTN_ON_ERROR(isisc_dev_init(dev_id, cfg->cpu_mode));
 
+#ifndef ESS_ONLY_FPGA
 #if !(defined(KERNEL_MODULE) && defined(USER_MODE))
     {
         sw_error_t rv;
@@ -327,6 +332,7 @@ isisc_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 #endif
 #endif
     }
+#endif
 #endif
 
     return SW_OK;
