@@ -2269,6 +2269,7 @@ isisc_nat_prv_addr_mode_set(a_uint32_t dev_id, a_bool_t map_en)
     HSL_API_UNLOCK;
     return rv;
 }
+#endif
 
 /**
  * @brief Get IP4 private base address mode on a particular device
@@ -2276,7 +2277,7 @@ isisc_nat_prv_addr_mode_set(a_uint32_t dev_id, a_bool_t map_en)
  * @param[out] map_en private base mapping mode
  * @return SW_OK or error code
  */
-HSL_LOCAL sw_error_t
+sw_error_t
 isisc_nat_prv_addr_mode_get(a_uint32_t dev_id, a_bool_t * map_en)
 {
     sw_error_t rv = SW_OK;
@@ -2286,7 +2287,6 @@ isisc_nat_prv_addr_mode_get(a_uint32_t dev_id, a_bool_t * map_en)
     HSL_API_UNLOCK;
     return rv;
 }
-#endif
 
 /**
  * @brief Add one public address entry to one particular device.
