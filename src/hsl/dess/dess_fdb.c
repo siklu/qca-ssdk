@@ -1639,6 +1639,8 @@ _dess_fdb_rfs_update(fal_fdb_rfs_t *rfs, fal_fdb_entry_t *entry, char op)
 		entry->static_en = 1;
 		entry->load_balance_en = 1;
 		entry->load_balance = rfs->load_balance;
+		entry->port.map = 1;
+		entry->portmap_en = 1;
 	} else {
 		entry->static_en = 0;
 		entry->load_balance_en = 0;
