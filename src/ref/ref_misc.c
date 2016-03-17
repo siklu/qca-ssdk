@@ -55,9 +55,6 @@ qca_ar8327_sw_set_max_frame_size(struct switch_dev *dev,
 	a_uint32_t size = val->value.i;
 	a_uint32_t ret;
 
-	/* be compatible with old implementations. */
-	size = size + 8 + 2;
-
 	ret = fal_frame_max_size_set(0, size);
 	if (ret){
 		return -1;
