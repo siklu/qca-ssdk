@@ -23,6 +23,10 @@ extern "C" {
 
 #include "common/sw.h"
 
+#define IPE_L3_BASE_ADDR    0x3a200000
+#define QUEUE_MANAGER_BASE_ADDR    0x3a800000
+#define TRAFFIC_MANAGER_BASE_ADDR    0x3a400000
+
 sw_error_t hppe_reg_get(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint32_t *val);
 sw_error_t hppe_reg_set(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint32_t val);
 sw_error_t hppe_reg_tbl_get(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint32_t *val, a_uint32_t num);

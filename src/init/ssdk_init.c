@@ -115,6 +115,13 @@
 #include "fal_rfs.h"
 #endif
 #endif
+#include "hppe_reg_access.h"
+#include "hppe_ip_reg.h"
+#include "hppe_ip.h"
+#include "hppe_qm_reg.h"
+#include "hppe_qm.h"
+#include "hppe_qos_reg.h"
+#include "hppe_qos.h"
 
 #define ISIS_CHIP_ID 0x18
 #define ISIS_CHIP_REG 0
@@ -3035,6 +3042,78 @@ static int ssdk_dess_mac_mode_init(a_uint32_t mac_mode)
 static int
 qca_hppe_hw_init(ssdk_init_cfg *cfg)
 {
+	a_uint32_t i = 0, val, index, queue_base;
+	union ucast_priority_map_tbl_u reg_val;
+	union l0_flow_map_tbl_u l0_flow_map;
+	union l1_flow_map_tbl_u l1_flow_map;
+	union l0_c_sp_cfg_tbl_u l0_sp_cfg;
+	union l1_c_sp_cfg_tbl_u l1_sp_cfg;
+	union l3_vp_port_tbl_u port_vsi;
+
+	/*fixme*/
+	val = 0x3b;
+	qca_switch_reg_write(0, 0x3a000010, (a_uint8_t *)&val, 4);
+	val = 0;
+	qca_switch_reg_write(0, 0x3a000008, (a_uint8_t *)&val, 4);
+
+	for(i = 0; i < 8; i++) {
+		port_vsi.bf.vsi = 1;
+		port_vsi.bf.vsi_valid = 1;
+		hppe_l3_vp_port_tbl_set(0, i, &port_vsi);
+	}
+	hppe_ucast_queue_map_tbl_queue_id_set(0, 0, 0);
+	index = 4;
+	queue_base = 0x80;
+	for(i = 1; i < 8; i++) {
+		hppe_ucast_queue_map_tbl_queue_id_set(0, index + (i-1)*4,
+						queue_base + (i-1) * 0x10);
+	}
+	reg_val.bf.class = 0;
+	hppe_ucast_priority_map_tbl_set(0, 0, &reg_val);
+
+	hppe_l0_flow_port_map_tbl_port_num_set(0, 0, 0);
+	l0_flow_map.bf.c_drr_wt = 1;
+	l0_flow_map.bf.e_drr_wt = 1;
+	hppe_l0_flow_map_tbl_set(0, 0, &l0_flow_map);
+	
+
+	hppe_l1_flow_port_map_tbl_port_num_set(0, 0, 0);
+	l1_flow_map.bf.c_drr_wt = 1;
+	l1_flow_map.bf.e_drr_wt = 1;
+	hppe_l1_flow_map_tbl_set(0, 0, &l1_flow_map);
+
+	hppe_l0_c_sp_cfg_tbl_drr_id_set(0, 0, 0);
+	hppe_l0_e_sp_cfg_tbl_drr_id_set(0, 0, 1);
+	hppe_l1_c_sp_cfg_tbl_drr_id_set(0, 0, 0);
+	hppe_l1_e_sp_cfg_tbl_drr_id_set(0, 0, 1);
+
+	for(i = 1; i < 8; i++) {
+		hppe_l0_flow_port_map_tbl_port_num_set(0, queue_base + (i-1) * 0x10, i);
+		l0_flow_map.bf.c_drr_wt = 1;
+		l0_flow_map.bf.e_drr_wt = 1;
+		l0_flow_map.bf.sp_id = i;
+		hppe_l0_flow_map_tbl_set(0, queue_base + (i-1) * 0x10, &l0_flow_map);
+
+		hppe_l1_flow_port_map_tbl_port_num_set(0, i, i);
+		l1_flow_map.bf.c_drr_wt = 1;
+		l1_flow_map.bf.e_drr_wt = 1;
+		l1_flow_map.bf.sp_id = i;
+		hppe_l0_flow_map_tbl_set(0, i, &l1_flow_map);
+
+		hppe_l0_c_sp_cfg_tbl_drr_id_set(0, i*8, 1+i);
+		hppe_l0_e_sp_cfg_tbl_drr_id_set(0, i*8, 2+i);
+		hppe_l1_c_sp_cfg_tbl_drr_id_set(0, i*8, 1+i);
+		hppe_l1_e_sp_cfg_tbl_drr_id_set(0, i*8, 2+i);
+	}
+
+	for(i = 0; i < 8; i++) {
+		hppe_l0_flow_port_map_tbl_port_num_set(0, 256+i, i);
+		l0_flow_map.bf.c_drr_wt = 1;
+		l0_flow_map.bf.e_drr_wt = 1;
+		l0_flow_map.bf.sp_id = i;
+		hppe_l0_flow_map_tbl_set(0, 256+i, &l0_flow_map);
+	}
+	
 	return 0;
 }
 

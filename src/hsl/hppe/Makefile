@@ -3,7 +3,8 @@ LIB=HSL
 
 include $(PRJ_PATH)/make/config.mk
 
-SRC_LIST=hppe_l3_api.c hppe_reg_access.c
+SRC_LIST=hppe_reg_access.c hppe_ip.c hppe_flow.c
+SRC_LIST+=hppe_qm.c hppe_qos.c
 
 ifeq (, $(findstring HPPE, $(SUPPORT_CHIP)))
   SRC_LIST=
