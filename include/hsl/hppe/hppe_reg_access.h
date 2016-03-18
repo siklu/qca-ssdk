@@ -23,9 +23,17 @@ extern "C" {
 
 #include "common/sw.h"
 
-#define IPE_L3_BASE_ADDR    0x3a200000
-#define QUEUE_MANAGER_BASE_ADDR    0x3a800000
+#define IPE_L3_BASE_ADDR             0x3a200000
+#define QUEUE_MANAGER_BASE_ADDR      0x3a800000
 #define TRAFFIC_MANAGER_BASE_ADDR    0x3a400000
+#define INGRESS_POLICER_BASE_ADDR    0x3a100000
+#define INGRESS_VLAN_BASE_ADDR       0x3a00f000
+#define IPE_L2_BASE_ADDR             0x3a060000
+#define IPO_CSR_BASE_ADDR            0x3a0b0000
+#define IPR_CSR_BASE_ADDR            0x3a002000
+#define NSS_MAC_CSR_BASE_ADDR        0x3a001000
+#define NSS_PRX_CSR_BASE_ADDR        0x3a00b000
+#define NSS_PTX_CSR_BASE_ADDR        0x3a020000
 
 sw_error_t hppe_reg_get(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint32_t *val);
 sw_error_t hppe_reg_set(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint32_t val);
