@@ -122,7 +122,12 @@
 #include "hppe_qm.h"
 #include "hppe_qos_reg.h"
 #include "hppe_qos.h"
-
+#include "hppe_fdb_reg.h"
+#include "hppe_fdb.h"
+#include "hppe_stp_reg.h"
+#include "hppe_stp.h"
+#include "hppe_vsi_reg.h"
+#include "hppe_vsi.h"
 #define ISIS_CHIP_ID 0x18
 #define ISIS_CHIP_REG 0
 #define SHIVA_CHIP_ID 0x1f
@@ -3039,6 +3044,95 @@ static int ssdk_dess_mac_mode_init(a_uint32_t mac_mode)
 	return 0;
 }
 
+static int qca_hppe_vsi_hw_init(void)
+{
+	union vsi_tbl_u value = {0};
+
+	value.bf.new_addr_lrn_en = 0x1;
+	value.bf.new_addr_fwd_cmd = 0x0;
+	value.bf.station_move_lrn_en = 0x1;
+	value.bf.station_move_fwd_cmd = 0x0;
+
+	value.bf.member_port_bitmap = 0x7e;
+	value.bf.uuc_bitmap = 0x7e;
+	value.bf.umc_bitmap = 0x7e;
+	value.bf.bc_bitmap = 0x7e;
+	hppe_vsi_tbl_set(0, 1, &value);
+
+	value.bf.member_port_bitmap = 0x1f;
+	value.bf.uuc_bitmap = 0x1f;
+	value.bf.umc_bitmap = 0x1f;
+	value.bf.bc_bitmap = 0x1f;
+	hppe_vsi_tbl_set(0, 2, &value);
+
+	value.bf.member_port_bitmap = 0x61;
+	value.bf.uuc_bitmap = 0x61;
+	value.bf.umc_bitmap = 0x61;
+	value.bf.bc_bitmap = 0x61;
+	hppe_vsi_tbl_set(0, 3, &value);
+
+	return 0;
+}
+
+static int qca_hppe_fdb_hw_init(void)
+{
+	union port_bridge_ctrl_u value = {0};
+	a_uint32_t port = 0;
+
+	for(port = 0; port < 7; port++)
+	{
+		value.bf.new_addr_lrn_en = 1;
+		value.bf.new_addr_fwd_cmd = 0;
+		value.bf.station_move_lrn_en = 1;
+		value.bf.station_move_fwd_cmd = 0;
+		value.bf.port_isolation_bitmap = 0x7f;
+		value.bf.txmac_en = 1;
+		value.bf.promisc_en = 1;
+
+		hppe_port_bridge_ctrl_set(0, port, &value);
+	}
+
+	value.bf.txmac_en = 0;
+	hppe_port_bridge_ctrl_set(0, 7, &value);
+
+	hppe_l2_global_conf_age_en_set(0, 1);
+	hppe_l2_global_conf_lrn_en_set(0, 1);
+
+	return 0;
+}
+
+static int qca_hppe_stp_hw_init(void)
+{
+	union cst_state_u value = {0};
+	a_uint32_t port = 0;
+
+	value.bf.port_state = CST_STATE_DEFAULT;
+	for(port = 0; port < 8; port++)
+	{
+		hppe_cst_state_set(0, port, &value);
+	}
+
+	return 0;
+}
+
+static int
+qca_hppe_portctrl_hw_init()
+{
+	a_uint32_t i = 0, val;
+	a_uint32_t addr_delta = 0x200;
+
+	for(i = 0; i < 6; i++) {
+		val = 0x13;
+		qca_switch_reg_write(0, 0x3a001000 + (addr_delta*i), (a_uint8_t *)&val, 4);
+		val = 0x2;
+		qca_switch_reg_write(0, 0x3a001004 + (addr_delta*i), (a_uint8_t *)&val, 4);
+		val = 0x1;
+		qca_switch_reg_write(0, 0x3a001034 + (addr_delta*i), (a_uint8_t *)&val, 4);
+	}
+
+	return 0;
+}
+
 static int
 qca_hppe_hw_init(ssdk_init_cfg *cfg)
 {
@@ -3075,7 +3169,7 @@ qca_hppe_hw_init(ssdk_init_cfg *cfg)
 	l0_flow_map.bf.c_drr_wt = 1;
 	l0_flow_map.bf.e_drr_wt = 1;
 	hppe_l0_flow_map_tbl_set(0, 0, &l0_flow_map);
-	
+
 
 	hppe_l1_flow_port_map_tbl_port_num_set(0, 0, 0);
 	l1_flow_map.bf.c_drr_wt = 1;
@@ -3100,20 +3194,33 @@ qca_hppe_hw_init(ssdk_init_cfg *cfg)
 		l1_flow_map.bf.sp_id = i;
 		hppe_l0_flow_map_tbl_set(0, i, &l1_flow_map);
 
-		hppe_l0_c_sp_cfg_tbl_drr_id_set(0, i*8, 1+i);
-		hppe_l0_e_sp_cfg_tbl_drr_id_set(0, i*8, 2+i);
-		hppe_l1_c_sp_cfg_tbl_drr_id_set(0, i*8, 1+i);
-		hppe_l1_e_sp_cfg_tbl_drr_id_set(0, i*8, 2+i);
+		hppe_l0_c_sp_cfg_tbl_drr_id_set(0, i*8, 0+i*2);
+		hppe_l0_e_sp_cfg_tbl_drr_id_set(0, i*8, 1+i*2);
+		hppe_l1_c_sp_cfg_tbl_drr_id_set(0, i*8, 0+i*2);
+		hppe_l1_e_sp_cfg_tbl_drr_id_set(0, i*8, 1+i*2);
 	}
 
+	hppe_l0_flow_port_map_tbl_port_num_set(0, 256, 0);
+	hppe_l0_flow_port_map_tbl_port_num_set(0, 256+i, i);
+	l0_flow_map.bf.c_drr_wt = 1;
+	l0_flow_map.bf.e_drr_wt = 1;
+	l0_flow_map.bf.sp_id = 0;
+	hppe_l0_flow_map_tbl_set(0, 256, &l0_flow_map);
+
 	for(i = 0; i < 8; i++) {
-		hppe_l0_flow_port_map_tbl_port_num_set(0, 256+i, i);
+		hppe_l0_flow_port_map_tbl_port_num_set(0, 272+(i-1)*4, i);
 		l0_flow_map.bf.c_drr_wt = 1;
 		l0_flow_map.bf.e_drr_wt = 1;
 		l0_flow_map.bf.sp_id = i;
-		hppe_l0_flow_map_tbl_set(0, 256+i, &l0_flow_map);
+		hppe_l0_flow_map_tbl_set(0, 272+(i-1)*4, &l0_flow_map);
 	}
-	
+
+	qca_hppe_fdb_hw_init();
+	qca_hppe_vsi_hw_init();
+	qca_hppe_stp_hw_init();
+
+	qca_hppe_portctrl_hw_init();
+
 	return 0;
 }
 
