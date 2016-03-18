@@ -1591,7 +1591,7 @@ _isisc_port_mac_loopback_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t ena
 
     HSL_REG_FIELD_SET(rv, dev_id, PORT_HDR_CTL, port_id, LOOPBACK_EN,
                       (a_uint8_t *) (&val), sizeof (a_uint32_t));
-    return SW_OK;
+    return rv;
 }
 
 static sw_error_t
