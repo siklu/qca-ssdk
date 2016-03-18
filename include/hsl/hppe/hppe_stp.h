@@ -20,8 +20,6 @@
 #ifndef _HPPE_STP_H_
 #define _HPPE_STP_H_
 
-#define IPE_L2_BASE_ADDR    0x3000
-
 #define CST_STATE_MAX_ENTRY	8
 
 sw_error_t

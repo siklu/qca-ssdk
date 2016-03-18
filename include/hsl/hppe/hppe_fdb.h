@@ -20,8 +20,6 @@
 #ifndef _HPPE_FDB_H_
 #define _HPPE_FDB_H_
 
-#define IPE_L2_BASE_ADDR    0x3000
-
 #define PRE_L2_CNT_TBL_MAX_ENTRY	32
 #define PORT_BRIDGE_CTRL_MAX_ENTRY	8
 #define PORT_LRN_LIMIT_CTRL_MAX_ENTRY	8

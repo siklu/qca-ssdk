@@ -20,8 +20,6 @@
 #ifndef _HPPE_VSI_H_
 #define _HPPE_VSI_H_
 
-#define IPE_L2_BASE_ADDR    0x3000
-
 #define VSI_TBL_MAX_ENTRY	32
 
 sw_error_t
