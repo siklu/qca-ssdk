@@ -116,6 +116,8 @@
 #endif
 #endif
 #include "hppe_reg_access.h"
+#include "hppe_flow_reg.h"
+#include "hppe_flow.h"
 #include "hppe_ip_reg.h"
 #include "hppe_ip.h"
 #include "hppe_qm_reg.h"
@@ -3143,6 +3145,7 @@ qca_hppe_hw_init(ssdk_init_cfg *cfg)
 	union l0_c_sp_cfg_tbl_u l0_sp_cfg;
 	union l1_c_sp_cfg_tbl_u l1_sp_cfg;
 	union l3_vp_port_tbl_u port_vsi;
+	union flow_ctrl0_u flow_ctrl0;
 
 	/*fixme*/
 	val = 0x3b;
@@ -3150,16 +3153,34 @@ qca_hppe_hw_init(ssdk_init_cfg *cfg)
 	val = 0;
 	qca_switch_reg_write(0, 0x3a000008, (a_uint8_t *)&val, 4);
 
-	for(i = 0; i < 8; i++) {
-		port_vsi.bf.vsi = 1;
-		port_vsi.bf.vsi_valid = 1;
-		hppe_l3_vp_port_tbl_set(0, i, &port_vsi);
-	}
+	flow_ctrl0.val = 0x00000c88;
+	hppe_flow_ctrl0_set(0, &flow_ctrl0);
+
+	port_vsi.val[0] = 0;
+	port_vsi.val[1] = 0;
+	port_vsi.val[2] = 0;
+	port_vsi.bf.vsi = 1;
+	port_vsi.bf.vsi_valid = 1;
+	hppe_l3_vp_port_tbl_set(0, 0, &port_vsi);
+	hppe_l3_vp_port_tbl_set(0, 7, &port_vsi);
+	port_vsi.bf.vsi = 2;
+	port_vsi.bf.vsi_valid = 1;
+	hppe_l3_vp_port_tbl_set(0, 1, &port_vsi);
+	hppe_l3_vp_port_tbl_set(0, 2, &port_vsi);
+	hppe_l3_vp_port_tbl_set(0, 3, &port_vsi);
+	hppe_l3_vp_port_tbl_set(0, 4, &port_vsi);
+	hppe_l3_vp_port_tbl_set(0, 0x41, &port_vsi);
+	port_vsi.bf.vsi = 3;
+	port_vsi.bf.vsi_valid = 1;
+	hppe_l3_vp_port_tbl_set(0, 5, &port_vsi);
+	hppe_l3_vp_port_tbl_set(0, 6, &port_vsi);
+	hppe_l3_vp_port_tbl_set(0, 0x42, &port_vsi);
+
 	hppe_ucast_queue_map_tbl_queue_id_set(0, 0, 0);
 	index = 4;
 	queue_base = 0x80;
 	for(i = 1; i < 8; i++) {
-		hppe_ucast_queue_map_tbl_queue_id_set(0, index + (i-1)*4,
+		hppe_ucast_queue_map_tbl_queue_id_set(0, i,
 						queue_base + (i-1) * 0x10);
 	}
 	reg_val.bf.class = 0;
@@ -3168,12 +3189,17 @@ qca_hppe_hw_init(ssdk_init_cfg *cfg)
 	hppe_l0_flow_port_map_tbl_port_num_set(0, 0, 0);
 	l0_flow_map.bf.c_drr_wt = 1;
 	l0_flow_map.bf.e_drr_wt = 1;
+	l0_flow_map.bf.c_pri = 0;
+	l0_flow_map.bf.e_pri = 0;
+	l0_flow_map.bf.sp_id = 0;
 	hppe_l0_flow_map_tbl_set(0, 0, &l0_flow_map);
-
 
 	hppe_l1_flow_port_map_tbl_port_num_set(0, 0, 0);
 	l1_flow_map.bf.c_drr_wt = 1;
 	l1_flow_map.bf.e_drr_wt = 1;
+	l1_flow_map.bf.c_pri = 0;
+	l1_flow_map.bf.e_pri = 0;
+	l1_flow_map.bf.sp_id = 0;
 	hppe_l1_flow_map_tbl_set(0, 0, &l1_flow_map);
 
 	hppe_l0_c_sp_cfg_tbl_drr_id_set(0, 0, 0);
@@ -3186,13 +3212,17 @@ qca_hppe_hw_init(ssdk_init_cfg *cfg)
 		l0_flow_map.bf.c_drr_wt = 1;
 		l0_flow_map.bf.e_drr_wt = 1;
 		l0_flow_map.bf.sp_id = i;
+		l0_flow_map.bf.c_pri = 0;
+		l0_flow_map.bf.e_pri = 0;
 		hppe_l0_flow_map_tbl_set(0, queue_base + (i-1) * 0x10, &l0_flow_map);
 
 		hppe_l1_flow_port_map_tbl_port_num_set(0, i, i);
 		l1_flow_map.bf.c_drr_wt = 1;
 		l1_flow_map.bf.e_drr_wt = 1;
 		l1_flow_map.bf.sp_id = i;
-		hppe_l0_flow_map_tbl_set(0, i, &l1_flow_map);
+		l1_flow_map.bf.c_pri = 0;
+		l1_flow_map.bf.e_pri = 0;
+		hppe_l1_flow_map_tbl_set(0, i, &l1_flow_map);
 
 		hppe_l0_c_sp_cfg_tbl_drr_id_set(0, i*8, 0+i*2);
 		hppe_l0_e_sp_cfg_tbl_drr_id_set(0, i*8, 1+i*2);
@@ -3201,17 +3231,20 @@ qca_hppe_hw_init(ssdk_init_cfg *cfg)
 	}
 
 	hppe_l0_flow_port_map_tbl_port_num_set(0, 256, 0);
-	hppe_l0_flow_port_map_tbl_port_num_set(0, 256+i, i);
 	l0_flow_map.bf.c_drr_wt = 1;
 	l0_flow_map.bf.e_drr_wt = 1;
 	l0_flow_map.bf.sp_id = 0;
+	l0_flow_map.bf.c_pri = 0;
+	l0_flow_map.bf.e_pri = 0;
 	hppe_l0_flow_map_tbl_set(0, 256, &l0_flow_map);
 
-	for(i = 0; i < 8; i++) {
+	for(i = 1; i < 8; i++) {
 		hppe_l0_flow_port_map_tbl_port_num_set(0, 272+(i-1)*4, i);
 		l0_flow_map.bf.c_drr_wt = 1;
 		l0_flow_map.bf.e_drr_wt = 1;
 		l0_flow_map.bf.sp_id = i;
+		l0_flow_map.bf.c_pri = 0;
+		l0_flow_map.bf.e_pri = 0;
 		hppe_l0_flow_map_tbl_set(0, 272+(i-1)*4, &l0_flow_map);
 	}
 
