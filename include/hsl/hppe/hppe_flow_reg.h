@@ -2822,5 +2822,27 @@ union in_flow_ipv6_3tuple_tbl_u {
 	struct in_flow_ipv6_3tuple_tbl_3 bf3;
 };
 
+/*[table] EG_FLOW_TREE_MAP_TBL*/
+#define EG_FLOW_TREE_MAP_TBL
+#define EG_FLOW_TREE_MAP_TBL_ADDRESS 0x8000
+#define EG_FLOW_TREE_MAP_TBL_NUM     4096
+#define EG_FLOW_TREE_MAP_TBL_INC     0x4
+#define EG_FLOW_TREE_MAP_TBL_TYPE    REG_TYPE_RW
+#define EG_FLOW_TREE_MAP_TBL_DEFAULT 0x0
+	/*[field] TREE_ID*/
+	#define EG_FLOW_TREE_MAP_TBL_TREE_ID
+	#define EG_FLOW_TREE_MAP_TBL_TREE_ID_OFFSET  0
+	#define EG_FLOW_TREE_MAP_TBL_TREE_ID_LEN     24
+	#define EG_FLOW_TREE_MAP_TBL_TREE_ID_DEFAULT 0x0
+
+struct eg_flow_tree_map_tbl {
+	a_uint32_t  tree_id:24;
+	a_uint32_t  _reserved0:8;
+};
+
+union eg_flow_tree_map_tbl_u {
+	a_uint32_t val;
+	struct eg_flow_tree_map_tbl bf;
+};
 
 #endif

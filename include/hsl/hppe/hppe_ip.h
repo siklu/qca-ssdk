@@ -26,12 +26,6 @@
 #define NETWORK_ROUTE_IP_MAX_ENTRY	32
 #define NETWORK_ROUTE_IP_EXT_MAX_ENTRY	32
 #define NETWORK_ROUTE_ACTION_MAX_ENTRY	32
-#define L3_EXCEPTION_CMD_MAX_ENTRY	72
-#define L3_EXP_L3_ONLY_CTRL_MAX_ENTRY	72
-#define L3_EXP_L2_ONLY_CTRL_MAX_ENTRY	72
-#define L3_EXP_L2_FLOW_CTRL_MAX_ENTRY	72
-#define L3_EXP_L3_FLOW_CTRL_MAX_ENTRY	72
-#define L3_EXP_MULTICAST_CTRL_MAX_ENTRY	72
 #define L3_VP_PORT_TBL_MAX_ENTRY	256
 #define IN_L3_IF_TBL_MAX_ENTRY	256
 #define HOST_IPV6_MCAST_TBL_MAX_ENTRY	1536
@@ -39,6 +33,7 @@
 #define HOST_TBL_MAX_ENTRY	6144
 #define HOST_IPV6_TBL_MAX_ENTRY	3072
 #define IN_NEXTHOP_TBL_MAX_ENTRY	2560
+#define EG_L3_IF_TBL_MAX_ENTRY	256
 
 sw_error_t
 hppe_my_mac_tbl_get(
@@ -473,78 +468,6 @@ hppe_host_tbl_rd_rslt_data9_set(
 		union host_tbl_rd_rslt_data9_u *value);
 
 sw_error_t
-hppe_l3_exception_cmd_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union l3_exception_cmd_u *value);
-
-sw_error_t
-hppe_l3_exception_cmd_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union l3_exception_cmd_u *value);
-
-sw_error_t
-hppe_l3_exp_l3_only_ctrl_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union l3_exp_l3_only_ctrl_u *value);
-
-sw_error_t
-hppe_l3_exp_l3_only_ctrl_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union l3_exp_l3_only_ctrl_u *value);
-
-sw_error_t
-hppe_l3_exp_l2_only_ctrl_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union l3_exp_l2_only_ctrl_u *value);
-
-sw_error_t
-hppe_l3_exp_l2_only_ctrl_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union l3_exp_l2_only_ctrl_u *value);
-
-sw_error_t
-hppe_l3_exp_l2_flow_ctrl_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union l3_exp_l2_flow_ctrl_u *value);
-
-sw_error_t
-hppe_l3_exp_l2_flow_ctrl_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union l3_exp_l2_flow_ctrl_u *value);
-
-sw_error_t
-hppe_l3_exp_l3_flow_ctrl_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union l3_exp_l3_flow_ctrl_u *value);
-
-sw_error_t
-hppe_l3_exp_l3_flow_ctrl_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union l3_exp_l3_flow_ctrl_u *value);
-
-sw_error_t
-hppe_l3_exp_multicast_ctrl_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union l3_exp_multicast_ctrl_u *value);
-
-sw_error_t
-hppe_l3_exp_multicast_ctrl_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union l3_exp_multicast_ctrl_u *value);
-
-sw_error_t
 hppe_l3_dbg_cmd_get(
 		a_uint32_t dev_id,
 		union l3_dbg_cmd_u *value);
@@ -657,6 +580,18 @@ hppe_in_nexthop_tbl_set(
 		a_uint32_t dev_id,
 		a_uint32_t index,
 		union in_nexthop_tbl_u *value);
+
+sw_error_t
+hppe_eg_l3_if_tbl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union eg_l3_if_tbl_u *value);
+
+sw_error_t
+hppe_eg_l3_if_tbl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union eg_l3_if_tbl_u *value);
 
 sw_error_t
 hppe_my_mac_tbl_mac_da_get(
@@ -1898,90 +1833,6 @@ hppe_host_tbl_rd_rslt_data9_data_set(
 		unsigned int value);
 
 sw_error_t
-hppe_l3_exception_cmd_l3_excep_cmd_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t *value);
-
-sw_error_t
-hppe_l3_exception_cmd_l3_excep_cmd_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t value);
-
-sw_error_t
-hppe_l3_exception_cmd_de_acce_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t *value);
-
-sw_error_t
-hppe_l3_exception_cmd_de_acce_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t value);
-
-sw_error_t
-hppe_l3_exp_l3_only_ctrl_excep_en_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t *value);
-
-sw_error_t
-hppe_l3_exp_l3_only_ctrl_excep_en_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t value);
-
-sw_error_t
-hppe_l3_exp_l2_only_ctrl_excep_en_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t *value);
-
-sw_error_t
-hppe_l3_exp_l2_only_ctrl_excep_en_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t value);
-
-sw_error_t
-hppe_l3_exp_l2_flow_ctrl_excep_en_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t *value);
-
-sw_error_t
-hppe_l3_exp_l2_flow_ctrl_excep_en_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t value);
-
-sw_error_t
-hppe_l3_exp_l3_flow_ctrl_excep_en_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t *value);
-
-sw_error_t
-hppe_l3_exp_l3_flow_ctrl_excep_en_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t value);
-
-sw_error_t
-hppe_l3_exp_multicast_ctrl_excep_en_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t *value);
-
-sw_error_t
-hppe_l3_exp_multicast_ctrl_excep_en_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t value);
-
-sw_error_t
 hppe_l3_dbg_cmd_type_get(
 		a_uint32_t dev_id,
 		unsigned int *value);
@@ -2641,6 +2492,42 @@ hppe_in_nexthop_tbl_ctag_fmt_get(
 
 sw_error_t
 hppe_in_nexthop_tbl_ctag_fmt_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_l3_if_tbl_session_id_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_l3_if_tbl_session_id_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_l3_if_tbl_mac_addr_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint64_t *value);
+
+sw_error_t
+hppe_eg_l3_if_tbl_mac_addr_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint64_t value);
+
+sw_error_t
+hppe_eg_l3_if_tbl_pppoe_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_l3_if_tbl_pppoe_en_set(
 		a_uint32_t dev_id,
 		a_uint32_t index,
 		a_uint32_t value);

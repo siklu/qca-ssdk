@@ -948,174 +948,6 @@ hppe_host_tbl_rd_rslt_data9_set(
 }
 
 sw_error_t
-hppe_l3_exception_cmd_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union l3_exception_cmd_u *value)
-{
-	if (index >= L3_EXCEPTION_CMD_MAX_ENTRY)
-		return SW_OUT_OF_RANGE;
-	return hppe_reg_get(
-				dev_id,
-				IPE_L3_BASE_ADDR + L3_EXCEPTION_CMD_ADDRESS + \
-				index * L3_EXCEPTION_CMD_INC,
-				&value->val);
-}
-
-sw_error_t
-hppe_l3_exception_cmd_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union l3_exception_cmd_u *value)
-{
-	return hppe_reg_set(
-				dev_id,
-				IPE_L3_BASE_ADDR + L3_EXCEPTION_CMD_ADDRESS + \
-				index * L3_EXCEPTION_CMD_INC,
-				value->val);
-}
-
-sw_error_t
-hppe_l3_exp_l3_only_ctrl_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union l3_exp_l3_only_ctrl_u *value)
-{
-	if (index >= L3_EXP_L3_ONLY_CTRL_MAX_ENTRY)
-		return SW_OUT_OF_RANGE;
-	return hppe_reg_get(
-				dev_id,
-				IPE_L3_BASE_ADDR + L3_EXP_L3_ONLY_CTRL_ADDRESS + \
-				index * L3_EXP_L3_ONLY_CTRL_INC,
-				&value->val);
-}
-
-sw_error_t
-hppe_l3_exp_l3_only_ctrl_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union l3_exp_l3_only_ctrl_u *value)
-{
-	return hppe_reg_set(
-				dev_id,
-				IPE_L3_BASE_ADDR + L3_EXP_L3_ONLY_CTRL_ADDRESS + \
-				index * L3_EXP_L3_ONLY_CTRL_INC,
-				value->val);
-}
-
-sw_error_t
-hppe_l3_exp_l2_only_ctrl_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union l3_exp_l2_only_ctrl_u *value)
-{
-	if (index >= L3_EXP_L2_ONLY_CTRL_MAX_ENTRY)
-		return SW_OUT_OF_RANGE;
-	return hppe_reg_get(
-				dev_id,
-				IPE_L3_BASE_ADDR + L3_EXP_L2_ONLY_CTRL_ADDRESS + \
-				index * L3_EXP_L2_ONLY_CTRL_INC,
-				&value->val);
-}
-
-sw_error_t
-hppe_l3_exp_l2_only_ctrl_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union l3_exp_l2_only_ctrl_u *value)
-{
-	return hppe_reg_set(
-				dev_id,
-				IPE_L3_BASE_ADDR + L3_EXP_L2_ONLY_CTRL_ADDRESS + \
-				index * L3_EXP_L2_ONLY_CTRL_INC,
-				value->val);
-}
-
-sw_error_t
-hppe_l3_exp_l2_flow_ctrl_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union l3_exp_l2_flow_ctrl_u *value)
-{
-	if (index >= L3_EXP_L2_FLOW_CTRL_MAX_ENTRY)
-		return SW_OUT_OF_RANGE;
-	return hppe_reg_get(
-				dev_id,
-				IPE_L3_BASE_ADDR + L3_EXP_L2_FLOW_CTRL_ADDRESS + \
-				index * L3_EXP_L2_FLOW_CTRL_INC,
-				&value->val);
-}
-
-sw_error_t
-hppe_l3_exp_l2_flow_ctrl_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union l3_exp_l2_flow_ctrl_u *value)
-{
-	return hppe_reg_set(
-				dev_id,
-				IPE_L3_BASE_ADDR + L3_EXP_L2_FLOW_CTRL_ADDRESS + \
-				index * L3_EXP_L2_FLOW_CTRL_INC,
-				value->val);
-}
-
-sw_error_t
-hppe_l3_exp_l3_flow_ctrl_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union l3_exp_l3_flow_ctrl_u *value)
-{
-	if (index >= L3_EXP_L3_FLOW_CTRL_MAX_ENTRY)
-		return SW_OUT_OF_RANGE;
-	return hppe_reg_get(
-				dev_id,
-				IPE_L3_BASE_ADDR + L3_EXP_L3_FLOW_CTRL_ADDRESS + \
-				index * L3_EXP_L3_FLOW_CTRL_INC,
-				&value->val);
-}
-
-sw_error_t
-hppe_l3_exp_l3_flow_ctrl_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union l3_exp_l3_flow_ctrl_u *value)
-{
-	return hppe_reg_set(
-				dev_id,
-				IPE_L3_BASE_ADDR + L3_EXP_L3_FLOW_CTRL_ADDRESS + \
-				index * L3_EXP_L3_FLOW_CTRL_INC,
-				value->val);
-}
-
-sw_error_t
-hppe_l3_exp_multicast_ctrl_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union l3_exp_multicast_ctrl_u *value)
-{
-	if (index >= L3_EXP_MULTICAST_CTRL_MAX_ENTRY)
-		return SW_OUT_OF_RANGE;
-	return hppe_reg_get(
-				dev_id,
-				IPE_L3_BASE_ADDR + L3_EXP_MULTICAST_CTRL_ADDRESS + \
-				index * L3_EXP_MULTICAST_CTRL_INC,
-				&value->val);
-}
-
-sw_error_t
-hppe_l3_exp_multicast_ctrl_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union l3_exp_multicast_ctrl_u *value)
-{
-	return hppe_reg_set(
-				dev_id,
-				IPE_L3_BASE_ADDR + L3_EXP_MULTICAST_CTRL_ADDRESS + \
-				index * L3_EXP_MULTICAST_CTRL_INC,
-				value->val);
-}
-
-sw_error_t
 hppe_l3_dbg_cmd_get(
 		a_uint32_t dev_id,
 		union l3_dbg_cmd_u *value)
@@ -1372,6 +1204,34 @@ hppe_in_nexthop_tbl_set(
 				index * IN_NEXTHOP_TBL_INC,
 				value->val,
 				4);
+}
+
+sw_error_t
+hppe_eg_l3_if_tbl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union eg_l3_if_tbl_u *value)
+{
+	return hppe_reg_tbl_get(
+				dev_id,
+				NSS_PTX_CSR_BASE_ADDR + EG_L3_IF_TBL_ADDRESS + \
+				index * EG_L3_IF_TBL_INC,
+				value->val,
+				3);
+}
+
+sw_error_t
+hppe_eg_l3_if_tbl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union eg_l3_if_tbl_u *value)
+{
+	return hppe_reg_tbl_set(
+				dev_id,
+				NSS_PTX_CSR_BASE_ADDR + EG_L3_IF_TBL_ADDRESS + \
+				index * EG_L3_IF_TBL_INC,
+				value->val,
+				3);
 }
 
 sw_error_t
@@ -4675,223 +4535,6 @@ hppe_host_tbl_rd_rslt_data9_data_set(
 }
 
 sw_error_t
-hppe_l3_exception_cmd_l3_excep_cmd_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t *value)
-{
-	union l3_exception_cmd_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_l3_exception_cmd_get(dev_id, index, &reg_val);
-	*value = reg_val.bf.l3_excep_cmd;
-	return ret;
-}
-
-sw_error_t
-hppe_l3_exception_cmd_l3_excep_cmd_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t value)
-{
-	union l3_exception_cmd_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_l3_exception_cmd_get(dev_id, index, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.l3_excep_cmd = value;
-	ret = hppe_l3_exception_cmd_set(dev_id, index, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_l3_exception_cmd_de_acce_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t *value)
-{
-	union l3_exception_cmd_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_l3_exception_cmd_get(dev_id, index, &reg_val);
-	*value = reg_val.bf.de_acce;
-	return ret;
-}
-
-sw_error_t
-hppe_l3_exception_cmd_de_acce_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t value)
-{
-	union l3_exception_cmd_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_l3_exception_cmd_get(dev_id, index, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.de_acce = value;
-	ret = hppe_l3_exception_cmd_set(dev_id, index, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_l3_exp_l3_only_ctrl_excep_en_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t *value)
-{
-	union l3_exp_l3_only_ctrl_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_l3_exp_l3_only_ctrl_get(dev_id, index, &reg_val);
-	*value = reg_val.bf.excep_en;
-	return ret;
-}
-
-sw_error_t
-hppe_l3_exp_l3_only_ctrl_excep_en_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t value)
-{
-	union l3_exp_l3_only_ctrl_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_l3_exp_l3_only_ctrl_get(dev_id, index, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.excep_en = value;
-	ret = hppe_l3_exp_l3_only_ctrl_set(dev_id, index, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_l3_exp_l2_only_ctrl_excep_en_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t *value)
-{
-	union l3_exp_l2_only_ctrl_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_l3_exp_l2_only_ctrl_get(dev_id, index, &reg_val);
-	*value = reg_val.bf.excep_en;
-	return ret;
-}
-
-sw_error_t
-hppe_l3_exp_l2_only_ctrl_excep_en_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t value)
-{
-	union l3_exp_l2_only_ctrl_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_l3_exp_l2_only_ctrl_get(dev_id, index, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.excep_en = value;
-	ret = hppe_l3_exp_l2_only_ctrl_set(dev_id, index, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_l3_exp_l2_flow_ctrl_excep_en_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t *value)
-{
-	union l3_exp_l2_flow_ctrl_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_l3_exp_l2_flow_ctrl_get(dev_id, index, &reg_val);
-	*value = reg_val.bf.excep_en;
-	return ret;
-}
-
-sw_error_t
-hppe_l3_exp_l2_flow_ctrl_excep_en_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t value)
-{
-	union l3_exp_l2_flow_ctrl_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_l3_exp_l2_flow_ctrl_get(dev_id, index, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.excep_en = value;
-	ret = hppe_l3_exp_l2_flow_ctrl_set(dev_id, index, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_l3_exp_l3_flow_ctrl_excep_en_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t *value)
-{
-	union l3_exp_l3_flow_ctrl_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_l3_exp_l3_flow_ctrl_get(dev_id, index, &reg_val);
-	*value = reg_val.bf.excep_en;
-	return ret;
-}
-
-sw_error_t
-hppe_l3_exp_l3_flow_ctrl_excep_en_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t value)
-{
-	union l3_exp_l3_flow_ctrl_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_l3_exp_l3_flow_ctrl_get(dev_id, index, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.excep_en = value;
-	ret = hppe_l3_exp_l3_flow_ctrl_set(dev_id, index, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_l3_exp_multicast_ctrl_excep_en_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t *value)
-{
-	union l3_exp_multicast_ctrl_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_l3_exp_multicast_ctrl_get(dev_id, index, &reg_val);
-	*value = reg_val.bf.excep_en;
-	return ret;
-}
-
-sw_error_t
-hppe_l3_exp_multicast_ctrl_excep_en_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t value)
-{
-	union l3_exp_multicast_ctrl_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_l3_exp_multicast_ctrl_get(dev_id, index, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.excep_en = value;
-	ret = hppe_l3_exp_multicast_ctrl_set(dev_id, index, &reg_val);
-	return ret;
-}
-
-sw_error_t
 hppe_l3_dbg_cmd_type_get(
 		a_uint32_t dev_id,
 		a_uint32_t *value)
@@ -6612,5 +6255,100 @@ hppe_in_nexthop_tbl_ctag_fmt_set(
 		return ret;
 	reg_val.bf1.ctag_fmt = value;
 	ret = hppe_in_nexthop_tbl_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_l3_if_tbl_session_id_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_l3_if_tbl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_l3_if_tbl_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.session_id;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_l3_if_tbl_session_id_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_l3_if_tbl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_l3_if_tbl_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.session_id = value;
+	ret = hppe_eg_l3_if_tbl_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_l3_if_tbl_mac_addr_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint64_t *value)
+{
+	union eg_l3_if_tbl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_l3_if_tbl_get(dev_id, index, &reg_val);
+	*value = (a_uint64_t)reg_val.bf.mac_addr_1 << 32 | \
+		reg_val.bf.mac_addr_0;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_l3_if_tbl_mac_addr_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint64_t value)
+{
+	union eg_l3_if_tbl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_l3_if_tbl_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.mac_addr_1 = value >> 32;
+	reg_val.bf.mac_addr_0 = value & (((a_uint64_t)1<<32)-1);
+	ret = hppe_eg_l3_if_tbl_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_l3_if_tbl_pppoe_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_l3_if_tbl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_l3_if_tbl_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.pppoe_en;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_l3_if_tbl_pppoe_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_l3_if_tbl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_l3_if_tbl_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.pppoe_en = value;
+	ret = hppe_eg_l3_if_tbl_set(dev_id, index, &reg_val);
 	return ret;
 }

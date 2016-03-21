@@ -1399,150 +1399,6 @@ union host_tbl_rd_rslt_data9_u {
 	struct host_tbl_rd_rslt_data9 bf;
 };
 
-/*[register] L3_EXCEPTION_CMD*/
-#define L3_EXCEPTION_CMD
-#define L3_EXCEPTION_CMD_ADDRESS 0x544
-#define L3_EXCEPTION_CMD_NUM     72
-#define L3_EXCEPTION_CMD_INC     0x4
-#define L3_EXCEPTION_CMD_TYPE    REG_TYPE_RW
-#define L3_EXCEPTION_CMD_DEFAULT 0x0
-	/*[field] L3_EXCEP_CMD*/
-	#define L3_EXCEPTION_CMD_L3_EXCEP_CMD
-	#define L3_EXCEPTION_CMD_L3_EXCEP_CMD_OFFSET  0
-	#define L3_EXCEPTION_CMD_L3_EXCEP_CMD_LEN     2
-	#define L3_EXCEPTION_CMD_L3_EXCEP_CMD_DEFAULT 0x0
-	/*[field] DE_ACCE*/
-	#define L3_EXCEPTION_CMD_DE_ACCE
-	#define L3_EXCEPTION_CMD_DE_ACCE_OFFSET  2
-	#define L3_EXCEPTION_CMD_DE_ACCE_LEN     1
-	#define L3_EXCEPTION_CMD_DE_ACCE_DEFAULT 0x0
-
-struct l3_exception_cmd {
-	a_uint32_t  l3_excep_cmd:2;
-	a_uint32_t  de_acce:1;
-	a_uint32_t  _reserved0:29;
-};
-
-union l3_exception_cmd_u {
-	a_uint32_t val;
-	struct l3_exception_cmd bf;
-};
-
-/*[register] L3_EXP_L3_ONLY_CTRL*/
-#define L3_EXP_L3_ONLY_CTRL
-#define L3_EXP_L3_ONLY_CTRL_ADDRESS 0x664
-#define L3_EXP_L3_ONLY_CTRL_NUM     72
-#define L3_EXP_L3_ONLY_CTRL_INC     0x4
-#define L3_EXP_L3_ONLY_CTRL_TYPE    REG_TYPE_RW
-#define L3_EXP_L3_ONLY_CTRL_DEFAULT 0x0
-	/*[field] EXCEP_EN*/
-	#define L3_EXP_L3_ONLY_CTRL_EXCEP_EN
-	#define L3_EXP_L3_ONLY_CTRL_EXCEP_EN_OFFSET  0
-	#define L3_EXP_L3_ONLY_CTRL_EXCEP_EN_LEN     1
-	#define L3_EXP_L3_ONLY_CTRL_EXCEP_EN_DEFAULT 0x0
-
-struct l3_exp_l3_only_ctrl {
-	a_uint32_t  excep_en:1;
-	a_uint32_t  _reserved0:31;
-};
-
-union l3_exp_l3_only_ctrl_u {
-	a_uint32_t val;
-	struct l3_exp_l3_only_ctrl bf;
-};
-
-/*[register] L3_EXP_L2_ONLY_CTRL*/
-#define L3_EXP_L2_ONLY_CTRL
-#define L3_EXP_L2_ONLY_CTRL_ADDRESS 0x784
-#define L3_EXP_L2_ONLY_CTRL_NUM     72
-#define L3_EXP_L2_ONLY_CTRL_INC     0x4
-#define L3_EXP_L2_ONLY_CTRL_TYPE    REG_TYPE_RW
-#define L3_EXP_L2_ONLY_CTRL_DEFAULT 0x0
-	/*[field] EXCEP_EN*/
-	#define L3_EXP_L2_ONLY_CTRL_EXCEP_EN
-	#define L3_EXP_L2_ONLY_CTRL_EXCEP_EN_OFFSET  0
-	#define L3_EXP_L2_ONLY_CTRL_EXCEP_EN_LEN     1
-	#define L3_EXP_L2_ONLY_CTRL_EXCEP_EN_DEFAULT 0x0
-
-struct l3_exp_l2_only_ctrl {
-	a_uint32_t  excep_en:1;
-	a_uint32_t  _reserved0:31;
-};
-
-union l3_exp_l2_only_ctrl_u {
-	a_uint32_t val;
-	struct l3_exp_l2_only_ctrl bf;
-};
-
-/*[register] L3_EXP_L2_FLOW_CTRL*/
-#define L3_EXP_L2_FLOW_CTRL
-#define L3_EXP_L2_FLOW_CTRL_ADDRESS 0x8a4
-#define L3_EXP_L2_FLOW_CTRL_NUM     72
-#define L3_EXP_L2_FLOW_CTRL_INC     0x4
-#define L3_EXP_L2_FLOW_CTRL_TYPE    REG_TYPE_RW
-#define L3_EXP_L2_FLOW_CTRL_DEFAULT 0x0
-	/*[field] EXCEP_EN*/
-	#define L3_EXP_L2_FLOW_CTRL_EXCEP_EN
-	#define L3_EXP_L2_FLOW_CTRL_EXCEP_EN_OFFSET  0
-	#define L3_EXP_L2_FLOW_CTRL_EXCEP_EN_LEN     1
-	#define L3_EXP_L2_FLOW_CTRL_EXCEP_EN_DEFAULT 0x0
-
-struct l3_exp_l2_flow_ctrl {
-	a_uint32_t  excep_en:1;
-	a_uint32_t  _reserved0:31;
-};
-
-union l3_exp_l2_flow_ctrl_u {
-	a_uint32_t val;
-	struct l3_exp_l2_flow_ctrl bf;
-};
-
-/*[register] L3_EXP_L3_FLOW_CTRL*/
-#define L3_EXP_L3_FLOW_CTRL
-#define L3_EXP_L3_FLOW_CTRL_ADDRESS 0x9c4
-#define L3_EXP_L3_FLOW_CTRL_NUM     72
-#define L3_EXP_L3_FLOW_CTRL_INC     0x4
-#define L3_EXP_L3_FLOW_CTRL_TYPE    REG_TYPE_RW
-#define L3_EXP_L3_FLOW_CTRL_DEFAULT 0x0
-	/*[field] EXCEP_EN*/
-	#define L3_EXP_L3_FLOW_CTRL_EXCEP_EN
-	#define L3_EXP_L3_FLOW_CTRL_EXCEP_EN_OFFSET  0
-	#define L3_EXP_L3_FLOW_CTRL_EXCEP_EN_LEN     1
-	#define L3_EXP_L3_FLOW_CTRL_EXCEP_EN_DEFAULT 0x0
-
-struct l3_exp_l3_flow_ctrl {
-	a_uint32_t  excep_en:1;
-	a_uint32_t  _reserved0:31;
-};
-
-union l3_exp_l3_flow_ctrl_u {
-	a_uint32_t val;
-	struct l3_exp_l3_flow_ctrl bf;
-};
-
-/*[register] L3_EXP_MULTICAST_CTRL*/
-#define L3_EXP_MULTICAST_CTRL
-#define L3_EXP_MULTICAST_CTRL_ADDRESS 0xae4
-#define L3_EXP_MULTICAST_CTRL_NUM     72
-#define L3_EXP_MULTICAST_CTRL_INC     0x4
-#define L3_EXP_MULTICAST_CTRL_TYPE    REG_TYPE_RW
-#define L3_EXP_MULTICAST_CTRL_DEFAULT 0x0
-	/*[field] EXCEP_EN*/
-	#define L3_EXP_MULTICAST_CTRL_EXCEP_EN
-	#define L3_EXP_MULTICAST_CTRL_EXCEP_EN_OFFSET  0
-	#define L3_EXP_MULTICAST_CTRL_EXCEP_EN_LEN     1
-	#define L3_EXP_MULTICAST_CTRL_EXCEP_EN_DEFAULT 0x0
-
-struct l3_exp_multicast_ctrl {
-	a_uint32_t  excep_en:1;
-	a_uint32_t  _reserved0:31;
-};
-
-union l3_exp_multicast_ctrl_u {
-	a_uint32_t val;
-	struct l3_exp_multicast_ctrl bf;
-};
-
 /*[register] L3_DBG_CMD*/
 #define L3_DBG_CMD
 #define L3_DBG_CMD_ADDRESS 0xc04
@@ -2274,6 +2130,42 @@ union in_nexthop_tbl_u {
 	a_uint32_t val[4];
 	struct in_nexthop_tbl_0 bf0;
 	struct in_nexthop_tbl_1 bf1;
+};
+
+/*[table] EG_L3_IF_TBL*/
+#define EG_L3_IF_TBL
+#define EG_L3_IF_TBL_ADDRESS 0xe000
+#define EG_L3_IF_TBL_NUM     256
+#define EG_L3_IF_TBL_INC     0x10
+#define EG_L3_IF_TBL_TYPE    REG_TYPE_RW
+#define EG_L3_IF_TBL_DEFAULT 0x0
+	/*[field] MAC_ADDR*/
+	#define EG_L3_IF_TBL_MAC_ADDR
+	#define EG_L3_IF_TBL_MAC_ADDR_OFFSET  0
+	#define EG_L3_IF_TBL_MAC_ADDR_LEN     48
+	#define EG_L3_IF_TBL_MAC_ADDR_DEFAULT 0x0
+	/*[field] SESSION_ID*/
+	#define EG_L3_IF_TBL_SESSION_ID
+	#define EG_L3_IF_TBL_SESSION_ID_OFFSET  48
+	#define EG_L3_IF_TBL_SESSION_ID_LEN     16
+	#define EG_L3_IF_TBL_SESSION_ID_DEFAULT 0x0
+	/*[field] PPPOE_EN*/
+	#define EG_L3_IF_TBL_PPPOE_EN
+	#define EG_L3_IF_TBL_PPPOE_EN_OFFSET  64
+	#define EG_L3_IF_TBL_PPPOE_EN_LEN     1
+	#define EG_L3_IF_TBL_PPPOE_EN_DEFAULT 0x0
+
+struct eg_l3_if_tbl {
+	a_uint32_t  mac_addr_0:32;
+	a_uint32_t  mac_addr_1:16;
+	a_uint32_t  session_id:16;
+	a_uint32_t  pppoe_en:1;
+	a_uint32_t  _reserved0:31;
+};
+
+union eg_l3_if_tbl_u {
+	a_uint32_t val[3];
+	struct eg_l3_if_tbl bf;
 };
 
 

@@ -1575,6 +1575,34 @@ hppe_in_flow_tbl_set(
 }
 
 sw_error_t
+hppe_eg_flow_tree_map_tbl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union eg_flow_tree_map_tbl_u *value)
+{
+	if (index >= EG_FLOW_TREE_MAP_TBL_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+	return hppe_reg_get(
+				dev_id,
+				NSS_PTX_CSR_BASE_ADDR + EG_FLOW_TREE_MAP_TBL_ADDRESS + \
+				index * EG_FLOW_TREE_MAP_TBL_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_eg_flow_tree_map_tbl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union eg_flow_tree_map_tbl_u *value)
+{
+	return hppe_reg_set(
+				dev_id,
+				NSS_PTX_CSR_BASE_ADDR + EG_FLOW_TREE_MAP_TBL_ADDRESS + \
+				index * EG_FLOW_TREE_MAP_TBL_INC,
+				value->val);
+}
+
+sw_error_t
 hppe_flow_ctrl0_flow_hash_mode_0_get(
 		a_uint32_t dev_id,
 		a_uint32_t *value)
@@ -4873,4 +4901,36 @@ hppe_flow_host_tbl_rd_rslt_data9_data_set(
 {
 	return SW_NOT_SUPPORTED;
 }
+
+sw_error_t
+hppe_eg_flow_tree_map_tbl_tree_id_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_flow_tree_map_tbl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_flow_tree_map_tbl_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.tree_id;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_flow_tree_map_tbl_tree_id_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_flow_tree_map_tbl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_flow_tree_map_tbl_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.tree_id = value;
+	ret = hppe_eg_flow_tree_map_tbl_set(dev_id, index, &reg_val);
+	return ret;
+}
+
 

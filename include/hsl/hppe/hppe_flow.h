@@ -26,6 +26,7 @@
 #define IN_FLOW_IPV6_3TUPLE_TBL_MAX_ENTRY	2048
 #define IN_FLOW_IPV6_5TUPLE_TBL_MAX_ENTRY	2048
 #define IN_FLOW_TBL_MAX_ENTRY	4096
+#define EG_FLOW_TREE_MAP_TBL_MAX_ENTRY	4096
 
 sw_error_t
 hppe_flow_ctrl0_get(
@@ -758,6 +759,18 @@ hppe_in_flow_tbl_set(
 		a_uint32_t dev_id,
 		a_uint32_t index,
 		union in_flow_tbl_u *value);
+
+sw_error_t
+hppe_eg_flow_tree_map_tbl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union eg_flow_tree_map_tbl_u *value);
+
+sw_error_t
+hppe_eg_flow_tree_map_tbl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union eg_flow_tree_map_tbl_u *value);
 
 sw_error_t
 hppe_flow_ctrl0_flow_hash_mode_0_get(
@@ -2010,6 +2023,18 @@ sw_error_t
 hppe_flow_host_tbl_rd_rslt_data9_data_set(
 		a_uint32_t dev_id,
 		unsigned int value);
+
+sw_error_t
+hppe_eg_flow_tree_map_tbl_tree_id_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_flow_tree_map_tbl_tree_id_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
 
 
 #endif
