@@ -523,34 +523,6 @@ hppe_port_lrn_limit_counter_set(
 }
 
 sw_error_t
-hppe_port_in_forward_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union port_in_forward_u *value)
-{
-	if (index >= PORT_IN_FORWARD_MAX_ENTRY)
-		return SW_OUT_OF_RANGE;
-	return hppe_reg_get(
-				dev_id,
-				IPE_L2_BASE_ADDR + PORT_IN_FORWARD_ADDRESS + \
-				index * PORT_IN_FORWARD_INC,
-				&value->val);
-}
-
-sw_error_t
-hppe_port_in_forward_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union port_in_forward_u *value)
-{
-	return hppe_reg_set(
-				dev_id,
-				IPE_L2_BASE_ADDR + PORT_IN_FORWARD_ADDRESS + \
-				index * PORT_IN_FORWARD_INC,
-				value->val);
-}
-
-sw_error_t
 hppe_rfdb_tbl_get(
 		a_uint32_t dev_id,
 		a_uint32_t index,
@@ -2138,37 +2110,6 @@ hppe_port_lrn_limit_counter_lrn_cnt_set(
 		a_uint32_t value)
 {
 	return SW_NOT_SUPPORTED;
-}
-
-sw_error_t
-hppe_port_in_forward_source_filtering_bypass_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t *value)
-{
-	union port_in_forward_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_in_forward_get(dev_id, index, &reg_val);
-	*value = reg_val.bf.source_filtering_bypass;
-	return ret;
-}
-
-sw_error_t
-hppe_port_in_forward_source_filtering_bypass_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t value)
-{
-	union port_in_forward_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_in_forward_get(dev_id, index, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.source_filtering_bypass = value;
-	ret = hppe_port_in_forward_set(dev_id, index, &reg_val);
-	return ret;
 }
 
 sw_error_t

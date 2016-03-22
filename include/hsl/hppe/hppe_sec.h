@@ -26,6 +26,7 @@
 #define L3_EXP_L2_FLOW_CTRL_MAX_ENTRY	72
 #define L3_EXP_L3_FLOW_CTRL_MAX_ENTRY	72
 #define L3_EXP_MULTICAST_CTRL_MAX_ENTRY	72
+#define PORT_IN_FORWARD_MAX_ENTRY	8
 
 sw_error_t
 hppe_l3_exception_cmd_get(
@@ -182,5 +183,259 @@ hppe_l3_exp_multicast_ctrl_excep_en_set(
 		a_uint32_t dev_id,
 		a_uint32_t index,
 		a_uint32_t value);
+
+sw_error_t
+hppe_port_in_forward_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union port_in_forward_u *value);
+
+sw_error_t
+hppe_port_in_forward_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union port_in_forward_u *value);
+
+sw_error_t
+hppe_port_in_forward_source_filtering_bypass_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_port_in_forward_source_filtering_bypass_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_l3_exception_parsing_ctrl_reg_get(
+		a_uint32_t dev_id,
+		union l3_exception_parsing_ctrl_reg_u *value);
+
+sw_error_t
+hppe_l3_exception_parsing_ctrl_reg_set(
+		a_uint32_t dev_id,
+		union l3_exception_parsing_ctrl_reg_u *value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_0_reg_get(
+		a_uint32_t dev_id,
+		union l4_exception_parsing_ctrl_0_reg_u *value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_0_reg_set(
+		a_uint32_t dev_id,
+		union l4_exception_parsing_ctrl_0_reg_u *value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_1_reg_get(
+		a_uint32_t dev_id,
+		union l4_exception_parsing_ctrl_1_reg_u *value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_1_reg_set(
+		a_uint32_t dev_id,
+		union l4_exception_parsing_ctrl_1_reg_u *value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_2_reg_get(
+		a_uint32_t dev_id,
+		union l4_exception_parsing_ctrl_2_reg_u *value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_2_reg_set(
+		a_uint32_t dev_id,
+		union l4_exception_parsing_ctrl_2_reg_u *value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_3_reg_get(
+		a_uint32_t dev_id,
+		union l4_exception_parsing_ctrl_3_reg_u *value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_3_reg_set(
+		a_uint32_t dev_id,
+		union l4_exception_parsing_ctrl_3_reg_u *value);
+
+sw_error_t
+hppe_l3_exception_parsing_ctrl_reg_small_hop_limit_get(
+		a_uint32_t dev_id,
+		unsigned int *value);
+
+sw_error_t
+hppe_l3_exception_parsing_ctrl_reg_small_hop_limit_set(
+		a_uint32_t dev_id,
+		unsigned int value);
+
+sw_error_t
+hppe_l3_exception_parsing_ctrl_reg_small_ttl_get(
+		a_uint32_t dev_id,
+		unsigned int *value);
+
+sw_error_t
+hppe_l3_exception_parsing_ctrl_reg_small_ttl_set(
+		a_uint32_t dev_id,
+		unsigned int value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_0_reg_tcp_flags0_get(
+		a_uint32_t dev_id,
+		unsigned int *value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_0_reg_tcp_flags0_set(
+		a_uint32_t dev_id,
+		unsigned int value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_0_reg_tcp_flags0_mask_get(
+		a_uint32_t dev_id,
+		unsigned int *value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_0_reg_tcp_flags0_mask_set(
+		a_uint32_t dev_id,
+		unsigned int value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_0_reg_tcp_flags1_get(
+		a_uint32_t dev_id,
+		unsigned int *value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_0_reg_tcp_flags1_set(
+		a_uint32_t dev_id,
+		unsigned int value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_0_reg_tcp_flags1_mask_get(
+		a_uint32_t dev_id,
+		unsigned int *value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_0_reg_tcp_flags1_mask_set(
+		a_uint32_t dev_id,
+		unsigned int value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_1_reg_tcp_flags2_get(
+		a_uint32_t dev_id,
+		unsigned int *value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_1_reg_tcp_flags2_set(
+		a_uint32_t dev_id,
+		unsigned int value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_1_reg_tcp_flags2_mask_get(
+		a_uint32_t dev_id,
+		unsigned int *value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_1_reg_tcp_flags2_mask_set(
+		a_uint32_t dev_id,
+		unsigned int value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_1_reg_tcp_flags3_get(
+		a_uint32_t dev_id,
+		unsigned int *value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_1_reg_tcp_flags3_set(
+		a_uint32_t dev_id,
+		unsigned int value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_1_reg_tcp_flags3_mask_get(
+		a_uint32_t dev_id,
+		unsigned int *value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_1_reg_tcp_flags3_mask_set(
+		a_uint32_t dev_id,
+		unsigned int value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_2_reg_tcp_flags4_get(
+		a_uint32_t dev_id,
+		unsigned int *value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_2_reg_tcp_flags4_set(
+		a_uint32_t dev_id,
+		unsigned int value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_2_reg_tcp_flags4_mask_get(
+		a_uint32_t dev_id,
+		unsigned int *value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_2_reg_tcp_flags4_mask_set(
+		a_uint32_t dev_id,
+		unsigned int value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_2_reg_tcp_flags5_get(
+		a_uint32_t dev_id,
+		unsigned int *value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_2_reg_tcp_flags5_set(
+		a_uint32_t dev_id,
+		unsigned int value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_2_reg_tcp_flags5_mask_get(
+		a_uint32_t dev_id,
+		unsigned int *value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_2_reg_tcp_flags5_mask_set(
+		a_uint32_t dev_id,
+		unsigned int value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_3_reg_tcp_flags6_get(
+		a_uint32_t dev_id,
+		unsigned int *value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_3_reg_tcp_flags6_set(
+		a_uint32_t dev_id,
+		unsigned int value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_3_reg_tcp_flags6_mask_get(
+		a_uint32_t dev_id,
+		unsigned int *value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_3_reg_tcp_flags6_mask_set(
+		a_uint32_t dev_id,
+		unsigned int value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_3_reg_tcp_flags7_get(
+		a_uint32_t dev_id,
+		unsigned int *value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_3_reg_tcp_flags7_set(
+		a_uint32_t dev_id,
+		unsigned int value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_3_reg_tcp_flags7_mask_get(
+		a_uint32_t dev_id,
+		unsigned int *value);
+
+sw_error_t
+hppe_l4_exception_parsing_ctrl_3_reg_tcp_flags7_mask_set(
+		a_uint32_t dev_id,
+		unsigned int value);
 
 #endif
