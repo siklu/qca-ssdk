@@ -139,27 +139,34 @@ static sw_error_t
 _dess_port_duplex_get (a_uint32_t dev_id, fal_port_t port_id,
 		       fal_port_duplex_t * pduplex)
 {
-  sw_error_t rv = SW_OK;
-  a_uint32_t phy_id;
-  hsl_phy_ops_t *phy_drv;
+	sw_error_t rv = SW_OK;
+	a_uint32_t phy_id;
+	hsl_phy_ops_t *phy_drv;
 
-  HSL_DEV_ID_CHECK (dev_id);
+	HSL_DEV_ID_CHECK (dev_id);
 
-  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
-    {
-      return SW_BAD_PARAM;
-    }
+	if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
+	{
+		return SW_BAD_PARAM;
+	}
 
-  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
-  if (NULL == phy_drv->phy_duplex_get)
-    return SW_NOT_SUPPORTED;
+	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+	if (NULL == phy_drv->phy_duplex_get)
+		return SW_NOT_SUPPORTED;
 
-  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
-      SW_RTN_ON_ERROR (rv);
+	/* for those ports without PHY device supposed always full duplex */
+	if (A_FALSE == _dess_port_phy_connected (dev_id, port_id))
+	{
+		*pduplex = FAL_FULL_DUPLEX;
+	}
+	else
+	{
+		rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+		SW_RTN_ON_ERROR (rv);
 
-      rv = phy_drv->phy_duplex_get (dev_id, phy_id, pduplex);
-      SW_RTN_ON_ERROR (rv);
-
+		 rv = phy_drv->phy_duplex_get (dev_id, phy_id, pduplex);
+		SW_RTN_ON_ERROR (rv);
+	}
 #if 0
   HSL_REG_ENTRY_GET (rv, dev_id, PORT_STATUS, port_id,
 		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
@@ -175,7 +182,7 @@ _dess_port_duplex_get (a_uint32_t dev_id, fal_port_t port_id,
 
 #endif
 
-  return rv;
+	return rv;
 }
 
 static sw_error_t
@@ -277,27 +284,33 @@ static sw_error_t
 _dess_port_speed_get (a_uint32_t dev_id, fal_port_t port_id,
 		      fal_port_speed_t * pspeed)
 {
-  sw_error_t rv = SW_OK;
-  a_uint32_t phy_id;
-  hsl_phy_ops_t *phy_drv;
+	sw_error_t rv = SW_OK;
+	a_uint32_t phy_id;
+	hsl_phy_ops_t *phy_drv;
 
-  HSL_DEV_ID_CHECK (dev_id);
+	HSL_DEV_ID_CHECK (dev_id);
 
-  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
-    {
-      return SW_BAD_PARAM;
-    }
+	if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
+	{
+		return SW_BAD_PARAM;
+	}
 
-  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
-  if (NULL == phy_drv->phy_speed_get)
-    return SW_NOT_SUPPORTED;
+	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+	if (NULL == phy_drv->phy_speed_get)
+		return SW_NOT_SUPPORTED;
 
-  rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
-      SW_RTN_ON_ERROR (rv);
-
-      rv = phy_drv->phy_speed_get (dev_id, phy_id, pspeed);
-      SW_RTN_ON_ERROR (rv);
-
+	/* for those ports without PHY device supposed always 1000Mbps */
+	if (A_FALSE == _dess_port_phy_connected (dev_id, port_id))
+	{
+		*pspeed = FAL_SPEED_1000;
+	}
+	else
+	{
+		rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+		SW_RTN_ON_ERROR (rv);
+		rv = phy_drv->phy_speed_get (dev_id, phy_id, pspeed);
+		SW_RTN_ON_ERROR (rv);
+	}
 #if 0
   HSL_REG_ENTRY_GET (rv, dev_id, PORT_STATUS, port_id,
 		     (a_uint8_t *) (&reg), sizeof (a_uint32_t));
@@ -323,7 +336,7 @@ _dess_port_speed_get (a_uint32_t dev_id, fal_port_t port_id,
     }
 #endif
 
-  return rv;
+	return rv;
 }
 
 static sw_error_t
@@ -1237,7 +1250,7 @@ _dess_port_rxfc_status_set (a_uint32_t dev_id, fal_port_t port_id,
 
   HSL_DEV_ID_CHECK (dev_id);
 
-  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_EXCL_CPU))
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
     {
       return SW_BAD_PARAM;
     }
@@ -1295,7 +1308,7 @@ _dess_port_rxfc_status_get (a_uint32_t dev_id, fal_port_t port_id,
 
   HSL_DEV_ID_CHECK (dev_id);
 
-  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_EXCL_CPU))
+  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
     {
       return SW_BAD_PARAM;
     }
@@ -1462,42 +1475,42 @@ static sw_error_t
 _dess_port_link_status_get (a_uint32_t dev_id, fal_port_t port_id,
 			    a_bool_t * status)
 {
-  sw_error_t rv;
-  a_uint32_t phy_id;
-  hsl_phy_ops_t *phy_drv;
+	sw_error_t rv;
+	a_uint32_t phy_id;
+	hsl_phy_ops_t *phy_drv;
 
-  HSL_DEV_ID_CHECK (dev_id);
+	HSL_DEV_ID_CHECK (dev_id);
 
-  if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_EXCL_CPU))
-    {
-      return SW_BAD_PARAM;
-    }
-
-  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
-  if (NULL == phy_drv->phy_link_status_get)
-    return SW_NOT_SUPPORTED;
-
-  /* for those ports without PHY device supposed always link up */
-  if (A_FALSE == _dess_port_phy_connected (dev_id, port_id))
-    {
-      *status = A_TRUE;
-    }
-  else
-    {
-      rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
-      SW_RTN_ON_ERROR (rv);
-
-      if (A_TRUE == phy_drv->phy_link_status_get (dev_id, phy_id))
+	if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
 	{
-	  *status = A_TRUE;
+		return SW_BAD_PARAM;
 	}
-      else
-	{
-	  *status = A_FALSE;
-	}
-    }
 
-  return SW_OK;
+	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+	if (NULL == phy_drv->phy_link_status_get)
+		return SW_NOT_SUPPORTED;
+
+		/* for those ports without PHY device supposed always link up */
+	if (A_FALSE == _dess_port_phy_connected (dev_id, port_id))
+	{
+		*status = A_TRUE;
+	}
+	else
+	{
+		rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+		SW_RTN_ON_ERROR (rv);
+
+		if (A_TRUE == phy_drv->phy_link_status_get (dev_id, phy_id))
+		{
+			*status = A_TRUE;
+		}
+		else
+		{
+			*status = A_FALSE;
+		}
+	}
+
+	return SW_OK;
 }
 
 static sw_error_t
