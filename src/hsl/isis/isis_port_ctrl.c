@@ -150,7 +150,7 @@ _isis_port_duplex_get(a_uint32_t dev_id, fal_port_t port_id,
         *pduplex = FAL_HALF_DUPLEX;
     }
 
-    return SW_OK;
+    return rv;
 }
 
 static sw_error_t
@@ -1437,8 +1437,8 @@ _isis_port_link_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * sta
 static sw_error_t
 _isis_port_mac_loopback_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
-    sw_error_t rv;
-    a_uint32_t val;
+	sw_error_t rv;
+	a_uint32_t val;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1462,7 +1462,7 @@ _isis_port_mac_loopback_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enab
 
     HSL_REG_FIELD_SET(rv, dev_id, PORT_HDR_CTL, port_id, LOOPBACK_EN,
                       (a_uint8_t *) (&val), sizeof (a_uint32_t));
-    return SW_OK;
+    return rv;
 }
 
 static sw_error_t

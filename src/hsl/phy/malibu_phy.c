@@ -38,13 +38,15 @@ _phy_reg_read(a_uint32_t dev_id, a_uint32_t phy_addr, a_uint32_t reg)
 
 }
 
-static void
+static sw_error_t
 _phy_reg_write(a_uint32_t dev_id, a_uint32_t phy_addr, a_uint32_t reg,
 	       a_uint16_t phy_data)
 {
 	sw_error_t rv;
 
 	HSL_PHY_SET(rv, dev_id, phy_addr, reg, phy_data);
+
+	return rv;
 }
 
 /* #define malibu_phy_reg_read _phy_reg_read  */
@@ -2480,10 +2482,10 @@ static int malibu_phy_probe(struct phy_device *pdev)
 static void malibu_phy_remove(struct phy_device *pdev)
 {
 
-	int ret;
 	hsl_phy_ops_t malibu_phy_api_ops;
 
-	ret = hsl_phy_api_ops_unregister(&malibu_phy_api_ops);
+	hsl_phy_api_ops_unregister(&malibu_phy_api_ops);
+
 }
 
 /******************************************************************************
