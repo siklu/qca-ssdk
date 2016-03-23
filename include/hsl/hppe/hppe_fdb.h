@@ -24,7 +24,6 @@
 #define PORT_BRIDGE_CTRL_MAX_ENTRY	8
 #define PORT_LRN_LIMIT_CTRL_MAX_ENTRY	8
 #define PORT_LRN_LIMIT_COUNTER_MAX_ENTRY	8
-#define PORT_IN_FORWARD_MAX_ENTRY	8
 #define RFDB_TBL_MAX_ENTRY	32
 #define FDB_TBL_MAX_ENTRY	2048
 
@@ -264,18 +263,6 @@ hppe_port_lrn_limit_counter_set(
 		a_uint32_t dev_id,
 		a_uint32_t index,
 		union port_lrn_limit_counter_u *value);
-
-sw_error_t
-hppe_port_in_forward_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union port_in_forward_u *value);
-
-sw_error_t
-hppe_port_in_forward_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union port_in_forward_u *value);
 
 sw_error_t
 hppe_rfdb_tbl_get(
@@ -879,18 +866,6 @@ hppe_port_lrn_limit_counter_lrn_cnt_get(
 
 sw_error_t
 hppe_port_lrn_limit_counter_lrn_cnt_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t value);
-
-sw_error_t
-hppe_port_in_forward_source_filtering_bypass_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t *value);
-
-sw_error_t
-hppe_port_in_forward_source_filtering_bypass_set(
 		a_uint32_t dev_id,
 		a_uint32_t index,
 		a_uint32_t value);
