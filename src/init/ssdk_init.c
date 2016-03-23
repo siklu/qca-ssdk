@@ -122,9 +122,9 @@ struct rfs_device rfs_dev;
 struct notifier_block ssdk_inet_notifier;
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+//#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 struct notifier_block ssdk_dev_notifier;
-#endif
+//#endif
 
 
 extern ssdk_chip_type SSDK_CURRENT_CHIP_TYPE;
@@ -3095,10 +3095,14 @@ static int ssdk_inet_event(struct notifier_block *this, unsigned long event, voi
 }
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+//#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 static int ssdk_dev_event(struct notifier_block *this, unsigned long event, void *ptr)
 {
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 	struct net_device *dev = netdev_notifier_info_to_dev(ptr);
+#else
+	struct net_device *dev = (struct net_device *)ptr;
+#endif
 
 	switch (event) {
 #ifdef IN_RFS
@@ -3122,7 +3126,7 @@ static int ssdk_dev_event(struct notifier_block *this, unsigned long event, void
                 }
 	return NOTIFY_DONE;
 }
-#endif
+//#endif
 
 static int __init regi_init(void)
 {
@@ -3155,6 +3159,10 @@ static int __init regi_init(void)
 	if(rv)
 		goto out;
 
+	ssdk_dev_notifier.notifier_call = ssdk_dev_event;
+	ssdk_dev_notifier.priority = 1;
+	register_netdevice_notifier(&ssdk_dev_notifier);
+
 	#ifdef DESS
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
 		/*Do Malibu self test to fix packet drop issue firstly*/
@@ -3173,12 +3181,7 @@ static int __init regi_init(void)
 		#endif
 		#endif
 		#endif
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 
-		ssdk_dev_notifier.notifier_call = ssdk_dev_event;
-		ssdk_dev_notifier.priority = 1;
-		register_netdevice_notifier(&ssdk_dev_notifier);
-#endif
 		#ifdef IN_RFS
 		memset(&rfs_dev, 0, sizeof(rfs_dev));
 		rfs_dev.name = NULL;
