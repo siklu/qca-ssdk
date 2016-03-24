@@ -74,6 +74,8 @@ static sw_error_t hsl_set_current_chip_type(ssdk_chip_type chip_type)
         SSDK_CURRENT_CHIP_TYPE = CHIP_ISISC;
 #elif defined DESS
         SSDK_CURRENT_CHIP_TYPE = CHIP_DESS;
+#elif defined HPPE
+        SSDK_CURRENT_CHIP_TYPE = CHIP_HPPE;
 #else
         rv = SW_FAIL;
 #endif
@@ -171,6 +173,12 @@ hsl_dev_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 #if defined DESS
             rv = dess_init(dev_id, cfg);
 #endif
+
+        case CHIP_HPPE:
+#if defined HPPE
+            rv = hppe_init(dev_id, cfg);
+#endif
+
             break;
 
         case CHIP_UNSPECIFIED:
@@ -255,6 +263,10 @@ hsl_ssdk_cfg(a_uint32_t dev_id, ssdk_cfg_t *ssdk_cfg)
 
         case CHIP_DESS:
             aos_mem_copy(ssdk_cfg->chip_type, "dess", sizeof("dess"));
+            break;
+
+        case CHIP_HPPE:
+            aos_mem_copy(ssdk_cfg->chip_type, "hppe", sizeof("hppe"));
             break;
 
         case CHIP_UNSPECIFIED:
@@ -557,12 +569,12 @@ sw_error_t reduce_hsl_phy_set(a_uint32_t dev,a_uint32_t phy_addr,a_uint32_t reg,
 {
 	sw_error_t rv;
 
-	hsl_api_t *p_api = hsl_api_ptr_get(dev); 
-	if (p_api) { 
-	    rv = p_api->phy_set(dev, phy_addr, reg, value); 
-	} else { 
-	    rv = SW_NOT_INITIALIZED; 
-	} 
+	hsl_api_t *p_api = hsl_api_ptr_get(dev);
+	if (p_api) {
+	    rv = p_api->phy_set(dev, phy_addr, reg, value);
+	} else {
+	    rv = SW_NOT_INITIALIZED;
+	}
 
 	return rv;
 }

@@ -20,6 +20,7 @@
 #include "sw.h"
 #include "fal_fdb.h"
 #include "hsl_api.h"
+#include "adpt.h"
 
 #include <linux/kernel.h>
 #include <linux/module.h>
@@ -31,6 +32,15 @@ _fal_fdb_add(a_uint32_t dev_id, const fal_fdb_entry_t * entry)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_fdb_add)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_fdb_add(dev_id, entry);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -235,6 +245,15 @@ _fal_fdb_age_time_set(a_uint32_t dev_id, a_uint32_t * time)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_fdb_age_time_set)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_fdb_age_time_set(dev_id, time);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -251,6 +270,15 @@ _fal_fdb_age_time_get(a_uint32_t dev_id, a_uint32_t * time)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_fdb_age_time_get)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_fdb_age_time_get(dev_id, time);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 

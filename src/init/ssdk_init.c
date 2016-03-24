@@ -3525,21 +3525,25 @@ static int __init regi_init(void)
 	rv = chip_ver_get(&cfg);
 	if(rv)
 		goto out;
-
 	ssdk_phy_id_get(&cfg);
+	#else
+	cfg.chip_type = CHIP_HPPE;
 	#endif
 
 	memset(&chip_spec_cfg, 0, sizeof(garuda_init_spec_cfg));
 	cfg.chip_spec_cfg = &chip_spec_cfg;
-
-	cfg.chip_type = CHIP_ISISC;
 
 	rv = ssdk_init(0, &cfg);
 	if(rv)
 		goto out;
 
 	/*fixme*/
-	qca_hppe_hw_init(&cfg);
+	if(cfg.chip_type == CHIP_HPPE)
+	{
+		printk("Initializing HPPE!!\n");
+		qca_hppe_hw_init(&cfg);
+		printk("Initializing HPPE Done!!\n");
+	}
 
 	#ifndef ESS_ONLY_FPGA
 	#ifdef DESS

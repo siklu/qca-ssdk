@@ -168,6 +168,7 @@ MODULE_INC += -I$(PRJ_PATH)/include \
                    -I$(PRJ_PATH)/include/api \
                    -I$(PRJ_PATH)/include/fal \
                    -I$(PRJ_PATH)/include/ref \
+                   -I$(PRJ_PATH)/include/adpt \
                    -I$(PRJ_PATH)/include/hsl \
                    -I$(PRJ_PATH)/include/hsl/phy \
                    -I$(PRJ_PATH)/include/sal/os \
@@ -215,6 +216,7 @@ endif
 
 ifneq (,$(findstring HPPE, $(SUPPORT_CHIP)))
   MODULE_INC   += -I$(PRJ_PATH)/include/hsl/hppe
+  MODULE_INC   += -I$(PRJ_PATH)/include/adpt/hppe
   MODULE_CFLAG += -DHPPE
 endif
 

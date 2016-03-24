@@ -22,6 +22,7 @@
 #include "hsl.h"
 #include "hsl_dev.h"
 #include "hsl_api.h"
+#include "adpt.h"
 
 #define ESS_ONLY_FPGA
 /**
@@ -50,6 +51,9 @@ fal_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
     SW_RTN_ON_ERROR(rv);
 #endif
 	#endif
+
+    rv = adpt_init(dev_id, cfg);
+    SW_RTN_ON_ERROR(rv);
 
     return rv;
 }
