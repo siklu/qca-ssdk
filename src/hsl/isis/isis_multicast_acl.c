@@ -338,6 +338,9 @@ HSL_LOCAL int multi_get_dp(void)
     HSL_REG_ENTRY_GEN_GET(rv, dev_id, addr, sizeof (a_uint32_t),
                           (a_uint8_t *) (&val),
                           sizeof (a_uint32_t));
+    if (rv != SW_OK)
+        aos_printk("Get entry value error\n");
+
     val = (val>>24)&0x7f; //30:24, IGMP_JOIN_LEAVE_DP
 
     return val;
@@ -386,22 +389,12 @@ HSL_LOCAL int multi_acl_bind(void)
 HSL_LOCAL sw_error_t isis_multicast_acl_update( int list_id, int acl_index, fal_igmp_sg_entry_t * entry, int action)
 {
     a_uint32_t dev_id=0;
-    //a_uint32_t list_pos;
     a_uint32_t rule_pos;
-    a_uint32_t list_pri;
     sw_error_t rv = SW_OK;
 
-    //if(entry->port_map < 1 || acl_index<0)
     if(acl_index<0)
         aos_printk("Something is wrong...\n");
 
-    if(list_id == FAL_ACL_LIST_MULTICAST) //Update all matched group based acl_rule->source
-        list_pri=FAL_MULTICAST_PRI;
-    else if(list_id == FAL_ACL_LIST_MULTICAST+1) //only update the specific (G,*)entry
-        list_pri=FAL_MULTICAST_PRI+1;
-
-
-    //list_pos = isis_acl_rule_get_pos(dev_id, list_id, list_pri);
     rule_pos = ACL_RULE_GET_OFFSET(dev_id, list_id, multi_acl_group[acl_index].index);
     if(MULT_ACTION_SET == action)
     {

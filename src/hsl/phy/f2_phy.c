@@ -41,13 +41,15 @@ _phy_reg_read(a_uint32_t dev_id, a_uint32_t phy_addr, a_uint8_t reg)
 }
 
 
-static void
+static sw_error_t
 _phy_reg_write(a_uint32_t dev_id, a_uint32_t phy_addr, a_uint8_t reg,
                a_uint16_t val)
 {
     sw_error_t rv;
 
     HSL_PHY_SET(rv, dev_id, phy_addr, reg, val);
+
+    return rv;
 }
 
 /* #define f2_phy_reg_read _phy_reg_read */

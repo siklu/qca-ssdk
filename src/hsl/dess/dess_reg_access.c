@@ -380,7 +380,7 @@ _dess_regsiter_dump(a_uint32_t dev_id,a_uint32_t register_idx, fal_reg_dump_t * 
 			reg_dump->reg_count = reg_count;
 			reg_dump->reg_base = reg_dumps[register_idx].reg_base;
 			reg_dump->reg_end = reg_dumps[register_idx].reg_end;
-			snprintf(reg_dump->reg_name,sizeof(reg_dump->reg_name),"%s",reg_dumps[register_idx].name);
+			snprintf((char *)reg_dump->reg_name,sizeof(reg_dump->reg_name),"%s",reg_dumps[register_idx].name);
 			break;
 		default:
 			return SW_BAD_PARAM;
@@ -392,7 +392,7 @@ _dess_regsiter_dump(a_uint32_t dev_id,a_uint32_t register_idx, fal_reg_dump_t * 
 static sw_error_t
 _dess_debug_regsiter_dump(a_uint32_t dev_id,fal_debug_reg_dump_t * dbg_reg_dump)
 {
-    sw_error_t rv;
+    sw_error_t rv = SW_OK;
     a_uint32_t reg;
 	a_uint32_t  reg_count, reg_val;
 
@@ -408,7 +408,7 @@ _dess_debug_regsiter_dump(a_uint32_t dev_id,fal_debug_reg_dump_t * dbg_reg_dump)
 	}
 	dbg_reg_dump->reg_count = reg_count;
 
-	snprintf(dbg_reg_dump->reg_name,sizeof(dbg_reg_dump->reg_name),"QM debug registers");
+	snprintf((char *)dbg_reg_dump->reg_name,sizeof(dbg_reg_dump->reg_name),"QM debug registers");
 
     return rv;
 }
@@ -424,7 +424,7 @@ _dess_debug_regsiter_dump(a_uint32_t dev_id,fal_debug_reg_dump_t * dbg_reg_dump)
 sw_error_t
 dess_regsiter_dump(a_uint32_t dev_id,a_uint32_t register_idx, fal_reg_dump_t * reg_dump)
 {
-    sw_error_t rv;
+    sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
     rv = _dess_regsiter_dump(dev_id,register_idx,reg_dump);
@@ -441,7 +441,7 @@ dess_regsiter_dump(a_uint32_t dev_id,a_uint32_t register_idx, fal_reg_dump_t * r
 sw_error_t
 dess_debug_regsiter_dump(a_uint32_t dev_id, fal_debug_reg_dump_t * dbg_reg_dump)
 {
-    sw_error_t rv;
+    sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
     rv = _dess_debug_regsiter_dump(dev_id,dbg_reg_dump);

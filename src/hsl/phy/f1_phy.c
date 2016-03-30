@@ -39,13 +39,15 @@ _phy_reg_read(a_uint32_t dev_id, a_uint32_t phy_addr, a_uint32_t reg)
     return val;
 }
 
-static void
+static sw_error_t
 _phy_reg_write(a_uint32_t dev_id, a_uint32_t phy_addr, a_uint32_t reg,
                a_uint16_t val)
 {
     sw_error_t rv;
 
     HSL_PHY_SET(rv, dev_id, phy_addr, reg, val);
+
+    return rv;
 }
 
 /* #define f1_phy_reg_read _phy_reg_read */
@@ -890,26 +892,46 @@ sw_error_t
 f1_phy_get_speed(a_uint32_t dev_id, a_uint32_t phy_id,
                  fal_port_speed_t * speed)
 {
-    a_uint16_t phy_data;
+	a_uint16_t phy_data;
+	a_bool_t auto_neg;
 
-    phy_data = f1_phy_reg_read(dev_id, phy_id, F1_PHY_SPEC_STATUS);
-
-    switch (phy_data & F1_STATUS_SPEED_MASK)
-    {
-        case F1_STATUS_SPEED_1000MBS:
-            *speed = FAL_SPEED_1000;
-            break;
-        case F1_STATUS_SPEED_100MBS:
-            *speed = FAL_SPEED_100;
-            break;
-        case F1_STATUS_SPEED_10MBS:
-            *speed = FAL_SPEED_10;
-            break;
-        default:
-            return SW_READ_ERROR;
-    }
-
-    return SW_OK;
+	auto_neg = f1_phy_autoneg_status(dev_id, phy_id);
+	if (A_TRUE == auto_neg ) {
+		phy_data = f1_phy_reg_read(dev_id, phy_id, F1_PHY_SPEC_STATUS);
+		switch (phy_data & F1_STATUS_SPEED_MASK)
+    		{
+			case F1_STATUS_SPEED_1000MBS:
+				*speed = FAL_SPEED_1000;
+				break;
+			case F1_STATUS_SPEED_100MBS:
+				*speed = FAL_SPEED_100;
+				break;
+			case F1_STATUS_SPEED_10MBS:
+				*speed = FAL_SPEED_10;
+				break;
+			default:
+				return SW_READ_ERROR;
+		}
+	}
+	else
+	{
+		phy_data = f1_phy_reg_read(dev_id, phy_id, F1_PHY_CONTROL);
+		switch (phy_data & F1_CTRL_SPEED_MASK)
+    		{
+			case F1_CTRL_SPEED_1000:
+				*speed = FAL_SPEED_1000;
+				break;
+			case F1_CTRL_SPEED_100:
+				*speed = FAL_SPEED_100;
+				break;
+			case F1_CTRL_SPEED_10:
+				*speed = FAL_SPEED_10;
+				break;
+			default:
+				return SW_READ_ERROR;
+		}
+	}
+	return SW_OK;
 }
 
 /******************************************************************************
@@ -1014,17 +1036,29 @@ sw_error_t
 f1_phy_get_duplex(a_uint32_t dev_id, a_uint32_t phy_id,
                   fal_port_duplex_t * duplex)
 {
-    a_uint16_t phy_data;
+	a_uint16_t phy_data;
+	a_bool_t auto_neg;
 
-    phy_data = f1_phy_reg_read(dev_id, phy_id, F1_PHY_SPEC_STATUS);
+	auto_neg = f1_phy_autoneg_status(dev_id, phy_id);
+	if (A_TRUE == auto_neg ) {
+		phy_data = f1_phy_reg_read(dev_id, phy_id, F1_PHY_SPEC_STATUS);
 
-    //read duplex
-    if (phy_data & F1_STATUS_FULL_DUPLEX)
-        *duplex = FAL_FULL_DUPLEX;
-    else
-        *duplex = FAL_HALF_DUPLEX;
-
-    return SW_OK;
+		//read duplex
+		if (phy_data & F1_STATUS_FULL_DUPLEX)
+			*duplex = FAL_FULL_DUPLEX;
+		else
+			*duplex = FAL_HALF_DUPLEX;
+	}
+	else
+	{
+		phy_data = f1_phy_reg_read(dev_id, phy_id, F1_PHY_CONTROL);
+		//read duplex
+		if (phy_data & F1_CTRL_FULL_DUPLEX)
+			*duplex = FAL_FULL_DUPLEX;
+		else
+			*duplex = FAL_HALF_DUPLEX;
+	}
+	return SW_OK;
 }
 
 /******************************************************************************
