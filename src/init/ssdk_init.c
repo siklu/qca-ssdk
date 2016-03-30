@@ -159,6 +159,8 @@ phy_identification_t phy_array[] =
 	#if defined(ISIS) ||defined(ISISC) ||defined(GARUDA)
 	{0x0, 0x004DD036, f1_phy_init},
 	{0x0, 0x004DD033, f1_phy_init},
+	{0x0, 0x004DD034, f1_phy_init},
+	{0x0, 0x004DD035, f1_phy_init},
 	#endif
 	#if defined(ATHENA) ||defined(SHIVA) ||defined(HORUS)
 	{0x0, 0x004DD042, f2_phy_init}
