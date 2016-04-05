@@ -45,6 +45,7 @@ _isisc_port_duplex_set(a_uint32_t dev_id, fal_port_t port_id,
     sw_error_t rv;
     a_uint32_t phy_id, reg_save, reg_val, force, tmp;
     hsl_phy_ops_t *phy_drv;
+    a_bool_t status;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -91,7 +92,8 @@ _isisc_port_duplex_set(a_uint32_t dev_id, fal_port_t port_id,
 		SW_RTN_ON_ERROR(rv);
 		rv = phy_drv->phy_duplex_get (dev_id, phy_id, &tmp);
 		SW_RTN_ON_ERROR(rv);
-		if (tmp == duplex)
+		status = phy_drv->phy_autoneg_status_get (dev_id, phy_id);
+		if ((tmp == duplex) && (status == A_FALSE))
 			return SW_OK;
         reg_save = reg_val;
         SW_SET_REG_BY_FIELD(PORT_STATUS, LINK_EN, 0, reg_val);
@@ -132,6 +134,7 @@ _isisc_port_speed_set(a_uint32_t dev_id, fal_port_t port_id,
     sw_error_t rv;
     a_uint32_t phy_id, reg_save, reg_val, force, tmp;
     hsl_phy_ops_t *phy_drv;
+    a_bool_t status;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -185,7 +188,8 @@ _isisc_port_speed_set(a_uint32_t dev_id, fal_port_t port_id,
 		SW_RTN_ON_ERROR(rv);
 		rv = phy_drv->phy_speed_get (dev_id, phy_id, &tmp);
 		SW_RTN_ON_ERROR(rv);
-		if (tmp == speed)
+		status = phy_drv->phy_autoneg_status_get (dev_id, phy_id);
+		if ((tmp == speed) && (status == A_FALSE))
 			return SW_OK;
         reg_save = reg_val;
         SW_SET_REG_BY_FIELD(PORT_STATUS, LINK_EN,  0, reg_val);
