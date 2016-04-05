@@ -327,19 +327,26 @@ _isisc_port_speed_get(a_uint32_t dev_id, fal_port_t port_id,
 
 	if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
 	{
-	return SW_BAD_PARAM;
+		return SW_BAD_PARAM;
 	}
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
 	if (NULL == phy_drv->phy_speed_get)
 		return SW_NOT_SUPPORTED;
 
-	rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
-	SW_RTN_ON_ERROR (rv);
+	/* for those ports without PHY device supposed always 1000Mbps */
+	if (A_FALSE == _isisc_port_phy_connected(dev_id, port_id))
+	{
+		*pspeed = FAL_SPEED_1000;
+	}
+	else
+	{
+		rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+		SW_RTN_ON_ERROR (rv);
 
-	rv = phy_drv->phy_speed_get (dev_id, phy_id, pspeed);
-	SW_RTN_ON_ERROR (rv);
-
+		rv = phy_drv->phy_speed_get (dev_id, phy_id, pspeed);
+		SW_RTN_ON_ERROR (rv);
+	}
 #if 0
     HSL_REG_ENTRY_GET(rv, dev_id, PORT_STATUS, port_id,
                       (a_uint8_t *) (&reg), sizeof (a_uint32_t));
@@ -384,12 +391,19 @@ _isisc_port_duplex_get(a_uint32_t dev_id, fal_port_t port_id,
 	if (NULL == phy_drv->phy_duplex_get)
 		return SW_NOT_SUPPORTED;
 
-	rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
-	SW_RTN_ON_ERROR (rv);
+	/* for those ports without PHY device supposed always full */
+	if (A_FALSE == _isisc_port_phy_connected(dev_id, port_id))
+	{
+		*pduplex = FAL_FULL_DUPLEX;
+	}
+	else
+	{
+		rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+		SW_RTN_ON_ERROR (rv);
 
-	rv = phy_drv->phy_duplex_get (dev_id, phy_id, pduplex);
-	SW_RTN_ON_ERROR (rv);
-
+		rv = phy_drv->phy_duplex_get (dev_id, phy_id, pduplex);
+		SW_RTN_ON_ERROR (rv);
+	}
 #if 0
     HSL_REG_ENTRY_GET(rv, dev_id, PORT_STATUS, port_id,
                       (a_uint8_t *) (&reg), sizeof (a_uint32_t));
