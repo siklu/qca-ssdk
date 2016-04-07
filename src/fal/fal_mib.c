@@ -21,6 +21,10 @@
 #include "sw.h"
 #include "fal_mib.h"
 #include "hsl_api.h"
+#include "adpt.h"
+
+#include <linux/kernel.h>
+#include <linux/module.h>
 
 
 static sw_error_t
@@ -29,6 +33,15 @@ _fal_get_mib_info(a_uint32_t dev_id, fal_port_t port_id,
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_get_mib_info)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_get_mib_info(dev_id, port_id, mib_Info);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -45,6 +58,15 @@ _fal_get_rx_mib_info(a_uint32_t dev_id, fal_port_t port_id,
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_get_rx_mib_info)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_get_rx_mib_info(dev_id, port_id, mib_Info);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -61,6 +83,15 @@ _fal_get_tx_mib_info(a_uint32_t dev_id, fal_port_t port_id,
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_get_tx_mib_info)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_get_tx_mib_info(dev_id, port_id, mib_Info);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -76,6 +107,15 @@ _fal_mib_status_set(a_uint32_t dev_id, a_bool_t enable)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_mib_status_set)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_mib_status_set(dev_id, enable);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -92,6 +132,15 @@ _fal_mib_status_get(a_uint32_t dev_id, a_bool_t * enable)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_mib_status_get)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_mib_status_get(dev_id, enable);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -107,6 +156,15 @@ _fal_mib_port_flush_counters(a_uint32_t dev_id, fal_port_t port_id)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_mib_port_flush_counters)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_mib_port_flush_counters(dev_id, port_id);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -122,6 +180,15 @@ _fal_mib_cpukeep_set(a_uint32_t dev_id, a_bool_t enable)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_mib_cpukeep_set)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_mib_cpukeep_set(dev_id, enable);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -138,6 +205,15 @@ _fal_mib_cpukeep_get(a_uint32_t dev_id, a_bool_t * enable)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_mib_cpukeep_get)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_mib_cpukeep_get(dev_id, enable);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -147,7 +223,7 @@ _fal_mib_cpukeep_get(a_uint32_t dev_id, a_bool_t * enable)
     rv = p_api->mib_cpukeep_get(dev_id, enable);
     return rv;
 }
-
+/*insert flag for inner fal, don't remove it*/
 /**
  * @brief Get mib infomation on particular port.
  * @param[in] dev_id device id
@@ -289,7 +365,7 @@ fal_mib_cpukeep_get(a_uint32_t dev_id, a_bool_t * enable)
     FAL_API_UNLOCK;
     return rv;
 }
-
+/*insert flag for outter fal, don't remove it*/
 /**
  * @}
  */

@@ -3,7 +3,7 @@ LIB=ADPT
 
 include $(PRJ_PATH)/make/config.mk
 
-SRC_LIST=adpt_hppe_fdb.c
+SRC_LIST=adpt_hppe_fdb.c adpt_hppe_mib.c
 
 ifeq (, $(findstring HPPE, $(SUPPORT_CHIP)))
   SRC_LIST=

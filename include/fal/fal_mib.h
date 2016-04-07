@@ -50,8 +50,8 @@ extern "C" {
         a_uint32_t RxGoodByte_hi;       /**<   high 32 bits of RxGoodByte statistc item*/
         a_uint32_t RxBadByte_lo;        /**<   low 32 bits of RxBadByte statistc item */
         a_uint32_t RxBadByte_hi;        /**<   high 32 bits of RxBadByte statistc item */
-        a_uint32_t RxOverFlow;
-        a_uint32_t Filtered;
+        a_uint32_t RxOverFlow;		/* no this counter for Hawkeye*/
+        a_uint32_t Filtered;			/*no this counter for Hawkeye*/
         a_uint32_t TxBroad;
         a_uint32_t TxPause;
         a_uint32_t TxMulti;
@@ -63,7 +63,7 @@ extern "C" {
         a_uint32_t Tx1024Byte;
         a_uint32_t Tx1518Byte;
         a_uint32_t TxMaxByte;
-        a_uint32_t TxOverSize;
+        a_uint32_t TxOverSize;	/*no this counter for Hawkeye*/
         a_uint32_t TxByte_lo;       /**<  low 32 bits of TxByte statistc item */
         a_uint32_t TxByte_hi;       /**<  high 32 bits of TxByte statistc item */
         a_uint32_t TxCollision;
@@ -75,40 +75,36 @@ extern "C" {
         a_uint32_t TxLateCol;
         a_uint32_t RxUniCast;
         a_uint32_t TxUniCast;
+        a_uint32_t RxJumboFcsErr;	/* add for  Hawkeye*/
+        a_uint32_t RxJumboAligenErr;		/* add for Hawkeye*/
     } fal_mib_info_t;
 
-
-    sw_error_t
-    fal_get_mib_info(a_uint32_t dev_id, fal_port_t port_id,
+sw_error_t
+fal_get_mib_info(a_uint32_t dev_id, fal_port_t port_id,
                      fal_mib_info_t * mib_info );
 
-    sw_error_t
-    fal_get_rx_mib_info(a_uint32_t dev_id, fal_port_t port_id,
+sw_error_t
+fal_get_rx_mib_info(a_uint32_t dev_id, fal_port_t port_id,
                      fal_mib_info_t * mib_info );
 
-    sw_error_t
-    fal_get_tx_mib_info(a_uint32_t dev_id, fal_port_t port_id,
+sw_error_t
+fal_get_tx_mib_info(a_uint32_t dev_id, fal_port_t port_id,
                      fal_mib_info_t * mib_info );
 
+sw_error_t
+fal_mib_status_set(a_uint32_t dev_id, a_bool_t enable);
 
-    sw_error_t
-    fal_mib_status_set(a_uint32_t dev_id, a_bool_t enable);
+sw_error_t
+fal_mib_status_get(a_uint32_t dev_id, a_bool_t * enable);
 
+sw_error_t
+fal_mib_port_flush_counters(a_uint32_t dev_id, fal_port_t port_id);
 
+sw_error_t
+fal_mib_cpukeep_set(a_uint32_t dev_id, a_bool_t  enable);
 
-    sw_error_t
-    fal_mib_status_get(a_uint32_t dev_id, a_bool_t * enable);
-
-
-    sw_error_t
-    fal_mib_port_flush_counters(a_uint32_t dev_id, fal_port_t port_id);
-
-
-    sw_error_t
-    fal_mib_cpukeep_set(a_uint32_t dev_id, a_bool_t  enable);
-
-    sw_error_t
-    fal_mib_cpukeep_get(a_uint32_t dev_id, a_bool_t * enable);
+sw_error_t
+fal_mib_cpukeep_get(a_uint32_t dev_id, a_bool_t * enable);
 
 #ifdef __cplusplus
 }
