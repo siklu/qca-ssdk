@@ -9,6 +9,8 @@ SRC_LIST+=hppe_vsi.c hppe_fdb.c hppe_stp.c
 SRC_LIST+=hppe_sec.c
 SRC_LIST+=hppe_bm.c
 SRC_LIST+=hppe_mib.c
+SRC_LIST+=hppe_rss.c
+SRC_LIST+=hppe_pppoe.c
 ifeq (, $(findstring HPPE, $(SUPPORT_CHIP)))
   SRC_LIST=
 endif
