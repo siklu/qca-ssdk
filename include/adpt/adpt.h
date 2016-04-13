@@ -28,6 +28,8 @@ extern "C" {
 #include "fal_fdb.h"
 #include "fal_mib.h"
 #include "ssdk_init.h"
+#include "fal_type.h"
+#include "fal_stp.h"
 
 #define ADPT_DEV_ID_CHECK(dev_id) \
 do { \
@@ -97,6 +99,12 @@ typedef sw_error_t (*adpt_mib_port_flush_counters_func)(a_uint32_t dev_id, fal_p
 typedef sw_error_t (*adpt_mib_status_get_func)(a_uint32_t dev_id, a_bool_t * enable);
 typedef sw_error_t (*adpt_get_rx_mib_info_func)(a_uint32_t dev_id, fal_port_t port_id,
                      fal_mib_info_t * mib_info );
+
+typedef sw_error_t (*adpt_stp_port_state_get_func)(a_uint32_t dev_id, a_uint32_t st_id,
+                     fal_port_t port_id, fal_stp_state_t * state);
+typedef sw_error_t (*adpt_stp_port_state_set_func)(a_uint32_t dev_id, a_uint32_t st_id,
+                     fal_port_t port_id, fal_stp_state_t state);
+
 typedef struct
 {
 	adpt_fdb_first_func adpt_fdb_first;
@@ -138,6 +146,9 @@ typedef struct
 	adpt_mib_port_flush_counters_func adpt_mib_port_flush_counters;
 	adpt_mib_status_get_func adpt_mib_status_get;
 	adpt_get_rx_mib_info_func adpt_get_rx_mib_info;
+
+	adpt_stp_port_state_get_func adpt_stp_port_state_get;
+	adpt_stp_port_state_set_func adpt_stp_port_state_set;
 }adpt_api_t;
 
 

@@ -28,6 +28,8 @@ sw_error_t adpt_hppe_fdb_init(a_uint32_t dev_id);
 
 sw_error_t adpt_hppe_mib_init(a_uint32_t dev_id);
 
+sw_error_t adpt_hppe_stp_init(a_uint32_t dev_id);
+
 #ifdef __cplusplus
 }
 #endif                          /* __cplusplus */
