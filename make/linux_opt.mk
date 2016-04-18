@@ -270,6 +270,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
 		MODULE_CFLAG += -DKVER34
 		MODULE_CFLAG += -DKVER32
 	    MODULE_CFLAG += -DLNX26_22
+	    MODULE_CFLAG += -Werror
 	    MODULE_INC += -I$(SYS_PATH) \
 	          -I$(SYS_PATH)/include \
               -I$(SYS_PATH)/source/include \
