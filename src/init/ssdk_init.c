@@ -1900,6 +1900,8 @@ int ssdk_phy_init(ssdk_init_cfg *cfg)
 
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 struct reset_control *ess_rst = NULL;
+struct reset_control *ess_mac_clock_disable[5] = {NULL,NULL,NULL,NULL,NULL};
+
 void ssdk_ess_reset(void)
 {
 	if (!ess_rst)
@@ -1915,10 +1917,37 @@ char ssdk_driver_name[] = "ess_ssdk";
 static int ssdk_probe(struct platform_device *pdev)
 {
 	ess_rst = devm_reset_control_get(&pdev->dev, "ess_rst");
+	ess_mac_clock_disable[0] = devm_reset_control_get(&pdev->dev, "ess_mac1_clk_dis");
+	ess_mac_clock_disable[1] = devm_reset_control_get(&pdev->dev, "ess_mac2_clk_dis");
+	ess_mac_clock_disable[2] = devm_reset_control_get(&pdev->dev, "ess_mac3_clk_dis");
+	ess_mac_clock_disable[3] = devm_reset_control_get(&pdev->dev, "ess_mac4_clk_dis");
+	ess_mac_clock_disable[4] = devm_reset_control_get(&pdev->dev, "ess_mac5_clk_dis");
+
 	if (!ess_rst) {
 		printk("ess rst fail!\n");
 		return -1;
 	}
+	if (!ess_mac_clock_disable[0]) {
+		printk("ess_mac1_clock_disable fail!\n");
+		return -1;
+	}
+	if (!ess_mac_clock_disable[1]) {
+		printk("ess_mac2_clock_disable fail!\n");
+		return -1;
+	}
+	if (!ess_mac_clock_disable[2]) {
+		printk("ess_mac3_clock_disable fail!\n");
+		return -1;
+	}
+	if (!ess_mac_clock_disable[3]) {
+		printk("ess_mac4_clock_disable fail!\n");
+		return -1;
+	}
+	if (!ess_mac_clock_disable[4]) {
+		printk("ess_mac5_clock_disable fail!\n");
+		return -1;
+	}
+
 	reset_control_assert(ess_rst);
 	mdelay(10);
 	reset_control_deassert(ess_rst);
@@ -2346,6 +2375,7 @@ void switch_cpuport_setup(void)
 
 	fal_port_duplex_set(0, 0, FAL_FULL_DUPLEX);
 	fal_port_speed_set(0, 0, FAL_SPEED_1000);
+	udelay(10);
 	fal_port_txmac_status_set(0, 0, A_TRUE);
 	fal_port_rxmac_status_set(0, 0, A_TRUE);
 	#endif

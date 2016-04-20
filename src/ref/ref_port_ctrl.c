@@ -37,6 +37,7 @@
 #include <generated/autoconf.h>
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 #include <linux/switch.h>
+#include <linux/reset.h>
 #else
 #include <net/switch.h>
 #include <linux/ar8216_platform.h>
@@ -48,6 +49,10 @@
 #include "ref_vlan.h"
 #include <linux/time.h>
 #include "f1_phy.h"
+
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+extern struct reset_control *ess_mac_clock_disable[5];
+#endif
 
 int
 qca_ar8327_sw_get_port_link(struct switch_dev *dev, int port,
@@ -196,11 +201,18 @@ static int qca_switch_force_mac_status(struct switch_dev *dev, a_uint32_t port_i
 		return -1;
 	if (priv->version == 0x14)
 	{
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+		/*disable mac clock*/
+		reset_control_assert(ess_mac_clock_disable[port_id -1]);
+		udelay(10);
 		reg = AR8327_REG_PORT_STATUS(port_id);
 		qca_switch_reg_read(0,reg,(a_uint8_t*)&value,4);
 		value &= ~(BIT(6) | BITS(0,2));
 		value |= speed | (duplex?BIT(6):0);
 		qca_switch_reg_write(0,reg,(a_uint8_t*)&value,4);
+		/*enable mac clock*/
+		reset_control_deassert(ess_mac_clock_disable[port_id -1]);
+#endif
 	}
 	if (priv->version == QCA_VER_AR8337 ||
 	priv->version == QCA_VER_AR8327)
@@ -547,28 +559,33 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 				}
 				else
 				{
+					// a_uint32_t pstatus = 0;
 					fal_port_link_forcemode_set(0, i, A_TRUE);
+					// below only for dess debug print
+					// qca_switch_reg_read(0, AR8327_REG_PORT_STATUS(i), (a_uint8_t *)&pstatus, 4);
+					// printk("%s, %d, port_id %d link down pstatus 0x%x\n",__FUNCTION__,__LINE__,i, pstatus);
 				}
 				port_link_down[i]=0;
-				/* Check queue buffer */
-				qm_err_cnt[i] = 0;
-				qca_switch_get_qm_status(dev, i, &qm_buffer_err);
+				if(priv->version != 0x14){
+					/* Check queue buffer */
+					qm_err_cnt[i] = 0;
+					qca_switch_get_qm_status(dev, i, &qm_buffer_err);
 
-				if (qm_buffer_err) {
-					port_qm_buf[i] = QM_NOT_EMPTY;
-				}
-				else {
-					a_uint16_t value = 0;
-					port_qm_buf[i] = QM_EMPTY;
+					if (qm_buffer_err) {
+						port_qm_buf[i] = QM_NOT_EMPTY;
+					}
+					else {
+						a_uint16_t value = 0;
+						port_qm_buf[i] = QM_EMPTY;
 
-					/* Force MAC 1000M Full before auto negotiation */
-					if(priv->version != 0x14)
+						/* Force MAC 1000M Full before auto negotiation */
 						qca_switch_force_mac_1000M_full(dev, i);
-					mdelay(10);
-					// printk("%s, %d, port %d link down\n",__FUNCTION__,__LINE__,i);
-					qca_ar8327_phy_dbg_read(0, i-1, 0, &value);
-					value &= (~(1<<12));
-					qca_ar8327_phy_dbg_write(0, i-1, 0, value);
+						mdelay(10);
+						// printk("%s, %d, port %d link down\n",__FUNCTION__,__LINE__,i);
+						qca_ar8327_phy_dbg_read(0, i-1, 0, &value);
+						value &= (~(1<<12));
+						qca_ar8327_phy_dbg_write(0, i-1, 0, value);
+					}
 				}
 			}
 			/* Down --> Up */
@@ -584,11 +601,10 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 					}
 				}
 				else{
-					// a_uint32_t pstatus = 0;
+					//a_uint32_t pstatus = 0;
 					port_link_up[i]=0;
-
 					qca_switch_force_mac_status(dev, i, speed, duplex);
-					udelay(10);
+					udelay(100);
 					if (qca_ar8327_sw_rgmii_mode_valid(i) == A_FALSE) {
 						fal_port_link_forcemode_set(0, i, A_FALSE);
 					}
@@ -598,10 +614,10 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 						fal_port_txmac_status_set(0, i, A_TRUE);
 					}
 					udelay(100);
-					// qca_switch_reg_read(0, AR8327_REG_PORT_STATUS(i), (a_uint8_t *)&pstatus, 4);
-					// printk("%s, %d, port %d link up speed %d, duplex %d pstatus 0x%x\n",__FUNCTION__,__LINE__,i, speed, duplex, pstatus);
+					//qca_switch_reg_read(0, AR8327_REG_PORT_STATUS(i), (a_uint8_t *)&pstatus, 4);
+					//printk("%s, %d, port %d link up speed %d, duplex %d pstatus 0x%x\n",__FUNCTION__,__LINE__,i, speed, duplex, pstatus);
 
-					if(speed == 0x01)/*PHY is link up 100M*/
+					if((speed == 0x01) && (priv->version != 0x14))/*PHY is link up 100M*/
 					{
 						a_uint16_t value = 0;
 						qca_ar8327_phy_dbg_read(0, i-1, 0, &value);
