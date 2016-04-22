@@ -611,7 +611,7 @@ struct cmd_des_t gcmd_des[] =
 #else
 
 #ifdef IN_PORTCONTROL
-struct sub_cmd_des_t g_port_des[] = 
+struct sub_cmd_des_t g_port_des[] =
 {
 	{"duplex", "set",   SW_API_PT_DUPLEX_SET, NULL},
 	{"speed", "set",   SW_API_PT_SPEED_SET, NULL},
@@ -660,7 +660,7 @@ struct sub_cmd_des_t g_port_des[] =
 #endif
 
 #ifdef IN_VLAN
-struct sub_cmd_des_t g_vlan_des[] = 
+struct sub_cmd_des_t g_vlan_des[] =
 {
 	{"entry", "set",   SW_API_VLAN_ADD, NULL},
 	{"entry", "create",   SW_API_VLAN_ADD, NULL},
@@ -864,7 +864,7 @@ struct sub_cmd_des_t g_mirror_des[] =
 #endif
 
 #ifdef IN_RATE
-struct sub_cmd_des_t g_rate_des[] =      
+struct sub_cmd_des_t g_rate_des[] =
 {
 #ifndef ISISC
 	{"qEgress", "set", SW_API_RATE_QU_EGRL_SET, NULL},
@@ -885,7 +885,7 @@ struct sub_cmd_des_t g_rate_des[] =
 
 #ifdef IN_SEC
 #ifdef ISISC
-struct sub_cmd_des_t g_sec_des[] = 
+struct sub_cmd_des_t g_sec_des[] =
 {
 	{"mac", "set", SW_API_SEC_MAC_SET, NULL},
 	{"ip", "set", SW_API_SEC_IP_SET, NULL},
@@ -901,7 +901,7 @@ struct sub_cmd_des_t g_sec_des[] =
 #endif
 
 #ifdef IN_STP
-struct sub_cmd_des_t g_stp_des[] = 
+struct sub_cmd_des_t g_stp_des[] =
 {
 	{"portState", "set", SW_API_STP_PT_STATE_SET, NULL},
 	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
@@ -926,7 +926,7 @@ struct sub_cmd_des_t g_led_des[] =
 };
 #endif
 
-		
+
 #ifdef IN_COSMAP
 struct sub_cmd_des_t g_cosmap_des[] =
 {
@@ -1103,6 +1103,20 @@ struct sub_cmd_des_t g_interfacecontrol_des[] =
 };
 #endif
 
+#ifdef IN_VSI
+struct sub_cmd_des_t g_vsi_des[] =
+{
+	{"vsi", "alloc", SW_API_VSI_ALLOC, NULL},
+	{"vsi", "free", SW_API_VSI_FREE, NULL},
+	{"port_vsi", "set", SW_API_PORT_VSI_SET, NULL},
+	{"vlan_vsi", "set", SW_API_PORT_VLAN_VSI_SET, NULL},
+	{"newaddr_lrn", "set", SW_API_VSI_NEWADDR_LRN_SET, NULL},
+	{"stamove", "set", SW_API_VSI_STAMOVE_SET, NULL},
+	{NULL, NULL, NULL, NULL, (int)NULL, NULL}/*end of desc*/
+};
+#endif
+
+
 struct cmd_des_t gcmd_des[] =
 {
     /*port ctrl*/
@@ -1243,6 +1257,12 @@ struct cmd_des_t gcmd_des[] =
 #ifdef IN_INTERFACECONTROL
     {
         "interface", g_interfacecontrol_des,
+    },
+#endif
+
+#ifdef IN_VSI
+    {
+        "vsi", g_vsi_des,
     },
 #endif
 

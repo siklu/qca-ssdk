@@ -133,6 +133,10 @@ ifeq (TRUE, $(IN_MALIBU_PHY))
   MODULE_CFLAG += -DIN_MALIBU_PHY
 endif
 
+ifeq (TRUE, $(IN_VSI))
+  MODULE_CFLAG += -DIN_VSI
+endif
+
 ifneq (TRUE, $(FAL))
   MODULE_CFLAG += -DHSL_STANDALONG
 endif

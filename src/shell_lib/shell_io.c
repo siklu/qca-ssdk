@@ -232,6 +232,10 @@ static sw_data_type_t sw_data_type[] =
     SW_TYPE_DEF(SW_INTERFACE_MODE, cmd_data_check_interface_mode, NULL),
 	#endif
     SW_TYPE_DEF(SW_COUNTER_INFO, NULL, NULL),
+    #ifdef IN_VSI
+    SW_TYPE_DEF(SW_VSI_NEWADDR_LRN, cmd_data_check_newadr_lrn, NULL),
+    SW_TYPE_DEF(SW_VSI_STAMOVE, cmd_data_check_stamove, NULL),
+    #endif
 };
 
 sw_data_type_t *
@@ -4190,6 +4194,64 @@ cmd_data_check_ip6_rfs_entry(char *cmd_str, void * val, a_uint32_t size)
 	entry.load_balance = tmp;
 
 	*(fal_ip6_rfs_t *)val = entry;
+	return SW_OK;
+}
+#endif
+
+#ifdef IN_VSI
+sw_error_t
+cmd_data_check_newadr_lrn(char *cmd_str, void * val, a_uint32_t size)
+{
+	char *cmd;
+	a_uint32_t tmp;
+	sw_error_t rv;
+	fal_vsi_newaddr_lrn_t entry;
+
+	aos_mem_zero(&entry, sizeof (fal_vsi_newaddr_lrn_t));
+
+	rv = __cmd_data_check_complex("lrn_en", "1",
+                        "usage: 0-disable 1-enable\n",
+                        cmd_data_check_uint32, &(entry.lrn_en),
+                        sizeof (a_uint32_t));
+	if (rv)
+		return rv;
+
+	rv = __cmd_data_check_complex("action", 0,
+                            "usage: 0-Forward 1-Drop 2-Copy to CPU 3-redirect to CPU\n",
+                            cmd_data_check_uint32, &(entry.action),
+                            4);
+	if (rv)
+		return rv;
+
+	*(fal_vsi_newaddr_lrn_t *)val = entry;
+	return SW_OK;
+}
+
+sw_error_t
+cmd_data_check_stamove(char *cmd_str, void * val, a_uint32_t size)
+{
+	char *cmd;
+	a_uint32_t tmp;
+	sw_error_t rv;
+	fal_vsi_stamove_t entry;
+
+	aos_mem_zero(&entry, sizeof (fal_vsi_stamove_t));
+
+	rv = __cmd_data_check_complex("stamove", "1",
+                        "usage: 0-disable 1-enable\n",
+                        cmd_data_check_uint32, &(entry.stamove_en),
+                        sizeof (a_uint32_t));
+	if (rv)
+		return rv;
+
+	rv = __cmd_data_check_complex("action", 0,
+                            "usage: 0-Forward 1-Drop 2-Copy to CPU 3-redirect to CPU\n",
+                            cmd_data_check_uint32, &(entry.action),
+                            4);
+	if (rv)
+		return rv;
+
+	*(fal_vsi_stamove_t *)val = entry;
 	return SW_OK;
 }
 #endif

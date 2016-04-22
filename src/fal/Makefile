@@ -81,6 +81,10 @@ ifeq (TRUE, $(IN_TRUNK))
   SRC_LIST += fal_trunk.c
 endif
 
+ifeq (TRUE, $(IN_VSI))
+  SRC_LIST += fal_vsi.c
+endif
+
 ifeq (TRUE, $(IN_INTERFACECONTROL))
   SRC_LIST += fal_interface_ctrl.c
 endif

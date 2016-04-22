@@ -19,9 +19,14 @@ sw_error_t adpt_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 	switch (cfg->chip_type)
 	{
 		case CHIP_HPPE:
+			rv = adpt_hppe_vsi_init(dev_id);
+			SW_RTN_ON_ERROR(rv);
 			rv = adpt_hppe_fdb_init(dev_id);
+			SW_RTN_ON_ERROR(rv);
 			rv = adpt_hppe_mib_init(dev_id);
+			SW_RTN_ON_ERROR(rv);
 			rv = adpt_hppe_stp_init(dev_id);
+			SW_RTN_ON_ERROR(rv);
 			break;
 		default:
 			break;

@@ -27,14 +27,6 @@ extern "C" {
 #include "common/sw.h"
 #include "fal/fal_type.h"
 
-#if defined(SW_API_LOCK) && (!defined(HSL_STANDALONG))
-#define FAL_FDB_API_LOCK
-#define FAL_FDB_API_UNLOCK
-#else
-#define FAL_FDB_API_LOCK
-#define FAL_FDB_API_UNLOCK
-#endif
-
     /**
       @details  Fields description:
 

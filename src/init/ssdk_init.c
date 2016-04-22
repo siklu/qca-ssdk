@@ -3046,6 +3046,53 @@ static int ssdk_dess_mac_mode_init(a_uint32_t mac_mode)
 	return 0;
 }
 
+static int
+qca_dess_hw_init(ssdk_init_cfg *cfg)
+{
+	a_uint32_t reg_value;
+	hsl_api_t *p_api;
+
+	qca_switch_init(0);
+	ssdk_portvlan_init(cfg->port_cfg.cpu_bmp, cfg->port_cfg.lan_bmp, cfg->port_cfg.wan_bmp);
+
+	#ifdef IN_PORTVLAN
+	fal_port_rxhdr_mode_set(0, 0, FAL_ALL_TYPE_FRAME_EN);
+	#endif
+	#ifdef IN_IP
+	fal_ip_route_status_set(0, A_TRUE);
+	#endif
+
+	ssdk_flow_default_act_init();
+
+	/*set normal hash and disable nat/napt*/
+	qca_switch_reg_read(0, 0x0e38, (a_uint8_t *)&reg_value, 4);
+	reg_value = (reg_value|0x1000000|0x8);
+	reg_value &= ~2;
+	qca_switch_reg_write(0, 0x0e38, (a_uint8_t *)&reg_value, 4);
+	#ifdef IN_IP
+	fal_ip_vrf_base_addr_set(0, 0, 0);
+	#endif
+
+	p_api = hsl_api_ptr_get (0);
+	if (p_api && p_api->port_flowctrl_thresh_set)
+		p_api->port_flowctrl_thresh_set(0, 0, SSDK_PORT0_FC_THRESH_ON_DFLT,
+							SSDK_PORT0_FC_THRESH_OFF_DFLT);
+
+	if (p_api && p_api->ip_glb_lock_time_set)
+		p_api->ip_glb_lock_time_set(0, FAL_GLB_LOCK_TIME_100US);
+
+
+	/*config psgmii,sgmii or rgmii mode for Dakota*/
+	ssdk_dess_mac_mode_init(cfg->mac_mode);
+
+	/*add BGA Board led contorl*/
+	ssdk_dess_led_init(cfg);
+
+	return 0;
+}
+#endif
+
+#ifdef HPPE
 static int qca_hppe_vsi_hw_init(void)
 {
 	union vsi_tbl_u value = {0};
@@ -3062,9 +3109,9 @@ static int qca_hppe_vsi_hw_init(void)
 	hppe_vsi_tbl_set(0, 1, &value);
 
 	value.bf.member_port_bitmap = 0x1f;
-	value.bf.uuc_bitmap = 0x1f;
-	value.bf.umc_bitmap = 0x1f;
-	value.bf.bc_bitmap = 0x1f;
+	value.bf.uuc_bitmap = 0x1e;
+	value.bf.umc_bitmap = 0x1e;
+	value.bf.bc_bitmap = 0x1e;
 	hppe_vsi_tbl_set(0, 2, &value);
 
 	value.bf.member_port_bitmap = 0x61;
@@ -3087,7 +3134,7 @@ static int qca_hppe_fdb_hw_init(void)
 		value.bf.new_addr_fwd_cmd = 0;
 		value.bf.station_move_lrn_en = 1;
 		value.bf.station_move_fwd_cmd = 0;
-		value.bf.port_isolation_bitmap = 0x7f;
+		value.bf.port_isolation_bitmap = 0x7e;
 		value.bf.txmac_en = 1;
 		value.bf.promisc_en = 1;
 
@@ -3099,20 +3146,6 @@ static int qca_hppe_fdb_hw_init(void)
 
 	hppe_l2_global_conf_age_en_set(0, 1);
 	hppe_l2_global_conf_lrn_en_set(0, 1);
-
-	return 0;
-}
-
-static int qca_hppe_stp_hw_init(void)
-{
-	union cst_state_u value = {0};
-	a_uint32_t port = 0;
-
-	value.bf.port_state = CST_STATE_DEFAULT;
-	for(port = 0; port < 8; port++)
-	{
-		hppe_cst_state_set(0, port, &value);
-	}
 
 	return 0;
 }
@@ -3146,6 +3179,8 @@ qca_hppe_hw_init(ssdk_init_cfg *cfg)
 	union l1_c_sp_cfg_tbl_u l1_sp_cfg;
 	union l3_vp_port_tbl_u port_vsi;
 	union flow_ctrl0_u flow_ctrl0;
+
+	qca_switch_init(0);
 
 	/*fixme*/
 	val = 0x3b;
@@ -3250,54 +3285,8 @@ qca_hppe_hw_init(ssdk_init_cfg *cfg)
 
 	qca_hppe_fdb_hw_init();
 	qca_hppe_vsi_hw_init();
-	qca_hppe_stp_hw_init();
 
 	qca_hppe_portctrl_hw_init();
-
-	return 0;
-}
-
-static int
-qca_dess_hw_init(ssdk_init_cfg *cfg)
-{
-	a_uint32_t reg_value;
-	hsl_api_t *p_api;
-
-	qca_switch_init(0);
-	ssdk_portvlan_init(cfg->port_cfg.cpu_bmp, cfg->port_cfg.lan_bmp, cfg->port_cfg.wan_bmp);
-
-	#ifdef IN_PORTVLAN
-	fal_port_rxhdr_mode_set(0, 0, FAL_ALL_TYPE_FRAME_EN);
-	#endif
-	#ifdef IN_IP
-	fal_ip_route_status_set(0, A_TRUE);
-	#endif
-
-	ssdk_flow_default_act_init();
-
-	/*set normal hash and disable nat/napt*/
-	qca_switch_reg_read(0, 0x0e38, (a_uint8_t *)&reg_value, 4);
-	reg_value = (reg_value|0x1000000|0x8);
-	reg_value &= ~2;
-	qca_switch_reg_write(0, 0x0e38, (a_uint8_t *)&reg_value, 4);
-	#ifdef IN_IP
-	fal_ip_vrf_base_addr_set(0, 0, 0);
-	#endif
-
-	p_api = hsl_api_ptr_get (0);
-	if (p_api && p_api->port_flowctrl_thresh_set)
-		p_api->port_flowctrl_thresh_set(0, 0, SSDK_PORT0_FC_THRESH_ON_DFLT,
-							SSDK_PORT0_FC_THRESH_OFF_DFLT);
-
-	if (p_api && p_api->ip_glb_lock_time_set)
-		p_api->ip_glb_lock_time_set(0, FAL_GLB_LOCK_TIME_100US);
-
-
-	/*config psgmii,sgmii or rgmii mode for Dakota*/
-	ssdk_dess_mac_mode_init(cfg->mac_mode);
-
-	/*add BGA Board led contorl*/
-	ssdk_dess_led_init(cfg);
 
 	return 0;
 }

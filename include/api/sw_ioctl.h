@@ -596,6 +596,20 @@ extern "C" {
 #define SW_API_MAC06_EXCH_SET          (9  + SW_API_INTERFACE_OFFSET)
 #define SW_API_MAC06_EXCH_GET          (10  + SW_API_INTERFACE_OFFSET)
 
+    /* VSI */
+#define SW_API_VSI_OFFSET        2000
+#define SW_API_VSI_ALLOC               (0  + SW_API_VSI_OFFSET)
+#define SW_API_VSI_FREE                (1  + SW_API_VSI_OFFSET)
+#define SW_API_PORT_VSI_SET            (2  + SW_API_VSI_OFFSET)
+#define SW_API_PORT_VSI_GET            (3  + SW_API_VSI_OFFSET)
+#define SW_API_PORT_VLAN_VSI_SET       (4  + SW_API_VSI_OFFSET)
+#define SW_API_PORT_VLAN_VSI_GET       (5  + SW_API_VSI_OFFSET)
+#define SW_API_VSI_TBL_DUMP	       (6  + SW_API_VSI_OFFSET)
+#define SW_API_VSI_NEWADDR_LRN_SET     (7  + SW_API_VSI_OFFSET)
+#define SW_API_VSI_NEWADDR_LRN_GET     (8  + SW_API_VSI_OFFSET)
+#define SW_API_VSI_STAMOVE_SET	       (9  + SW_API_VSI_OFFSET)
+#define SW_API_VSI_STAMOVE_GET	       (10 + SW_API_VSI_OFFSET)
+
     /*debug*/
 #define SW_API_DEBUG_OFFSET        10000
 #define SW_API_PHY_GET             (0  + SW_API_DEBUG_OFFSET)

@@ -174,7 +174,7 @@ extern "C" {
     SW_API_DESC(SW_API_PT_COUNTER_SET) \
     SW_API_DESC(SW_API_PT_COUNTER_GET) \
     SW_API_DESC(SW_API_PT_COUNTER_SHOW)
-    
+
 #else
 #define PORTCONTROL_API \
     SW_API_DEF(SW_API_PT_DUPLEX_SET, fal_port_duplex_set), \
@@ -378,10 +378,10 @@ extern "C" {
     SW_API_DESC(SW_API_NESTVLAN_TPID_SET)    \
     SW_API_DESC(SW_API_PT_IN_VLAN_MODE_SET)   \
     SW_API_DESC(SW_API_PT_DEF_SVID_SET)    \
-    SW_API_DESC(SW_API_PT_DEF_CVID_SET) 
+    SW_API_DESC(SW_API_PT_DEF_CVID_SET)
 
 #endif
-	
+
 #else
 #define PORTVLAN_API
 #define PORTVLAN_API_PARAM
@@ -602,12 +602,12 @@ extern "C" {
     SW_API_DESC(SW_API_QOS_QUEUE_REMARK_GET)
 #else
 #define QOS_API \
-    SW_API_DEF(SW_API_QOS_PT_MODE_SET, fal_qos_port_mode_set), 
-   
+    SW_API_DEF(SW_API_QOS_PT_MODE_SET, fal_qos_port_mode_set),
+
 
 #define QOS_API_PARAM \
-    SW_API_DESC(SW_API_QOS_PT_MODE_SET) 
-    
+    SW_API_DESC(SW_API_QOS_PT_MODE_SET)
+
 #endif
 #else
 #define QOS_API
@@ -958,7 +958,7 @@ extern "C" {
     SW_API_DEF(SW_API_EAPOL_STATUS_SET, fal_eapol_status_set), \
     SW_API_DEF(SW_API_EAPOL_CMD_SET, fal_eapol_cmd_set), \
     SW_API_DEF(SW_API_CPU_PORT_STATUS_SET, fal_cpu_port_status_set),
-   
+
 #define MISC_API_PARAM \
     SW_API_DESC(SW_API_PT_UNK_SA_CMD_SET) \
     SW_API_DESC(SW_API_PT_UNK_UC_FILTER_SET) \
@@ -1040,7 +1040,7 @@ extern "C" {
 #else
 #define COSMAP_API \
     SW_API_DEF(SW_API_COSMAP_PRI_TO_QU_SET, fal_cosmap_pri_to_queue_set), \
-    SW_API_DEF(SW_API_COSMAP_PRI_TO_EHQU_SET, fal_cosmap_pri_to_ehqueue_set), 
+    SW_API_DEF(SW_API_COSMAP_PRI_TO_EHQU_SET, fal_cosmap_pri_to_ehqueue_set),
 
 #define COSMAP_API_PARAM \
     SW_API_DESC(SW_API_COSMAP_PRI_TO_QU_SET)  \
@@ -1331,6 +1331,40 @@ extern "C" {
 #define INTERFACECTRL_API_PARAM
 #endif
 
+#ifdef IN_VSI
+#define VSI_API \
+    SW_API_DEF(SW_API_VSI_ALLOC, fal_vsi_alloc), \
+    SW_API_DEF(SW_API_VSI_FREE, fal_vsi_free), \
+    SW_API_DEF(SW_API_PORT_VSI_SET, fal_port_vsi_set), \
+    SW_API_DEF(SW_API_PORT_VSI_GET, fal_port_vsi_get), \
+    SW_API_DEF(SW_API_PORT_VLAN_VSI_SET, fal_port_vlan_vsi_set), \
+    SW_API_DEF(SW_API_PORT_VLAN_VSI_GET, fal_port_vlan_vsi_get), \
+    SW_API_DEF(SW_API_VSI_TBL_DUMP, fal_vsi_tbl_dump), \
+    SW_API_DEF(SW_API_VSI_NEWADDR_LRN_GET, fal_vsi_newaddr_lrn_get), \
+    SW_API_DEF(SW_API_VSI_NEWADDR_LRN_SET, fal_vsi_newaddr_lrn_set), \
+    SW_API_DEF(SW_API_VSI_STAMOVE_SET, fal_vsi_stamove_set), \
+    SW_API_DEF(SW_API_VSI_STAMOVE_GET,fal_vsi_stamove_get),
+
+
+#define VSI_API_PARAM \
+    SW_API_DESC(SW_API_VSI_ALLOC)  \
+    SW_API_DESC(SW_API_VSI_FREE)  \
+    SW_API_DESC(SW_API_PORT_VSI_SET)  \
+    SW_API_DESC(SW_API_PORT_VSI_GET)  \
+    SW_API_DESC(SW_API_PORT_VLAN_VSI_SET)  \
+    SW_API_DESC(SW_API_PORT_VLAN_VSI_GET)  \
+    SW_API_DESC(SW_API_VSI_TBL_DUMP) \
+    SW_API_DESC(SW_API_VSI_NEWADDR_LRN_GET) \
+    SW_API_DESC(SW_API_VSI_NEWADDR_LRN_SET) \
+    SW_API_DESC(SW_API_VSI_STAMOVE_SET) \
+    SW_API_DESC(SW_API_VSI_STAMOVE_GET)
+
+#else
+#define VSI_API
+#define VSI_API_PARAM
+#endif
+
+
 #define REG_API \
     SW_API_DEF(SW_API_PHY_GET, fal_phy_get), \
     SW_API_DEF(SW_API_PHY_SET, fal_phy_set), \
@@ -1379,6 +1413,7 @@ extern "C" {
     NAT_API \
     TRUNK_API \
     INTERFACECTRL_API \
+    VSI_API \
     REG_API \
     SW_API_DEF(SW_API_MAX, NULL),
 
@@ -1407,6 +1442,7 @@ extern "C" {
     NAT_API_PARAM \
     TRUNK_API_PARAM \
     INTERFACECTRL_API_PARAM \
+    VSI_API_PARAM \
     REG_API_PARAM \
     SW_PARAM_DEF(SW_API_MAX, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"),
 

@@ -199,3 +199,4 @@ IN_SFE=TRUE
 else
 IN_SFE=FALSE
 endif
+IN_VSI=TRUE

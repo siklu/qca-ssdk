@@ -259,5 +259,13 @@ cmd_data_check_fiber_mode(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size);
 sw_error_t
 cmd_data_check_interface_mode(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size);
 #endif
+#ifdef IN_VSI
+sw_error_t
+cmd_data_check_newadr_lrn(char *cmd_str, void * val, a_uint32_t size);
+
+sw_error_t
+cmd_data_check_stamove(char *cmd_str, void * val, a_uint32_t size);
+
+#endif
 #endif
 
