@@ -126,7 +126,11 @@ extern "C" {
 	SW_REG_DUMP,
 	SW_DBG_REG_DUMP,
 	SW_VSI_NEWADDR_LRN,
-	SW_VSI_STAMOVE
+	SW_VSI_STAMOVE,
+	SW_MTU_INFO,
+	SW_MRU_INFO,
+	SW_MTU_ENTRY,
+	SW_MRU_ENTRY,
     } sw_data_type_e;
 
     typedef struct

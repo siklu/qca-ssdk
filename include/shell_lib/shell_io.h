@@ -253,6 +253,14 @@ cmd_data_check_prefer_medium(char *cmd_str, a_uint32_t * arg_val, a_uint32_t siz
 
 sw_error_t
 cmd_data_check_fiber_mode(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size);
+
+sw_error_t
+cmd_data_check_mtu_entry(char *cmd_str, void * val, a_uint32_t size);
+
+sw_error_t
+cmd_data_check_mru_entry(char *cmd_str, void * val, a_uint32_t size);
+
+
 #endif
 #endif
 #ifdef IN_INTERFACECONTROL

@@ -27,6 +27,7 @@ extern "C" {
 #include "sw.h"
 #include "fal_fdb.h"
 #include "fal_mib.h"
+#include "fal_port_ctrl.h"
 #include "ssdk_init.h"
 #include "fal_type.h"
 #include "fal_stp.h"
@@ -113,6 +114,7 @@ typedef sw_error_t (*adpt_stp_port_state_get_func)(a_uint32_t dev_id, a_uint32_t
                      fal_port_t port_id, fal_stp_state_t * state);
 typedef sw_error_t (*adpt_stp_port_state_set_func)(a_uint32_t dev_id, a_uint32_t st_id,
                      fal_port_t port_id, fal_stp_state_t state);
+
 typedef sw_error_t (*adpt_port_vlan_vsi_set_func)(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vlan_id, a_uint32_t vsi_id);
 typedef sw_error_t (*adpt_vsi_free_func)(a_uint32_t dev_id, a_uint32_t vsi);
 typedef sw_error_t (*adpt_port_vsi_set_func)(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vsi_id);
@@ -124,6 +126,137 @@ typedef sw_error_t (*adpt_vsi_tbl_dump_func)(a_uint32_t dev_id);
 typedef sw_error_t (*adpt_vsi_newaddr_lrn_set_func)(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_newaddr_lrn_t *newaddr_lrn);
 typedef sw_error_t (*adpt_port_vlan_vsi_get_func)(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vlan_id, a_uint32_t *vsi_id);
 typedef sw_error_t (*adpt_vsi_alloc_func)(a_uint32_t dev_id, a_uint32_t *vsi);
+
+// portctrl function.
+
+typedef sw_error_t (*adpt_port_local_loopback_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+					a_bool_t * enable);
+typedef sw_error_t (*adpt_port_autoneg_restart_func)(a_uint32_t dev_id, fal_port_t port_id);
+typedef sw_error_t (*adpt_port_duplex_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+				fal_port_duplex_t duplex);
+typedef sw_error_t (*adpt_port_rxmac_status_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+					  a_bool_t * enable);
+typedef sw_error_t (*adpt_port_cdt_func)(a_uint32_t dev_id, fal_port_t port_id,
+		a_uint32_t mdi_pair, fal_cable_status_t * cable_status,
+		a_uint32_t * cable_len);
+typedef sw_error_t (*adpt_port_txmac_status_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+					  a_bool_t enable);
+typedef sw_error_t (*adpt_port_combo_fiber_mode_set_func)(a_uint32_t dev_id,
+						  a_uint32_t port_id,
+						  fal_port_fiber_mode_t mode);
+typedef sw_error_t (*adpt_port_combo_medium_status_get_func)(a_uint32_t dev_id,
+							 a_uint32_t port_id,
+							 fal_port_medium_t *
+							 medium);
+typedef sw_error_t (*adpt_port_magic_frame_mac_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+				   fal_mac_addr_t * mac);
+typedef sw_error_t (*adpt_port_powersave_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+			  a_bool_t enable);
+typedef sw_error_t (*adpt_port_hibernate_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+			  a_bool_t enable);
+typedef sw_error_t (*adpt_port_max_frame_size_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+		a_uint32_t max_frame);
+typedef sw_error_t (*adpt_port_8023az_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+				a_bool_t * enable);
+typedef sw_error_t (*adpt_port_rxfc_status_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+					 a_bool_t * enable);
+typedef sw_error_t (*adpt_port_txfc_status_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+					 a_bool_t * enable);
+typedef sw_error_t (*adpt_port_remote_loopback_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+					 a_bool_t enable);
+typedef sw_error_t (*adpt_port_flowctrl_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+				  a_bool_t enable);
+typedef sw_error_t (*adpt_port_mru_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+		fal_mru_ctrl_t *ctrl);
+typedef sw_error_t (*adpt_port_autoneg_status_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+					a_bool_t * status);
+typedef sw_error_t (*adpt_port_txmac_status_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+					  a_bool_t * enable);
+typedef sw_error_t (*adpt_port_mdix_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+				  fal_port_mdix_mode_t * mode);
+typedef sw_error_t (*adpt_ports_link_status_get_func)(a_uint32_t dev_id, a_uint32_t * status);
+typedef sw_error_t (*adpt_port_mac_loopback_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+				 a_bool_t enable);
+typedef sw_error_t (*adpt_port_phy_id_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+			  a_uint16_t * org_id, a_uint16_t * rev_id);
+typedef sw_error_t (*adpt_port_mru_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+		fal_mru_ctrl_t *ctrl);
+typedef sw_error_t (*adpt_port_power_on_func)(a_uint32_t dev_id, fal_port_t port_id);
+typedef sw_error_t (*adpt_port_speed_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+				   fal_port_speed_t speed);
+typedef sw_error_t (*adpt_port_interface_mode_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+				  fal_port_interface_mode_t * mode);
+typedef sw_error_t (*adpt_port_duplex_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+				fal_port_duplex_t * pduplex);
+typedef sw_error_t (*adpt_port_autoneg_adv_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+					 a_uint32_t * autoadv);
+typedef sw_error_t (*adpt_port_mdix_status_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+					 fal_port_mdix_status_t * mode);
+typedef sw_error_t (*adpt_port_mtu_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+		fal_mtu_ctrl_t *ctrl);
+typedef sw_error_t (*adpt_port_link_status_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+					 a_bool_t * status);
+typedef sw_error_t (*adpt_port_8023az_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+				a_bool_t enable);
+typedef sw_error_t (*adpt_port_powersave_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+			  a_bool_t * enable);
+typedef sw_error_t (*adpt_port_combo_prefer_medium_get_func)(a_uint32_t dev_id,
+							 a_uint32_t port_id,
+							 fal_port_medium_t *
+							 medium);
+typedef sw_error_t (*adpt_port_max_frame_size_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+		a_uint32_t *max_frame);
+typedef sw_error_t (*adpt_port_combo_prefer_medium_set_func)(a_uint32_t dev_id,
+						 a_uint32_t port_id,
+						 fal_port_medium_t medium);
+typedef sw_error_t (*adpt_port_power_off_func)(a_uint32_t dev_id, fal_port_t port_id);
+typedef sw_error_t (*adpt_port_txfc_status_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+					 a_bool_t enable);
+typedef sw_error_t (*adpt_port_counter_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+		   a_bool_t enable);
+typedef sw_error_t (*adpt_port_combo_fiber_mode_get_func)(a_uint32_t dev_id,
+						  a_uint32_t port_id,
+						  fal_port_fiber_mode_t * mode);
+typedef sw_error_t (*adpt_port_local_loopback_set_func)(a_uint32_t dev_id,
+						fal_port_t port_id,
+						a_bool_t enable);
+typedef sw_error_t (*adpt_port_wol_status_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+				  a_bool_t enable);
+typedef sw_error_t (*adpt_port_magic_frame_mac_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+				   fal_mac_addr_t * mac);
+typedef sw_error_t (*adpt_port_flowctrl_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+				  a_bool_t * enable);
+typedef sw_error_t (*adpt_port_rxmac_status_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+					  a_bool_t enable);
+typedef sw_error_t (*adpt_port_counter_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+		   a_bool_t * enable);
+typedef sw_error_t (*adpt_port_interface_mode_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+				  fal_port_interface_mode_t mode);
+typedef sw_error_t (*adpt_port_mac_loopback_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+				 a_bool_t * enable);
+typedef sw_error_t (*adpt_port_hibernate_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+			  a_bool_t * enable);
+typedef sw_error_t (*adpt_port_autoneg_adv_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+					 a_uint32_t autoadv);
+typedef sw_error_t (*adpt_port_remote_loopback_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+					 a_bool_t * enable);
+typedef sw_error_t (*adpt_port_counter_show_func)(a_uint32_t dev_id, fal_port_t port_id,
+				 fal_port_counter_info_t * counter_info);
+typedef sw_error_t (*adpt_port_autoneg_enable_func)(a_uint32_t dev_id, fal_port_t port_id);
+typedef sw_error_t (*adpt_port_mtu_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+		fal_mtu_ctrl_t *ctrl);
+typedef sw_error_t (*adpt_port_interface_mode_status_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+				  fal_port_interface_mode_t * mode);
+typedef sw_error_t (*adpt_port_reset_func)(a_uint32_t dev_id, fal_port_t port_id);
+typedef sw_error_t (*adpt_port_rxfc_status_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+					 a_bool_t enable);
+typedef sw_error_t (*adpt_port_speed_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+				   fal_port_speed_t * pspeed);
+typedef sw_error_t (*adpt_port_mdix_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+				  fal_port_mdix_mode_t mode);
+typedef sw_error_t (*adpt_port_wol_status_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+				  a_bool_t * enable);
+
 typedef struct
 {
 	adpt_fdb_first_func adpt_fdb_first;
@@ -168,6 +301,7 @@ typedef struct
 
 	adpt_stp_port_state_get_func adpt_stp_port_state_get;
 	adpt_stp_port_state_set_func adpt_stp_port_state_set;
+
 	adpt_port_vlan_vsi_set_func adpt_port_vlan_vsi_set;
 	adpt_vsi_free_func adpt_vsi_free;
 	adpt_port_vsi_set_func adpt_port_vsi_set;
@@ -179,6 +313,69 @@ typedef struct
 	adpt_vsi_newaddr_lrn_set_func adpt_vsi_newaddr_lrn_set;
 	adpt_port_vlan_vsi_get_func adpt_port_vlan_vsi_get;
 	adpt_vsi_alloc_func adpt_vsi_alloc;
+
+	adpt_port_local_loopback_get_func adpt_port_local_loopback_get;
+	adpt_port_autoneg_restart_func adpt_port_autoneg_restart;
+	adpt_port_duplex_set_func adpt_port_duplex_set;
+	adpt_port_rxmac_status_get_func adpt_port_rxmac_status_get;
+	adpt_port_cdt_func adpt_port_cdt;
+	adpt_port_txmac_status_set_func adpt_port_txmac_status_set;
+	adpt_port_combo_fiber_mode_set_func adpt_port_combo_fiber_mode_set;
+	adpt_port_combo_medium_status_get_func adpt_port_combo_medium_status_get;
+	adpt_port_magic_frame_mac_set_func adpt_port_magic_frame_mac_set;
+	adpt_port_powersave_set_func adpt_port_powersave_set;
+	adpt_port_hibernate_set_func adpt_port_hibernate_set;
+	adpt_port_max_frame_size_get_func adpt_port_max_frame_size_get;
+	adpt_port_8023az_get_func adpt_port_8023az_get;
+	adpt_port_rxfc_status_get_func adpt_port_rxfc_status_get;
+	adpt_port_txfc_status_get_func adpt_port_txfc_status_get;
+	adpt_port_remote_loopback_set_func adpt_port_remote_loopback_set;
+	adpt_port_flowctrl_set_func adpt_port_flowctrl_set;
+	adpt_port_mru_set_func adpt_port_mru_set;
+	adpt_port_autoneg_status_get_func adpt_port_autoneg_status_get;
+	adpt_port_txmac_status_get_func adpt_port_txmac_status_get;
+	adpt_port_mdix_get_func adpt_port_mdix_get;
+	adpt_ports_link_status_get_func adpt_ports_link_status_get;
+	adpt_port_mac_loopback_set_func adpt_port_mac_loopback_set;
+	adpt_port_phy_id_get_func adpt_port_phy_id_get;
+	adpt_port_mru_get_func adpt_port_mru_get;
+	adpt_port_power_on_func adpt_port_power_on;
+	adpt_port_speed_set_func adpt_port_speed_set;
+	adpt_port_interface_mode_get_func adpt_port_interface_mode_get;
+	adpt_port_duplex_get_func adpt_port_duplex_get;
+	adpt_port_autoneg_adv_get_func adpt_port_autoneg_adv_get;
+	adpt_port_mdix_status_get_func adpt_port_mdix_status_get;
+	adpt_port_mtu_set_func adpt_port_mtu_set;
+	adpt_port_link_status_get_func adpt_port_link_status_get;
+	adpt_port_8023az_set_func adpt_port_8023az_set;
+	adpt_port_powersave_get_func adpt_port_powersave_get;
+	adpt_port_combo_prefer_medium_get_func adpt_port_combo_prefer_medium_get;
+	adpt_port_max_frame_size_set_func adpt_port_max_frame_size_set;
+	adpt_port_combo_prefer_medium_set_func adpt_port_combo_prefer_medium_set;
+	adpt_port_power_off_func adpt_port_power_off;
+	adpt_port_txfc_status_set_func adpt_port_txfc_status_set;
+	adpt_port_counter_set_func adpt_port_counter_set;
+	adpt_port_combo_fiber_mode_get_func adpt_port_combo_fiber_mode_get;
+	adpt_port_local_loopback_set_func adpt_port_local_loopback_set;
+	adpt_port_wol_status_set_func adpt_port_wol_status_set;
+	adpt_port_magic_frame_mac_get_func adpt_port_magic_frame_mac_get;
+	adpt_port_flowctrl_get_func adpt_port_flowctrl_get;
+	adpt_port_rxmac_status_set_func adpt_port_rxmac_status_set;
+	adpt_port_counter_get_func adpt_port_counter_get;
+	adpt_port_interface_mode_set_func adpt_port_interface_mode_set;
+	adpt_port_mac_loopback_get_func adpt_port_mac_loopback_get;
+	adpt_port_hibernate_get_func adpt_port_hibernate_get;
+	adpt_port_autoneg_adv_set_func adpt_port_autoneg_adv_set;
+	adpt_port_remote_loopback_get_func adpt_port_remote_loopback_get;
+	adpt_port_counter_show_func adpt_port_counter_show;
+	adpt_port_autoneg_enable_func adpt_port_autoneg_enable;
+	adpt_port_mtu_get_func adpt_port_mtu_get;
+	adpt_port_interface_mode_status_get_func adpt_port_interface_mode_status_get;
+	adpt_port_reset_func adpt_port_reset;
+	adpt_port_rxfc_status_set_func adpt_port_rxfc_status_set;
+	adpt_port_speed_get_func adpt_port_speed_get;
+	adpt_port_mdix_set_func adpt_port_mdix_set;
+	adpt_port_wol_status_get_func adpt_port_wol_status_get;
 }adpt_api_t;
 
 

@@ -398,6 +398,7 @@ union mac_ctrl1_u {
 	#define MAC_CTRL2_MAC_RSV_DEFAULT 0x0
 
 struct mac_ctrl2 {
+	a_uint32_t  _reserved0:1;
 	a_uint32_t  ipg_dec_len:1;
 	a_uint32_t  test_pause:1;
 	a_uint32_t  mac_lpi_tx_idle:1;
@@ -406,7 +407,7 @@ struct mac_ctrl2 {
 	a_uint32_t  crs_sel:1;
 	a_uint32_t  crc_rsv_en:1;
 	a_uint32_t  maxfr:14;
-	a_uint32_t  _reserved0:2;
+	a_uint32_t  _reserved1:2;
 	a_uint32_t  mac_tx_thd:4;
 	a_uint32_t  mac_rsv:4;
 };

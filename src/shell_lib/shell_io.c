@@ -236,6 +236,10 @@ static sw_data_type_t sw_data_type[] =
     SW_TYPE_DEF(SW_VSI_NEWADDR_LRN, cmd_data_check_newadr_lrn, NULL),
     SW_TYPE_DEF(SW_VSI_STAMOVE, cmd_data_check_stamove, NULL),
     #endif
+    SW_TYPE_DEF(SW_MTU_INFO, NULL, NULL),
+    SW_TYPE_DEF(SW_MRU_INFO, NULL, NULL),
+    SW_TYPE_DEF(SW_MTU_ENTRY, cmd_data_check_mtu_entry, NULL),
+    SW_TYPE_DEF(SW_MRU_ENTRY, cmd_data_check_mru_entry, NULL),
 };
 
 sw_data_type_t *
@@ -577,6 +581,127 @@ cmd_data_check_fiber_mode(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
 
     return SW_OK;
 }
+
+sw_error_t
+cmd_data_check_mtu_entry(char *cmd_str, void * val, a_uint32_t size)
+{
+    char *cmd;
+    a_uint32_t tmp;
+    sw_error_t rv;
+    fal_mtu_ctrl_t entry;
+
+    aos_mem_zero(&entry, sizeof (fal_mtu_ctrl_t));
+
+    do
+    {
+        cmd = get_sub_cmd("mtu_size", "1514");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: 1514 - 32767 \n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint32(cmd, &(entry.mtu_size), sizeof (a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: usage: 1514 - 32767 \n");
+        }
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    do
+    {
+        cmd = get_sub_cmd("mtu_action", "0");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: usage: 0:forward 1:drop 2:cpycpu 3:rdtcpu\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint32(cmd, (a_uint32_t *)&(entry.action), sizeof (a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: usage: 0:forward 1:drop 2:cpycpu 3:rdtcpu\n");
+        }
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    *(fal_mtu_ctrl_t *)val = entry;
+    return SW_OK;
+}
+
+sw_error_t
+cmd_data_check_mru_entry(char *cmd_str, void * val, a_uint32_t size)
+{
+    char *cmd;
+    a_uint32_t tmp;
+    sw_error_t rv;
+    fal_mru_ctrl_t entry;
+
+    aos_mem_zero(&entry, sizeof (fal_mru_ctrl_t));
+
+    do
+    {
+        cmd = get_sub_cmd("mru_size", "1514");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: 1514 - 32767 \n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint32(cmd, &(entry.mru_size), sizeof (a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: usage: 1514 - 32767 \n");
+        }
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    do
+    {
+        cmd = get_sub_cmd("mru_action", "0");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: usage: 0:forward 1:drop 2:cpycpu 3:rdtcpu\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint32(cmd, (a_uint32_t *)&(entry.action), sizeof (a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: usage: 0:forward 1:drop 2:cpycpu 3:rdtcpu\n");
+        }
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    *(fal_mru_ctrl_t *)val = entry;
+    return SW_OK;
+}
+
 #endif
 #endif
 #ifdef IN_INTERFACECONTROL
