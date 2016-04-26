@@ -374,6 +374,7 @@ qca_switch_init(a_uint32_t dev_id)
 			#ifdef DESS
 			#ifdef IN_PORTCONTROL
 			fal_port_flowctrl_forcemode_set(dev_id, i, A_FALSE);
+			fal_port_link_forcemode_set(dev_id, i, A_TRUE);
 			#endif
 			#ifdef IN_QOS
 			nr = 240; /*30*8*/
@@ -1148,7 +1149,8 @@ qm_err_check_work_start(struct qca_phy_priv *priv)
 {
 	/*Only valid for S17c chip*/
 	if (priv->version != QCA_VER_AR8337 &&
-		priv->version != QCA_VER_AR8327)
+		priv->version != QCA_VER_AR8327 &&
+		priv->version != 0x14)
 		return -1;
 
 	mutex_init(&priv->qm_lock);
@@ -1171,7 +1173,8 @@ qm_err_check_work_stop(struct qca_phy_priv *priv)
 {
 	/*Only valid for S17c chip*/
 	if (priv->version != QCA_VER_AR8337 &&
-		priv->version != QCA_VER_AR8327) return;
+		priv->version != QCA_VER_AR8327 &&
+		priv->version != 0x14) return;
 
 	cancel_delayed_work_sync(&priv->qm_dwork);
 }
@@ -1340,6 +1343,13 @@ static int ssdk_switch_register(void)
 			printk("qca_phy_mib_work_start failed for %s\n", sw_dev->name);
 			return ret;
 	}
+
+	ret = qm_err_check_work_start(priv);
+	if (ret != 0) {
+			printk("qm_err_check_work_start failed for %s\n", sw_dev->name);
+			return ret;
+	}
+	#if 0
 	#ifdef DESS
 	if ((ssdk_dt_global.mac_mode == PORT_WRAPPER_SGMII0_RGMII5)
 		||(ssdk_dt_global.mac_mode == PORT_WRAPPER_SGMII1_RGMII5)
@@ -1352,6 +1362,7 @@ static int ssdk_switch_register(void)
 			return ret;
 		}
 	}
+	#endif
 	#endif
 
 	return 0;
@@ -1899,6 +1910,8 @@ int ssdk_phy_init(ssdk_init_cfg *cfg)
 
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 struct reset_control *ess_rst = NULL;
+struct reset_control *ess_mac_clock_disable[5] = {NULL,NULL,NULL,NULL,NULL};
+
 void ssdk_ess_reset(void)
 {
 	if (!ess_rst)
@@ -1914,10 +1927,37 @@ char ssdk_driver_name[] = "ess_ssdk";
 static int ssdk_probe(struct platform_device *pdev)
 {
 	ess_rst = devm_reset_control_get(&pdev->dev, "ess_rst");
+	ess_mac_clock_disable[0] = devm_reset_control_get(&pdev->dev, "ess_mac1_clk_dis");
+	ess_mac_clock_disable[1] = devm_reset_control_get(&pdev->dev, "ess_mac2_clk_dis");
+	ess_mac_clock_disable[2] = devm_reset_control_get(&pdev->dev, "ess_mac3_clk_dis");
+	ess_mac_clock_disable[3] = devm_reset_control_get(&pdev->dev, "ess_mac4_clk_dis");
+	ess_mac_clock_disable[4] = devm_reset_control_get(&pdev->dev, "ess_mac5_clk_dis");
+
 	if (!ess_rst) {
 		printk("ess rst fail!\n");
 		return -1;
 	}
+	if (!ess_mac_clock_disable[0]) {
+		printk("ess_mac1_clock_disable fail!\n");
+		return -1;
+	}
+	if (!ess_mac_clock_disable[1]) {
+		printk("ess_mac2_clock_disable fail!\n");
+		return -1;
+	}
+	if (!ess_mac_clock_disable[2]) {
+		printk("ess_mac3_clock_disable fail!\n");
+		return -1;
+	}
+	if (!ess_mac_clock_disable[3]) {
+		printk("ess_mac4_clock_disable fail!\n");
+		return -1;
+	}
+	if (!ess_mac_clock_disable[4]) {
+		printk("ess_mac5_clock_disable fail!\n");
+		return -1;
+	}
+
 	reset_control_assert(ess_rst);
 	mdelay(10);
 	reset_control_deassert(ess_rst);
@@ -2352,6 +2392,7 @@ void switch_cpuport_setup(void)
 
 	fal_port_duplex_set(0, 0, FAL_FULL_DUPLEX);
 	fal_port_speed_set(0, 0, FAL_SPEED_1000);
+	udelay(10);
 	fal_port_txmac_status_set(0, 0, A_TRUE);
 	fal_port_rxmac_status_set(0, 0, A_TRUE);
 	#endif
@@ -2789,7 +2830,7 @@ static int ssdk_dess_mac_mode_init(a_uint32_t mac_mode)
 				qca_ar8327_phy_dbg_write(0, 4, 0x5, 0x2d47);
 				qca_ar8327_phy_dbg_write(0, 4, 0xb, 0xbc40);
 				qca_ar8327_phy_dbg_write(0, 4, 0x0, 0x82ee);
-				reg_value = 0x7e;
+				reg_value = 0x72;
 				qca_switch_reg_write(0, 0x90, (a_uint8_t *)&reg_value, 4);
 			}
 			/* config mac4 RGMII*/
@@ -2799,7 +2840,7 @@ static int ssdk_dess_mac_mode_init(a_uint32_t mac_mode)
 				qca_ar8327_phy_dbg_write(0, 4, 0x5, 0x2d47);
 				qca_ar8327_phy_dbg_write(0, 4, 0xb, 0xbc40);
 				qca_ar8327_phy_dbg_write(0, 4, 0x0, 0x82ee);
-				reg_value = 0x7e;
+				reg_value = 0x72;
 				qca_switch_reg_write(0, 0x8c, (a_uint8_t *)&reg_value, 4);
 			}
 			break;

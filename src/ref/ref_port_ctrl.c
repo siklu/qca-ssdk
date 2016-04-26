@@ -37,6 +37,7 @@
 #include <generated/autoconf.h>
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 #include <linux/switch.h>
+#include <linux/reset.h>
 #else
 #include <net/switch.h>
 #include <linux/ar8216_platform.h>
@@ -48,6 +49,10 @@
 #include "ref_vlan.h"
 #include <linux/time.h>
 #include "f1_phy.h"
+
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+extern struct reset_control *ess_mac_clock_disable[5];
+#endif
 
 int
 qca_ar8327_sw_get_port_link(struct switch_dev *dev, int port,
@@ -127,16 +132,34 @@ static int qca_switch_get_qm_status(struct switch_dev *dev, a_uint32_t port_id, 
 		*qm_buffer_err = 0;
 		return -1;
 	}
-	if (port_id < 4) {
-		reg = 0x1D;
-		priv->mii_write(0x820, reg);
-		qm_val = priv->mii_read(0x824);
-		*qm_buffer_err = (qm_val >> (port_id * 8)) & 0xFF;
-	} else {
-		reg = 0x1E;
-		priv->mii_write(0x820, reg);
-		qm_val = priv->mii_read(0x824);
-		*qm_buffer_err = (qm_val >> ((port_id-4) * 8)) & 0xFF;
+	if (priv->version == 0x14)
+	{
+		if (port_id < 4) {
+			reg = 0x1D;
+			qca_switch_reg_write(0, 0x820, (a_uint8_t *)&reg, 4);
+			qca_switch_reg_read(0, 0x824, (a_uint8_t *)&qm_val, 4);
+			*qm_buffer_err = (qm_val >> (port_id * 8)) & 0xFF;
+		} else {
+			reg = 0x1E;
+			qca_switch_reg_write(0, 0x820, (a_uint8_t *)&reg, 4);
+			qca_switch_reg_read(0, 0x824, (a_uint8_t *)&qm_val, 4);
+			*qm_buffer_err = (qm_val >> ((port_id-4) * 8)) & 0xFF;
+		}
+	}
+	if (priv->version == QCA_VER_AR8337 ||
+		priv->version == QCA_VER_AR8327)
+	{
+		if (port_id < 4) {
+			reg = 0x1D;
+			priv->mii_write(0x820, reg);
+			qm_val = priv->mii_read(0x824);
+			*qm_buffer_err = (qm_val >> (port_id * 8)) & 0xFF;
+		} else {
+			reg = 0x1E;
+			priv->mii_write(0x820, reg);
+			qm_val = priv->mii_read(0x824);
+			*qm_buffer_err = (qm_val >> ((port_id-4) * 8)) & 0xFF;
+		}
 	}
 
 	return 0;
@@ -149,29 +172,102 @@ static int qca_switch_force_mac_1000M_full(struct switch_dev *dev, a_uint32_t po
 
 	if (port_id < 0 || port_id > 6)
 		return -1;
-
-	reg = AR8327_REG_PORT_STATUS(port_id);
-	value = priv->mii_read(reg);
-	value &= ~(BIT(6) | BITS(0,2));
-	value |= AR8327_PORT_SPEED_1000M | BIT(6);
-	priv->mii_write(reg, value);
-	value = priv->mii_read(reg);
-
+	if (priv->version == 0x14)
+	{
+		reg = AR8327_REG_PORT_STATUS(port_id);
+		qca_switch_reg_read(0, reg, (a_uint8_t *)&value, 4);
+		value &= ~(BIT(6) | BITS(0,2));
+		value |= AR8327_PORT_SPEED_1000M | BIT(6);
+		qca_switch_reg_write(0, reg, (a_uint8_t *)&value, 4);
+	}
+	if (priv->version == QCA_VER_AR8337 ||
+		priv->version == QCA_VER_AR8327)
+	{
+		reg = AR8327_REG_PORT_STATUS(port_id);
+		value = priv->mii_read(reg);
+		value &= ~(BIT(6) | BITS(0,2));
+		value |= AR8327_PORT_SPEED_1000M | BIT(6);
+		priv->mii_write(reg, value);
+	}
 	return 0;
 }
 
 static int qca_switch_force_mac_status(struct switch_dev *dev, a_uint32_t port_id,a_uint32_t speed,a_uint32_t duplex)
 {
 	a_uint32_t reg, value;
+	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 
 	if (port_id < 0 || port_id > 6)
 		return -1;
+	if (priv->version == 0x14)
+	{
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+		/*disable mac clock*/
+		reset_control_assert(ess_mac_clock_disable[port_id -1]);
+		udelay(10);
+		reg = AR8327_REG_PORT_STATUS(port_id);
+		qca_switch_reg_read(0,reg,(a_uint8_t*)&value,4);
+		value &= ~(BIT(6) | BITS(0,2));
+		value |= speed | (duplex?BIT(6):0);
+		qca_switch_reg_write(0,reg,(a_uint8_t*)&value,4);
+		/*enable mac clock*/
+		reset_control_deassert(ess_mac_clock_disable[port_id -1]);
+#endif
+	}
+	if (priv->version == QCA_VER_AR8337 ||
+	priv->version == QCA_VER_AR8327)
+	{
+		reg = AR8327_REG_PORT_STATUS(port_id);
+		value = priv->mii_read(reg);
+		value &= ~(BIT(6) | BITS(0,2));
+		value |= speed | (duplex?BIT(6):0);
+		priv->mii_write(reg,value);
+	}
 
-	reg = AR8327_REG_PORT_STATUS(port_id);
-	qca_switch_reg_read(0,reg,(a_uint8_t*)&value,4);
-	value &= ~(BIT(6) | BITS(0,2));
-	value |= speed | (duplex?BIT(6):0);
-	qca_switch_reg_write(0,reg,(a_uint8_t*)&value,4);
+	return 0;
+}
+
+a_bool_t
+qca_ar8327_sw_rgmii_mode_valid(a_uint32_t port_id)
+{
+	a_uint32_t rgmii_mode;
+
+	rgmii_mode = ssdk_dt_global_get_mac_mode();
+
+	if(((rgmii_mode == PORT_WRAPPER_SGMII0_RGMII5) ||
+		(rgmii_mode == PORT_WRAPPER_SGMII1_RGMII5)) && (port_id == 5))
+		return A_TRUE;
+
+	if(((rgmii_mode == PORT_WRAPPER_SGMII0_RGMII4) ||
+		(rgmii_mode == PORT_WRAPPER_SGMII1_RGMII4) ||
+		(rgmii_mode == PORT_WRAPPER_SGMII4_RGMII4)) && (port_id == 4))
+		return A_TRUE;
+
+	return A_FALSE;
+}
+
+static int
+qca_switch_get_mac_link(struct switch_dev *dev, a_uint32_t port_id, a_uint32_t *link)
+{
+	a_uint32_t reg, value;
+	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
+
+	if (port_id < 0 || port_id > 6)
+		return -1;
+	if (priv->version == 0x14)
+	{
+		reg = AR8327_REG_PORT_STATUS(port_id);
+		qca_switch_reg_read(0,reg,(a_uint8_t*)&value,4);
+		*link = (value>>8)&0x1;
+	}
+	if (priv->version == QCA_VER_AR8337 ||
+	priv->version == QCA_VER_AR8327)
+	{
+		reg = AR8327_REG_PORT_STATUS(port_id);
+		value = priv->mii_read(reg);
+		*link = (value>>8)&0x1;
+	}
+
 	return 0;
 }
 
@@ -318,15 +414,29 @@ int qca_qm_error_check(struct qca_phy_priv *priv)
 {
 	a_uint32_t value, qm_err_int=0;
 
-	value = priv->mii_read(0x24);
-	qm_err_int = value & BIT(14);	// b14-QM_ERR_INT
+	if (priv->version == QCA_VER_AR8337 ||
+		priv->version == QCA_VER_AR8327)
+	{
+		value = priv->mii_read(0x24);
+		qm_err_int = value & BIT(14);	// b14-QM_ERR_INT
 
-	if(qm_err_int)
-		return 1;
+		if(qm_err_int)
+			return 1;
 
-	priv->mii_write(0x820, 0x0);
-	value = priv->mii_read(0x824);
+		priv->mii_write(0x820, 0x0);
+		value = priv->mii_read(0x824);
+	}
+	if(priv->version==0x14)
+	{
+		qca_switch_reg_read(0, 0x24, (a_uint8_t*)&value, 4);
+		qm_err_int = value & BIT(14);	// b14-QM_ERR_INT
 
+		if(qm_err_int)
+			return 1;
+		value = 0;
+		qca_switch_reg_write(0, 0x820, (a_uint8_t*)&value, 4);
+		qca_switch_reg_read(0, 0x824, (a_uint8_t*)&value, 4);
+	}
 	return value;
 }
 
@@ -355,16 +465,52 @@ int qca_qm_err_recovery(struct qca_phy_priv *priv)
 	return 1;
 }
 
+a_bool_t
+qca_ar8327_sw_mac_polling_port_valid(struct switch_dev *dev, a_uint32_t port_id)
+{
+	a_uint32_t mac_mode;
+
+	mac_mode = ssdk_dt_global_get_mac_mode();
+
+	if( port_id >= AR8327_NUM_PORTS-1 || port_id < 1)
+		return A_FALSE;
+
+	if(((mac_mode == PORT_WRAPPER_SGMII0_RGMII5) ||
+		(mac_mode == PORT_WRAPPER_SGMII1_RGMII5)) && (port_id != 5))
+		return A_FALSE;
+
+	if(((mac_mode == PORT_WRAPPER_SGMII0_RGMII4) ||
+		(mac_mode == PORT_WRAPPER_SGMII1_RGMII4) ||
+		(mac_mode == PORT_WRAPPER_SGMII4_RGMII4)) && (port_id != 4))
+		return A_FALSE;
+
+	return A_TRUE;
+}
+void
+qca_phy_status_get(a_uint32_t port_id, a_uint32_t *speed_status, a_uint32_t *link_status, a_uint32_t *duplex_status)
+{
+	a_uint16_t port_phy_status;
+	a_uint32_t phy_addr;
+
+	phy_addr = port_id -1;
+	if (qca_ar8327_sw_rgmii_mode_valid(port_id) == A_TRUE)
+		phy_addr = 4;
+
+	qca_ar8327_phy_read(0, phy_addr, F1_PHY_SPEC_STATUS, &port_phy_status);
+	*speed_status = (a_uint32_t)((port_phy_status >> 14) & 0x03);
+	*link_status = (a_uint32_t)((port_phy_status & BIT(10)) >> 10);
+	*duplex_status = (a_uint32_t)((port_phy_status & BIT(13)) >> 13);
+}
+
 void
 qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 {
 	static int task_count = 0;
 	a_uint32_t i;
 	a_uint32_t value;
-	a_uint32_t link, speed, duplex;
+	a_uint32_t link = 0, speed = 0, duplex = 0;
 	a_uint32_t qm_buffer_err = 0;
 	a_uint16_t port_phy_status[AR8327_NUM_PORTS];
-	static a_uint32_t mac_err_flag[AR8327_NUM_PORTS] = {0,0,0,0,0,0,0};
 	static a_uint32_t qm_err_cnt[AR8327_NUM_PORTS] = {0,0,0,0,0,0,0};
 
 	static a_uint32_t link_cnt[AR8327_NUM_PORTS] = {0,0,0,0,0,0,0};
@@ -373,77 +519,105 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 
 	/*Only valid for S17c chip*/
 	if (priv->version != QCA_VER_AR8337 &&
-		priv->version != QCA_VER_AR8327)
+		priv->version != QCA_VER_AR8327 &&
+		priv->version != 0x14)
 		return;
 
 	value = qca_qm_error_check(priv);
 	if(value)
 	{
-		qca_qm_err_recovery(priv);
+		if(priv->version != 0x14)
+			qca_qm_err_recovery(priv);
 		return;
 	}
 
 	++task_count;
 
-	for (i = 1; i < AR8327_NUM_PORTS-1; ++i) {
-		qca_ar8327_phy_read(0, i-1, F1_PHY_SPEC_STATUS, &port_phy_status[i]);
-		speed = (a_uint32_t)((port_phy_status[i] >> 14) & 0x03);
-		link = (a_uint32_t)((port_phy_status[i] & BIT(10)) >> 10);
-		duplex = (a_uint32_t)((port_phy_status[i] & BIT(13)) >> 13);
+	for (i = 1; i < AR8327_NUM_PORTS-1; i++) {
+		if(qca_ar8327_sw_mac_polling_port_valid(dev, i) == A_FALSE)
+			continue;
 
+		if (qca_ar8327_sw_rgmii_mode_valid(i) == A_FALSE)
+			qca_switch_get_mac_link(dev, i, &link);
+		else
+		{
+			qca_phy_status_get(i, &speed, &link, &duplex);
+		}
 		if (link != port_old_link[i]) {
+			if (qca_ar8327_sw_rgmii_mode_valid(i) == A_FALSE)
+			{
+				qca_phy_status_get(i, &speed, &link, &duplex);
+			}
 			++link_cnt[i];
 			/* Up --> Down */
 			if ((port_old_link[i] == PORT_LINK_UP) && (link == PORT_LINK_DOWN)) {
-				fal_port_link_forcemode_set(0, i, A_TRUE);
-				port_link_down[i]=0;
-				/* Check queue buffer */
-				qm_err_cnt[i] = 0;
-				qca_switch_get_qm_status(dev, i, &qm_buffer_err);
 
-				if (qm_buffer_err) {
-					port_qm_buf[i] = QM_NOT_EMPTY;
+				if (qca_ar8327_sw_rgmii_mode_valid(i) == A_TRUE)
+				{
+					fal_port_rxmac_status_set(0, i, A_FALSE);
+					fal_port_txmac_status_set(0, i, A_FALSE);
 				}
-				else {
-					a_uint16_t value = 0;
-					port_qm_buf[i] = QM_EMPTY;
+				else
+				{
+					// a_uint32_t pstatus = 0;
+					fal_port_link_forcemode_set(0, i, A_TRUE);
+					// below only for dess debug print
+					// qca_switch_reg_read(0, AR8327_REG_PORT_STATUS(i), (a_uint8_t *)&pstatus, 4);
+					// printk("%s, %d, port_id %d link down pstatus 0x%x\n",__FUNCTION__,__LINE__,i, pstatus);
+				}
+				port_link_down[i]=0;
+				if(priv->version != 0x14){
+					/* Check queue buffer */
+					qm_err_cnt[i] = 0;
+					qca_switch_get_qm_status(dev, i, &qm_buffer_err);
 
-					/* Force MAC 1000M Full before auto negotiation */
-					qca_switch_force_mac_1000M_full(dev, i);
-					mdelay(10);
+					if (qm_buffer_err) {
+						port_qm_buf[i] = QM_NOT_EMPTY;
+					}
+					else {
+						a_uint16_t value = 0;
+						port_qm_buf[i] = QM_EMPTY;
 
-					qca_ar8327_phy_dbg_read(0, i-1, 0, &value);
-					value &= (~(1<<12));
-					qca_ar8327_phy_dbg_write(0, i-1, 0, value);
+						/* Force MAC 1000M Full before auto negotiation */
+						qca_switch_force_mac_1000M_full(dev, i);
+						mdelay(10);
+						// printk("%s, %d, port %d link down\n",__FUNCTION__,__LINE__,i);
+						qca_ar8327_phy_dbg_read(0, i-1, 0, &value);
+						value &= (~(1<<12));
+						qca_ar8327_phy_dbg_write(0, i-1, 0, value);
+					}
 				}
 			}
 			/* Down --> Up */
 			else if ((port_old_link[i] == PORT_LINK_DOWN) && (link == PORT_LINK_UP)) {
-				/* Check MAC state machine */
-				if (!mac_err_flag[i]) {
-					value  = 0x00010045 | (i << 8);
-					priv->mii_write(0xc0, value);
-					value = priv->mii_read(0xc4);
-					if (value & 0xf) {
-						mac_err_flag[i] = 1;
-					}
-					else
-						mac_err_flag[i] = 0;
-				}
+
 				if (port_link_up[i] < 1) {
 					++port_link_up[i];
 					qca_switch_get_qm_status(dev, i, &qm_buffer_err);
 					if (qm_buffer_err) {
-						qca_qm_err_recovery(priv);
+						if(priv->version != 0x14)
+								qca_qm_err_recovery(priv);
 						return;
 					}
 				}
 				else{
+					//a_uint32_t pstatus = 0;
 					port_link_up[i]=0;
-					fal_port_link_forcemode_set(0, i, A_FALSE);
+					qca_switch_force_mac_status(dev, i, speed, duplex);
 					udelay(100);
+					if (qca_ar8327_sw_rgmii_mode_valid(i) == A_FALSE) {
+						fal_port_link_forcemode_set(0, i, A_FALSE);
+					}
+					else
+					{
+						fal_port_rxmac_status_set(0, i, A_TRUE);
+						fal_port_txmac_status_set(0, i, A_TRUE);
+					}
+					udelay(100);
+					//qca_switch_reg_read(0, AR8327_REG_PORT_STATUS(i), (a_uint8_t *)&pstatus, 4);
+					//printk("%s, %d, port %d link up speed %d, duplex %d pstatus 0x%x\n",__FUNCTION__,__LINE__,i, speed, duplex, pstatus);
 
-					if(speed == 0x01)/*PHY is link up 100M*/
+					if((speed == 0x01) && (priv->version != 0x14))/*PHY is link up 100M*/
 					{
 						a_uint16_t value = 0;
 						qca_ar8327_phy_dbg_read(0, i-1, 0, &value);
