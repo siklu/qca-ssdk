@@ -31,6 +31,7 @@ extern "C" {
 #else
     typedef a_uint64_t fal_pbmp_t;
 #endif
+    typedef a_uint32_t fal_nexthop_t;
 
     typedef struct
     {

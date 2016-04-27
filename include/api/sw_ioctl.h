@@ -215,6 +215,13 @@ extern "C" {
 #define SW_API_FDB_VLAN_IVL_SVL_GET        (34  + SW_API_FDB_OFFSET)
 #define SW_API_FDB_RFS_SET                 (35  + SW_API_FDB_OFFSET)
 #define SW_API_FDB_RFS_DEL                 (36  + SW_API_FDB_OFFSET)
+#define SW_API_FDB_AGE_MODE_SET            (37  + SW_API_FDB_OFFSET)
+#define SW_API_FDB_AGE_MODE_GET            (38  + SW_API_FDB_OFFSET)
+#define SW_API_FDB_LEARN_CTRL_SET          (39  + SW_API_FDB_OFFSET)
+#define SW_API_FDB_LEARN_CTRL_GET          (40  + SW_API_FDB_OFFSET)
+#define SW_API_FDB_LEARN_MODE_SET          (41  + SW_API_FDB_OFFSET)
+#define SW_API_FDB_LEARN_MODE_GET          (42  + SW_API_FDB_OFFSET)
+#define SW_API_PT_FDB_LEARN_COUNTER_GET    (43  + SW_API_FDB_OFFSET)
 
 
     /*acl*/

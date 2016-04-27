@@ -443,7 +443,7 @@ union fdb_tbl_rd_op_rslt_data0_u {
 
 /*[register] FDB_TBL_RD_OP_RSLT_DATA1*/
 #define FDB_TBL_RD_OP_RSLT_DATA1
-#define FDB_TBL_RD_OP_RSLT_DATA1_ADDRESS 0x210
+#define FDB_TBL_RD_OP_RSLT_DATA1_ADDRESS 0x204
 #define FDB_TBL_RD_OP_RSLT_DATA1_NUM     1
 #define FDB_TBL_RD_OP_RSLT_DATA1_INC     0x10
 #define FDB_TBL_RD_OP_RSLT_DATA1_TYPE    REG_TYPE_RO
@@ -465,7 +465,7 @@ union fdb_tbl_rd_op_rslt_data1_u {
 
 /*[register] FDB_TBL_RD_OP_RSLT_DATA2*/
 #define FDB_TBL_RD_OP_RSLT_DATA2
-#define FDB_TBL_RD_OP_RSLT_DATA2_ADDRESS 0x220
+#define FDB_TBL_RD_OP_RSLT_DATA2_ADDRESS 0x208
 #define FDB_TBL_RD_OP_RSLT_DATA2_NUM     1
 #define FDB_TBL_RD_OP_RSLT_DATA2_INC     0x10
 #define FDB_TBL_RD_OP_RSLT_DATA2_TYPE    REG_TYPE_RO
@@ -509,7 +509,7 @@ union fdb_tbl_op_data0_u {
 
 /*[register] FDB_TBL_OP_DATA1*/
 #define FDB_TBL_OP_DATA1
-#define FDB_TBL_OP_DATA1_ADDRESS 0x240
+#define FDB_TBL_OP_DATA1_ADDRESS 0x234
 #define FDB_TBL_OP_DATA1_NUM     1
 #define FDB_TBL_OP_DATA1_INC     0x10
 #define FDB_TBL_OP_DATA1_TYPE    REG_TYPE_RW
@@ -531,7 +531,7 @@ union fdb_tbl_op_data1_u {
 
 /*[register] FDB_TBL_OP_DATA2*/
 #define FDB_TBL_OP_DATA2
-#define FDB_TBL_OP_DATA2_ADDRESS 0x250
+#define FDB_TBL_OP_DATA2_ADDRESS 0x238
 #define FDB_TBL_OP_DATA2_NUM     1
 #define FDB_TBL_OP_DATA2_INC     0x10
 #define FDB_TBL_OP_DATA2_TYPE    REG_TYPE_RW
@@ -575,7 +575,7 @@ union fdb_tbl_rd_op_data0_u {
 
 /*[register] FDB_TBL_RD_OP_DATA1*/
 #define FDB_TBL_RD_OP_DATA1
-#define FDB_TBL_RD_OP_DATA1_ADDRESS 0x270
+#define FDB_TBL_RD_OP_DATA1_ADDRESS 0x264
 #define FDB_TBL_RD_OP_DATA1_NUM     1
 #define FDB_TBL_RD_OP_DATA1_INC     0x10
 #define FDB_TBL_RD_OP_DATA1_TYPE    REG_TYPE_RW
@@ -597,7 +597,7 @@ union fdb_tbl_rd_op_data1_u {
 
 /*[register] FDB_TBL_RD_OP_DATA2*/
 #define FDB_TBL_RD_OP_DATA2
-#define FDB_TBL_RD_OP_DATA2_ADDRESS 0x280
+#define FDB_TBL_RD_OP_DATA2_ADDRESS 0x268
 #define FDB_TBL_RD_OP_DATA2_NUM     1
 #define FDB_TBL_RD_OP_DATA2_INC     0x10
 #define FDB_TBL_RD_OP_DATA2_TYPE    REG_TYPE_RW
@@ -772,26 +772,26 @@ union rfdb_tbl_u {
 #define FDB_TBL_INC     0x10
 #define FDB_TBL_TYPE    REG_TYPE_RW
 #define FDB_TBL_DEFAULT 0x0
+	/*[field] MAC_ADDR*/
+	#define FDB_TBL_MAC_ADDR
+	#define FDB_TBL_MAC_ADDR_OFFSET  0
+	#define FDB_TBL_MAC_ADDR_LEN     48
+	#define FDB_TBL_MAC_ADDR_DEFAULT 0x0
 	/*[field] ENTRY_VALID*/
 	#define FDB_TBL_ENTRY_VALID
-	#define FDB_TBL_ENTRY_VALID_OFFSET  0
+	#define FDB_TBL_ENTRY_VALID_OFFSET  48
 	#define FDB_TBL_ENTRY_VALID_LEN     1
 	#define FDB_TBL_ENTRY_VALID_DEFAULT 0x0
 	/*[field] LOOKUP_VALID*/
 	#define FDB_TBL_LOOKUP_VALID
-	#define FDB_TBL_LOOKUP_VALID_OFFSET  1
+	#define FDB_TBL_LOOKUP_VALID_OFFSET  49
 	#define FDB_TBL_LOOKUP_VALID_LEN     1
 	#define FDB_TBL_LOOKUP_VALID_DEFAULT 0x0
 	/*[field] VSI*/
 	#define FDB_TBL_VSI
-	#define FDB_TBL_VSI_OFFSET  2
+	#define FDB_TBL_VSI_OFFSET  50
 	#define FDB_TBL_VSI_LEN     5
 	#define FDB_TBL_VSI_DEFAULT 0x0
-	/*[field] MAC_ADDR*/
-	#define FDB_TBL_MAC_ADDR
-	#define FDB_TBL_MAC_ADDR_OFFSET  7
-	#define FDB_TBL_MAC_ADDR_LEN     48
-	#define FDB_TBL_MAC_ADDR_DEFAULT 0x0
 	/*[field] DST_INFO*/
 	#define FDB_TBL_DST_INFO
 	#define FDB_TBL_DST_INFO_OFFSET  55
@@ -814,11 +814,11 @@ union rfdb_tbl_u {
 	#define FDB_TBL_HIT_AGE_DEFAULT 0x0
 
 struct fdb_tbl {
+	a_uint32_t  mac_addr_0:25;
+	a_uint32_t  mac_addr_1:23;
 	a_uint32_t  entry_valid:1;
 	a_uint32_t  lookup_valid:1;
 	a_uint32_t  vsi:5;
-	a_uint32_t  mac_addr_0:25;
-	a_uint32_t  mac_addr_1:23;
 	a_uint32_t  dst_info_0:9;
 	a_uint32_t  dst_info_1:5;
 	a_uint32_t  sa_cmd:2;

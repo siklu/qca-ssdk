@@ -406,8 +406,14 @@ extern "C" {
     SW_API_DEF(SW_API_FDB_FIND,   fal_fdb_find), \
     SW_API_DEF(SW_API_FDB_PT_LEARN_SET,   fal_fdb_port_learn_set), \
     SW_API_DEF(SW_API_FDB_PT_LEARN_GET,   fal_fdb_port_learn_get), \
+    SW_API_DEF(SW_API_FDB_AGE_MODE_SET,   fal_fdb_age_mode_set), \
+    SW_API_DEF(SW_API_FDB_AGE_MODE_GET,   fal_fdb_age_mode_get), \
     SW_API_DEF(SW_API_FDB_AGE_CTRL_SET,   fal_fdb_age_ctrl_set), \
     SW_API_DEF(SW_API_FDB_AGE_CTRL_GET,   fal_fdb_age_ctrl_get), \
+    SW_API_DEF(SW_API_FDB_LEARN_CTRL_SET,  fal_fdb_learn_ctrl_set), \
+    SW_API_DEF(SW_API_FDB_LEARN_CTRL_GET,  fal_fdb_learn_ctrl_get), \
+    SW_API_DEF(SW_API_FDB_LEARN_MODE_SET,  fal_fdb_learn_mode_set), \
+    SW_API_DEF(SW_API_FDB_LEARN_MODE_GET,  fal_fdb_learn_mode_get), \
     SW_API_DEF(SW_API_FDB_VLAN_IVL_SVL_SET, fal_fdb_vlan_ivl_svl_set),\
     SW_API_DEF(SW_API_FDB_VLAN_IVL_SVL_GET, fal_fdb_vlan_ivl_svl_get),\
     SW_API_DEF(SW_API_FDB_AGE_TIME_SET,   fal_fdb_age_time_set), \
@@ -416,6 +422,7 @@ extern "C" {
     SW_API_DEF(SW_API_FDB_EXTEND_NEXT,    fal_fdb_extend_next),  \
     SW_API_DEF(SW_API_FDB_EXTEND_FIRST,   fal_fdb_extend_first), \
     SW_API_DEF(SW_API_FDB_TRANSFER,       fal_fdb_transfer), \
+    SW_API_DEF(SW_API_PT_FDB_LEARN_COUNTER_GET,  fal_port_fdb_learn_counter_get), \
     SW_API_DEF(SW_API_PT_FDB_LEARN_LIMIT_SET,    fal_port_fdb_learn_limit_set),  \
     SW_API_DEF(SW_API_PT_FDB_LEARN_LIMIT_GET,    fal_port_fdb_learn_limit_get),  \
     SW_API_DEF(SW_API_PT_FDB_LEARN_EXCEED_CMD_SET,    fal_port_fdb_learn_exceed_cmd_set),  \
@@ -445,8 +452,14 @@ extern "C" {
     SW_API_DESC(SW_API_FDB_FIND) \
     SW_API_DESC(SW_API_FDB_PT_LEARN_SET) \
     SW_API_DESC(SW_API_FDB_PT_LEARN_GET) \
+    SW_API_DESC(SW_API_FDB_AGE_MODE_SET) \
+    SW_API_DESC(SW_API_FDB_AGE_MODE_GET) \
     SW_API_DESC(SW_API_FDB_AGE_CTRL_SET) \
     SW_API_DESC(SW_API_FDB_AGE_CTRL_GET) \
+    SW_API_DESC(SW_API_FDB_LEARN_CTRL_SET) \
+    SW_API_DESC(SW_API_FDB_LEARN_CTRL_GET) \
+    SW_API_DESC(SW_API_FDB_LEARN_MODE_SET) \
+    SW_API_DESC(SW_API_FDB_LEARN_MODE_GET) \
     SW_API_DESC(SW_API_FDB_VLAN_IVL_SVL_SET) \
     SW_API_DESC(SW_API_FDB_VLAN_IVL_SVL_GET) \
     SW_API_DESC(SW_API_FDB_AGE_TIME_SET) \
@@ -455,6 +468,7 @@ extern "C" {
     SW_API_DESC(SW_API_FDB_EXTEND_NEXT)  \
     SW_API_DESC(SW_API_FDB_EXTEND_FIRST) \
     SW_API_DESC(SW_API_FDB_TRANSFER) \
+    SW_API_DESC(SW_API_PT_FDB_LEARN_COUNTER_GET) \
     SW_API_DESC(SW_API_PT_FDB_LEARN_LIMIT_SET)  \
     SW_API_DESC(SW_API_PT_FDB_LEARN_LIMIT_GET)  \
     SW_API_DESC(SW_API_PT_FDB_LEARN_EXCEED_CMD_SET)  \

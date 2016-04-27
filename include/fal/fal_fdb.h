@@ -58,8 +58,10 @@ extern "C" {
         {
             fal_port_t id;
             fal_pbmp_t map;
+            fal_nexthop_t nexthop;
         } port;
         a_bool_t portmap_en;
+        a_bool_t nexthop_en;
         a_bool_t is_multicast;
         a_bool_t static_en;
         a_bool_t leaky_en;

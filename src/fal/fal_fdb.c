@@ -57,6 +57,15 @@ _fal_fdb_del_all(a_uint32_t dev_id, a_uint32_t flag)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_fdb_del_all)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_fdb_del_all(dev_id, flag);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -73,6 +82,15 @@ _fal_fdb_del_by_port(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t flag)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_fdb_del_by_port)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_fdb_del_by_port(dev_id, port_id, flag);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -89,6 +107,15 @@ _fal_fdb_del_by_mac(a_uint32_t dev_id, const fal_fdb_entry_t * entry)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_fdb_del_by_mac)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_fdb_del_by_mac(dev_id, entry);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -105,6 +132,15 @@ _fal_fdb_first(a_uint32_t dev_id, fal_fdb_entry_t * entry)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_fdb_first)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_fdb_first(dev_id, entry);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -121,6 +157,15 @@ _fal_fdb_next(a_uint32_t dev_id, fal_fdb_entry_t * entry)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_fdb_next)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_fdb_next(dev_id, entry);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -137,6 +182,15 @@ _fal_fdb_find(a_uint32_t dev_id, fal_fdb_entry_t * entry)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_fdb_find)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_fdb_find(dev_id, entry);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -153,6 +207,15 @@ _fal_fdb_port_learn_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_fdb_port_learn_set)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_fdb_port_learn_set(dev_id, port_id, enable);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -169,6 +232,15 @@ _fal_fdb_port_learn_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_fdb_port_learn_get)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_fdb_port_learn_get(dev_id, port_id, enable);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -184,6 +256,15 @@ _fal_fdb_age_ctrl_set(a_uint32_t dev_id, a_bool_t enable)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_fdb_age_ctrl_set)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_fdb_age_ctrl_set(dev_id, enable);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -200,6 +281,15 @@ _fal_fdb_age_ctrl_get(a_uint32_t dev_id, a_bool_t * enable)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_fdb_age_ctrl_get)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_fdb_age_ctrl_get(dev_id, enable);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -295,6 +385,15 @@ _fal_fdb_iterate(a_uint32_t dev_id, a_uint32_t * iterator, fal_fdb_entry_t * ent
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_fdb_iterate)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_fdb_iterate(dev_id, iterator, entry);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -311,6 +410,15 @@ _fal_fdb_extend_next(a_uint32_t dev_id, fal_fdb_op_t * option,
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_fdb_extend_next)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_fdb_extend_next(dev_id, option, entry);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -327,6 +435,15 @@ _fal_fdb_extend_first(a_uint32_t dev_id, fal_fdb_op_t * option,
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_fdb_extend_first)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_fdb_extend_first(dev_id, option, entry);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -344,6 +461,15 @@ _fal_fdb_transfer(a_uint32_t dev_id, fal_port_t old_port, fal_port_t new_port,
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_fdb_transfer)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_fdb_transfer(dev_id, old_port, new_port, fid, option);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -360,6 +486,15 @@ _fal_port_fdb_learn_limit_set(a_uint32_t dev_id, fal_port_t port_id,
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_port_fdb_learn_limit_set)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_port_fdb_learn_limit_set(dev_id, port_id, enable, cnt);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -376,6 +511,15 @@ _fal_port_fdb_learn_limit_get(a_uint32_t dev_id, fal_port_t port_id,
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_port_fdb_learn_limit_get)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_port_fdb_learn_limit_get(dev_id, port_id, enable, cnt);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -392,6 +536,15 @@ _fal_port_fdb_learn_exceed_cmd_set(a_uint32_t dev_id, fal_port_t port_id,
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_port_fdb_learn_exceed_cmd_set)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_port_fdb_learn_exceed_cmd_set(dev_id, port_id, cmd);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -408,6 +561,15 @@ _fal_port_fdb_learn_exceed_cmd_get(a_uint32_t dev_id, fal_port_t port_id,
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_port_fdb_learn_exceed_cmd_get)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_port_fdb_learn_exceed_cmd_get(dev_id, port_id, cmd);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -576,6 +738,15 @@ _fal_fdb_port_add(a_uint32_t dev_id, a_uint32_t fid, fal_mac_addr_t * addr, fal_
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_fdb_port_add)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_fdb_port_add(dev_id, fid, addr, port_id);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -591,6 +762,15 @@ _fal_fdb_port_del(a_uint32_t dev_id, a_uint32_t fid, fal_mac_addr_t * addr, fal_
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_fdb_port_del)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_fdb_port_del(dev_id, fid, addr, port_id);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -631,6 +811,107 @@ _fal_fdb_rfs_del(a_uint32_t dev_id, const fal_fdb_rfs_t * entry)
 	return rv;
 }
 
+sw_error_t
+_fal_fdb_learn_ctrl_set(a_uint32_t dev_id, a_bool_t enable)
+{
+    adpt_api_t *p_api;
+	sw_error_t rv = SW_OK;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_fdb_learn_ctrl_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_fdb_learn_ctrl_set(dev_id, enable);
+    return rv;
+}
+sw_error_t
+_fal_fdb_age_mode_get(a_uint32_t dev_id, a_uint32_t * age_mode)
+{
+    adpt_api_t *p_api;
+	sw_error_t rv = SW_OK;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_fdb_age_mode_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_fdb_age_mode_get(dev_id, age_mode);
+    return rv;
+}
+sw_error_t
+_fal_fdb_learn_ctrl_get(a_uint32_t dev_id, a_bool_t * enable)
+{
+    adpt_api_t *p_api;
+	sw_error_t rv = SW_OK;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_fdb_learn_ctrl_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_fdb_learn_ctrl_get(dev_id, enable);
+    return rv;
+}
+sw_error_t
+_fal_fdb_age_mode_set(a_uint32_t dev_id, a_uint32_t age_mode)
+{
+    adpt_api_t *p_api;
+	sw_error_t rv = SW_OK;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_fdb_age_mode_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_fdb_age_mode_set(dev_id, age_mode);
+    return rv;
+}
+sw_error_t
+_fal_fdb_learn_mode_set(a_uint32_t dev_id, a_uint32_t learn_mode)
+{
+    adpt_api_t *p_api;
+	sw_error_t rv = SW_OK;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_fdb_learn_mode_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_fdb_learn_mode_set(dev_id, learn_mode);
+    return rv;
+}
+sw_error_t
+_fal_fdb_learn_mode_get(a_uint32_t dev_id, a_uint32_t * learn_mode)
+{
+    adpt_api_t *p_api;
+	sw_error_t rv = SW_OK;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_fdb_learn_mode_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_fdb_learn_mode_get(dev_id, learn_mode);
+    return rv;
+}
+sw_error_t
+_fal_port_fdb_learn_counter_get(a_uint32_t dev_id, fal_port_t port_id,
+                                  a_uint32_t * cnt)
+{
+    adpt_api_t *p_api;
+	sw_error_t rv = SW_OK;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_port_fdb_learn_counter_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_port_fdb_learn_counter_get(dev_id, port_id, cnt);
+    return rv;
+}
+
+/*insert flag for inner fal, don't remove it*/
 
 /**
  * @brief Add a Fdb entry
@@ -1355,6 +1636,79 @@ int ssdk_rfs_mac_rule_del(ssdk_fdb_rfs_t *rfs)
 EXPORT_SYMBOL(ssdk_rfs_mac_rule_set);
 EXPORT_SYMBOL(ssdk_rfs_mac_rule_del);
 #endif
+
+sw_error_t
+fal_fdb_learn_ctrl_set(a_uint32_t dev_id, a_bool_t enable)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_API_LOCK;
+    rv = _fal_fdb_learn_ctrl_set(dev_id, enable);
+    FAL_API_UNLOCK;
+    return rv;
+}
+sw_error_t
+fal_fdb_age_mode_get(a_uint32_t dev_id, a_uint32_t * age_mode)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_API_LOCK;
+    rv = _fal_fdb_age_mode_get(dev_id, age_mode);
+    FAL_API_UNLOCK;
+    return rv;
+}
+sw_error_t
+fal_fdb_learn_ctrl_get(a_uint32_t dev_id, a_bool_t * enable)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_API_LOCK;
+    rv = _fal_fdb_learn_ctrl_get(dev_id, enable);
+    FAL_API_UNLOCK;
+    return rv;
+}
+sw_error_t
+fal_fdb_age_mode_set(a_uint32_t dev_id, a_uint32_t age_mode)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_API_LOCK;
+    rv = _fal_fdb_age_mode_set(dev_id, age_mode);
+    FAL_API_UNLOCK;
+    return rv;
+}
+sw_error_t
+fal_fdb_learn_mode_set(a_uint32_t dev_id, a_uint32_t learn_mode)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_API_LOCK;
+    rv = _fal_fdb_learn_mode_set(dev_id, learn_mode);
+    FAL_API_UNLOCK;
+    return rv;
+}
+sw_error_t
+fal_fdb_learn_mode_get(a_uint32_t dev_id, a_uint32_t * learn_mode)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_API_LOCK;
+    rv = _fal_fdb_learn_mode_get(dev_id, learn_mode);
+    FAL_API_UNLOCK;
+    return rv;
+}
+sw_error_t
+fal_port_fdb_learn_counter_get(a_uint32_t dev_id, fal_port_t port_id,
+                                  a_uint32_t * cnt)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_API_LOCK;
+    rv = _fal_port_fdb_learn_counter_get(dev_id, port_id, cnt);
+    FAL_API_UNLOCK;
+    return rv;
+}
+/*insert flag for outter fal, don't remove it*/
 
 /**
  * @}
