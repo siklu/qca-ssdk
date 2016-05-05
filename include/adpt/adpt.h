@@ -51,14 +51,6 @@ do { \
         return SW_BAD_PTR; \
 } while (0)
 
-/*fal_port_t definition,
-	bit31-bit24: port_type, 0-physical port, 1-trunk port, 2-virtual port
-	bit23-bit0: physical port id or trunk id or virtual port id*/
-
-#define ADPT_PORT_ID_TYPE(port_id) (((port_id)>>24)&0xff)
-#define ADPT_PORT_ID_VALUE(port_id) ((port_id)&0xffffff)
-#define ADPT_PORT_ID(type, value) (((type)<<24)|(value))
-
 typedef sw_error_t (*adpt_fdb_first_func)(a_uint32_t dev_id, fal_fdb_entry_t * entry);
 typedef sw_error_t (*adpt_fdb_next_func)(a_uint32_t dev_id, fal_fdb_entry_t * entry);
 typedef sw_error_t (*adpt_fdb_add_func)(a_uint32_t dev_id, const fal_fdb_entry_t * entry);

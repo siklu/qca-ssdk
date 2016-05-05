@@ -3095,30 +3095,29 @@ qca_dess_hw_init(ssdk_init_cfg *cfg)
 #ifdef HPPE
 static int qca_hppe_vsi_hw_init(void)
 {
-	union vsi_tbl_u value = {0};
+	fal_vsi_newaddr_lrn_t newaddr_lrn;
+	fal_vsi_stamove_t stamove;
+	newaddr_lrn.action = 0;
+	newaddr_lrn.lrn_en = 1;
+	fal_vsi_newaddr_lrn_set(0, 1, &newaddr_lrn);
+	fal_vsi_newaddr_lrn_set(0, 2, &newaddr_lrn);
+	fal_vsi_newaddr_lrn_set(0, 3, &newaddr_lrn);
+	stamove.action = 0;
+	stamove.stamove_en = 1;
+	fal_vsi_stamove_set(0, 1, &stamove);
+	fal_vsi_stamove_set(0, 2, &stamove);
+	fal_vsi_stamove_set(0, 3, &stamove);
 
-	value.bf.new_addr_lrn_en = 0x1;
-	value.bf.new_addr_fwd_cmd = 0x0;
-	value.bf.station_move_lrn_en = 0x1;
-	value.bf.station_move_fwd_cmd = 0x0;
-
-	value.bf.member_port_bitmap = 0x7e;
-	value.bf.uuc_bitmap = 0x7e;
-	value.bf.umc_bitmap = 0x7e;
-	value.bf.bc_bitmap = 0x7e;
-	hppe_vsi_tbl_set(0, 1, &value);
-
-	value.bf.member_port_bitmap = 0x1f;
-	value.bf.uuc_bitmap = 0x1e;
-	value.bf.umc_bitmap = 0x1e;
-	value.bf.bc_bitmap = 0x1e;
-	hppe_vsi_tbl_set(0, 2, &value);
-
-	value.bf.member_port_bitmap = 0x61;
-	value.bf.uuc_bitmap = 0x61;
-	value.bf.umc_bitmap = 0x61;
-	value.bf.bc_bitmap = 0x61;
-	hppe_vsi_tbl_set(0, 3, &value);
+	fal_port_vsi_set(0, 0, 1);
+	fal_port_vsi_set(0, 7, 1);
+	fal_port_vsi_set(0, 1, 2);
+	fal_port_vsi_set(0, 2, 2);
+	fal_port_vsi_set(0, 3, 2);
+	fal_port_vsi_set(0, 4, 2);
+	fal_port_vsi_set(0, 0x41, 2);
+	fal_port_vsi_set(0, 5, 3);
+	fal_port_vsi_set(0, 6, 3);
+	fal_port_vsi_set(0, 0x42, 3);
 
 	return 0;
 }
@@ -3134,7 +3133,7 @@ static int qca_hppe_fdb_hw_init(void)
 		value.bf.new_addr_fwd_cmd = 0;
 		value.bf.station_move_lrn_en = 1;
 		value.bf.station_move_fwd_cmd = 0;
-		value.bf.port_isolation_bitmap = 0x7e;
+		value.bf.port_isolation_bitmap = 0x7f;
 		value.bf.txmac_en = 1;
 		value.bf.promisc_en = 1;
 
@@ -3142,6 +3141,7 @@ static int qca_hppe_fdb_hw_init(void)
 	}
 
 	value.bf.txmac_en = 0;
+	hppe_port_bridge_ctrl_set(0, 0, &value);
 	hppe_port_bridge_ctrl_set(0, 7, &value);
 
 	hppe_l2_global_conf_age_en_set(0, 1);
@@ -3190,27 +3190,6 @@ qca_hppe_hw_init(ssdk_init_cfg *cfg)
 
 	flow_ctrl0.val = 0x00000c88;
 	hppe_flow_ctrl0_set(0, &flow_ctrl0);
-
-	port_vsi.val[0] = 0;
-	port_vsi.val[1] = 0;
-	port_vsi.val[2] = 0;
-	port_vsi.bf.vsi = 1;
-	port_vsi.bf.vsi_valid = 1;
-	hppe_l3_vp_port_tbl_set(0, 0, &port_vsi);
-	hppe_l3_vp_port_tbl_set(0, 7, &port_vsi);
-	port_vsi.bf.vsi = 2;
-	port_vsi.bf.vsi_valid = 1;
-	hppe_l3_vp_port_tbl_set(0, 1, &port_vsi);
-	hppe_l3_vp_port_tbl_set(0, 2, &port_vsi);
-	hppe_l3_vp_port_tbl_set(0, 3, &port_vsi);
-	hppe_l3_vp_port_tbl_set(0, 4, &port_vsi);
-	hppe_l3_vp_port_tbl_set(0, 0x41, &port_vsi);
-	port_vsi.bf.vsi = 3;
-	port_vsi.bf.vsi_valid = 1;
-	hppe_l3_vp_port_tbl_set(0, 5, &port_vsi);
-	hppe_l3_vp_port_tbl_set(0, 6, &port_vsi);
-	hppe_l3_vp_port_tbl_set(0, 0x42, &port_vsi);
-
 	hppe_ucast_queue_map_tbl_queue_id_set(0, 0, 0);
 	index = 4;
 	queue_base = 0x80;

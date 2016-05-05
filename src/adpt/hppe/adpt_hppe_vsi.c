@@ -63,20 +63,22 @@ _adpt_hppe_vsi_member_update(a_uint32_t dev_id,	a_uint32_t vsi_id,
 	rv = hppe_vsi_tbl_get( dev_id, vsi_id, &vsi_tbl);
 	if( rv != SW_OK )
 		return rv;
-	if( ADPT_VSI_ADD == op )
+	printk("member = 0x%x\n", vsi_tbl.bf.member_port_bitmap);
+	if( ADPT_VSI_DEL == op )
 	{
-		vsi_tbl.bf.bc_bitmap &= (!(1<<port_id));
-		vsi_tbl.bf.member_port_bitmap &= (!(1<<port_id));
-		vsi_tbl.bf.umc_bitmap &= (!(1<<port_id));
-		vsi_tbl.bf.uuc_bitmap &= (!(1<<port_id));
+		vsi_tbl.bf.bc_bitmap &= (~(1<<port_id));
+		vsi_tbl.bf.member_port_bitmap &= (~(1<<port_id));
+		vsi_tbl.bf.umc_bitmap &= (~(1<<port_id));
+		vsi_tbl.bf.uuc_bitmap &= (~(1<<port_id));
 	}
-	else if( ADPT_VSI_DEL == op )
+	else if( ADPT_VSI_ADD == op )
 	{
 		vsi_tbl.bf.bc_bitmap |= (1<<port_id);
 		vsi_tbl.bf.member_port_bitmap |= (1<<port_id);
 		vsi_tbl.bf.umc_bitmap |= (1<<port_id);
 		vsi_tbl.bf.uuc_bitmap |= (1<<port_id);
 	}
+	printk("member = 0x%x\n", vsi_tbl.bf.member_port_bitmap);
 	rv = hppe_vsi_tbl_set( dev_id, vsi_id, &vsi_tbl);
 	if( rv != SW_OK )
 		return rv;
@@ -99,6 +101,7 @@ static sw_error_t _adpt_hppe_port_vsi_mapping_update(a_uint32_t dev_id,
 				__FUNCTION__, __LINE__, port_id, vsi_id);
 		return SW_NOT_FOUND;
 	}
+	printk("%s, %d: port %d, vsi %d\n", __FUNCTION__, __LINE__, port_id, vsi_id);
 
 	/*check port previous vsi*/
 	for( i = 0; i <= ADPT_VSI_MAX; i++ )
@@ -114,6 +117,7 @@ static sw_error_t _adpt_hppe_port_vsi_mapping_update(a_uint32_t dev_id,
 			p_vsi->pport_bitmap &= (~(1<<port_id));
 		}
 	}
+	printk("%s, %d: port %d, vsi %d\n", __FUNCTION__, __LINE__, port_id, vsi_id);
 
 	/*port based vsi update*/
 	rv = _adpt_hppe_vsi_member_update(dev_id, vsi_id, port_id, ADPT_VSI_ADD);
@@ -406,31 +410,44 @@ adpt_hppe_port_vsi_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vsi_id)
 	sw_error_t rv;
 
 	ADPT_DEV_ID_CHECK(dev_id);
-
-	l3_vp_port_tbl.bf.vsi_valid = A_TRUE;
-	if(ADPT_VSI_DELETE == vsi_id && port_id > ADPT_VSI_PPORT_NR)
+	printk("%s, %d: port %d, vsi %d\n", __FUNCTION__, __LINE__, port_id, vsi_id);
+	if(ADPT_VSI_DELETE == vsi_id)
 	{
-		if(port_id <= ADPT_VSI_PPORT_NR)
-			vsi_id = default_port_vsi[port_id];
-		else
+		if(FAL_IS_PPORT(port_id))
 		{
+			printk("physical port\n");
+			vsi_id = default_port_vsi[port_id];
+		}
+		else if(FAL_IS_VPORT(port_id))
+		{
+			printk("virtual port\n");
 			l3_vp_port_tbl.bf.vsi_valid = A_FALSE;
 			vsi_id = 0;
 		}
+		else if(FAL_IS_TRUNK(port_id))
+		{
+			printk("trunk port\n");
+			return SW_BAD_VALUE;
+		}
 	}
+	printk("%s, %d: port %d, vsi %d\n", __FUNCTION__, __LINE__, port_id, vsi_id);
 
-	rv = hppe_l3_vp_port_tbl_get(dev_id, port_id, &l3_vp_port_tbl);
+	rv = hppe_l3_vp_port_tbl_get(dev_id, FAL_PORT_ID_VALUE(port_id), &l3_vp_port_tbl);
 	if (SW_OK != rv)
 		return rv;
+	l3_vp_port_tbl.bf.vsi_valid = A_TRUE;
 	l3_vp_port_tbl.bf.vsi = vsi_id;
-	rv = hppe_l3_vp_port_tbl_set(dev_id, port_id, &l3_vp_port_tbl);
+	rv = hppe_l3_vp_port_tbl_set(dev_id, FAL_PORT_ID_VALUE(port_id), &l3_vp_port_tbl);
 	if( rv != SW_OK )
 		return rv;
+	printk("%s, %d: port %d, vsi %d\n", __FUNCTION__, __LINE__, port_id, vsi_id);
 
-	rv = _adpt_hppe_port_vsi_mapping_update(dev_id, port_id, vsi_id);
-	if( rv != SW_OK )
-		return rv;
-
+	if(FAL_IS_PPORT(port_id))
+	{
+		rv = _adpt_hppe_port_vsi_mapping_update(dev_id, FAL_PORT_ID_VALUE(port_id), vsi_id);
+		if( rv != SW_OK )
+			return rv;
+	}
 	return rv;
 }
 
@@ -444,12 +461,15 @@ adpt_hppe_vsi_alloc(a_uint32_t dev_id, a_uint32_t *vsi)
 
 	for( vsi_id = ADPT_VSI_RESERVE_MAX+1; vsi_id < ADPT_VSI_MAX; vsi_id++ )
 	{
+		union vsi_tbl_u vsi_tbl;
 		if(adpt_vsi_mapping[dev_id][vsi_id].valid == 0)
 		{
 			adpt_vsi_mapping[dev_id][vsi_id].valid = 1;
   			adpt_vsi_mapping[dev_id][vsi_id].pport_bitmap = 0;
   			adpt_vsi_mapping[dev_id][vsi_id].pHead = NULL;
 			*vsi = vsi_id;
+			aos_mem_zero(&vsi_tbl, sizeof(vsi_tbl));
+			hppe_vsi_tbl_set(0, vsi_id, &vsi_tbl);
 			return SW_OK;
 		}
 	}
@@ -530,7 +550,7 @@ adpt_hppe_vsi_tbl_dump(a_uint32_t dev_id)
 		if(adpt_vsi_mapping[dev_id][vsi_id].valid == 0)
 			continue;
 		p_vsi_info = adpt_vsi_mapping[dev_id][vsi_id].pHead;
-		printk("vsi , port bitmap 0x%x\n",vsi_id, adpt_vsi_mapping[dev_id][vsi_id].pport_bitmap);
+		printk("vsi %d, port bitmap 0x%x\n",vsi_id, adpt_vsi_mapping[dev_id][vsi_id].pport_bitmap);
 		while(p_vsi_info != NULL)
 		{
 			printk("%8s vlan %d, port bitmap 0x%x\n","",
@@ -590,12 +610,15 @@ sw_error_t adpt_hppe_vsi_init(a_uint32_t dev_id)
 	/*init reserved vsi*/
 	for( vsi_id = 0; vsi_id < ADPT_VSI_RESERVE_MAX + 1; vsi_id++ )
 	{
+		union vsi_tbl_u vsi_tbl;
 		if(adpt_vsi_mapping[dev_id][vsi_id].valid == 0)
 		{
 			adpt_vsi_mapping[dev_id][vsi_id].valid = 1;
   			adpt_vsi_mapping[dev_id][vsi_id].pport_bitmap = 0;
   			adpt_vsi_mapping[dev_id][vsi_id].pHead = NULL;
 		}
+		aos_mem_zero(&vsi_tbl, sizeof(vsi_tbl));
+		hppe_vsi_tbl_set(0, vsi_id, &vsi_tbl);
 	}
 
 	return SW_OK;
