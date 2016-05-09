@@ -3114,10 +3114,10 @@ static int qca_hppe_vsi_hw_init(void)
 	fal_port_vsi_set(0, 2, 2);
 	fal_port_vsi_set(0, 3, 2);
 	fal_port_vsi_set(0, 4, 2);
-	fal_port_vsi_set(0, 0x41, 2);
+	fal_port_vsi_set(0, 0x02000041, 2);
 	fal_port_vsi_set(0, 5, 3);
 	fal_port_vsi_set(0, 6, 3);
-	fal_port_vsi_set(0, 0x42, 3);
+	fal_port_vsi_set(0, 0x02000042, 3);
 
 	return 0;
 }
@@ -3141,7 +3141,7 @@ static int qca_hppe_fdb_hw_init(void)
 	}
 
 	value.bf.txmac_en = 0;
-	hppe_port_bridge_ctrl_set(0, 0, &value);
+	//hppe_port_bridge_ctrl_set(0, 0, &value);
 	hppe_port_bridge_ctrl_set(0, 7, &value);
 
 	hppe_l2_global_conf_age_en_set(0, 1);
