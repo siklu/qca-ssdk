@@ -2014,7 +2014,7 @@ void ssdk_malibu_psgmii_and_dakota_dess_reset(void)
 	/*check dakota psgmii calibration done start*/
 	m = 0;
 	while (m < 100) {
-		u32 status;
+		u32 status = 0;
 		qca_psgmii_reg_read(0, 0xa0, (a_uint8_t *)&status, 4);
 		if (status & BIT(0))
 			break;
