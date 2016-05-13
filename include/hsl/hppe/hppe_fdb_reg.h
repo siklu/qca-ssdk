@@ -814,8 +814,8 @@ union rfdb_tbl_u {
 	#define FDB_TBL_HIT_AGE_DEFAULT 0x0
 
 struct fdb_tbl {
-	a_uint32_t  mac_addr_0:25;
-	a_uint32_t  mac_addr_1:23;
+	a_uint32_t  mac_addr_0:32;
+	a_uint32_t  mac_addr_1:16;
 	a_uint32_t  entry_valid:1;
 	a_uint32_t  lookup_valid:1;
 	a_uint32_t  vsi:5;
