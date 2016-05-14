@@ -1913,6 +1913,7 @@ qca_switch_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data
 
 	reg_val = readl(hw_addr + reg_addr);
 	#else
+	reg_addr += 0x3a000000;
 	new_addr = (reg_addr & BIT_MASK_U32(MEM_ACCESS_AVA_BIT)) | 0x100000;
 	base_addr_val = (reg_addr & BIT_MASK_NOT_U32(MEM_ACCESS_AVA_BIT)) | 1;
 	writel(base_addr_val, hw_addr + PCIE_MEM_ACCESS_BASE_ADDR_REG);
@@ -1940,6 +1941,7 @@ qca_switch_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_dat
 	aos_mem_copy(&reg_val, reg_data, sizeof (a_uint32_t));
 	writel(reg_val, hw_addr + reg_addr);
 	#else
+	reg_addr += 0x3a000000;
 	new_addr = (reg_addr & BIT_MASK_U32(MEM_ACCESS_AVA_BIT)) | 0x100000;
 	base_addr_val = (reg_addr & BIT_MASK_NOT_U32(MEM_ACCESS_AVA_BIT)) | 1;
 	writel(base_addr_val, hw_addr + PCIE_MEM_ACCESS_BASE_ADDR_REG);
@@ -3158,11 +3160,11 @@ qca_hppe_portctrl_hw_init()
 
 	for(i = 0; i < 6; i++) {
 		val = 0x13;
-		qca_switch_reg_write(0, 0x3a001000 + (addr_delta*i), (a_uint8_t *)&val, 4);
+		qca_switch_reg_write(0, 0x001000 + (addr_delta*i), (a_uint8_t *)&val, 4);
 		val = 0x2;
-		qca_switch_reg_write(0, 0x3a001004 + (addr_delta*i), (a_uint8_t *)&val, 4);
+		qca_switch_reg_write(0, 0x001004 + (addr_delta*i), (a_uint8_t *)&val, 4);
 		val = 0x1;
-		qca_switch_reg_write(0, 0x3a001034 + (addr_delta*i), (a_uint8_t *)&val, 4);
+		qca_switch_reg_write(0, 0x001034 + (addr_delta*i), (a_uint8_t *)&val, 4);
 	}
 
 	return 0;
@@ -3178,18 +3180,15 @@ qca_hppe_hw_init(ssdk_init_cfg *cfg)
 	union l0_c_sp_cfg_tbl_u l0_sp_cfg;
 	union l1_c_sp_cfg_tbl_u l1_sp_cfg;
 	union l3_vp_port_tbl_u port_vsi;
-	union flow_ctrl0_u flow_ctrl0;
 
 	qca_switch_init(0);
 
 	/*fixme*/
 	val = 0x3b;
-	qca_switch_reg_write(0, 0x3a000010, (a_uint8_t *)&val, 4);
+	qca_switch_reg_write(0, 0x000010, (a_uint8_t *)&val, 4);
 	val = 0;
-	qca_switch_reg_write(0, 0x3a000008, (a_uint8_t *)&val, 4);
+	qca_switch_reg_write(0, 0x000008, (a_uint8_t *)&val, 4);
 
-	flow_ctrl0.val = 0x00000c88;
-	hppe_flow_ctrl0_set(0, &flow_ctrl0);
 	hppe_ucast_queue_map_tbl_queue_id_set(0, 0, 0);
 	index = 4;
 	queue_base = 0x80;
