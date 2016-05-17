@@ -1433,7 +1433,7 @@ static int ssdk_switch_register(void)
 	if (fal_reg_get(0, 0, (a_uint8_t *)&chip_id, 4) == SW_OK) {
 		priv->version = ((chip_id >> 8) & 0xff);
 		priv->revision = (chip_id & 0xff);
-		printk("Dakota Chip version 0x%02x%02x\n", priv->version, priv->revision);
+		printk("Chip version 0x%02x%02x\n", priv->version, priv->revision);
 	}
 
 	mutex_init(&priv->reg_mutex);
@@ -3472,8 +3472,8 @@ static int __init regi_init(void)
 	ssdk_init_cfg cfg;
 	int rv = 0;
 	garuda_init_spec_cfg chip_spec_cfg;
-	ssdk_dt_global.switch_reg_access_mode = HSL_REG_MDIO;
-	ssdk_dt_global.psgmii_reg_access_mode = HSL_REG_MDIO;
+	ssdk_dt_global.switch_reg_access_mode = HSL_REG_LOCAL_BUS;
+	ssdk_dt_global.psgmii_reg_access_mode = HSL_REG_LOCAL_BUS;
 	a_uint8_t chip_version = 0;
 
 	ssdk_cfg_default_init(&cfg);
@@ -3488,13 +3488,11 @@ static int __init regi_init(void)
 	if(rv)
 		goto out;
 
-	#ifndef ESS_ONLY_FPGA
 	rv = chip_ver_get(&cfg);
 	if(rv)
 		goto out;
+	#ifndef ESS_ONLY_FPGA
 	ssdk_phy_id_get(&cfg);
-	#else
-	cfg.chip_type = CHIP_HPPE;
 	#endif
 
 	memset(&chip_spec_cfg, 0, sizeof(garuda_init_spec_cfg));
@@ -3504,60 +3502,61 @@ static int __init regi_init(void)
 	if(rv)
 		goto out;
 
-	/*fixme*/
-	if(cfg.chip_type == CHIP_HPPE)
-	{
-		printk("Initializing HPPE!!\n");
-		qca_hppe_hw_init(&cfg);
-		printk("Initializing HPPE Done!!\n");
-	}
-
-	#ifndef ESS_ONLY_FPGA
-	#ifdef DESS
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
-		/*Do Malibu self test to fix packet drop issue firstly*/
-		if ((cfg.chip_type == CHIP_DESS) && (ssdk_dt_global.mac_mode == PORT_WRAPPER_PSGMII)) {
-			ssdk_psgmii_self_test();
-			clear_self_test_config();
+		#ifdef HPPE
+		if(cfg.chip_type == CHIP_HPPE)
+		{
+			printk("Initializing HPPE!!\n");
+			qca_hppe_hw_init(&cfg);
+			printk("Initializing HPPE Done!!\n");
 		}
+		#endif
+		#ifdef DESS
+		if(cfg.chip_type == CHIP_DESS)
+		{
+			/*Do Malibu self test to fix packet drop issue firstly*/
+			if(ssdk_dt_global.mac_mode == PORT_WRAPPER_PSGMII) {
+				ssdk_psgmii_self_test();
+				clear_self_test_config();
+			}
 
+			qca_dess_hw_init(&cfg);
+
+			#if defined (CONFIG_NF_FLOW_COOKIE)
+			#ifdef IN_NAT
+			#ifdef IN_SFE
+			sfe_register_flow_cookie_cb(ssdk_flow_cookie_set);
+			#endif
+			#endif
+			#endif
+
+			#ifdef IN_RFS
+			memset(&rfs_dev, 0, sizeof(rfs_dev));
+			rfs_dev.name = NULL;
+			#ifdef IN_FDB
+			rfs_dev.mac_rule_cb = ssdk_rfs_mac_rule_set;
+			#endif
+			#ifdef IN_IP
+			rfs_dev.ip4_rule_cb = ssdk_rfs_ip4_rule_set;
+			rfs_dev.ip6_rule_cb = ssdk_rfs_ip6_rule_set;
+			#endif
+			rfs_ess_device_register(&rfs_dev);
+			#if defined(CONFIG_RFS_ACCEL)
+			ssdk_dev_notifier.notifier_call = ssdk_dev_event;
+			ssdk_dev_notifier.priority = 1;
+			register_netdevice_notifier(&ssdk_dev_notifier);
+			#endif
+			ssdk_inet_notifier.notifier_call = ssdk_inet_event;
+			ssdk_inet_notifier.priority = 1;
+			register_inetaddr_notifier(&ssdk_inet_notifier);
+			#endif
+
+			/* Setup Cpu port for Dakota platform. */
+			switch_cpuport_setup();
+		}
+		#endif
 		rv = ssdk_switch_register();
-		qca_dess_hw_init(&cfg);
-
-		#if defined (CONFIG_NF_FLOW_COOKIE)
-		#ifdef IN_NAT
-		#ifdef IN_SFE
-		sfe_register_flow_cookie_cb(ssdk_flow_cookie_set);
-		#endif
-		#endif
-		#endif
-
-		#ifdef IN_RFS
-		memset(&rfs_dev, 0, sizeof(rfs_dev));
-		rfs_dev.name = NULL;
-		#ifdef IN_FDB
-		rfs_dev.mac_rule_cb = ssdk_rfs_mac_rule_set;
-		#endif
-		#ifdef IN_IP
-		rfs_dev.ip4_rule_cb = ssdk_rfs_ip4_rule_set;
-		rfs_dev.ip6_rule_cb = ssdk_rfs_ip6_rule_set;
-		#endif
-		rfs_ess_device_register(&rfs_dev);
-		#if defined(CONFIG_RFS_ACCEL)
-		ssdk_dev_notifier.notifier_call = ssdk_dev_event;
-		ssdk_dev_notifier.priority = 1;
-		register_netdevice_notifier(&ssdk_dev_notifier);
-		#endif
-		ssdk_inet_notifier.notifier_call = ssdk_inet_event;
-		ssdk_inet_notifier.priority = 1;
-		register_inetaddr_notifier(&ssdk_inet_notifier);
-		#endif
-
-		/* Setup Cpu port for Dakota platform. */
-		switch_cpuport_setup();
 	}
-	#endif
-	#endif
 
 out:
 	if (rv == 0)
