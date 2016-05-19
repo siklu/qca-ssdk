@@ -32,33 +32,38 @@ extern "C" {
 #define FAL_TRUNK_HASH_KEY_SA              0x2
 #define FAL_TRUNK_HASH_KEY_DIP             0x4
 #define FAL_TRUNK_HASH_KEY_SIP             0x8
+#define FAL_TRUNK_HASH_KEY_SRC_PORT  0x10
+#define FAL_TRUNK_HASH_KEY_L4_SRC_PORT           0x20
+#define FAL_TRUNK_HASH_KEY_L4_DST_PORT           0x40
+#define FAL_TRUNK_HASH_KEY_UDF0             0x80
+#define FAL_TRUNK_HASH_KEY_UDF1             0x100
+#define FAL_TRUNK_HASH_KEY_UDF2             0x200
+#define FAL_TRUNK_HASH_KEY_UDF3             0x400
+#define FAL_TRUNK_GROUP_MAX_MEMEBER    4
 
+sw_error_t
+fal_trunk_group_set(a_uint32_t dev_id, a_uint32_t trunk_id,
+			a_bool_t enable, fal_pbmp_t member);
+sw_error_t
+fal_trunk_group_get(a_uint32_t dev_id, a_uint32_t trunk_id,
+			a_bool_t * enable, fal_pbmp_t * member);
+sw_error_t
+fal_trunk_hash_mode_set(a_uint32_t dev_id, a_uint32_t hash_mode);
 
-    sw_error_t
-    fal_trunk_group_set(a_uint32_t dev_id, a_uint32_t trunk_id,
-                        a_bool_t enable, fal_pbmp_t member);
+sw_error_t
+fal_trunk_hash_mode_get(a_uint32_t dev_id, a_uint32_t * hash_mode);
 
+sw_error_t
+fal_trunk_manipulate_sa_set(a_uint32_t dev_id, fal_mac_addr_t * addr);
 
-    sw_error_t
-    fal_trunk_group_get(a_uint32_t dev_id, a_uint32_t trunk_id,
-                        a_bool_t * enable, fal_pbmp_t * member);
+sw_error_t
+fal_trunk_manipulate_sa_get(a_uint32_t dev_id, fal_mac_addr_t * addr);
 
+sw_error_t
+fal_trunk_fail_over_en_set(a_uint32_t dev_id, a_bool_t fail_over);
 
-    sw_error_t
-    fal_trunk_hash_mode_set(a_uint32_t dev_id, a_uint32_t hash_mode);
-
-
-    sw_error_t
-    fal_trunk_hash_mode_get(a_uint32_t dev_id, a_uint32_t * hash_mode);
-
-
-    sw_error_t
-    fal_trunk_manipulate_sa_set(a_uint32_t dev_id, fal_mac_addr_t * addr);
-
-
-    sw_error_t
-    fal_trunk_manipulate_sa_get(a_uint32_t dev_id, fal_mac_addr_t * addr);
-
+sw_error_t
+fal_trunk_fail_over_en_get(a_uint32_t dev_id, a_bool_t * fail_over);
 
 #ifdef __cplusplus
 }

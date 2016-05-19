@@ -28,6 +28,8 @@ extern "C" {
 #include "fal_fdb.h"
 #include "fal_mib.h"
 #include "fal_port_ctrl.h"
+#include "fal_mirror.h"
+#include "fal_trunk.h"
 #include "ssdk_init.h"
 #include "fal_type.h"
 #include "fal_stp.h"
@@ -248,6 +250,31 @@ typedef sw_error_t (*adpt_port_mdix_set_func)(a_uint32_t dev_id, fal_port_t port
 				  fal_port_mdix_mode_t mode);
 typedef sw_error_t (*adpt_port_wol_status_get_func)(a_uint32_t dev_id, fal_port_t port_id,
 				  a_bool_t * enable);
+// mirror
+typedef sw_error_t (*adpt_mirr_eg_analysis_port_get_func)(a_uint32_t dev_id, fal_port_t *port_id);
+typedef sw_error_t (*adpt_mirr_port_in_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+                         a_bool_t * enable);
+typedef sw_error_t (*adpt_mirr_port_eg_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+                         a_bool_t * enable);
+typedef sw_error_t (*adpt_mirr_analysis_port_get_func)(a_uint32_t dev_id, fal_port_t * port_id);
+typedef sw_error_t (*adpt_mirr_port_in_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+                         a_bool_t enable);
+typedef sw_error_t (*adpt_mirr_port_eg_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+                         a_bool_t enable);
+typedef sw_error_t (*adpt_mirr_eg_analysis_port_set_func)(a_uint32_t dev_id, fal_port_t port_id);
+typedef sw_error_t (*adpt_mirr_analysis_port_set_func)(a_uint32_t dev_id, fal_port_t port_id);
+typedef sw_error_t (*adpt_mirr_in_analysis_port_set_func)(a_uint32_t dev_id, fal_port_t port_id);
+typedef sw_error_t (*adpt_mirr_in_analysis_port_get_func)(a_uint32_t dev_id, fal_port_t *port_id);
+
+//trunk
+typedef sw_error_t (*adpt_trunk_fail_over_en_get_func)(a_uint32_t dev_id, a_bool_t * fail_over);
+typedef sw_error_t (*adpt_trunk_hash_mode_get_func)(a_uint32_t dev_id, a_uint32_t * hash_mode);
+typedef sw_error_t (*adpt_trunk_group_get_func)(a_uint32_t dev_id, a_uint32_t trunk_id,
+                        a_bool_t * enable, fal_pbmp_t * member);
+typedef sw_error_t (*adpt_trunk_group_set_func)(a_uint32_t dev_id, a_uint32_t trunk_id,
+                        a_bool_t enable, fal_pbmp_t member);
+typedef sw_error_t (*adpt_trunk_fail_over_en_set_func)(a_uint32_t dev_id, a_bool_t fail_over);
+typedef sw_error_t (*adpt_trunk_hash_mode_set_func)(a_uint32_t dev_id, a_uint32_t hash_mode);
 
 typedef struct
 {
@@ -368,6 +395,25 @@ typedef struct
 	adpt_port_speed_get_func adpt_port_speed_get;
 	adpt_port_mdix_set_func adpt_port_mdix_set;
 	adpt_port_wol_status_get_func adpt_port_wol_status_get;
+// mirror
+	adpt_mirr_eg_analysis_port_get_func adpt_mirr_eg_analysis_port_get;
+	adpt_mirr_port_in_get_func adpt_mirr_port_in_get;
+	adpt_mirr_port_eg_get_func adpt_mirr_port_eg_get;
+	adpt_mirr_analysis_port_get_func adpt_mirr_analysis_port_get;
+	adpt_mirr_port_in_set_func adpt_mirr_port_in_set;
+	adpt_mirr_port_eg_set_func adpt_mirr_port_eg_set;
+	adpt_mirr_eg_analysis_port_set_func adpt_mirr_eg_analysis_port_set;
+	adpt_mirr_analysis_port_set_func adpt_mirr_analysis_port_set;
+	adpt_mirr_in_analysis_port_set_func adpt_mirr_in_analysis_port_set;
+	adpt_mirr_in_analysis_port_get_func adpt_mirr_in_analysis_port_get;
+//trunk
+	adpt_trunk_fail_over_en_get_func adpt_trunk_fail_over_en_get;
+	adpt_trunk_hash_mode_get_func adpt_trunk_hash_mode_get;
+	adpt_trunk_group_get_func adpt_trunk_group_get;
+	adpt_trunk_group_set_func adpt_trunk_group_set;
+	adpt_trunk_fail_over_en_set_func adpt_trunk_fail_over_en_set;
+	adpt_trunk_hash_mode_set_func adpt_trunk_hash_mode_set;
+
 }adpt_api_t;
 
 

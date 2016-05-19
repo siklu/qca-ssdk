@@ -50,6 +50,7 @@ extern "c" {
 
 #define FAL_ENABLE      1
 #define FAL_DISABLE     0
+#define FAL_MAX_PORT_NUMBER     8
 
 //phy autoneg adv
 #define FAL_PHY_ADV_10T_HD      0x01

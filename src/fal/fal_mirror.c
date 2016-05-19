@@ -20,12 +20,27 @@
 #include "sw.h"
 #include "fal_mirror.h"
 #include "hsl_api.h"
+#include "adpt.h"
+
+#include <linux/kernel.h>
+#include <linux/module.h>
+
+
 
 static sw_error_t
 _fal_mirr_analysis_port_set(a_uint32_t dev_id, fal_port_t port_id)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_mirr_analysis_port_set)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_mirr_analysis_port_set(dev_id, port_id);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -41,6 +56,15 @@ _fal_mirr_analysis_port_get(a_uint32_t dev_id, fal_port_t * port_id)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_mirr_analysis_port_get)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_mirr_analysis_port_get(dev_id, port_id);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -56,6 +80,15 @@ _fal_mirr_port_in_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_mirr_port_in_set)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_mirr_port_in_set(dev_id, port_id, enable);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -72,6 +105,15 @@ _fal_mirr_port_in_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_mirr_port_in_get)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_mirr_port_in_get(dev_id, port_id, enable);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -87,6 +129,15 @@ _fal_mirr_port_eg_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_mirr_port_eg_set)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_mirr_port_eg_set(dev_id, port_id, enable);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -103,6 +154,15 @@ _fal_mirr_port_eg_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_mirr_port_eg_get)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_mirr_port_eg_get(dev_id, port_id, enable);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -112,7 +172,63 @@ _fal_mirr_port_eg_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
     rv = p_api->mirr_port_eg_get(dev_id, port_id, enable);
     return rv;
 }
+sw_error_t
+_fal_mirr_eg_analysis_port_get(a_uint32_t dev_id, fal_port_t port_id)
+{
+    adpt_api_t *p_api;
+	sw_error_t rv = SW_OK;
 
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_mirr_eg_analysis_port_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_mirr_eg_analysis_port_get(dev_id, port_id);
+    return rv;
+}
+sw_error_t
+_fal_mirr_eg_analysis_port_set(a_uint32_t dev_id, fal_port_t port_id)
+{
+    adpt_api_t *p_api;
+	sw_error_t rv = SW_OK;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_mirr_eg_analysis_port_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_mirr_eg_analysis_port_set(dev_id, port_id);
+    return rv;
+}
+sw_error_t
+_fal_mirr_in_analysis_port_set(a_uint32_t dev_id, fal_port_t port_id)
+{
+    adpt_api_t *p_api;
+	sw_error_t rv = SW_OK;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_mirr_in_analysis_port_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_mirr_in_analysis_port_set(dev_id, port_id);
+    return rv;
+}
+sw_error_t
+_fal_mirr_in_analysis_port_get(a_uint32_t dev_id, fal_port_t port_id)
+{
+    adpt_api_t *p_api;
+	sw_error_t rv = SW_OK;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_mirr_in_analysis_port_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_mirr_in_analysis_port_get(dev_id, port_id);
+    return rv;
+}
+/*insert flag for inner fal, don't remove it*/
 /**
  *   @details  Comments:
  *   The analysis port works for both ingress and egress mirror.
@@ -220,7 +336,47 @@ fal_mirr_port_eg_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
     FAL_API_UNLOCK;
     return rv;
 }
+sw_error_t
+fal_mirr_eg_analysis_port_get(a_uint32_t dev_id, fal_port_t *port_id)
+{
+    sw_error_t rv = SW_OK;
 
+    FAL_API_LOCK;
+    rv = _fal_mirr_eg_analysis_port_get(dev_id, port_id);
+    FAL_API_UNLOCK;
+    return rv;
+}
+sw_error_t
+fal_mirr_eg_analysis_port_set(a_uint32_t dev_id, fal_port_t port_id)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_API_LOCK;
+    rv = _fal_mirr_eg_analysis_port_set(dev_id, port_id);
+    FAL_API_UNLOCK;
+    return rv;
+}
+sw_error_t
+fal_mirr_in_analysis_port_set(a_uint32_t dev_id, fal_port_t port_id)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_API_LOCK;
+    rv = _fal_mirr_in_analysis_port_set(dev_id, port_id);
+    FAL_API_UNLOCK;
+    return rv;
+}
+sw_error_t
+fal_mirr_in_analysis_port_get(a_uint32_t dev_id, fal_port_t *port_id)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_API_LOCK;
+    rv = _fal_mirr_in_analysis_port_get(dev_id, port_id);
+    FAL_API_UNLOCK;
+    return rv;
+}
+/*insert flag for outter fal, don't remove it*/
 /**
  * @}
  */

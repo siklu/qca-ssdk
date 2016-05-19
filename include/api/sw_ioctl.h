@@ -332,6 +332,10 @@ extern "C" {
 #define SW_API_MIRROR_IN_PT_GET       (3  + SW_API_MIR_OFFSET)
 #define SW_API_MIRROR_EG_PT_SET       (4  + SW_API_MIR_OFFSET)
 #define SW_API_MIRROR_EG_PT_GET       (5  + SW_API_MIR_OFFSET)
+#define SW_API_IN_MIRROR_ANALY_PT_SET    (6  + SW_API_MIR_OFFSET)
+#define SW_API_IN_MIRROR_ANALY_PT_GET    (7  + SW_API_MIR_OFFSET)
+#define SW_API_EG_MIRROR_ANALY_PT_SET    (8  + SW_API_MIR_OFFSET)
+#define SW_API_EG_MIRROR_ANALY_PT_GET    (9  + SW_API_MIR_OFFSET)
 
     /*rate*/
 #define SW_API_RATE_OFFSET            900
@@ -594,6 +598,8 @@ extern "C" {
 #define SW_API_TRUNK_HASH_GET          (3  + SW_API_TRUNK_OFFSET)
 #define SW_API_TRUNK_MAN_SA_SET        (4  + SW_API_TRUNK_OFFSET)
 #define SW_API_TRUNK_MAN_SA_GET        (5  + SW_API_TRUNK_OFFSET)
+#define SW_API_TRUNK_FAILOVER_EN_SET        (6  + SW_API_TRUNK_OFFSET)
+#define SW_API_TRUNK_FAILOVER_EN_GET        (7  + SW_API_TRUNK_OFFSET)
 
     /* Interface Control */
 #define SW_API_INTERFACE_OFFSET        1900

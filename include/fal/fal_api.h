@@ -736,7 +736,11 @@ extern "C" {
     SW_API_DEF(SW_API_MIRROR_IN_PT_SET, fal_mirr_port_in_set), \
     SW_API_DEF(SW_API_MIRROR_IN_PT_GET, fal_mirr_port_in_get), \
     SW_API_DEF(SW_API_MIRROR_EG_PT_SET, fal_mirr_port_eg_set), \
-    SW_API_DEF(SW_API_MIRROR_EG_PT_GET, fal_mirr_port_eg_get),
+    SW_API_DEF(SW_API_MIRROR_EG_PT_GET, fal_mirr_port_eg_get), \
+    SW_API_DEF(SW_API_IN_MIRROR_ANALY_PT_SET, fal_mirr_in_analysis_port_set), \
+    SW_API_DEF(SW_API_IN_MIRROR_ANALY_PT_GET, fal_mirr_in_analysis_port_get), \
+    SW_API_DEF(SW_API_EG_MIRROR_ANALY_PT_SET, fal_mirr_eg_analysis_port_set), \
+    SW_API_DEF(SW_API_EG_MIRROR_ANALY_PT_GET, fal_mirr_eg_analysis_port_get),
 
 #define MIRROR_API_PARAM \
     SW_API_DESC(SW_API_MIRROR_ANALY_PT_SET) \
@@ -744,7 +748,12 @@ extern "C" {
     SW_API_DESC(SW_API_MIRROR_IN_PT_SET) \
     SW_API_DESC(SW_API_MIRROR_IN_PT_GET) \
     SW_API_DESC(SW_API_MIRROR_EG_PT_SET) \
-    SW_API_DESC(SW_API_MIRROR_EG_PT_GET)
+    SW_API_DESC(SW_API_MIRROR_EG_PT_GET) \
+    SW_API_DESC(SW_API_IN_MIRROR_ANALY_PT_SET) \
+    SW_API_DESC(SW_API_IN_MIRROR_ANALY_PT_GET) \
+    SW_API_DESC(SW_API_EG_MIRROR_ANALY_PT_SET) \
+    SW_API_DESC(SW_API_EG_MIRROR_ANALY_PT_GET)
+
 #else
 #define MIRROR_API
 #define MIRROR_API_PARAM
@@ -1306,7 +1315,9 @@ extern "C" {
     SW_API_DEF(SW_API_TRUNK_HASH_SET, fal_trunk_hash_mode_set), \
     SW_API_DEF(SW_API_TRUNK_HASH_GET, fal_trunk_hash_mode_get), \
     SW_API_DEF(SW_API_TRUNK_MAN_SA_SET, fal_trunk_manipulate_sa_set), \
-    SW_API_DEF(SW_API_TRUNK_MAN_SA_GET, fal_trunk_manipulate_sa_get),
+    SW_API_DEF(SW_API_TRUNK_MAN_SA_GET, fal_trunk_manipulate_sa_get), \
+    SW_API_DEF(SW_API_TRUNK_FAILOVER_EN_SET, fal_trunk_fail_over_en_set), \
+    SW_API_DEF(SW_API_TRUNK_FAILOVER_EN_GET, fal_trunk_fail_over_en_get),
 
 #define TRUNK_API_PARAM \
     SW_API_DESC(SW_API_TRUNK_GROUP_SET) \
@@ -1314,7 +1325,9 @@ extern "C" {
     SW_API_DESC(SW_API_TRUNK_HASH_SET)  \
     SW_API_DESC(SW_API_TRUNK_HASH_GET)  \
     SW_API_DESC(SW_API_TRUNK_MAN_SA_SET)\
-    SW_API_DESC(SW_API_TRUNK_MAN_SA_GET)
+    SW_API_DESC(SW_API_TRUNK_MAN_SA_GET) \
+    SW_API_DESC(SW_API_TRUNK_FAILOVER_EN_SET)\
+    SW_API_DESC(SW_API_TRUNK_FAILOVER_EN_GET)
 #else
 #define TRUNK_API
 #define TRUNK_API_PARAM

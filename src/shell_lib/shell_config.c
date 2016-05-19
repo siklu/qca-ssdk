@@ -859,6 +859,8 @@ struct sub_cmd_des_t g_mirror_des[] =
 	{"analyPt", "set", SW_API_MIRROR_ANALY_PT_SET, NULL},
 	{"ptIngress", "set", SW_API_MIRROR_IN_PT_SET, NULL},
 	{"ptEgress", "set", SW_API_MIRROR_EG_PT_SET, NULL},
+	{"inanalyPt", "set", SW_API_IN_MIRROR_ANALY_PT_SET, NULL},
+	{"eganalyPt", "set", SW_API_EG_MIRROR_ANALY_PT_SET, NULL},
 	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
 };
 #endif
@@ -1087,6 +1089,7 @@ struct sub_cmd_des_t g_trunk_des[] =
 	{"group", "set", SW_API_TRUNK_GROUP_SET, NULL},
 	{"hashmode", "set", SW_API_TRUNK_HASH_SET, NULL},
 	{"mansa", "set", SW_API_TRUNK_MAN_SA_SET, NULL},
+	{"failover", "set", SW_API_TRUNK_FAILOVER_EN_SET, NULL},
 	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
 };
 #endif

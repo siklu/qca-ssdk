@@ -28,37 +28,35 @@ extern "C" {
 #include "fal/fal_type.h"
 
 
+sw_error_t
+fal_mirr_analysis_port_set(a_uint32_t dev_id, fal_port_t port_id);
 
-    sw_error_t fal_mirr_analysis_port_set(a_uint32_t dev_id, fal_port_t port_id);
+sw_error_t
+fal_mirr_analysis_port_get(a_uint32_t dev_id, fal_port_t * port_id);
 
+sw_error_t
+fal_mirr_port_in_set(a_uint32_t dev_id, fal_port_t port_id,
+			a_bool_t enable);
+sw_error_t
+fal_mirr_port_in_get(a_uint32_t dev_id, fal_port_t port_id,
+			a_bool_t * enable);
+sw_error_t
+fal_mirr_port_eg_set(a_uint32_t dev_id, fal_port_t port_id,
+			a_bool_t enable);
+sw_error_t
+fal_mirr_port_eg_get(a_uint32_t dev_id, fal_port_t port_id,
+			a_bool_t * enable);
+sw_error_t
+fal_mirr_in_analysis_port_set(a_uint32_t dev_id, fal_port_t port_id);
 
+sw_error_t
+fal_mirr_in_analysis_port_get(a_uint32_t dev_id, fal_port_t *port_id);
 
-    sw_error_t fal_mirr_analysis_port_get(a_uint32_t dev_id, fal_port_t * port_id);
+sw_error_t
+fal_mirr_eg_analysis_port_set(a_uint32_t dev_id, fal_port_t port_id);
 
-
-
-    sw_error_t
-    fal_mirr_port_in_set(a_uint32_t dev_id, fal_port_t port_id,
-                         a_bool_t enable);
-
-
-
-    sw_error_t
-    fal_mirr_port_in_get(a_uint32_t dev_id, fal_port_t port_id,
-                         a_bool_t * enable);
-
-
-
-    sw_error_t
-    fal_mirr_port_eg_set(a_uint32_t dev_id, fal_port_t port_id,
-                         a_bool_t enable);
-
-
-
-    sw_error_t
-    fal_mirr_port_eg_get(a_uint32_t dev_id, fal_port_t port_id,
-                         a_bool_t * enable);
-
+sw_error_t
+fal_mirr_eg_analysis_port_get(a_uint32_t dev_id, fal_port_t *port_id);
 
 #ifdef __cplusplus
 }

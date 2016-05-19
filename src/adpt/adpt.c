@@ -29,6 +29,10 @@ sw_error_t adpt_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 			SW_RTN_ON_ERROR(rv);
 			rv = adpt_hppe_port_ctrl_init(dev_id);
 			SW_RTN_ON_ERROR(rv);
+			rv =  adpt_hppe_mirror_init( dev_id);
+			SW_RTN_ON_ERROR(rv);
+			rv =  adpt_hppe_trunk_init( dev_id);
+			SW_RTN_ON_ERROR(rv);
 			break;
 		default:
 			break;
