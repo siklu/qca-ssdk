@@ -73,11 +73,8 @@ _adpt_hppe_fdb_tbl_op_rslt_reg_get(a_uint32_t dev_id, a_uint32_t cmd_id)
 
 	rv = hppe_fdb_tbl_op_rslt_get(dev_id, &reg_val_op_rslt);
 
-	if (rv != SW_OK || reg_val_op_rslt.bf.op_rslt != SW_OK || reg_val_op_rslt.bf.cmd_id != cmd_id ||
-			reg_val_op_rslt.bf.valid_cnt >= OP_FIFO_CNT_SIZE)
-	{
+	if (rv != SW_OK || reg_val_op_rslt.bf.cmd_id != cmd_id || reg_val_op_rslt.bf.valid_cnt > OP_FIFO_CNT_SIZE)
 		return SW_FAIL;
-	}
 
 	return SW_OK;
 }
@@ -114,8 +111,8 @@ _adpt_hppe_fdb_tbl_rd_op_rslt_reg_get(a_uint32_t dev_id, a_uint32_t cmd_id, a_ui
 
 	rv = hppe_fdb_tbl_rd_op_rslt_get(dev_id, &reg_val_rd_op_rslt);
 
-	if (rv != SW_OK || (*entry_index !=0 && reg_val_rd_op_rslt.bf.op_rslt != SW_OK) ||
-			reg_val_rd_op_rslt.bf.cmd_id != cmd_id || reg_val_rd_op_rslt.bf.valid_cnt >= OP_FIFO_CNT_SIZE)
+	if (rv != SW_OK || reg_val_rd_op_rslt.bf.cmd_id != cmd_id ||
+		reg_val_rd_op_rslt.bf.valid_cnt > OP_FIFO_CNT_SIZE)
 	{
 		return SW_FAIL;
 	}
@@ -237,14 +234,17 @@ _adpt_hppe_fdb_tbl_rd_op_rslt_data_reg_get(a_uint32_t dev_id, fal_fdb_entry_t * 
 	lookup_valid = (rslt_data[1] >> (FDB_TBL_LOOKUP_VALID_OFFSET - 32)) & 0x1;
 	dst_info_encode = (rslt_data[2] >> (FDB_TBL_DST_INFO_OFFSET + 12 -64)) & 0x3;
 
-	if (entry_valid == 0x0 || lookup_valid == 0x0 || dst_info_encode == 0x0)
+	if (entry_valid == 0x0 || dst_info_encode == 0x0)
 	{
 		return SW_NOT_FOUND;
 	}
 	else
 	{
 		entry->entry_valid = A_TRUE;
-		entry->lookup_valid = A_TRUE;
+		if (lookup_valid == 0x1)
+			entry->lookup_valid = A_TRUE;
+		else
+			entry->lookup_valid = A_FALSE;
 		entry->fid = (rslt_data[1] >> (FDB_TBL_VSI_OFFSET - 32)) & 0x1f;
 		entry->sacmd = (rslt_data[2] >> (FDB_TBL_SA_CMD_OFFSET - 64)) & 0x3;
 		entry->dacmd = (rslt_data[2] >> (FDB_TBL_DA_CMD_OFFSET - 64)) & 0x3;
@@ -285,6 +285,7 @@ _get_fdb_table_entryindex_by_entry(a_uint32_t dev_id, fal_fdb_entry_t * entry,
 {
 	sw_error_t rv = SW_OK;
 	a_uint32_t init_entry_index = 0;
+	fal_fdb_entry_t temp_entry;
 
 	rv = _adpt_hppe_fdb_tbl_rd_op_data_reg_set(dev_id, entry);
 	if (rv != SW_OK)
@@ -294,9 +295,20 @@ _get_fdb_table_entryindex_by_entry(a_uint32_t dev_id, fal_fdb_entry_t * entry,
 	if (rv != SW_OK)
 		return rv;
 
+	rv = _adpt_hppe_fdb_tbl_rd_op_rslt_data_reg_get(dev_id, &temp_entry);
+
 	rv = _adpt_hppe_fdb_tbl_rd_op_rslt_reg_get(dev_id, cmd_id, entry_index);
 	if (rv != SW_OK)
 		return rv;
+
+	if (*entry_index == 0)
+	{
+		if (!(temp_entry.addr.uc[0] == entry->addr.uc[0] && temp_entry.addr.uc[1] == entry->addr.uc[1] &&
+			temp_entry.addr.uc[2] == entry->addr.uc[2] && temp_entry.addr.uc[3] == entry->addr.uc[3] &&
+			temp_entry.addr.uc[4] == entry->addr.uc[4] && temp_entry.addr.uc[5] == entry->addr.uc[5] &&
+			temp_entry.fid == entry->fid))
+			return SW_NOT_FOUND;
+	}
 
 	return SW_OK;
 }
@@ -305,7 +317,7 @@ sw_error_t
 _get_fdb_table_entry_by_entryindex(a_uint32_t dev_id, fal_fdb_entry_t * entry,
 		a_uint32_t entry_index, a_uint32_t cmd_id)
 {
-	sw_error_t rv = SW_OK;
+	sw_error_t rv = SW_OK, rv1 = SW_OK;
 	fal_fdb_entry_t init_entry;
 	a_uint32_t rslt_entry_index = 0;
 
@@ -318,15 +330,17 @@ _get_fdb_table_entry_by_entryindex(a_uint32_t dev_id, fal_fdb_entry_t * entry,
 	if (rv != SW_OK)
 		return rv;
 
+	rv = _adpt_hppe_fdb_tbl_rd_op_rslt_data_reg_get(dev_id, entry);
+	if (rv != SW_OK && rv != SW_NOT_FOUND)
+		return rv;
+	else
+		rv1 = rv;
+
 	rv = _adpt_hppe_fdb_tbl_rd_op_rslt_reg_get(dev_id, cmd_id, &rslt_entry_index);
 	if (rv != SW_OK)
 		return rv;
 
-	rv = _adpt_hppe_fdb_tbl_rd_op_rslt_data_reg_get(dev_id, entry);
-	if (rv != SW_OK)
-		return rv;
-
-	return SW_OK;
+	return rv1;
 }
 
 sw_error_t
@@ -334,6 +348,7 @@ _modify_fdb_table_entry(a_uint32_t dev_id, fal_fdb_entry_t * entry, a_uint32_t o
 	a_uint32_t cmd_id)
 {
 	sw_error_t rv = SW_OK;
+	fal_fdb_entry_t temp_entry;
 
 	rv = _adpt_hppe_fdb_tbl_op_data_reg_set(dev_id, entry);
 	if (rv != SW_OK)
@@ -342,6 +357,8 @@ _modify_fdb_table_entry(a_uint32_t dev_id, fal_fdb_entry_t * entry, a_uint32_t o
 	rv = _adpt_hppe_fdb_tbl_op_reg_set(dev_id, cmd_id, op_type);
 	if (rv != SW_OK)
 		return rv;
+
+	rv = _adpt_hppe_fdb_tbl_rd_op_rslt_data_reg_get(dev_id, &temp_entry);
 
 	rv = _adpt_hppe_fdb_tbl_op_rslt_reg_get(dev_id, cmd_id);
 	if (rv != SW_OK)
@@ -370,10 +387,10 @@ _adpt_hppe_fdb_extend_first_next(a_uint32_t dev_id, fal_fdb_entry_t * entry, fal
 		aos_mem_zero(entry, sizeof (fal_fdb_entry_t));
 
 	rv = _get_fdb_table_entryindex_by_entry(dev_id, entry, &entry_index, cmd_id);
-	if (rv != SW_OK)
+	if (rv != SW_OK && rv != SW_NOT_FOUND)
 		return rv;
 
-	if (entry->entry_valid == A_TRUE || entry_index > 0)
+	if (rv != SW_NOT_FOUND)
 		entry_index += 1;
 
 	for (; entry_index < FDB_TBL_NUM; entry_index++)
@@ -532,7 +549,7 @@ adpt_hppe_fdb_del_all(a_uint32_t dev_id, a_uint32_t flag)
 			cmd_id = entry_index % OP_CMD_ID_SIZE;
 			aos_mem_zero(&entry, sizeof (fal_fdb_entry_t));
 			rv = _get_fdb_table_entry_by_entryindex(dev_id, &entry, entry_index, cmd_id);
-			if (rv != SW_OK)
+			if (rv != SW_OK && rv != SW_NOT_FOUND)
 				return rv;
 
 			if (entry.static_en == A_FALSE)
@@ -656,18 +673,14 @@ sw_error_t
 adpt_hppe_fdb_age_time_set(a_uint32_t dev_id, a_uint32_t * time)
 {
 	union age_timer_u age_timer = {0};
-	a_uint32_t data;
 
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(time);
 
-	if ((65535 * 7 < *time) || (7 > *time))
+	if (*time < 1 || *time > 1048575)
 		return SW_BAD_PARAM;
 
-	data = *time / 7;
-	*time = data * 7;
-
-	age_timer.bf.age_val = data;
+	age_timer.bf.age_val = *time;
 
 	return hppe_age_timer_set(dev_id, &age_timer);
 }
@@ -686,7 +699,7 @@ adpt_hppe_fdb_age_time_get(a_uint32_t dev_id, a_uint32_t * time)
 	if( rv != SW_OK )
 		return rv;
 
-	*time = age_timer.bf.age_val * 7;
+	*time = age_timer.bf.age_val;
 
 	return SW_OK;
 }
@@ -1023,7 +1036,7 @@ adpt_hppe_port_fdb_learn_counter_get(a_uint32_t dev_id, fal_port_t port_id,
 	if( rv != SW_OK )
 		return rv;
 
-	cnt = port_lrn_limit_counter.bf.lrn_cnt;
+	*cnt = port_lrn_limit_counter.bf.lrn_cnt;
 
 	return SW_OK;
 }

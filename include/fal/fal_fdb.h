@@ -60,7 +60,6 @@ extern "C" {
             fal_pbmp_t map;
             fal_nexthop_t nexthop;
         } port;
-        a_bool_t nexthop_en;
         a_bool_t portmap_en;
         a_bool_t is_multicast;
         a_bool_t static_en;
@@ -75,6 +74,7 @@ extern "C" {
         a_uint8_t load_balance;
         a_bool_t entry_valid;
         a_bool_t lookup_valid;
+        a_bool_t nexthop_en;
     } fal_fdb_entry_t;
 
     typedef struct
