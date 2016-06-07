@@ -110,16 +110,15 @@ typedef sw_error_t (*adpt_stp_port_state_set_func)(a_uint32_t dev_id, a_uint32_t
                      fal_port_t port_id, fal_stp_state_t state);
 
 typedef sw_error_t (*adpt_port_vlan_vsi_set_func)(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vlan_id, a_uint32_t vsi_id);
-typedef sw_error_t (*adpt_vsi_free_func)(a_uint32_t dev_id, a_uint32_t vsi);
+typedef sw_error_t (*adpt_port_vlan_vsi_get_func)(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vlan_id, a_uint32_t *vsi_id);
 typedef sw_error_t (*adpt_port_vsi_set_func)(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vsi_id);
+typedef sw_error_t (*adpt_port_vsi_get_func)(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t *vsi_id);
 typedef sw_error_t (*adpt_vsi_stamove_set_func)(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_stamove_t *stamove);
 typedef sw_error_t (*adpt_vsi_stamove_get_func)(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_stamove_t *stamove);
-typedef sw_error_t (*adpt_vsi_newaddr_lrn_get_func)(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_newaddr_lrn_t *newaddr_lrn);
-typedef sw_error_t (*adpt_port_vsi_get_func)(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t *vsi_id);
-typedef sw_error_t (*adpt_vsi_tbl_dump_func)(a_uint32_t dev_id);
 typedef sw_error_t (*adpt_vsi_newaddr_lrn_set_func)(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_newaddr_lrn_t *newaddr_lrn);
-typedef sw_error_t (*adpt_port_vlan_vsi_get_func)(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vlan_id, a_uint32_t *vsi_id);
-typedef sw_error_t (*adpt_vsi_alloc_func)(a_uint32_t dev_id, a_uint32_t *vsi);
+typedef sw_error_t (*adpt_vsi_newaddr_lrn_get_func)(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_newaddr_lrn_t *newaddr_lrn);
+typedef sw_error_t (*adpt_vsi_member_set_func)(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_member_t *vsi_member);
+typedef sw_error_t (*adpt_vsi_member_get_func)(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_member_t *vsi_member);
 
 // portctrl function.
 
@@ -322,16 +321,15 @@ typedef struct
 	adpt_stp_port_state_set_func adpt_stp_port_state_set;
 
 	adpt_port_vlan_vsi_set_func adpt_port_vlan_vsi_set;
-	adpt_vsi_free_func adpt_vsi_free;
+	adpt_port_vlan_vsi_get_func adpt_port_vlan_vsi_get;
 	adpt_port_vsi_set_func adpt_port_vsi_set;
+	adpt_port_vsi_get_func adpt_port_vsi_get;
 	adpt_vsi_stamove_set_func adpt_vsi_stamove_set;
 	adpt_vsi_stamove_get_func adpt_vsi_stamove_get;
-	adpt_vsi_newaddr_lrn_get_func adpt_vsi_newaddr_lrn_get;
-	adpt_port_vsi_get_func adpt_port_vsi_get;
-	adpt_vsi_tbl_dump_func adpt_vsi_tbl_dump;
 	adpt_vsi_newaddr_lrn_set_func adpt_vsi_newaddr_lrn_set;
-	adpt_port_vlan_vsi_get_func adpt_port_vlan_vsi_get;
-	adpt_vsi_alloc_func adpt_vsi_alloc;
+	adpt_vsi_newaddr_lrn_get_func adpt_vsi_newaddr_lrn_get;
+	adpt_vsi_member_set_func adpt_vsi_member_set;
+	adpt_vsi_member_get_func adpt_vsi_member_get;
 
 	adpt_port_local_loopback_get_func adpt_port_local_loopback_get;
 	adpt_port_autoneg_restart_func adpt_port_autoneg_restart;

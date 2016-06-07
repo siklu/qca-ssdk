@@ -1115,6 +1115,7 @@ struct sub_cmd_des_t g_vsi_des[] =
 	{"vlan_vsi", "set", SW_API_PORT_VLAN_VSI_SET, NULL},
 	{"newaddr_lrn", "set", SW_API_VSI_NEWADDR_LRN_SET, NULL},
 	{"stamove", "set", SW_API_VSI_STAMOVE_SET, NULL},
+	{"member", "set", SW_API_VSI_MEMBER_SET, NULL},
 	{NULL, NULL, NULL, NULL, (int)NULL, NULL}/*end of desc*/
 };
 #endif

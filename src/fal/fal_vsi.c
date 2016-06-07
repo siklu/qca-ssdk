@@ -30,19 +30,20 @@ _fal_port_vlan_vsi_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vlan_id
     return rv;
 }
 sw_error_t
-_fal_vsi_free(a_uint32_t dev_id, a_uint32_t vsi)
+_fal_port_vlan_vsi_get(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vlan_id, a_uint32_t *vsi_id)
 {
     adpt_api_t *p_api;
 	sw_error_t rv = SW_OK;
 
     SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
 
-    if (NULL == p_api->adpt_vsi_free)
+    if (NULL == p_api->adpt_port_vlan_vsi_get)
         return SW_NOT_SUPPORTED;
 
-    rv = p_api->adpt_vsi_free(dev_id, vsi);
+    rv = p_api->adpt_port_vlan_vsi_get(dev_id, port_id, vlan_id, vsi_id);
     return rv;
 }
+
 sw_error_t
 _fal_port_vsi_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vsi_id)
 {
@@ -55,6 +56,20 @@ _fal_port_vsi_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vsi_id)
         return SW_NOT_SUPPORTED;
 
     rv = p_api->adpt_port_vsi_set(dev_id, port_id, vsi_id);
+    return rv;
+}
+sw_error_t
+_fal_port_vsi_get(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t *vsi_id)
+{
+    adpt_api_t *p_api;
+	sw_error_t rv = SW_OK;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_port_vsi_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_port_vsi_get(dev_id, port_id, vsi_id);
     return rv;
 }
 sw_error_t
@@ -100,34 +115,6 @@ _fal_vsi_newaddr_lrn_get(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_newaddr_l
     return rv;
 }
 sw_error_t
-_fal_port_vsi_get(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t *vsi_id)
-{
-    adpt_api_t *p_api;
-	sw_error_t rv = SW_OK;
-
-    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
-
-    if (NULL == p_api->adpt_port_vsi_get)
-        return SW_NOT_SUPPORTED;
-
-    rv = p_api->adpt_port_vsi_get(dev_id, port_id, vsi_id);
-    return rv;
-}
-sw_error_t
-_fal_vsi_tbl_dump(a_uint32_t dev_id)
-{
-    adpt_api_t *p_api;
-	sw_error_t rv = SW_OK;
-
-    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
-
-    if (NULL == p_api->adpt_vsi_tbl_dump)
-        return SW_NOT_SUPPORTED;
-
-    rv = p_api->adpt_vsi_tbl_dump(dev_id);
-    return rv;
-}
-sw_error_t
 _fal_vsi_newaddr_lrn_set(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_newaddr_lrn_t *newaddr_lrn)
 {
     adpt_api_t *p_api;
@@ -142,33 +129,34 @@ _fal_vsi_newaddr_lrn_set(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_newaddr_l
     return rv;
 }
 sw_error_t
-_fal_port_vlan_vsi_get(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vlan_id, a_uint32_t *vsi_id)
+_fal_vsi_member_set(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_member_t *vsi_member)
 {
     adpt_api_t *p_api;
 	sw_error_t rv = SW_OK;
 
     SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
 
-    if (NULL == p_api->adpt_port_vlan_vsi_get)
+    if (NULL == p_api->adpt_vsi_member_set)
         return SW_NOT_SUPPORTED;
 
-    rv = p_api->adpt_port_vlan_vsi_get(dev_id, port_id, vlan_id, vsi_id);
+    rv = p_api->adpt_vsi_member_set(dev_id, vsi_id, vsi_member);
     return rv;
 }
 sw_error_t
-_fal_vsi_alloc(a_uint32_t dev_id, a_uint32_t *vsi)
+_fal_vsi_member_get(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_member_t *vsi_member)
 {
     adpt_api_t *p_api;
 	sw_error_t rv = SW_OK;
 
     SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
 
-    if (NULL == p_api->adpt_vsi_alloc)
+    if (NULL == p_api->adpt_vsi_member_get)
         return SW_NOT_SUPPORTED;
 
-    rv = p_api->adpt_vsi_alloc(dev_id, vsi);
+    rv = p_api->adpt_vsi_member_get(dev_id, vsi_id, vsi_member);
     return rv;
 }
+
 /*insert flag for inner fal, don't remove it*/
 
 sw_error_t
@@ -182,12 +170,12 @@ fal_port_vlan_vsi_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vlan_id,
     return rv;
 }
 sw_error_t
-fal_vsi_free(a_uint32_t dev_id, a_uint32_t vsi)
+fal_port_vlan_vsi_get(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vlan_id, a_uint32_t *vsi_id)
 {
     sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
-    rv = _fal_vsi_free(dev_id, vsi);
+    rv = _fal_port_vlan_vsi_get(dev_id, port_id, vlan_id, vsi_id);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -201,6 +189,17 @@ fal_port_vsi_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vsi_id)
     FAL_API_UNLOCK;
     return rv;
 }
+sw_error_t
+fal_port_vsi_get(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t *vsi_id)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_API_LOCK;
+    rv = _fal_port_vsi_get(dev_id, port_id, vsi_id);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
 sw_error_t
 fal_vsi_stamove_set(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_stamove_t *stamove)
 {
@@ -232,26 +231,6 @@ fal_vsi_newaddr_lrn_get(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_newaddr_lr
     return rv;
 }
 sw_error_t
-fal_port_vsi_get(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t *vsi_id)
-{
-    sw_error_t rv = SW_OK;
-
-    FAL_API_LOCK;
-    rv = _fal_port_vsi_get(dev_id, port_id, vsi_id);
-    FAL_API_UNLOCK;
-    return rv;
-}
-sw_error_t
-fal_vsi_tbl_dump(a_uint32_t dev_id)
-{
-    sw_error_t rv = SW_OK;
-
-    FAL_API_LOCK;
-    rv = _fal_vsi_tbl_dump(dev_id);
-    FAL_API_UNLOCK;
-    return rv;
-}
-sw_error_t
 fal_vsi_newaddr_lrn_set(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_newaddr_lrn_t *newaddr_lrn)
 {
     sw_error_t rv = SW_OK;
@@ -262,22 +241,25 @@ fal_vsi_newaddr_lrn_set(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_newaddr_lr
     return rv;
 }
 sw_error_t
-fal_port_vlan_vsi_get(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vlan_id, a_uint32_t *vsi_id)
+fal_vsi_member_set(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_member_t *vsi_member)
 {
     sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
-    rv = _fal_port_vlan_vsi_get(dev_id, port_id, vlan_id, vsi_id);
+    rv = _fal_vsi_member_set(dev_id, vsi_id, vsi_member);
     FAL_API_UNLOCK;
     return rv;
 }
+
 sw_error_t
-fal_vsi_alloc(a_uint32_t dev_id, a_uint32_t *vsi)
+fal_vsi_member_get(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_member_t *vsi_member)
 {
     sw_error_t rv = SW_OK;
+
     FAL_API_LOCK;
-    rv = _fal_vsi_alloc(dev_id, vsi);
+    rv = _fal_vsi_member_get(dev_id, vsi_id, vsi_member);
     FAL_API_UNLOCK;
     return rv;
 }
+
 /*insert flag for outter fal, don't remove it*/

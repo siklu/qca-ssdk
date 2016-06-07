@@ -628,6 +628,8 @@ extern "C" {
 #define SW_API_VSI_NEWADDR_LRN_GET     (8  + SW_API_VSI_OFFSET)
 #define SW_API_VSI_STAMOVE_SET	       (9  + SW_API_VSI_OFFSET)
 #define SW_API_VSI_STAMOVE_GET	       (10 + SW_API_VSI_OFFSET)
+#define SW_API_VSI_MEMBER_SET	       (11 + SW_API_VSI_OFFSET)
+#define SW_API_VSI_MEMBER_GET	       (12 + SW_API_VSI_OFFSET)
 
     /*debug*/
 #define SW_API_DEBUG_OFFSET        10000

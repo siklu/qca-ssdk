@@ -3097,6 +3097,8 @@ qca_dess_hw_init(ssdk_init_cfg *cfg)
 #ifdef HPPE
 static int qca_hppe_vsi_hw_init(void)
 {
+	ref_vsi_init(0);
+
 	fal_vsi_newaddr_lrn_t newaddr_lrn;
 	fal_vsi_stamove_t stamove;
 	newaddr_lrn.action = 0;
@@ -3110,16 +3112,16 @@ static int qca_hppe_vsi_hw_init(void)
 	fal_vsi_stamove_set(0, 2, &stamove);
 	fal_vsi_stamove_set(0, 3, &stamove);
 
-	fal_port_vsi_set(0, 0, 1);
-	fal_port_vsi_set(0, 7, 1);
-	fal_port_vsi_set(0, 1, 2);
-	fal_port_vsi_set(0, 2, 2);
-	fal_port_vsi_set(0, 3, 2);
-	fal_port_vsi_set(0, 4, 2);
-	fal_port_vsi_set(0, 0x02000041, 2);
-	fal_port_vsi_set(0, 5, 3);
-	fal_port_vsi_set(0, 6, 3);
-	fal_port_vsi_set(0, 0x02000042, 3);
+	ref_port_vsi_set(0, 0, 1);
+	ref_port_vsi_set(0, 7, 1);
+	ref_port_vsi_set(0, 1, 2);
+	ref_port_vsi_set(0, 2, 2);
+	ref_port_vsi_set(0, 3, 2);
+	ref_port_vsi_set(0, 4, 2);
+	ref_port_vsi_set(0, 0x02000041, 2);
+	ref_port_vsi_set(0, 5, 3);
+	ref_port_vsi_set(0, 6, 3);
+	ref_port_vsi_set(0, 0x02000042, 3);
 
 	return 0;
 }

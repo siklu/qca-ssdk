@@ -27,6 +27,8 @@ extern "C" {
 #include "common/sw.h"
 #include "fal/fal_type.h"
 
+#define FAL_VSI_INVALID 0xffff
+
 typedef struct{
 	a_uint32_t lrn_en;
 	a_uint32_t action;
@@ -36,6 +38,13 @@ typedef struct{
 	a_uint32_t stamove_en;
 	a_uint32_t action;
 }fal_vsi_stamove_t;
+
+typedef struct{
+	a_uint32_t member_ports;
+	a_uint32_t uuc_ports;
+	a_uint32_t umc_ports;
+	a_uint32_t bc_ports;
+}fal_vsi_member_t;
 
 sw_error_t
 fal_vsi_alloc(a_uint32_t dev_id, a_uint32_t *vsi);
@@ -69,6 +78,13 @@ fal_vsi_stamove_set(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_stamove_t *sta
 
 sw_error_t
 fal_vsi_stamove_get(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_stamove_t *stamove);
+
+sw_error_t
+fal_vsi_member_set(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_member_t *vsi_member);
+
+sw_error_t
+fal_vsi_member_get(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_member_t *vsi_member);
+
 
 #ifdef __cplusplus
 }

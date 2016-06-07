@@ -54,6 +54,7 @@
 #else
 #include "fal_api.h"
 #endif
+#include "ref_vsi.h"
 
 
 static sw_api_func_t sw_api_func[] = { SSDK_API };

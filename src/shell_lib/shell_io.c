@@ -235,6 +235,7 @@ static sw_data_type_t sw_data_type[] =
     #ifdef IN_VSI
     SW_TYPE_DEF(SW_VSI_NEWADDR_LRN, cmd_data_check_newadr_lrn, NULL),
     SW_TYPE_DEF(SW_VSI_STAMOVE, cmd_data_check_stamove, NULL),
+    SW_TYPE_DEF(SW_VSI_MEMBER, cmd_data_check_vsi_member, NULL),
     #endif
     SW_TYPE_DEF(SW_MTU_INFO, NULL, NULL),
     SW_TYPE_DEF(SW_MRU_INFO, NULL, NULL),
@@ -4377,6 +4378,47 @@ cmd_data_check_stamove(char *cmd_str, void * val, a_uint32_t size)
 		return rv;
 
 	*(fal_vsi_stamove_t *)val = entry;
+	return SW_OK;
+}
+sw_error_t
+cmd_data_check_vsi_member(char *cmd_str, void * val, a_uint32_t size)
+{
+	char *cmd;
+	a_uint32_t tmp;
+	sw_error_t rv;
+	fal_vsi_member_t entry;
+
+	aos_mem_zero(&entry, sizeof (fal_vsi_member_t));
+
+	rv = __cmd_data_check_complex("member_ports", 0,
+                        "usage: Bit0-port0 Bit1-port1 ....\n",
+                        cmd_data_check_pbmp, &(entry.member_ports),
+                        sizeof (a_uint32_t));
+	if (rv)
+		return rv;
+
+	rv = __cmd_data_check_complex("uuc_ports", 0,
+                        "usage: Bit0-port0 Bit1-port1 ....\n",
+                        cmd_data_check_pbmp, &(entry.uuc_ports),
+                        sizeof (a_uint32_t));
+	if (rv)
+		return rv;
+
+	rv = __cmd_data_check_complex("umc_ports", 0,
+                        "usage: Bit0-port0 Bit1-port1 ....\n",
+                        cmd_data_check_pbmp, &(entry.umc_ports),
+                        sizeof (a_uint32_t));
+	if (rv)
+		return rv;
+
+	rv = __cmd_data_check_complex("bc_ports", 0,
+                        "usage: Bit0-port0 Bit1-port1 ....\n",
+                        cmd_data_check_pbmp, &(entry.bc_ports),
+                        sizeof (a_uint32_t));
+	if (rv)
+		return rv;
+
+	*(fal_vsi_member_t *)val = entry;
 	return SW_OK;
 }
 #endif

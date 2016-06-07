@@ -274,6 +274,9 @@ cmd_data_check_newadr_lrn(char *cmd_str, void * val, a_uint32_t size);
 sw_error_t
 cmd_data_check_stamove(char *cmd_str, void * val, a_uint32_t size);
 
+sw_error_t
+cmd_data_check_vsi_member(char *cmd_str, void * val, a_uint32_t size);
+
 #endif
 #endif
 
