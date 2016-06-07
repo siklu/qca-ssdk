@@ -5619,10 +5619,10 @@ parse_mib_cpukeep(struct switch_val *val)
 static int
 parse_acl_rule(struct switch_val *val)
 {
-	a_uint32_t prio;
+	a_uint32_t prio = 0;
 	a_uint32_t i;
 	a_uint32_t portmap = 0;
-	a_uint32_t rule_id;
+	a_uint32_t rule_id = 0;
 	fal_acl_rule_t  rule;
 	struct switch_ext *switch_ext_p, *ext_value_p;
 	int rv = 0;
