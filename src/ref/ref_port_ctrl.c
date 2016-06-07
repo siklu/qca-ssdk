@@ -167,7 +167,7 @@ static int qca_switch_get_qm_status(struct switch_dev *dev, a_uint32_t port_id, 
 
 static int qca_switch_force_mac_1000M_full(struct switch_dev *dev, a_uint32_t port_id)
 {
-	a_uint32_t reg, value;
+	a_uint32_t reg, value = 0;
 	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 
 	if (port_id < 0 || port_id > 6)
@@ -249,7 +249,7 @@ qca_ar8327_sw_rgmii_mode_valid(a_uint32_t port_id)
 static int
 qca_switch_get_mac_link(struct switch_dev *dev, a_uint32_t port_id, a_uint32_t *link)
 {
-	a_uint32_t reg, value;
+	a_uint32_t reg, value = 0;
 	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 
 	if (port_id < 0 || port_id > 6)
@@ -412,7 +412,7 @@ int qca_ar8327_vlan_recovery(struct switch_dev *dev)
 
 int qca_qm_error_check(struct qca_phy_priv *priv)
 {
-	a_uint32_t value, qm_err_int=0;
+	a_uint32_t value = 0, qm_err_int=0;
 
 	if (priv->version == QCA_VER_AR8337 ||
 		priv->version == QCA_VER_AR8327)
@@ -510,7 +510,7 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 	a_uint32_t value;
 	a_uint32_t link = 0, speed = 0, duplex = 0;
 	a_uint32_t qm_buffer_err = 0;
-	a_uint16_t port_phy_status[AR8327_NUM_PORTS];
+	a_uint16_t port_phy_status[AR8327_NUM_PORTS] = {0,0,0,0,0,0,0};
 	static a_uint32_t qm_err_cnt[AR8327_NUM_PORTS] = {0,0,0,0,0,0,0};
 
 	static a_uint32_t link_cnt[AR8327_NUM_PORTS] = {0,0,0,0,0,0,0};
