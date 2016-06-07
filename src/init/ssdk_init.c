@@ -2551,7 +2551,7 @@ static int chip_ver_get(ssdk_init_cfg* cfg)
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_MDIO)
 		chip_ver = (qca_ar8216_mii_read(0)&0xff00)>>8;
 	else {
-		a_uint32_t reg_val;
+		a_uint32_t reg_val = 0;
 		qca_switch_reg_read(0,0,(a_uint8_t *)&reg_val, 4);
 		chip_ver = (reg_val&0xff00)>>8;
 	}
@@ -2852,7 +2852,7 @@ static int ssdk_dess_mac_mode_init(a_uint32_t mac_mode)
 static int
 qca_dess_hw_init(ssdk_init_cfg *cfg)
 {
-	a_uint32_t reg_value;
+	a_uint32_t reg_value = 0;
 	hsl_api_t *p_api;
 
 	qca_switch_init(0);
