@@ -123,7 +123,7 @@ _dess_mdio_reg_set(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t value[],
 	 a_uint8_t phy_reg;
 	 sw_error_t rv;
 #else
-	a_uint32_t reg_val;
+	a_uint32_t reg_val = 0;
 #endif
 
 

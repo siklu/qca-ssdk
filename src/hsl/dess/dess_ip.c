@@ -2278,7 +2278,7 @@ static sw_error_t
 _dess_ip_default_route_set(a_uint32_t dev_id, a_uint32_t droute_id, fal_default_route_t * entry)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
     a_uint32_t addr;
 
     HSL_DEV_ID_CHECK(dev_id);

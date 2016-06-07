@@ -85,7 +85,7 @@ static sw_error_t
 _shiva_mdio_reg_set(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t value[],
                     a_uint32_t value_len)
 {
-    a_uint32_t reg_val;
+    a_uint32_t reg_val = 0;
 
     if (value_len != sizeof (a_uint32_t))
         return SW_BAD_LEN;
