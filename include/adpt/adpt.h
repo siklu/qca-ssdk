@@ -68,6 +68,10 @@ typedef sw_error_t (*adpt_fdb_learn_mode_set_func)(a_uint32_t dev_id, a_uint32_t
 typedef sw_error_t (*adpt_fdb_port_add_func)(a_uint32_t dev_id, a_uint32_t fid, fal_mac_addr_t * addr, fal_port_t port_id);
 typedef sw_error_t (*adpt_fdb_port_learn_set_func)(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable);
 typedef sw_error_t (*adpt_fdb_port_learn_get_func)(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable);
+typedef sw_error_t (*adpt_fdb_port_newaddr_lrn_set_func)(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable, fal_fwd_cmd_t cmd);
+typedef sw_error_t (*adpt_fdb_port_newaddr_lrn_get_func)(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable, fal_fwd_cmd_t *cmd);
+typedef sw_error_t (*adpt_fdb_port_stamove_set_func)(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable, fal_fwd_cmd_t cmd);
+typedef sw_error_t (*adpt_fdb_port_stamove_get_func)(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable, fal_fwd_cmd_t *cmd);
 typedef sw_error_t (*adpt_port_fdb_learn_counter_get_func)(a_uint32_t dev_id, fal_port_t port_id,
                                   a_uint32_t * cnt);
 typedef sw_error_t (*adpt_fdb_extend_first_func)(a_uint32_t dev_id, fal_fdb_op_t * option,
@@ -290,6 +294,10 @@ typedef struct
 	adpt_fdb_port_add_func adpt_fdb_port_add;
 	adpt_fdb_port_learn_set_func adpt_fdb_port_learn_set;
 	adpt_fdb_port_learn_get_func adpt_fdb_port_learn_get;
+	adpt_fdb_port_newaddr_lrn_set_func adpt_fdb_port_newaddr_lrn_set;
+	adpt_fdb_port_newaddr_lrn_get_func adpt_fdb_port_newaddr_lrn_get;
+	adpt_fdb_port_stamove_set_func adpt_fdb_port_stamove_set;
+	adpt_fdb_port_stamove_get_func adpt_fdb_port_stamove_get;
 	adpt_port_fdb_learn_counter_get_func adpt_port_fdb_learn_counter_get;
 	adpt_fdb_extend_first_func adpt_fdb_extend_first;
 	adpt_fdb_transfer_func adpt_fdb_transfer;

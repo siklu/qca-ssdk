@@ -252,6 +252,66 @@ _fal_fdb_port_learn_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable
 }
 
 static sw_error_t
+_fal_fdb_port_newaddr_lrn_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable, fal_fwd_cmd_t cmd)
+{
+    adpt_api_t *p_api;
+    sw_error_t rv = SW_OK;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_fdb_port_newaddr_lrn_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_fdb_port_newaddr_lrn_set(dev_id, port_id, enable, cmd);
+    return rv;
+}
+
+static sw_error_t
+_fal_fdb_port_newaddr_lrn_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable, fal_fwd_cmd_t *cmd)
+{
+    adpt_api_t *p_api;
+    sw_error_t rv = SW_OK;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_fdb_port_newaddr_lrn_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_fdb_port_newaddr_lrn_get(dev_id, port_id, enable, cmd);
+    return rv;
+}
+
+static sw_error_t
+_fal_fdb_port_stamove_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable, fal_fwd_cmd_t cmd)
+{
+    adpt_api_t *p_api;
+    sw_error_t rv = SW_OK;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_fdb_port_stamove_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_fdb_port_stamove_set(dev_id, port_id, enable, cmd);
+    return rv;
+}
+
+static sw_error_t
+_fal_fdb_port_stamove_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable, fal_fwd_cmd_t *cmd)
+{
+    adpt_api_t *p_api;
+    sw_error_t rv = SW_OK;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_fdb_port_stamove_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_fdb_port_stamove_get(dev_id, port_id, enable, cmd);
+    return rv;
+}
+
+static sw_error_t
 _fal_fdb_age_ctrl_set(a_uint32_t dev_id, a_bool_t enable)
 {
     sw_error_t rv;
@@ -1053,10 +1113,10 @@ fal_fdb_find(a_uint32_t dev_id, fal_fdb_entry_t * entry)
 #endif
 
 /**
- * @brief Set dynamic address learning status on a particular port.
+ * @brief Set dynamic address and station move learning status on a particular port.
  *    @details  Comments:
- *       This operation will enable or disable dynamic address learning
- *       feature on a particular port.
+ *       This operation will enable or disable dynamic address and
+ *       station move learning feature on a particular port.
  * @param[in] dev_id device id
  * @param[in] port_id port id
  * @param[in] enable enable or disable
@@ -1075,7 +1135,7 @@ fal_fdb_port_learn_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 
 #ifndef IN_FDB_MINI
 /**
- * @brief Get dynamic address learning status on a particular port.
+ * @brief Get dynamic address and station move learning status on a particular port.
  * @param[in] dev_id device id
  * @param[in] port_id port id
  * @param[out] enable A_TRUE or A_FALSE
@@ -1088,6 +1148,82 @@ fal_fdb_port_learn_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
 
     FAL_API_LOCK;
     rv = _fal_fdb_port_learn_get(dev_id, port_id, enable);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Set dynamic address learning and forward command on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[in] learning status
+ * @param[in] forward command
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_fdb_port_newaddr_lrn_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable, fal_fwd_cmd_t cmd)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_API_LOCK;
+    rv = _fal_fdb_port_newaddr_lrn_set(dev_id, port_id, enable, cmd);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Get dynamic address learning and forward command on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] learning status
+ * @param[out] forward command
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_fdb_port_newaddr_lrn_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable, fal_fwd_cmd_t *cmd)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_API_LOCK;
+    rv = _fal_fdb_port_newaddr_lrn_get(dev_id, port_id, enable, cmd);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Set station move learning and forward command on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[in] learning status
+ * @param[in] forward command
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_fdb_port_stamove_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable, fal_fwd_cmd_t cmd)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_API_LOCK;
+    rv = _fal_fdb_port_stamove_set(dev_id, port_id, enable, cmd);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Get station move learning and forward command on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] learning status
+ * @param[out] forward command
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_fdb_port_stamove_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable, fal_fwd_cmd_t *cmd)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_API_LOCK;
+    rv = _fal_fdb_port_stamove_get(dev_id, port_id, enable, cmd);
     FAL_API_UNLOCK;
     return rv;
 }

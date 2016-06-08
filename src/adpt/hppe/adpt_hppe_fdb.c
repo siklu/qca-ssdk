@@ -998,6 +998,7 @@ adpt_hppe_fdb_port_learn_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t ena
 		return rv;
 
 	port_bridge_ctrl.bf.new_addr_lrn_en = enable;
+	port_bridge_ctrl.bf.station_move_lrn_en = enable;
 
 	return hppe_port_bridge_ctrl_set(dev_id, port_id, &port_bridge_ctrl);
 }
@@ -1017,6 +1018,90 @@ adpt_hppe_fdb_port_learn_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *en
 		return rv;
 
 	*enable = port_bridge_ctrl.bf.new_addr_lrn_en;
+
+	return SW_OK;
+}
+
+sw_error_t
+adpt_hppe_fdb_port_newaddr_lrn_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable, fal_fwd_cmd_t cmd)
+{
+	sw_error_t rv = SW_OK;
+	union port_bridge_ctrl_u port_bridge_ctrl;
+
+	memset(&port_bridge_ctrl, 0, sizeof(port_bridge_ctrl));
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	rv = hppe_port_bridge_ctrl_get(dev_id, port_id, &port_bridge_ctrl);
+
+	if( rv != SW_OK )
+		return rv;
+
+	port_bridge_ctrl.bf.new_addr_lrn_en = enable;
+	port_bridge_ctrl.bf.new_addr_fwd_cmd = cmd;
+
+	return hppe_port_bridge_ctrl_set(dev_id, port_id, &port_bridge_ctrl);
+}
+
+sw_error_t
+adpt_hppe_fdb_port_newaddr_lrn_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable, fal_fwd_cmd_t *cmd)
+{
+	sw_error_t rv = SW_OK;
+	union port_bridge_ctrl_u port_bridge_ctrl;
+
+	memset(&port_bridge_ctrl, 0, sizeof(port_bridge_ctrl));
+	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(enable);
+	ADPT_NULL_POINT_CHECK(cmd);
+
+	rv = hppe_port_bridge_ctrl_get(dev_id, port_id, &port_bridge_ctrl);
+
+	if( rv != SW_OK )
+		return rv;
+
+	*enable = port_bridge_ctrl.bf.new_addr_lrn_en;
+	*cmd = port_bridge_ctrl.bf.new_addr_fwd_cmd;
+
+	return SW_OK;
+}
+
+sw_error_t
+adpt_hppe_fdb_port_stamove_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable, fal_fwd_cmd_t cmd)
+{
+	sw_error_t rv = SW_OK;
+	union port_bridge_ctrl_u port_bridge_ctrl;
+
+	memset(&port_bridge_ctrl, 0, sizeof(port_bridge_ctrl));
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	rv = hppe_port_bridge_ctrl_get(dev_id, port_id, &port_bridge_ctrl);
+
+	if( rv != SW_OK )
+		return rv;
+
+	port_bridge_ctrl.bf.station_move_lrn_en = enable;
+	port_bridge_ctrl.bf.station_move_fwd_cmd = cmd;
+
+	return hppe_port_bridge_ctrl_set(dev_id, port_id, &port_bridge_ctrl);
+}
+
+sw_error_t
+adpt_hppe_fdb_port_stamove_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable, fal_fwd_cmd_t *cmd)
+{
+	sw_error_t rv = SW_OK;
+	union port_bridge_ctrl_u port_bridge_ctrl;
+
+	memset(&port_bridge_ctrl, 0, sizeof(port_bridge_ctrl));
+	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(enable);
+	ADPT_NULL_POINT_CHECK(cmd);
+
+	rv = hppe_port_bridge_ctrl_get(dev_id, port_id, &port_bridge_ctrl);
+
+	if( rv != SW_OK )
+		return rv;
+
+	*enable = port_bridge_ctrl.bf.station_move_lrn_en;
+	*cmd = port_bridge_ctrl.bf.station_move_fwd_cmd;
 
 	return SW_OK;
 }
@@ -1151,6 +1236,10 @@ sw_error_t adpt_hppe_fdb_init(a_uint32_t dev_id)
 	p_adpt_api->adpt_fdb_port_del = adpt_hppe_fdb_port_del;
 	p_adpt_api->adpt_fdb_port_learn_set = adpt_hppe_fdb_port_learn_set;
 	p_adpt_api->adpt_fdb_port_learn_get = adpt_hppe_fdb_port_learn_get;
+	p_adpt_api->adpt_fdb_port_newaddr_lrn_set = adpt_hppe_fdb_port_newaddr_lrn_set;
+	p_adpt_api->adpt_fdb_port_newaddr_lrn_get = adpt_hppe_fdb_port_newaddr_lrn_get;
+	p_adpt_api->adpt_fdb_port_stamove_set = adpt_hppe_fdb_port_stamove_set;
+	p_adpt_api->adpt_fdb_port_stamove_get = adpt_hppe_fdb_port_stamove_get;
 	p_adpt_api->adpt_port_fdb_learn_counter_get = adpt_hppe_port_fdb_learn_counter_get;
 	p_adpt_api->adpt_port_fdb_learn_exceed_cmd_set = adpt_hppe_port_fdb_learn_exceed_cmd_set;
 	p_adpt_api->adpt_port_fdb_learn_exceed_cmd_get = adpt_hppe_port_fdb_learn_exceed_cmd_get;

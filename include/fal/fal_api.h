@@ -406,6 +406,10 @@ extern "C" {
     SW_API_DEF(SW_API_FDB_FIND,   fal_fdb_find), \
     SW_API_DEF(SW_API_FDB_PT_LEARN_SET,   fal_fdb_port_learn_set), \
     SW_API_DEF(SW_API_FDB_PT_LEARN_GET,   fal_fdb_port_learn_get), \
+    SW_API_DEF(SW_API_FDB_PT_NEWADDR_LEARN_SET, fal_fdb_port_newaddr_lrn_set), \
+    SW_API_DEF(SW_API_FDB_PT_NEWADDR_LEARN_GET, fal_fdb_port_newaddr_lrn_get), \
+    SW_API_DEF(SW_API_FDB_PT_STAMOVE_SET,       fal_fdb_port_stamove_set), \
+    SW_API_DEF(SW_API_FDB_PT_STAMOVE_GET,       fal_fdb_port_stamove_get), \
     SW_API_DEF(SW_API_FDB_AGE_MODE_SET,   fal_fdb_age_mode_set), \
     SW_API_DEF(SW_API_FDB_AGE_MODE_GET,   fal_fdb_age_mode_get), \
     SW_API_DEF(SW_API_FDB_AGE_CTRL_SET,   fal_fdb_age_ctrl_set), \
@@ -452,6 +456,10 @@ extern "C" {
     SW_API_DESC(SW_API_FDB_FIND) \
     SW_API_DESC(SW_API_FDB_PT_LEARN_SET) \
     SW_API_DESC(SW_API_FDB_PT_LEARN_GET) \
+    SW_API_DESC(SW_API_FDB_PT_NEWADDR_LEARN_SET) \
+    SW_API_DESC(SW_API_FDB_PT_NEWADDR_LEARN_GET) \
+    SW_API_DESC(SW_API_FDB_PT_STAMOVE_SET) \
+    SW_API_DESC(SW_API_FDB_PT_STAMOVE_GET) \
     SW_API_DESC(SW_API_FDB_AGE_MODE_SET) \
     SW_API_DESC(SW_API_FDB_AGE_MODE_GET) \
     SW_API_DESC(SW_API_FDB_AGE_CTRL_SET) \
