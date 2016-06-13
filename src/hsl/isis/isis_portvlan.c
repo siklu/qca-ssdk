@@ -1000,6 +1000,11 @@ _isis_port_vlan_trans_add(a_uint32_t dev_id, fal_port_t port_id,
         return SW_BAD_PARAM;
     }
 
+    if (NULL == entry)
+    {
+        return SW_BAD_PTR;
+    }
+    aos_mem_zero(&local, sizeof(fal_vlan_trans_entry_t));
     rv = _isis_port_vlan_trans_convert(entry, &local);
     SW_RTN_ON_ERROR(rv);
 
@@ -1056,6 +1061,11 @@ _isis_port_vlan_trans_del(a_uint32_t dev_id, fal_port_t port_id,
         return SW_BAD_PARAM;
     }
 
+    if (NULL == entry)
+    {
+        return SW_BAD_PTR;
+    }
+    aos_mem_zero(&local, sizeof(fal_vlan_trans_entry_t));
     rv = _isis_port_vlan_trans_convert(entry, &local);
     SW_RTN_ON_ERROR(rv);
 
@@ -1106,6 +1116,11 @@ _isis_port_vlan_trans_get(a_uint32_t dev_id, fal_port_t port_id,
         return SW_BAD_PARAM;
     }
 
+    if (NULL == entry)
+    {
+        return SW_BAD_PTR;
+    }
+    aos_mem_zero(&local, sizeof(fal_vlan_trans_entry_t));
     rv = _isis_port_vlan_trans_convert(entry, &local);
     SW_RTN_ON_ERROR(rv);
 
