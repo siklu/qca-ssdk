@@ -610,6 +610,7 @@ extern "C" {
 #define SW_API_PSGMII_REG_SET             (9  + SW_API_DEBUG_OFFSET)
 #define SW_API_REG_DUMP          			(10  + SW_API_DEBUG_OFFSET)
 #define SW_API_DBG_REG_DUMP          		(11  + SW_API_DEBUG_OFFSET)
+#define SW_API_DBG_PSGMII_SELF_TEST          		(12  + SW_API_DEBUG_OFFSET)
 
 #define SW_API_MAX                 0xffff
 

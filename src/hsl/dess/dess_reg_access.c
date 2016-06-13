@@ -47,6 +47,8 @@ static a_uint32_t mdio_base_addr = 0xffffffff;
 
 uint32_t qca_ar8216_mii_read(int reg);
 void qca_ar8216_mii_write(int reg, uint32_t val);
+extern void ssdk_psgmii_self_test(a_bool_t enable, a_uint32_t times, a_uint32_t *result);
+extern void clear_self_test_config(void);
 
 static sw_error_t
 _dess_mdio_reg_get(a_uint32_t dev_id, a_uint32_t reg_addr,
@@ -409,8 +411,17 @@ _dess_debug_regsiter_dump(a_uint32_t dev_id,fal_debug_reg_dump_t * dbg_reg_dump)
 	dbg_reg_dump->reg_count = reg_count;
 
 	snprintf((char *)dbg_reg_dump->reg_name,sizeof(dbg_reg_dump->reg_name),"QM debug registers");
-
     return rv;
+}
+static sw_error_t
+_dess_debug_psgmii_self_test(a_uint32_t dev_id, a_bool_t enable,
+					a_uint32_t times, a_uint32_t * result)
+{
+	sw_error_t rv = SW_OK;
+	ssdk_psgmii_self_test(enable, times, result);
+	clear_self_test_config();
+
+	return rv;
 }
 
 
@@ -450,6 +461,25 @@ dess_debug_regsiter_dump(a_uint32_t dev_id, fal_debug_reg_dump_t * dbg_reg_dump)
 }
 
 
+/**
+ * @brief debug psgmii self test.
+ * @param[in] dev_id, enable, times
+ * @param[out] status
+ * @return SW_OK or error code
+ */
+sw_error_t
+dess_debug_psgmii_self_test(a_uint32_t dev_id, a_bool_t enable,
+				a_uint32_t times, a_uint32_t * result)
+
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_API_LOCK;
+    rv = _dess_debug_psgmii_self_test(dev_id, enable, times, result);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
 sw_error_t
 dess_reg_access_init(a_uint32_t dev_id, hsl_access_mode mode)
 {
@@ -469,6 +499,7 @@ dess_reg_access_init(a_uint32_t dev_id, hsl_access_mode mode)
     p_api->psgmii_reg_set = dess_psgmii_reg_set;
 	p_api->register_dump = dess_regsiter_dump;
 	p_api->debug_register_dump = dess_debug_regsiter_dump;
+	p_api->debug_psgmii_self_test = dess_debug_psgmii_self_test;
 
 
     return SW_OK;

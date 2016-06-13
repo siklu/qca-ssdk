@@ -1976,6 +1976,10 @@ typedef sw_error_t
 			    a_uint32_t entry_len, const a_uint8_t value[],
 			    a_uint32_t value_len);
 
+  typedef sw_error_t
+    (*hsl_debug_psgmii_self_test) (a_uint32_t dev_id, a_bool_t enable,
+			    a_uint32_t times, a_uint32_t *result);
+
   typedef struct
   {
 #if (!(defined(USER_MODE) && defined(KERNEL_MODULE)))
@@ -2534,6 +2538,8 @@ typedef sw_error_t
     hsl_psgmii_reg_set psgmii_reg_set;
 	hsl_register_dump	register_dump;
 	hsl_debug_register_dump	debug_register_dump;
+	hsl_debug_psgmii_self_test	debug_psgmii_self_test;
+
 
       /*INIT*/ hsl_dev_reset dev_reset;
     hsl_dev_clean dev_clean;

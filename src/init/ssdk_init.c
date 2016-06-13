@@ -2038,15 +2038,28 @@ void ssdk_malibu_psgmii_and_dakota_dess_reset(void)
 static void ssdk_psgmii_phy_testing_printf(int phy, u32 tx_ok, u32 rx_ok,
 				u32 tx_counter_error, u32 rx_counter_error)
 {
-#ifdef PSGMII_DEBUG
 	printk("tx_ok = 0x%x, rx_ok = 0x%x, tx_counter_error = 0x%x, rx_counter_error = 0x%x\n",
 			tx_ok, rx_ok, tx_counter_error, rx_counter_error);
-	printk("PHY %d single test PSGMII issue happen \n", phy);
-#endif
+	if (tx_ok== 0x3000 && tx_counter_error == 0)
+		printk("PHY %d single PSGMII test pass\n", phy);
+	else
+		printk("PHY %d single PSGMII test fail\n", phy);
 	return;
 
 }
-void ssdk_psgmii_single_phy_testing(int phy)
+static void ssdk_psgmii_all_phy_testing_printf(int phy, u32 tx_ok, u32 rx_ok,
+				u32 tx_counter_error, u32 rx_counter_error)
+{
+	printk("tx_ok = 0x%x, rx_ok = 0x%x, tx_counter_error = 0x%x, rx_counter_error = 0x%x\n",
+			tx_ok, rx_ok, tx_counter_error, rx_counter_error);
+	if (tx_ok== 0x3000 && tx_counter_error == 0)
+		printk("PHY %d all PSGMII test pass\n", phy);
+	else
+		printk("PHY %d all PSGMII test fail\n", phy);
+	return;
+
+}
+void ssdk_psgmii_single_phy_testing(int phy, a_bool_t enable)
 {
 	int j = 0;
 
@@ -2066,6 +2079,9 @@ void ssdk_psgmii_single_phy_testing(int phy)
 		mdelay(10);
 		j++;
 	}
+	/*add a 300ms delay as qm polling task existing*/
+	if (enable == A_TRUE)
+		mdelay(300);
 
 	/*enable check*/
 	qca_phy_mmd_write(0, phy, 7, 0x8029, 0x0000);
@@ -2088,15 +2104,17 @@ void ssdk_psgmii_single_phy_testing(int phy)
 		/*success*/
 		phy_t_status &= (~(1<<phy));
 	} else {
-		ssdk_psgmii_phy_testing_printf(phy, tx_ok, rx_ok,
-					tx_counter_error, rx_counter_error);
 		phy_t_status |= (1<<phy);
 	}
+
+	if (enable == A_TRUE)
+		ssdk_psgmii_phy_testing_printf(phy, tx_ok, rx_ok,
+				tx_counter_error, rx_counter_error);
 
 	qca_ar8327_phy_write(0, phy, 0x0, 0x1840);
 }
 
-void ssdk_psgmii_all_phy_testing(void)
+void ssdk_psgmii_all_phy_testing(a_bool_t enable)
 {
 	int phy = 0, j = 0;
 
@@ -2116,6 +2134,10 @@ void ssdk_psgmii_all_phy_testing(void)
 		mdelay(10);
 		j++;
 	}
+	/*add a 300ms delay as qm polling task existing*/
+	if (enable == A_TRUE)
+		mdelay(300);
+
 	/*enable check*/
 	qca_phy_mmd_write(0, 0x1f, 7, 0x8029, 0x0000);
 	qca_phy_mmd_write(0, 0x1f, 7, 0x8029, 0x0003);
@@ -2142,22 +2164,26 @@ void ssdk_psgmii_all_phy_testing(void)
 			/*success*/
 			phy_t_status &= (~(1<<(phy+8)));
 		} else {
-				ssdk_psgmii_phy_testing_printf(phy, tx_ok,
+			phy_t_status |= (1<<(phy+8));
+		}
+
+		if (enable == A_TRUE)
+			ssdk_psgmii_all_phy_testing_printf(phy, tx_ok,
 					rx_ok,
 					tx_counter_error, rx_counter_error);
-				phy_t_status |= (1<<(phy+8));
-			}
 		}
-#ifdef PSGMII_DEBUG
-		printk("PHY all test 0x%x \r\n",phy_t_status);
-#endif
+	if (enable == A_TRUE)
+		printk("PHY final test result: 0x%x \r\n",phy_t_status);
+
 }
-void ssdk_psgmii_self_test(void)
+void ssdk_psgmii_self_test(a_bool_t enable, a_uint32_t times, a_uint32_t *result)
 {
 	int i = 0, phy = 0;
 	u32 value = 0;
 
-	ssdk_malibu_psgmii_and_dakota_dess_reset();
+	if (enable == A_FALSE) {
+		ssdk_malibu_psgmii_and_dakota_dess_reset();
+	}
 
 	qca_ar8327_phy_write(0, 4, 0x1f, 0x8500);/*switch to access MII reg for copper*/
 	for(phy = 0; phy < 5; phy++) {
@@ -2175,7 +2201,7 @@ void ssdk_psgmii_self_test(void)
 	/*fix mdi status */
 	qca_ar8327_phy_write(0, 0x1f, 0x10, 0x6800);
 
-	for(i = 0; i < 100; i++) {
+	for(i = 0; i < times; i++) {
 		phy_t_status = 0;
 
 		for(phy = 0; phy < 5; phy++) {
@@ -2184,20 +2210,21 @@ void ssdk_psgmii_self_test(void)
 		}
 
 		for (phy = 0; phy < 5; phy++) {
-			ssdk_psgmii_single_phy_testing(phy);
+			ssdk_psgmii_single_phy_testing(phy, enable);
 		}
-
-		ssdk_psgmii_all_phy_testing();
-
-		if (phy_t_status) {
-			ssdk_malibu_psgmii_and_dakota_dess_reset();
-		}
-		else
-		{
+		ssdk_psgmii_all_phy_testing(enable);
+		if (enable == A_FALSE) {
+			if (phy_t_status) {
+				ssdk_malibu_psgmii_and_dakota_dess_reset();
+			}
+			else
+			{
 		                break;
+			}
 		}
 	}
 
+	*result = phy_t_status;
 #ifdef PSGMII_DEBUG
 	if (i>=100)
 		printk("PSGMII cannot recover\n");
@@ -3113,6 +3140,7 @@ static int __init regi_init(void)
 	ssdk_init_cfg cfg;
 	int rv = 0;
 	garuda_init_spec_cfg chip_spec_cfg;
+	a_uint32_t psgmii_result = 0;
 	ssdk_dt_global.switch_reg_access_mode = HSL_REG_MDIO;
 	ssdk_dt_global.psgmii_reg_access_mode = HSL_REG_MDIO;
 
@@ -3147,7 +3175,7 @@ static int __init regi_init(void)
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
 		/*Do Malibu self test to fix packet drop issue firstly*/
 		if ((cfg.chip_type == CHIP_DESS) && (ssdk_dt_global.mac_mode == PORT_WRAPPER_PSGMII)) {
-			ssdk_psgmii_self_test();
+			ssdk_psgmii_self_test(A_FALSE, 100, &psgmii_result);
 			clear_self_test_config();
 		}
 

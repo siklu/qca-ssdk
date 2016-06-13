@@ -67,6 +67,9 @@ extern "C" {
 	sw_error_t
 	fal_reg_dump(a_uint32_t dev_id, a_uint32_t reg_idx,fal_reg_dump_t *reg_dump);
 
+	sw_error_t
+	fal_debug_psgmii_self_test(a_uint32_t dev_id, a_bool_t enable,
+		a_uint32_t times, a_uint32_t *result);
 
 #ifdef __cplusplus
 }
