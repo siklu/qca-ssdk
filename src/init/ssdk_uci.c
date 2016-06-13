@@ -195,7 +195,6 @@ void ssdk_uci_takeover_exit()
 		unregister_switch(&qca_priv.sw_dev);
 		register_switch(old_sw_dev, sw_attach_dev);
 		qca_phy_mib_work_stop(&qca_priv);
-		kfree(qca_priv.mib_counters);
 	}
 }
 
