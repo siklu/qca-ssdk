@@ -1079,7 +1079,8 @@ extern "C" {
     SW_API_DEF(SW_API_REG_FIELD_SET, dess_reg_field_set), \
     SW_API_DEF(SW_API_REG_DUMP, dess_regsiter_dump), \
     SW_API_DEF(SW_API_DBG_REG_DUMP, dess_debug_regsiter_dump), \
-    SW_API_DEF(SW_API_DBG_PSGMII_SELF_TEST, fal_debug_psgmii_self_test),
+    SW_API_DEF(SW_API_DBG_PSGMII_SELF_TEST, fal_debug_psgmii_self_test), \
+    SW_API_DEF(SW_API_PHY_DUMP, fal_phy_dump),
 
 
 #define REG_API_PARAM \
@@ -1093,7 +1094,9 @@ extern "C" {
     SW_API_DESC(SW_API_REG_FIELD_SET) \
     SW_API_DESC(SW_API_REG_DUMP)  \
     SW_API_DESC(SW_API_DBG_REG_DUMP) \
-    SW_API_DESC(SW_API_DBG_PSGMII_SELF_TEST)
+    SW_API_DESC(SW_API_DBG_PSGMII_SELF_TEST) \
+    SW_API_DESC(SW_API_PHY_DUMP)
+
 
 
 #define SSDK_API \
