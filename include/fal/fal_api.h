@@ -1180,7 +1180,36 @@ extern "C" {
     SW_API_DEF(SW_API_IP_DEFAULT_FLOW_CMD_SET, fal_default_flow_cmd_set), \
     SW_API_DEF(SW_API_IP_DEFAULT_FLOW_CMD_GET, fal_default_flow_cmd_get), \
     SW_API_DEF(SW_API_IP_DEFAULT_RT_FLOW_CMD_SET, fal_default_rt_flow_cmd_set), \
-    SW_API_DEF(SW_API_IP_DEFAULT_RT_FLOW_CMD_GET, fal_default_rt_flow_cmd_get),
+    SW_API_DEF(SW_API_IP_DEFAULT_RT_FLOW_CMD_GET, fal_default_rt_flow_cmd_get), \
+    SW_API_DEF(SW_API_IP_VIS_ARP_SG_CFG_GET, fal_ip_vsi_arp_sg_cfg_get), \
+    SW_API_DEF(SW_API_IP_VIS_ARP_SG_CFG_SET, fal_ip_vsi_arp_sg_cfg_set), \
+    SW_API_DEF(SW_API_IP_NETWORK_ROUTE_GET, fal_ip_network_route_get), \
+    SW_API_DEF(SW_API_IP_NETWORK_ROUTE_SET, fal_ip_network_route_set), \
+    SW_API_DEF(SW_API_IP_INTF_GET, fal_ip_intf_get), \
+    SW_API_DEF(SW_API_IP_INTF_SET, fal_ip_intf_set), \
+    SW_API_DEF(SW_API_IP_VSI_INTF_GET, fal_ip_vsi_intf_get), \
+    SW_API_DEF(SW_API_IP_VSI_INTF_SET, fal_ip_vsi_intf_set), \
+    SW_API_DEF(SW_API_IP_NEXTHOP_GET, fal_ip_nexthop_get), \
+    SW_API_DEF(SW_API_IP_NEXTHOP_SET, fal_ip_nexthop_set), \
+    SW_API_DEF(SW_API_IP_VSI_SG_SET, fal_ip_vsi_sg_cfg_set), \
+    SW_API_DEF(SW_API_IP_VSI_SG_GET, fal_ip_vsi_sg_cfg_get), \
+    SW_API_DEF(SW_API_IP_PORT_SG_SET, fal_ip_port_sg_cfg_set), \
+    SW_API_DEF(SW_API_IP_PORT_SG_GET, fal_ip_port_sg_cfg_get), \
+    SW_API_DEF(SW_API_IP_PUB_IP_ADD, fal_ip_pub_addr_add), \
+    SW_API_DEF(SW_API_IP_PUB_IP_GET, fal_ip_pub_addr_get), \
+    SW_API_DEF(SW_API_IP_PUB_IP_DEL, fal_ip_pub_addr_del), \
+    SW_API_DEF(SW_API_IP_PORT_INTF_GET, fal_ip_port_intf_get), \
+    SW_API_DEF(SW_API_IP_PORT_INTF_SET, fal_ip_port_intf_set), \
+    SW_API_DEF(SW_API_IP_PORT_MAC_GET, fal_ip_port_macaddr_get), \
+    SW_API_DEF(SW_API_IP_PORT_MAC_SET, fal_ip_port_macaddr_set), \
+    SW_API_DEF(SW_API_IP_ROUTE_MISS_GET, fal_ip_route_mismatch_get), \
+    SW_API_DEF(SW_API_IP_ROUTE_MISS_SET, fal_ip_route_mismatch_set), \
+    SW_API_DEF(SW_API_IP_PORT_ARP_SG_SET, fal_ip_port_arp_sg_cfg_set), \
+    SW_API_DEF(SW_API_IP_PORT_ARP_SG_GET, fal_ip_port_arp_sg_cfg_get), \
+    SW_API_DEF(SW_API_IP_VSI_MC_MODE_SET, fal_ip_vsi_mc_mode_set), \
+    SW_API_DEF(SW_API_IP_VSI_MC_MODE_GET, fal_ip_vsi_mc_mode_get), \
+    SW_API_DEF(SW_API_GLOBAL_CTRL_GET, fal_ip_global_ctrl_get), \
+    SW_API_DEF(SW_API_GLOBAL_CTRL_SET, fal_ip_global_ctrl_set),
 
 #define IP_API_PARAM \
     SW_API_DESC(SW_API_IP_HOST_ADD) \
@@ -1227,11 +1256,72 @@ extern "C" {
     SW_API_DESC(SW_API_IP_DEFAULT_FLOW_CMD_SET) \
     SW_API_DESC(SW_API_IP_DEFAULT_FLOW_CMD_GET) \
     SW_API_DESC(SW_API_IP_DEFAULT_RT_FLOW_CMD_SET) \
-    SW_API_DESC(SW_API_IP_DEFAULT_RT_FLOW_CMD_GET)
+    SW_API_DESC(SW_API_IP_DEFAULT_RT_FLOW_CMD_GET) \
+    SW_API_DESC(SW_API_IP_VIS_ARP_SG_CFG_GET) \
+    SW_API_DESC(SW_API_IP_VIS_ARP_SG_CFG_SET) \
+    SW_API_DESC(SW_API_IP_NETWORK_ROUTE_GET) \
+    SW_API_DESC(SW_API_IP_NETWORK_ROUTE_SET) \
+    SW_API_DESC(SW_API_IP_INTF_GET) \
+    SW_API_DESC(SW_API_IP_INTF_SET) \
+    SW_API_DESC(SW_API_IP_VSI_INTF_GET) \
+    SW_API_DESC(SW_API_IP_VSI_INTF_SET) \
+    SW_API_DESC(SW_API_IP_NEXTHOP_GET) \
+    SW_API_DESC(SW_API_IP_NEXTHOP_SET) \
+    SW_API_DESC(SW_API_IP_VSI_SG_SET) \
+    SW_API_DESC(SW_API_IP_VSI_SG_GET) \
+    SW_API_DESC(SW_API_IP_PORT_SG_SET) \
+    SW_API_DESC(SW_API_IP_PORT_SG_GET) \
+    SW_API_DESC(SW_API_IP_PUB_IP_ADD) \
+    SW_API_DESC(SW_API_IP_PUB_IP_GET) \
+    SW_API_DESC(SW_API_IP_PUB_IP_DEL) \
+    SW_API_DESC(SW_API_IP_PORT_INTF_GET) \
+    SW_API_DESC(SW_API_IP_PORT_INTF_SET) \
+    SW_API_DESC(SW_API_IP_PORT_MAC_GET) \
+    SW_API_DESC(SW_API_IP_PORT_MAC_SET) \
+    SW_API_DESC(SW_API_IP_ROUTE_MISS_GET) \
+    SW_API_DESC(SW_API_IP_ROUTE_MISS_SET) \
+    SW_API_DESC(SW_API_IP_PORT_ARP_SG_SET) \
+    SW_API_DESC(SW_API_IP_PORT_ARP_SG_GET) \
+    SW_API_DESC(SW_API_IP_VSI_MC_MODE_SET) \
+    SW_API_DESC(SW_API_IP_VSI_MC_MODE_GET) \
+    SW_API_DESC(SW_API_GLOBAL_CTRL_GET) \
+    SW_API_DESC(SW_API_GLOBAL_CTRL_SET)
 #else
 #define IP_API
 #define IP_API_PARAM
 #endif
+
+#ifdef IN_FLOW
+#define FLOW_API \
+    SW_API_DEF(SW_API_FLOW_STATUS_SET, fal_flow_status_set), \
+    SW_API_DEF(SW_API_FLOW_STATUS_GET, fal_flow_status_get), \
+    SW_API_DEF(SW_API_FLOW_AGE_TIMER_SET, fal_flow_age_timer_set), \
+    SW_API_DEF(SW_API_FLOW_AGE_TIMER_GET, fal_flow_age_timer_get), \
+    SW_API_DEF(SW_API_FLOW_CTRL_SET, fal_flow_ctrl_set), \
+    SW_API_DEF(SW_API_FLOW_CTRL_GET, fal_flow_ctrl_get), \
+    SW_API_DEF(SW_API_FLOW_ENTRY_ADD, fal_flow_entry_add), \
+    SW_API_DEF(SW_API_FLOW_ENTRY_DEL, fal_flow_entry_del), \
+    SW_API_DEF(SW_API_FLOW_ENTRY_GET, fal_flow_entry_get), \
+    SW_API_DEF(SW_API_FLOW_GLOBAL_CFG_GET, fal_flow_global_cfg_get), \
+    SW_API_DEF(SW_API_FLOW_GLOBAL_CFG_SET, fal_flow_global_cfg_set),
+
+#define FLOW_API_PARAM \
+    SW_API_DESC(SW_API_FLOW_STATUS_SET) \
+    SW_API_DESC(SW_API_FLOW_STATUS_GET) \
+    SW_API_DESC(SW_API_FLOW_AGE_TIMER_SET) \
+    SW_API_DESC(SW_API_FLOW_AGE_TIMER_GET) \
+    SW_API_DESC(SW_API_FLOW_CTRL_SET) \
+    SW_API_DESC(SW_API_FLOW_CTRL_GET) \
+    SW_API_DESC(SW_API_FLOW_ENTRY_ADD) \
+    SW_API_DESC(SW_API_FLOW_ENTRY_DEL) \
+    SW_API_DESC(SW_API_FLOW_ENTRY_GET) \
+    SW_API_DESC(SW_API_FLOW_GLOBAL_CFG_GET) \
+    SW_API_DESC(SW_API_FLOW_GLOBAL_CFG_SET)
+#else
+#define FLOW_API
+#define FLOW_API_PARAM
+#endif
+
 
 #ifdef IN_NAT
 #define NAT_API \
@@ -1410,6 +1500,55 @@ extern "C" {
 #define VSI_API_PARAM
 #endif
 
+#ifdef IN_QM
+#define QM_API \
+    SW_API_DEF(SW_API_UCAST_QUEUE_MAP_SET, fal_ucast_queue_map_set), \
+    SW_API_DEF(SW_API_UCAST_QUEUE_MAP_GET, fal_ucast_queue_map_get), \
+    SW_API_DEF(SW_API_UCAST_PRIORITY_MAP_SET, fal_ucast_priority_map_set), \
+    SW_API_DEF(SW_API_UCAST_PRIORITY_MAP_GET, fal_ucast_priority_map_get), \
+    SW_API_DEF(SW_API_MCAST_PRIORITY_CLASS_SET, fal_port_mcast_priority_class_set), \
+    SW_API_DEF(SW_API_MCAST_PRIORITY_CLASS_GET, fal_port_mcast_priority_class_get), \
+    SW_API_DEF(SW_API_QUEUE_FLUSH, SW_API_QUEUE_FLUSH), \
+    SW_API_DEF(SW_API_UNI_QUEUE_AC_SET, fal_unicast_queue_ac_cfg_set), \
+    SW_API_DEF(SW_API_UNI_QUEUE_AC_GET, fal_unicast_queue_ac_cfg_get), \
+    SW_API_DEF(SW_API_MULTI_QUEUE_AC_SET, fal_multicast_queue_ac_cfg_set), \
+    SW_API_DEF(SW_API_MULTI_QUEUE_AC_GET, fal_multicast_queue_ac_cfg_get), \
+    SW_API_DEF(SW_API_GROUP_AC_SET, fal_group_ac_cfg_set), \
+    SW_API_DEF(SW_API_GROUP_AC_GET, fal_group_ac_cfg_get), \
+    SW_API_DEF(SW_API_UCAST_HASH_MAP_SET, fal_ucast_hash_map_set), \
+    SW_API_DEF(SW_API_UCAST_HASH_MAP_GET, fal_ucast_hash_map_get), \
+    SW_API_DEF(SW_API_UCAST_DFLT_HASH_MAP_SET, fal_ucast_default_hash_set), \
+    SW_API_DEF(SW_API_UCAST_DFLT_HASH_MAP_GET, fal_ucast_default_hash_get), \
+    SW_API_DEF(SW_API_MCAST_QUEUE_MAP_SET, fal_mcast_queue_map_set), \
+    SW_API_DEF(SW_API_MCAST_QUEUE_MAP_GET, fal_mcast_queue_map_get),
+
+#define QM_API_PARAM \
+    SW_API_DESC(SW_API_UCAST_QUEUE_MAP_SET) \
+    SW_API_DESC(SW_API_UCAST_QUEUE_MAP_GET) \
+    SW_API_DESC(SW_API_UCAST_PRIORITY_MAP_SET) \
+    SW_API_DESC(SW_API_UCAST_PRIORITY_MAP_GET) \
+    SW_API_DESC(SW_API_MCAST_PRIORITY_CLASS_SET) \
+    SW_API_DESC(SW_API_MCAST_PRIORITY_CLASS_GET) \
+    SW_API_DESC(SW_API_QUEUE_FLUSH) \
+    SW_API_DESC(SW_API_UNI_QUEUE_AC_SET) \
+    SW_API_DESC(SW_API_UNI_QUEUE_AC_GET) \
+    SW_API_DESC(SW_API_MULTI_QUEUE_AC_SET) \
+    SW_API_DESC(SW_API_MULTI_QUEUE_AC_GET) \
+    SW_API_DESC(SW_API_GROUP_AC_SET) \
+    SW_API_DESC(SW_API_GROUP_AC_GET) \
+    SW_API_DESC(SW_API_UCAST_HASH_MAP_SET) \
+    SW_API_DESC(SW_API_UCAST_HASH_MAP_GET) \
+    SW_API_DESC(SW_API_UCAST_DFLT_HASH_MAP_SET) \
+    SW_API_DESC(SW_API_UCAST_DFLT_HASH_MAP_GET) \
+    SW_API_DESC(SW_API_MCAST_QUEUE_MAP_SET) \
+    SW_API_DESC(SW_API_MCAST_QUEUE_MAP_GET)
+
+#else
+#define QM_API
+#define QM_API_PARAM
+#endif
+
+
 
 #define REG_API \
     SW_API_DEF(SW_API_PHY_GET, fal_phy_get), \
@@ -1457,9 +1596,11 @@ extern "C" {
     SEC_API  \
     IP_API \
     NAT_API \
+    FLOW_API \
     TRUNK_API \
     INTERFACECTRL_API \
     VSI_API \
+    QM_API \
     REG_API \
     SW_API_DEF(SW_API_MAX, NULL),
 
@@ -1486,9 +1627,11 @@ extern "C" {
     SEC_API_PARAM \
     IP_API_PARAM \
     NAT_API_PARAM \
+    FLOW_API_PARAM \
     TRUNK_API_PARAM \
     INTERFACECTRL_API_PARAM \
     VSI_API_PARAM \
+    QM_API_PARAM \
     REG_API_PARAM \
     SW_PARAM_DEF(SW_API_MAX, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"),
 

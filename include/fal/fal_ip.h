@@ -42,11 +42,32 @@ extern "C" {
 #define FAL_IP_ENTRY_PORT_EN             0x4
 #define FAL_IP_ENTRY_STATUS_EN           0x8
 #define FAL_IP_ENTRY_IPADDR_EN           0x10
+#define FAL_IP_ENTRY_ALL_EN           0x20
 
     /* IP host entry structure flags field */
 #define FAL_IP_IP4_ADDR                         0x1
 #define FAL_IP_IP6_ADDR                         0x2
 #define FAL_IP_CPU_ADDR                         0x4
+#define FAL_IP_IP4_ADDR_MCAST              0x8
+#define FAL_IP_IP6_ADDR_MCAST              0x10
+
+	typedef struct {
+		a_uint8_t vsi;
+	        fal_ip4_addr_t sip4_addr;
+	        fal_ip6_addr_t sip6_addr;
+	} fal_host_mcast_t;
+
+    typedef struct
+    {
+        a_uint32_t rx_pkt;
+        a_uint64_t rx_byte;
+        a_uint32_t rx_drop_pkt;
+        a_uint64_t rx_drop_byte;
+        a_uint32_t tx_pkt;
+        a_uint64_t tx_byte;
+        a_uint32_t tx_drop_pkt;
+        a_uint64_t tx_drop_byte;
+    } fal_ip_cnt_t;
 
     typedef struct
     {
@@ -69,6 +90,9 @@ extern "C" {
         a_bool_t pppoe_en;
         a_uint32_t pppoe_id;
         fal_fwd_cmd_t action;
+        a_uint8_t syn_toggle;
+        a_uint8_t lan_wan;
+        fal_host_mcast_t mcast_info;
     } fal_host_entry_t;
 
     typedef enum
@@ -168,6 +192,140 @@ typedef enum
 	}route_addr;
         a_uint32_t prefix_length;/*For IPv4, up to 32 and for IPv6, up to 128*/
     } fal_host_route_t;
+
+    typedef struct
+    {
+        a_bool_t l3_if_valid;
+        a_uint32_t l3_if_index;        	  
+    } fal_intf_id_t;
+
+	typedef enum
+	{
+		FAL_MC_MODE_GV = 0,
+		FAL_MC_MODE_SGV
+	} fal_mc_mode_t;
+
+	typedef struct
+	{
+		a_bool_t l2_ipv4_mc_en;
+		fal_mc_mode_t l2_ipv4_mc_mode;
+		a_bool_t l2_ipv6_mc_en;
+		fal_mc_mode_t l2_ipv6_mc_mode;
+	} fal_mc_mode_cfg_t;
+
+	typedef struct
+	{
+		a_bool_t ipv4_sg_en;
+		fal_fwd_cmd_t ipv4_sg_vio_cmd;
+		a_bool_t ipv4_sg_port_en;
+		a_bool_t ipv4_sg_svlan_en;
+		a_bool_t ipv4_sg_cvlan_en;
+		fal_fwd_cmd_t ipv4_src_unk_cmd;
+		a_bool_t ipv6_sg_en;
+		fal_fwd_cmd_t ipv6_sg_vio_cmd;
+		a_bool_t ipv6_sg_port_en;
+		a_bool_t ipv6_sg_svlan_en;
+		a_bool_t ipv6_sg_cvlan_en;
+		fal_fwd_cmd_t ipv6_src_unk_cmd;
+	} fal_sg_cfg_t;
+
+	typedef struct
+	{
+		a_bool_t ipv4_arp_sg_en;
+		fal_fwd_cmd_t ipv4_arp_sg_vio_cmd;
+		a_bool_t ipv4_arp_sg_port_en;
+		a_bool_t ipv4_arp_sg_svlan_en;
+		a_bool_t ipv4_arp_sg_cvlan_en;
+		fal_fwd_cmd_t ipv4_arp_src_unk_cmd;
+		a_bool_t ip_nd_sg_en;
+		fal_fwd_cmd_t ip_nd_sg_vio_cmd;
+		a_bool_t ip_nd_sg_port_en;
+		a_bool_t ip_nd_sg_svlan_en;
+		a_bool_t ip_nd_sg_cvlan_en;
+		fal_fwd_cmd_t ip_nd_src_unk_cmd;
+	} fal_arp_sg_cfg_t;
+
+	typedef struct
+	{
+		a_bool_t valid;
+		a_uint8_t type;
+		fal_fwd_cmd_t fwd_cmd;
+		fal_port_t port;
+		a_uint8_t lan_wan;
+		union {
+			fal_ip4_addr_t ip4_addr;
+			fal_ip6_addr_t ip6_addr;
+		} route_addr;
+		union {
+			fal_ip4_addr_t ip4_addr_mask;
+			fal_ip6_addr_t ip6_addr_mask;
+		} route_addr_mask;
+	} fal_network_route_entry_t;
+
+	typedef struct {
+		a_bool_t valid;
+		fal_mac_addr_t mac_addr;
+	} fal_macaddr_entry_t;
+
+	typedef struct {
+		a_uint16_t mru;
+		a_uint16_t mtu;
+		a_bool_t ttl_dec_bypass;
+		a_bool_t ipv4_uc_route_en;
+		a_bool_t ipv6_uc_route_en;
+		a_bool_t icmp_trigger_en;
+		fal_fwd_cmd_t ttl_exceed_cmd;
+		a_bool_t ttl_exceed_de_acce;
+		a_uint8_t mac_bitmap;
+		fal_mac_addr_t mac_addr;
+		a_bool_t pppoe_en;
+		a_uint32_t session_id;
+		fal_ip_cnt_t counter;
+	} fal_intf_entry_t;
+
+	typedef struct
+	{
+		a_uint32_t     entry_id;
+		fal_ip4_addr_t pub_addr;
+	} fal_ip_pub_addr_t;
+
+	typedef enum
+	{
+		FAL_NEXTHOP_L3 = 0,
+		FAL_NEXTHOP_VP,
+	} fal_nexthop_type_t;
+
+	typedef struct
+	{
+		fal_nexthop_type_t type;
+		a_uint8_t vsi;
+		fal_port_t port;
+		a_uint32_t if_index;
+		a_bool_t ip_to_me;
+		a_uint8_t pub_index;
+		a_uint8_t stag_fmt;
+		a_uint16_t svid;
+		a_int8_t ctag_fmt;
+		a_uint16_t cvid;
+		fal_mac_addr_t macaddr;
+		fal_ip4_addr_t dnat_ip;
+	} fal_ip_nexthop_t;
+
+	typedef struct
+	{
+		fal_fwd_cmd_t mru_fail;
+		a_bool_t mru_de_acce;
+		fal_fwd_cmd_t mtu_fail;
+		a_bool_t mtu_de_acce;
+		fal_fwd_cmd_t mtu_df_fail;
+		a_bool_t mtu_df_de_acce;
+		fal_fwd_cmd_t prefix_bc;
+		a_bool_t prefix_de_acce;
+		fal_fwd_cmd_t icmp_rdt;
+		a_bool_t icmp_rdt_de_acce;
+		a_uint8_t hash_mode_0;
+		a_uint8_t hash_mode_1;
+	} fal_ip_global_cfg_t;
 
     sw_error_t
     fal_ip_host_add(a_uint32_t dev_id, fal_host_entry_t * host_entry);
@@ -327,6 +485,120 @@ typedef enum
     sw_error_t
     fal_default_rt_flow_cmd_get(a_uint32_t dev_id, a_uint32_t vrf_id,
 			fal_flow_type_t type, fal_default_flow_cmd_t * cmd);
+
+    sw_error_t
+    fal_ip_vsi_intf_set(a_uint32_t dev_id, a_uint32_t vsi, fal_intf_id_t *id);
+
+    sw_error_t
+    fal_ip_vsi_intf_get(a_uint32_t dev_id, a_uint32_t vsi, fal_intf_id_t *id);
+
+    sw_error_t
+    fal_ip_vsi_mc_mode_set(a_uint32_t dev_id, a_uint32_t vsi,
+    			fal_mc_mode_cfg_t *cfg);
+
+    sw_error_t
+    fal_ip_vsi_mc_mode_get(a_uint32_t dev_id, a_uint32_t vsi,
+    			fal_mc_mode_cfg_t *cfg);
+
+    sw_error_t
+    fal_ip_vsi_sg_cfg_set(a_uint32_t dev_id, a_uint32_t vsi,
+    			fal_sg_cfg_t *sg_cfg);
+
+    sw_error_t
+    fal_ip_vsi_sg_cfg_get(a_uint32_t dev_id, a_uint32_t vsi,
+    			fal_sg_cfg_t *sg_cfg);
+
+    sw_error_t
+    fal_ip_vsi_arp_sg_cfg_set(a_uint32_t dev_id, a_uint32_t vsi,
+    			fal_arp_sg_cfg_t *arp_sg_cfg);
+
+    sw_error_t
+    fal_ip_vsi_arp_sg_cfg_get(a_uint32_t dev_id, a_uint32_t vsi,
+    			fal_arp_sg_cfg_t *arp_sg_cfg);
+
+    sw_error_t
+    fal_ip_port_intf_set(a_uint32_t dev_id, fal_port_t port_id, fal_intf_id_t *id);
+
+    sw_error_t
+    fal_ip_port_intf_get(a_uint32_t dev_id, fal_port_t port_id, fal_intf_id_t *id);
+
+
+    sw_error_t
+    fal_ip_port_macaddr_set(a_uint32_t dev_id, fal_port_t port_id,
+    			fal_macaddr_entry_t *macaddr);
+
+    sw_error_t
+    fal_ip_port_macaddr_get(a_uint32_t dev_id, fal_port_t port_id,
+    			fal_macaddr_entry_t *macaddr);
+
+    sw_error_t
+    fal_ip_port_sg_cfg_set(a_uint32_t dev_id, fal_port_t port_id,
+    			fal_sg_cfg_t *sg_cfg);
+
+    sw_error_t
+    fal_ip_port_sg_cfg_get(a_uint32_t dev_id, fal_port_t port_id,
+    			fal_sg_cfg_t *sg_cfg);
+
+    sw_error_t
+    fal_ip_port_arp_sg_cfg_set(a_uint32_t dev_id, fal_port_t port_id,
+    			fal_arp_sg_cfg_t *arp_sg_cfg);
+
+    sw_error_t
+    fal_ip_port_arp_sg_cfg_get(a_uint32_t dev_id, fal_port_t port_id,
+    			fal_arp_sg_cfg_t *arp_sg_cfg);
+
+    sw_error_t
+    fal_ip_network_route_set(a_uint32_t dev_id,
+    			a_uint32_t index,
+			fal_network_route_entry_t *entry);
+
+    sw_error_t
+    fal_ip_network_route_get(a_uint32_t dev_id,
+    			a_uint32_t index, a_uint8_t type,
+			fal_network_route_entry_t *entry);
+
+
+    sw_error_t
+    fal_ip_intf_set(
+    			a_uint32_t dev_id,
+    			a_uint32_t index,
+    			fal_intf_entry_t *entry);
+
+    sw_error_t
+    fal_ip_intf_get(
+    			a_uint32_t dev_id,
+    			a_uint32_t index,
+    			fal_intf_entry_t *entry);
+
+    sw_error_t
+    fal_ip_route_mismatch_set(a_uint32_t dev_id, fal_fwd_cmd_t cmd);
+
+    sw_error_t
+    fal_ip_route_mismatch_get(a_uint32_t dev_id, fal_fwd_cmd_t *cmd);
+
+    sw_error_t
+    fal_ip_pub_addr_add(a_uint32_t dev_id, fal_ip_pub_addr_t *entry);
+
+    sw_error_t
+    fal_ip_pub_addr_del(a_uint32_t dev_id, a_uint32_t entry_id);
+
+    sw_error_t
+    fal_ip_pub_addr_get(a_uint32_t dev_id, fal_ip_pub_addr_t *entry);
+
+    sw_error_t
+    fal_ip_nexthop_set(a_uint32_t dev_id, a_uint32_t index,
+    			fal_ip_nexthop_t *entry);
+
+
+    sw_error_t
+    fal_ip_nexthop_get(a_uint32_t dev_id, a_uint32_t index,
+    			fal_ip_nexthop_t *entry);
+
+    sw_error_t
+    fal_ip_global_ctrl_get(a_uint32_t dev_id, fal_ip_global_cfg_t *cfg);
+
+    sw_error_t
+    fal_ip_global_ctrl_set(a_uint32_t dev_id, fal_ip_global_cfg_t *cfg);
 
 #ifdef __cplusplus
 }

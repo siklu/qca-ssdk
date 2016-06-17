@@ -73,6 +73,10 @@ ifeq (TRUE, $(IN_NAT))
   SRC_LIST += fal_nat.c
 endif
 
+ifeq (TRUE, $(IN_FLOW))
+  SRC_LIST += fal_flow.c
+endif
+
 ifeq (TRUE, $(IN_SEC))
   SRC_LIST += fal_sec.c
 endif
@@ -87,6 +91,10 @@ endif
 
 ifeq (TRUE, $(IN_INTERFACECONTROL))
   SRC_LIST += fal_interface_ctrl.c
+endif
+
+ifeq (TRUE, $(IN_QM))
+  SRC_LIST += fal_qm.c
 endif
 
 include $(PRJ_PATH)/make/components.mk

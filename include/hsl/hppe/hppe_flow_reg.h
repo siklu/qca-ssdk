@@ -234,28 +234,6 @@ union flow_ctrl1_u {
 	struct flow_ctrl1 bf;
 };
 
-/*[register] IN_PUB_IP_ADDR_TBL*/
-#define IN_PUB_IP_ADDR_TBL
-#define IN_PUB_IP_ADDR_TBL_ADDRESS 0x378
-#define IN_PUB_IP_ADDR_TBL_NUM     16
-#define IN_PUB_IP_ADDR_TBL_INC     0x4
-#define IN_PUB_IP_ADDR_TBL_TYPE    REG_TYPE_RW
-#define IN_PUB_IP_ADDR_TBL_DEFAULT 0x0
-	/*[field] IP_ADDR*/
-	#define IN_PUB_IP_ADDR_TBL_IP_ADDR
-	#define IN_PUB_IP_ADDR_TBL_IP_ADDR_OFFSET  0
-	#define IN_PUB_IP_ADDR_TBL_IP_ADDR_LEN     32
-	#define IN_PUB_IP_ADDR_TBL_IP_ADDR_DEFAULT 0x0
-
-struct in_pub_ip_addr_tbl {
-	a_uint32_t  ip_addr:32;
-};
-
-union in_pub_ip_addr_tbl_u {
-	a_uint32_t val;
-	struct in_pub_ip_addr_tbl bf;
-};
-
 /*[register] IN_FLOW_TBL_OP*/
 #define IN_FLOW_TBL_OP
 #define IN_FLOW_TBL_OP_ADDRESS 0x3b8
@@ -2843,6 +2821,36 @@ struct eg_flow_tree_map_tbl {
 union eg_flow_tree_map_tbl_u {
 	a_uint32_t val;
 	struct eg_flow_tree_map_tbl bf;
+};
+
+/*[table] IN_FLOW_CNT_TBL*/
+#define IN_FLOW_CNT_TBL
+#define IN_FLOW_CNT_TBL_ADDRESS 0x20000
+#define IN_FLOW_CNT_TBL_NUM     4096
+#define IN_FLOW_CNT_TBL_INC     0x10
+#define IN_FLOW_CNT_TBL_TYPE    REG_TYPE_RW
+#define IN_FLOW_CNT_TBL_DEFAULT 0x0
+	/*[field] HIT_PKT_COUNTER*/
+	#define IN_FLOW_CNT_TBL_HIT_PKT_COUNTER
+	#define IN_FLOW_CNT_TBL_HIT_PKT_COUNTER_OFFSET  0
+	#define IN_FLOW_CNT_TBL_HIT_PKT_COUNTER_LEN     32
+	#define IN_FLOW_CNT_TBL_HIT_PKT_COUNTER_DEFAULT 0x0
+	/*[field] HIT_BYTE_COUNTER*/
+	#define IN_FLOW_CNT_TBL_HIT_BYTE_COUNTER
+	#define IN_FLOW_CNT_TBL_HIT_BYTE_COUNTER_OFFSET  32
+	#define IN_FLOW_CNT_TBL_HIT_BYTE_COUNTER_LEN     40
+	#define IN_FLOW_CNT_TBL_HIT_BYTE_COUNTER_DEFAULT 0x0
+
+struct in_flow_cnt_tbl {
+	a_uint32_t  hit_pkt_counter:32;
+	a_uint32_t  hit_byte_counter_0:32;
+	a_uint32_t  hit_byte_counter_1:8;
+	a_uint32_t  _reserved0:24;
+};
+
+union in_flow_cnt_tbl_u {
+	a_uint32_t val[3];
+	struct in_flow_cnt_tbl bf;
 };
 
 #endif

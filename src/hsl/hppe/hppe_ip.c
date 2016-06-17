@@ -23,6 +23,36 @@
 #include "hppe_ip_reg.h"
 #include "hppe_ip.h"
 
+static a_uint32_t host_cmd_id = 0;
+
+sw_error_t
+hppe_rt_interface_cnt_tbl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union rt_interface_cnt_tbl_u *value)
+{
+	return hppe_reg_tbl_get(
+				dev_id,
+				INGRESS_POLICER_BASE_ADDR + RT_INTERFACE_CNT_TBL_ADDRESS + \
+				index * RT_INTERFACE_CNT_TBL_INC,
+				value->val,
+				5);
+}
+
+sw_error_t
+hppe_rt_interface_cnt_tbl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union rt_interface_cnt_tbl_u *value)
+{
+	return hppe_reg_tbl_set(
+				dev_id,
+				INGRESS_POLICER_BASE_ADDR + RT_INTERFACE_CNT_TBL_ADDRESS + \
+				index * RT_INTERFACE_CNT_TBL_INC,
+				value->val,
+				5);
+}
+
 sw_error_t
 hppe_my_mac_tbl_get(
 		a_uint32_t dev_id,
@@ -119,6 +149,35 @@ hppe_network_route_ip_get(
 				index * NETWORK_ROUTE_IP_INC,
 				value->val,
 				2);
+}
+
+sw_error_t
+hppe_in_pub_ip_addr_tbl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union in_pub_ip_addr_tbl_u *value)
+{
+	return hppe_reg_set(
+				dev_id,
+				IPE_L3_BASE_ADDR + IN_PUB_IP_ADDR_TBL_ADDRESS + \
+				index * IN_PUB_IP_ADDR_TBL_INC,
+				value->val);
+}
+
+
+sw_error_t
+hppe_in_pub_ip_addr_tbl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union in_pub_ip_addr_tbl_u *value)
+{
+	if (index >= IN_PUB_IP_ADDR_TBL_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+	return hppe_reg_get(
+				dev_id,
+				IPE_L3_BASE_ADDR + IN_PUB_IP_ADDR_TBL_ADDRESS + \
+				index * IN_PUB_IP_ADDR_TBL_INC,
+				&value->val);
 }
 
 sw_error_t
@@ -6352,3 +6411,476 @@ hppe_eg_l3_if_tbl_pppoe_en_set(
 	ret = hppe_eg_l3_if_tbl_set(dev_id, index, &reg_val);
 	return ret;
 }
+
+sw_error_t
+hppe_in_pub_ip_addr_tbl_ip_addr_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union in_pub_ip_addr_tbl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_in_pub_ip_addr_tbl_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.ip_addr;
+	return ret;
+}
+
+sw_error_t
+hppe_in_pub_ip_addr_tbl_ip_addr_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union in_pub_ip_addr_tbl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_in_pub_ip_addr_tbl_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.ip_addr = value;
+	ret = hppe_in_pub_ip_addr_tbl_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_rt_interface_cnt_tbl_byte_cnt_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint64_t *value)
+{
+	union rt_interface_cnt_tbl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_rt_interface_cnt_tbl_get(dev_id, index, &reg_val);
+	*value = (a_uint64_t)reg_val.bf.byte_cnt_1 << 32 | \
+		reg_val.bf.byte_cnt_0;
+	return ret;
+}
+
+sw_error_t
+hppe_rt_interface_cnt_tbl_byte_cnt_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint64_t value)
+{
+	union rt_interface_cnt_tbl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_rt_interface_cnt_tbl_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.byte_cnt_1 = value >> 32;
+	reg_val.bf.byte_cnt_0 = value & (((a_uint64_t)1<<32)-1);
+	ret = hppe_rt_interface_cnt_tbl_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_rt_interface_cnt_tbl_pkt_cnt_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union rt_interface_cnt_tbl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_rt_interface_cnt_tbl_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.pkt_cnt;
+	return ret;
+}
+
+sw_error_t
+hppe_rt_interface_cnt_tbl_pkt_cnt_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union rt_interface_cnt_tbl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_rt_interface_cnt_tbl_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.pkt_cnt = value;
+	ret = hppe_rt_interface_cnt_tbl_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_rt_interface_cnt_tbl_drop_byte_cnt_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint64_t *value)
+{
+	union rt_interface_cnt_tbl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_rt_interface_cnt_tbl_get(dev_id, index, &reg_val);
+	*value = (a_uint64_t)reg_val.bf.drop_byte_cnt_1 << 24 | \
+		reg_val.bf.drop_byte_cnt_0;
+	return ret;
+}
+
+sw_error_t
+hppe_rt_interface_cnt_tbl_drop_byte_cnt_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint64_t value)
+{
+	union rt_interface_cnt_tbl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_rt_interface_cnt_tbl_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.drop_byte_cnt_1 = value >> 24;
+	reg_val.bf.drop_byte_cnt_0 = value & (((a_uint64_t)1<<24)-1);
+	ret = hppe_rt_interface_cnt_tbl_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_rt_interface_cnt_tbl_drop_pkt_cnt_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union rt_interface_cnt_tbl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_rt_interface_cnt_tbl_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.drop_pkt_cnt_1 << 24 | \
+		reg_val.bf.drop_pkt_cnt_0;
+	return ret;
+}
+
+sw_error_t
+hppe_rt_interface_cnt_tbl_drop_pkt_cnt_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union rt_interface_cnt_tbl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_rt_interface_cnt_tbl_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.drop_pkt_cnt_1 = value >> 24;
+	reg_val.bf.drop_pkt_cnt_0 = value & (((a_uint64_t)1<<24)-1);
+	ret = hppe_rt_interface_cnt_tbl_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+
+sw_error_t
+hppe_host_op_common(
+		a_uint32_t dev_id,
+		a_uint32_t op_type,
+		a_uint32_t op_mode,
+		a_uint32_t *index)
+{
+	union host_tbl_op_u op;
+	union host_tbl_op_rslt_u result;
+	a_uint32_t i = 0x100;
+	sw_error_t rv;
+
+	op.bf.cmd_id = host_cmd_id;
+	host_cmd_id++;
+	op.bf.byp_rslt_en = 0;
+	op.bf.op_type = op_type;
+	op.bf.hash_block_bitmap = 3;
+	op.bf.op_mode = op_mode;
+	op.bf.entry_index = *index;
+
+	rv = hppe_host_tbl_op_set(dev_id, &op);
+	if (SW_OK != rv)
+		return rv;
+	rv = hppe_host_tbl_op_rslt_get(dev_id, &result);
+	if (SW_OK != rv)
+		return rv;
+	while (!result.bf.valid_cnt && --i) {
+		hppe_host_tbl_op_rslt_get(dev_id, &result);
+	}
+	if (i == 0)
+		return SW_BUSY;
+	if (result.bf.op_rslt == 0) {
+		*index = result.bf.entry_index;
+		return SW_OK;
+	}
+	else
+		return SW_FAIL;
+	
+}
+
+sw_error_t
+hppe_host_ipv4_add(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union host_tbl_u *entry)
+{
+	hppe_host_tbl_op_data0_set(dev_id, (union host_tbl_op_data0_u *)(&entry->val[0]));
+	hppe_host_tbl_op_data1_set(dev_id, (union host_tbl_op_data1_u *)(&entry->val[1]));
+	hppe_host_tbl_op_data2_set(dev_id, (union host_tbl_op_data2_u *)(&entry->val[2]));
+	return hppe_host_op_common(dev_id, 0, op_mode, index);
+}
+
+sw_error_t
+hppe_host_ipv6_add(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union host_ipv6_tbl_u *entry)
+{
+	hppe_host_tbl_op_data0_set(dev_id, (union host_tbl_op_data0_u *)(&entry->val[0]));
+	hppe_host_tbl_op_data1_set(dev_id, (union host_tbl_op_data1_u *)(&entry->val[1]));
+	hppe_host_tbl_op_data2_set(dev_id, (union host_tbl_op_data2_u *)(&entry->val[2]));
+	hppe_host_tbl_op_data3_set(dev_id, (union host_tbl_op_data3_u *)(&entry->val[3]));
+	hppe_host_tbl_op_data4_set(dev_id, (union host_tbl_op_data4_u *)(&entry->val[4]));
+	return hppe_host_op_common(dev_id, 0, op_mode, index);
+}
+
+sw_error_t
+hppe_host_ipv4_mcast_add(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union host_ipv4_mcast_tbl_u *entry)
+{
+	hppe_host_tbl_op_data0_set(dev_id, (union host_tbl_op_data0_u *)(&entry->val[0]));
+	hppe_host_tbl_op_data1_set(dev_id, (union host_tbl_op_data1_u *)(&entry->val[1]));
+	hppe_host_tbl_op_data2_set(dev_id, (union host_tbl_op_data2_u *)(&entry->val[2]));
+	hppe_host_tbl_op_data3_set(dev_id, (union host_tbl_op_data3_u *)(&entry->val[3]));
+	hppe_host_tbl_op_data4_set(dev_id, (union host_tbl_op_data4_u *)(&entry->val[4]));
+	return hppe_host_op_common(dev_id, 0, op_mode, index);
+}
+
+sw_error_t
+hppe_host_ipv6_mcast_add(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union host_ipv6_mcast_tbl_u *entry)
+{
+	hppe_host_tbl_op_data0_set(dev_id, (union host_tbl_op_data0_u *)(&entry->val[0]));
+	hppe_host_tbl_op_data1_set(dev_id, (union host_tbl_op_data1_u *)(&entry->val[1]));
+	hppe_host_tbl_op_data2_set(dev_id, (union host_tbl_op_data2_u *)(&entry->val[2]));
+	hppe_host_tbl_op_data3_set(dev_id, (union host_tbl_op_data3_u *)(&entry->val[3]));
+	hppe_host_tbl_op_data4_set(dev_id, (union host_tbl_op_data4_u *)(&entry->val[4]));
+	hppe_host_tbl_op_data5_set(dev_id, (union host_tbl_op_data5_u *)(&entry->val[5]));
+	hppe_host_tbl_op_data6_set(dev_id, (union host_tbl_op_data6_u *)(&entry->val[6]));
+	hppe_host_tbl_op_data7_set(dev_id, (union host_tbl_op_data7_u *)(&entry->val[7]));
+	hppe_host_tbl_op_data8_set(dev_id, (union host_tbl_op_data8_u *)(&entry->val[8]));
+	hppe_host_tbl_op_data9_set(dev_id, (union host_tbl_op_data9_u *)(&entry->val[9]));
+	return hppe_host_op_common(dev_id, 0, op_mode, index);
+}
+
+sw_error_t
+hppe_host_ipv4_del(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union host_tbl_u *entry)
+{
+	if (op_mode == 0) {
+		hppe_host_tbl_op_data0_set(dev_id, (union host_tbl_op_data0_u *)(&entry->val[0]));
+		hppe_host_tbl_op_data1_set(dev_id, (union host_tbl_op_data1_u *)(&entry->val[1]));
+		hppe_host_tbl_op_data2_set(dev_id, (union host_tbl_op_data2_u *)(&entry->val[2]));
+	}
+	return hppe_host_op_common(dev_id, 1, op_mode, index);
+
+}
+
+sw_error_t
+hppe_host_ipv6_del(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union host_ipv6_tbl_u *entry)
+{
+	if (op_mode == 0) {
+		hppe_host_tbl_op_data0_set(dev_id, (union host_tbl_op_data0_u *)(&entry->val[0]));
+		hppe_host_tbl_op_data1_set(dev_id, (union host_tbl_op_data1_u *)(&entry->val[1]));
+		hppe_host_tbl_op_data2_set(dev_id, (union host_tbl_op_data2_u *)(&entry->val[2]));
+		hppe_host_tbl_op_data3_set(dev_id, (union host_tbl_op_data3_u *)(&entry->val[3]));
+		hppe_host_tbl_op_data4_set(dev_id, (union host_tbl_op_data4_u *)(&entry->val[4]));
+	}
+	return hppe_host_op_common(dev_id, 1, op_mode, index);
+}
+
+sw_error_t
+hppe_host_ipv4_mcast_del(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union host_ipv4_mcast_tbl_u *entry)
+{
+	if (op_mode == 0) {
+		hppe_host_tbl_op_data0_set(dev_id, (union host_tbl_op_data0_u *)(&entry->val[0]));
+		hppe_host_tbl_op_data1_set(dev_id, (union host_tbl_op_data1_u *)(&entry->val[1]));
+		hppe_host_tbl_op_data2_set(dev_id, (union host_tbl_op_data2_u *)(&entry->val[2]));
+		hppe_host_tbl_op_data3_set(dev_id, (union host_tbl_op_data3_u *)(&entry->val[3]));
+		hppe_host_tbl_op_data4_set(dev_id, (union host_tbl_op_data4_u *)(&entry->val[4]));
+	}
+	return hppe_host_op_common(dev_id, 1, op_mode, index);
+}
+
+sw_error_t
+hppe_host_ipv6_mcast_del(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union host_ipv6_mcast_tbl_u *entry)
+{
+	if (op_mode == 0) {
+		hppe_host_tbl_op_data0_set(dev_id, (union host_tbl_op_data0_u *)(&entry->val[0]));
+		hppe_host_tbl_op_data1_set(dev_id, (union host_tbl_op_data1_u *)(&entry->val[1]));
+		hppe_host_tbl_op_data2_set(dev_id, (union host_tbl_op_data2_u *)(&entry->val[2]));
+		hppe_host_tbl_op_data3_set(dev_id, (union host_tbl_op_data3_u *)(&entry->val[3]));
+		hppe_host_tbl_op_data4_set(dev_id, (union host_tbl_op_data4_u *)(&entry->val[4]));
+		hppe_host_tbl_op_data5_set(dev_id, (union host_tbl_op_data5_u *)(&entry->val[5]));
+		hppe_host_tbl_op_data6_set(dev_id, (union host_tbl_op_data6_u *)(&entry->val[6]));
+		hppe_host_tbl_op_data7_set(dev_id, (union host_tbl_op_data7_u *)(&entry->val[7]));
+		hppe_host_tbl_op_data8_set(dev_id, (union host_tbl_op_data8_u *)(&entry->val[8]));
+		hppe_host_tbl_op_data9_set(dev_id, (union host_tbl_op_data9_u *)(&entry->val[9]));
+	}
+	return hppe_host_op_common(dev_id, 1, op_mode, index);
+}
+
+sw_error_t
+hppe_host_get_common(
+		a_uint32_t dev_id,
+		a_uint32_t op_mode,
+		a_uint32_t *index,
+		a_uint32_t *data,
+		a_uint32_t num)
+{
+	union host_tbl_rd_op_u op;
+	union host_tbl_rd_op_rslt_u result;
+	a_uint32_t i = 0x100;
+	sw_error_t rv;
+
+	op.bf.cmd_id = host_cmd_id;
+	host_cmd_id++;
+	op.bf.byp_rslt_en = 0;
+	op.bf.op_type = 2;
+	op.bf.hash_block_bitmap = 3;
+	op.bf.op_mode = op_mode;
+	op.bf.entry_index = *index;
+
+	rv = hppe_host_tbl_rd_op_set(dev_id, &op);
+	if (SW_OK != rv)
+		return rv;
+	rv = hppe_host_tbl_rd_op_rslt_get(dev_id, &result);
+	if (SW_OK != rv)
+		return rv;
+	while (!result.bf.valid_cnt && --i) {
+		hppe_host_tbl_rd_op_rslt_get(dev_id, &result);
+	}
+	if (i == 0)
+		return SW_BUSY;
+	if (result.bf.op_rslt == 0) {
+		a_uint32_t j = 0;
+		hppe_reg_tbl_get(
+				dev_id,
+				IPE_L3_BASE_ADDR + HOST_TBL_RD_RSLT_DATA0_ADDRESS,
+				data, num);
+		*index = result.bf.entry_index;
+		return SW_OK;
+	}
+	else
+		return SW_FAIL;
+	
+}
+
+
+sw_error_t
+hppe_host_ipv4_get(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union host_tbl_u *entry)
+{
+	if (op_mode == 0) {
+		hppe_host_tbl_rd_op_data0_set(dev_id, (union host_tbl_rd_op_data0_u *)(&entry->val[0]));
+		hppe_host_tbl_rd_op_data1_set(dev_id, (union host_tbl_rd_op_data1_u *)(&entry->val[1]));
+		hppe_host_tbl_rd_op_data2_set(dev_id, (union host_tbl_rd_op_data2_u *)(&entry->val[2]));
+	}
+	return hppe_host_get_common(dev_id, op_mode, index,
+					(a_uint32_t *)entry, 3);
+
+}
+
+sw_error_t
+hppe_host_ipv6_get(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union host_ipv6_tbl_u *entry)
+{
+	if (op_mode == 0) {
+		hppe_host_tbl_rd_op_data0_set(dev_id, (union host_tbl_rd_op_data0_u *)(&entry->val[0]));
+		hppe_host_tbl_rd_op_data1_set(dev_id, (union host_tbl_rd_op_data1_u *)(&entry->val[1]));
+		hppe_host_tbl_rd_op_data2_set(dev_id, (union host_tbl_rd_op_data2_u *)(&entry->val[2]));
+		hppe_host_tbl_rd_op_data3_set(dev_id, (union host_tbl_rd_op_data3_u *)(&entry->val[3]));
+		hppe_host_tbl_rd_op_data4_set(dev_id, (union host_tbl_rd_op_data4_u *)(&entry->val[4]));
+	}
+	return hppe_host_get_common(dev_id, op_mode, index,
+					(a_uint32_t *)entry, 5);
+}
+
+sw_error_t
+hppe_host_ipv4_mcast_get(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union host_ipv4_mcast_tbl_u *entry)
+{
+	if (op_mode == 0) {
+		hppe_host_tbl_rd_op_data0_set(dev_id, (union host_tbl_rd_op_data0_u *)(&entry->val[0]));
+		hppe_host_tbl_rd_op_data1_set(dev_id, (union host_tbl_rd_op_data1_u *)(&entry->val[1]));
+		hppe_host_tbl_rd_op_data2_set(dev_id, (union host_tbl_rd_op_data2_u *)(&entry->val[2]));
+		hppe_host_tbl_rd_op_data3_set(dev_id, (union host_tbl_rd_op_data3_u *)(&entry->val[3]));
+		hppe_host_tbl_rd_op_data4_set(dev_id, (union host_tbl_rd_op_data4_u *)(&entry->val[4]));
+	}
+	return hppe_host_get_common(dev_id, op_mode, index,
+					(a_uint32_t *)entry, 5);
+}
+
+sw_error_t
+hppe_host_ipv6_mcast_get(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union host_ipv6_mcast_tbl_u *entry)
+{
+	if (op_mode == 0) {
+		hppe_host_tbl_rd_op_data0_set(dev_id, (union host_tbl_rd_op_data0_u *)(&entry->val[0]));
+		hppe_host_tbl_rd_op_data1_set(dev_id, (union host_tbl_rd_op_data1_u *)(&entry->val[1]));
+		hppe_host_tbl_rd_op_data2_set(dev_id, (union host_tbl_rd_op_data2_u *)(&entry->val[2]));
+		hppe_host_tbl_rd_op_data3_set(dev_id, (union host_tbl_rd_op_data3_u *)(&entry->val[3]));
+		hppe_host_tbl_rd_op_data4_set(dev_id, (union host_tbl_rd_op_data4_u *)(&entry->val[4]));
+		hppe_host_tbl_rd_op_data5_set(dev_id, (union host_tbl_rd_op_data5_u *)(&entry->val[5]));
+		hppe_host_tbl_rd_op_data6_set(dev_id, (union host_tbl_rd_op_data6_u *)(&entry->val[6]));
+		hppe_host_tbl_rd_op_data7_set(dev_id, (union host_tbl_rd_op_data7_u *)(&entry->val[7]));
+		hppe_host_tbl_rd_op_data8_set(dev_id, (union host_tbl_rd_op_data8_u *)(&entry->val[8]));
+		hppe_host_tbl_rd_op_data9_set(dev_id, (union host_tbl_rd_op_data9_u *)(&entry->val[9]));
+	}
+	return hppe_host_get_common(dev_id, op_mode, index,
+					(a_uint32_t *)entry, 10);
+}
+
+sw_error_t
+hppe_host_flush_common(a_uint32_t dev_id)
+{
+	union host_tbl_op_u op;
+	union host_tbl_op_rslt_u result;
+	a_uint32_t i = 0x100 * 50;
+	sw_error_t rv;
+
+	op.bf.cmd_id = host_cmd_id;
+	host_cmd_id++;
+	op.bf.byp_rslt_en = 0;
+	op.bf.op_type = 3;
+	op.bf.hash_block_bitmap = 3;
+	op.bf.op_mode = 0;
+
+	rv = hppe_host_tbl_op_set(dev_id, &op);
+	if (SW_OK != rv)
+		return rv;
+	rv = hppe_host_tbl_op_rslt_get(dev_id, &result);
+	if (SW_OK != rv)
+		return rv;
+	while (!result.bf.valid_cnt && --i) {
+		hppe_host_tbl_op_rslt_get(dev_id, &result);
+	}
+	if (i == 0)
+		return SW_BUSY;
+	if (result.bf.op_rslt == 0)
+		return SW_OK;
+	else
+		return SW_FAIL;
+	
+	
+}
+
+
+

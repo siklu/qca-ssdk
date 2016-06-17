@@ -30,6 +30,9 @@ extern "C" {
 #include "fal_port_ctrl.h"
 #include "fal_mirror.h"
 #include "fal_trunk.h"
+#include "fal_ip.h"
+#include "fal_qm.h"
+#include "fal_flow.h"
 #include "ssdk_init.h"
 #include "fal_type.h"
 #include "fal_stp.h"
@@ -279,6 +282,209 @@ typedef sw_error_t (*adpt_trunk_group_set_func)(a_uint32_t dev_id, a_uint32_t tr
 typedef sw_error_t (*adpt_trunk_fail_over_en_set_func)(a_uint32_t dev_id, a_bool_t fail_over);
 typedef sw_error_t (*adpt_trunk_hash_mode_set_func)(a_uint32_t dev_id, a_uint32_t hash_mode);
 
+typedef sw_error_t (*adpt_ip_network_route_get_func)(a_uint32_t dev_id,
+			a_uint32_t index, a_uint8_t type,
+			fal_network_route_entry_t *entry);
+typedef sw_error_t (*adpt_ip_host_add_func)(
+			a_uint32_t dev_id, fal_host_entry_t * host_entry);
+typedef sw_error_t (*adpt_ip_vsi_sg_cfg_get_func)(
+			a_uint32_t dev_id, a_uint32_t vsi,
+    			fal_sg_cfg_t *sg_cfg);
+typedef sw_error_t (*adpt_ip_pub_addr_del_func)(
+			a_uint32_t dev_id, a_uint32_t entry_id);
+typedef sw_error_t (*adpt_ip_port_sg_cfg_set_func)(
+			a_uint32_t dev_id, fal_port_t port_id,
+    			fal_sg_cfg_t *sg_cfg);
+typedef sw_error_t (*adpt_ip_port_intf_get_func)(
+			a_uint32_t dev_id, fal_port_t port_id, fal_intf_id_t *id);
+typedef sw_error_t (*adpt_ip_vsi_arp_sg_cfg_set_func)(
+			a_uint32_t dev_id, a_uint32_t vsi,
+    			fal_arp_sg_cfg_t *arp_sg_cfg);
+typedef sw_error_t (*adpt_ip_pub_addr_get_func)(
+			a_uint32_t dev_id, fal_ip_pub_addr_t *entry);
+typedef sw_error_t (*adpt_ip_port_intf_set_func)(
+			a_uint32_t dev_id, fal_port_t port_id, fal_intf_id_t *id);
+typedef sw_error_t (*adpt_ip_vsi_sg_cfg_set_func)(
+			a_uint32_t dev_id, a_uint32_t vsi,
+    			fal_sg_cfg_t *sg_cfg);
+typedef sw_error_t (*adpt_ip_host_next_func)(
+			a_uint32_t dev_id, a_uint32_t next_mode,
+			fal_host_entry_t * host_entry);
+typedef sw_error_t (*adpt_ip_port_macaddr_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+    			fal_macaddr_entry_t *macaddr);
+typedef sw_error_t (*adpt_ip_vsi_intf_get_func)(
+			a_uint32_t dev_id, a_uint32_t vsi, fal_intf_id_t *id);
+typedef sw_error_t (*adpt_ip_network_route_set_func)(a_uint32_t dev_id,
+			a_uint32_t index,
+			fal_network_route_entry_t *entry);
+typedef sw_error_t (*adpt_ip_port_sg_cfg_get_func)(
+			a_uint32_t dev_id, fal_port_t port_id,
+    			fal_sg_cfg_t *sg_cfg);
+typedef sw_error_t (*adpt_ip_intf_get_func)(
+    			a_uint32_t dev_id,
+    			a_uint32_t index,
+    			fal_intf_entry_t *entry);
+typedef sw_error_t (*adpt_ip_pub_addr_add_func)(
+			a_uint32_t dev_id, fal_ip_pub_addr_t *entry);
+typedef sw_error_t (*adpt_ip_host_del_func)(
+			a_uint32_t dev_id, a_uint32_t del_mode,
+			fal_host_entry_t * host_entry);
+typedef sw_error_t (*adpt_ip_route_mismatch_get_func)(
+			a_uint32_t dev_id, fal_fwd_cmd_t *cmd);
+typedef sw_error_t (*adpt_ip_vsi_arp_sg_cfg_get_func)(
+			a_uint32_t dev_id, a_uint32_t vsi,
+    			fal_arp_sg_cfg_t *arp_sg_cfg);
+typedef sw_error_t (*adpt_ip_port_arp_sg_cfg_set_func)(
+			a_uint32_t dev_id, fal_port_t port_id,
+    			fal_arp_sg_cfg_t *arp_sg_cfg);
+typedef sw_error_t (*adpt_ip_vsi_mc_mode_set_func)(
+			a_uint32_t dev_id, a_uint32_t vsi,
+    			fal_mc_mode_cfg_t *cfg);
+typedef sw_error_t (*adpt_ip_vsi_intf_set_func)(
+			a_uint32_t dev_id, a_uint32_t vsi, fal_intf_id_t *id);
+typedef sw_error_t (*adpt_ip_nexthop_get_func)(a_uint32_t dev_id,
+			a_uint32_t index, fal_ip_nexthop_t *entry);
+typedef sw_error_t (*adpt_ip_route_mismatch_set_func)(
+			a_uint32_t dev_id, fal_fwd_cmd_t cmd);
+typedef sw_error_t (*adpt_ip_host_get_func)(
+			a_uint32_t dev_id, a_uint32_t get_mode,
+                    fal_host_entry_t * host_entry);
+typedef sw_error_t (*adpt_ip_intf_set_func)(
+    			a_uint32_t dev_id,
+    			a_uint32_t index,
+    			fal_intf_entry_t *entry);
+typedef sw_error_t (*adpt_ip_vsi_mc_mode_get_func)(
+			a_uint32_t dev_id,
+			a_uint32_t vsi,
+    			fal_mc_mode_cfg_t *cfg);
+typedef sw_error_t (*adpt_ip_port_macaddr_get_func)(
+			a_uint32_t dev_id, fal_port_t port_id,
+    			fal_macaddr_entry_t *macaddr);
+typedef sw_error_t (*adpt_ip_port_arp_sg_cfg_get_func)(
+			a_uint32_t dev_id, fal_port_t port_id,
+    			fal_arp_sg_cfg_t *arp_sg_cfg);
+typedef sw_error_t (*adpt_ip_nexthop_set_func)(a_uint32_t dev_id,
+			a_uint32_t index, fal_ip_nexthop_t *entry);
+typedef sw_error_t (*adpt_ip_global_ctrl_get_func)(a_uint32_t dev_id,
+			fal_ip_global_cfg_t *cfg);
+typedef sw_error_t (*adpt_ip_global_ctrl_set_func)(a_uint32_t dev_id,
+			fal_ip_global_cfg_t *cfg);
+typedef sw_error_t (*adpt_flow_global_cfg_get_func)(
+		a_uint32_t dev_id,
+		fal_flow_global_cfg_t *cfg);
+typedef sw_error_t (*adpt_flow_global_cfg_set_func)(
+		a_uint32_t dev_id,
+		fal_flow_global_cfg_t *cfg);
+typedef sw_error_t (*adpt_flow_host_add_func)(
+		a_uint32_t dev_id,
+		a_uint32_t add_mode,
+		fal_flow_host_entry_t *flow_host_entry);
+typedef sw_error_t (*adpt_flow_entry_get_func)(
+		a_uint32_t dev_id,
+		a_uint32_t get_mode,
+		fal_flow_entry_t *flow_entry);
+typedef sw_error_t (*adpt_flow_entry_del_func)(
+		a_uint32_t dev_id,
+		a_uint32_t del_mode,
+		fal_flow_entry_t *flow_entry);
+typedef sw_error_t (*adpt_flow_status_get_func)(
+		a_uint32_t dev_id, a_bool_t *enable);
+typedef sw_error_t (*adpt_flow_ctrl_set_func)(
+		a_uint32_t dev_id,
+		fal_flow_pkt_type_t type,
+		fal_flow_direction_t dir,
+		fal_flow_ctrl_t *ctrl);
+typedef sw_error_t (*adpt_flow_age_timer_get_func)(
+		a_uint32_t dev_id, fal_flow_age_timer_t *age_timer);
+typedef sw_error_t (*adpt_flow_status_set_func)(
+		a_uint32_t dev_id, a_bool_t enable);
+typedef sw_error_t (*adpt_flow_host_get_func)(
+		a_uint32_t dev_id,
+		a_uint32_t get_mode,
+		fal_flow_host_entry_t *flow_host_entry);
+typedef sw_error_t (*adpt_flow_host_del_func)(
+		a_uint32_t dev_id,
+		a_uint32_t del_mode,
+		fal_flow_host_entry_t *flow_host_entry);
+typedef sw_error_t (*adpt_flow_ctrl_get_func)(
+		a_uint32_t dev_id,
+		fal_flow_pkt_type_t type,
+		fal_flow_direction_t dir,
+		fal_flow_ctrl_t *ctrl);
+typedef sw_error_t (*adpt_flow_age_timer_set_func)(
+		a_uint32_t dev_id, fal_flow_age_timer_t *age_timer);
+typedef sw_error_t (*adpt_flow_entry_add_func)(
+		a_uint32_t dev_id,
+		a_uint32_t add_mode, /*index or hash*/
+		fal_flow_entry_t *flow_entry);
+typedef sw_error_t (*adpt_mcast_queue_map_set_func)(
+		a_uint32_t dev_id,
+		fal_mcast_queue_map_t *queue_map);
+typedef sw_error_t (*adpt_ucast_priority_map_get_func)(
+		a_uint32_t dev_id,
+		fal_ucast_priority_map_t *priority_map);
+typedef sw_error_t (*adpt_ucast_hash_map_set_func)(
+		a_uint32_t dev_id,
+		fal_ucast_hash_map_t *hash_map);
+typedef sw_error_t (*adpt_port_mcast_priority_class_get_func)(
+		a_uint32_t dev_id,
+		fal_port_t port,
+		fal_mcast_priority_map_t *pri_map);
+typedef sw_error_t (*adpt_ucast_default_hash_get_func)(
+		a_uint32_t dev_id,
+		a_uint8_t *hash_value);
+typedef sw_error_t (*adpt_ucast_queue_map_get_func)(
+		a_uint32_t dev_id,
+		fal_ucast_queue_map_t *queue_map);
+typedef sw_error_t (*adpt_ucast_default_hash_set_func)(
+		a_uint32_t dev_id,
+		a_uint8_t hash_value);
+typedef sw_error_t (*adpt_mcast_queue_map_get_func)(
+		a_uint32_t dev_id,
+		fal_mcast_queue_map_t *queue_map);
+typedef sw_error_t (*adpt_ucast_priority_map_set_func)(
+		a_uint32_t dev_id,
+		fal_ucast_priority_map_t *priority_map);
+typedef sw_error_t (*adpt_port_mcast_priority_class_set_func)(
+		a_uint32_t dev_id,
+		fal_port_t port,
+		fal_mcast_priority_map_t *pri_map);
+typedef sw_error_t (*adpt_ucast_queue_map_set_func)(
+		a_uint32_t dev_id,
+		fal_ucast_queue_map_t *queue_map);
+typedef sw_error_t (*adpt_ucast_hash_map_get_func)(
+		a_uint32_t dev_id,
+		fal_ucast_hash_map_t *hash_map);
+typedef sw_error_t (*adpt_unicast_queue_ac_cfg_get_func)(
+		a_uint32_t dev_id,
+		a_uint32_t queue_id,
+		fal_uni_queue_ac_cfg_t *cfg);
+typedef sw_error_t (*adpt_queue_flush_func)(
+		a_uint32_t dev_id,
+		fal_port_t port,
+		fal_queue_flush_dst_t *flush_dst);
+typedef sw_error_t (*adpt_unicast_queue_ac_cfg_set_func)(
+		a_uint32_t dev_id,
+		a_uint32_t queue_id,
+		fal_uni_queue_ac_cfg_t *cfg);
+typedef sw_error_t (*adpt_group_ac_cfg_set_func)(
+		a_uint32_t dev_id,
+		a_uint8_t group_id,
+		fal_group_ac_cfg_t *cfg);
+typedef sw_error_t (*adpt_group_ac_cfg_get_func)(
+		a_uint32_t dev_id,
+		a_uint8_t group_id,
+		fal_group_ac_cfg_t *cfg);
+typedef sw_error_t (*adpt_multicast_queue_ac_cfg_get_func)(
+		a_uint32_t dev_id,
+		a_uint32_t queue_id,
+		fal_multi_queue_ac_cfg_t *cfg);
+typedef sw_error_t (*adpt_multicast_queue_ac_cfg_set_func)(
+		a_uint32_t dev_id,
+		a_uint32_t queue_id,
+		fal_multi_queue_ac_cfg_t *cfg);
+
+
 typedef struct
 {
 	adpt_fdb_first_func adpt_fdb_first;
@@ -419,6 +625,74 @@ typedef struct
 	adpt_trunk_group_set_func adpt_trunk_group_set;
 	adpt_trunk_fail_over_en_set_func adpt_trunk_fail_over_en_set;
 	adpt_trunk_hash_mode_set_func adpt_trunk_hash_mode_set;
+
+	adpt_ip_network_route_get_func adpt_ip_network_route_get;
+	adpt_ip_host_add_func adpt_ip_host_add;
+	adpt_ip_vsi_sg_cfg_get_func adpt_ip_vsi_sg_cfg_get;
+	adpt_ip_pub_addr_del_func adpt_ip_pub_addr_del;
+	adpt_ip_port_sg_cfg_set_func adpt_ip_port_sg_cfg_set;
+	adpt_ip_port_intf_get_func adpt_ip_port_intf_get;
+	adpt_ip_vsi_arp_sg_cfg_set_func adpt_ip_vsi_arp_sg_cfg_set;
+	adpt_ip_pub_addr_get_func adpt_ip_pub_addr_get;
+	adpt_ip_port_intf_set_func adpt_ip_port_intf_set;
+	adpt_ip_vsi_sg_cfg_set_func adpt_ip_vsi_sg_cfg_set;
+	adpt_ip_host_next_func adpt_ip_host_next;
+	adpt_ip_port_macaddr_set_func adpt_ip_port_macaddr_set;
+	adpt_ip_vsi_intf_get_func adpt_ip_vsi_intf_get;
+	adpt_ip_network_route_set_func adpt_ip_network_route_set;
+	adpt_ip_port_sg_cfg_get_func adpt_ip_port_sg_cfg_get;
+	adpt_ip_intf_get_func adpt_ip_intf_get;
+	adpt_ip_pub_addr_add_func adpt_ip_pub_addr_add;
+	adpt_ip_host_del_func adpt_ip_host_del;
+	adpt_ip_route_mismatch_get_func adpt_ip_route_mismatch_get;
+	adpt_ip_vsi_arp_sg_cfg_get_func adpt_ip_vsi_arp_sg_cfg_get;
+	adpt_ip_port_arp_sg_cfg_set_func adpt_ip_port_arp_sg_cfg_set;
+	adpt_ip_vsi_mc_mode_set_func adpt_ip_vsi_mc_mode_set;
+	adpt_ip_vsi_intf_set_func adpt_ip_vsi_intf_set;
+	adpt_ip_nexthop_get_func adpt_ip_nexthop_get;
+	adpt_ip_route_mismatch_set_func adpt_ip_route_mismatch_set;
+	adpt_ip_host_get_func adpt_ip_host_get;
+	adpt_ip_intf_set_func adpt_ip_intf_set;
+	adpt_ip_vsi_mc_mode_get_func adpt_ip_vsi_mc_mode_get;
+	adpt_ip_port_macaddr_get_func adpt_ip_port_macaddr_get;
+	adpt_ip_port_arp_sg_cfg_get_func adpt_ip_port_arp_sg_cfg_get;
+	adpt_ip_nexthop_set_func adpt_ip_nexthop_set;
+	adpt_ip_global_ctrl_get_func adpt_ip_global_ctrl_get;
+	adpt_ip_global_ctrl_set_func adpt_ip_global_ctrl_set;
+	adpt_flow_host_add_func adpt_flow_host_add;
+	adpt_flow_entry_get_func adpt_flow_entry_get;
+	adpt_flow_entry_del_func adpt_flow_entry_del;
+	adpt_flow_status_get_func adpt_flow_status_get;
+	adpt_flow_ctrl_set_func adpt_flow_ctrl_set;
+	adpt_flow_age_timer_get_func adpt_flow_age_timer_get;
+	adpt_flow_status_set_func adpt_flow_status_set;
+	adpt_flow_host_get_func adpt_flow_host_get;
+	adpt_flow_host_del_func adpt_flow_host_del;
+	adpt_flow_ctrl_get_func adpt_flow_ctrl_get;
+	adpt_flow_age_timer_set_func adpt_flow_age_timer_set;
+	adpt_flow_entry_add_func adpt_flow_entry_add;
+	adpt_flow_global_cfg_get_func adpt_flow_global_cfg_get;
+	adpt_flow_global_cfg_set_func adpt_flow_global_cfg_set;
+	adpt_mcast_queue_map_set_func adpt_mcast_queue_map_set;
+	adpt_ucast_priority_map_get_func adpt_ucast_priority_map_get;
+	adpt_ucast_hash_map_set_func adpt_ucast_hash_map_set;
+	adpt_port_mcast_priority_class_get_func adpt_port_mcast_priority_class_get;
+	adpt_ucast_default_hash_get_func adpt_ucast_default_hash_get;
+	adpt_ucast_queue_map_get_func adpt_ucast_queue_map_get;
+	adpt_ucast_default_hash_set_func adpt_ucast_default_hash_set;
+	adpt_mcast_queue_map_get_func adpt_mcast_queue_map_get;
+	adpt_ucast_priority_map_set_func adpt_ucast_priority_map_set;
+	adpt_port_mcast_priority_class_set_func adpt_port_mcast_priority_class_set;
+	adpt_ucast_queue_map_set_func adpt_ucast_queue_map_set;
+	adpt_ucast_hash_map_get_func adpt_ucast_hash_map_get;
+	adpt_unicast_queue_ac_cfg_get_func adpt_unicast_queue_ac_cfg_get;
+	adpt_queue_flush_func adpt_queue_flush;
+	adpt_unicast_queue_ac_cfg_set_func adpt_unicast_queue_ac_cfg_set;
+	adpt_group_ac_cfg_set_func adpt_group_ac_cfg_set;
+	adpt_group_ac_cfg_get_func adpt_group_ac_cfg_get;
+	adpt_multicast_queue_ac_cfg_get_func adpt_multicast_queue_ac_cfg_get;
+	adpt_multicast_queue_ac_cfg_set_func adpt_multicast_queue_ac_cfg_set;
+
 
 }adpt_api_t;
 

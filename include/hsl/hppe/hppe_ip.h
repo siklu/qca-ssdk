@@ -34,6 +34,20 @@
 #define HOST_IPV6_TBL_MAX_ENTRY	3072
 #define IN_NEXTHOP_TBL_MAX_ENTRY	2560
 #define EG_L3_IF_TBL_MAX_ENTRY	256
+#define IN_PUB_IP_ADDR_TBL_MAX_ENTRY	16
+#define RT_INTERFACE_CNT_TBL_MAX_ENTRY	512
+
+sw_error_t
+hppe_rt_interface_cnt_tbl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union rt_interface_cnt_tbl_u *value);
+
+sw_error_t
+hppe_rt_interface_cnt_tbl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union rt_interface_cnt_tbl_u *value);
 
 sw_error_t
 hppe_my_mac_tbl_get(
@@ -70,6 +84,18 @@ hppe_l3_vsi_ext_set(
 		a_uint32_t dev_id,
 		a_uint32_t index,
 		union l3_vsi_ext_u *value);
+
+sw_error_t
+hppe_in_pub_ip_addr_tbl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union in_pub_ip_addr_tbl_u *value);
+
+sw_error_t
+hppe_in_pub_ip_addr_tbl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union in_pub_ip_addr_tbl_u *value);
 
 sw_error_t
 hppe_network_route_ip_get(
@@ -2531,4 +2557,130 @@ hppe_eg_l3_if_tbl_pppoe_en_set(
 		a_uint32_t dev_id,
 		a_uint32_t index,
 		a_uint32_t value);
+
+sw_error_t
+hppe_in_pub_ip_addr_tbl_ip_addr_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_in_pub_ip_addr_tbl_ip_addr_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_rt_interface_cnt_tbl_byte_cnt_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint64_t *value);
+
+sw_error_t
+hppe_rt_interface_cnt_tbl_byte_cnt_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint64_t value);
+
+sw_error_t
+hppe_rt_interface_cnt_tbl_pkt_cnt_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_rt_interface_cnt_tbl_pkt_cnt_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_rt_interface_cnt_tbl_drop_byte_cnt_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint64_t *value);
+
+sw_error_t
+hppe_rt_interface_cnt_tbl_drop_byte_cnt_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint64_t value);
+
+sw_error_t
+hppe_rt_interface_cnt_tbl_drop_pkt_cnt_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_rt_interface_cnt_tbl_drop_pkt_cnt_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+
+sw_error_t
+hppe_host_ipv4_add(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union host_tbl_u *entry);
+
+sw_error_t
+hppe_host_ipv6_add(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union host_ipv6_tbl_u *entry);
+
+sw_error_t
+hppe_host_ipv4_mcast_add(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union host_ipv4_mcast_tbl_u *entry);
+
+sw_error_t
+hppe_host_ipv6_mcast_add(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union host_ipv6_mcast_tbl_u *entry);
+
+sw_error_t
+hppe_host_ipv4_del(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union host_tbl_u *entry);
+
+sw_error_t
+hppe_host_ipv6_del(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union host_ipv6_tbl_u *entry);
+
+sw_error_t
+hppe_host_ipv4_mcast_del(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union host_ipv4_mcast_tbl_u *entry);
+
+sw_error_t
+hppe_host_ipv6_mcast_del(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union host_ipv6_mcast_tbl_u *entry);
+
+sw_error_t
+hppe_host_ipv4_get(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union host_tbl_u *entry);
+
+sw_error_t
+hppe_host_ipv6_get(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union host_ipv6_tbl_u *entry);
+
+sw_error_t
+hppe_host_ipv4_mcast_get(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union host_ipv4_mcast_tbl_u *entry);
+
+sw_error_t
+hppe_host_ipv6_mcast_get(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union host_ipv6_mcast_tbl_u *entry);
+
+sw_error_t
+hppe_host_flush_common(a_uint32_t dev_id);
+
+
 #endif

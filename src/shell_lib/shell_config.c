@@ -1044,6 +1044,34 @@ struct sub_cmd_des_t g_ip_des[] =
 	{"rfsip6", "set", SW_API_IP_RFS_IP6_SET, NULL},
 	{"defaultflowcmd", "set", SW_API_IP_DEFAULT_FLOW_CMD_SET, NULL},
 	{"defaultrtflowcmd", "set", SW_API_IP_DEFAULT_RT_FLOW_CMD_SET, NULL},
+	{"vsiarpsg", "set",  SW_API_IP_VIS_ARP_SG_CFG_SET, NULL},
+	{"networkroute", "set",  SW_API_IP_NETWORK_ROUTE_SET, NULL},
+	{"intf", "set",  SW_API_IP_INTF_SET, NULL},
+	{"vsiintf", "set",  SW_API_IP_VSI_INTF_SET, NULL},
+	{"portintf", "set",  SW_API_IP_PORT_INTF_SET, NULL},
+	{"nexthop", "set",  SW_API_IP_NEXTHOP_SET, NULL},
+	{"portsg", "set",  SW_API_IP_PORT_SG_SET, NULL},
+	{"vsisg", "set",  SW_API_IP_VSI_SG_SET, NULL},
+	{"pubip", "add",  SW_API_IP_PUB_IP_ADD, NULL},
+	{"pubip", "del",  SW_API_IP_PUB_IP_DEL, NULL},
+	{"portmac", "set",  SW_API_IP_PORT_MAC_SET, NULL},
+	{"routemiss", "set",  SW_API_IP_ROUTE_MISS_SET, NULL},
+	{"portarp", "set",  SW_API_IP_PORT_ARP_SG_SET, NULL},
+	{"mcmode", "set",  SW_API_IP_VSI_MC_MODE_SET, NULL},
+	{"global", "set",  SW_API_GLOBAL_CTRL_SET, NULL},
+	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
+};
+#endif
+
+#ifdef IN_FLOW
+struct sub_cmd_des_t g_flow_des[] =
+{
+	{"flowstatus", "set", SW_API_FLOW_STATUS_SET, NULL},
+	{"flowage", "set", SW_API_FLOW_AGE_TIMER_SET, NULL},
+	{"flowactrl", "set", SW_API_FLOW_CTRL_SET, NULL},
+	{"entry", "add", SW_API_FLOW_ENTRY_ADD, NULL},
+	{"entry", "del", SW_API_FLOW_ENTRY_DEL, NULL},
+	{"global", "set", SW_API_FLOW_GLOBAL_CFG_SET, NULL},
 	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
 };
 #endif
@@ -1118,6 +1146,26 @@ struct sub_cmd_des_t g_vsi_des[] =
 	{"member", "set", SW_API_VSI_MEMBER_SET, NULL},
 	{NULL, NULL, NULL, NULL, (int)NULL, NULL}/*end of desc*/
 };
+#endif
+
+    /*QM*/
+#ifdef IN_QM
+struct sub_cmd_des_t g_qm_des[] =
+{
+
+    {"ucastqmap", "set", SW_API_UCAST_QUEUE_MAP_SET, NULL},
+    {"ucastprimap", "set", SW_API_UCAST_PRIORITY_MAP_SET, NULL},
+    {"mcastpriclass", "set", SW_API_MCAST_PRIORITY_CLASS_SET, NULL},
+    {"queue", "flush", SW_API_QUEUE_FLUSH, NULL},
+    {"ucastqac", "set", SW_API_UNI_QUEUE_AC_SET, NULL},
+    {"mcastqac", "set", SW_API_MULTI_QUEUE_AC_SET, NULL},
+    {"groupac", "set", SW_API_GROUP_AC_SET, NULL},
+    {"ucasthash", "set", SW_API_UCAST_HASH_MAP_SET, NULL},
+    {"ucastdflthash", "set", SW_API_UCAST_DFLT_HASH_MAP_SET, NULL},
+    {"mcastqmap", "set", SW_API_MCAST_QUEUE_MAP_SET, NULL},
+    {NULL, NULL, (int)NULL, NULL},/*end of desc*/
+
+},
 #endif
 
 
@@ -1243,6 +1291,13 @@ struct cmd_des_t gcmd_des[] =
     },
 #endif
 
+    /* FLOW */
+#ifdef IN_FLOW
+    {
+        "flow", g_flow_des,
+    },
+#endif
+
     /* NAT */
 #ifdef IN_NAT
     {
@@ -1267,6 +1322,13 @@ struct cmd_des_t gcmd_des[] =
 #ifdef IN_VSI
     {
         "vsi", g_vsi_des,
+    },
+#endif
+
+        /*qm Control*/
+#ifdef IN_QM
+    {
+        "qm", g_qm_des,
     },
 #endif
 

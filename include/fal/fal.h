@@ -40,6 +40,8 @@ extern "C" {
 #include "fal_cosmap.h"
 #include "fal_ip.h"
 #include "fal_nat.h"
+#include "fal_flow.h"
+#include "fal_qm.h"
 #include "fal_sec.h"
 #include "fal_trunk.h"
 #include "fal_interface_ctrl.h"

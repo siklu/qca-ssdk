@@ -232,6 +232,26 @@ sw_error_t
 cmd_data_check_ip4_rfs_entry(char *cmd_str, void * val, a_uint32_t size);
 sw_error_t
 cmd_data_check_ip6_rfs_entry(char *cmd_str, void * val, a_uint32_t size);
+sw_error_t
+cmd_data_check_arp_sg(char *cmd_str, void * val, a_uint32_t size);
+sw_error_t
+cmd_data_check_network_route(char *cmd_str, void * val, a_uint32_t size);
+sw_error_t
+cmd_data_check_intf(char *cmd_str, void * val, a_uint32_t size);
+sw_error_t
+cmd_data_check_vsi_intf(char *cmd_str, void * val, a_uint32_t size);
+sw_error_t
+cmd_data_check_nexthop(char *cmd_str, void * val, a_uint32_t size);
+sw_error_t
+cmd_data_check_ip_sg(char *cmd_str, void * val, a_uint32_t size);
+sw_error_t
+cmd_data_check_ip_pub(char *cmd_str, void * val, a_uint32_t size);
+sw_error_t
+cmd_data_check_ip_portmac(char *cmd_str, void * val, a_uint32_t size);
+sw_error_t
+cmd_data_check_ip_mcmode(char *cmd_str, void * val, a_uint32_t size);
+sw_error_t
+cmd_data_check_ip_global(char *cmd_str, void * val, a_uint32_t size);
 #endif
 #ifdef IN_NAT
 sw_error_t
@@ -277,6 +297,45 @@ cmd_data_check_stamove(char *cmd_str, void * val, a_uint32_t size);
 sw_error_t
 cmd_data_check_vsi_member(char *cmd_str, void * val, a_uint32_t size);
 
+#endif
+#ifdef IN_QM
+sw_error_t
+cmd_data_check_u_qmap(char *cmd_str, void * val, a_uint32_t size);
+
+sw_error_t
+cmd_data_check_u_priclass(char *cmd_str, void * val, a_uint32_t size);
+
+sw_error_t
+cmd_data_check_m_priclass(char *cmd_str, void * val, a_uint32_t size);
+
+sw_error_t
+cmd_data_check_queue_flush(char *cmd_str, void * val, a_uint32_t size);
+
+sw_error_t
+cmd_data_check_uqueue_ac(char *cmd_str, void * val, a_uint32_t size);
+
+sw_error_t
+cmd_data_check_ucast_hash(char *cmd_str, void * val, a_uint32_t size);
+
+sw_error_t
+cmd_data_check_mcast_queue_map(char *cmd_str, void * val, a_uint32_t size);
+
+sw_error_t
+cmd_data_check_mqueue_ac(char *cmd_str, void * val, a_uint32_t size);
+
+sw_error_t
+cmd_data_check_group_ac(char *cmd_str, void * val, a_uint32_t size);
+
+#endif
+#ifdef IN_FLOW
+sw_error_t
+cmd_data_check_flow_age(char *cmd_str, void * val, a_uint32_t size);
+sw_error_t
+cmd_data_check_flow_ctrl(char *cmd_str, void * val, a_uint32_t size);
+sw_error_t
+cmd_data_check_flow(char *cmd_str, void * val, a_uint32_t size);
+sw_error_t
+cmd_data_check_flow_global(char *cmd_str, void * val, a_uint32_t size);
 #endif
 #endif
 

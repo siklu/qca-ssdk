@@ -27,8 +27,6 @@
 #define IN_PORT_METER_CRDT_TBL_MAX_ENTRY	8
 #define IN_PORT_METER_CNT_TBL_MAX_ENTRY	24
 #define IN_ACL_METER_CNT_TBL_MAX_ENTRY	1536
-#define IN_FLOW_CNT_TBL_MAX_ENTRY	4096
-#define RT_INTERFACE_CNT_TBL_MAX_ENTRY	512
 #define PC_GLOBAL_CNT_TBL_MAX_ENTRY	3
 #define DROP_CPU_CNT_TBL_MAX_ENTRY	1280
 #define IPO_CNT_TBL_MAX_ENTRY	512
@@ -173,29 +171,6 @@ hppe_in_acl_meter_cnt_tbl_set(
 		a_uint32_t index,
 		union in_acl_meter_cnt_tbl_u *value);
 
-sw_error_t
-hppe_in_flow_cnt_tbl_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union in_flow_cnt_tbl_u *value);
-
-sw_error_t
-hppe_in_flow_cnt_tbl_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union in_flow_cnt_tbl_u *value);
-
-sw_error_t
-hppe_rt_interface_cnt_tbl_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union rt_interface_cnt_tbl_u *value);
-
-sw_error_t
-hppe_rt_interface_cnt_tbl_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union rt_interface_cnt_tbl_u *value);
 
 sw_error_t
 hppe_pc_global_cnt_tbl_get(
@@ -1111,77 +1086,6 @@ hppe_in_acl_meter_cnt_tbl_pkt_cnt_set(
 		a_uint32_t index,
 		a_uint32_t value);
 
-sw_error_t
-hppe_in_flow_cnt_tbl_hit_byte_counter_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint64_t *value);
-
-sw_error_t
-hppe_in_flow_cnt_tbl_hit_byte_counter_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint64_t value);
-
-sw_error_t
-hppe_in_flow_cnt_tbl_hit_pkt_counter_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t *value);
-
-sw_error_t
-hppe_in_flow_cnt_tbl_hit_pkt_counter_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t value);
-
-sw_error_t
-hppe_rt_interface_cnt_tbl_byte_cnt_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint64_t *value);
-
-sw_error_t
-hppe_rt_interface_cnt_tbl_byte_cnt_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint64_t value);
-
-sw_error_t
-hppe_rt_interface_cnt_tbl_pkt_cnt_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t *value);
-
-sw_error_t
-hppe_rt_interface_cnt_tbl_pkt_cnt_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t value);
-
-sw_error_t
-hppe_rt_interface_cnt_tbl_drop_byte_cnt_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint64_t *value);
-
-sw_error_t
-hppe_rt_interface_cnt_tbl_drop_byte_cnt_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint64_t value);
-
-sw_error_t
-hppe_rt_interface_cnt_tbl_drop_pkt_cnt_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t *value);
-
-sw_error_t
-hppe_rt_interface_cnt_tbl_drop_pkt_cnt_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t value);
 
 sw_error_t
 hppe_pc_global_cnt_tbl_byte_cnt_get(

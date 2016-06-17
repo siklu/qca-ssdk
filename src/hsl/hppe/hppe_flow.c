@@ -23,6 +23,37 @@
 #include "hppe_flow_reg.h"
 #include "hppe_flow.h"
 
+static a_uint32_t flow_cmd_id = 0;
+static a_uint32_t flow_host_cmd_id = 0;
+
+sw_error_t
+hppe_in_flow_cnt_tbl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union in_flow_cnt_tbl_u *value)
+{
+	return hppe_reg_tbl_get(
+				dev_id,
+				INGRESS_POLICER_BASE_ADDR + IN_FLOW_CNT_TBL_ADDRESS + \
+				index * IN_FLOW_CNT_TBL_INC,
+				value->val,
+				3);
+}
+
+sw_error_t
+hppe_in_flow_cnt_tbl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union in_flow_cnt_tbl_u *value)
+{
+	return hppe_reg_tbl_set(
+				dev_id,
+				INGRESS_POLICER_BASE_ADDR + IN_FLOW_CNT_TBL_ADDRESS + \
+				index * IN_FLOW_CNT_TBL_INC,
+				value->val,
+				3);
+}
+
 sw_error_t
 hppe_flow_ctrl0_get(
 		a_uint32_t dev_id,
@@ -70,34 +101,6 @@ hppe_flow_ctrl1_set(
 				dev_id,
 				IPE_L3_BASE_ADDR + FLOW_CTRL1_ADDRESS + \
 				index * FLOW_CTRL1_INC,
-				value->val);
-}
-
-sw_error_t
-hppe_in_pub_ip_addr_tbl_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union in_pub_ip_addr_tbl_u *value)
-{
-	if (index >= IN_PUB_IP_ADDR_TBL_MAX_ENTRY)
-		return SW_OUT_OF_RANGE;
-	return hppe_reg_get(
-				dev_id,
-				IPE_L3_BASE_ADDR + IN_PUB_IP_ADDR_TBL_ADDRESS + \
-				index * IN_PUB_IP_ADDR_TBL_INC,
-				&value->val);
-}
-
-sw_error_t
-hppe_in_pub_ip_addr_tbl_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union in_pub_ip_addr_tbl_u *value)
-{
-	return hppe_reg_set(
-				dev_id,
-				IPE_L3_BASE_ADDR + IN_PUB_IP_ADDR_TBL_ADDRESS + \
-				index * IN_PUB_IP_ADDR_TBL_INC,
 				value->val);
 }
 
@@ -2523,37 +2526,6 @@ hppe_flow_ctrl1_flow_ctl4_miss_action_set(
 }
 
 sw_error_t
-hppe_in_pub_ip_addr_tbl_ip_addr_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t *value)
-{
-	union in_pub_ip_addr_tbl_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_in_pub_ip_addr_tbl_get(dev_id, index, &reg_val);
-	*value = reg_val.bf.ip_addr;
-	return ret;
-}
-
-sw_error_t
-hppe_in_pub_ip_addr_tbl_ip_addr_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t value)
-{
-	union in_pub_ip_addr_tbl_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_in_pub_ip_addr_tbl_get(dev_id, index, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.ip_addr = value;
-	ret = hppe_in_pub_ip_addr_tbl_set(dev_id, index, &reg_val);
-	return ret;
-}
-
-sw_error_t
 hppe_in_flow_tbl_op_entry_index_get(
 		a_uint32_t dev_id,
 		a_uint32_t *value)
@@ -4932,5 +4904,391 @@ hppe_eg_flow_tree_map_tbl_tree_id_set(
 	ret = hppe_eg_flow_tree_map_tbl_set(dev_id, index, &reg_val);
 	return ret;
 }
+
+sw_error_t
+hppe_in_flow_cnt_tbl_hit_byte_counter_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint64_t *value)
+{
+	union in_flow_cnt_tbl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_in_flow_cnt_tbl_get(dev_id, index, &reg_val);
+	*value = (a_uint64_t)reg_val.bf.hit_byte_counter_1 << 32 | \
+		reg_val.bf.hit_byte_counter_0;
+	return ret;
+}
+
+sw_error_t
+hppe_in_flow_cnt_tbl_hit_byte_counter_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint64_t value)
+{
+	union in_flow_cnt_tbl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_in_flow_cnt_tbl_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.hit_byte_counter_1 = value >> 32;
+	reg_val.bf.hit_byte_counter_0 = value & (((a_uint64_t)1<<32)-1);
+	ret = hppe_in_flow_cnt_tbl_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_in_flow_cnt_tbl_hit_pkt_counter_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union in_flow_cnt_tbl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_in_flow_cnt_tbl_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.hit_pkt_counter;
+	return ret;
+}
+
+sw_error_t
+hppe_in_flow_cnt_tbl_hit_pkt_counter_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union in_flow_cnt_tbl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_in_flow_cnt_tbl_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.hit_pkt_counter = value;
+	ret = hppe_in_flow_cnt_tbl_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+
+sw_error_t
+hppe_flow_get_common(
+		a_uint32_t dev_id,
+		a_uint32_t op_mode,
+		a_uint32_t *index,
+		a_uint32_t *data,
+		a_uint32_t num)
+{
+	union in_flow_tbl_rd_op_u op;
+	union in_flow_tbl_rd_op_rslt_u result;
+	a_uint32_t i = 0x100;
+	sw_error_t rv;
+
+	op.bf.cmd_id = flow_cmd_id;
+	flow_cmd_id++;
+	op.bf.byp_rslt_en = 0;
+	op.bf.op_type = 2;
+	op.bf.hash_block_bitmap = 3;
+	op.bf.op_mode = op_mode;
+	op.bf.entry_index = *index;
+	op.bf.op_host_en = 0;
+
+	rv = hppe_in_flow_tbl_rd_op_set(dev_id, &op);
+	if (SW_OK != rv)
+		return rv;
+	rv = hppe_in_flow_tbl_rd_op_rslt_get(dev_id, &result);
+	if (SW_OK != rv)
+		return rv;
+	while (!result.bf.valid_cnt && --i) {
+		hppe_in_flow_tbl_rd_op_rslt_get(dev_id, &result);
+	}
+	if (i == 0)
+		return SW_BUSY;
+	if (result.bf.op_rslt == 0) {
+		hppe_reg_tbl_get(
+				dev_id,
+				IPE_L3_BASE_ADDR + IN_FLOW_TBL_RD_RSLT_DATA0_ADDRESS,
+				data, num);
+		*index = result.bf.flow_entry_index;
+		return SW_OK;
+	}
+	else
+		return SW_FAIL;
+	
+}
+
+
+sw_error_t
+hppe_flow_flush_common(a_uint32_t dev_id)
+{
+	union in_flow_tbl_op_u op;
+	union in_flow_tbl_op_rslt_u result;
+	a_uint32_t i = 0x100 * 50;
+	sw_error_t rv;
+
+	op.bf.cmd_id = flow_cmd_id;
+	flow_cmd_id++;
+	op.bf.byp_rslt_en = 0;
+	op.bf.op_type = 3;
+	op.bf.hash_block_bitmap = 3;
+	op.bf.op_mode = 0;
+	op.bf.op_host_en = 0;
+
+	rv = hppe_in_flow_tbl_op_set(dev_id, &op);
+	if (SW_OK != rv)
+		return rv;
+	rv = hppe_in_flow_tbl_op_rslt_get(dev_id, &result);
+	if (SW_OK != rv)
+		return rv;
+	while (!result.bf.valid_cnt && --i) {
+		hppe_in_flow_tbl_op_rslt_get(dev_id, &result);
+	}
+	if (i == 0)
+		return SW_BUSY;
+	if (result.bf.op_rslt == 0)
+		return SW_OK;
+	else
+		return SW_FAIL;
+	
+	
+}
+
+sw_error_t
+hppe_flow_op_common(
+		a_uint32_t dev_id,
+		a_uint32_t op_type,
+		a_uint32_t op_mode,
+		a_uint32_t *index)
+{
+	union in_flow_tbl_op_u op;
+	union in_flow_tbl_op_rslt_u result;
+	a_uint32_t i = 0x100;
+	sw_error_t rv;
+
+	op.bf.cmd_id = flow_cmd_id;
+	flow_cmd_id++;
+	op.bf.byp_rslt_en = 0;
+	op.bf.op_type = op_type;
+	op.bf.hash_block_bitmap = 3;
+	op.bf.op_mode = op_mode;
+	op.bf.entry_index = *index;
+	op.bf.op_host_en = 0;
+
+	rv = hppe_in_flow_tbl_op_set(dev_id, &op);
+	if (SW_OK != rv)
+		return rv;
+	rv = hppe_in_flow_tbl_op_rslt_get(dev_id, &result);
+	if (SW_OK != rv)
+		return rv;
+	while (!result.bf.valid_cnt && --i) {
+		hppe_in_flow_tbl_op_rslt_get(dev_id, &result);
+	}
+	if (i == 0)
+		return SW_BUSY;
+	if (result.bf.op_rslt == 0) {
+		*index = result.bf.flow_entry_index;
+		return SW_OK;
+	}
+	else
+		return SW_FAIL;
+	
+}
+
+
+sw_error_t
+hppe_flow_ipv4_5tuple_add(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union in_flow_tbl_u *entry)
+{
+	hppe_in_flow_tbl_op_data0_set(dev_id, (union in_flow_tbl_op_data0_u *)(&entry->val[0]));
+	hppe_in_flow_tbl_op_data1_set(dev_id, (union in_flow_tbl_op_data1_u *)(&entry->val[1]));
+	hppe_in_flow_tbl_op_data2_set(dev_id, (union in_flow_tbl_op_data2_u *)(&entry->val[2]));
+	hppe_in_flow_tbl_op_data3_set(dev_id, (union in_flow_tbl_op_data3_u *)(&entry->val[3]));
+	hppe_in_flow_tbl_op_data4_set(dev_id, (union in_flow_tbl_op_data4_u *)(&entry->val[4]));
+	return hppe_flow_op_common(dev_id, 0, op_mode, index);
+}
+
+sw_error_t
+hppe_flow_ipv4_3tuple_add(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union in_flow_3tuple_tbl_u *entry)
+{
+	hppe_in_flow_tbl_op_data0_set(dev_id, (union in_flow_tbl_op_data0_u *)(&entry->val[0]));
+	hppe_in_flow_tbl_op_data1_set(dev_id, (union in_flow_tbl_op_data1_u *)(&entry->val[1]));
+	hppe_in_flow_tbl_op_data2_set(dev_id, (union in_flow_tbl_op_data2_u *)(&entry->val[2]));
+	hppe_in_flow_tbl_op_data3_set(dev_id, (union in_flow_tbl_op_data3_u *)(&entry->val[3]));
+	hppe_in_flow_tbl_op_data4_set(dev_id, (union in_flow_tbl_op_data4_u *)(&entry->val[4]));
+	return hppe_flow_op_common(dev_id, 0, op_mode, index);
+}
+
+sw_error_t
+hppe_flow_ipv6_5tuple_add(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union in_flow_ipv6_5tuple_tbl_u *entry)
+{
+	hppe_in_flow_tbl_op_data0_set(dev_id, (union in_flow_tbl_op_data0_u *)(&entry->val[0]));
+	hppe_in_flow_tbl_op_data1_set(dev_id, (union in_flow_tbl_op_data1_u *)(&entry->val[1]));
+	hppe_in_flow_tbl_op_data2_set(dev_id, (union in_flow_tbl_op_data2_u *)(&entry->val[2]));
+	hppe_in_flow_tbl_op_data3_set(dev_id, (union in_flow_tbl_op_data3_u *)(&entry->val[3]));
+	hppe_in_flow_tbl_op_data4_set(dev_id, (union in_flow_tbl_op_data4_u *)(&entry->val[4]));
+	hppe_in_flow_tbl_op_data5_set(dev_id, (union in_flow_tbl_op_data5_u *)(&entry->val[5]));
+	hppe_in_flow_tbl_op_data6_set(dev_id, (union in_flow_tbl_op_data6_u *)(&entry->val[6]));
+	hppe_in_flow_tbl_op_data7_set(dev_id, (union in_flow_tbl_op_data7_u *)(&entry->val[7]));
+	hppe_in_flow_tbl_op_data8_set(dev_id, (union in_flow_tbl_op_data8_u *)(&entry->val[8]));
+	return hppe_flow_op_common(dev_id, 0, op_mode, index);
+}
+
+sw_error_t
+hppe_flow_ipv6_3tuple_add(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union in_flow_ipv6_3tuple_tbl_u *entry)
+{
+	hppe_in_flow_tbl_op_data0_set(dev_id, (union in_flow_tbl_op_data0_u *)(&entry->val[0]));
+	hppe_in_flow_tbl_op_data1_set(dev_id, (union in_flow_tbl_op_data1_u *)(&entry->val[1]));
+	hppe_in_flow_tbl_op_data2_set(dev_id, (union in_flow_tbl_op_data2_u *)(&entry->val[2]));
+	hppe_in_flow_tbl_op_data3_set(dev_id, (union in_flow_tbl_op_data3_u *)(&entry->val[3]));
+	hppe_in_flow_tbl_op_data4_set(dev_id, (union in_flow_tbl_op_data4_u *)(&entry->val[4]));
+	hppe_in_flow_tbl_op_data5_set(dev_id, (union in_flow_tbl_op_data5_u *)(&entry->val[5]));
+	hppe_in_flow_tbl_op_data6_set(dev_id, (union in_flow_tbl_op_data6_u *)(&entry->val[6]));
+	hppe_in_flow_tbl_op_data7_set(dev_id, (union in_flow_tbl_op_data7_u *)(&entry->val[7]));
+	hppe_in_flow_tbl_op_data8_set(dev_id, (union in_flow_tbl_op_data8_u *)(&entry->val[8]));
+	return hppe_flow_op_common(dev_id, 0, op_mode, index);
+}
+
+sw_error_t
+hppe_flow_ipv4_5tuple_del(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union in_flow_tbl_u *entry)
+{
+	if (op_mode == 0) {
+		hppe_in_flow_tbl_op_data0_set(dev_id, (union in_flow_tbl_op_data0_u *)(&entry->val[0]));
+		hppe_in_flow_tbl_op_data1_set(dev_id, (union in_flow_tbl_op_data1_u *)(&entry->val[1]));
+		hppe_in_flow_tbl_op_data2_set(dev_id, (union in_flow_tbl_op_data2_u *)(&entry->val[2]));
+		hppe_in_flow_tbl_op_data3_set(dev_id, (union in_flow_tbl_op_data3_u *)(&entry->val[3]));
+		hppe_in_flow_tbl_op_data4_set(dev_id, (union in_flow_tbl_op_data4_u *)(&entry->val[4]));
+	}
+	return hppe_flow_op_common(dev_id, 1, op_mode, index);
+}
+
+sw_error_t
+hppe_flow_ipv4_3tuple_del(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union in_flow_3tuple_tbl_u *entry)
+{
+	if (op_mode == 0) {
+		hppe_in_flow_tbl_op_data0_set(dev_id, (union in_flow_tbl_op_data0_u *)(&entry->val[0]));
+		hppe_in_flow_tbl_op_data1_set(dev_id, (union in_flow_tbl_op_data1_u *)(&entry->val[1]));
+		hppe_in_flow_tbl_op_data2_set(dev_id, (union in_flow_tbl_op_data2_u *)(&entry->val[2]));
+		hppe_in_flow_tbl_op_data3_set(dev_id, (union in_flow_tbl_op_data3_u *)(&entry->val[3]));
+		hppe_in_flow_tbl_op_data4_set(dev_id, (union in_flow_tbl_op_data4_u *)(&entry->val[4]));
+	}
+	return hppe_flow_op_common(dev_id, 1, op_mode, index);
+}
+
+sw_error_t
+hppe_flow_ipv6_5tuple_del(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union in_flow_ipv6_5tuple_tbl_u *entry)
+{
+	if (op_mode == 0) {
+		hppe_in_flow_tbl_op_data0_set(dev_id, (union in_flow_tbl_op_data0_u *)(&entry->val[0]));
+		hppe_in_flow_tbl_op_data1_set(dev_id, (union in_flow_tbl_op_data1_u *)(&entry->val[1]));
+		hppe_in_flow_tbl_op_data2_set(dev_id, (union in_flow_tbl_op_data2_u *)(&entry->val[2]));
+		hppe_in_flow_tbl_op_data3_set(dev_id, (union in_flow_tbl_op_data3_u *)(&entry->val[3]));
+		hppe_in_flow_tbl_op_data4_set(dev_id, (union in_flow_tbl_op_data4_u *)(&entry->val[4]));
+		hppe_in_flow_tbl_op_data5_set(dev_id, (union in_flow_tbl_op_data5_u *)(&entry->val[5]));
+		hppe_in_flow_tbl_op_data6_set(dev_id, (union in_flow_tbl_op_data6_u *)(&entry->val[6]));
+		hppe_in_flow_tbl_op_data7_set(dev_id, (union in_flow_tbl_op_data7_u *)(&entry->val[7]));
+		hppe_in_flow_tbl_op_data8_set(dev_id, (union in_flow_tbl_op_data8_u *)(&entry->val[8]));
+	}
+	return hppe_flow_op_common(dev_id, 1, op_mode, index);
+}
+
+sw_error_t
+hppe_flow_ipv6_3tuple_del(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union in_flow_ipv6_3tuple_tbl_u *entry)
+{
+	if (op_mode == 0) {
+		hppe_in_flow_tbl_op_data0_set(dev_id, (union in_flow_tbl_op_data0_u *)(&entry->val[0]));
+		hppe_in_flow_tbl_op_data1_set(dev_id, (union in_flow_tbl_op_data1_u *)(&entry->val[1]));
+		hppe_in_flow_tbl_op_data2_set(dev_id, (union in_flow_tbl_op_data2_u *)(&entry->val[2]));
+		hppe_in_flow_tbl_op_data3_set(dev_id, (union in_flow_tbl_op_data3_u *)(&entry->val[3]));
+		hppe_in_flow_tbl_op_data4_set(dev_id, (union in_flow_tbl_op_data4_u *)(&entry->val[4]));
+		hppe_in_flow_tbl_op_data5_set(dev_id, (union in_flow_tbl_op_data5_u *)(&entry->val[5]));
+		hppe_in_flow_tbl_op_data6_set(dev_id, (union in_flow_tbl_op_data6_u *)(&entry->val[6]));
+		hppe_in_flow_tbl_op_data7_set(dev_id, (union in_flow_tbl_op_data7_u *)(&entry->val[7]));
+		hppe_in_flow_tbl_op_data8_set(dev_id, (union in_flow_tbl_op_data8_u *)(&entry->val[8]));
+	}
+	return hppe_flow_op_common(dev_id, 1, op_mode, index);
+}
+
+sw_error_t
+hppe_flow_ipv4_5tuple_get(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union in_flow_tbl_u *entry)
+{
+	if (op_mode == 0) {
+		hppe_in_flow_tbl_rd_op_data0_set(dev_id, (union in_flow_tbl_rd_op_data0_u *)(&entry->val[0]));
+		hppe_in_flow_tbl_rd_op_data1_set(dev_id, (union in_flow_tbl_rd_op_data1_u *)(&entry->val[1]));
+		hppe_in_flow_tbl_rd_op_data2_set(dev_id, (union in_flow_tbl_rd_op_data2_u *)(&entry->val[2]));
+		hppe_in_flow_tbl_rd_op_data3_set(dev_id, (union in_flow_tbl_rd_op_data3_u *)(&entry->val[3]));
+		hppe_in_flow_tbl_rd_op_data4_set(dev_id, (union in_flow_tbl_rd_op_data4_u *)(&entry->val[4]));
+	}
+	return hppe_flow_get_common(dev_id, op_mode, index, (a_uint32_t *)entry, 5);
+}
+
+sw_error_t
+hppe_flow_ipv4_3tuple_get(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union in_flow_3tuple_tbl_u *entry)
+{
+	if (op_mode == 0) {
+		hppe_in_flow_tbl_rd_op_data0_set(dev_id, (union in_flow_tbl_rd_op_data0_u *)(&entry->val[0]));
+		hppe_in_flow_tbl_rd_op_data1_set(dev_id, (union in_flow_tbl_rd_op_data1_u *)(&entry->val[1]));
+		hppe_in_flow_tbl_rd_op_data2_set(dev_id, (union in_flow_tbl_rd_op_data2_u *)(&entry->val[2]));
+		hppe_in_flow_tbl_rd_op_data3_set(dev_id, (union in_flow_tbl_rd_op_data3_u *)(&entry->val[3]));
+		hppe_in_flow_tbl_rd_op_data4_set(dev_id, (union in_flow_tbl_rd_op_data4_u *)(&entry->val[4]));
+	}
+	return hppe_flow_get_common(dev_id, op_mode, index, (a_uint32_t *)entry, 5);
+}
+
+sw_error_t
+hppe_flow_ipv6_5tuple_get(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union in_flow_ipv6_5tuple_tbl_u *entry)
+{
+	if (op_mode == 0) {
+		hppe_in_flow_tbl_rd_op_data0_set(dev_id, (union in_flow_tbl_rd_op_data0_u *)(&entry->val[0]));
+		hppe_in_flow_tbl_rd_op_data1_set(dev_id, (union in_flow_tbl_rd_op_data1_u *)(&entry->val[1]));
+		hppe_in_flow_tbl_rd_op_data2_set(dev_id, (union in_flow_tbl_rd_op_data2_u *)(&entry->val[2]));
+		hppe_in_flow_tbl_rd_op_data3_set(dev_id, (union in_flow_tbl_rd_op_data3_u *)(&entry->val[3]));
+		hppe_in_flow_tbl_rd_op_data4_set(dev_id, (union in_flow_tbl_rd_op_data4_u *)(&entry->val[4]));
+		hppe_in_flow_tbl_rd_op_data5_set(dev_id, (union in_flow_tbl_rd_op_data5_u *)(&entry->val[5]));
+		hppe_in_flow_tbl_rd_op_data6_set(dev_id, (union in_flow_tbl_rd_op_data6_u *)(&entry->val[6]));
+		hppe_in_flow_tbl_rd_op_data7_set(dev_id, (union in_flow_tbl_rd_op_data7_u *)(&entry->val[7]));
+		hppe_in_flow_tbl_rd_op_data8_set(dev_id, (union in_flow_tbl_rd_op_data8_u *)(&entry->val[8]));
+	}
+	return hppe_flow_get_common(dev_id, op_mode, index, (a_uint32_t *)entry, 9);
+}
+
+sw_error_t
+hppe_flow_ipv6_3tuple_get(
+		a_uint32_t dev_id, a_uint32_t op_mode,
+		a_uint32_t *index, union in_flow_ipv6_3tuple_tbl_u *entry)
+{
+	if (op_mode == 0) {
+		hppe_in_flow_tbl_rd_op_data0_set(dev_id, (union in_flow_tbl_rd_op_data0_u *)(&entry->val[0]));
+		hppe_in_flow_tbl_rd_op_data1_set(dev_id, (union in_flow_tbl_rd_op_data1_u *)(&entry->val[1]));
+		hppe_in_flow_tbl_rd_op_data2_set(dev_id, (union in_flow_tbl_rd_op_data2_u *)(&entry->val[2]));
+		hppe_in_flow_tbl_rd_op_data3_set(dev_id, (union in_flow_tbl_rd_op_data3_u *)(&entry->val[3]));
+		hppe_in_flow_tbl_rd_op_data4_set(dev_id, (union in_flow_tbl_rd_op_data4_u *)(&entry->val[4]));
+		hppe_in_flow_tbl_rd_op_data5_set(dev_id, (union in_flow_tbl_rd_op_data5_u *)(&entry->val[5]));
+		hppe_in_flow_tbl_rd_op_data6_set(dev_id, (union in_flow_tbl_rd_op_data6_u *)(&entry->val[6]));
+		hppe_in_flow_tbl_rd_op_data7_set(dev_id, (union in_flow_tbl_rd_op_data7_u *)(&entry->val[7]));
+		hppe_in_flow_tbl_rd_op_data8_set(dev_id, (union in_flow_tbl_rd_op_data8_u *)(&entry->val[8]));
+	}
+	return hppe_flow_get_common(dev_id, op_mode, index, (a_uint32_t *)entry, 9);
+}
+
 
 

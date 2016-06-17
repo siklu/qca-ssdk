@@ -1472,6 +1472,28 @@ union l3_dbg_rd_data_u {
 	struct l3_dbg_rd_data bf;
 };
 
+/*[register] IN_PUB_IP_ADDR_TBL*/
+#define IN_PUB_IP_ADDR_TBL
+#define IN_PUB_IP_ADDR_TBL_ADDRESS 0x378
+#define IN_PUB_IP_ADDR_TBL_NUM     16
+#define IN_PUB_IP_ADDR_TBL_INC     0x4
+#define IN_PUB_IP_ADDR_TBL_TYPE    REG_TYPE_RW
+#define IN_PUB_IP_ADDR_TBL_DEFAULT 0x0
+	/*[field] IP_ADDR*/
+	#define IN_PUB_IP_ADDR_TBL_IP_ADDR
+	#define IN_PUB_IP_ADDR_TBL_IP_ADDR_OFFSET  0
+	#define IN_PUB_IP_ADDR_TBL_IP_ADDR_LEN     32
+	#define IN_PUB_IP_ADDR_TBL_IP_ADDR_DEFAULT 0x0
+
+struct in_pub_ip_addr_tbl {
+	a_uint32_t  ip_addr:32;
+};
+
+union in_pub_ip_addr_tbl_u {
+	a_uint32_t val;
+	struct in_pub_ip_addr_tbl bf;
+};
+
 /*[table] L3_VP_PORT_TBL*/
 #define L3_VP_PORT_TBL
 #define L3_VP_PORT_TBL_ADDRESS 0x1000
@@ -2167,6 +2189,51 @@ union eg_l3_if_tbl_u {
 	a_uint32_t val[3];
 	struct eg_l3_if_tbl bf;
 };
+
+/*[table] RT_INTERFACE_CNT_TBL*/
+#define RT_INTERFACE_CNT_TBL
+#define RT_INTERFACE_CNT_TBL_ADDRESS 0x40000
+#define RT_INTERFACE_CNT_TBL_NUM     512
+#define RT_INTERFACE_CNT_TBL_INC     0x20
+#define RT_INTERFACE_CNT_TBL_TYPE    REG_TYPE_RW
+#define RT_INTERFACE_CNT_TBL_DEFAULT 0x0
+	/*[field] PKT_CNT*/
+	#define RT_INTERFACE_CNT_TBL_PKT_CNT
+	#define RT_INTERFACE_CNT_TBL_PKT_CNT_OFFSET  0
+	#define RT_INTERFACE_CNT_TBL_PKT_CNT_LEN     32
+	#define RT_INTERFACE_CNT_TBL_PKT_CNT_DEFAULT 0x0
+	/*[field] BYTE_CNT*/
+	#define RT_INTERFACE_CNT_TBL_BYTE_CNT
+	#define RT_INTERFACE_CNT_TBL_BYTE_CNT_OFFSET  32
+	#define RT_INTERFACE_CNT_TBL_BYTE_CNT_LEN     40
+	#define RT_INTERFACE_CNT_TBL_BYTE_CNT_DEFAULT 0x0
+	/*[field] DROP_PKT_CNT*/
+	#define RT_INTERFACE_CNT_TBL_DROP_PKT_CNT
+	#define RT_INTERFACE_CNT_TBL_DROP_PKT_CNT_OFFSET  72
+	#define RT_INTERFACE_CNT_TBL_DROP_PKT_CNT_LEN     32
+	#define RT_INTERFACE_CNT_TBL_DROP_PKT_CNT_DEFAULT 0x0
+	/*[field] DROP_BYTE_CNT*/
+	#define RT_INTERFACE_CNT_TBL_DROP_BYTE_CNT
+	#define RT_INTERFACE_CNT_TBL_DROP_BYTE_CNT_OFFSET  104
+	#define RT_INTERFACE_CNT_TBL_DROP_BYTE_CNT_LEN     40
+	#define RT_INTERFACE_CNT_TBL_DROP_BYTE_CNT_DEFAULT 0x0
+
+struct rt_interface_cnt_tbl {
+	a_uint32_t  pkt_cnt:32;
+	a_uint32_t  byte_cnt_0:32;
+	a_uint32_t  byte_cnt_1:8;
+	a_uint32_t  drop_pkt_cnt_0:24;
+	a_uint32_t  drop_pkt_cnt_1:8;
+	a_uint32_t  drop_byte_cnt_0:24;
+	a_uint32_t  drop_byte_cnt_1:16;
+	a_uint32_t  _reserved0:16;
+};
+
+union rt_interface_cnt_tbl_u {
+	a_uint32_t val[5];
+	struct rt_interface_cnt_tbl bf;
+};
+
 
 
 #endif
