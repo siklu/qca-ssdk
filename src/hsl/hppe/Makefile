@@ -9,6 +9,7 @@ SRC_LIST+=hppe_vsi.c hppe_fdb.c hppe_stp.c hppe_portvlan.c
 SRC_LIST+=hppe_sec.c
 SRC_LIST+=hppe_bm.c
 SRC_LIST+=hppe_mib.c
+SRC_LIST+=hppe_acl.c hppe_servcode.c hppe_ctrlpkt.c
 SRC_LIST+=hppe_rss.c
 SRC_LIST+=hppe_pppoe.c
 SRC_LIST+=hppe_portctrl.c

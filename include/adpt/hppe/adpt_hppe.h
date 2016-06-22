@@ -25,7 +25,9 @@ extern "C" {
 #endif                          /* __cplusplus */
 
 sw_error_t adpt_hppe_fdb_init(a_uint32_t dev_id);
-
+sw_error_t adpt_hppe_portvlan_init(a_uint32_t dev_id);
+sw_error_t adpt_hppe_ctrlpkt_init(a_uint32_t dev_id);
+sw_error_t adpt_hppe_servcode_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_mib_init(a_uint32_t dev_id);
 
 sw_error_t adpt_hppe_stp_init(a_uint32_t dev_id);

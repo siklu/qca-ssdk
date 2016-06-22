@@ -26,6 +26,9 @@ extern "C" {
 
 #include "sw.h"
 #include "fal_fdb.h"
+#include "fal_portvlan.h"
+#include "fal_ctrlpkt.h"
+#include "fal_servcode.h"
 #include "fal_mib.h"
 #include "fal_port_ctrl.h"
 #include "fal_mirror.h"
@@ -484,6 +487,97 @@ typedef sw_error_t (*adpt_multicast_queue_ac_cfg_set_func)(
 		a_uint32_t queue_id,
 		fal_multi_queue_ac_cfg_t *cfg);
 
+/*portvlan module begin*/
+typedef sw_error_t (*adpt_global_qinq_mode_set_func)(a_uint32_t dev_id, fal_global_qinq_mode_t *mode);
+typedef sw_error_t (*adpt_global_qinq_mode_get_func)(a_uint32_t dev_id, fal_global_qinq_mode_t *mode);
+typedef sw_error_t (*adpt_tpid_set_func)(a_uint32_t dev_id, fal_tpid_t *tpid);
+typedef sw_error_t (*adpt_tpid_get_func)(a_uint32_t dev_id, fal_tpid_t *tpid);
+typedef sw_error_t (*adpt_egress_tpid_set_func)(a_uint32_t dev_id, fal_tpid_t *tpid);
+typedef sw_error_t (*adpt_egress_tpid_get_func)(a_uint32_t dev_id, fal_tpid_t *tpid);
+typedef sw_error_t (*adpt_port_qinq_mode_set_func)(a_uint32_t dev_id, fal_port_t port_id, fal_port_qinq_mode_t *mode);
+typedef sw_error_t (*adpt_port_qinq_mode_get_func)(a_uint32_t dev_id, fal_port_t port_id, fal_port_qinq_mode_t *mode);
+typedef sw_error_t (*adpt_port_ingress_filter_set_func)(a_uint32_t dev_id, fal_port_t port_id, fal_ingress_filter_t *filter);
+typedef sw_error_t (*adpt_port_ingress_filter_get_func)(a_uint32_t dev_id, fal_port_t port_id, fal_ingress_filter_t *filter);
+typedef sw_error_t (*adpt_port_ingress_default_tag_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+                                 fal_port_ingress_default_tag_t *default_tag);
+typedef sw_error_t (*adpt_port_ingress_default_tag_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+                                 fal_port_ingress_default_tag_t *default_tag);
+typedef sw_error_t (*adpt_port_tag_propagation_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+                                 fal_tag_propagation_t *prop);
+typedef sw_error_t (*adpt_port_tag_propagation_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+                                 fal_tag_propagation_t *prop);
+typedef sw_error_t (*adpt_port_tag_egvlanmode_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+                            fal_egressmode_t *port_egvlanmode);
+typedef sw_error_t (*adpt_port_tag_egvlanmode_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+                            fal_egressmode_t *port_egvlanmode);
+typedef sw_error_t (*adpt_port_egress_tag_propagation_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+                                 fal_tag_propagation_t *eg_prop);
+typedef sw_error_t (*adpt_port_egress_tag_propagation_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+                                 fal_tag_propagation_t *eg_prop);
+typedef sw_error_t (*adpt_port_vlan_xlt_miss_cmd_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+                                 fal_fwd_cmd_t *cmd);
+typedef sw_error_t (*adpt_port_vlan_xlt_miss_cmd_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+                                 fal_fwd_cmd_t cmd);
+typedef sw_error_t (*adpt_port_vlan_trans_add_func)(a_uint32_t dev_id, fal_port_t port_id, fal_vlan_trans_entry_t *entry);
+typedef sw_error_t (*adpt_port_vlan_trans_get_func)(a_uint32_t dev_id, fal_port_t port_id, fal_vlan_trans_entry_t *entry);
+typedef sw_error_t (*adpt_port_vlan_trans_del_func)(a_uint32_t dev_id, fal_port_t port_id, fal_vlan_trans_entry_t *entry);
+typedef sw_error_t (*adpt_port_vlan_trans_iterate_func)(a_uint32_t dev_id, fal_port_t port_id,
+                                a_uint32_t * iterator, fal_vlan_trans_entry_t *entry);
+typedef sw_error_t (*adpt_port_egress_default_vid_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+                                 fal_port_egress_default_vid_t *default_vid);
+typedef sw_error_t (*adpt_port_egress_default_vid_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+                                 fal_port_egress_default_vid_t *default_vid);
+/*portvlan module end*/
+
+/*ctrlpkt module end*/
+typedef sw_error_t (*adpt_ethernet_type_profile_set_func)(a_uint32_t dev_id,
+														a_uint32_t profile_id,
+														a_uint32_t ethernet_type,
+														a_bool_t enable);
+typedef sw_error_t (*adpt_ethernet_type_profile_get_func)(a_uint32_t dev_id,
+														a_uint32_t profile_id,
+														a_uint32_t *ethernet_type,
+														a_bool_t *enable);
+
+typedef sw_error_t (*adpt_rfdb_profile_set_func)(a_uint32_t dev_id,
+												a_uint32_t profile_id,
+												fal_mac_addr_t *addr,
+												a_bool_t enable);
+typedef sw_error_t (*adpt_rfdb_profile_get_func)(a_uint32_t dev_id,
+												a_uint32_t profile_id,
+												fal_mac_addr_t *addr,
+												a_bool_t *enable);
+
+typedef sw_error_t (*adpt_ctrlpkt_profile_set_func)(a_uint32_t dev_id,
+												a_uint32_t profile_id,
+												fal_ctrlpkt_profile_t *ctrlpkt);
+typedef sw_error_t (*adpt_ctrlpkt_profile_get_func)(a_uint32_t dev_id,
+												a_uint32_t profile_id,
+												fal_ctrlpkt_profile_t *ctrlpkt);
+/*ctrlpkt module end*/
+
+/*service module end*/
+typedef sw_error_t (*adpt_parse_service_profile_set_func)(a_uint32_t dev_id,
+										a_uint32_t profile_id,
+										fal_parse_service_entry_t *entry);
+typedef sw_error_t (*adpt_parse_service_profile_get_func)(a_uint32_t dev_id,
+										a_uint32_t profile_id,
+										fal_parse_service_entry_t *entry);
+
+typedef sw_error_t (*adpt_ingress_service_profile_set_func)(a_uint32_t dev_id,
+										a_uint32_t profile_id,
+										fal_ingress_service_entry_t *entry);
+typedef sw_error_t (*adpt_ingress_service_profile_get_func)(a_uint32_t dev_id,
+										a_uint32_t profile_id,
+										fal_ingress_service_entry_t *entry);
+
+typedef sw_error_t (*adpt_egress_service_profile_set_func)(a_uint32_t dev_id,
+										a_uint32_t profile_id,
+										fal_egress_service_entry_t *entry);
+typedef sw_error_t (*adpt_egress_service_profile_get_func)(a_uint32_t dev_id,
+										a_uint32_t profile_id,
+										fal_egress_service_entry_t *entry);
+/*service module end*/
 
 typedef struct
 {
@@ -693,6 +787,52 @@ typedef struct
 	adpt_multicast_queue_ac_cfg_get_func adpt_multicast_queue_ac_cfg_get;
 	adpt_multicast_queue_ac_cfg_set_func adpt_multicast_queue_ac_cfg_set;
 
+	/*portvlan module begin*/
+	adpt_global_qinq_mode_set_func adpt_global_qinq_mode_set;
+	adpt_global_qinq_mode_get_func adpt_global_qinq_mode_get;
+	adpt_tpid_set_func adpt_tpid_set;
+	adpt_tpid_get_func adpt_tpid_get;
+	adpt_egress_tpid_set_func adpt_egress_tpid_set;
+	adpt_egress_tpid_get_func adpt_egress_tpid_get;
+	adpt_port_qinq_mode_set_func adpt_port_qinq_mode_set;
+	adpt_port_qinq_mode_get_func adpt_port_qinq_mode_get;
+	adpt_port_ingress_filter_set_func adpt_port_ingress_filter_set;
+	adpt_port_ingress_filter_get_func adpt_port_ingress_filter_get;
+	adpt_port_ingress_default_tag_set_func adpt_port_ingress_default_tag_set;
+	adpt_port_ingress_default_tag_get_func adpt_port_ingress_default_tag_get;
+	adpt_port_tag_propagation_set_func adpt_port_tag_propagation_set;
+	adpt_port_tag_propagation_get_func adpt_port_tag_propagation_get;
+	adpt_port_tag_egvlanmode_set_func adpt_port_tag_egvlanmode_set;
+	adpt_port_tag_egvlanmode_get_func adpt_port_tag_egvlanmode_get;
+	adpt_port_egress_tag_propagation_set_func adpt_port_egress_tag_propagation_set;
+	adpt_port_egress_tag_propagation_get_func adpt_port_egress_tag_propagation_get;
+	adpt_port_vlan_xlt_miss_cmd_set_func adpt_port_vlan_xlt_miss_cmd_set;
+	adpt_port_vlan_xlt_miss_cmd_get_func adpt_port_vlan_xlt_miss_cmd_get;
+	adpt_port_vlan_trans_add_func adpt_port_vlan_trans_add;
+	adpt_port_vlan_trans_get_func adpt_port_vlan_trans_get;
+	adpt_port_vlan_trans_del_func adpt_port_vlan_trans_del;
+	adpt_port_vlan_trans_iterate_func adpt_port_vlan_trans_iterate;
+	adpt_port_egress_default_vid_set_func adpt_port_egress_default_vid_set;
+	adpt_port_egress_default_vid_get_func adpt_port_egress_default_vid_get;
+	/*portvlan module end*/
+
+	/*ctrlpkt module begin*/
+	adpt_ethernet_type_profile_set_func adpt_ethernet_type_profile_set;
+	adpt_ethernet_type_profile_get_func adpt_ethernet_type_profile_get;
+	adpt_rfdb_profile_set_func adpt_rfdb_profile_set;
+	adpt_rfdb_profile_get_func adpt_rfdb_profile_get;
+	adpt_ctrlpkt_profile_set_func adpt_ctrlpkt_profile_set;
+	adpt_ctrlpkt_profile_get_func adpt_ctrlpkt_profile_get;
+	/*ctrlpkt module end*/
+
+	/*servcode module begin*/
+	adpt_parse_service_profile_set_func adpt_parse_service_profile_set;
+	adpt_parse_service_profile_get_func adpt_parse_service_profile_get;
+	adpt_ingress_service_profile_set_func adpt_ingress_service_profile_set;
+	adpt_ingress_service_profile_get_func adpt_ingress_service_profile_get;
+	adpt_egress_service_profile_set_func adpt_egress_service_profile_set;
+	adpt_egress_service_profile_get_func adpt_egress_service_profile_get;
+	/*servcode module end*/
 
 }adpt_api_t;
 

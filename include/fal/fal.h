@@ -47,6 +47,8 @@ extern "C" {
 #include "fal_interface_ctrl.h"
 #include "fal_fdb.h"
 #include "fal_multi.h"
+#include "fal_ctrlpkt.h"
+#include "fal_servcode.h"
 #include "fal_vsi.h"
 
 #ifdef __cplusplus

@@ -43,6 +43,10 @@ endif
 ifeq (TRUE, $(IN_QM))
   SRC_LIST += adpt_hppe_qm.c
 endif
+SRC_LIST=adpt_hppe_fdb.c adpt_hppe_mib.c adpt_hppe_stp.c adpt_hppe_vsi.c adpt_hppe_portctrl.c adpt_hppe_mirror.c adpt_hppe_trunk.c
+SRC_LIST+=adpt_hppe_portvlan.c
+SRC_LIST+=adpt_hppe_ctrlpkt.c
+SRC_LIST+=adpt_hppe_servcode.c
 
 ifeq (, $(findstring HPPE, $(SUPPORT_CHIP)))
   SRC_LIST=

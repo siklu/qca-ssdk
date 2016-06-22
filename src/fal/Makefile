@@ -95,6 +95,13 @@ endif
 
 ifeq (TRUE, $(IN_QM))
   SRC_LIST += fal_qm.c
+
+ifeq (TRUE, $(IN_CTRLPKT))
+  SRC_LIST += fal_ctrlpkt.c
+endif
+
+ifeq (TRUE, $(IN_SERVCODE))
+  SRC_LIST += fal_servcode.c
 endif
 
 include $(PRJ_PATH)/make/components.mk

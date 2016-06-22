@@ -20,9 +20,15 @@
 #ifndef _HPPE_PORTVLAN_H_
 #define _HPPE_PORTVLAN_H_
 
+#include "hppe_portvlan_reg.h"
+
 #define XLT_RULE_TBL_MAX_ENTRY	64
 #define XLT_ACTION_TBL_MAX_ENTRY	64
 #define PORT_PARSING_REG_MAX_ENTRY	8
+#define EG_VLAN_XLT_RULE_MAX_ENTRY	64
+#define PORT_EG_DEF_VID_MAX_ENTRY	8
+#define PORT_EG_VLAN_MAX_ENTRY	8
+#define EG_VLAN_XLT_ACTION_MAX_ENTRY	64
 
 
 sw_error_t
@@ -90,244 +96,40 @@ hppe_bridge_config_set(
 		union bridge_config_u *value);
 
 sw_error_t
-hppe_port_def_vid_0_get(
+hppe_port_def_vid_get(
 		a_uint32_t dev_id,
-		union port_def_vid_0_u *value);
+		a_uint32_t port_id,
+		union port_def_vid_u *value);
 
 sw_error_t
-hppe_port_def_vid_0_set(
+hppe_port_def_vid_set(
 		a_uint32_t dev_id,
-		union port_def_vid_0_u *value);
+		a_uint32_t port_id,
+		union port_def_vid_u *value);
 
 sw_error_t
-hppe_port_def_vid_1_get(
+hppe_port_def_pcp_get(
 		a_uint32_t dev_id,
-		union port_def_vid_1_u *value);
+		a_uint32_t port_id,
+		union port_def_pcp_u *value);
 
 sw_error_t
-hppe_port_def_vid_1_set(
+hppe_port_def_pcp_set(
 		a_uint32_t dev_id,
-		union port_def_vid_1_u *value);
+		a_uint32_t port_id,
+		union port_def_pcp_u *value);
 
 sw_error_t
-hppe_port_def_vid_2_get(
+hppe_port_vlan_config_get(
 		a_uint32_t dev_id,
-		union port_def_vid_2_u *value);
+		a_uint32_t port_id,
+		union port_vlan_config_u *value);
 
 sw_error_t
-hppe_port_def_vid_2_set(
+hppe_port_vlan_config_set(
 		a_uint32_t dev_id,
-		union port_def_vid_2_u *value);
-
-sw_error_t
-hppe_port_def_vid_3_get(
-		a_uint32_t dev_id,
-		union port_def_vid_3_u *value);
-
-sw_error_t
-hppe_port_def_vid_3_set(
-		a_uint32_t dev_id,
-		union port_def_vid_3_u *value);
-
-sw_error_t
-hppe_port_def_vid_4_get(
-		a_uint32_t dev_id,
-		union port_def_vid_4_u *value);
-
-sw_error_t
-hppe_port_def_vid_4_set(
-		a_uint32_t dev_id,
-		union port_def_vid_4_u *value);
-
-sw_error_t
-hppe_port_def_vid_5_get(
-		a_uint32_t dev_id,
-		union port_def_vid_5_u *value);
-
-sw_error_t
-hppe_port_def_vid_5_set(
-		a_uint32_t dev_id,
-		union port_def_vid_5_u *value);
-
-sw_error_t
-hppe_port_def_vid_6_get(
-		a_uint32_t dev_id,
-		union port_def_vid_6_u *value);
-
-sw_error_t
-hppe_port_def_vid_6_set(
-		a_uint32_t dev_id,
-		union port_def_vid_6_u *value);
-
-sw_error_t
-hppe_port_def_vid_7_get(
-		a_uint32_t dev_id,
-		union port_def_vid_7_u *value);
-
-sw_error_t
-hppe_port_def_vid_7_set(
-		a_uint32_t dev_id,
-		union port_def_vid_7_u *value);
-
-sw_error_t
-hppe_port_def_pcp_0_get(
-		a_uint32_t dev_id,
-		union port_def_pcp_0_u *value);
-
-sw_error_t
-hppe_port_def_pcp_0_set(
-		a_uint32_t dev_id,
-		union port_def_pcp_0_u *value);
-
-sw_error_t
-hppe_port_def_pcp_1_get(
-		a_uint32_t dev_id,
-		union port_def_pcp_1_u *value);
-
-sw_error_t
-hppe_port_def_pcp_1_set(
-		a_uint32_t dev_id,
-		union port_def_pcp_1_u *value);
-
-sw_error_t
-hppe_port_def_pcp_2_get(
-		a_uint32_t dev_id,
-		union port_def_pcp_2_u *value);
-
-sw_error_t
-hppe_port_def_pcp_2_set(
-		a_uint32_t dev_id,
-		union port_def_pcp_2_u *value);
-
-sw_error_t
-hppe_port_def_pcp_3_get(
-		a_uint32_t dev_id,
-		union port_def_pcp_3_u *value);
-
-sw_error_t
-hppe_port_def_pcp_3_set(
-		a_uint32_t dev_id,
-		union port_def_pcp_3_u *value);
-
-sw_error_t
-hppe_port_def_pcp_4_get(
-		a_uint32_t dev_id,
-		union port_def_pcp_4_u *value);
-
-sw_error_t
-hppe_port_def_pcp_4_set(
-		a_uint32_t dev_id,
-		union port_def_pcp_4_u *value);
-
-sw_error_t
-hppe_port_def_pcp_5_get(
-		a_uint32_t dev_id,
-		union port_def_pcp_5_u *value);
-
-sw_error_t
-hppe_port_def_pcp_5_set(
-		a_uint32_t dev_id,
-		union port_def_pcp_5_u *value);
-
-sw_error_t
-hppe_port_def_pcp_6_get(
-		a_uint32_t dev_id,
-		union port_def_pcp_6_u *value);
-
-sw_error_t
-hppe_port_def_pcp_6_set(
-		a_uint32_t dev_id,
-		union port_def_pcp_6_u *value);
-
-sw_error_t
-hppe_port_def_pcp_7_get(
-		a_uint32_t dev_id,
-		union port_def_pcp_7_u *value);
-
-sw_error_t
-hppe_port_def_pcp_7_set(
-		a_uint32_t dev_id,
-		union port_def_pcp_7_u *value);
-
-sw_error_t
-hppe_port_vlan_config_0_get(
-		a_uint32_t dev_id,
-		union port_vlan_config_0_u *value);
-
-sw_error_t
-hppe_port_vlan_config_0_set(
-		a_uint32_t dev_id,
-		union port_vlan_config_0_u *value);
-
-sw_error_t
-hppe_port_vlan_config_1_get(
-		a_uint32_t dev_id,
-		union port_vlan_config_1_u *value);
-
-sw_error_t
-hppe_port_vlan_config_1_set(
-		a_uint32_t dev_id,
-		union port_vlan_config_1_u *value);
-
-sw_error_t
-hppe_port_vlan_config_2_get(
-		a_uint32_t dev_id,
-		union port_vlan_config_2_u *value);
-
-sw_error_t
-hppe_port_vlan_config_2_set(
-		a_uint32_t dev_id,
-		union port_vlan_config_2_u *value);
-
-sw_error_t
-hppe_port_vlan_config_3_get(
-		a_uint32_t dev_id,
-		union port_vlan_config_3_u *value);
-
-sw_error_t
-hppe_port_vlan_config_3_set(
-		a_uint32_t dev_id,
-		union port_vlan_config_3_u *value);
-
-sw_error_t
-hppe_port_vlan_config_4_get(
-		a_uint32_t dev_id,
-		union port_vlan_config_4_u *value);
-
-sw_error_t
-hppe_port_vlan_config_4_set(
-		a_uint32_t dev_id,
-		union port_vlan_config_4_u *value);
-
-sw_error_t
-hppe_port_vlan_config_5_get(
-		a_uint32_t dev_id,
-		union port_vlan_config_5_u *value);
-
-sw_error_t
-hppe_port_vlan_config_5_set(
-		a_uint32_t dev_id,
-		union port_vlan_config_5_u *value);
-
-sw_error_t
-hppe_port_vlan_config_6_get(
-		a_uint32_t dev_id,
-		union port_vlan_config_6_u *value);
-
-sw_error_t
-hppe_port_vlan_config_6_set(
-		a_uint32_t dev_id,
-		union port_vlan_config_6_u *value);
-
-sw_error_t
-hppe_port_vlan_config_7_get(
-		a_uint32_t dev_id,
-		union port_vlan_config_7_u *value);
-
-sw_error_t
-hppe_port_vlan_config_7_set(
-		a_uint32_t dev_id,
-		union port_vlan_config_7_u *value);
+		a_uint32_t port_id,
+		union port_vlan_config_u *value);
 
 sw_error_t
 hppe_iv_dbg_addr_get(
@@ -394,1203 +196,183 @@ hppe_bridge_config_bridge_type_set(
 		unsigned int value);
 
 sw_error_t
-hppe_port_def_vid_0_port_def_cvid_en_0_get(
+hppe_port_def_vid_port_def_cvid_en_get(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		unsigned int *value);
 
 sw_error_t
-hppe_port_def_vid_0_port_def_cvid_en_0_set(
+hppe_port_def_vid_port_def_cvid_en_set(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		unsigned int value);
 
 sw_error_t
-hppe_port_def_vid_0_port_def_svid_en_0_get(
+hppe_port_def_vid_port_def_svid_en_get(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		unsigned int *value);
 
 sw_error_t
-hppe_port_def_vid_0_port_def_svid_en_0_set(
+hppe_port_def_vid_port_def_svid_en_set(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		unsigned int value);
 
 sw_error_t
-hppe_port_def_vid_0_port_def_cvid_0_get(
+hppe_port_def_vid_port_def_cvid_get(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		unsigned int *value);
 
 sw_error_t
-hppe_port_def_vid_0_port_def_cvid_0_set(
+hppe_port_def_vid_port_def_cvid_set(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		unsigned int value);
 
 sw_error_t
-hppe_port_def_vid_0_port_def_svid_0_get(
+hppe_port_def_vid_port_def_svid_get(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		unsigned int *value);
 
 sw_error_t
-hppe_port_def_vid_0_port_def_svid_0_set(
+hppe_port_def_vid_port_def_svid_set(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		unsigned int value);
 
 sw_error_t
-hppe_port_def_vid_1_port_def_svid_1_get(
+hppe_port_def_pcp_port_def_sdei_get(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		unsigned int *value);
 
 sw_error_t
-hppe_port_def_vid_1_port_def_svid_1_set(
+hppe_port_def_pcp_port_def_sdei_set(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		unsigned int value);
 
 sw_error_t
-hppe_port_def_vid_1_port_def_svid_en_1_get(
+hppe_port_def_pcp_port_def_spcp_get(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		unsigned int *value);
 
 sw_error_t
-hppe_port_def_vid_1_port_def_svid_en_1_set(
+hppe_port_def_pcp_port_def_spcp_set(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		unsigned int value);
 
 sw_error_t
-hppe_port_def_vid_1_port_def_cvid_en_1_get(
+hppe_port_def_pcp_port_def_cdei_get(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		unsigned int *value);
 
 sw_error_t
-hppe_port_def_vid_1_port_def_cvid_en_1_set(
+hppe_port_def_pcp_port_def_cdei_set(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		unsigned int value);
 
 sw_error_t
-hppe_port_def_vid_1_port_def_cvid_1_get(
+hppe_port_def_pcp_port_def_cpcp_get(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		unsigned int *value);
 
 sw_error_t
-hppe_port_def_vid_1_port_def_cvid_1_set(
+hppe_port_def_pcp_port_def_cpcp_set(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		unsigned int value);
 
 sw_error_t
-hppe_port_def_vid_2_port_def_cvid_2_get(
+hppe_port_vlan_config_port_in_dei_prop_cmd_get(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		unsigned int *value);
 
 sw_error_t
-hppe_port_def_vid_2_port_def_cvid_2_set(
+hppe_port_vlan_config_port_in_dei_prop_cmd_set(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		unsigned int value);
 
 sw_error_t
-hppe_port_def_vid_2_port_def_svid_2_get(
+hppe_port_vlan_config_port_in_pcp_prop_cmd_get(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		unsigned int *value);
 
 sw_error_t
-hppe_port_def_vid_2_port_def_svid_2_set(
+hppe_port_vlan_config_port_in_pcp_prop_cmd_set(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		unsigned int value);
 
 sw_error_t
-hppe_port_def_vid_2_port_def_cvid_en_2_get(
+hppe_port_vlan_config_port_untag_fltr_cmd_get(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		unsigned int *value);
 
 sw_error_t
-hppe_port_def_vid_2_port_def_cvid_en_2_set(
+hppe_port_vlan_config_port_untag_fltr_cmd_set(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		unsigned int value);
 
 sw_error_t
-hppe_port_def_vid_2_port_def_svid_en_2_get(
+hppe_port_vlan_config_port_in_vlan_fltr_cmd_get(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		unsigned int *value);
 
 sw_error_t
-hppe_port_def_vid_2_port_def_svid_en_2_set(
+hppe_port_vlan_config_port_in_vlan_fltr_cmd_set(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		unsigned int value);
 
 sw_error_t
-hppe_port_def_vid_3_port_def_svid_3_get(
+hppe_port_vlan_config_port_pri_tag_fltr_cmd_get(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		unsigned int *value);
 
 sw_error_t
-hppe_port_def_vid_3_port_def_svid_3_set(
+hppe_port_vlan_config_port_pri_tag_fltr_cmd_set(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		unsigned int value);
 
 sw_error_t
-hppe_port_def_vid_3_port_def_cvid_3_get(
+hppe_port_vlan_config_port_vlan_xlt_miss_fwd_cmd_get(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		unsigned int *value);
 
 sw_error_t
-hppe_port_def_vid_3_port_def_cvid_3_set(
+hppe_port_vlan_config_port_vlan_xlt_miss_fwd_cmd_set(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		unsigned int value);
 
 sw_error_t
-hppe_port_def_vid_3_port_def_svid_en_3_get(
+hppe_port_vlan_config_port_tag_fltr_cmd_get(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		unsigned int *value);
 
 sw_error_t
-hppe_port_def_vid_3_port_def_svid_en_3_set(
+hppe_port_vlan_config_port_tag_fltr_cmd_set(
 		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_vid_3_port_def_cvid_en_3_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_vid_3_port_def_cvid_en_3_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_vid_4_port_def_cvid_en_4_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_vid_4_port_def_cvid_en_4_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_vid_4_port_def_svid_en_4_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_vid_4_port_def_svid_en_4_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_vid_4_port_def_svid_4_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_vid_4_port_def_svid_4_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_vid_4_port_def_cvid_4_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_vid_4_port_def_cvid_4_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_vid_5_port_def_svid_en_5_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_vid_5_port_def_svid_en_5_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_vid_5_port_def_svid_5_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_vid_5_port_def_svid_5_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_vid_5_port_def_cvid_en_5_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_vid_5_port_def_cvid_en_5_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_vid_5_port_def_cvid_5_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_vid_5_port_def_cvid_5_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_vid_6_port_def_cvid_6_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_vid_6_port_def_cvid_6_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_vid_6_port_def_cvid_en_6_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_vid_6_port_def_cvid_en_6_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_vid_6_port_def_svid_6_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_vid_6_port_def_svid_6_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_vid_6_port_def_svid_en_6_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_vid_6_port_def_svid_en_6_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_vid_7_port_def_cvid_en_7_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_vid_7_port_def_cvid_en_7_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_vid_7_port_def_svid_en_7_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_vid_7_port_def_svid_en_7_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_vid_7_port_def_svid_7_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_vid_7_port_def_svid_7_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_vid_7_port_def_cvid_7_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_vid_7_port_def_cvid_7_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_pcp_0_port_def_sdei_0_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_pcp_0_port_def_sdei_0_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_pcp_0_port_def_spcp_0_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_pcp_0_port_def_spcp_0_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_pcp_0_port_def_cdei_0_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_pcp_0_port_def_cdei_0_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_pcp_0_port_def_cpcp_0_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_pcp_0_port_def_cpcp_0_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_pcp_1_port_def_cpcp_1_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_pcp_1_port_def_cpcp_1_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_pcp_1_port_def_spcp_1_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_pcp_1_port_def_spcp_1_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_pcp_1_port_def_cdei_1_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_pcp_1_port_def_cdei_1_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_pcp_1_port_def_sdei_1_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_pcp_1_port_def_sdei_1_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_pcp_2_port_def_cpcp_2_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_pcp_2_port_def_cpcp_2_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_pcp_2_port_def_spcp_2_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_pcp_2_port_def_spcp_2_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_pcp_2_port_def_sdei_2_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_pcp_2_port_def_sdei_2_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_pcp_2_port_def_cdei_2_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_pcp_2_port_def_cdei_2_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_pcp_3_port_def_cdei_3_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_pcp_3_port_def_cdei_3_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_pcp_3_port_def_sdei_3_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_pcp_3_port_def_sdei_3_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_pcp_3_port_def_spcp_3_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_pcp_3_port_def_spcp_3_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_pcp_3_port_def_cpcp_3_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_pcp_3_port_def_cpcp_3_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_pcp_4_port_def_spcp_4_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_pcp_4_port_def_spcp_4_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_pcp_4_port_def_sdei_4_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_pcp_4_port_def_sdei_4_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_pcp_4_port_def_cdei_4_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_pcp_4_port_def_cdei_4_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_pcp_4_port_def_cpcp_4_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_pcp_4_port_def_cpcp_4_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_pcp_5_port_def_cdei_5_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_pcp_5_port_def_cdei_5_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_pcp_5_port_def_sdei_5_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_pcp_5_port_def_sdei_5_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_pcp_5_port_def_cpcp_5_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_pcp_5_port_def_cpcp_5_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_pcp_5_port_def_spcp_5_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_pcp_5_port_def_spcp_5_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_pcp_6_port_def_cdei_6_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_pcp_6_port_def_cdei_6_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_pcp_6_port_def_spcp_6_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_pcp_6_port_def_spcp_6_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_pcp_6_port_def_sdei_6_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_pcp_6_port_def_sdei_6_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_pcp_6_port_def_cpcp_6_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_pcp_6_port_def_cpcp_6_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_pcp_7_port_def_sdei_7_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_pcp_7_port_def_sdei_7_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_pcp_7_port_def_spcp_7_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_pcp_7_port_def_spcp_7_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_pcp_7_port_def_cdei_7_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_pcp_7_port_def_cdei_7_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_def_pcp_7_port_def_cpcp_7_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_def_pcp_7_port_def_cpcp_7_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_0_port_in_dei_prop_cmd_0_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_0_port_in_dei_prop_cmd_0_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_0_port_in_pcp_prop_cmd_0_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_0_port_in_pcp_prop_cmd_0_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_0_port_untag_fltr_cmd_0_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_0_port_untag_fltr_cmd_0_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_0_port_in_vlan_fltr_cmd_0_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_0_port_in_vlan_fltr_cmd_0_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_0_port_pri_tag_fltr_cmd_0_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_0_port_pri_tag_fltr_cmd_0_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_0_port_vlan_xlt_miss_fwd_cmd_0_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_0_port_vlan_xlt_miss_fwd_cmd_0_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_0_port_tag_fltr_cmd_0_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_0_port_tag_fltr_cmd_0_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_1_port_tag_fltr_cmd_1_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_1_port_tag_fltr_cmd_1_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_1_port_in_pcp_prop_cmd_1_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_1_port_in_pcp_prop_cmd_1_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_1_port_in_vlan_fltr_cmd_1_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_1_port_in_vlan_fltr_cmd_1_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_1_port_untag_fltr_cmd_1_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_1_port_untag_fltr_cmd_1_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_1_port_in_dei_prop_cmd_1_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_1_port_in_dei_prop_cmd_1_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_1_port_vlan_xlt_miss_fwd_cmd_1_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_1_port_vlan_xlt_miss_fwd_cmd_1_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_1_port_pri_tag_fltr_cmd_1_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_1_port_pri_tag_fltr_cmd_1_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_2_port_vlan_xlt_miss_fwd_cmd_2_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_2_port_vlan_xlt_miss_fwd_cmd_2_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_2_port_in_vlan_fltr_cmd_2_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_2_port_in_vlan_fltr_cmd_2_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_2_port_pri_tag_fltr_cmd_2_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_2_port_pri_tag_fltr_cmd_2_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_2_port_in_pcp_prop_cmd_2_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_2_port_in_pcp_prop_cmd_2_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_2_port_untag_fltr_cmd_2_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_2_port_untag_fltr_cmd_2_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_2_port_in_dei_prop_cmd_2_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_2_port_in_dei_prop_cmd_2_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_2_port_tag_fltr_cmd_2_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_2_port_tag_fltr_cmd_2_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_3_port_in_dei_prop_cmd_3_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_3_port_in_dei_prop_cmd_3_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_3_port_pri_tag_fltr_cmd_3_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_3_port_pri_tag_fltr_cmd_3_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_3_port_in_vlan_fltr_cmd_3_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_3_port_in_vlan_fltr_cmd_3_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_3_port_tag_fltr_cmd_3_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_3_port_tag_fltr_cmd_3_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_3_port_untag_fltr_cmd_3_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_3_port_untag_fltr_cmd_3_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_3_port_in_pcp_prop_cmd_3_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_3_port_in_pcp_prop_cmd_3_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_3_port_vlan_xlt_miss_fwd_cmd_3_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_3_port_vlan_xlt_miss_fwd_cmd_3_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_4_port_in_pcp_prop_cmd_4_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_4_port_in_pcp_prop_cmd_4_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_4_port_untag_fltr_cmd_4_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_4_port_untag_fltr_cmd_4_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_4_port_in_vlan_fltr_cmd_4_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_4_port_in_vlan_fltr_cmd_4_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_4_port_vlan_xlt_miss_fwd_cmd_4_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_4_port_vlan_xlt_miss_fwd_cmd_4_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_4_port_tag_fltr_cmd_4_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_4_port_tag_fltr_cmd_4_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_4_port_pri_tag_fltr_cmd_4_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_4_port_pri_tag_fltr_cmd_4_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_4_port_in_dei_prop_cmd_4_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_4_port_in_dei_prop_cmd_4_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_5_port_in_vlan_fltr_cmd_5_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_5_port_in_vlan_fltr_cmd_5_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_5_port_tag_fltr_cmd_5_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_5_port_tag_fltr_cmd_5_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_5_port_in_dei_prop_cmd_5_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_5_port_in_dei_prop_cmd_5_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_5_port_in_pcp_prop_cmd_5_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_5_port_in_pcp_prop_cmd_5_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_5_port_pri_tag_fltr_cmd_5_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_5_port_pri_tag_fltr_cmd_5_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_5_port_vlan_xlt_miss_fwd_cmd_5_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_5_port_vlan_xlt_miss_fwd_cmd_5_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_5_port_untag_fltr_cmd_5_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_5_port_untag_fltr_cmd_5_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_6_port_in_vlan_fltr_cmd_6_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_6_port_in_vlan_fltr_cmd_6_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_6_port_untag_fltr_cmd_6_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_6_port_untag_fltr_cmd_6_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_6_port_tag_fltr_cmd_6_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_6_port_tag_fltr_cmd_6_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_6_port_pri_tag_fltr_cmd_6_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_6_port_pri_tag_fltr_cmd_6_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_6_port_vlan_xlt_miss_fwd_cmd_6_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_6_port_vlan_xlt_miss_fwd_cmd_6_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_6_port_in_dei_prop_cmd_6_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_6_port_in_dei_prop_cmd_6_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_6_port_in_pcp_prop_cmd_6_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_6_port_in_pcp_prop_cmd_6_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_7_port_vlan_xlt_miss_fwd_cmd_7_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_7_port_vlan_xlt_miss_fwd_cmd_7_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_7_port_tag_fltr_cmd_7_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_7_port_tag_fltr_cmd_7_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_7_port_untag_fltr_cmd_7_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_7_port_untag_fltr_cmd_7_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_7_port_in_dei_prop_cmd_7_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_7_port_in_dei_prop_cmd_7_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_7_port_in_pcp_prop_cmd_7_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_7_port_in_pcp_prop_cmd_7_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_7_port_pri_tag_fltr_cmd_7_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_7_port_pri_tag_fltr_cmd_7_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_port_vlan_config_7_port_in_vlan_fltr_cmd_7_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_port_vlan_config_7_port_in_vlan_fltr_cmd_7_set(
-		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		unsigned int value);
 
 sw_error_t
@@ -2087,6 +869,668 @@ hppe_xlt_action_tbl_xlt_cdei_get(
 
 sw_error_t
 hppe_xlt_action_tbl_xlt_cdei_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union eg_vlan_xlt_rule_u *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union eg_vlan_xlt_rule_u *value);
+
+sw_error_t
+hppe_port_eg_def_vid_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union port_eg_def_vid_u *value);
+
+sw_error_t
+hppe_port_eg_def_vid_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union port_eg_def_vid_u *value);
+
+sw_error_t
+hppe_port_eg_vlan_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union port_eg_vlan_u *value);
+
+sw_error_t
+hppe_port_eg_vlan_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union port_eg_vlan_u *value);
+
+sw_error_t
+hppe_eg_vlan_tpid_get(
+		a_uint32_t dev_id,
+		union eg_vlan_tpid_u *value);
+
+sw_error_t
+hppe_eg_vlan_tpid_set(
+		a_uint32_t dev_id,
+		union eg_vlan_tpid_u *value);
+
+sw_error_t
+hppe_eg_bridge_config_get(
+		a_uint32_t dev_id,
+		union eg_bridge_config_u *value);
+
+sw_error_t
+hppe_eg_bridge_config_set(
+		a_uint32_t dev_id,
+		union eg_bridge_config_u *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union eg_vlan_xlt_action_u *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union eg_vlan_xlt_action_u *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_ckey_vid_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_ckey_vid_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_valid_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_valid_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_ckey_dei_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_ckey_dei_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_skey_dei_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_skey_dei_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_skey_pcp_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_skey_pcp_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_ckey_pcp_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_ckey_pcp_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_vsi_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_vsi_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_ckey_vid_incl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_ckey_vid_incl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_ckey_dei_incl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_ckey_dei_incl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_vsi_incl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_vsi_incl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_port_bitmap_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_port_bitmap_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_skey_pcp_incl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_skey_pcp_incl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_ckey_fmt_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_ckey_fmt_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_skey_vid_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_skey_vid_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_skey_fmt_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_skey_fmt_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_ckey_pcp_incl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_ckey_pcp_incl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_skey_vid_incl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_skey_vid_incl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_skey_dei_incl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_skey_dei_incl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_vsi_valid_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_vsi_valid_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_port_eg_def_vid_port_def_svid_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_port_eg_def_vid_port_def_svid_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_port_eg_def_vid_port_def_svid_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_port_eg_def_vid_port_def_svid_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_port_eg_def_vid_port_def_cvid_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_port_eg_def_vid_port_def_cvid_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_port_eg_def_vid_port_def_cvid_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_port_eg_def_vid_port_def_cvid_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_port_eg_vlan_tx_counting_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_port_eg_vlan_tx_counting_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_port_eg_vlan_port_eg_vlan_ctag_mode_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_port_eg_vlan_port_eg_vlan_ctag_mode_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_port_eg_vlan_port_eg_pcp_prop_cmd_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_port_eg_vlan_port_eg_pcp_prop_cmd_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_port_eg_vlan_vsi_tag_mode_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_port_eg_vlan_vsi_tag_mode_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_port_eg_vlan_port_eg_vlan_stag_mode_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_port_eg_vlan_port_eg_vlan_stag_mode_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_port_eg_vlan_port_eg_dei_prop_cmd_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_port_eg_vlan_port_eg_dei_prop_cmd_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_port_eg_vlan_port_vlan_type_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_port_eg_vlan_port_vlan_type_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_tpid_ctpid_get(
+		a_uint32_t dev_id,
+		unsigned int *value);
+
+sw_error_t
+hppe_eg_vlan_tpid_ctpid_set(
+		a_uint32_t dev_id,
+		unsigned int value);
+
+sw_error_t
+hppe_eg_vlan_tpid_stpid_get(
+		a_uint32_t dev_id,
+		unsigned int *value);
+
+sw_error_t
+hppe_eg_vlan_tpid_stpid_set(
+		a_uint32_t dev_id,
+		unsigned int value);
+
+sw_error_t
+hppe_eg_bridge_config_bridge_type_get(
+		a_uint32_t dev_id,
+		unsigned int *value);
+
+sw_error_t
+hppe_eg_bridge_config_bridge_type_set(
+		a_uint32_t dev_id,
+		unsigned int value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_dei_swap_cmd_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_dei_swap_cmd_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_cvid_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_cvid_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_cpcp_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_cpcp_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_spcp_cmd_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_spcp_cmd_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_sdei_cmd_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_sdei_cmd_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_cvid_cmd_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_cvid_cmd_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_spcp_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_spcp_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_counter_id_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_counter_id_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_vid_swap_cmd_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_vid_swap_cmd_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_sdei_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_sdei_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_counter_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_counter_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_svid_cmd_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_svid_cmd_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_svid_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_svid_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_cpcp_cmd_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_cpcp_cmd_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_cdei_cmd_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_cdei_cmd_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_pcp_swap_cmd_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_pcp_swap_cmd_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_cdei_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_cdei_set(
 		a_uint32_t dev_id,
 		a_uint32_t index,
 		a_uint32_t value);

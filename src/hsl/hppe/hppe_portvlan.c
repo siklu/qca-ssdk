@@ -185,530 +185,80 @@ hppe_bridge_config_set(
 }
 
 sw_error_t
-hppe_port_def_vid_0_get(
+hppe_port_def_vid_get(
 		a_uint32_t dev_id,
-		union port_def_vid_0_u *value)
+		a_uint32_t port_id,
+		union port_def_vid_u *value)
 {
 	return hppe_reg_get(
 				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_DEF_VID_0_ADDRESS,
+				INGRESS_VLAN_BASE_ADDR + PORT_DEF_VID_ADDRESS +
+				port_id * PORT_DEF_VID_INC,
 				&value->val);
 }
 
 sw_error_t
-hppe_port_def_vid_0_set(
+hppe_port_def_vid_set(
 		a_uint32_t dev_id,
-		union port_def_vid_0_u *value)
+		a_uint32_t port_id,
+		union port_def_vid_u *value)
 {
 	return hppe_reg_set(
 				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_DEF_VID_0_ADDRESS,
+				INGRESS_VLAN_BASE_ADDR + PORT_DEF_VID_ADDRESS +
+				port_id * PORT_DEF_VID_INC,
 				value->val);
 }
 
 sw_error_t
-hppe_port_def_vid_1_get(
+hppe_port_def_pcp_get(
 		a_uint32_t dev_id,
-		union port_def_vid_1_u *value)
+		a_uint32_t port_id,
+		union port_def_pcp_u *value)
 {
 	return hppe_reg_get(
 				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_DEF_VID_1_ADDRESS,
+				INGRESS_VLAN_BASE_ADDR + PORT_DEF_PCP_ADDRESS +
+				port_id * PORT_DEF_PCP_INC,
 				&value->val);
 }
 
 sw_error_t
-hppe_port_def_vid_1_set(
+hppe_port_def_pcp_set(
 		a_uint32_t dev_id,
-		union port_def_vid_1_u *value)
+		a_uint32_t port_id,
+		union port_def_pcp_u *value)
 {
 	return hppe_reg_set(
 				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_DEF_VID_1_ADDRESS,
+				INGRESS_VLAN_BASE_ADDR + PORT_DEF_PCP_ADDRESS +
+				port_id * PORT_DEF_PCP_INC,
 				value->val);
 }
 
 sw_error_t
-hppe_port_def_vid_2_get(
+hppe_port_vlan_config_get(
 		a_uint32_t dev_id,
-		union port_def_vid_2_u *value)
+		a_uint32_t port_id,
+		union port_vlan_config_u *value)
 {
 	return hppe_reg_get(
 				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_DEF_VID_2_ADDRESS,
+				INGRESS_VLAN_BASE_ADDR + PORT_VLAN_CONFIG_ADDRESS +
+				port_id * PORT_VLAN_CONFIG_INC,
 				&value->val);
 }
 
 sw_error_t
-hppe_port_def_vid_2_set(
+hppe_port_vlan_config_set(
 		a_uint32_t dev_id,
-		union port_def_vid_2_u *value)
+		a_uint32_t port_id,
+		union port_vlan_config_u *value)
 {
 	return hppe_reg_set(
 				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_DEF_VID_2_ADDRESS,
-				value->val);
-}
-
-sw_error_t
-hppe_port_def_vid_3_get(
-		a_uint32_t dev_id,
-		union port_def_vid_3_u *value)
-{
-	return hppe_reg_get(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_DEF_VID_3_ADDRESS,
-				&value->val);
-}
-
-sw_error_t
-hppe_port_def_vid_3_set(
-		a_uint32_t dev_id,
-		union port_def_vid_3_u *value)
-{
-	return hppe_reg_set(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_DEF_VID_3_ADDRESS,
-				value->val);
-}
-
-sw_error_t
-hppe_port_def_vid_4_get(
-		a_uint32_t dev_id,
-		union port_def_vid_4_u *value)
-{
-	return hppe_reg_get(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_DEF_VID_4_ADDRESS,
-				&value->val);
-}
-
-sw_error_t
-hppe_port_def_vid_4_set(
-		a_uint32_t dev_id,
-		union port_def_vid_4_u *value)
-{
-	return hppe_reg_set(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_DEF_VID_4_ADDRESS,
-				value->val);
-}
-
-sw_error_t
-hppe_port_def_vid_5_get(
-		a_uint32_t dev_id,
-		union port_def_vid_5_u *value)
-{
-	return hppe_reg_get(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_DEF_VID_5_ADDRESS,
-				&value->val);
-}
-
-sw_error_t
-hppe_port_def_vid_5_set(
-		a_uint32_t dev_id,
-		union port_def_vid_5_u *value)
-{
-	return hppe_reg_set(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_DEF_VID_5_ADDRESS,
-				value->val);
-}
-
-sw_error_t
-hppe_port_def_vid_6_get(
-		a_uint32_t dev_id,
-		union port_def_vid_6_u *value)
-{
-	return hppe_reg_get(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_DEF_VID_6_ADDRESS,
-				&value->val);
-}
-
-sw_error_t
-hppe_port_def_vid_6_set(
-		a_uint32_t dev_id,
-		union port_def_vid_6_u *value)
-{
-	return hppe_reg_set(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_DEF_VID_6_ADDRESS,
-				value->val);
-}
-
-sw_error_t
-hppe_port_def_vid_7_get(
-		a_uint32_t dev_id,
-		union port_def_vid_7_u *value)
-{
-	return hppe_reg_get(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_DEF_VID_7_ADDRESS,
-				&value->val);
-}
-
-sw_error_t
-hppe_port_def_vid_7_set(
-		a_uint32_t dev_id,
-		union port_def_vid_7_u *value)
-{
-	return hppe_reg_set(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_DEF_VID_7_ADDRESS,
-				value->val);
-}
-
-sw_error_t
-hppe_port_def_pcp_0_get(
-		a_uint32_t dev_id,
-		union port_def_pcp_0_u *value)
-{
-	return hppe_reg_get(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_DEF_PCP_0_ADDRESS,
-				&value->val);
-}
-
-sw_error_t
-hppe_port_def_pcp_0_set(
-		a_uint32_t dev_id,
-		union port_def_pcp_0_u *value)
-{
-	return hppe_reg_set(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_DEF_PCP_0_ADDRESS,
-				value->val);
-}
-
-sw_error_t
-hppe_port_def_pcp_1_get(
-		a_uint32_t dev_id,
-		union port_def_pcp_1_u *value)
-{
-	return hppe_reg_get(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_DEF_PCP_1_ADDRESS,
-				&value->val);
-}
-
-sw_error_t
-hppe_port_def_pcp_1_set(
-		a_uint32_t dev_id,
-		union port_def_pcp_1_u *value)
-{
-	return hppe_reg_set(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_DEF_PCP_1_ADDRESS,
-				value->val);
-}
-
-sw_error_t
-hppe_port_def_pcp_2_get(
-		a_uint32_t dev_id,
-		union port_def_pcp_2_u *value)
-{
-	return hppe_reg_get(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_DEF_PCP_2_ADDRESS,
-				&value->val);
-}
-
-sw_error_t
-hppe_port_def_pcp_2_set(
-		a_uint32_t dev_id,
-		union port_def_pcp_2_u *value)
-{
-	return hppe_reg_set(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_DEF_PCP_2_ADDRESS,
-				value->val);
-}
-
-sw_error_t
-hppe_port_def_pcp_3_get(
-		a_uint32_t dev_id,
-		union port_def_pcp_3_u *value)
-{
-	return hppe_reg_get(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_DEF_PCP_3_ADDRESS,
-				&value->val);
-}
-
-sw_error_t
-hppe_port_def_pcp_3_set(
-		a_uint32_t dev_id,
-		union port_def_pcp_3_u *value)
-{
-	return hppe_reg_set(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_DEF_PCP_3_ADDRESS,
-				value->val);
-}
-
-sw_error_t
-hppe_port_def_pcp_4_get(
-		a_uint32_t dev_id,
-		union port_def_pcp_4_u *value)
-{
-	return hppe_reg_get(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_DEF_PCP_4_ADDRESS,
-				&value->val);
-}
-
-sw_error_t
-hppe_port_def_pcp_4_set(
-		a_uint32_t dev_id,
-		union port_def_pcp_4_u *value)
-{
-	return hppe_reg_set(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_DEF_PCP_4_ADDRESS,
-				value->val);
-}
-
-sw_error_t
-hppe_port_def_pcp_5_get(
-		a_uint32_t dev_id,
-		union port_def_pcp_5_u *value)
-{
-	return hppe_reg_get(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_DEF_PCP_5_ADDRESS,
-				&value->val);
-}
-
-sw_error_t
-hppe_port_def_pcp_5_set(
-		a_uint32_t dev_id,
-		union port_def_pcp_5_u *value)
-{
-	return hppe_reg_set(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_DEF_PCP_5_ADDRESS,
-				value->val);
-}
-
-sw_error_t
-hppe_port_def_pcp_6_get(
-		a_uint32_t dev_id,
-		union port_def_pcp_6_u *value)
-{
-	return hppe_reg_get(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_DEF_PCP_6_ADDRESS,
-				&value->val);
-}
-
-sw_error_t
-hppe_port_def_pcp_6_set(
-		a_uint32_t dev_id,
-		union port_def_pcp_6_u *value)
-{
-	return hppe_reg_set(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_DEF_PCP_6_ADDRESS,
-				value->val);
-}
-
-sw_error_t
-hppe_port_def_pcp_7_get(
-		a_uint32_t dev_id,
-		union port_def_pcp_7_u *value)
-{
-	return hppe_reg_get(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_DEF_PCP_7_ADDRESS,
-				&value->val);
-}
-
-sw_error_t
-hppe_port_def_pcp_7_set(
-		a_uint32_t dev_id,
-		union port_def_pcp_7_u *value)
-{
-	return hppe_reg_set(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_DEF_PCP_7_ADDRESS,
-				value->val);
-}
-
-sw_error_t
-hppe_port_vlan_config_0_get(
-		a_uint32_t dev_id,
-		union port_vlan_config_0_u *value)
-{
-	return hppe_reg_get(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_VLAN_CONFIG_0_ADDRESS,
-				&value->val);
-}
-
-sw_error_t
-hppe_port_vlan_config_0_set(
-		a_uint32_t dev_id,
-		union port_vlan_config_0_u *value)
-{
-	return hppe_reg_set(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_VLAN_CONFIG_0_ADDRESS,
-				value->val);
-}
-
-sw_error_t
-hppe_port_vlan_config_1_get(
-		a_uint32_t dev_id,
-		union port_vlan_config_1_u *value)
-{
-	return hppe_reg_get(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_VLAN_CONFIG_1_ADDRESS,
-				&value->val);
-}
-
-sw_error_t
-hppe_port_vlan_config_1_set(
-		a_uint32_t dev_id,
-		union port_vlan_config_1_u *value)
-{
-	return hppe_reg_set(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_VLAN_CONFIG_1_ADDRESS,
-				value->val);
-}
-
-sw_error_t
-hppe_port_vlan_config_2_get(
-		a_uint32_t dev_id,
-		union port_vlan_config_2_u *value)
-{
-	return hppe_reg_get(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_VLAN_CONFIG_2_ADDRESS,
-				&value->val);
-}
-
-sw_error_t
-hppe_port_vlan_config_2_set(
-		a_uint32_t dev_id,
-		union port_vlan_config_2_u *value)
-{
-	return hppe_reg_set(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_VLAN_CONFIG_2_ADDRESS,
-				value->val);
-}
-
-sw_error_t
-hppe_port_vlan_config_3_get(
-		a_uint32_t dev_id,
-		union port_vlan_config_3_u *value)
-{
-	return hppe_reg_get(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_VLAN_CONFIG_3_ADDRESS,
-				&value->val);
-}
-
-sw_error_t
-hppe_port_vlan_config_3_set(
-		a_uint32_t dev_id,
-		union port_vlan_config_3_u *value)
-{
-	return hppe_reg_set(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_VLAN_CONFIG_3_ADDRESS,
-				value->val);
-}
-
-sw_error_t
-hppe_port_vlan_config_4_get(
-		a_uint32_t dev_id,
-		union port_vlan_config_4_u *value)
-{
-	return hppe_reg_get(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_VLAN_CONFIG_4_ADDRESS,
-				&value->val);
-}
-
-sw_error_t
-hppe_port_vlan_config_4_set(
-		a_uint32_t dev_id,
-		union port_vlan_config_4_u *value)
-{
-	return hppe_reg_set(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_VLAN_CONFIG_4_ADDRESS,
-				value->val);
-}
-
-sw_error_t
-hppe_port_vlan_config_5_get(
-		a_uint32_t dev_id,
-		union port_vlan_config_5_u *value)
-{
-	return hppe_reg_get(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_VLAN_CONFIG_5_ADDRESS,
-				&value->val);
-}
-
-sw_error_t
-hppe_port_vlan_config_5_set(
-		a_uint32_t dev_id,
-		union port_vlan_config_5_u *value)
-{
-	return hppe_reg_set(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_VLAN_CONFIG_5_ADDRESS,
-				value->val);
-}
-
-sw_error_t
-hppe_port_vlan_config_6_get(
-		a_uint32_t dev_id,
-		union port_vlan_config_6_u *value)
-{
-	return hppe_reg_get(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_VLAN_CONFIG_6_ADDRESS,
-				&value->val);
-}
-
-sw_error_t
-hppe_port_vlan_config_6_set(
-		a_uint32_t dev_id,
-		union port_vlan_config_6_u *value)
-{
-	return hppe_reg_set(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_VLAN_CONFIG_6_ADDRESS,
-				value->val);
-}
-
-sw_error_t
-hppe_port_vlan_config_7_get(
-		a_uint32_t dev_id,
-		union port_vlan_config_7_u *value)
-{
-	return hppe_reg_get(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_VLAN_CONFIG_7_ADDRESS,
-				&value->val);
-}
-
-sw_error_t
-hppe_port_vlan_config_7_set(
-		a_uint32_t dev_id,
-		union port_vlan_config_7_u *value)
-{
-	return hppe_reg_set(
-				dev_id,
-				INGRESS_VLAN_BASE_ADDR + PORT_VLAN_CONFIG_7_ADDRESS,
+				INGRESS_VLAN_BASE_ADDR + PORT_VLAN_CONFIG_ADDRESS +
+				port_id * PORT_VLAN_CONFIG_INC,
 				value->val);
 }
 
@@ -861,3482 +411,467 @@ hppe_bridge_config_bridge_type_set(
 }
 
 sw_error_t
-hppe_port_def_vid_0_port_def_cvid_en_0_get(
+hppe_port_def_vid_port_def_cvid_en_get(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		a_uint32_t *value)
 {
-	union port_def_vid_0_u reg_val;
+	union port_def_vid_u reg_val;
 	sw_error_t ret = SW_OK;
 
-	ret = hppe_port_def_vid_0_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_cvid_en_0;
+	ret = hppe_port_def_vid_get(dev_id, port_id, &reg_val);
+	*value = reg_val.bf.port_def_cvid_en;
 	return ret;
 }
 
 sw_error_t
-hppe_port_def_vid_0_port_def_cvid_en_0_set(
+hppe_port_def_vid_port_def_cvid_en_set(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		a_uint32_t value)
 {
-	union port_def_vid_0_u reg_val;
+	union port_def_vid_u reg_val;
 	sw_error_t ret = SW_OK;
 
-	ret = hppe_port_def_vid_0_get(dev_id, &reg_val);
+	ret = hppe_port_def_vid_get(dev_id, port_id, &reg_val);
 	if (SW_OK != ret)
 		return ret;
-	reg_val.bf.port_def_cvid_en_0 = value;
-	ret = hppe_port_def_vid_0_set(dev_id, &reg_val);
+	reg_val.bf.port_def_cvid_en = value;
+	ret = hppe_port_def_vid_set(dev_id, port_id, &reg_val);
 	return ret;
 }
 
 sw_error_t
-hppe_port_def_vid_0_port_def_svid_en_0_get(
+hppe_port_def_vid_port_def_svid_en_get(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		a_uint32_t *value)
 {
-	union port_def_vid_0_u reg_val;
+	union port_def_vid_u reg_val;
 	sw_error_t ret = SW_OK;
 
-	ret = hppe_port_def_vid_0_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_svid_en_0;
+	ret = hppe_port_def_vid_get(dev_id, port_id, &reg_val);
+	*value = reg_val.bf.port_def_svid_en;
 	return ret;
 }
 
 sw_error_t
-hppe_port_def_vid_0_port_def_svid_en_0_set(
+hppe_port_def_vid_port_def_svid_en_set(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		a_uint32_t value)
 {
-	union port_def_vid_0_u reg_val;
+	union port_def_vid_u reg_val;
 	sw_error_t ret = SW_OK;
 
-	ret = hppe_port_def_vid_0_get(dev_id, &reg_val);
+	ret = hppe_port_def_vid_get(dev_id, port_id, &reg_val);
 	if (SW_OK != ret)
 		return ret;
-	reg_val.bf.port_def_svid_en_0 = value;
-	ret = hppe_port_def_vid_0_set(dev_id, &reg_val);
+	reg_val.bf.port_def_svid_en = value;
+	ret = hppe_port_def_vid_set(dev_id, port_id, &reg_val);
 	return ret;
 }
 
 sw_error_t
-hppe_port_def_vid_0_port_def_cvid_0_get(
+hppe_port_def_vid_port_def_cvid_get(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		a_uint32_t *value)
 {
-	union port_def_vid_0_u reg_val;
+	union port_def_vid_u reg_val;
 	sw_error_t ret = SW_OK;
 
-	ret = hppe_port_def_vid_0_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_cvid_0;
+	ret = hppe_port_def_vid_get(dev_id, port_id, &reg_val);
+	*value = reg_val.bf.port_def_cvid;
 	return ret;
 }
 
 sw_error_t
-hppe_port_def_vid_0_port_def_cvid_0_set(
+hppe_port_def_vid_port_def_cvid_set(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		a_uint32_t value)
 {
-	union port_def_vid_0_u reg_val;
+	union port_def_vid_u reg_val;
 	sw_error_t ret = SW_OK;
 
-	ret = hppe_port_def_vid_0_get(dev_id, &reg_val);
+	ret = hppe_port_def_vid_get(dev_id, port_id, &reg_val);
 	if (SW_OK != ret)
 		return ret;
-	reg_val.bf.port_def_cvid_0 = value;
-	ret = hppe_port_def_vid_0_set(dev_id, &reg_val);
+	reg_val.bf.port_def_cvid = value;
+	ret = hppe_port_def_vid_set(dev_id, port_id, &reg_val);
 	return ret;
 }
 
 sw_error_t
-hppe_port_def_vid_0_port_def_svid_0_get(
+hppe_port_def_vid_port_def_svid_get(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		a_uint32_t *value)
 {
-	union port_def_vid_0_u reg_val;
+	union port_def_vid_u reg_val;
 	sw_error_t ret = SW_OK;
 
-	ret = hppe_port_def_vid_0_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_svid_0;
+	ret = hppe_port_def_vid_get(dev_id, port_id, &reg_val);
+	*value = reg_val.bf.port_def_svid;
 	return ret;
 }
 
 sw_error_t
-hppe_port_def_vid_0_port_def_svid_0_set(
+hppe_port_def_vid_port_def_svid_set(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		a_uint32_t value)
 {
-	union port_def_vid_0_u reg_val;
+	union port_def_vid_u reg_val;
 	sw_error_t ret = SW_OK;
 
-	ret = hppe_port_def_vid_0_get(dev_id, &reg_val);
+	ret = hppe_port_def_vid_get(dev_id, port_id, &reg_val);
 	if (SW_OK != ret)
 		return ret;
-	reg_val.bf.port_def_svid_0 = value;
-	ret = hppe_port_def_vid_0_set(dev_id, &reg_val);
+	reg_val.bf.port_def_svid = value;
+	ret = hppe_port_def_vid_set(dev_id, port_id, &reg_val);
 	return ret;
 }
 
 sw_error_t
-hppe_port_def_vid_1_port_def_svid_1_get(
+hppe_port_def_pcp_port_def_sdei_get(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		a_uint32_t *value)
 {
-	union port_def_vid_1_u reg_val;
+	union port_def_pcp_u reg_val;
 	sw_error_t ret = SW_OK;
 
-	ret = hppe_port_def_vid_1_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_svid_1;
+	ret = hppe_port_def_pcp_get(dev_id, port_id, &reg_val);
+	*value = reg_val.bf.port_def_sdei;
 	return ret;
 }
 
 sw_error_t
-hppe_port_def_vid_1_port_def_svid_1_set(
+hppe_port_def_pcp_port_def_sdei_set(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		a_uint32_t value)
 {
-	union port_def_vid_1_u reg_val;
+	union port_def_pcp_u reg_val;
 	sw_error_t ret = SW_OK;
 
-	ret = hppe_port_def_vid_1_get(dev_id, &reg_val);
+	ret = hppe_port_def_pcp_get(dev_id, port_id, &reg_val);
 	if (SW_OK != ret)
 		return ret;
-	reg_val.bf.port_def_svid_1 = value;
-	ret = hppe_port_def_vid_1_set(dev_id, &reg_val);
+	reg_val.bf.port_def_sdei = value;
+	ret = hppe_port_def_pcp_set(dev_id, port_id, &reg_val);
 	return ret;
 }
 
 sw_error_t
-hppe_port_def_vid_1_port_def_svid_en_1_get(
+hppe_port_def_pcp_port_def_spcp_get(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		a_uint32_t *value)
 {
-	union port_def_vid_1_u reg_val;
+	union port_def_pcp_u reg_val;
 	sw_error_t ret = SW_OK;
 
-	ret = hppe_port_def_vid_1_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_svid_en_1;
+	ret = hppe_port_def_pcp_get(dev_id, port_id, &reg_val);
+	*value = reg_val.bf.port_def_spcp;
 	return ret;
 }
 
 sw_error_t
-hppe_port_def_vid_1_port_def_svid_en_1_set(
+hppe_port_def_pcp_port_def_spcp_set(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		a_uint32_t value)
 {
-	union port_def_vid_1_u reg_val;
+	union port_def_pcp_u reg_val;
 	sw_error_t ret = SW_OK;
 
-	ret = hppe_port_def_vid_1_get(dev_id, &reg_val);
+	ret = hppe_port_def_pcp_get(dev_id, port_id, &reg_val);
 	if (SW_OK != ret)
 		return ret;
-	reg_val.bf.port_def_svid_en_1 = value;
-	ret = hppe_port_def_vid_1_set(dev_id, &reg_val);
+	reg_val.bf.port_def_spcp = value;
+	ret = hppe_port_def_pcp_set(dev_id, port_id, &reg_val);
 	return ret;
 }
 
 sw_error_t
-hppe_port_def_vid_1_port_def_cvid_en_1_get(
+hppe_port_def_pcp_port_def_cdei_get(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		a_uint32_t *value)
 {
-	union port_def_vid_1_u reg_val;
+	union port_def_pcp_u reg_val;
 	sw_error_t ret = SW_OK;
 
-	ret = hppe_port_def_vid_1_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_cvid_en_1;
+	ret = hppe_port_def_pcp_get(dev_id, port_id, &reg_val);
+	*value = reg_val.bf.port_def_cdei;
 	return ret;
 }
 
 sw_error_t
-hppe_port_def_vid_1_port_def_cvid_en_1_set(
+hppe_port_def_pcp_port_def_cdei_set(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		a_uint32_t value)
 {
-	union port_def_vid_1_u reg_val;
+	union port_def_pcp_u reg_val;
 	sw_error_t ret = SW_OK;
 
-	ret = hppe_port_def_vid_1_get(dev_id, &reg_val);
+	ret = hppe_port_def_pcp_get(dev_id, port_id, &reg_val);
 	if (SW_OK != ret)
 		return ret;
-	reg_val.bf.port_def_cvid_en_1 = value;
-	ret = hppe_port_def_vid_1_set(dev_id, &reg_val);
+	reg_val.bf.port_def_cdei = value;
+	ret = hppe_port_def_pcp_set(dev_id, port_id, &reg_val);
 	return ret;
 }
 
 sw_error_t
-hppe_port_def_vid_1_port_def_cvid_1_get(
+hppe_port_def_pcp_port_def_cpcp_get(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		a_uint32_t *value)
 {
-	union port_def_vid_1_u reg_val;
+	union port_def_pcp_u reg_val;
 	sw_error_t ret = SW_OK;
 
-	ret = hppe_port_def_vid_1_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_cvid_1;
+	ret = hppe_port_def_pcp_get(dev_id, port_id, &reg_val);
+	*value = reg_val.bf.port_def_cpcp;
 	return ret;
 }
 
 sw_error_t
-hppe_port_def_vid_1_port_def_cvid_1_set(
+hppe_port_def_pcp_port_def_cpcp_set(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		a_uint32_t value)
 {
-	union port_def_vid_1_u reg_val;
+	union port_def_pcp_u reg_val;
 	sw_error_t ret = SW_OK;
 
-	ret = hppe_port_def_vid_1_get(dev_id, &reg_val);
+	ret = hppe_port_def_pcp_get(dev_id, port_id, &reg_val);
 	if (SW_OK != ret)
 		return ret;
-	reg_val.bf.port_def_cvid_1 = value;
-	ret = hppe_port_def_vid_1_set(dev_id, &reg_val);
+	reg_val.bf.port_def_cpcp = value;
+	ret = hppe_port_def_pcp_set(dev_id, port_id, &reg_val);
 	return ret;
 }
 
 sw_error_t
-hppe_port_def_vid_2_port_def_cvid_2_get(
+hppe_port_vlan_config_port_in_dei_prop_cmd_get(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		a_uint32_t *value)
 {
-	union port_def_vid_2_u reg_val;
+	union port_vlan_config_u reg_val;
 	sw_error_t ret = SW_OK;
 
-	ret = hppe_port_def_vid_2_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_cvid_2;
+	ret = hppe_port_vlan_config_get(dev_id, port_id, &reg_val);
+	*value = reg_val.bf.port_in_dei_prop_cmd;
 	return ret;
 }
 
 sw_error_t
-hppe_port_def_vid_2_port_def_cvid_2_set(
+hppe_port_vlan_config_port_in_dei_prop_cmd_set(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		a_uint32_t value)
 {
-	union port_def_vid_2_u reg_val;
+	union port_vlan_config_u reg_val;
 	sw_error_t ret = SW_OK;
 
-	ret = hppe_port_def_vid_2_get(dev_id, &reg_val);
+	ret = hppe_port_vlan_config_get(dev_id, port_id, &reg_val);
 	if (SW_OK != ret)
 		return ret;
-	reg_val.bf.port_def_cvid_2 = value;
-	ret = hppe_port_def_vid_2_set(dev_id, &reg_val);
+	reg_val.bf.port_in_dei_prop_cmd = value;
+	ret = hppe_port_vlan_config_set(dev_id, port_id, &reg_val);
 	return ret;
 }
 
 sw_error_t
-hppe_port_def_vid_2_port_def_svid_2_get(
+hppe_port_vlan_config_port_in_pcp_prop_cmd_get(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		a_uint32_t *value)
 {
-	union port_def_vid_2_u reg_val;
+	union port_vlan_config_u reg_val;
 	sw_error_t ret = SW_OK;
 
-	ret = hppe_port_def_vid_2_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_svid_2;
+	ret = hppe_port_vlan_config_get(dev_id, port_id, &reg_val);
+	*value = reg_val.bf.port_in_pcp_prop_cmd;
 	return ret;
 }
 
 sw_error_t
-hppe_port_def_vid_2_port_def_svid_2_set(
+hppe_port_vlan_config_port_in_pcp_prop_cmd_set(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		a_uint32_t value)
 {
-	union port_def_vid_2_u reg_val;
+	union port_vlan_config_u reg_val;
 	sw_error_t ret = SW_OK;
 
-	ret = hppe_port_def_vid_2_get(dev_id, &reg_val);
+	ret = hppe_port_vlan_config_get(dev_id, port_id, &reg_val);
 	if (SW_OK != ret)
 		return ret;
-	reg_val.bf.port_def_svid_2 = value;
-	ret = hppe_port_def_vid_2_set(dev_id, &reg_val);
+	reg_val.bf.port_in_pcp_prop_cmd = value;
+	ret = hppe_port_vlan_config_set(dev_id, port_id, &reg_val);
 	return ret;
 }
 
 sw_error_t
-hppe_port_def_vid_2_port_def_cvid_en_2_get(
+hppe_port_vlan_config_port_untag_fltr_cmd_get(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		a_uint32_t *value)
 {
-	union port_def_vid_2_u reg_val;
+	union port_vlan_config_u reg_val;
 	sw_error_t ret = SW_OK;
 
-	ret = hppe_port_def_vid_2_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_cvid_en_2;
+	ret = hppe_port_vlan_config_get(dev_id, port_id, &reg_val);
+	*value = reg_val.bf.port_untag_fltr_cmd;
 	return ret;
 }
 
 sw_error_t
-hppe_port_def_vid_2_port_def_cvid_en_2_set(
+hppe_port_vlan_config_port_untag_fltr_cmd_set(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		a_uint32_t value)
 {
-	union port_def_vid_2_u reg_val;
+	union port_vlan_config_u reg_val;
 	sw_error_t ret = SW_OK;
 
-	ret = hppe_port_def_vid_2_get(dev_id, &reg_val);
+	ret = hppe_port_vlan_config_get(dev_id, port_id, &reg_val);
 	if (SW_OK != ret)
 		return ret;
-	reg_val.bf.port_def_cvid_en_2 = value;
-	ret = hppe_port_def_vid_2_set(dev_id, &reg_val);
+	reg_val.bf.port_untag_fltr_cmd = value;
+	ret = hppe_port_vlan_config_set(dev_id, port_id, &reg_val);
 	return ret;
 }
 
 sw_error_t
-hppe_port_def_vid_2_port_def_svid_en_2_get(
+hppe_port_vlan_config_port_in_vlan_fltr_cmd_get(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		a_uint32_t *value)
 {
-	union port_def_vid_2_u reg_val;
+	union port_vlan_config_u reg_val;
 	sw_error_t ret = SW_OK;
 
-	ret = hppe_port_def_vid_2_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_svid_en_2;
+	ret = hppe_port_vlan_config_get(dev_id, port_id, &reg_val);
+	*value = reg_val.bf.port_in_vlan_fltr_cmd;
 	return ret;
 }
 
 sw_error_t
-hppe_port_def_vid_2_port_def_svid_en_2_set(
+hppe_port_vlan_config_port_in_vlan_fltr_cmd_set(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		a_uint32_t value)
 {
-	union port_def_vid_2_u reg_val;
+	union port_vlan_config_u reg_val;
 	sw_error_t ret = SW_OK;
 
-	ret = hppe_port_def_vid_2_get(dev_id, &reg_val);
+	ret = hppe_port_vlan_config_get(dev_id, port_id, &reg_val);
 	if (SW_OK != ret)
 		return ret;
-	reg_val.bf.port_def_svid_en_2 = value;
-	ret = hppe_port_def_vid_2_set(dev_id, &reg_val);
+	reg_val.bf.port_in_vlan_fltr_cmd = value;
+	ret = hppe_port_vlan_config_set(dev_id, port_id, &reg_val);
 	return ret;
 }
 
 sw_error_t
-hppe_port_def_vid_3_port_def_svid_3_get(
+hppe_port_vlan_config_port_pri_tag_fltr_cmd_get(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		a_uint32_t *value)
 {
-	union port_def_vid_3_u reg_val;
+	union port_vlan_config_u reg_val;
 	sw_error_t ret = SW_OK;
 
-	ret = hppe_port_def_vid_3_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_svid_3;
+	ret = hppe_port_vlan_config_get(dev_id, port_id, &reg_val);
+	*value = reg_val.bf.port_pri_tag_fltr_cmd;
 	return ret;
 }
 
 sw_error_t
-hppe_port_def_vid_3_port_def_svid_3_set(
+hppe_port_vlan_config_port_pri_tag_fltr_cmd_set(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		a_uint32_t value)
 {
-	union port_def_vid_3_u reg_val;
+	union port_vlan_config_u reg_val;
 	sw_error_t ret = SW_OK;
 
-	ret = hppe_port_def_vid_3_get(dev_id, &reg_val);
+	ret = hppe_port_vlan_config_get(dev_id, port_id, &reg_val);
 	if (SW_OK != ret)
 		return ret;
-	reg_val.bf.port_def_svid_3 = value;
-	ret = hppe_port_def_vid_3_set(dev_id, &reg_val);
+	reg_val.bf.port_pri_tag_fltr_cmd = value;
+	ret = hppe_port_vlan_config_set(dev_id, port_id, &reg_val);
 	return ret;
 }
 
 sw_error_t
-hppe_port_def_vid_3_port_def_cvid_3_get(
+hppe_port_vlan_config_port_vlan_xlt_miss_fwd_cmd_get(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		a_uint32_t *value)
 {
-	union port_def_vid_3_u reg_val;
+	union port_vlan_config_u reg_val;
 	sw_error_t ret = SW_OK;
 
-	ret = hppe_port_def_vid_3_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_cvid_3;
+	ret = hppe_port_vlan_config_get(dev_id, port_id, &reg_val);
+	*value = reg_val.bf.port_vlan_xlt_miss_fwd_cmd;
 	return ret;
 }
 
 sw_error_t
-hppe_port_def_vid_3_port_def_cvid_3_set(
+hppe_port_vlan_config_port_vlan_xlt_miss_fwd_cmd_set(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		a_uint32_t value)
 {
-	union port_def_vid_3_u reg_val;
+	union port_vlan_config_u reg_val;
 	sw_error_t ret = SW_OK;
 
-	ret = hppe_port_def_vid_3_get(dev_id, &reg_val);
+	ret = hppe_port_vlan_config_get(dev_id, port_id, &reg_val);
 	if (SW_OK != ret)
 		return ret;
-	reg_val.bf.port_def_cvid_3 = value;
-	ret = hppe_port_def_vid_3_set(dev_id, &reg_val);
+	reg_val.bf.port_vlan_xlt_miss_fwd_cmd = value;
+	ret = hppe_port_vlan_config_set(dev_id, port_id, &reg_val);
 	return ret;
 }
 
 sw_error_t
-hppe_port_def_vid_3_port_def_svid_en_3_get(
+hppe_port_vlan_config_port_tag_fltr_cmd_get(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		a_uint32_t *value)
 {
-	union port_def_vid_3_u reg_val;
+	union port_vlan_config_u reg_val;
 	sw_error_t ret = SW_OK;
 
-	ret = hppe_port_def_vid_3_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_svid_en_3;
+	ret = hppe_port_vlan_config_get(dev_id, port_id, &reg_val);
+	*value = reg_val.bf.port_tag_fltr_cmd;
 	return ret;
 }
 
 sw_error_t
-hppe_port_def_vid_3_port_def_svid_en_3_set(
+hppe_port_vlan_config_port_tag_fltr_cmd_set(
 		a_uint32_t dev_id,
+		a_uint32_t port_id,
 		a_uint32_t value)
 {
-	union port_def_vid_3_u reg_val;
+	union port_vlan_config_u reg_val;
 	sw_error_t ret = SW_OK;
 
-	ret = hppe_port_def_vid_3_get(dev_id, &reg_val);
+	ret = hppe_port_vlan_config_get(dev_id, port_id, &reg_val);
 	if (SW_OK != ret)
 		return ret;
-	reg_val.bf.port_def_svid_en_3 = value;
-	ret = hppe_port_def_vid_3_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_3_port_def_cvid_en_3_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_vid_3_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_3_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_cvid_en_3;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_3_port_def_cvid_en_3_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_vid_3_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_3_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_cvid_en_3 = value;
-	ret = hppe_port_def_vid_3_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_4_port_def_cvid_en_4_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_vid_4_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_4_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_cvid_en_4;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_4_port_def_cvid_en_4_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_vid_4_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_4_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_cvid_en_4 = value;
-	ret = hppe_port_def_vid_4_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_4_port_def_svid_en_4_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_vid_4_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_4_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_svid_en_4;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_4_port_def_svid_en_4_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_vid_4_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_4_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_svid_en_4 = value;
-	ret = hppe_port_def_vid_4_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_4_port_def_svid_4_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_vid_4_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_4_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_svid_4;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_4_port_def_svid_4_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_vid_4_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_4_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_svid_4 = value;
-	ret = hppe_port_def_vid_4_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_4_port_def_cvid_4_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_vid_4_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_4_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_cvid_4;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_4_port_def_cvid_4_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_vid_4_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_4_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_cvid_4 = value;
-	ret = hppe_port_def_vid_4_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_5_port_def_svid_en_5_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_vid_5_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_5_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_svid_en_5;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_5_port_def_svid_en_5_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_vid_5_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_5_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_svid_en_5 = value;
-	ret = hppe_port_def_vid_5_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_5_port_def_svid_5_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_vid_5_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_5_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_svid_5;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_5_port_def_svid_5_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_vid_5_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_5_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_svid_5 = value;
-	ret = hppe_port_def_vid_5_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_5_port_def_cvid_en_5_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_vid_5_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_5_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_cvid_en_5;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_5_port_def_cvid_en_5_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_vid_5_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_5_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_cvid_en_5 = value;
-	ret = hppe_port_def_vid_5_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_5_port_def_cvid_5_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_vid_5_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_5_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_cvid_5;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_5_port_def_cvid_5_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_vid_5_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_5_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_cvid_5 = value;
-	ret = hppe_port_def_vid_5_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_6_port_def_cvid_6_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_vid_6_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_6_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_cvid_6;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_6_port_def_cvid_6_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_vid_6_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_6_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_cvid_6 = value;
-	ret = hppe_port_def_vid_6_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_6_port_def_cvid_en_6_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_vid_6_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_6_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_cvid_en_6;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_6_port_def_cvid_en_6_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_vid_6_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_6_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_cvid_en_6 = value;
-	ret = hppe_port_def_vid_6_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_6_port_def_svid_6_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_vid_6_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_6_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_svid_6;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_6_port_def_svid_6_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_vid_6_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_6_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_svid_6 = value;
-	ret = hppe_port_def_vid_6_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_6_port_def_svid_en_6_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_vid_6_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_6_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_svid_en_6;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_6_port_def_svid_en_6_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_vid_6_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_6_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_svid_en_6 = value;
-	ret = hppe_port_def_vid_6_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_7_port_def_cvid_en_7_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_vid_7_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_7_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_cvid_en_7;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_7_port_def_cvid_en_7_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_vid_7_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_7_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_cvid_en_7 = value;
-	ret = hppe_port_def_vid_7_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_7_port_def_svid_en_7_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_vid_7_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_7_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_svid_en_7;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_7_port_def_svid_en_7_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_vid_7_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_7_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_svid_en_7 = value;
-	ret = hppe_port_def_vid_7_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_7_port_def_svid_7_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_vid_7_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_7_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_svid_7;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_7_port_def_svid_7_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_vid_7_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_7_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_svid_7 = value;
-	ret = hppe_port_def_vid_7_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_7_port_def_cvid_7_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_vid_7_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_7_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_cvid_7;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_vid_7_port_def_cvid_7_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_vid_7_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_vid_7_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_cvid_7 = value;
-	ret = hppe_port_def_vid_7_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_0_port_def_sdei_0_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_pcp_0_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_0_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_sdei_0;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_0_port_def_sdei_0_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_pcp_0_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_0_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_sdei_0 = value;
-	ret = hppe_port_def_pcp_0_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_0_port_def_spcp_0_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_pcp_0_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_0_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_spcp_0;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_0_port_def_spcp_0_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_pcp_0_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_0_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_spcp_0 = value;
-	ret = hppe_port_def_pcp_0_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_0_port_def_cdei_0_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_pcp_0_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_0_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_cdei_0;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_0_port_def_cdei_0_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_pcp_0_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_0_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_cdei_0 = value;
-	ret = hppe_port_def_pcp_0_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_0_port_def_cpcp_0_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_pcp_0_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_0_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_cpcp_0;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_0_port_def_cpcp_0_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_pcp_0_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_0_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_cpcp_0 = value;
-	ret = hppe_port_def_pcp_0_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_1_port_def_cpcp_1_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_pcp_1_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_1_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_cpcp_1;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_1_port_def_cpcp_1_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_pcp_1_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_1_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_cpcp_1 = value;
-	ret = hppe_port_def_pcp_1_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_1_port_def_spcp_1_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_pcp_1_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_1_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_spcp_1;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_1_port_def_spcp_1_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_pcp_1_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_1_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_spcp_1 = value;
-	ret = hppe_port_def_pcp_1_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_1_port_def_cdei_1_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_pcp_1_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_1_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_cdei_1;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_1_port_def_cdei_1_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_pcp_1_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_1_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_cdei_1 = value;
-	ret = hppe_port_def_pcp_1_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_1_port_def_sdei_1_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_pcp_1_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_1_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_sdei_1;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_1_port_def_sdei_1_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_pcp_1_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_1_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_sdei_1 = value;
-	ret = hppe_port_def_pcp_1_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_2_port_def_cpcp_2_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_pcp_2_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_2_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_cpcp_2;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_2_port_def_cpcp_2_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_pcp_2_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_2_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_cpcp_2 = value;
-	ret = hppe_port_def_pcp_2_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_2_port_def_spcp_2_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_pcp_2_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_2_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_spcp_2;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_2_port_def_spcp_2_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_pcp_2_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_2_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_spcp_2 = value;
-	ret = hppe_port_def_pcp_2_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_2_port_def_sdei_2_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_pcp_2_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_2_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_sdei_2;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_2_port_def_sdei_2_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_pcp_2_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_2_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_sdei_2 = value;
-	ret = hppe_port_def_pcp_2_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_2_port_def_cdei_2_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_pcp_2_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_2_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_cdei_2;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_2_port_def_cdei_2_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_pcp_2_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_2_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_cdei_2 = value;
-	ret = hppe_port_def_pcp_2_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_3_port_def_cdei_3_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_pcp_3_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_3_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_cdei_3;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_3_port_def_cdei_3_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_pcp_3_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_3_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_cdei_3 = value;
-	ret = hppe_port_def_pcp_3_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_3_port_def_sdei_3_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_pcp_3_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_3_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_sdei_3;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_3_port_def_sdei_3_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_pcp_3_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_3_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_sdei_3 = value;
-	ret = hppe_port_def_pcp_3_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_3_port_def_spcp_3_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_pcp_3_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_3_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_spcp_3;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_3_port_def_spcp_3_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_pcp_3_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_3_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_spcp_3 = value;
-	ret = hppe_port_def_pcp_3_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_3_port_def_cpcp_3_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_pcp_3_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_3_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_cpcp_3;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_3_port_def_cpcp_3_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_pcp_3_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_3_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_cpcp_3 = value;
-	ret = hppe_port_def_pcp_3_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_4_port_def_spcp_4_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_pcp_4_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_4_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_spcp_4;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_4_port_def_spcp_4_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_pcp_4_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_4_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_spcp_4 = value;
-	ret = hppe_port_def_pcp_4_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_4_port_def_sdei_4_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_pcp_4_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_4_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_sdei_4;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_4_port_def_sdei_4_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_pcp_4_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_4_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_sdei_4 = value;
-	ret = hppe_port_def_pcp_4_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_4_port_def_cdei_4_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_pcp_4_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_4_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_cdei_4;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_4_port_def_cdei_4_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_pcp_4_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_4_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_cdei_4 = value;
-	ret = hppe_port_def_pcp_4_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_4_port_def_cpcp_4_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_pcp_4_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_4_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_cpcp_4;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_4_port_def_cpcp_4_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_pcp_4_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_4_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_cpcp_4 = value;
-	ret = hppe_port_def_pcp_4_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_5_port_def_cdei_5_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_pcp_5_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_5_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_cdei_5;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_5_port_def_cdei_5_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_pcp_5_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_5_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_cdei_5 = value;
-	ret = hppe_port_def_pcp_5_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_5_port_def_sdei_5_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_pcp_5_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_5_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_sdei_5;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_5_port_def_sdei_5_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_pcp_5_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_5_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_sdei_5 = value;
-	ret = hppe_port_def_pcp_5_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_5_port_def_cpcp_5_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_pcp_5_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_5_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_cpcp_5;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_5_port_def_cpcp_5_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_pcp_5_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_5_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_cpcp_5 = value;
-	ret = hppe_port_def_pcp_5_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_5_port_def_spcp_5_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_pcp_5_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_5_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_spcp_5;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_5_port_def_spcp_5_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_pcp_5_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_5_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_spcp_5 = value;
-	ret = hppe_port_def_pcp_5_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_6_port_def_cdei_6_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_pcp_6_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_6_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_cdei_6;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_6_port_def_cdei_6_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_pcp_6_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_6_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_cdei_6 = value;
-	ret = hppe_port_def_pcp_6_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_6_port_def_spcp_6_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_pcp_6_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_6_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_spcp_6;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_6_port_def_spcp_6_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_pcp_6_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_6_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_spcp_6 = value;
-	ret = hppe_port_def_pcp_6_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_6_port_def_sdei_6_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_pcp_6_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_6_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_sdei_6;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_6_port_def_sdei_6_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_pcp_6_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_6_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_sdei_6 = value;
-	ret = hppe_port_def_pcp_6_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_6_port_def_cpcp_6_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_pcp_6_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_6_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_cpcp_6;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_6_port_def_cpcp_6_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_pcp_6_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_6_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_cpcp_6 = value;
-	ret = hppe_port_def_pcp_6_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_7_port_def_sdei_7_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_pcp_7_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_7_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_sdei_7;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_7_port_def_sdei_7_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_pcp_7_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_7_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_sdei_7 = value;
-	ret = hppe_port_def_pcp_7_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_7_port_def_spcp_7_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_pcp_7_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_7_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_spcp_7;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_7_port_def_spcp_7_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_pcp_7_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_7_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_spcp_7 = value;
-	ret = hppe_port_def_pcp_7_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_7_port_def_cdei_7_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_pcp_7_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_7_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_cdei_7;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_7_port_def_cdei_7_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_pcp_7_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_7_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_cdei_7 = value;
-	ret = hppe_port_def_pcp_7_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_7_port_def_cpcp_7_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_def_pcp_7_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_7_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_def_cpcp_7;
-	return ret;
-}
-
-sw_error_t
-hppe_port_def_pcp_7_port_def_cpcp_7_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_def_pcp_7_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_def_pcp_7_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_def_cpcp_7 = value;
-	ret = hppe_port_def_pcp_7_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_0_port_in_dei_prop_cmd_0_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_0_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_0_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_in_dei_prop_cmd_0;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_0_port_in_dei_prop_cmd_0_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_0_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_0_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_in_dei_prop_cmd_0 = value;
-	ret = hppe_port_vlan_config_0_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_0_port_in_pcp_prop_cmd_0_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_0_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_0_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_in_pcp_prop_cmd_0;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_0_port_in_pcp_prop_cmd_0_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_0_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_0_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_in_pcp_prop_cmd_0 = value;
-	ret = hppe_port_vlan_config_0_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_0_port_untag_fltr_cmd_0_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_0_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_0_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_untag_fltr_cmd_0;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_0_port_untag_fltr_cmd_0_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_0_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_0_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_untag_fltr_cmd_0 = value;
-	ret = hppe_port_vlan_config_0_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_0_port_in_vlan_fltr_cmd_0_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_0_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_0_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_in_vlan_fltr_cmd_0;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_0_port_in_vlan_fltr_cmd_0_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_0_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_0_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_in_vlan_fltr_cmd_0 = value;
-	ret = hppe_port_vlan_config_0_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_0_port_pri_tag_fltr_cmd_0_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_0_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_0_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_pri_tag_fltr_cmd_0;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_0_port_pri_tag_fltr_cmd_0_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_0_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_0_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_pri_tag_fltr_cmd_0 = value;
-	ret = hppe_port_vlan_config_0_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_0_port_vlan_xlt_miss_fwd_cmd_0_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_0_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_0_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_vlan_xlt_miss_fwd_cmd_0;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_0_port_vlan_xlt_miss_fwd_cmd_0_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_0_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_0_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_vlan_xlt_miss_fwd_cmd_0 = value;
-	ret = hppe_port_vlan_config_0_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_0_port_tag_fltr_cmd_0_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_0_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_0_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_tag_fltr_cmd_0;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_0_port_tag_fltr_cmd_0_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_0_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_0_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_tag_fltr_cmd_0 = value;
-	ret = hppe_port_vlan_config_0_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_1_port_tag_fltr_cmd_1_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_1_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_1_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_tag_fltr_cmd_1;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_1_port_tag_fltr_cmd_1_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_1_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_1_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_tag_fltr_cmd_1 = value;
-	ret = hppe_port_vlan_config_1_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_1_port_in_pcp_prop_cmd_1_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_1_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_1_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_in_pcp_prop_cmd_1;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_1_port_in_pcp_prop_cmd_1_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_1_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_1_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_in_pcp_prop_cmd_1 = value;
-	ret = hppe_port_vlan_config_1_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_1_port_in_vlan_fltr_cmd_1_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_1_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_1_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_in_vlan_fltr_cmd_1;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_1_port_in_vlan_fltr_cmd_1_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_1_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_1_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_in_vlan_fltr_cmd_1 = value;
-	ret = hppe_port_vlan_config_1_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_1_port_untag_fltr_cmd_1_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_1_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_1_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_untag_fltr_cmd_1;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_1_port_untag_fltr_cmd_1_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_1_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_1_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_untag_fltr_cmd_1 = value;
-	ret = hppe_port_vlan_config_1_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_1_port_in_dei_prop_cmd_1_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_1_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_1_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_in_dei_prop_cmd_1;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_1_port_in_dei_prop_cmd_1_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_1_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_1_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_in_dei_prop_cmd_1 = value;
-	ret = hppe_port_vlan_config_1_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_1_port_vlan_xlt_miss_fwd_cmd_1_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_1_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_1_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_vlan_xlt_miss_fwd_cmd_1;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_1_port_vlan_xlt_miss_fwd_cmd_1_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_1_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_1_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_vlan_xlt_miss_fwd_cmd_1 = value;
-	ret = hppe_port_vlan_config_1_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_1_port_pri_tag_fltr_cmd_1_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_1_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_1_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_pri_tag_fltr_cmd_1;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_1_port_pri_tag_fltr_cmd_1_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_1_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_1_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_pri_tag_fltr_cmd_1 = value;
-	ret = hppe_port_vlan_config_1_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_2_port_vlan_xlt_miss_fwd_cmd_2_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_2_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_2_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_vlan_xlt_miss_fwd_cmd_2;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_2_port_vlan_xlt_miss_fwd_cmd_2_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_2_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_2_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_vlan_xlt_miss_fwd_cmd_2 = value;
-	ret = hppe_port_vlan_config_2_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_2_port_in_vlan_fltr_cmd_2_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_2_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_2_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_in_vlan_fltr_cmd_2;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_2_port_in_vlan_fltr_cmd_2_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_2_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_2_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_in_vlan_fltr_cmd_2 = value;
-	ret = hppe_port_vlan_config_2_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_2_port_pri_tag_fltr_cmd_2_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_2_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_2_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_pri_tag_fltr_cmd_2;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_2_port_pri_tag_fltr_cmd_2_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_2_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_2_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_pri_tag_fltr_cmd_2 = value;
-	ret = hppe_port_vlan_config_2_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_2_port_in_pcp_prop_cmd_2_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_2_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_2_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_in_pcp_prop_cmd_2;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_2_port_in_pcp_prop_cmd_2_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_2_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_2_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_in_pcp_prop_cmd_2 = value;
-	ret = hppe_port_vlan_config_2_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_2_port_untag_fltr_cmd_2_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_2_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_2_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_untag_fltr_cmd_2;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_2_port_untag_fltr_cmd_2_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_2_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_2_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_untag_fltr_cmd_2 = value;
-	ret = hppe_port_vlan_config_2_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_2_port_in_dei_prop_cmd_2_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_2_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_2_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_in_dei_prop_cmd_2;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_2_port_in_dei_prop_cmd_2_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_2_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_2_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_in_dei_prop_cmd_2 = value;
-	ret = hppe_port_vlan_config_2_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_2_port_tag_fltr_cmd_2_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_2_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_2_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_tag_fltr_cmd_2;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_2_port_tag_fltr_cmd_2_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_2_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_2_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_tag_fltr_cmd_2 = value;
-	ret = hppe_port_vlan_config_2_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_3_port_in_dei_prop_cmd_3_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_3_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_3_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_in_dei_prop_cmd_3;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_3_port_in_dei_prop_cmd_3_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_3_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_3_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_in_dei_prop_cmd_3 = value;
-	ret = hppe_port_vlan_config_3_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_3_port_pri_tag_fltr_cmd_3_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_3_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_3_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_pri_tag_fltr_cmd_3;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_3_port_pri_tag_fltr_cmd_3_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_3_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_3_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_pri_tag_fltr_cmd_3 = value;
-	ret = hppe_port_vlan_config_3_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_3_port_in_vlan_fltr_cmd_3_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_3_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_3_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_in_vlan_fltr_cmd_3;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_3_port_in_vlan_fltr_cmd_3_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_3_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_3_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_in_vlan_fltr_cmd_3 = value;
-	ret = hppe_port_vlan_config_3_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_3_port_tag_fltr_cmd_3_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_3_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_3_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_tag_fltr_cmd_3;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_3_port_tag_fltr_cmd_3_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_3_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_3_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_tag_fltr_cmd_3 = value;
-	ret = hppe_port_vlan_config_3_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_3_port_untag_fltr_cmd_3_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_3_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_3_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_untag_fltr_cmd_3;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_3_port_untag_fltr_cmd_3_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_3_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_3_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_untag_fltr_cmd_3 = value;
-	ret = hppe_port_vlan_config_3_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_3_port_in_pcp_prop_cmd_3_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_3_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_3_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_in_pcp_prop_cmd_3;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_3_port_in_pcp_prop_cmd_3_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_3_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_3_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_in_pcp_prop_cmd_3 = value;
-	ret = hppe_port_vlan_config_3_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_3_port_vlan_xlt_miss_fwd_cmd_3_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_3_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_3_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_vlan_xlt_miss_fwd_cmd_3;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_3_port_vlan_xlt_miss_fwd_cmd_3_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_3_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_3_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_vlan_xlt_miss_fwd_cmd_3 = value;
-	ret = hppe_port_vlan_config_3_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_4_port_in_pcp_prop_cmd_4_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_4_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_4_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_in_pcp_prop_cmd_4;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_4_port_in_pcp_prop_cmd_4_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_4_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_4_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_in_pcp_prop_cmd_4 = value;
-	ret = hppe_port_vlan_config_4_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_4_port_untag_fltr_cmd_4_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_4_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_4_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_untag_fltr_cmd_4;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_4_port_untag_fltr_cmd_4_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_4_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_4_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_untag_fltr_cmd_4 = value;
-	ret = hppe_port_vlan_config_4_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_4_port_in_vlan_fltr_cmd_4_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_4_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_4_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_in_vlan_fltr_cmd_4;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_4_port_in_vlan_fltr_cmd_4_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_4_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_4_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_in_vlan_fltr_cmd_4 = value;
-	ret = hppe_port_vlan_config_4_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_4_port_vlan_xlt_miss_fwd_cmd_4_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_4_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_4_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_vlan_xlt_miss_fwd_cmd_4;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_4_port_vlan_xlt_miss_fwd_cmd_4_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_4_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_4_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_vlan_xlt_miss_fwd_cmd_4 = value;
-	ret = hppe_port_vlan_config_4_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_4_port_tag_fltr_cmd_4_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_4_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_4_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_tag_fltr_cmd_4;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_4_port_tag_fltr_cmd_4_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_4_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_4_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_tag_fltr_cmd_4 = value;
-	ret = hppe_port_vlan_config_4_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_4_port_pri_tag_fltr_cmd_4_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_4_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_4_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_pri_tag_fltr_cmd_4;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_4_port_pri_tag_fltr_cmd_4_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_4_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_4_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_pri_tag_fltr_cmd_4 = value;
-	ret = hppe_port_vlan_config_4_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_4_port_in_dei_prop_cmd_4_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_4_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_4_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_in_dei_prop_cmd_4;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_4_port_in_dei_prop_cmd_4_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_4_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_4_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_in_dei_prop_cmd_4 = value;
-	ret = hppe_port_vlan_config_4_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_5_port_in_vlan_fltr_cmd_5_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_5_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_5_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_in_vlan_fltr_cmd_5;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_5_port_in_vlan_fltr_cmd_5_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_5_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_5_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_in_vlan_fltr_cmd_5 = value;
-	ret = hppe_port_vlan_config_5_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_5_port_tag_fltr_cmd_5_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_5_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_5_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_tag_fltr_cmd_5;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_5_port_tag_fltr_cmd_5_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_5_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_5_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_tag_fltr_cmd_5 = value;
-	ret = hppe_port_vlan_config_5_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_5_port_in_dei_prop_cmd_5_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_5_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_5_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_in_dei_prop_cmd_5;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_5_port_in_dei_prop_cmd_5_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_5_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_5_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_in_dei_prop_cmd_5 = value;
-	ret = hppe_port_vlan_config_5_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_5_port_in_pcp_prop_cmd_5_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_5_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_5_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_in_pcp_prop_cmd_5;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_5_port_in_pcp_prop_cmd_5_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_5_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_5_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_in_pcp_prop_cmd_5 = value;
-	ret = hppe_port_vlan_config_5_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_5_port_pri_tag_fltr_cmd_5_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_5_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_5_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_pri_tag_fltr_cmd_5;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_5_port_pri_tag_fltr_cmd_5_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_5_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_5_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_pri_tag_fltr_cmd_5 = value;
-	ret = hppe_port_vlan_config_5_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_5_port_vlan_xlt_miss_fwd_cmd_5_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_5_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_5_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_vlan_xlt_miss_fwd_cmd_5;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_5_port_vlan_xlt_miss_fwd_cmd_5_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_5_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_5_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_vlan_xlt_miss_fwd_cmd_5 = value;
-	ret = hppe_port_vlan_config_5_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_5_port_untag_fltr_cmd_5_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_5_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_5_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_untag_fltr_cmd_5;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_5_port_untag_fltr_cmd_5_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_5_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_5_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_untag_fltr_cmd_5 = value;
-	ret = hppe_port_vlan_config_5_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_6_port_in_vlan_fltr_cmd_6_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_6_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_6_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_in_vlan_fltr_cmd_6;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_6_port_in_vlan_fltr_cmd_6_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_6_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_6_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_in_vlan_fltr_cmd_6 = value;
-	ret = hppe_port_vlan_config_6_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_6_port_untag_fltr_cmd_6_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_6_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_6_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_untag_fltr_cmd_6;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_6_port_untag_fltr_cmd_6_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_6_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_6_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_untag_fltr_cmd_6 = value;
-	ret = hppe_port_vlan_config_6_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_6_port_tag_fltr_cmd_6_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_6_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_6_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_tag_fltr_cmd_6;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_6_port_tag_fltr_cmd_6_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_6_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_6_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_tag_fltr_cmd_6 = value;
-	ret = hppe_port_vlan_config_6_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_6_port_pri_tag_fltr_cmd_6_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_6_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_6_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_pri_tag_fltr_cmd_6;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_6_port_pri_tag_fltr_cmd_6_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_6_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_6_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_pri_tag_fltr_cmd_6 = value;
-	ret = hppe_port_vlan_config_6_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_6_port_vlan_xlt_miss_fwd_cmd_6_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_6_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_6_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_vlan_xlt_miss_fwd_cmd_6;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_6_port_vlan_xlt_miss_fwd_cmd_6_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_6_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_6_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_vlan_xlt_miss_fwd_cmd_6 = value;
-	ret = hppe_port_vlan_config_6_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_6_port_in_dei_prop_cmd_6_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_6_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_6_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_in_dei_prop_cmd_6;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_6_port_in_dei_prop_cmd_6_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_6_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_6_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_in_dei_prop_cmd_6 = value;
-	ret = hppe_port_vlan_config_6_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_6_port_in_pcp_prop_cmd_6_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_6_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_6_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_in_pcp_prop_cmd_6;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_6_port_in_pcp_prop_cmd_6_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_6_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_6_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_in_pcp_prop_cmd_6 = value;
-	ret = hppe_port_vlan_config_6_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_7_port_vlan_xlt_miss_fwd_cmd_7_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_7_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_7_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_vlan_xlt_miss_fwd_cmd_7;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_7_port_vlan_xlt_miss_fwd_cmd_7_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_7_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_7_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_vlan_xlt_miss_fwd_cmd_7 = value;
-	ret = hppe_port_vlan_config_7_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_7_port_tag_fltr_cmd_7_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_7_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_7_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_tag_fltr_cmd_7;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_7_port_tag_fltr_cmd_7_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_7_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_7_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_tag_fltr_cmd_7 = value;
-	ret = hppe_port_vlan_config_7_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_7_port_untag_fltr_cmd_7_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_7_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_7_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_untag_fltr_cmd_7;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_7_port_untag_fltr_cmd_7_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_7_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_7_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_untag_fltr_cmd_7 = value;
-	ret = hppe_port_vlan_config_7_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_7_port_in_dei_prop_cmd_7_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_7_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_7_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_in_dei_prop_cmd_7;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_7_port_in_dei_prop_cmd_7_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_7_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_7_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_in_dei_prop_cmd_7 = value;
-	ret = hppe_port_vlan_config_7_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_7_port_in_pcp_prop_cmd_7_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_7_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_7_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_in_pcp_prop_cmd_7;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_7_port_in_pcp_prop_cmd_7_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_7_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_7_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_in_pcp_prop_cmd_7 = value;
-	ret = hppe_port_vlan_config_7_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_7_port_pri_tag_fltr_cmd_7_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_7_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_7_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_pri_tag_fltr_cmd_7;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_7_port_pri_tag_fltr_cmd_7_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_7_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_7_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_pri_tag_fltr_cmd_7 = value;
-	ret = hppe_port_vlan_config_7_set(dev_id, &reg_val);
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_7_port_in_vlan_fltr_cmd_7_get(
-		a_uint32_t dev_id,
-		a_uint32_t *value)
-{
-	union port_vlan_config_7_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_7_get(dev_id, &reg_val);
-	*value = reg_val.bf.port_in_vlan_fltr_cmd_7;
-	return ret;
-}
-
-sw_error_t
-hppe_port_vlan_config_7_port_in_vlan_fltr_cmd_7_set(
-		a_uint32_t dev_id,
-		a_uint32_t value)
-{
-	union port_vlan_config_7_u reg_val;
-	sw_error_t ret = SW_OK;
-
-	ret = hppe_port_vlan_config_7_get(dev_id, &reg_val);
-	if (SW_OK != ret)
-		return ret;
-	reg_val.bf.port_in_vlan_fltr_cmd_7 = value;
-	ret = hppe_port_vlan_config_7_set(dev_id, &reg_val);
+	reg_val.bf.port_tag_fltr_cmd = value;
+	ret = hppe_port_vlan_config_set(dev_id, port_id, &reg_val);
 	return ret;
 }
 
@@ -5631,6 +2166,1708 @@ hppe_xlt_action_tbl_xlt_cdei_set(
 		return ret;
 	reg_val.bf.xlt_cdei = value;
 	ret = hppe_xlt_action_tbl_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union eg_vlan_xlt_rule_u *value)
+{
+	return hppe_reg_tbl_get(
+				dev_id,
+				NSS_PTX_CSR_BASE_ADDR + EG_VLAN_XLT_RULE_ADDRESS + \
+				index * EG_VLAN_XLT_RULE_INC,
+				value->val,
+				2);
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union eg_vlan_xlt_rule_u *value)
+{
+	return hppe_reg_tbl_set(
+				dev_id,
+				NSS_PTX_CSR_BASE_ADDR + EG_VLAN_XLT_RULE_ADDRESS + \
+				index * EG_VLAN_XLT_RULE_INC,
+				value->val,
+				2);
+}
+
+sw_error_t
+hppe_port_eg_def_vid_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union port_eg_def_vid_u *value)
+{
+	if (index >= PORT_EG_DEF_VID_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+	return hppe_reg_get(
+				dev_id,
+				NSS_PTX_CSR_BASE_ADDR + PORT_EG_DEF_VID_ADDRESS + \
+				index * PORT_EG_DEF_VID_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_port_eg_def_vid_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union port_eg_def_vid_u *value)
+{
+	return hppe_reg_set(
+				dev_id,
+				NSS_PTX_CSR_BASE_ADDR + PORT_EG_DEF_VID_ADDRESS + \
+				index * PORT_EG_DEF_VID_INC,
+				value->val);
+}
+
+sw_error_t
+hppe_port_eg_vlan_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union port_eg_vlan_u *value)
+{
+	if (index >= PORT_EG_VLAN_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+	return hppe_reg_get(
+				dev_id,
+				NSS_PTX_CSR_BASE_ADDR + PORT_EG_VLAN_ADDRESS + \
+				index * PORT_EG_VLAN_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_port_eg_vlan_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union port_eg_vlan_u *value)
+{
+	return hppe_reg_set(
+				dev_id,
+				NSS_PTX_CSR_BASE_ADDR + PORT_EG_VLAN_ADDRESS + \
+				index * PORT_EG_VLAN_INC,
+				value->val);
+}
+
+sw_error_t
+hppe_eg_vlan_tpid_get(
+		a_uint32_t dev_id,
+		union eg_vlan_tpid_u *value)
+{
+	return hppe_reg_get(
+				dev_id,
+				NSS_PTX_CSR_BASE_ADDR + EG_VLAN_TPID_ADDRESS,
+				&value->val);
+}
+
+sw_error_t
+hppe_eg_vlan_tpid_set(
+		a_uint32_t dev_id,
+		union eg_vlan_tpid_u *value)
+{
+	return hppe_reg_set(
+				dev_id,
+				NSS_PTX_CSR_BASE_ADDR + EG_VLAN_TPID_ADDRESS,
+				value->val);
+}
+
+sw_error_t
+hppe_eg_bridge_config_get(
+		a_uint32_t dev_id,
+		union eg_bridge_config_u *value)
+{
+	return hppe_reg_get(
+				dev_id,
+				NSS_PTX_CSR_BASE_ADDR + EG_BRIDGE_CONFIG_ADDRESS,
+				&value->val);
+}
+
+sw_error_t
+hppe_eg_bridge_config_set(
+		a_uint32_t dev_id,
+		union eg_bridge_config_u *value)
+{
+	return hppe_reg_set(
+				dev_id,
+				NSS_PTX_CSR_BASE_ADDR + EG_BRIDGE_CONFIG_ADDRESS,
+				value->val);
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union eg_vlan_xlt_action_u *value)
+{
+	return hppe_reg_tbl_get(
+				dev_id,
+				NSS_PTX_CSR_BASE_ADDR + EG_VLAN_XLT_ACTION_ADDRESS + \
+				index * EG_VLAN_XLT_ACTION_INC,
+				value->val,
+				2);
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union eg_vlan_xlt_action_u *value)
+{
+	return hppe_reg_tbl_set(
+				dev_id,
+				NSS_PTX_CSR_BASE_ADDR + EG_VLAN_XLT_ACTION_ADDRESS + \
+				index * EG_VLAN_XLT_ACTION_INC,
+				value->val,
+				2);
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_ckey_vid_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.ckey_vid;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_ckey_vid_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.ckey_vid = value;
+	ret = hppe_eg_vlan_xlt_rule_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_valid_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.valid;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_valid_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.valid = value;
+	ret = hppe_eg_vlan_xlt_rule_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_ckey_dei_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.ckey_dei;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_ckey_dei_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.ckey_dei = value;
+	ret = hppe_eg_vlan_xlt_rule_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_skey_dei_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.skey_dei;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_skey_dei_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.skey_dei = value;
+	ret = hppe_eg_vlan_xlt_rule_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_skey_pcp_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.skey_pcp;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_skey_pcp_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.skey_pcp = value;
+	ret = hppe_eg_vlan_xlt_rule_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_ckey_pcp_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.ckey_pcp;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_ckey_pcp_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.ckey_pcp = value;
+	ret = hppe_eg_vlan_xlt_rule_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_vsi_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.vsi;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_vsi_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.vsi = value;
+	ret = hppe_eg_vlan_xlt_rule_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_ckey_vid_incl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.ckey_vid_incl;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_ckey_vid_incl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.ckey_vid_incl = value;
+	ret = hppe_eg_vlan_xlt_rule_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_ckey_dei_incl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.ckey_dei_incl;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_ckey_dei_incl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.ckey_dei_incl = value;
+	ret = hppe_eg_vlan_xlt_rule_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_vsi_incl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.vsi_incl;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_vsi_incl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.vsi_incl = value;
+	ret = hppe_eg_vlan_xlt_rule_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_port_bitmap_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.port_bitmap;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_port_bitmap_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.port_bitmap = value;
+	ret = hppe_eg_vlan_xlt_rule_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_skey_pcp_incl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.skey_pcp_incl;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_skey_pcp_incl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.skey_pcp_incl = value;
+	ret = hppe_eg_vlan_xlt_rule_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_ckey_fmt_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.ckey_fmt;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_ckey_fmt_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.ckey_fmt = value;
+	ret = hppe_eg_vlan_xlt_rule_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_skey_vid_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.skey_vid;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_skey_vid_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.skey_vid = value;
+	ret = hppe_eg_vlan_xlt_rule_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_skey_fmt_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.skey_fmt;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_skey_fmt_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.skey_fmt = value;
+	ret = hppe_eg_vlan_xlt_rule_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_ckey_pcp_incl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.ckey_pcp_incl;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_ckey_pcp_incl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.ckey_pcp_incl = value;
+	ret = hppe_eg_vlan_xlt_rule_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_skey_vid_incl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.skey_vid_incl;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_skey_vid_incl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.skey_vid_incl = value;
+	ret = hppe_eg_vlan_xlt_rule_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_skey_dei_incl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.skey_dei_incl;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_skey_dei_incl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.skey_dei_incl = value;
+	ret = hppe_eg_vlan_xlt_rule_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_vsi_valid_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.vsi_valid;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_rule_vsi_valid_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_rule_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_rule_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.vsi_valid = value;
+	ret = hppe_eg_vlan_xlt_rule_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_port_eg_def_vid_port_def_svid_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union port_eg_def_vid_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_eg_def_vid_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.port_def_svid_en;
+	return ret;
+}
+
+sw_error_t
+hppe_port_eg_def_vid_port_def_svid_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union port_eg_def_vid_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_eg_def_vid_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.port_def_svid_en = value;
+	ret = hppe_port_eg_def_vid_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_port_eg_def_vid_port_def_svid_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union port_eg_def_vid_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_eg_def_vid_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.port_def_svid;
+	return ret;
+}
+
+sw_error_t
+hppe_port_eg_def_vid_port_def_svid_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union port_eg_def_vid_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_eg_def_vid_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.port_def_svid = value;
+	ret = hppe_port_eg_def_vid_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_port_eg_def_vid_port_def_cvid_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union port_eg_def_vid_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_eg_def_vid_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.port_def_cvid_en;
+	return ret;
+}
+
+sw_error_t
+hppe_port_eg_def_vid_port_def_cvid_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union port_eg_def_vid_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_eg_def_vid_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.port_def_cvid_en = value;
+	ret = hppe_port_eg_def_vid_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_port_eg_def_vid_port_def_cvid_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union port_eg_def_vid_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_eg_def_vid_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.port_def_cvid;
+	return ret;
+}
+
+sw_error_t
+hppe_port_eg_def_vid_port_def_cvid_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union port_eg_def_vid_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_eg_def_vid_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.port_def_cvid = value;
+	ret = hppe_port_eg_def_vid_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_port_eg_vlan_tx_counting_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union port_eg_vlan_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_eg_vlan_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.tx_counting_en;
+	return ret;
+}
+
+sw_error_t
+hppe_port_eg_vlan_tx_counting_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union port_eg_vlan_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_eg_vlan_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.tx_counting_en = value;
+	ret = hppe_port_eg_vlan_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_port_eg_vlan_port_eg_vlan_ctag_mode_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union port_eg_vlan_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_eg_vlan_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.port_eg_vlan_ctag_mode;
+	return ret;
+}
+
+sw_error_t
+hppe_port_eg_vlan_port_eg_vlan_ctag_mode_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union port_eg_vlan_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_eg_vlan_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.port_eg_vlan_ctag_mode = value;
+	ret = hppe_port_eg_vlan_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_port_eg_vlan_port_eg_pcp_prop_cmd_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union port_eg_vlan_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_eg_vlan_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.port_eg_pcp_prop_cmd;
+	return ret;
+}
+
+sw_error_t
+hppe_port_eg_vlan_port_eg_pcp_prop_cmd_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union port_eg_vlan_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_eg_vlan_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.port_eg_pcp_prop_cmd = value;
+	ret = hppe_port_eg_vlan_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_port_eg_vlan_vsi_tag_mode_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union port_eg_vlan_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_eg_vlan_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.vsi_tag_mode_en;
+	return ret;
+}
+
+sw_error_t
+hppe_port_eg_vlan_vsi_tag_mode_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union port_eg_vlan_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_eg_vlan_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.vsi_tag_mode_en = value;
+	ret = hppe_port_eg_vlan_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_port_eg_vlan_port_eg_vlan_stag_mode_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union port_eg_vlan_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_eg_vlan_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.port_eg_vlan_stag_mode;
+	return ret;
+}
+
+sw_error_t
+hppe_port_eg_vlan_port_eg_vlan_stag_mode_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union port_eg_vlan_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_eg_vlan_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.port_eg_vlan_stag_mode = value;
+	ret = hppe_port_eg_vlan_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_port_eg_vlan_port_eg_dei_prop_cmd_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union port_eg_vlan_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_eg_vlan_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.port_eg_dei_prop_cmd;
+	return ret;
+}
+
+sw_error_t
+hppe_port_eg_vlan_port_eg_dei_prop_cmd_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union port_eg_vlan_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_eg_vlan_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.port_eg_dei_prop_cmd = value;
+	ret = hppe_port_eg_vlan_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_port_eg_vlan_port_vlan_type_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union port_eg_vlan_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_eg_vlan_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.port_vlan_type;
+	return ret;
+}
+
+sw_error_t
+hppe_port_eg_vlan_port_vlan_type_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union port_eg_vlan_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_eg_vlan_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.port_vlan_type = value;
+	ret = hppe_port_eg_vlan_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_tpid_ctpid_get(
+		a_uint32_t dev_id,
+		a_uint32_t *value)
+{
+	union eg_vlan_tpid_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_tpid_get(dev_id, &reg_val);
+	*value = reg_val.bf.ctpid;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_tpid_ctpid_set(
+		a_uint32_t dev_id,
+		a_uint32_t value)
+{
+	union eg_vlan_tpid_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_tpid_get(dev_id, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.ctpid = value;
+	ret = hppe_eg_vlan_tpid_set(dev_id, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_tpid_stpid_get(
+		a_uint32_t dev_id,
+		a_uint32_t *value)
+{
+	union eg_vlan_tpid_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_tpid_get(dev_id, &reg_val);
+	*value = reg_val.bf.stpid;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_tpid_stpid_set(
+		a_uint32_t dev_id,
+		a_uint32_t value)
+{
+	union eg_vlan_tpid_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_tpid_get(dev_id, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.stpid = value;
+	ret = hppe_eg_vlan_tpid_set(dev_id, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_bridge_config_bridge_type_get(
+		a_uint32_t dev_id,
+		a_uint32_t *value)
+{
+	union eg_bridge_config_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_bridge_config_get(dev_id, &reg_val);
+	*value = reg_val.bf.bridge_type;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_bridge_config_bridge_type_set(
+		a_uint32_t dev_id,
+		a_uint32_t value)
+{
+	union eg_bridge_config_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_bridge_config_get(dev_id, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.bridge_type = value;
+	ret = hppe_eg_bridge_config_set(dev_id, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_dei_swap_cmd_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.dei_swap_cmd;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_dei_swap_cmd_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.dei_swap_cmd = value;
+	ret = hppe_eg_vlan_xlt_action_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_cvid_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.xlt_cvid;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_cvid_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.xlt_cvid = value;
+	ret = hppe_eg_vlan_xlt_action_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_cpcp_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.xlt_cpcp;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_cpcp_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.xlt_cpcp = value;
+	ret = hppe_eg_vlan_xlt_action_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_spcp_cmd_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.xlt_spcp_cmd;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_spcp_cmd_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.xlt_spcp_cmd = value;
+	ret = hppe_eg_vlan_xlt_action_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_sdei_cmd_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.xlt_sdei_cmd;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_sdei_cmd_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.xlt_sdei_cmd = value;
+	ret = hppe_eg_vlan_xlt_action_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_cvid_cmd_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.xlt_cvid_cmd;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_cvid_cmd_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.xlt_cvid_cmd = value;
+	ret = hppe_eg_vlan_xlt_action_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_spcp_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.xlt_spcp_1 << 1 | \
+		reg_val.bf.xlt_spcp_0;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_spcp_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.xlt_spcp_1 = value >> 1;
+	reg_val.bf.xlt_spcp_0 = value & (((a_uint64_t)1<<1)-1);
+	ret = hppe_eg_vlan_xlt_action_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_counter_id_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.counter_id;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_counter_id_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.counter_id = value;
+	ret = hppe_eg_vlan_xlt_action_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_vid_swap_cmd_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.vid_swap_cmd;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_vid_swap_cmd_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.vid_swap_cmd = value;
+	ret = hppe_eg_vlan_xlt_action_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_sdei_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.xlt_sdei;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_sdei_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.xlt_sdei = value;
+	ret = hppe_eg_vlan_xlt_action_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_counter_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.counter_en;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_counter_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.counter_en = value;
+	ret = hppe_eg_vlan_xlt_action_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_svid_cmd_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.xlt_svid_cmd;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_svid_cmd_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.xlt_svid_cmd = value;
+	ret = hppe_eg_vlan_xlt_action_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_svid_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.xlt_svid;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_svid_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.xlt_svid = value;
+	ret = hppe_eg_vlan_xlt_action_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_cpcp_cmd_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.xlt_cpcp_cmd;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_cpcp_cmd_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.xlt_cpcp_cmd = value;
+	ret = hppe_eg_vlan_xlt_action_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_cdei_cmd_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.xlt_cdei_cmd;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_cdei_cmd_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.xlt_cdei_cmd = value;
+	ret = hppe_eg_vlan_xlt_action_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_pcp_swap_cmd_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.pcp_swap_cmd;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_pcp_swap_cmd_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.pcp_swap_cmd = value;
+	ret = hppe_eg_vlan_xlt_action_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_cdei_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.xlt_cdei;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vlan_xlt_action_xlt_cdei_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vlan_xlt_action_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vlan_xlt_action_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.xlt_cdei = value;
+	ret = hppe_eg_vlan_xlt_action_set(dev_id, index, &reg_val);
 	return ret;
 }
 

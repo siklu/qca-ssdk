@@ -20,7 +20,10 @@
 #include "sw.h"
 #include "fal_portvlan.h"
 #include "hsl_api.h"
+#include "adpt.h"
 
+#include <linux/kernel.h>
+#include <linux/module.h>
 
 static sw_error_t
 _fal_port_1qmode_set(a_uint32_t dev_id, fal_port_t port_id,
@@ -524,6 +527,15 @@ _fal_port_vlan_trans_add(a_uint32_t dev_id, fal_port_t port_id, fal_vlan_trans_e
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if(p_adpt_api = adpt_api_ptr_get(dev_id) != NULL) {
+        if (NULL == p_adpt_api->adpt_port_vlan_trans_add)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_port_vlan_trans_add(dev_id, port_id, entry);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -539,6 +551,15 @@ _fal_port_vlan_trans_del(a_uint32_t dev_id, fal_port_t port_id, fal_vlan_trans_e
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if(p_adpt_api = adpt_api_ptr_get(dev_id) != NULL) {
+        if (NULL == p_adpt_api->adpt_port_vlan_trans_del)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_port_vlan_trans_del(dev_id, port_id, entry);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -554,6 +575,15 @@ _fal_port_vlan_trans_get(a_uint32_t dev_id, fal_port_t port_id, fal_vlan_trans_e
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if(p_adpt_api = adpt_api_ptr_get(dev_id) != NULL) {
+        if (NULL == p_adpt_api->adpt_port_vlan_trans_get)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_port_vlan_trans_get(dev_id, port_id, entry);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -629,6 +659,15 @@ _fal_port_vlan_trans_iterate(a_uint32_t dev_id, fal_port_t port_id,
                              a_uint32_t * iterator, fal_vlan_trans_entry_t *entry)
 {
     sw_error_t rv;
+    adpt_api_t *p_adpt_api;
+
+    if(p_adpt_api = adpt_api_ptr_get(dev_id) != NULL) {
+        if (NULL == p_adpt_api->adpt_port_vlan_trans_iterate)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_port_vlan_trans_iterate(dev_id, port_id, iterator, entry);
+        return rv;
+    }
     hsl_api_t *p_api;
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
@@ -1625,3 +1664,596 @@ fal_port_vrf_id_get(a_uint32_t dev_id, fal_port_t port_id,
 /**
  * @}
  */
+sw_error_t
+_fal_global_qinq_mode_set(a_uint32_t dev_id, fal_global_qinq_mode_t *mode)
+{
+    sw_error_t rv;
+    adpt_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_global_qinq_mode_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_global_qinq_mode_set(dev_id, mode);
+    return rv;
+}
+
+sw_error_t
+_fal_global_qinq_mode_get(a_uint32_t dev_id, fal_global_qinq_mode_t *mode)
+{
+    sw_error_t rv;
+    adpt_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_global_qinq_mode_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_global_qinq_mode_get(dev_id, mode);
+    return rv;
+}
+
+sw_error_t
+_fal_port_qinq_mode_set(a_uint32_t dev_id, fal_port_t port_id, fal_port_qinq_mode_t *mode)
+{
+    sw_error_t rv;
+    adpt_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_port_qinq_mode_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_port_qinq_mode_set(dev_id, port_id, mode);
+    return rv;
+}
+
+sw_error_t
+_fal_port_qinq_mode_get(a_uint32_t dev_id, fal_port_t port_id, fal_port_qinq_mode_t *mode)
+{
+    sw_error_t rv;
+    adpt_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_port_qinq_mode_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_port_qinq_mode_get(dev_id, port_id, mode);
+    return rv;
+}
+
+sw_error_t
+_fal_tpid_set(a_uint32_t dev_id, fal_tpid_t *tpid)
+{
+    sw_error_t rv;
+    adpt_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_tpid_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_tpid_set(dev_id, tpid);
+    return rv;
+}
+
+sw_error_t
+_fal_tpid_get(a_uint32_t dev_id, fal_tpid_t * tpid)
+{
+    sw_error_t rv;
+    adpt_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_tpid_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_tpid_get(dev_id, tpid);
+    return rv;
+}
+
+sw_error_t
+_fal_egress_tpid_set(a_uint32_t dev_id, fal_tpid_t *tpid)
+{
+    sw_error_t rv;
+    adpt_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_egress_tpid_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_egress_tpid_set(dev_id, tpid);
+    return rv;
+}
+
+sw_error_t
+_fal_egress_tpid_get(a_uint32_t dev_id, fal_tpid_t * tpid)
+{
+    sw_error_t rv;
+    adpt_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_egress_tpid_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_egress_tpid_get(dev_id, tpid);
+    return rv;
+}
+
+sw_error_t
+_fal_port_ingress_filter_set(a_uint32_t dev_id, fal_port_t port_id, fal_ingress_filter_t *filter)
+{
+    sw_error_t rv;
+    adpt_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_port_ingress_filter_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_port_ingress_filter_set(dev_id, port_id, filter);
+    return rv;
+}
+
+sw_error_t
+_fal_port_ingress_filter_get(a_uint32_t dev_id, fal_port_t port_id, fal_ingress_filter_t * filter)
+{
+    sw_error_t rv;
+    adpt_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_port_ingress_filter_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_port_ingress_filter_get(dev_id, port_id, filter);
+    return rv;
+}
+
+sw_error_t
+_fal_port_ingress_default_tag_set(a_uint32_t dev_id, fal_port_t port_id,
+                                 fal_port_ingress_default_tag_t *default_tag)
+{
+    sw_error_t rv;
+    adpt_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_port_ingress_default_tag_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_port_ingress_default_tag_set(dev_id, port_id, default_tag);
+    return rv;
+}
+
+sw_error_t
+_fal_port_ingress_default_tag_get(a_uint32_t dev_id, fal_port_t port_id,
+                                 fal_port_ingress_default_tag_t *default_tag)
+{
+    sw_error_t rv;
+    adpt_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_port_ingress_default_tag_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_port_ingress_default_tag_get(dev_id, port_id, default_tag);
+    return rv;
+}
+
+sw_error_t
+_fal_port_tag_propagation_set(a_uint32_t dev_id, fal_port_t port_id,
+                                 fal_tag_propagation_t *prop)
+{
+    sw_error_t rv;
+    adpt_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_port_tag_propagation_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_port_tag_propagation_set(dev_id, port_id, prop);
+    return rv;
+}
+
+sw_error_t
+_fal_port_tag_propagation_get(a_uint32_t dev_id, fal_port_t port_id,
+                                 fal_tag_propagation_t *prop)
+{
+    sw_error_t rv;
+    adpt_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_port_tag_propagation_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_port_tag_propagation_get(dev_id, port_id, prop);
+    return rv;
+}
+
+sw_error_t
+_fal_port_tag_egvlanmode_set(a_uint32_t dev_id, fal_port_t port_id,
+                            fal_egressmode_t *port_egvlanmode)
+{
+    sw_error_t rv;
+    adpt_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_port_tag_egvlanmode_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_port_tag_egvlanmode_set(dev_id, port_id, port_egvlanmode);
+    return rv;
+}
+
+sw_error_t
+_fal_port_tag_egvlanmode_get(a_uint32_t dev_id, fal_port_t port_id,
+                            fal_egressmode_t *port_egvlanmode)
+{
+    sw_error_t rv;
+    adpt_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_port_tag_egvlanmode_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_port_tag_egvlanmode_get(dev_id, port_id, port_egvlanmode);
+    return rv;
+}
+
+sw_error_t
+_fal_port_egress_tag_propagation_set(a_uint32_t dev_id, fal_port_t port_id,
+                                 fal_tag_propagation_t *eg_prop)
+{
+    sw_error_t rv;
+    adpt_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_port_egress_tag_propagation_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_port_egress_tag_propagation_set(dev_id, port_id, eg_prop);
+    return rv;
+}
+
+sw_error_t
+_fal_port_egress_tag_propagation_get(a_uint32_t dev_id, fal_port_t port_id,
+                                 fal_tag_propagation_t *eg_prop)
+{
+    sw_error_t rv;
+    adpt_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_port_egress_tag_propagation_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_port_egress_tag_propagation_get(dev_id, port_id, eg_prop);
+    return rv;
+}
+
+sw_error_t
+_fal_port_vlan_xlt_miss_cmd_set(a_uint32_t dev_id, fal_port_t port_id,
+                                 fal_fwd_cmd_t cmd)
+{
+    sw_error_t rv;
+    adpt_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_port_vlan_xlt_miss_cmd_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_port_vlan_xlt_miss_cmd_set(dev_id, port_id, cmd);
+    return rv;
+}
+
+sw_error_t
+_fal_port_vlan_xlt_miss_cmd_get(a_uint32_t dev_id, fal_port_t port_id,
+                                 fal_fwd_cmd_t *cmd)
+{
+    sw_error_t rv;
+    adpt_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_port_vlan_xlt_miss_cmd_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_port_vlan_xlt_miss_cmd_get(dev_id, port_id, cmd);
+    return rv;
+}
+
+sw_error_t
+_fal_port_egress_default_vid_set(a_uint32_t dev_id, fal_port_t port_id,
+                                 fal_port_egress_default_vid_t *default_vid)
+{
+    sw_error_t rv;
+    adpt_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_port_egress_default_vid_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_port_egress_default_vid_set(dev_id, port_id, default_vid);
+    return rv;
+}
+sw_error_t
+_fal_port_egress_default_vid_get(a_uint32_t dev_id, fal_port_t port_id,
+                                 fal_port_egress_default_vid_t *default_vid)
+{
+    sw_error_t rv;
+    adpt_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_port_egress_default_vid_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_port_egress_default_vid_get(dev_id, port_id, default_vid);
+    return rv;
+}
+
+sw_error_t
+fal_global_qinq_mode_set(a_uint32_t dev_id, fal_global_qinq_mode_t *mode)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_PORTVLAN_API_LOCK;
+    rv = _fal_global_qinq_mode_set(dev_id, mode);
+    FAL_PORTVLAN_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_global_qinq_mode_get(a_uint32_t dev_id, fal_global_qinq_mode_t *mode)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_PORTVLAN_API_LOCK;
+    rv = _fal_global_qinq_mode_get(dev_id, mode);
+    FAL_PORTVLAN_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_port_qinq_mode_set(a_uint32_t dev_id, fal_port_t port_id, fal_port_qinq_mode_t *mode)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_PORTVLAN_API_LOCK;
+    rv = _fal_port_qinq_mode_set(dev_id, port_id, mode);
+    FAL_PORTVLAN_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_port_qinq_mode_get(a_uint32_t dev_id, fal_port_t port_id, fal_port_qinq_mode_t *mode)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_PORTVLAN_API_LOCK;
+    rv = _fal_port_qinq_mode_get(dev_id, port_id, mode);
+    FAL_PORTVLAN_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_tpid_set(a_uint32_t dev_id, fal_tpid_t *tpid)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_PORTVLAN_API_LOCK;
+    rv = _fal_tpid_set(dev_id, tpid);
+    FAL_PORTVLAN_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_tpid_get(a_uint32_t dev_id, fal_tpid_t * tpid)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_PORTVLAN_API_LOCK;
+    rv = _fal_tpid_get(dev_id, tpid);
+    FAL_PORTVLAN_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_egress_tpid_set(a_uint32_t dev_id, fal_tpid_t *tpid)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_PORTVLAN_API_LOCK;
+    rv = _fal_egress_tpid_set(dev_id, tpid);
+    FAL_PORTVLAN_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_egress_tpid_get(a_uint32_t dev_id, fal_tpid_t * tpid)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_PORTVLAN_API_LOCK;
+    rv = _fal_egress_tpid_get(dev_id, tpid);
+    FAL_PORTVLAN_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_port_ingress_filter_set(a_uint32_t dev_id, fal_port_t port_id, fal_ingress_filter_t *filter)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_PORTVLAN_API_LOCK;
+    rv = _fal_port_ingress_filter_set(dev_id, port_id, filter);
+    FAL_PORTVLAN_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_port_ingress_filter_get(a_uint32_t dev_id, fal_port_t port_id, fal_ingress_filter_t * filter)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_PORTVLAN_API_LOCK;
+    rv = _fal_port_ingress_filter_get(dev_id, port_id, filter);
+    FAL_PORTVLAN_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_port_ingress_default_tag_set(a_uint32_t dev_id, fal_port_t port_id,
+                                 fal_port_ingress_default_tag_t *default_tag)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_PORTVLAN_API_LOCK;
+    rv = _fal_port_ingress_default_tag_set(dev_id, port_id, default_tag);
+    FAL_PORTVLAN_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_port_ingress_default_tag_get(a_uint32_t dev_id, fal_port_t port_id,
+                                 fal_port_ingress_default_tag_t *default_tag)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_PORTVLAN_API_LOCK;
+    rv = _fal_port_ingress_default_tag_get(dev_id, port_id, default_tag);
+    FAL_PORTVLAN_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_port_tag_propagation_set(a_uint32_t dev_id, fal_port_t port_id,
+                                 fal_tag_propagation_t *prop)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_PORTVLAN_API_LOCK;
+    rv = _fal_port_tag_propagation_set(dev_id, port_id, prop);
+    FAL_PORTVLAN_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_port_tag_propagation_get(a_uint32_t dev_id, fal_port_t port_id,
+                                 fal_tag_propagation_t *prop)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_PORTVLAN_API_LOCK;
+    rv = _fal_port_tag_propagation_get(dev_id, port_id, prop);
+    FAL_PORTVLAN_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_port_tag_egvlanmode_set(a_uint32_t dev_id, fal_port_t port_id,
+                            fal_egressmode_t *port_egvlanmode)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_PORTVLAN_API_LOCK;
+    rv = _fal_port_tag_egvlanmode_set(dev_id, port_id, port_egvlanmode);
+    FAL_PORTVLAN_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_port_tag_egvlanmode_get(a_uint32_t dev_id, fal_port_t port_id,
+                            fal_egressmode_t *port_egvlanmode)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_PORTVLAN_API_LOCK;
+    rv = _fal_port_tag_egvlanmode_get(dev_id, port_id, port_egvlanmode);
+    FAL_PORTVLAN_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_port_egress_tag_propagation_set(a_uint32_t dev_id, fal_port_t port_id,
+                                 fal_tag_propagation_t *eg_prop)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_PORTVLAN_API_LOCK;
+    rv = _fal_port_egress_tag_propagation_set(dev_id, port_id, eg_prop);
+    FAL_PORTVLAN_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_port_egress_tag_propagation_get(a_uint32_t dev_id, fal_port_t port_id,
+                                 fal_tag_propagation_t *eg_prop)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_PORTVLAN_API_LOCK;
+    rv = _fal_port_egress_tag_propagation_get(dev_id, port_id, eg_prop);
+    FAL_PORTVLAN_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_port_vlan_xlt_miss_cmd_set(a_uint32_t dev_id, fal_port_t port_id,
+                                 fal_fwd_cmd_t cmd)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_PORTVLAN_API_LOCK;
+    rv = _fal_port_vlan_xlt_miss_cmd_set(dev_id, port_id, cmd);
+    FAL_PORTVLAN_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_port_vlan_xlt_miss_cmd_get(a_uint32_t dev_id, fal_port_t port_id,
+                                 fal_fwd_cmd_t *cmd)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_PORTVLAN_API_LOCK;
+    rv = _fal_port_vlan_xlt_miss_cmd_get(dev_id, port_id, cmd);
+    FAL_PORTVLAN_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_port_egress_default_vid_set(a_uint32_t dev_id, fal_port_t port_id,
+                                 fal_port_egress_default_vid_t *default_vid)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_PORTVLAN_API_LOCK;
+    rv = _fal_port_egress_default_vid_set(dev_id, port_id, default_vid);
+    FAL_PORTVLAN_API_UNLOCK;
+    return rv;
+}
+sw_error_t
+fal_port_egress_default_vid_get(a_uint32_t dev_id, fal_port_t port_id,
+                                 fal_port_egress_default_vid_t *default_vid)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_PORTVLAN_API_LOCK;
+    rv = _fal_port_egress_default_vid_get(dev_id, port_id, default_vid);
+    FAL_PORTVLAN_API_UNLOCK;
+    return rv;
+}

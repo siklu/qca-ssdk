@@ -94,1140 +94,146 @@ union bridge_config_u {
 	struct bridge_config bf;
 };
 
-/*[register] PORT_DEF_VID_0*/
-#define PORT_DEF_VID_0
-#define PORT_DEF_VID_0_ADDRESS 0x10
-#define PORT_DEF_VID_0_NUM     1
-#define PORT_DEF_VID_0_INC     0x4
-#define PORT_DEF_VID_0_TYPE    REG_TYPE_RW
-#define PORT_DEF_VID_0_DEFAULT 0x0
-	/*[field] PORT_DEF_SVID_0*/
-	#define PORT_DEF_VID_0_PORT_DEF_SVID_0
-	#define PORT_DEF_VID_0_PORT_DEF_SVID_0_OFFSET  0
-	#define PORT_DEF_VID_0_PORT_DEF_SVID_0_LEN     12
-	#define PORT_DEF_VID_0_PORT_DEF_SVID_0_DEFAULT 0x0
-	/*[field] PORT_DEF_SVID_EN_0*/
-	#define PORT_DEF_VID_0_PORT_DEF_SVID_EN_0
-	#define PORT_DEF_VID_0_PORT_DEF_SVID_EN_0_OFFSET  12
-	#define PORT_DEF_VID_0_PORT_DEF_SVID_EN_0_LEN     1
-	#define PORT_DEF_VID_0_PORT_DEF_SVID_EN_0_DEFAULT 0x0
-	/*[field] PORT_DEF_CVID_0*/
-	#define PORT_DEF_VID_0_PORT_DEF_CVID_0
-	#define PORT_DEF_VID_0_PORT_DEF_CVID_0_OFFSET  16
-	#define PORT_DEF_VID_0_PORT_DEF_CVID_0_LEN     12
-	#define PORT_DEF_VID_0_PORT_DEF_CVID_0_DEFAULT 0x0
-	/*[field] PORT_DEF_CVID_EN_0*/
-	#define PORT_DEF_VID_0_PORT_DEF_CVID_EN_0
-	#define PORT_DEF_VID_0_PORT_DEF_CVID_EN_0_OFFSET  28
-	#define PORT_DEF_VID_0_PORT_DEF_CVID_EN_0_LEN     1
-	#define PORT_DEF_VID_0_PORT_DEF_CVID_EN_0_DEFAULT 0x0
+/*[register] PORT_DEF_VID*/
+#define PORT_DEF_VID
+#define PORT_DEF_VID_ADDRESS 0x10
+#define PORT_DEF_VID_NUM     1
+#define PORT_DEF_VID_INC     0x4
+#define PORT_DEF_VID_TYPE    REG_TYPE_RW
+#define PORT_DEF_VID_DEFAULT 0x0
+	/*[field] PORT_DEF_SVID*/
+	#define PORT_DEF_VID_PORT_DEF_SVID
+	#define PORT_DEF_VID_PORT_DEF_SVID_OFFSET  0
+	#define PORT_DEF_VID_PORT_DEF_SVID_LEN     12
+	#define PORT_DEF_VID_PORT_DEF_SVID_DEFAULT 0x0
+	/*[field] PORT_DEF_SVID_EN*/
+	#define PORT_DEF_VID_PORT_DEF_SVID_EN
+	#define PORT_DEF_VID_PORT_DEF_SVID_EN_OFFSET  12
+	#define PORT_DEF_VID_PORT_DEF_SVID_EN_LEN     1
+	#define PORT_DEF_VID_PORT_DEF_SVID_EN_DEFAULT 0x0
+	/*[field] PORT_DEF_CVID*/
+	#define PORT_DEF_VID_PORT_DEF_CVID
+	#define PORT_DEF_VID_PORT_DEF_CVID_OFFSET  16
+	#define PORT_DEF_VID_PORT_DEF_CVID_LEN     12
+	#define PORT_DEF_VID_PORT_DEF_CVID_DEFAULT 0x0
+	/*[field] PORT_DEF_CVID_EN*/
+	#define PORT_DEF_VID_PORT_DEF_CVID_EN
+	#define PORT_DEF_VID_PORT_DEF_CVID_EN_OFFSET  28
+	#define PORT_DEF_VID_PORT_DEF_CVID_EN_LEN     1
+	#define PORT_DEF_VID_PORT_DEF_CVID_EN_DEFAULT 0x0
 
-struct port_def_vid_0 {
-	a_uint32_t  port_def_svid_0:12;
-	a_uint32_t  port_def_svid_en_0:1;
+struct port_def_vid {
+	a_uint32_t  port_def_svid:12;
+	a_uint32_t  port_def_svid_en:1;
 	a_uint32_t  _reserved0:3;
-	a_uint32_t  port_def_cvid_0:12;
-	a_uint32_t  port_def_cvid_en_0:1;
+	a_uint32_t  port_def_cvid:12;
+	a_uint32_t  port_def_cvid_en:1;
 	a_uint32_t  _reserved1:3;
 };
 
-union port_def_vid_0_u {
+union port_def_vid_u {
 	a_uint32_t val;
-	struct port_def_vid_0 bf;
+	struct port_def_vid bf;
 };
 
-/*[register] PORT_DEF_VID_1*/
-#define PORT_DEF_VID_1
-#define PORT_DEF_VID_1_ADDRESS 0x14
-#define PORT_DEF_VID_1_NUM     1
-#define PORT_DEF_VID_1_INC     0x4
-#define PORT_DEF_VID_1_TYPE    REG_TYPE_RW
-#define PORT_DEF_VID_1_DEFAULT 0x0
-	/*[field] PORT_DEF_SVID_1*/
-	#define PORT_DEF_VID_1_PORT_DEF_SVID_1
-	#define PORT_DEF_VID_1_PORT_DEF_SVID_1_OFFSET  0
-	#define PORT_DEF_VID_1_PORT_DEF_SVID_1_LEN     12
-	#define PORT_DEF_VID_1_PORT_DEF_SVID_1_DEFAULT 0x0
-	/*[field] PORT_DEF_SVID_EN_1*/
-	#define PORT_DEF_VID_1_PORT_DEF_SVID_EN_1
-	#define PORT_DEF_VID_1_PORT_DEF_SVID_EN_1_OFFSET  12
-	#define PORT_DEF_VID_1_PORT_DEF_SVID_EN_1_LEN     1
-	#define PORT_DEF_VID_1_PORT_DEF_SVID_EN_1_DEFAULT 0x0
-	/*[field] PORT_DEF_CVID_1*/
-	#define PORT_DEF_VID_1_PORT_DEF_CVID_1
-	#define PORT_DEF_VID_1_PORT_DEF_CVID_1_OFFSET  16
-	#define PORT_DEF_VID_1_PORT_DEF_CVID_1_LEN     12
-	#define PORT_DEF_VID_1_PORT_DEF_CVID_1_DEFAULT 0x0
-	/*[field] PORT_DEF_CVID_EN_1*/
-	#define PORT_DEF_VID_1_PORT_DEF_CVID_EN_1
-	#define PORT_DEF_VID_1_PORT_DEF_CVID_EN_1_OFFSET  28
-	#define PORT_DEF_VID_1_PORT_DEF_CVID_EN_1_LEN     1
-	#define PORT_DEF_VID_1_PORT_DEF_CVID_EN_1_DEFAULT 0x0
+/*[register] PORT_DEF_PCP*/
+#define PORT_DEF_PCP
+#define PORT_DEF_PCP_ADDRESS 0x30
+#define PORT_DEF_PCP_NUM     1
+#define PORT_DEF_PCP_INC     0x4
+#define PORT_DEF_PCP_TYPE    REG_TYPE_RW
+#define PORT_DEF_PCP_DEFAULT 0x0
+	/*[field] PORT_DEF_SPCP*/
+	#define PORT_DEF_PCP_PORT_DEF_SPCP
+	#define PORT_DEF_PCP_PORT_DEF_SPCP_OFFSET  0
+	#define PORT_DEF_PCP_PORT_DEF_SPCP_LEN     3
+	#define PORT_DEF_PCP_PORT_DEF_SPCP_DEFAULT 0x0
+	/*[field] PORT_DEF_SDEI*/
+	#define PORT_DEF_PCP_PORT_DEF_SDEI
+	#define PORT_DEF_PCP_PORT_DEF_SDEI_OFFSET  3
+	#define PORT_DEF_PCP_PORT_DEF_SDEI_LEN     1
+	#define PORT_DEF_PCP_PORT_DEF_SDEI_DEFAULT 0x0
+	/*[field] PORT_DEF_CPCP*/
+	#define PORT_DEF_PCP_PORT_DEF_CPCP
+	#define PORT_DEF_PCP_PORT_DEF_CPCP_OFFSET  4
+	#define PORT_DEF_PCP_PORT_DEF_CPCP_LEN     3
+	#define PORT_DEF_PCP_PORT_DEF_CPCP_DEFAULT 0x0
+	/*[field] PORT_DEF_CDEI*/
+	#define PORT_DEF_PCP_PORT_DEF_CDEI
+	#define PORT_DEF_PCP_PORT_DEF_CDEI_OFFSET  7
+	#define PORT_DEF_PCP_PORT_DEF_CDEI_LEN     1
+	#define PORT_DEF_PCP_PORT_DEF_CDEI_DEFAULT 0x0
 
-struct port_def_vid_1 {
-	a_uint32_t  port_def_svid_1:12;
-	a_uint32_t  port_def_svid_en_1:1;
-	a_uint32_t  _reserved0:3;
-	a_uint32_t  port_def_cvid_1:12;
-	a_uint32_t  port_def_cvid_en_1:1;
-	a_uint32_t  _reserved1:3;
-};
-
-union port_def_vid_1_u {
-	a_uint32_t val;
-	struct port_def_vid_1 bf;
-};
-
-/*[register] PORT_DEF_VID_2*/
-#define PORT_DEF_VID_2
-#define PORT_DEF_VID_2_ADDRESS 0x18
-#define PORT_DEF_VID_2_NUM     1
-#define PORT_DEF_VID_2_INC     0x4
-#define PORT_DEF_VID_2_TYPE    REG_TYPE_RW
-#define PORT_DEF_VID_2_DEFAULT 0x0
-	/*[field] PORT_DEF_SVID_2*/
-	#define PORT_DEF_VID_2_PORT_DEF_SVID_2
-	#define PORT_DEF_VID_2_PORT_DEF_SVID_2_OFFSET  0
-	#define PORT_DEF_VID_2_PORT_DEF_SVID_2_LEN     12
-	#define PORT_DEF_VID_2_PORT_DEF_SVID_2_DEFAULT 0x0
-	/*[field] PORT_DEF_SVID_EN_2*/
-	#define PORT_DEF_VID_2_PORT_DEF_SVID_EN_2
-	#define PORT_DEF_VID_2_PORT_DEF_SVID_EN_2_OFFSET  12
-	#define PORT_DEF_VID_2_PORT_DEF_SVID_EN_2_LEN     1
-	#define PORT_DEF_VID_2_PORT_DEF_SVID_EN_2_DEFAULT 0x0
-	/*[field] PORT_DEF_CVID_2*/
-	#define PORT_DEF_VID_2_PORT_DEF_CVID_2
-	#define PORT_DEF_VID_2_PORT_DEF_CVID_2_OFFSET  16
-	#define PORT_DEF_VID_2_PORT_DEF_CVID_2_LEN     12
-	#define PORT_DEF_VID_2_PORT_DEF_CVID_2_DEFAULT 0x0
-	/*[field] PORT_DEF_CVID_EN_2*/
-	#define PORT_DEF_VID_2_PORT_DEF_CVID_EN_2
-	#define PORT_DEF_VID_2_PORT_DEF_CVID_EN_2_OFFSET  28
-	#define PORT_DEF_VID_2_PORT_DEF_CVID_EN_2_LEN     1
-	#define PORT_DEF_VID_2_PORT_DEF_CVID_EN_2_DEFAULT 0x0
-
-struct port_def_vid_2 {
-	a_uint32_t  port_def_svid_2:12;
-	a_uint32_t  port_def_svid_en_2:1;
-	a_uint32_t  _reserved0:3;
-	a_uint32_t  port_def_cvid_2:12;
-	a_uint32_t  port_def_cvid_en_2:1;
-	a_uint32_t  _reserved1:3;
-};
-
-union port_def_vid_2_u {
-	a_uint32_t val;
-	struct port_def_vid_2 bf;
-};
-
-/*[register] PORT_DEF_VID_3*/
-#define PORT_DEF_VID_3
-#define PORT_DEF_VID_3_ADDRESS 0x1c
-#define PORT_DEF_VID_3_NUM     1
-#define PORT_DEF_VID_3_INC     0x4
-#define PORT_DEF_VID_3_TYPE    REG_TYPE_RW
-#define PORT_DEF_VID_3_DEFAULT 0x0
-	/*[field] PORT_DEF_SVID_3*/
-	#define PORT_DEF_VID_3_PORT_DEF_SVID_3
-	#define PORT_DEF_VID_3_PORT_DEF_SVID_3_OFFSET  0
-	#define PORT_DEF_VID_3_PORT_DEF_SVID_3_LEN     12
-	#define PORT_DEF_VID_3_PORT_DEF_SVID_3_DEFAULT 0x0
-	/*[field] PORT_DEF_SVID_EN_3*/
-	#define PORT_DEF_VID_3_PORT_DEF_SVID_EN_3
-	#define PORT_DEF_VID_3_PORT_DEF_SVID_EN_3_OFFSET  12
-	#define PORT_DEF_VID_3_PORT_DEF_SVID_EN_3_LEN     1
-	#define PORT_DEF_VID_3_PORT_DEF_SVID_EN_3_DEFAULT 0x0
-	/*[field] PORT_DEF_CVID_3*/
-	#define PORT_DEF_VID_3_PORT_DEF_CVID_3
-	#define PORT_DEF_VID_3_PORT_DEF_CVID_3_OFFSET  16
-	#define PORT_DEF_VID_3_PORT_DEF_CVID_3_LEN     12
-	#define PORT_DEF_VID_3_PORT_DEF_CVID_3_DEFAULT 0x0
-	/*[field] PORT_DEF_CVID_EN_3*/
-	#define PORT_DEF_VID_3_PORT_DEF_CVID_EN_3
-	#define PORT_DEF_VID_3_PORT_DEF_CVID_EN_3_OFFSET  28
-	#define PORT_DEF_VID_3_PORT_DEF_CVID_EN_3_LEN     1
-	#define PORT_DEF_VID_3_PORT_DEF_CVID_EN_3_DEFAULT 0x0
-
-struct port_def_vid_3 {
-	a_uint32_t  port_def_svid_3:12;
-	a_uint32_t  port_def_svid_en_3:1;
-	a_uint32_t  _reserved0:3;
-	a_uint32_t  port_def_cvid_3:12;
-	a_uint32_t  port_def_cvid_en_3:1;
-	a_uint32_t  _reserved1:3;
-};
-
-union port_def_vid_3_u {
-	a_uint32_t val;
-	struct port_def_vid_3 bf;
-};
-
-/*[register] PORT_DEF_VID_4*/
-#define PORT_DEF_VID_4
-#define PORT_DEF_VID_4_ADDRESS 0x20
-#define PORT_DEF_VID_4_NUM     1
-#define PORT_DEF_VID_4_INC     0x4
-#define PORT_DEF_VID_4_TYPE    REG_TYPE_RW
-#define PORT_DEF_VID_4_DEFAULT 0x0
-	/*[field] PORT_DEF_SVID_4*/
-	#define PORT_DEF_VID_4_PORT_DEF_SVID_4
-	#define PORT_DEF_VID_4_PORT_DEF_SVID_4_OFFSET  0
-	#define PORT_DEF_VID_4_PORT_DEF_SVID_4_LEN     12
-	#define PORT_DEF_VID_4_PORT_DEF_SVID_4_DEFAULT 0x0
-	/*[field] PORT_DEF_SVID_EN_4*/
-	#define PORT_DEF_VID_4_PORT_DEF_SVID_EN_4
-	#define PORT_DEF_VID_4_PORT_DEF_SVID_EN_4_OFFSET  12
-	#define PORT_DEF_VID_4_PORT_DEF_SVID_EN_4_LEN     1
-	#define PORT_DEF_VID_4_PORT_DEF_SVID_EN_4_DEFAULT 0x0
-	/*[field] PORT_DEF_CVID_4*/
-	#define PORT_DEF_VID_4_PORT_DEF_CVID_4
-	#define PORT_DEF_VID_4_PORT_DEF_CVID_4_OFFSET  16
-	#define PORT_DEF_VID_4_PORT_DEF_CVID_4_LEN     12
-	#define PORT_DEF_VID_4_PORT_DEF_CVID_4_DEFAULT 0x0
-	/*[field] PORT_DEF_CVID_EN_4*/
-	#define PORT_DEF_VID_4_PORT_DEF_CVID_EN_4
-	#define PORT_DEF_VID_4_PORT_DEF_CVID_EN_4_OFFSET  28
-	#define PORT_DEF_VID_4_PORT_DEF_CVID_EN_4_LEN     1
-	#define PORT_DEF_VID_4_PORT_DEF_CVID_EN_4_DEFAULT 0x0
-
-struct port_def_vid_4 {
-	a_uint32_t  port_def_svid_4:12;
-	a_uint32_t  port_def_svid_en_4:1;
-	a_uint32_t  _reserved0:3;
-	a_uint32_t  port_def_cvid_4:12;
-	a_uint32_t  port_def_cvid_en_4:1;
-	a_uint32_t  _reserved1:3;
-};
-
-union port_def_vid_4_u {
-	a_uint32_t val;
-	struct port_def_vid_4 bf;
-};
-
-/*[register] PORT_DEF_VID_5*/
-#define PORT_DEF_VID_5
-#define PORT_DEF_VID_5_ADDRESS 0x24
-#define PORT_DEF_VID_5_NUM     1
-#define PORT_DEF_VID_5_INC     0x4
-#define PORT_DEF_VID_5_TYPE    REG_TYPE_RW
-#define PORT_DEF_VID_5_DEFAULT 0x0
-	/*[field] PORT_DEF_SVID_5*/
-	#define PORT_DEF_VID_5_PORT_DEF_SVID_5
-	#define PORT_DEF_VID_5_PORT_DEF_SVID_5_OFFSET  0
-	#define PORT_DEF_VID_5_PORT_DEF_SVID_5_LEN     12
-	#define PORT_DEF_VID_5_PORT_DEF_SVID_5_DEFAULT 0x0
-	/*[field] PORT_DEF_SVID_EN_5*/
-	#define PORT_DEF_VID_5_PORT_DEF_SVID_EN_5
-	#define PORT_DEF_VID_5_PORT_DEF_SVID_EN_5_OFFSET  12
-	#define PORT_DEF_VID_5_PORT_DEF_SVID_EN_5_LEN     1
-	#define PORT_DEF_VID_5_PORT_DEF_SVID_EN_5_DEFAULT 0x0
-	/*[field] PORT_DEF_CVID_5*/
-	#define PORT_DEF_VID_5_PORT_DEF_CVID_5
-	#define PORT_DEF_VID_5_PORT_DEF_CVID_5_OFFSET  16
-	#define PORT_DEF_VID_5_PORT_DEF_CVID_5_LEN     12
-	#define PORT_DEF_VID_5_PORT_DEF_CVID_5_DEFAULT 0x0
-	/*[field] PORT_DEF_CVID_EN_5*/
-	#define PORT_DEF_VID_5_PORT_DEF_CVID_EN_5
-	#define PORT_DEF_VID_5_PORT_DEF_CVID_EN_5_OFFSET  28
-	#define PORT_DEF_VID_5_PORT_DEF_CVID_EN_5_LEN     1
-	#define PORT_DEF_VID_5_PORT_DEF_CVID_EN_5_DEFAULT 0x0
-
-struct port_def_vid_5 {
-	a_uint32_t  port_def_svid_5:12;
-	a_uint32_t  port_def_svid_en_5:1;
-	a_uint32_t  _reserved0:3;
-	a_uint32_t  port_def_cvid_5:12;
-	a_uint32_t  port_def_cvid_en_5:1;
-	a_uint32_t  _reserved1:3;
-};
-
-union port_def_vid_5_u {
-	a_uint32_t val;
-	struct port_def_vid_5 bf;
-};
-
-/*[register] PORT_DEF_VID_6*/
-#define PORT_DEF_VID_6
-#define PORT_DEF_VID_6_ADDRESS 0x28
-#define PORT_DEF_VID_6_NUM     1
-#define PORT_DEF_VID_6_INC     0x4
-#define PORT_DEF_VID_6_TYPE    REG_TYPE_RW
-#define PORT_DEF_VID_6_DEFAULT 0x0
-	/*[field] PORT_DEF_SVID_6*/
-	#define PORT_DEF_VID_6_PORT_DEF_SVID_6
-	#define PORT_DEF_VID_6_PORT_DEF_SVID_6_OFFSET  0
-	#define PORT_DEF_VID_6_PORT_DEF_SVID_6_LEN     12
-	#define PORT_DEF_VID_6_PORT_DEF_SVID_6_DEFAULT 0x0
-	/*[field] PORT_DEF_SVID_EN_6*/
-	#define PORT_DEF_VID_6_PORT_DEF_SVID_EN_6
-	#define PORT_DEF_VID_6_PORT_DEF_SVID_EN_6_OFFSET  12
-	#define PORT_DEF_VID_6_PORT_DEF_SVID_EN_6_LEN     1
-	#define PORT_DEF_VID_6_PORT_DEF_SVID_EN_6_DEFAULT 0x0
-	/*[field] PORT_DEF_CVID_6*/
-	#define PORT_DEF_VID_6_PORT_DEF_CVID_6
-	#define PORT_DEF_VID_6_PORT_DEF_CVID_6_OFFSET  16
-	#define PORT_DEF_VID_6_PORT_DEF_CVID_6_LEN     12
-	#define PORT_DEF_VID_6_PORT_DEF_CVID_6_DEFAULT 0x0
-	/*[field] PORT_DEF_CVID_EN_6*/
-	#define PORT_DEF_VID_6_PORT_DEF_CVID_EN_6
-	#define PORT_DEF_VID_6_PORT_DEF_CVID_EN_6_OFFSET  28
-	#define PORT_DEF_VID_6_PORT_DEF_CVID_EN_6_LEN     1
-	#define PORT_DEF_VID_6_PORT_DEF_CVID_EN_6_DEFAULT 0x0
-
-struct port_def_vid_6 {
-	a_uint32_t  port_def_svid_6:12;
-	a_uint32_t  port_def_svid_en_6:1;
-	a_uint32_t  _reserved0:3;
-	a_uint32_t  port_def_cvid_6:12;
-	a_uint32_t  port_def_cvid_en_6:1;
-	a_uint32_t  _reserved1:3;
-};
-
-union port_def_vid_6_u {
-	a_uint32_t val;
-	struct port_def_vid_6 bf;
-};
-
-/*[register] PORT_DEF_VID_7*/
-#define PORT_DEF_VID_7
-#define PORT_DEF_VID_7_ADDRESS 0x2c
-#define PORT_DEF_VID_7_NUM     1
-#define PORT_DEF_VID_7_INC     0x4
-#define PORT_DEF_VID_7_TYPE    REG_TYPE_RW
-#define PORT_DEF_VID_7_DEFAULT 0x0
-	/*[field] PORT_DEF_SVID_7*/
-	#define PORT_DEF_VID_7_PORT_DEF_SVID_7
-	#define PORT_DEF_VID_7_PORT_DEF_SVID_7_OFFSET  0
-	#define PORT_DEF_VID_7_PORT_DEF_SVID_7_LEN     12
-	#define PORT_DEF_VID_7_PORT_DEF_SVID_7_DEFAULT 0x0
-	/*[field] PORT_DEF_SVID_EN_7*/
-	#define PORT_DEF_VID_7_PORT_DEF_SVID_EN_7
-	#define PORT_DEF_VID_7_PORT_DEF_SVID_EN_7_OFFSET  12
-	#define PORT_DEF_VID_7_PORT_DEF_SVID_EN_7_LEN     1
-	#define PORT_DEF_VID_7_PORT_DEF_SVID_EN_7_DEFAULT 0x0
-	/*[field] PORT_DEF_CVID_7*/
-	#define PORT_DEF_VID_7_PORT_DEF_CVID_7
-	#define PORT_DEF_VID_7_PORT_DEF_CVID_7_OFFSET  16
-	#define PORT_DEF_VID_7_PORT_DEF_CVID_7_LEN     12
-	#define PORT_DEF_VID_7_PORT_DEF_CVID_7_DEFAULT 0x0
-	/*[field] PORT_DEF_CVID_EN_7*/
-	#define PORT_DEF_VID_7_PORT_DEF_CVID_EN_7
-	#define PORT_DEF_VID_7_PORT_DEF_CVID_EN_7_OFFSET  28
-	#define PORT_DEF_VID_7_PORT_DEF_CVID_EN_7_LEN     1
-	#define PORT_DEF_VID_7_PORT_DEF_CVID_EN_7_DEFAULT 0x0
-
-struct port_def_vid_7 {
-	a_uint32_t  port_def_svid_7:12;
-	a_uint32_t  port_def_svid_en_7:1;
-	a_uint32_t  _reserved0:3;
-	a_uint32_t  port_def_cvid_7:12;
-	a_uint32_t  port_def_cvid_en_7:1;
-	a_uint32_t  _reserved1:3;
-};
-
-union port_def_vid_7_u {
-	a_uint32_t val;
-	struct port_def_vid_7 bf;
-};
-
-/*[register] PORT_DEF_PCP_0*/
-#define PORT_DEF_PCP_0
-#define PORT_DEF_PCP_0_ADDRESS 0x30
-#define PORT_DEF_PCP_0_NUM     1
-#define PORT_DEF_PCP_0_INC     0x4
-#define PORT_DEF_PCP_0_TYPE    REG_TYPE_RW
-#define PORT_DEF_PCP_0_DEFAULT 0x0
-	/*[field] PORT_DEF_SPCP_0*/
-	#define PORT_DEF_PCP_0_PORT_DEF_SPCP_0
-	#define PORT_DEF_PCP_0_PORT_DEF_SPCP_0_OFFSET  0
-	#define PORT_DEF_PCP_0_PORT_DEF_SPCP_0_LEN     3
-	#define PORT_DEF_PCP_0_PORT_DEF_SPCP_0_DEFAULT 0x0
-	/*[field] PORT_DEF_SDEI_0*/
-	#define PORT_DEF_PCP_0_PORT_DEF_SDEI_0
-	#define PORT_DEF_PCP_0_PORT_DEF_SDEI_0_OFFSET  3
-	#define PORT_DEF_PCP_0_PORT_DEF_SDEI_0_LEN     1
-	#define PORT_DEF_PCP_0_PORT_DEF_SDEI_0_DEFAULT 0x0
-	/*[field] PORT_DEF_CPCP_0*/
-	#define PORT_DEF_PCP_0_PORT_DEF_CPCP_0
-	#define PORT_DEF_PCP_0_PORT_DEF_CPCP_0_OFFSET  4
-	#define PORT_DEF_PCP_0_PORT_DEF_CPCP_0_LEN     3
-	#define PORT_DEF_PCP_0_PORT_DEF_CPCP_0_DEFAULT 0x0
-	/*[field] PORT_DEF_CDEI_0*/
-	#define PORT_DEF_PCP_0_PORT_DEF_CDEI_0
-	#define PORT_DEF_PCP_0_PORT_DEF_CDEI_0_OFFSET  7
-	#define PORT_DEF_PCP_0_PORT_DEF_CDEI_0_LEN     1
-	#define PORT_DEF_PCP_0_PORT_DEF_CDEI_0_DEFAULT 0x0
-
-struct port_def_pcp_0 {
-	a_uint32_t  port_def_spcp_0:3;
-	a_uint32_t  port_def_sdei_0:1;
-	a_uint32_t  port_def_cpcp_0:3;
-	a_uint32_t  port_def_cdei_0:1;
+struct port_def_pcp {
+	a_uint32_t  port_def_spcp:3;
+	a_uint32_t  port_def_sdei:1;
+	a_uint32_t  port_def_cpcp:3;
+	a_uint32_t  port_def_cdei:1;
 	a_uint32_t  _reserved0:24;
 };
 
-union port_def_pcp_0_u {
+union port_def_pcp_u {
 	a_uint32_t val;
-	struct port_def_pcp_0 bf;
+	struct port_def_pcp bf;
 };
 
-/*[register] PORT_DEF_PCP_1*/
-#define PORT_DEF_PCP_1
-#define PORT_DEF_PCP_1_ADDRESS 0x34
-#define PORT_DEF_PCP_1_NUM     1
-#define PORT_DEF_PCP_1_INC     0x4
-#define PORT_DEF_PCP_1_TYPE    REG_TYPE_RW
-#define PORT_DEF_PCP_1_DEFAULT 0x0
-	/*[field] PORT_DEF_SPCP_1*/
-	#define PORT_DEF_PCP_1_PORT_DEF_SPCP_1
-	#define PORT_DEF_PCP_1_PORT_DEF_SPCP_1_OFFSET  0
-	#define PORT_DEF_PCP_1_PORT_DEF_SPCP_1_LEN     3
-	#define PORT_DEF_PCP_1_PORT_DEF_SPCP_1_DEFAULT 0x0
-	/*[field] PORT_DEF_SDEI_1*/
-	#define PORT_DEF_PCP_1_PORT_DEF_SDEI_1
-	#define PORT_DEF_PCP_1_PORT_DEF_SDEI_1_OFFSET  3
-	#define PORT_DEF_PCP_1_PORT_DEF_SDEI_1_LEN     1
-	#define PORT_DEF_PCP_1_PORT_DEF_SDEI_1_DEFAULT 0x0
-	/*[field] PORT_DEF_CPCP_1*/
-	#define PORT_DEF_PCP_1_PORT_DEF_CPCP_1
-	#define PORT_DEF_PCP_1_PORT_DEF_CPCP_1_OFFSET  4
-	#define PORT_DEF_PCP_1_PORT_DEF_CPCP_1_LEN     3
-	#define PORT_DEF_PCP_1_PORT_DEF_CPCP_1_DEFAULT 0x0
-	/*[field] PORT_DEF_CDEI_1*/
-	#define PORT_DEF_PCP_1_PORT_DEF_CDEI_1
-	#define PORT_DEF_PCP_1_PORT_DEF_CDEI_1_OFFSET  7
-	#define PORT_DEF_PCP_1_PORT_DEF_CDEI_1_LEN     1
-	#define PORT_DEF_PCP_1_PORT_DEF_CDEI_1_DEFAULT 0x0
+/*[register] PORT_VLAN_CONFIG*/
+#define PORT_VLAN_CONFIG
+#define PORT_VLAN_CONFIG_ADDRESS 0x50
+#define PORT_VLAN_CONFIG_NUM     1
+#define PORT_VLAN_CONFIG_INC     0x4
+#define PORT_VLAN_CONFIG_TYPE    REG_TYPE_RW
+#define PORT_VLAN_CONFIG_DEFAULT 0x0
+	/*[field] PORT_IN_PCP_PROP_CMD*/
+	#define PORT_VLAN_CONFIG_PORT_IN_PCP_PROP_CMD
+	#define PORT_VLAN_CONFIG_PORT_IN_PCP_PROP_CMD_OFFSET  0
+	#define PORT_VLAN_CONFIG_PORT_IN_PCP_PROP_CMD_LEN     1
+	#define PORT_VLAN_CONFIG_PORT_IN_PCP_PROP_CMD_DEFAULT 0x0
+	/*[field] PORT_IN_DEI_PROP_CMD*/
+	#define PORT_VLAN_CONFIG_PORT_IN_DEI_PROP_CMD
+	#define PORT_VLAN_CONFIG_PORT_IN_DEI_PROP_CMD_OFFSET  1
+	#define PORT_VLAN_CONFIG_PORT_IN_DEI_PROP_CMD_LEN     1
+	#define PORT_VLAN_CONFIG_PORT_IN_DEI_PROP_CMD_DEFAULT 0x0
+	/*[field] PORT_UNTAG_FLTR_CMD*/
+	#define PORT_VLAN_CONFIG_PORT_UNTAG_FLTR_CMD
+	#define PORT_VLAN_CONFIG_PORT_UNTAG_FLTR_CMD_OFFSET  2
+	#define PORT_VLAN_CONFIG_PORT_UNTAG_FLTR_CMD_LEN     1
+	#define PORT_VLAN_CONFIG_PORT_UNTAG_FLTR_CMD_DEFAULT 0x0
+	/*[field] PORT_PRI_TAG_FLTR_CMD*/
+	#define PORT_VLAN_CONFIG_PORT_PRI_TAG_FLTR_CMD
+	#define PORT_VLAN_CONFIG_PORT_PRI_TAG_FLTR_CMD_OFFSET  3
+	#define PORT_VLAN_CONFIG_PORT_PRI_TAG_FLTR_CMD_LEN     1
+	#define PORT_VLAN_CONFIG_PORT_PRI_TAG_FLTR_CMD_DEFAULT 0x0
+	/*[field] PORT_TAG_FLTR_CMD*/
+	#define PORT_VLAN_CONFIG_PORT_TAG_FLTR_CMD
+	#define PORT_VLAN_CONFIG_PORT_TAG_FLTR_CMD_OFFSET  4
+	#define PORT_VLAN_CONFIG_PORT_TAG_FLTR_CMD_LEN     1
+	#define PORT_VLAN_CONFIG_PORT_TAG_FLTR_CMD_DEFAULT 0x0
+	/*[field] PORT_VLAN_XLT_MISS_FWD_CMD*/
+	#define PORT_VLAN_CONFIG_PORT_VLAN_XLT_MISS_FWD_CMD
+	#define PORT_VLAN_CONFIG_PORT_VLAN_XLT_MISS_FWD_CMD_OFFSET  5
+	#define PORT_VLAN_CONFIG_PORT_VLAN_XLT_MISS_FWD_CMD_LEN     2
+	#define PORT_VLAN_CONFIG_PORT_VLAN_XLT_MISS_FWD_CMD_DEFAULT 0x0
+	/*[field] PORT_IN_VLAN_FLTR_CMD*/
+	#define PORT_VLAN_CONFIG_PORT_IN_VLAN_FLTR_CMD
+	#define PORT_VLAN_CONFIG_PORT_IN_VLAN_FLTR_CMD_OFFSET  7
+	#define PORT_VLAN_CONFIG_PORT_IN_VLAN_FLTR_CMD_LEN     1
+	#define PORT_VLAN_CONFIG_PORT_IN_VLAN_FLTR_CMD_DEFAULT 0x0
 
-struct port_def_pcp_1 {
-	a_uint32_t  port_def_spcp_1:3;
-	a_uint32_t  port_def_sdei_1:1;
-	a_uint32_t  port_def_cpcp_1:3;
-	a_uint32_t  port_def_cdei_1:1;
+struct port_vlan_config {
+	a_uint32_t  port_in_pcp_prop_cmd:1;
+	a_uint32_t  port_in_dei_prop_cmd:1;
+	a_uint32_t  port_untag_fltr_cmd:1;
+	a_uint32_t  port_pri_tag_fltr_cmd:1;
+	a_uint32_t  port_tag_fltr_cmd:1;
+	a_uint32_t  port_vlan_xlt_miss_fwd_cmd:2;
+	a_uint32_t  port_in_vlan_fltr_cmd:1;
 	a_uint32_t  _reserved0:24;
 };
 
-union port_def_pcp_1_u {
+union port_vlan_config_u {
 	a_uint32_t val;
-	struct port_def_pcp_1 bf;
-};
-
-/*[register] PORT_DEF_PCP_2*/
-#define PORT_DEF_PCP_2
-#define PORT_DEF_PCP_2_ADDRESS 0x38
-#define PORT_DEF_PCP_2_NUM     1
-#define PORT_DEF_PCP_2_INC     0x4
-#define PORT_DEF_PCP_2_TYPE    REG_TYPE_RW
-#define PORT_DEF_PCP_2_DEFAULT 0x0
-	/*[field] PORT_DEF_SPCP_2*/
-	#define PORT_DEF_PCP_2_PORT_DEF_SPCP_2
-	#define PORT_DEF_PCP_2_PORT_DEF_SPCP_2_OFFSET  0
-	#define PORT_DEF_PCP_2_PORT_DEF_SPCP_2_LEN     3
-	#define PORT_DEF_PCP_2_PORT_DEF_SPCP_2_DEFAULT 0x0
-	/*[field] PORT_DEF_SDEI_2*/
-	#define PORT_DEF_PCP_2_PORT_DEF_SDEI_2
-	#define PORT_DEF_PCP_2_PORT_DEF_SDEI_2_OFFSET  3
-	#define PORT_DEF_PCP_2_PORT_DEF_SDEI_2_LEN     1
-	#define PORT_DEF_PCP_2_PORT_DEF_SDEI_2_DEFAULT 0x0
-	/*[field] PORT_DEF_CPCP_2*/
-	#define PORT_DEF_PCP_2_PORT_DEF_CPCP_2
-	#define PORT_DEF_PCP_2_PORT_DEF_CPCP_2_OFFSET  4
-	#define PORT_DEF_PCP_2_PORT_DEF_CPCP_2_LEN     3
-	#define PORT_DEF_PCP_2_PORT_DEF_CPCP_2_DEFAULT 0x0
-	/*[field] PORT_DEF_CDEI_2*/
-	#define PORT_DEF_PCP_2_PORT_DEF_CDEI_2
-	#define PORT_DEF_PCP_2_PORT_DEF_CDEI_2_OFFSET  7
-	#define PORT_DEF_PCP_2_PORT_DEF_CDEI_2_LEN     1
-	#define PORT_DEF_PCP_2_PORT_DEF_CDEI_2_DEFAULT 0x0
-
-struct port_def_pcp_2 {
-	a_uint32_t  port_def_spcp_2:3;
-	a_uint32_t  port_def_sdei_2:1;
-	a_uint32_t  port_def_cpcp_2:3;
-	a_uint32_t  port_def_cdei_2:1;
-	a_uint32_t  _reserved0:24;
-};
-
-union port_def_pcp_2_u {
-	a_uint32_t val;
-	struct port_def_pcp_2 bf;
-};
-
-/*[register] PORT_DEF_PCP_3*/
-#define PORT_DEF_PCP_3
-#define PORT_DEF_PCP_3_ADDRESS 0x3c
-#define PORT_DEF_PCP_3_NUM     1
-#define PORT_DEF_PCP_3_INC     0x4
-#define PORT_DEF_PCP_3_TYPE    REG_TYPE_RW
-#define PORT_DEF_PCP_3_DEFAULT 0x0
-	/*[field] PORT_DEF_SPCP_3*/
-	#define PORT_DEF_PCP_3_PORT_DEF_SPCP_3
-	#define PORT_DEF_PCP_3_PORT_DEF_SPCP_3_OFFSET  0
-	#define PORT_DEF_PCP_3_PORT_DEF_SPCP_3_LEN     3
-	#define PORT_DEF_PCP_3_PORT_DEF_SPCP_3_DEFAULT 0x0
-	/*[field] PORT_DEF_SDEI_3*/
-	#define PORT_DEF_PCP_3_PORT_DEF_SDEI_3
-	#define PORT_DEF_PCP_3_PORT_DEF_SDEI_3_OFFSET  3
-	#define PORT_DEF_PCP_3_PORT_DEF_SDEI_3_LEN     1
-	#define PORT_DEF_PCP_3_PORT_DEF_SDEI_3_DEFAULT 0x0
-	/*[field] PORT_DEF_CPCP_3*/
-	#define PORT_DEF_PCP_3_PORT_DEF_CPCP_3
-	#define PORT_DEF_PCP_3_PORT_DEF_CPCP_3_OFFSET  4
-	#define PORT_DEF_PCP_3_PORT_DEF_CPCP_3_LEN     3
-	#define PORT_DEF_PCP_3_PORT_DEF_CPCP_3_DEFAULT 0x0
-	/*[field] PORT_DEF_CDEI_3*/
-	#define PORT_DEF_PCP_3_PORT_DEF_CDEI_3
-	#define PORT_DEF_PCP_3_PORT_DEF_CDEI_3_OFFSET  7
-	#define PORT_DEF_PCP_3_PORT_DEF_CDEI_3_LEN     1
-	#define PORT_DEF_PCP_3_PORT_DEF_CDEI_3_DEFAULT 0x0
-
-struct port_def_pcp_3 {
-	a_uint32_t  port_def_spcp_3:3;
-	a_uint32_t  port_def_sdei_3:1;
-	a_uint32_t  port_def_cpcp_3:3;
-	a_uint32_t  port_def_cdei_3:1;
-	a_uint32_t  _reserved0:24;
-};
-
-union port_def_pcp_3_u {
-	a_uint32_t val;
-	struct port_def_pcp_3 bf;
-};
-
-/*[register] PORT_DEF_PCP_4*/
-#define PORT_DEF_PCP_4
-#define PORT_DEF_PCP_4_ADDRESS 0x40
-#define PORT_DEF_PCP_4_NUM     1
-#define PORT_DEF_PCP_4_INC     0x4
-#define PORT_DEF_PCP_4_TYPE    REG_TYPE_RW
-#define PORT_DEF_PCP_4_DEFAULT 0x0
-	/*[field] PORT_DEF_SPCP_4*/
-	#define PORT_DEF_PCP_4_PORT_DEF_SPCP_4
-	#define PORT_DEF_PCP_4_PORT_DEF_SPCP_4_OFFSET  0
-	#define PORT_DEF_PCP_4_PORT_DEF_SPCP_4_LEN     3
-	#define PORT_DEF_PCP_4_PORT_DEF_SPCP_4_DEFAULT 0x0
-	/*[field] PORT_DEF_SDEI_4*/
-	#define PORT_DEF_PCP_4_PORT_DEF_SDEI_4
-	#define PORT_DEF_PCP_4_PORT_DEF_SDEI_4_OFFSET  3
-	#define PORT_DEF_PCP_4_PORT_DEF_SDEI_4_LEN     1
-	#define PORT_DEF_PCP_4_PORT_DEF_SDEI_4_DEFAULT 0x0
-	/*[field] PORT_DEF_CPCP_4*/
-	#define PORT_DEF_PCP_4_PORT_DEF_CPCP_4
-	#define PORT_DEF_PCP_4_PORT_DEF_CPCP_4_OFFSET  4
-	#define PORT_DEF_PCP_4_PORT_DEF_CPCP_4_LEN     3
-	#define PORT_DEF_PCP_4_PORT_DEF_CPCP_4_DEFAULT 0x0
-	/*[field] PORT_DEF_CDEI_4*/
-	#define PORT_DEF_PCP_4_PORT_DEF_CDEI_4
-	#define PORT_DEF_PCP_4_PORT_DEF_CDEI_4_OFFSET  7
-	#define PORT_DEF_PCP_4_PORT_DEF_CDEI_4_LEN     1
-	#define PORT_DEF_PCP_4_PORT_DEF_CDEI_4_DEFAULT 0x0
-
-struct port_def_pcp_4 {
-	a_uint32_t  port_def_spcp_4:3;
-	a_uint32_t  port_def_sdei_4:1;
-	a_uint32_t  port_def_cpcp_4:3;
-	a_uint32_t  port_def_cdei_4:1;
-	a_uint32_t  _reserved0:24;
-};
-
-union port_def_pcp_4_u {
-	a_uint32_t val;
-	struct port_def_pcp_4 bf;
-};
-
-/*[register] PORT_DEF_PCP_5*/
-#define PORT_DEF_PCP_5
-#define PORT_DEF_PCP_5_ADDRESS 0x44
-#define PORT_DEF_PCP_5_NUM     1
-#define PORT_DEF_PCP_5_INC     0x4
-#define PORT_DEF_PCP_5_TYPE    REG_TYPE_RW
-#define PORT_DEF_PCP_5_DEFAULT 0x0
-	/*[field] PORT_DEF_SPCP_5*/
-	#define PORT_DEF_PCP_5_PORT_DEF_SPCP_5
-	#define PORT_DEF_PCP_5_PORT_DEF_SPCP_5_OFFSET  0
-	#define PORT_DEF_PCP_5_PORT_DEF_SPCP_5_LEN     3
-	#define PORT_DEF_PCP_5_PORT_DEF_SPCP_5_DEFAULT 0x0
-	/*[field] PORT_DEF_SDEI_5*/
-	#define PORT_DEF_PCP_5_PORT_DEF_SDEI_5
-	#define PORT_DEF_PCP_5_PORT_DEF_SDEI_5_OFFSET  3
-	#define PORT_DEF_PCP_5_PORT_DEF_SDEI_5_LEN     1
-	#define PORT_DEF_PCP_5_PORT_DEF_SDEI_5_DEFAULT 0x0
-	/*[field] PORT_DEF_CPCP_5*/
-	#define PORT_DEF_PCP_5_PORT_DEF_CPCP_5
-	#define PORT_DEF_PCP_5_PORT_DEF_CPCP_5_OFFSET  4
-	#define PORT_DEF_PCP_5_PORT_DEF_CPCP_5_LEN     3
-	#define PORT_DEF_PCP_5_PORT_DEF_CPCP_5_DEFAULT 0x0
-	/*[field] PORT_DEF_CDEI_5*/
-	#define PORT_DEF_PCP_5_PORT_DEF_CDEI_5
-	#define PORT_DEF_PCP_5_PORT_DEF_CDEI_5_OFFSET  7
-	#define PORT_DEF_PCP_5_PORT_DEF_CDEI_5_LEN     1
-	#define PORT_DEF_PCP_5_PORT_DEF_CDEI_5_DEFAULT 0x0
-
-struct port_def_pcp_5 {
-	a_uint32_t  port_def_spcp_5:3;
-	a_uint32_t  port_def_sdei_5:1;
-	a_uint32_t  port_def_cpcp_5:3;
-	a_uint32_t  port_def_cdei_5:1;
-	a_uint32_t  _reserved0:24;
-};
-
-union port_def_pcp_5_u {
-	a_uint32_t val;
-	struct port_def_pcp_5 bf;
-};
-
-/*[register] PORT_DEF_PCP_6*/
-#define PORT_DEF_PCP_6
-#define PORT_DEF_PCP_6_ADDRESS 0x48
-#define PORT_DEF_PCP_6_NUM     1
-#define PORT_DEF_PCP_6_INC     0x4
-#define PORT_DEF_PCP_6_TYPE    REG_TYPE_RW
-#define PORT_DEF_PCP_6_DEFAULT 0x0
-	/*[field] PORT_DEF_SPCP_6*/
-	#define PORT_DEF_PCP_6_PORT_DEF_SPCP_6
-	#define PORT_DEF_PCP_6_PORT_DEF_SPCP_6_OFFSET  0
-	#define PORT_DEF_PCP_6_PORT_DEF_SPCP_6_LEN     3
-	#define PORT_DEF_PCP_6_PORT_DEF_SPCP_6_DEFAULT 0x0
-	/*[field] PORT_DEF_SDEI_6*/
-	#define PORT_DEF_PCP_6_PORT_DEF_SDEI_6
-	#define PORT_DEF_PCP_6_PORT_DEF_SDEI_6_OFFSET  3
-	#define PORT_DEF_PCP_6_PORT_DEF_SDEI_6_LEN     1
-	#define PORT_DEF_PCP_6_PORT_DEF_SDEI_6_DEFAULT 0x0
-	/*[field] PORT_DEF_CPCP_6*/
-	#define PORT_DEF_PCP_6_PORT_DEF_CPCP_6
-	#define PORT_DEF_PCP_6_PORT_DEF_CPCP_6_OFFSET  4
-	#define PORT_DEF_PCP_6_PORT_DEF_CPCP_6_LEN     3
-	#define PORT_DEF_PCP_6_PORT_DEF_CPCP_6_DEFAULT 0x0
-	/*[field] PORT_DEF_CDEI_6*/
-	#define PORT_DEF_PCP_6_PORT_DEF_CDEI_6
-	#define PORT_DEF_PCP_6_PORT_DEF_CDEI_6_OFFSET  7
-	#define PORT_DEF_PCP_6_PORT_DEF_CDEI_6_LEN     1
-	#define PORT_DEF_PCP_6_PORT_DEF_CDEI_6_DEFAULT 0x0
-
-struct port_def_pcp_6 {
-	a_uint32_t  port_def_spcp_6:3;
-	a_uint32_t  port_def_sdei_6:1;
-	a_uint32_t  port_def_cpcp_6:3;
-	a_uint32_t  port_def_cdei_6:1;
-	a_uint32_t  _reserved0:24;
-};
-
-union port_def_pcp_6_u {
-	a_uint32_t val;
-	struct port_def_pcp_6 bf;
-};
-
-/*[register] PORT_DEF_PCP_7*/
-#define PORT_DEF_PCP_7
-#define PORT_DEF_PCP_7_ADDRESS 0x4c
-#define PORT_DEF_PCP_7_NUM     1
-#define PORT_DEF_PCP_7_INC     0x4
-#define PORT_DEF_PCP_7_TYPE    REG_TYPE_RW
-#define PORT_DEF_PCP_7_DEFAULT 0x0
-	/*[field] PORT_DEF_SPCP_7*/
-	#define PORT_DEF_PCP_7_PORT_DEF_SPCP_7
-	#define PORT_DEF_PCP_7_PORT_DEF_SPCP_7_OFFSET  0
-	#define PORT_DEF_PCP_7_PORT_DEF_SPCP_7_LEN     3
-	#define PORT_DEF_PCP_7_PORT_DEF_SPCP_7_DEFAULT 0x0
-	/*[field] PORT_DEF_SDEI_7*/
-	#define PORT_DEF_PCP_7_PORT_DEF_SDEI_7
-	#define PORT_DEF_PCP_7_PORT_DEF_SDEI_7_OFFSET  3
-	#define PORT_DEF_PCP_7_PORT_DEF_SDEI_7_LEN     1
-	#define PORT_DEF_PCP_7_PORT_DEF_SDEI_7_DEFAULT 0x0
-	/*[field] PORT_DEF_CPCP_7*/
-	#define PORT_DEF_PCP_7_PORT_DEF_CPCP_7
-	#define PORT_DEF_PCP_7_PORT_DEF_CPCP_7_OFFSET  4
-	#define PORT_DEF_PCP_7_PORT_DEF_CPCP_7_LEN     3
-	#define PORT_DEF_PCP_7_PORT_DEF_CPCP_7_DEFAULT 0x0
-	/*[field] PORT_DEF_CDEI_7*/
-	#define PORT_DEF_PCP_7_PORT_DEF_CDEI_7
-	#define PORT_DEF_PCP_7_PORT_DEF_CDEI_7_OFFSET  7
-	#define PORT_DEF_PCP_7_PORT_DEF_CDEI_7_LEN     1
-	#define PORT_DEF_PCP_7_PORT_DEF_CDEI_7_DEFAULT 0x0
-
-struct port_def_pcp_7 {
-	a_uint32_t  port_def_spcp_7:3;
-	a_uint32_t  port_def_sdei_7:1;
-	a_uint32_t  port_def_cpcp_7:3;
-	a_uint32_t  port_def_cdei_7:1;
-	a_uint32_t  _reserved0:24;
-};
-
-union port_def_pcp_7_u {
-	a_uint32_t val;
-	struct port_def_pcp_7 bf;
-};
-
-/*[register] PORT_VLAN_CONFIG_0*/
-#define PORT_VLAN_CONFIG_0
-#define PORT_VLAN_CONFIG_0_ADDRESS 0x50
-#define PORT_VLAN_CONFIG_0_NUM     1
-#define PORT_VLAN_CONFIG_0_INC     0x4
-#define PORT_VLAN_CONFIG_0_TYPE    REG_TYPE_RW
-#define PORT_VLAN_CONFIG_0_DEFAULT 0x0
-	/*[field] PORT_IN_PCP_PROP_CMD_0*/
-	#define PORT_VLAN_CONFIG_0_PORT_IN_PCP_PROP_CMD_0
-	#define PORT_VLAN_CONFIG_0_PORT_IN_PCP_PROP_CMD_0_OFFSET  0
-	#define PORT_VLAN_CONFIG_0_PORT_IN_PCP_PROP_CMD_0_LEN     1
-	#define PORT_VLAN_CONFIG_0_PORT_IN_PCP_PROP_CMD_0_DEFAULT 0x0
-	/*[field] PORT_IN_DEI_PROP_CMD_0*/
-	#define PORT_VLAN_CONFIG_0_PORT_IN_DEI_PROP_CMD_0
-	#define PORT_VLAN_CONFIG_0_PORT_IN_DEI_PROP_CMD_0_OFFSET  1
-	#define PORT_VLAN_CONFIG_0_PORT_IN_DEI_PROP_CMD_0_LEN     1
-	#define PORT_VLAN_CONFIG_0_PORT_IN_DEI_PROP_CMD_0_DEFAULT 0x0
-	/*[field] PORT_UNTAG_FLTR_CMD_0*/
-	#define PORT_VLAN_CONFIG_0_PORT_UNTAG_FLTR_CMD_0
-	#define PORT_VLAN_CONFIG_0_PORT_UNTAG_FLTR_CMD_0_OFFSET  2
-	#define PORT_VLAN_CONFIG_0_PORT_UNTAG_FLTR_CMD_0_LEN     1
-	#define PORT_VLAN_CONFIG_0_PORT_UNTAG_FLTR_CMD_0_DEFAULT 0x0
-	/*[field] PORT_PRI_TAG_FLTR_CMD_0*/
-	#define PORT_VLAN_CONFIG_0_PORT_PRI_TAG_FLTR_CMD_0
-	#define PORT_VLAN_CONFIG_0_PORT_PRI_TAG_FLTR_CMD_0_OFFSET  3
-	#define PORT_VLAN_CONFIG_0_PORT_PRI_TAG_FLTR_CMD_0_LEN     1
-	#define PORT_VLAN_CONFIG_0_PORT_PRI_TAG_FLTR_CMD_0_DEFAULT 0x0
-	/*[field] PORT_TAG_FLTR_CMD_0*/
-	#define PORT_VLAN_CONFIG_0_PORT_TAG_FLTR_CMD_0
-	#define PORT_VLAN_CONFIG_0_PORT_TAG_FLTR_CMD_0_OFFSET  4
-	#define PORT_VLAN_CONFIG_0_PORT_TAG_FLTR_CMD_0_LEN     1
-	#define PORT_VLAN_CONFIG_0_PORT_TAG_FLTR_CMD_0_DEFAULT 0x0
-	/*[field] PORT_VLAN_XLT_MISS_FWD_CMD_0*/
-	#define PORT_VLAN_CONFIG_0_PORT_VLAN_XLT_MISS_FWD_CMD_0
-	#define PORT_VLAN_CONFIG_0_PORT_VLAN_XLT_MISS_FWD_CMD_0_OFFSET  5
-	#define PORT_VLAN_CONFIG_0_PORT_VLAN_XLT_MISS_FWD_CMD_0_LEN     2
-	#define PORT_VLAN_CONFIG_0_PORT_VLAN_XLT_MISS_FWD_CMD_0_DEFAULT 0x0
-	/*[field] PORT_IN_VLAN_FLTR_CMD_0*/
-	#define PORT_VLAN_CONFIG_0_PORT_IN_VLAN_FLTR_CMD_0
-	#define PORT_VLAN_CONFIG_0_PORT_IN_VLAN_FLTR_CMD_0_OFFSET  7
-	#define PORT_VLAN_CONFIG_0_PORT_IN_VLAN_FLTR_CMD_0_LEN     1
-	#define PORT_VLAN_CONFIG_0_PORT_IN_VLAN_FLTR_CMD_0_DEFAULT 0x0
-
-struct port_vlan_config_0 {
-	a_uint32_t  port_in_pcp_prop_cmd_0:1;
-	a_uint32_t  port_in_dei_prop_cmd_0:1;
-	a_uint32_t  port_untag_fltr_cmd_0:1;
-	a_uint32_t  port_pri_tag_fltr_cmd_0:1;
-	a_uint32_t  port_tag_fltr_cmd_0:1;
-	a_uint32_t  port_vlan_xlt_miss_fwd_cmd_0:2;
-	a_uint32_t  port_in_vlan_fltr_cmd_0:1;
-	a_uint32_t  _reserved0:24;
-};
-
-union port_vlan_config_0_u {
-	a_uint32_t val;
-	struct port_vlan_config_0 bf;
-};
-
-/*[register] PORT_VLAN_CONFIG_1*/
-#define PORT_VLAN_CONFIG_1
-#define PORT_VLAN_CONFIG_1_ADDRESS 0x54
-#define PORT_VLAN_CONFIG_1_NUM     1
-#define PORT_VLAN_CONFIG_1_INC     0x4
-#define PORT_VLAN_CONFIG_1_TYPE    REG_TYPE_RW
-#define PORT_VLAN_CONFIG_1_DEFAULT 0x0
-	/*[field] PORT_IN_PCP_PROP_CMD_1*/
-	#define PORT_VLAN_CONFIG_1_PORT_IN_PCP_PROP_CMD_1
-	#define PORT_VLAN_CONFIG_1_PORT_IN_PCP_PROP_CMD_1_OFFSET  0
-	#define PORT_VLAN_CONFIG_1_PORT_IN_PCP_PROP_CMD_1_LEN     1
-	#define PORT_VLAN_CONFIG_1_PORT_IN_PCP_PROP_CMD_1_DEFAULT 0x0
-	/*[field] PORT_IN_DEI_PROP_CMD_1*/
-	#define PORT_VLAN_CONFIG_1_PORT_IN_DEI_PROP_CMD_1
-	#define PORT_VLAN_CONFIG_1_PORT_IN_DEI_PROP_CMD_1_OFFSET  1
-	#define PORT_VLAN_CONFIG_1_PORT_IN_DEI_PROP_CMD_1_LEN     1
-	#define PORT_VLAN_CONFIG_1_PORT_IN_DEI_PROP_CMD_1_DEFAULT 0x0
-	/*[field] PORT_UNTAG_FLTR_CMD_1*/
-	#define PORT_VLAN_CONFIG_1_PORT_UNTAG_FLTR_CMD_1
-	#define PORT_VLAN_CONFIG_1_PORT_UNTAG_FLTR_CMD_1_OFFSET  2
-	#define PORT_VLAN_CONFIG_1_PORT_UNTAG_FLTR_CMD_1_LEN     1
-	#define PORT_VLAN_CONFIG_1_PORT_UNTAG_FLTR_CMD_1_DEFAULT 0x0
-	/*[field] PORT_PRI_TAG_FLTR_CMD_1*/
-	#define PORT_VLAN_CONFIG_1_PORT_PRI_TAG_FLTR_CMD_1
-	#define PORT_VLAN_CONFIG_1_PORT_PRI_TAG_FLTR_CMD_1_OFFSET  3
-	#define PORT_VLAN_CONFIG_1_PORT_PRI_TAG_FLTR_CMD_1_LEN     1
-	#define PORT_VLAN_CONFIG_1_PORT_PRI_TAG_FLTR_CMD_1_DEFAULT 0x0
-	/*[field] PORT_TAG_FLTR_CMD_1*/
-	#define PORT_VLAN_CONFIG_1_PORT_TAG_FLTR_CMD_1
-	#define PORT_VLAN_CONFIG_1_PORT_TAG_FLTR_CMD_1_OFFSET  4
-	#define PORT_VLAN_CONFIG_1_PORT_TAG_FLTR_CMD_1_LEN     1
-	#define PORT_VLAN_CONFIG_1_PORT_TAG_FLTR_CMD_1_DEFAULT 0x0
-	/*[field] PORT_VLAN_XLT_MISS_FWD_CMD_1*/
-	#define PORT_VLAN_CONFIG_1_PORT_VLAN_XLT_MISS_FWD_CMD_1
-	#define PORT_VLAN_CONFIG_1_PORT_VLAN_XLT_MISS_FWD_CMD_1_OFFSET  5
-	#define PORT_VLAN_CONFIG_1_PORT_VLAN_XLT_MISS_FWD_CMD_1_LEN     2
-	#define PORT_VLAN_CONFIG_1_PORT_VLAN_XLT_MISS_FWD_CMD_1_DEFAULT 0x0
-	/*[field] PORT_IN_VLAN_FLTR_CMD_1*/
-	#define PORT_VLAN_CONFIG_1_PORT_IN_VLAN_FLTR_CMD_1
-	#define PORT_VLAN_CONFIG_1_PORT_IN_VLAN_FLTR_CMD_1_OFFSET  7
-	#define PORT_VLAN_CONFIG_1_PORT_IN_VLAN_FLTR_CMD_1_LEN     1
-	#define PORT_VLAN_CONFIG_1_PORT_IN_VLAN_FLTR_CMD_1_DEFAULT 0x0
-
-struct port_vlan_config_1 {
-	a_uint32_t  port_in_pcp_prop_cmd_1:1;
-	a_uint32_t  port_in_dei_prop_cmd_1:1;
-	a_uint32_t  port_untag_fltr_cmd_1:1;
-	a_uint32_t  port_pri_tag_fltr_cmd_1:1;
-	a_uint32_t  port_tag_fltr_cmd_1:1;
-	a_uint32_t  port_vlan_xlt_miss_fwd_cmd_1:2;
-	a_uint32_t  port_in_vlan_fltr_cmd_1:1;
-	a_uint32_t  _reserved0:24;
-};
-
-union port_vlan_config_1_u {
-	a_uint32_t val;
-	struct port_vlan_config_1 bf;
-};
-
-/*[register] PORT_VLAN_CONFIG_2*/
-#define PORT_VLAN_CONFIG_2
-#define PORT_VLAN_CONFIG_2_ADDRESS 0x58
-#define PORT_VLAN_CONFIG_2_NUM     1
-#define PORT_VLAN_CONFIG_2_INC     0x4
-#define PORT_VLAN_CONFIG_2_TYPE    REG_TYPE_RW
-#define PORT_VLAN_CONFIG_2_DEFAULT 0x0
-	/*[field] PORT_IN_PCP_PROP_CMD_2*/
-	#define PORT_VLAN_CONFIG_2_PORT_IN_PCP_PROP_CMD_2
-	#define PORT_VLAN_CONFIG_2_PORT_IN_PCP_PROP_CMD_2_OFFSET  0
-	#define PORT_VLAN_CONFIG_2_PORT_IN_PCP_PROP_CMD_2_LEN     1
-	#define PORT_VLAN_CONFIG_2_PORT_IN_PCP_PROP_CMD_2_DEFAULT 0x0
-	/*[field] PORT_IN_DEI_PROP_CMD_2*/
-	#define PORT_VLAN_CONFIG_2_PORT_IN_DEI_PROP_CMD_2
-	#define PORT_VLAN_CONFIG_2_PORT_IN_DEI_PROP_CMD_2_OFFSET  1
-	#define PORT_VLAN_CONFIG_2_PORT_IN_DEI_PROP_CMD_2_LEN     1
-	#define PORT_VLAN_CONFIG_2_PORT_IN_DEI_PROP_CMD_2_DEFAULT 0x0
-	/*[field] PORT_UNTAG_FLTR_CMD_2*/
-	#define PORT_VLAN_CONFIG_2_PORT_UNTAG_FLTR_CMD_2
-	#define PORT_VLAN_CONFIG_2_PORT_UNTAG_FLTR_CMD_2_OFFSET  2
-	#define PORT_VLAN_CONFIG_2_PORT_UNTAG_FLTR_CMD_2_LEN     1
-	#define PORT_VLAN_CONFIG_2_PORT_UNTAG_FLTR_CMD_2_DEFAULT 0x0
-	/*[field] PORT_PRI_TAG_FLTR_CMD_2*/
-	#define PORT_VLAN_CONFIG_2_PORT_PRI_TAG_FLTR_CMD_2
-	#define PORT_VLAN_CONFIG_2_PORT_PRI_TAG_FLTR_CMD_2_OFFSET  3
-	#define PORT_VLAN_CONFIG_2_PORT_PRI_TAG_FLTR_CMD_2_LEN     1
-	#define PORT_VLAN_CONFIG_2_PORT_PRI_TAG_FLTR_CMD_2_DEFAULT 0x0
-	/*[field] PORT_TAG_FLTR_CMD_2*/
-	#define PORT_VLAN_CONFIG_2_PORT_TAG_FLTR_CMD_2
-	#define PORT_VLAN_CONFIG_2_PORT_TAG_FLTR_CMD_2_OFFSET  4
-	#define PORT_VLAN_CONFIG_2_PORT_TAG_FLTR_CMD_2_LEN     1
-	#define PORT_VLAN_CONFIG_2_PORT_TAG_FLTR_CMD_2_DEFAULT 0x0
-	/*[field] PORT_VLAN_XLT_MISS_FWD_CMD_2*/
-	#define PORT_VLAN_CONFIG_2_PORT_VLAN_XLT_MISS_FWD_CMD_2
-	#define PORT_VLAN_CONFIG_2_PORT_VLAN_XLT_MISS_FWD_CMD_2_OFFSET  5
-	#define PORT_VLAN_CONFIG_2_PORT_VLAN_XLT_MISS_FWD_CMD_2_LEN     2
-	#define PORT_VLAN_CONFIG_2_PORT_VLAN_XLT_MISS_FWD_CMD_2_DEFAULT 0x0
-	/*[field] PORT_IN_VLAN_FLTR_CMD_2*/
-	#define PORT_VLAN_CONFIG_2_PORT_IN_VLAN_FLTR_CMD_2
-	#define PORT_VLAN_CONFIG_2_PORT_IN_VLAN_FLTR_CMD_2_OFFSET  7
-	#define PORT_VLAN_CONFIG_2_PORT_IN_VLAN_FLTR_CMD_2_LEN     1
-	#define PORT_VLAN_CONFIG_2_PORT_IN_VLAN_FLTR_CMD_2_DEFAULT 0x0
-
-struct port_vlan_config_2 {
-	a_uint32_t  port_in_pcp_prop_cmd_2:1;
-	a_uint32_t  port_in_dei_prop_cmd_2:1;
-	a_uint32_t  port_untag_fltr_cmd_2:1;
-	a_uint32_t  port_pri_tag_fltr_cmd_2:1;
-	a_uint32_t  port_tag_fltr_cmd_2:1;
-	a_uint32_t  port_vlan_xlt_miss_fwd_cmd_2:2;
-	a_uint32_t  port_in_vlan_fltr_cmd_2:1;
-	a_uint32_t  _reserved0:24;
-};
-
-union port_vlan_config_2_u {
-	a_uint32_t val;
-	struct port_vlan_config_2 bf;
-};
-
-/*[register] PORT_VLAN_CONFIG_3*/
-#define PORT_VLAN_CONFIG_3
-#define PORT_VLAN_CONFIG_3_ADDRESS 0x5c
-#define PORT_VLAN_CONFIG_3_NUM     1
-#define PORT_VLAN_CONFIG_3_INC     0x4
-#define PORT_VLAN_CONFIG_3_TYPE    REG_TYPE_RW
-#define PORT_VLAN_CONFIG_3_DEFAULT 0x0
-	/*[field] PORT_IN_PCP_PROP_CMD_3*/
-	#define PORT_VLAN_CONFIG_3_PORT_IN_PCP_PROP_CMD_3
-	#define PORT_VLAN_CONFIG_3_PORT_IN_PCP_PROP_CMD_3_OFFSET  0
-	#define PORT_VLAN_CONFIG_3_PORT_IN_PCP_PROP_CMD_3_LEN     1
-	#define PORT_VLAN_CONFIG_3_PORT_IN_PCP_PROP_CMD_3_DEFAULT 0x0
-	/*[field] PORT_IN_DEI_PROP_CMD_3*/
-	#define PORT_VLAN_CONFIG_3_PORT_IN_DEI_PROP_CMD_3
-	#define PORT_VLAN_CONFIG_3_PORT_IN_DEI_PROP_CMD_3_OFFSET  1
-	#define PORT_VLAN_CONFIG_3_PORT_IN_DEI_PROP_CMD_3_LEN     1
-	#define PORT_VLAN_CONFIG_3_PORT_IN_DEI_PROP_CMD_3_DEFAULT 0x0
-	/*[field] PORT_UNTAG_FLTR_CMD_3*/
-	#define PORT_VLAN_CONFIG_3_PORT_UNTAG_FLTR_CMD_3
-	#define PORT_VLAN_CONFIG_3_PORT_UNTAG_FLTR_CMD_3_OFFSET  2
-	#define PORT_VLAN_CONFIG_3_PORT_UNTAG_FLTR_CMD_3_LEN     1
-	#define PORT_VLAN_CONFIG_3_PORT_UNTAG_FLTR_CMD_3_DEFAULT 0x0
-	/*[field] PORT_PRI_TAG_FLTR_CMD_3*/
-	#define PORT_VLAN_CONFIG_3_PORT_PRI_TAG_FLTR_CMD_3
-	#define PORT_VLAN_CONFIG_3_PORT_PRI_TAG_FLTR_CMD_3_OFFSET  3
-	#define PORT_VLAN_CONFIG_3_PORT_PRI_TAG_FLTR_CMD_3_LEN     1
-	#define PORT_VLAN_CONFIG_3_PORT_PRI_TAG_FLTR_CMD_3_DEFAULT 0x0
-	/*[field] PORT_TAG_FLTR_CMD_3*/
-	#define PORT_VLAN_CONFIG_3_PORT_TAG_FLTR_CMD_3
-	#define PORT_VLAN_CONFIG_3_PORT_TAG_FLTR_CMD_3_OFFSET  4
-	#define PORT_VLAN_CONFIG_3_PORT_TAG_FLTR_CMD_3_LEN     1
-	#define PORT_VLAN_CONFIG_3_PORT_TAG_FLTR_CMD_3_DEFAULT 0x0
-	/*[field] PORT_VLAN_XLT_MISS_FWD_CMD_3*/
-	#define PORT_VLAN_CONFIG_3_PORT_VLAN_XLT_MISS_FWD_CMD_3
-	#define PORT_VLAN_CONFIG_3_PORT_VLAN_XLT_MISS_FWD_CMD_3_OFFSET  5
-	#define PORT_VLAN_CONFIG_3_PORT_VLAN_XLT_MISS_FWD_CMD_3_LEN     2
-	#define PORT_VLAN_CONFIG_3_PORT_VLAN_XLT_MISS_FWD_CMD_3_DEFAULT 0x0
-	/*[field] PORT_IN_VLAN_FLTR_CMD_3*/
-	#define PORT_VLAN_CONFIG_3_PORT_IN_VLAN_FLTR_CMD_3
-	#define PORT_VLAN_CONFIG_3_PORT_IN_VLAN_FLTR_CMD_3_OFFSET  7
-	#define PORT_VLAN_CONFIG_3_PORT_IN_VLAN_FLTR_CMD_3_LEN     1
-	#define PORT_VLAN_CONFIG_3_PORT_IN_VLAN_FLTR_CMD_3_DEFAULT 0x0
-
-struct port_vlan_config_3 {
-	a_uint32_t  port_in_pcp_prop_cmd_3:1;
-	a_uint32_t  port_in_dei_prop_cmd_3:1;
-	a_uint32_t  port_untag_fltr_cmd_3:1;
-	a_uint32_t  port_pri_tag_fltr_cmd_3:1;
-	a_uint32_t  port_tag_fltr_cmd_3:1;
-	a_uint32_t  port_vlan_xlt_miss_fwd_cmd_3:2;
-	a_uint32_t  port_in_vlan_fltr_cmd_3:1;
-	a_uint32_t  _reserved0:24;
-};
-
-union port_vlan_config_3_u {
-	a_uint32_t val;
-	struct port_vlan_config_3 bf;
-};
-
-/*[register] PORT_VLAN_CONFIG_4*/
-#define PORT_VLAN_CONFIG_4
-#define PORT_VLAN_CONFIG_4_ADDRESS 0x60
-#define PORT_VLAN_CONFIG_4_NUM     1
-#define PORT_VLAN_CONFIG_4_INC     0x4
-#define PORT_VLAN_CONFIG_4_TYPE    REG_TYPE_RW
-#define PORT_VLAN_CONFIG_4_DEFAULT 0x0
-	/*[field] PORT_IN_PCP_PROP_CMD_4*/
-	#define PORT_VLAN_CONFIG_4_PORT_IN_PCP_PROP_CMD_4
-	#define PORT_VLAN_CONFIG_4_PORT_IN_PCP_PROP_CMD_4_OFFSET  0
-	#define PORT_VLAN_CONFIG_4_PORT_IN_PCP_PROP_CMD_4_LEN     1
-	#define PORT_VLAN_CONFIG_4_PORT_IN_PCP_PROP_CMD_4_DEFAULT 0x0
-	/*[field] PORT_IN_DEI_PROP_CMD_4*/
-	#define PORT_VLAN_CONFIG_4_PORT_IN_DEI_PROP_CMD_4
-	#define PORT_VLAN_CONFIG_4_PORT_IN_DEI_PROP_CMD_4_OFFSET  1
-	#define PORT_VLAN_CONFIG_4_PORT_IN_DEI_PROP_CMD_4_LEN     1
-	#define PORT_VLAN_CONFIG_4_PORT_IN_DEI_PROP_CMD_4_DEFAULT 0x0
-	/*[field] PORT_UNTAG_FLTR_CMD_4*/
-	#define PORT_VLAN_CONFIG_4_PORT_UNTAG_FLTR_CMD_4
-	#define PORT_VLAN_CONFIG_4_PORT_UNTAG_FLTR_CMD_4_OFFSET  2
-	#define PORT_VLAN_CONFIG_4_PORT_UNTAG_FLTR_CMD_4_LEN     1
-	#define PORT_VLAN_CONFIG_4_PORT_UNTAG_FLTR_CMD_4_DEFAULT 0x0
-	/*[field] PORT_PRI_TAG_FLTR_CMD_4*/
-	#define PORT_VLAN_CONFIG_4_PORT_PRI_TAG_FLTR_CMD_4
-	#define PORT_VLAN_CONFIG_4_PORT_PRI_TAG_FLTR_CMD_4_OFFSET  3
-	#define PORT_VLAN_CONFIG_4_PORT_PRI_TAG_FLTR_CMD_4_LEN     1
-	#define PORT_VLAN_CONFIG_4_PORT_PRI_TAG_FLTR_CMD_4_DEFAULT 0x0
-	/*[field] PORT_TAG_FLTR_CMD_4*/
-	#define PORT_VLAN_CONFIG_4_PORT_TAG_FLTR_CMD_4
-	#define PORT_VLAN_CONFIG_4_PORT_TAG_FLTR_CMD_4_OFFSET  4
-	#define PORT_VLAN_CONFIG_4_PORT_TAG_FLTR_CMD_4_LEN     1
-	#define PORT_VLAN_CONFIG_4_PORT_TAG_FLTR_CMD_4_DEFAULT 0x0
-	/*[field] PORT_VLAN_XLT_MISS_FWD_CMD_4*/
-	#define PORT_VLAN_CONFIG_4_PORT_VLAN_XLT_MISS_FWD_CMD_4
-	#define PORT_VLAN_CONFIG_4_PORT_VLAN_XLT_MISS_FWD_CMD_4_OFFSET  5
-	#define PORT_VLAN_CONFIG_4_PORT_VLAN_XLT_MISS_FWD_CMD_4_LEN     2
-	#define PORT_VLAN_CONFIG_4_PORT_VLAN_XLT_MISS_FWD_CMD_4_DEFAULT 0x0
-	/*[field] PORT_IN_VLAN_FLTR_CMD_4*/
-	#define PORT_VLAN_CONFIG_4_PORT_IN_VLAN_FLTR_CMD_4
-	#define PORT_VLAN_CONFIG_4_PORT_IN_VLAN_FLTR_CMD_4_OFFSET  7
-	#define PORT_VLAN_CONFIG_4_PORT_IN_VLAN_FLTR_CMD_4_LEN     1
-	#define PORT_VLAN_CONFIG_4_PORT_IN_VLAN_FLTR_CMD_4_DEFAULT 0x0
-
-struct port_vlan_config_4 {
-	a_uint32_t  port_in_pcp_prop_cmd_4:1;
-	a_uint32_t  port_in_dei_prop_cmd_4:1;
-	a_uint32_t  port_untag_fltr_cmd_4:1;
-	a_uint32_t  port_pri_tag_fltr_cmd_4:1;
-	a_uint32_t  port_tag_fltr_cmd_4:1;
-	a_uint32_t  port_vlan_xlt_miss_fwd_cmd_4:2;
-	a_uint32_t  port_in_vlan_fltr_cmd_4:1;
-	a_uint32_t  _reserved0:24;
-};
-
-union port_vlan_config_4_u {
-	a_uint32_t val;
-	struct port_vlan_config_4 bf;
-};
-
-/*[register] PORT_VLAN_CONFIG_5*/
-#define PORT_VLAN_CONFIG_5
-#define PORT_VLAN_CONFIG_5_ADDRESS 0x64
-#define PORT_VLAN_CONFIG_5_NUM     1
-#define PORT_VLAN_CONFIG_5_INC     0x4
-#define PORT_VLAN_CONFIG_5_TYPE    REG_TYPE_RW
-#define PORT_VLAN_CONFIG_5_DEFAULT 0x0
-	/*[field] PORT_IN_PCP_PROP_CMD_5*/
-	#define PORT_VLAN_CONFIG_5_PORT_IN_PCP_PROP_CMD_5
-	#define PORT_VLAN_CONFIG_5_PORT_IN_PCP_PROP_CMD_5_OFFSET  0
-	#define PORT_VLAN_CONFIG_5_PORT_IN_PCP_PROP_CMD_5_LEN     1
-	#define PORT_VLAN_CONFIG_5_PORT_IN_PCP_PROP_CMD_5_DEFAULT 0x0
-	/*[field] PORT_IN_DEI_PROP_CMD_5*/
-	#define PORT_VLAN_CONFIG_5_PORT_IN_DEI_PROP_CMD_5
-	#define PORT_VLAN_CONFIG_5_PORT_IN_DEI_PROP_CMD_5_OFFSET  1
-	#define PORT_VLAN_CONFIG_5_PORT_IN_DEI_PROP_CMD_5_LEN     1
-	#define PORT_VLAN_CONFIG_5_PORT_IN_DEI_PROP_CMD_5_DEFAULT 0x0
-	/*[field] PORT_UNTAG_FLTR_CMD_5*/
-	#define PORT_VLAN_CONFIG_5_PORT_UNTAG_FLTR_CMD_5
-	#define PORT_VLAN_CONFIG_5_PORT_UNTAG_FLTR_CMD_5_OFFSET  2
-	#define PORT_VLAN_CONFIG_5_PORT_UNTAG_FLTR_CMD_5_LEN     1
-	#define PORT_VLAN_CONFIG_5_PORT_UNTAG_FLTR_CMD_5_DEFAULT 0x0
-	/*[field] PORT_PRI_TAG_FLTR_CMD_5*/
-	#define PORT_VLAN_CONFIG_5_PORT_PRI_TAG_FLTR_CMD_5
-	#define PORT_VLAN_CONFIG_5_PORT_PRI_TAG_FLTR_CMD_5_OFFSET  3
-	#define PORT_VLAN_CONFIG_5_PORT_PRI_TAG_FLTR_CMD_5_LEN     1
-	#define PORT_VLAN_CONFIG_5_PORT_PRI_TAG_FLTR_CMD_5_DEFAULT 0x0
-	/*[field] PORT_TAG_FLTR_CMD_5*/
-	#define PORT_VLAN_CONFIG_5_PORT_TAG_FLTR_CMD_5
-	#define PORT_VLAN_CONFIG_5_PORT_TAG_FLTR_CMD_5_OFFSET  4
-	#define PORT_VLAN_CONFIG_5_PORT_TAG_FLTR_CMD_5_LEN     1
-	#define PORT_VLAN_CONFIG_5_PORT_TAG_FLTR_CMD_5_DEFAULT 0x0
-	/*[field] PORT_VLAN_XLT_MISS_FWD_CMD_5*/
-	#define PORT_VLAN_CONFIG_5_PORT_VLAN_XLT_MISS_FWD_CMD_5
-	#define PORT_VLAN_CONFIG_5_PORT_VLAN_XLT_MISS_FWD_CMD_5_OFFSET  5
-	#define PORT_VLAN_CONFIG_5_PORT_VLAN_XLT_MISS_FWD_CMD_5_LEN     2
-	#define PORT_VLAN_CONFIG_5_PORT_VLAN_XLT_MISS_FWD_CMD_5_DEFAULT 0x0
-	/*[field] PORT_IN_VLAN_FLTR_CMD_5*/
-	#define PORT_VLAN_CONFIG_5_PORT_IN_VLAN_FLTR_CMD_5
-	#define PORT_VLAN_CONFIG_5_PORT_IN_VLAN_FLTR_CMD_5_OFFSET  7
-	#define PORT_VLAN_CONFIG_5_PORT_IN_VLAN_FLTR_CMD_5_LEN     1
-	#define PORT_VLAN_CONFIG_5_PORT_IN_VLAN_FLTR_CMD_5_DEFAULT 0x0
-
-struct port_vlan_config_5 {
-	a_uint32_t  port_in_pcp_prop_cmd_5:1;
-	a_uint32_t  port_in_dei_prop_cmd_5:1;
-	a_uint32_t  port_untag_fltr_cmd_5:1;
-	a_uint32_t  port_pri_tag_fltr_cmd_5:1;
-	a_uint32_t  port_tag_fltr_cmd_5:1;
-	a_uint32_t  port_vlan_xlt_miss_fwd_cmd_5:2;
-	a_uint32_t  port_in_vlan_fltr_cmd_5:1;
-	a_uint32_t  _reserved0:24;
-};
-
-union port_vlan_config_5_u {
-	a_uint32_t val;
-	struct port_vlan_config_5 bf;
-};
-
-/*[register] PORT_VLAN_CONFIG_6*/
-#define PORT_VLAN_CONFIG_6
-#define PORT_VLAN_CONFIG_6_ADDRESS 0x68
-#define PORT_VLAN_CONFIG_6_NUM     1
-#define PORT_VLAN_CONFIG_6_INC     0x4
-#define PORT_VLAN_CONFIG_6_TYPE    REG_TYPE_RW
-#define PORT_VLAN_CONFIG_6_DEFAULT 0x0
-	/*[field] PORT_IN_PCP_PROP_CMD_6*/
-	#define PORT_VLAN_CONFIG_6_PORT_IN_PCP_PROP_CMD_6
-	#define PORT_VLAN_CONFIG_6_PORT_IN_PCP_PROP_CMD_6_OFFSET  0
-	#define PORT_VLAN_CONFIG_6_PORT_IN_PCP_PROP_CMD_6_LEN     1
-	#define PORT_VLAN_CONFIG_6_PORT_IN_PCP_PROP_CMD_6_DEFAULT 0x0
-	/*[field] PORT_IN_DEI_PROP_CMD_6*/
-	#define PORT_VLAN_CONFIG_6_PORT_IN_DEI_PROP_CMD_6
-	#define PORT_VLAN_CONFIG_6_PORT_IN_DEI_PROP_CMD_6_OFFSET  1
-	#define PORT_VLAN_CONFIG_6_PORT_IN_DEI_PROP_CMD_6_LEN     1
-	#define PORT_VLAN_CONFIG_6_PORT_IN_DEI_PROP_CMD_6_DEFAULT 0x0
-	/*[field] PORT_UNTAG_FLTR_CMD_6*/
-	#define PORT_VLAN_CONFIG_6_PORT_UNTAG_FLTR_CMD_6
-	#define PORT_VLAN_CONFIG_6_PORT_UNTAG_FLTR_CMD_6_OFFSET  2
-	#define PORT_VLAN_CONFIG_6_PORT_UNTAG_FLTR_CMD_6_LEN     1
-	#define PORT_VLAN_CONFIG_6_PORT_UNTAG_FLTR_CMD_6_DEFAULT 0x0
-	/*[field] PORT_PRI_TAG_FLTR_CMD_6*/
-	#define PORT_VLAN_CONFIG_6_PORT_PRI_TAG_FLTR_CMD_6
-	#define PORT_VLAN_CONFIG_6_PORT_PRI_TAG_FLTR_CMD_6_OFFSET  3
-	#define PORT_VLAN_CONFIG_6_PORT_PRI_TAG_FLTR_CMD_6_LEN     1
-	#define PORT_VLAN_CONFIG_6_PORT_PRI_TAG_FLTR_CMD_6_DEFAULT 0x0
-	/*[field] PORT_TAG_FLTR_CMD_6*/
-	#define PORT_VLAN_CONFIG_6_PORT_TAG_FLTR_CMD_6
-	#define PORT_VLAN_CONFIG_6_PORT_TAG_FLTR_CMD_6_OFFSET  4
-	#define PORT_VLAN_CONFIG_6_PORT_TAG_FLTR_CMD_6_LEN     1
-	#define PORT_VLAN_CONFIG_6_PORT_TAG_FLTR_CMD_6_DEFAULT 0x0
-	/*[field] PORT_VLAN_XLT_MISS_FWD_CMD_6*/
-	#define PORT_VLAN_CONFIG_6_PORT_VLAN_XLT_MISS_FWD_CMD_6
-	#define PORT_VLAN_CONFIG_6_PORT_VLAN_XLT_MISS_FWD_CMD_6_OFFSET  5
-	#define PORT_VLAN_CONFIG_6_PORT_VLAN_XLT_MISS_FWD_CMD_6_LEN     2
-	#define PORT_VLAN_CONFIG_6_PORT_VLAN_XLT_MISS_FWD_CMD_6_DEFAULT 0x0
-	/*[field] PORT_IN_VLAN_FLTR_CMD_6*/
-	#define PORT_VLAN_CONFIG_6_PORT_IN_VLAN_FLTR_CMD_6
-	#define PORT_VLAN_CONFIG_6_PORT_IN_VLAN_FLTR_CMD_6_OFFSET  7
-	#define PORT_VLAN_CONFIG_6_PORT_IN_VLAN_FLTR_CMD_6_LEN     1
-	#define PORT_VLAN_CONFIG_6_PORT_IN_VLAN_FLTR_CMD_6_DEFAULT 0x0
-
-struct port_vlan_config_6 {
-	a_uint32_t  port_in_pcp_prop_cmd_6:1;
-	a_uint32_t  port_in_dei_prop_cmd_6:1;
-	a_uint32_t  port_untag_fltr_cmd_6:1;
-	a_uint32_t  port_pri_tag_fltr_cmd_6:1;
-	a_uint32_t  port_tag_fltr_cmd_6:1;
-	a_uint32_t  port_vlan_xlt_miss_fwd_cmd_6:2;
-	a_uint32_t  port_in_vlan_fltr_cmd_6:1;
-	a_uint32_t  _reserved0:24;
-};
-
-union port_vlan_config_6_u {
-	a_uint32_t val;
-	struct port_vlan_config_6 bf;
-};
-
-/*[register] PORT_VLAN_CONFIG_7*/
-#define PORT_VLAN_CONFIG_7
-#define PORT_VLAN_CONFIG_7_ADDRESS 0x6c
-#define PORT_VLAN_CONFIG_7_NUM     1
-#define PORT_VLAN_CONFIG_7_INC     0x4
-#define PORT_VLAN_CONFIG_7_TYPE    REG_TYPE_RW
-#define PORT_VLAN_CONFIG_7_DEFAULT 0x0
-	/*[field] PORT_IN_PCP_PROP_CMD_7*/
-	#define PORT_VLAN_CONFIG_7_PORT_IN_PCP_PROP_CMD_7
-	#define PORT_VLAN_CONFIG_7_PORT_IN_PCP_PROP_CMD_7_OFFSET  0
-	#define PORT_VLAN_CONFIG_7_PORT_IN_PCP_PROP_CMD_7_LEN     1
-	#define PORT_VLAN_CONFIG_7_PORT_IN_PCP_PROP_CMD_7_DEFAULT 0x0
-	/*[field] PORT_IN_DEI_PROP_CMD_7*/
-	#define PORT_VLAN_CONFIG_7_PORT_IN_DEI_PROP_CMD_7
-	#define PORT_VLAN_CONFIG_7_PORT_IN_DEI_PROP_CMD_7_OFFSET  1
-	#define PORT_VLAN_CONFIG_7_PORT_IN_DEI_PROP_CMD_7_LEN     1
-	#define PORT_VLAN_CONFIG_7_PORT_IN_DEI_PROP_CMD_7_DEFAULT 0x0
-	/*[field] PORT_UNTAG_FLTR_CMD_7*/
-	#define PORT_VLAN_CONFIG_7_PORT_UNTAG_FLTR_CMD_7
-	#define PORT_VLAN_CONFIG_7_PORT_UNTAG_FLTR_CMD_7_OFFSET  2
-	#define PORT_VLAN_CONFIG_7_PORT_UNTAG_FLTR_CMD_7_LEN     1
-	#define PORT_VLAN_CONFIG_7_PORT_UNTAG_FLTR_CMD_7_DEFAULT 0x0
-	/*[field] PORT_PRI_TAG_FLTR_CMD_7*/
-	#define PORT_VLAN_CONFIG_7_PORT_PRI_TAG_FLTR_CMD_7
-	#define PORT_VLAN_CONFIG_7_PORT_PRI_TAG_FLTR_CMD_7_OFFSET  3
-	#define PORT_VLAN_CONFIG_7_PORT_PRI_TAG_FLTR_CMD_7_LEN     1
-	#define PORT_VLAN_CONFIG_7_PORT_PRI_TAG_FLTR_CMD_7_DEFAULT 0x0
-	/*[field] PORT_TAG_FLTR_CMD_7*/
-	#define PORT_VLAN_CONFIG_7_PORT_TAG_FLTR_CMD_7
-	#define PORT_VLAN_CONFIG_7_PORT_TAG_FLTR_CMD_7_OFFSET  4
-	#define PORT_VLAN_CONFIG_7_PORT_TAG_FLTR_CMD_7_LEN     1
-	#define PORT_VLAN_CONFIG_7_PORT_TAG_FLTR_CMD_7_DEFAULT 0x0
-	/*[field] PORT_VLAN_XLT_MISS_FWD_CMD_7*/
-	#define PORT_VLAN_CONFIG_7_PORT_VLAN_XLT_MISS_FWD_CMD_7
-	#define PORT_VLAN_CONFIG_7_PORT_VLAN_XLT_MISS_FWD_CMD_7_OFFSET  5
-	#define PORT_VLAN_CONFIG_7_PORT_VLAN_XLT_MISS_FWD_CMD_7_LEN     2
-	#define PORT_VLAN_CONFIG_7_PORT_VLAN_XLT_MISS_FWD_CMD_7_DEFAULT 0x0
-	/*[field] PORT_IN_VLAN_FLTR_CMD_7*/
-	#define PORT_VLAN_CONFIG_7_PORT_IN_VLAN_FLTR_CMD_7
-	#define PORT_VLAN_CONFIG_7_PORT_IN_VLAN_FLTR_CMD_7_OFFSET  7
-	#define PORT_VLAN_CONFIG_7_PORT_IN_VLAN_FLTR_CMD_7_LEN     1
-	#define PORT_VLAN_CONFIG_7_PORT_IN_VLAN_FLTR_CMD_7_DEFAULT 0x0
-
-struct port_vlan_config_7 {
-	a_uint32_t  port_in_pcp_prop_cmd_7:1;
-	a_uint32_t  port_in_dei_prop_cmd_7:1;
-	a_uint32_t  port_untag_fltr_cmd_7:1;
-	a_uint32_t  port_pri_tag_fltr_cmd_7:1;
-	a_uint32_t  port_tag_fltr_cmd_7:1;
-	a_uint32_t  port_vlan_xlt_miss_fwd_cmd_7:2;
-	a_uint32_t  port_in_vlan_fltr_cmd_7:1;
-	a_uint32_t  _reserved0:24;
-};
-
-union port_vlan_config_7_u {
-	a_uint32_t val;
-	struct port_vlan_config_7 bf;
+	struct port_vlan_config bf;
 };
 
 /*[register] IV_DBG_ADDR*/

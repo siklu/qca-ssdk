@@ -306,7 +306,29 @@ extern "C" {
     SW_API_DEF(SW_API_EG_FLTR_BYPASS_EN_SET, fal_eg_trans_filter_bypass_en_set), \
     SW_API_DEF(SW_API_EG_FLTR_BYPASS_EN_GET, fal_eg_trans_filter_bypass_en_get), \
     SW_API_DEF(SW_API_PT_VRF_ID_SET, fal_port_vrf_id_set), \
-    SW_API_DEF(SW_API_PT_VRF_ID_GET, fal_port_vrf_id_get),
+    SW_API_DEF(SW_API_PT_VRF_ID_GET, fal_port_vrf_id_get), \
+    SW_API_DEF(SW_API_GLOBAL_QINQ_MODE_SET, fal_global_qinq_mode_set), \
+    SW_API_DEF(SW_API_GLOBAL_QINQ_MODE_GET, fal_global_qinq_mode_get), \
+    SW_API_DEF(SW_API_PORT_QINQ_MODE_SET, fal_port_qinq_mode_set), \
+    SW_API_DEF(SW_API_PORT_QINQ_MODE_GET, fal_port_qinq_mode_get), \
+    SW_API_DEF(SW_API_TPID_SET, fal_tpid_set), \
+    SW_API_DEF(SW_API_TPID_GET, fal_tpid_get), \
+    SW_API_DEF(SW_API_EGRESS_TPID_SET, fal_egress_tpid_set), \
+    SW_API_DEF(SW_API_EGRESS_TPID_GET, fal_egress_tpid_get), \
+    SW_API_DEF(SW_API_PT_INGRESS_FILTER_SET, fal_port_ingress_filter_set), \
+    SW_API_DEF(SW_API_PT_INGRESS_FILTER_GET, fal_port_ingress_filter_get), \
+    SW_API_DEF(SW_API_PT_INGRESS_DEFAULT_TAG_SET, fal_port_ingress_default_tag_set), \
+    SW_API_DEF(SW_API_PT_INGRESS_DEFAULT_TAG_GET, fal_port_ingress_default_tag_get), \
+    SW_API_DEF(SW_API_PT_TAG_PROPOGATION_SET, fal_port_tag_propagation_set), \
+    SW_API_DEF(SW_API_PT_TAG_PROPOGATION_GET, fal_port_tag_propagation_get), \
+    SW_API_DEF(SW_API_PT_TAG_EGVLANMODE_SET, fal_port_tag_egvlanmode_set), \
+    SW_API_DEF(SW_API_PT_TAG_EGVLANMODE_GET, fal_port_tag_egvlanmode_get), \
+    SW_API_DEF(SW_API_PT_VLAN_XLT_MISS_CMD_SET, fal_port_vlan_xlt_miss_cmd_set), \
+    SW_API_DEF(SW_API_PT_VLAN_XLT_MISS_CMD_GET, fal_port_vlan_xlt_miss_cmd_get), \
+    SW_API_DEF(SW_API_PT_EGRESS_TAG_PROPOGATION_SET, fal_port_egress_tag_propagation_set), \
+    SW_API_DEF(SW_API_PT_EGRESS_TAG_PROPOGATION_GET, fal_port_egress_tag_propagation_get), \
+    SW_API_DEF(SW_API_PT_EGRESS_DEFAULT_VID_SET, fal_port_egress_default_vid_set), \
+    SW_API_DEF(SW_API_PT_EGRESS_DEFAULT_VID_GET, fal_port_egress_default_vid_get),
 
 #define PORTVLAN_API_PARAM \
     SW_API_DESC(SW_API_PT_ING_MODE_GET) \
@@ -354,7 +376,29 @@ extern "C" {
     SW_API_DESC(SW_API_EG_FLTR_BYPASS_EN_SET)   \
     SW_API_DESC(SW_API_EG_FLTR_BYPASS_EN_GET)   \
     SW_API_DESC(SW_API_PT_VRF_ID_SET)  \
-    SW_API_DESC(SW_API_PT_VRF_ID_GET)
+    SW_API_DESC(SW_API_PT_VRF_ID_GET) \
+    SW_API_DESC(SW_API_GLOBAL_QINQ_MODE_SET)  \
+    SW_API_DESC(SW_API_GLOBAL_QINQ_MODE_GET) \
+    SW_API_DESC(SW_API_PORT_QINQ_MODE_SET)  \
+    SW_API_DESC(SW_API_PORT_QINQ_MODE_GET) \
+    SW_API_DESC(SW_API_TPID_SET)  \
+    SW_API_DESC(SW_API_TPID_GET) \
+    SW_API_DESC(SW_API_EGRESS_TPID_SET)  \
+    SW_API_DESC(SW_API_EGRESS_TPID_GET) \
+    SW_API_DESC(SW_API_PT_INGRESS_FILTER_SET)  \
+    SW_API_DESC(SW_API_PT_INGRESS_FILTER_GET) \
+    SW_API_DESC(SW_API_PT_INGRESS_DEFAULT_TAG_SET)  \
+    SW_API_DESC(SW_API_PT_INGRESS_DEFAULT_TAG_GET) \
+    SW_API_DESC(SW_API_PT_TAG_PROPOGATION_SET)  \
+    SW_API_DESC(SW_API_PT_TAG_PROPOGATION_GET) \
+    SW_API_DESC(SW_API_PT_TAG_EGVLANMODE_SET)  \
+    SW_API_DESC(SW_API_PT_TAG_EGVLANMODE_GET) \
+    SW_API_DESC(SW_API_PT_VLAN_XLT_MISS_CMD_SET)  \
+    SW_API_DESC(SW_API_PT_VLAN_XLT_MISS_CMD_GET) \
+    SW_API_DESC(SW_API_PT_EGRESS_TAG_PROPOGATION_SET)  \
+    SW_API_DESC(SW_API_PT_EGRESS_TAG_PROPOGATION_GET) \
+    SW_API_DESC(SW_API_PT_EGRESS_DEFAULT_VID_SET)  \
+    SW_API_DESC(SW_API_PT_EGRESS_DEFAULT_VID_GET)
 
 #else
 #define PORTVLAN_API \
@@ -1574,6 +1618,38 @@ extern "C" {
     SW_API_DESC(SW_API_REG_DUMP) \
     SW_API_DESC(SW_API_DBG_REG_DUMP)
 
+#define CTRLPKT_API \
+    SW_API_DEF(SW_API_ETHERNET_TYPE_PROFILE_SET, fal_ethernet_type_profile_set), \
+    SW_API_DEF(SW_API_ETHERNET_TYPE_PROFILE_GET, fal_ethernet_type_profile_get), \
+    SW_API_DEF(SW_API_RFDB_PROFILE_SET, fal_rfdb_profile_set), \
+    SW_API_DEF(SW_API_RFDB_PROFILE_GET, fal_rfdb_profile_get), \
+    SW_API_DEF(SW_API_APP_PROFILE_SET, fal_ctrlpkt_profile_set), \
+    SW_API_DEF(SW_API_APP_PROFILE_GET, fal_ctrlpkt_profile_get),
+
+#define CTRLPKT_API_PARAM \
+    SW_API_DESC(SW_API_ETHERNET_TYPE_PROFILE_SET) \
+    SW_API_DESC(SW_API_ETHERNET_TYPE_PROFILE_GET) \
+    SW_API_DESC(SW_API_RFDB_PROFILE_SET) \
+    SW_API_DESC(SW_API_RFDB_PROFILE_GET) \
+    SW_API_DESC(SW_API_APP_PROFILE_SET) \
+    SW_API_DESC(SW_API_APP_PROFILE_GET)
+
+#define SERVCODE_API \
+    SW_API_DEF(SW_API_PARSE_SERVICE_PROFILE_SET, fal_parse_service_profile_set), \
+    SW_API_DEF(SW_API_PARSE_SERVICE_PROFILE_GET, fal_parse_service_profile_get), \
+    SW_API_DEF(SW_API_INGRESS_SERVICE_PROFILE_SET, fal_ingress_service_profile_set), \
+    SW_API_DEF(SW_API_INGRESS_SERVICE_PROFILE_GET, fal_ingress_service_profile_get), \
+    SW_API_DEF(SW_API_EGRESS_SERVICE_PROFILE_SET, fal_egress_service_profile_set), \
+    SW_API_DEF(SW_API_EGRESS_SERVICE_PROFILE_GET, fal_egress_service_profile_get),
+
+#define SERVCODE_API_PARAM \
+    SW_API_DESC(SW_API_PARSE_SERVICE_PROFILE_SET) \
+    SW_API_DESC(SW_API_PARSE_SERVICE_PROFILE_GET) \
+    SW_API_DESC(SW_API_INGRESS_SERVICE_PROFILE_SET) \
+    SW_API_DESC(SW_API_INGRESS_SERVICE_PROFILE_GET) \
+    SW_API_DESC(SW_API_EGRESS_SERVICE_PROFILE_SET) \
+    SW_API_DESC(SW_API_EGRESS_SERVICE_PROFILE_GET)
+
 
 #define SSDK_API \
     SW_API_DEF(SW_API_SWITCH_RESET, fal_reset), \
@@ -1602,6 +1678,8 @@ extern "C" {
     VSI_API \
     QM_API \
     REG_API \
+    CTRLPKT_API \
+    SERVCODE_API \
     SW_API_DEF(SW_API_MAX, NULL),
 
 
@@ -1633,6 +1711,8 @@ extern "C" {
     VSI_API_PARAM \
     QM_API_PARAM \
     REG_API_PARAM \
+    CTRLPKT_API_PARAM \
+    SERVCODE_API_PARAM \
     SW_PARAM_DEF(SW_API_MAX, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"),
 
 
