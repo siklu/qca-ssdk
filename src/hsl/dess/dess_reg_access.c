@@ -424,6 +424,123 @@ _dess_debug_psgmii_self_test(a_uint32_t dev_id, a_bool_t enable,
 	return rv;
 }
 
+static sw_error_t
+_dess_phy_dump(a_uint32_t dev_id, a_uint32_t phy_addr,
+		a_uint32_t idx, fal_phy_dump_t * phy_dump)
+{
+	sw_error_t rv = SW_OK;
+	typedef struct {
+		a_uint32_t phy_base;
+		a_uint32_t phy_end;
+		char name[30];
+	} phydump;
+
+	phydump dump[2] =
+	{
+		{0x0, 0x1f, "0.mii registers"},
+		{0x0, 0x3f, "1.debug registers"},
+	};
+
+	a_uint32_t mmd1[] = {0x0,0x5,0x8,0x1800,0x1801,0x1802,0x1803,0x1804,
+		0x1805,0x1806,0x1807,0x1808,0x9000,0x9001,0x9002,0x9003,
+		0x9004,0x9905,0x9006,0x9007,0x9008,0x9009,0x900a,0x900b};
+	char mmd1name[30] = {"2.mmd1 register"};
+
+	a_uint32_t mmd3[] = {0x0,0x1,0x5,0x8,0x14,0x16,0x8001,0x8002,
+		0x8003,0x8004,0x8005,0x8006,0x8007,0x8008,0x8009,0x800a,
+		0x8045,0x8046,0x8047,0x8048,0x8049,0x804a,0x804b,0x804c,
+		0x804d,0x804e,0x804f};
+	char mmd3name[30] = {"3.mmd3 register"};
+
+	a_uint32_t mmd7[] = {0x0,0x1,0x5,0x16,0x17,0x18,0x19,0x1a,0x1b,
+		0x3c,0x3d,0x8000,0x801a};
+	char mmd7name[30] = {"4.mmd7 register"};
+
+	a_uint32_t reg = 0, phy_count = 0,i = 0;
+	a_uint16_t phy_val = 0;
+	switch (idx)
+	{
+		case 0:
+			for (reg = dump[idx].phy_base; reg <= dump[idx].phy_end; reg++)
+			{
+				rv = dess_phy_get(dev_id, phy_addr, reg, &phy_val);
+				phy_dump->phy_value[phy_count] = phy_val;
+				phy_count ++;
+			}
+			phy_dump->phy_count = phy_count;
+			phy_dump->phy_base = dump[idx].phy_base;
+			phy_dump->phy_end = dump[idx].phy_end;
+			snprintf((char *)phy_dump->phy_name,
+				sizeof(phy_dump->phy_name),"%s",dump[idx].name);
+			break;
+		case 1:
+			for (reg = dump[idx].phy_base; reg <= dump[idx].phy_end; reg++)
+			{
+				rv = dess_phy_set(dev_id, phy_addr, 0x1d, (a_uint16_t)reg);
+				rv = dess_phy_get(dev_id, phy_addr, 0x1e, &phy_val);
+				phy_dump->phy_value[phy_count] = phy_val;
+				phy_count ++;
+			}
+			phy_dump->phy_count = phy_count;
+			phy_dump->phy_base = dump[idx].phy_base;
+			phy_dump->phy_end = dump[idx].phy_end;
+			snprintf((char *)phy_dump->phy_name,
+				sizeof(phy_dump->phy_name),"%s",dump[idx].name);
+			break;
+		case 2:
+			phy_count = sizeof (mmd1)/sizeof(a_uint32_t);
+			for (i = 0; i < phy_count; i++ )
+			{
+				rv = dess_phy_set(dev_id, phy_addr, 0xd, 1);
+				rv = dess_phy_set(dev_id, phy_addr, 0xe, (a_uint16_t)mmd1[i]);
+				rv = dess_phy_set(dev_id, phy_addr, 0xd, 0x4001);
+				rv = dess_phy_get(dev_id, phy_addr, 0xe, &phy_val);
+				phy_dump->phy_value[i] = phy_val;
+			}
+			phy_dump->phy_count = phy_count - 1;
+			phy_dump->phy_base = mmd1[0];
+			phy_dump->phy_end = mmd1[phy_count - 1];
+			snprintf((char *)phy_dump->phy_name,
+				sizeof(phy_dump->phy_name),"%s",mmd1name);
+			break;
+		case 3:
+			phy_count = sizeof (mmd3)/sizeof(a_uint32_t);
+			for (i = 0; i < phy_count; i++ )
+			{
+				rv = dess_phy_set(dev_id, phy_addr, 0xd, 3);
+				rv = dess_phy_set(dev_id, phy_addr, 0xe, (a_uint16_t)mmd3[i]);
+				rv = dess_phy_set(dev_id, phy_addr, 0xd, 0x4003);
+				rv = dess_phy_get(dev_id, phy_addr, 0xe, &phy_val);
+				phy_dump->phy_value[i] = phy_val;
+			}
+			phy_dump->phy_count = phy_count - 1;
+			phy_dump->phy_base = mmd3[0];
+			phy_dump->phy_end = mmd3[phy_count - 1];
+			snprintf((char *)phy_dump->phy_name,
+				sizeof(phy_dump->phy_name),"%s",mmd3name);
+			break;
+		case 4:
+			phy_count = sizeof (mmd7)/sizeof(a_uint32_t);
+			for (i = 0; i < phy_count; i++ )
+			{
+				rv = dess_phy_set(dev_id, phy_addr, 0xd, 7);
+				rv = dess_phy_set(dev_id, phy_addr, 0xe, (a_uint16_t)mmd7[i]);
+				rv = dess_phy_set(dev_id, phy_addr, 0xd, 0x4007);
+				rv = dess_phy_get(dev_id, phy_addr, 0xe, &phy_val);
+				phy_dump->phy_value[i] = phy_val;
+			}
+			phy_dump->phy_count = phy_count - 1;
+			phy_dump->phy_base = mmd7[0];
+			phy_dump->phy_end = mmd7[phy_count - 1];
+			snprintf((char *)phy_dump->phy_name,
+				sizeof(phy_dump->phy_name),"%s",mmd7name);
+			break;
+		default:
+			return SW_BAD_PARAM;
+	}
+
+    return rv;
+}
 
 /**
  * @brief dump registers.
@@ -481,6 +598,17 @@ dess_debug_psgmii_self_test(a_uint32_t dev_id, a_bool_t enable,
 }
 
 sw_error_t
+dess_phy_dump(a_uint32_t dev_id, a_uint32_t phy_addr,
+		a_uint32_t idx, fal_phy_dump_t * phy_dump)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_API_LOCK;
+    rv = _dess_phy_dump(dev_id, phy_addr, idx, phy_dump);
+    FAL_API_UNLOCK;
+    return rv;
+}
+sw_error_t
 dess_reg_access_init(a_uint32_t dev_id, hsl_access_mode mode)
 {
     hsl_api_t *p_api;
@@ -500,6 +628,7 @@ dess_reg_access_init(a_uint32_t dev_id, hsl_access_mode mode)
 	p_api->register_dump = dess_regsiter_dump;
 	p_api->debug_register_dump = dess_debug_regsiter_dump;
 	p_api->debug_psgmii_self_test = dess_debug_psgmii_self_test;
+	p_api->phy_dump = dess_phy_dump;
 
 
     return SW_OK;

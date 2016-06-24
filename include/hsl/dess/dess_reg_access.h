@@ -62,6 +62,14 @@ extern "C" {
     sw_error_t
     dess_access_mode_set(a_uint32_t dev_id, hsl_access_mode mode);
 
+	sw_error_t
+	dess_phy_dump(a_uint32_t dev_id, a_uint32_t phy_addr,
+		a_uint32_t idx, fal_phy_dump_t * phy_dump);
+
+	sw_error_t
+	dess_debug_psgmii_self_test(a_uint32_t dev_id, a_bool_t enable,
+		a_uint32_t times, a_uint32_t * result);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
