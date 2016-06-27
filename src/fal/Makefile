@@ -95,6 +95,7 @@ endif
 
 ifeq (TRUE, $(IN_QM))
   SRC_LIST += fal_qm.c
+endif
 
 ifeq (TRUE, $(IN_CTRLPKT))
   SRC_LIST += fal_ctrlpkt.c
