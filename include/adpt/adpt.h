@@ -40,6 +40,7 @@ extern "C" {
 #include "fal_type.h"
 #include "fal_stp.h"
 #include "fal_vsi.h"
+#include "fal_pppoe.h"
 
 #define ADPT_DEV_ID_CHECK(dev_id) \
 do { \
@@ -579,6 +580,25 @@ typedef sw_error_t (*adpt_egress_service_profile_get_func)(a_uint32_t dev_id,
 										fal_egress_service_entry_t *entry);
 /*service module end*/
 
+//pppoe
+typedef sw_error_t (*adpt_pppoe_session_table_add_func)(
+		a_uint32_t dev_id,
+		fal_pppoe_session_t * session_tbl);
+typedef sw_error_t (*adpt_pppoe_session_table_del_func)(
+		a_uint32_t dev_id,
+		fal_pppoe_session_t * session_tbl);
+typedef sw_error_t (*adpt_pppoe_session_table_get_func)(
+		a_uint32_t dev_id,
+		fal_pppoe_session_t * session_tbl);
+typedef sw_error_t (*adpt_pppoe_en_set_func)(
+		a_uint32_t dev_id,
+		a_uint32_t l3_if,
+		a_uint32_t enable);
+typedef sw_error_t (*adpt_pppoe_en_get_func)(
+		a_uint32_t dev_id,
+		a_uint32_t l3_if,
+		a_uint32_t *enable);
+
 typedef struct
 {
 	adpt_fdb_first_func adpt_fdb_first;
@@ -833,6 +853,13 @@ typedef struct
 	adpt_egress_service_profile_set_func adpt_egress_service_profile_set;
 	adpt_egress_service_profile_get_func adpt_egress_service_profile_get;
 	/*servcode module end*/
+
+	//pppoe
+	adpt_pppoe_session_table_add_func adpt_pppoe_session_table_add;
+	adpt_pppoe_session_table_del_func adpt_pppoe_session_table_del;
+	adpt_pppoe_session_table_get_func adpt_pppoe_session_table_get;
+	adpt_pppoe_en_set_func adpt_pppoe_en_set;
+	adpt_pppoe_en_get_func adpt_pppoe_en_get;
 
 }adpt_api_t;
 

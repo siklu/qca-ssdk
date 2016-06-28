@@ -78,6 +78,7 @@ extern "C" {
         SW_HDRMODE,
         SW_FDBOPRATION,
         SW_PPPOE,
+        SW_PPPOE_LESS,
         SW_ACL_UDF_TYPE,
         SW_IP_HOSTENTRY,
         SW_ARP_LEARNMODE,

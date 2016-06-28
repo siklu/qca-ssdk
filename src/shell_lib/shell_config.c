@@ -969,15 +969,7 @@ struct sub_cmd_des_t g_misc_des[] =
 #ifndef ISISC
 	{"bctoCpu", "set", SW_API_BC_TO_CPU_PORT_SET, NULL},
 #endif
-#ifdef ISISC
 #ifndef IN_MISC_MINI
-	{"PppoeCmd", "set",   SW_API_PPPOE_CMD_SET, NULL},
-#endif
-#else
-	{"PppoeCmd", "set",   SW_API_PPPOE_CMD_SET, NULL},
-#endif
-#ifndef IN_MISC_MINI
-	{"Pppoe", "set",   SW_API_PPPOE_STATUS_SET, NULL},
 	{"ptDhcp", "set",   SW_API_PT_DHCP_SET, NULL},
 #ifdef ISISC
 	{"arpcmd", "set",   SW_API_ARP_CMD_SET, NULL},
@@ -988,24 +980,15 @@ struct sub_cmd_des_t g_misc_des[] =
 	{"eapolcmd", "set",   SW_API_EAPOL_CMD_SET, NULL},
 	{"eapolstatus", "set",   SW_API_EAPOL_STATUS_SET, NULL},
 #ifndef IN_MISC_MINI
-#ifndef ISISC
-	{"pppoesession", "add", SW_API_PPPOE_SESSION_ADD, NULL},
-	{"pppoesession", "del", SW_API_PPPOE_SESSION_DEL, NULL},
-#endif
 	{"rip", "set",   SW_API_RIPV1_STATUS_SET, NULL},
 	{"ptarpreq", "set",   SW_API_PT_ARP_REQ_STATUS_SET, NULL},
 	{"ptarpack", "set",   SW_API_PT_ARP_ACK_STATUS_SET, NULL},
-	{"extendpppoe", "set",   SW_API_PPPOE_SESSION_TABLE_ADD, NULL},
-	{"extendpppoe", "add",   SW_API_PPPOE_SESSION_TABLE_ADD, NULL},
-	{"extendpppoe", "del",   SW_API_PPPOE_SESSION_TABLE_DEL, NULL},
-	{"pppoeid", "set",   SW_API_PPPOE_SESSION_ID_SET, NULL},
 	{"intrmask", "set",   SW_API_INTR_MASK_SET, NULL},
 	{"intrstatus", "clear",   SW_API_INTR_STATUS_CLEAR, NULL},
 	{"intrportlinkmask", "set",   SW_API_INTR_PORT_LINK_MASK_SET, NULL},
 	{"intrmaskmaclinkchg", "set",   SW_API_INTR_MASK_MAC_LINKCHG_SET, NULL},
 	{"intrstatusmaclinkchg", "clear",   SW_API_INTR_STATUS_MAC_LINKCHG_CLEAR, NULL},
 	{"cpuVid", "set",   SW_API_CPU_VID_EN_SET, NULL},
-	{"rtdPppoe", "set",   SW_API_RTD_PPPOE_EN_SET, NULL},
 	{"glomacaddr", "set",   SW_API_GLOBAL_MACADDR_SET, NULL},
 	{"lldp", "set",   SW_API_LLDP_STATUS_SET, NULL},
 	{"framecrc", "set",   SW_API_FRAME_CRC_RESERVE_SET, NULL},
@@ -1145,6 +1128,24 @@ struct sub_cmd_des_t g_vsi_des[] =
 	{"stamove", "set", SW_API_VSI_STAMOVE_SET, NULL},
 	{"member", "set", SW_API_VSI_MEMBER_SET, NULL},
 	{NULL, NULL, NULL, NULL, (int)NULL, NULL}/*end of desc*/
+};
+#endif
+
+#ifdef IN_PPPOE
+struct sub_cmd_des_t g_pppoe_des[] =
+{
+	{"pppoesession", "add", SW_API_PPPOE_SESSION_ADD, NULL},
+	{"pppoesession", "del", SW_API_PPPOE_SESSION_DEL, NULL},
+	{"extendpppoe", "set",   SW_API_PPPOE_SESSION_TABLE_ADD, NULL},
+	{"extendpppoe", "add",   SW_API_PPPOE_SESSION_TABLE_ADD, NULL},
+	{"extendpppoe", "del",   SW_API_PPPOE_SESSION_TABLE_DEL, NULL},
+	{"pppoeid", "set",   SW_API_PPPOE_SESSION_ID_SET, NULL},
+	{"PppoeCmd", "set",   SW_API_PPPOE_CMD_SET, NULL},
+	{"PppoeCmd", "set",   SW_API_PPPOE_CMD_SET, NULL},
+	{"rtdPppoe", "set",   SW_API_RTD_PPPOE_EN_SET, NULL},
+	{"Pppoe", "set",   SW_API_PPPOE_STATUS_SET, NULL},
+	{"pppoeen", "set", SW_API_PPPOE_EN_SET, NULL},
+	{NULL, NULL, (int)NULL, NULL},/*end of desc*/
 };
 #endif
 
@@ -1322,6 +1323,12 @@ struct cmd_des_t gcmd_des[] =
 #ifdef IN_VSI
     {
         "vsi", g_vsi_des,
+    },
+#endif
+
+#ifdef IN_PPPOE
+    {
+        "pppoe", g_pppoe_des,
     },
 #endif
 

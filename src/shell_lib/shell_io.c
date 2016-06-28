@@ -166,10 +166,9 @@ static sw_data_type_t sw_data_type[] =
 	#ifdef IN_FDB
     SW_TYPE_DEF(SW_FDBOPRATION, cmd_data_check_fdboperation, NULL),
 	#endif
-	#ifdef IN_MISC
-	#ifndef IN_MISC_MINI
+	#ifdef IN_PPPOE
     SW_TYPE_DEF(SW_PPPOE, cmd_data_check_pppoe, NULL),
-	#endif
+    SW_TYPE_DEF(SW_PPPOE_LESS, cmd_data_check_pppoe_less, NULL),
 	#endif
     SW_TYPE_DEF(SW_ACL_UDF_TYPE, NULL, NULL),
 	#if defined(IN_IP) || defined(IN_NAT)
@@ -2349,8 +2348,7 @@ cmd_data_check_fdboperation(char *cmd_str, void * val, a_uint32_t size)
     return SW_OK;
 }
 #endif
-#ifdef IN_MISC
-#ifndef IN_MISC_MINI
+#ifdef IN_PPPOE
 sw_error_t
 cmd_data_check_pppoe(char *cmd_str, void * val, a_uint32_t size)
 {
@@ -2397,7 +2395,25 @@ cmd_data_check_pppoe(char *cmd_str, void * val, a_uint32_t size)
     *(fal_pppoe_session_t*)val = entry;
     return SW_OK;
 }
-#endif
+
+sw_error_t
+cmd_data_check_pppoe_less(char *cmd_str, void * val, a_uint32_t size)
+{
+    sw_error_t rv;
+    fal_pppoe_session_t entry;
+
+    aos_mem_zero(&entry, sizeof (fal_pppoe_session_t));
+
+    rv = __cmd_data_check_complex("sessionid", "0",
+                        "usage: the range is 0 -- 65535\n",
+                        cmd_data_check_uint32, &entry.session_id,
+                        sizeof (a_uint32_t));
+    if (rv)
+        return rv;
+
+    *(fal_pppoe_session_t*)val = entry;
+    return SW_OK;
+}
 #endif
 
 #if defined(IN_IP) || defined(IN_NAT)

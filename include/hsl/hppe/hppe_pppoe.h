@@ -20,8 +20,9 @@
 #ifndef _HPPE_PPPOE_H_
 #define _HPPE_PPPOE_H_
 
-#define PPPOE_SESSION_MAX_ENTRY		4
-#define PPPOE_SESSION_EXT_MAX_ENTRY	4
+#define PPPOE_SESSION_MAX_ENTRY	16
+#define PPPOE_SESSION_EXT_MAX_ENTRY	16
+#define PPPOE_SESSION_EXT1_MAX_ENTRY	16
 
 sw_error_t
 hppe_pppoe_session_get(
@@ -46,6 +47,18 @@ hppe_pppoe_session_ext_set(
 		a_uint32_t dev_id,
 		a_uint32_t index,
 		union pppoe_session_ext_u *value);
+
+sw_error_t
+hppe_pppoe_session_ext1_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union pppoe_session_ext1_u *value);
+
+sw_error_t
+hppe_pppoe_session_ext1_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union pppoe_session_ext1_u *value);
 
 sw_error_t
 hppe_pppoe_session_session_id_get(
@@ -108,6 +121,18 @@ hppe_pppoe_session_ext_mc_valid_set(
 		a_uint32_t value);
 
 sw_error_t
+hppe_pppoe_session_ext_smac_valid_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_pppoe_session_ext_smac_valid_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
 hppe_pppoe_session_ext_l3_if_valid_get(
 		a_uint32_t dev_id,
 		a_uint32_t index,
@@ -118,6 +143,31 @@ hppe_pppoe_session_ext_l3_if_valid_set(
 		a_uint32_t dev_id,
 		a_uint32_t index,
 		a_uint32_t value);
+
+sw_error_t
+hppe_pppoe_session_ext_smac_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_pppoe_session_ext_smac_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_pppoe_session_ext1_smac_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_pppoe_session_ext1_smac_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
 
 #endif
 

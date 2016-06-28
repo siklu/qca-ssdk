@@ -3,6 +3,7 @@ LIB=ADPT
 
 include $(PRJ_PATH)/make/config.mk
 
+SRC_LIST=
 
 ifeq (TRUE, $(IN_FDB))
   SRC_LIST += adpt_hppe_fdb.c
@@ -43,10 +44,22 @@ endif
 ifeq (TRUE, $(IN_QM))
   SRC_LIST += adpt_hppe_qm.c
 endif
-SRC_LIST=adpt_hppe_fdb.c adpt_hppe_mib.c adpt_hppe_stp.c adpt_hppe_vsi.c adpt_hppe_portctrl.c adpt_hppe_mirror.c adpt_hppe_trunk.c
-SRC_LIST+=adpt_hppe_portvlan.c
-SRC_LIST+=adpt_hppe_ctrlpkt.c
-SRC_LIST+=adpt_hppe_servcode.c
+
+ifeq (TRUE, $(IN_PPPOE))
+  SRC_LIST += adpt_hppe_pppoe.c
+endif
+
+ifeq (TRUE, $(IN_PORTVLAN))
+  SRC_LIST += adpt_hppe_portvlan.c
+endif
+
+ifeq (TRUE, $(IN_CTRLPKT))
+  SRC_LIST += adpt_hppe_ctrlpkt.c
+endif
+
+ifeq (TRUE, $(IN_SERVCODE))
+  SRC_LIST += adpt_hppe_servcode.c
+endif
 
 ifeq (, $(findstring HPPE, $(SUPPORT_CHIP)))
   SRC_LIST=

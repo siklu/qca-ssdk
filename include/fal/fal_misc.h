@@ -28,15 +28,6 @@ extern "C" {
 #include "fal/fal_type.h"
 
 
-    typedef struct
-    {
-        a_uint32_t entry_id;
-        a_uint32_t session_id;
-        a_bool_t   multi_session;
-        a_bool_t   uni_session;
-        a_uint32_t vrf_id;
-    } fal_pppoe_session_t;
-
     typedef enum
     {
         FAL_LOOP_CHECK_1MS = 0,
@@ -119,26 +110,6 @@ extern "C" {
 
 
     sw_error_t
-    fal_pppoe_cmd_set(a_uint32_t dev_id, fal_fwd_cmd_t cmd);
-
-
-
-    sw_error_t
-    fal_pppoe_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd);
-
-
-
-    sw_error_t
-    fal_pppoe_status_set(a_uint32_t dev_id, a_bool_t enable);
-
-
-
-    sw_error_t
-    fal_pppoe_status_get(a_uint32_t dev_id, a_bool_t * enable);
-
-
-
-    sw_error_t
     fal_port_dhcp_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable);
 
 
@@ -161,18 +132,6 @@ extern "C" {
 #ifndef IN_MISC_MINI
     sw_error_t
     fal_eapol_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd);
-
-
-    sw_error_t
-    fal_pppoe_session_add(a_uint32_t dev_id, a_uint32_t session_id, a_bool_t strip_hdr);
-
-
-    sw_error_t
-    fal_pppoe_session_del(a_uint32_t dev_id, a_uint32_t session_id);
-
-
-    sw_error_t
-    fal_pppoe_session_get(a_uint32_t dev_id, a_uint32_t session_id, a_bool_t * strip_hdr);
 #endif
     sw_error_t
     fal_eapol_status_set(a_uint32_t dev_id, a_uint32_t port_id, a_bool_t enable);
@@ -201,28 +160,6 @@ extern "C" {
 
     sw_error_t
     fal_port_arp_ack_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable);
-
-
-    sw_error_t
-    fal_pppoe_session_table_add(a_uint32_t dev_id, fal_pppoe_session_t * session_tbl);
-
-
-    sw_error_t
-    fal_pppoe_session_table_del(a_uint32_t dev_id, fal_pppoe_session_t * session_tbl);
-
-
-    sw_error_t
-    fal_pppoe_session_table_get(a_uint32_t dev_id, fal_pppoe_session_t * session_tbl);
-
-
-    sw_error_t
-    fal_pppoe_session_id_set(a_uint32_t dev_id, a_uint32_t index,
-                             a_uint32_t id);
-
-
-    sw_error_t
-    fal_pppoe_session_id_get(a_uint32_t dev_id, a_uint32_t index,
-                             a_uint32_t * id);
 
 
     sw_error_t
@@ -268,12 +205,6 @@ extern "C" {
 
     sw_error_t
     fal_cpu_vid_en_get(a_uint32_t dev_id, a_bool_t * enable);
-
-    sw_error_t
-    fal_rtd_pppoe_en_set(a_uint32_t dev_id, a_bool_t enable);
-
-    sw_error_t
-    fal_rtd_pppoe_en_get(a_uint32_t dev_id, a_bool_t * enable);
 
     sw_error_t
     fal_intr_status_mac_linkchg_clear(a_uint32_t dev_id);

@@ -917,19 +917,12 @@ extern "C" {
     SW_API_DEF(SW_API_CPU_PORT_STATUS_GET, fal_cpu_port_status_get), \
     SW_API_DEF(SW_API_BC_TO_CPU_PORT_SET, fal_bc_to_cpu_port_set), \
     SW_API_DEF(SW_API_BC_TO_CPU_PORT_GET, fal_bc_to_cpu_port_get), \
-    SW_API_DEF(SW_API_PPPOE_CMD_SET, fal_pppoe_cmd_set), \
-    SW_API_DEF(SW_API_PPPOE_CMD_GET, fal_pppoe_cmd_get), \
-    SW_API_DEF(SW_API_PPPOE_STATUS_SET, fal_pppoe_status_set), \
-    SW_API_DEF(SW_API_PPPOE_STATUS_GET, fal_pppoe_status_get), \
     SW_API_DEF(SW_API_PT_DHCP_SET, fal_port_dhcp_set), \
     SW_API_DEF(SW_API_PT_DHCP_GET, fal_port_dhcp_get), \
     SW_API_DEF(SW_API_ARP_CMD_SET, fal_arp_cmd_set), \
     SW_API_DEF(SW_API_ARP_CMD_GET, fal_arp_cmd_get), \
     SW_API_DEF(SW_API_EAPOL_CMD_SET, fal_eapol_cmd_set), \
     SW_API_DEF(SW_API_EAPOL_CMD_GET, fal_eapol_cmd_get), \
-    SW_API_DEF(SW_API_PPPOE_SESSION_ADD, fal_pppoe_session_add), \
-    SW_API_DEF(SW_API_PPPOE_SESSION_DEL, fal_pppoe_session_del), \
-    SW_API_DEF(SW_API_PPPOE_SESSION_GET, fal_pppoe_session_get), \
     SW_API_DEF(SW_API_EAPOL_STATUS_SET, fal_eapol_status_set), \
     SW_API_DEF(SW_API_EAPOL_STATUS_GET, fal_eapol_status_get), \
     SW_API_DEF(SW_API_RIPV1_STATUS_SET, fal_ripv1_status_set), \
@@ -938,11 +931,6 @@ extern "C" {
     SW_API_DEF(SW_API_PT_ARP_REQ_STATUS_GET, fal_port_arp_req_status_get), \
     SW_API_DEF(SW_API_PT_ARP_ACK_STATUS_SET, fal_port_arp_ack_status_set), \
     SW_API_DEF(SW_API_PT_ARP_ACK_STATUS_GET, fal_port_arp_ack_status_get), \
-    SW_API_DEF(SW_API_PPPOE_SESSION_TABLE_ADD, fal_pppoe_session_table_add), \
-    SW_API_DEF(SW_API_PPPOE_SESSION_TABLE_DEL, fal_pppoe_session_table_del), \
-    SW_API_DEF(SW_API_PPPOE_SESSION_TABLE_GET, fal_pppoe_session_table_get), \
-    SW_API_DEF(SW_API_PPPOE_SESSION_ID_SET, fal_pppoe_session_id_set), \
-    SW_API_DEF(SW_API_PPPOE_SESSION_ID_GET, fal_pppoe_session_id_get), \
     SW_API_DEF(SW_API_INTR_MASK_SET, fal_intr_mask_set), \
     SW_API_DEF(SW_API_INTR_MASK_GET, fal_intr_mask_get), \
     SW_API_DEF(SW_API_INTR_STATUS_GET, fal_intr_status_get),   \
@@ -956,8 +944,6 @@ extern "C" {
     SW_API_DEF(SW_API_INTR_STATUS_MAC_LINKCHG_CLEAR, fal_intr_status_mac_linkchg_clear), \
     SW_API_DEF(SW_API_CPU_VID_EN_SET, fal_cpu_vid_en_set), \
     SW_API_DEF(SW_API_CPU_VID_EN_GET, fal_cpu_vid_en_get), \
-    SW_API_DEF(SW_API_RTD_PPPOE_EN_SET, fal_rtd_pppoe_en_set), \
-    SW_API_DEF(SW_API_RTD_PPPOE_EN_GET, fal_rtd_pppoe_en_get), \
     SW_API_DEF(SW_API_GLOBAL_MACADDR_SET, fal_global_macaddr_set), \
     SW_API_DEF(SW_API_GLOBAL_MACADDR_GET, fal_global_macaddr_get), \
     SW_API_DEF(SW_API_LLDP_STATUS_SET, fal_lldp_status_set), \
@@ -984,19 +970,12 @@ extern "C" {
     SW_API_DESC(SW_API_CPU_PORT_STATUS_GET) \
     SW_API_DESC(SW_API_BC_TO_CPU_PORT_SET) \
     SW_API_DESC(SW_API_BC_TO_CPU_PORT_GET) \
-    SW_API_DESC(SW_API_PPPOE_CMD_SET) \
-    SW_API_DESC(SW_API_PPPOE_CMD_GET) \
-    SW_API_DESC(SW_API_PPPOE_STATUS_SET) \
-    SW_API_DESC(SW_API_PPPOE_STATUS_GET) \
     SW_API_DESC(SW_API_PT_DHCP_SET) \
     SW_API_DESC(SW_API_PT_DHCP_GET) \
     SW_API_DESC(SW_API_ARP_CMD_SET) \
     SW_API_DESC(SW_API_ARP_CMD_GET) \
     SW_API_DESC(SW_API_EAPOL_CMD_SET) \
     SW_API_DESC(SW_API_EAPOL_CMD_GET) \
-    SW_API_DESC(SW_API_PPPOE_SESSION_ADD) \
-    SW_API_DESC(SW_API_PPPOE_SESSION_DEL) \
-    SW_API_DESC(SW_API_PPPOE_SESSION_GET) \
     SW_API_DESC(SW_API_EAPOL_STATUS_SET) \
     SW_API_DESC(SW_API_EAPOL_STATUS_GET) \
     SW_API_DESC(SW_API_RIPV1_STATUS_SET) \
@@ -1005,11 +984,6 @@ extern "C" {
     SW_API_DESC(SW_API_PT_ARP_REQ_STATUS_GET) \
     SW_API_DESC(SW_API_PT_ARP_ACK_STATUS_SET) \
     SW_API_DESC(SW_API_PT_ARP_ACK_STATUS_GET) \
-    SW_API_DESC(SW_API_PPPOE_SESSION_TABLE_ADD) \
-    SW_API_DESC(SW_API_PPPOE_SESSION_TABLE_DEL) \
-    SW_API_DESC(SW_API_PPPOE_SESSION_TABLE_GET) \
-    SW_API_DESC(SW_API_PPPOE_SESSION_ID_SET) \
-    SW_API_DESC(SW_API_PPPOE_SESSION_ID_GET) \
     SW_API_DESC(SW_API_INTR_MASK_SET) \
     SW_API_DESC(SW_API_INTR_MASK_GET) \
     SW_API_DESC(SW_API_INTR_STATUS_GET)   \
@@ -1023,8 +997,6 @@ extern "C" {
     SW_API_DESC(SW_API_INTR_STATUS_MAC_LINKCHG_CLEAR) \
     SW_API_DESC(SW_API_CPU_VID_EN_SET) \
     SW_API_DESC(SW_API_CPU_VID_EN_GET) \
-    SW_API_DESC(SW_API_RTD_PPPOE_EN_SET) \
-    SW_API_DESC(SW_API_RTD_PPPOE_EN_GET) \
     SW_API_DESC(SW_API_GLOBAL_MACADDR_SET) \
     SW_API_DESC(SW_API_GLOBAL_MACADDR_GET) \
     SW_API_DESC(SW_API_LLDP_STATUS_SET) \
@@ -1593,6 +1565,48 @@ extern "C" {
 #endif
 
 
+#ifdef IN_PPPOE
+#define PPPOE_API \
+    SW_API_DEF(SW_API_PPPOE_CMD_SET, fal_pppoe_cmd_set), \
+    SW_API_DEF(SW_API_PPPOE_CMD_GET, fal_pppoe_cmd_get), \
+    SW_API_DEF(SW_API_PPPOE_STATUS_SET, fal_pppoe_status_set), \
+    SW_API_DEF(SW_API_PPPOE_STATUS_GET, fal_pppoe_status_get), \
+    SW_API_DEF(SW_API_PPPOE_SESSION_ADD, fal_pppoe_session_add), \
+    SW_API_DEF(SW_API_PPPOE_SESSION_DEL, fal_pppoe_session_del), \
+    SW_API_DEF(SW_API_PPPOE_SESSION_GET, fal_pppoe_session_get), \
+    SW_API_DEF(SW_API_PPPOE_SESSION_TABLE_ADD, fal_pppoe_session_table_add), \
+    SW_API_DEF(SW_API_PPPOE_SESSION_TABLE_DEL, fal_pppoe_session_table_del), \
+    SW_API_DEF(SW_API_PPPOE_SESSION_TABLE_GET, fal_pppoe_session_table_get), \
+    SW_API_DEF(SW_API_PPPOE_SESSION_ID_SET, fal_pppoe_session_id_set), \
+    SW_API_DEF(SW_API_PPPOE_SESSION_ID_GET, fal_pppoe_session_id_get), \
+    SW_API_DEF(SW_API_RTD_PPPOE_EN_SET, fal_rtd_pppoe_en_set), \
+    SW_API_DEF(SW_API_RTD_PPPOE_EN_GET, fal_rtd_pppoe_en_get), \
+    SW_API_DEF(SW_API_PPPOE_EN_SET, fal_pppoe_en_set), \
+    SW_API_DEF(SW_API_PPPOE_EN_GET, fal_pppoe_en_get),
+
+#define PPPOE_API_PARAM \
+    SW_API_DESC(SW_API_PPPOE_CMD_SET) \
+    SW_API_DESC(SW_API_PPPOE_CMD_GET) \
+    SW_API_DESC(SW_API_PPPOE_STATUS_SET) \
+    SW_API_DESC(SW_API_PPPOE_STATUS_GET) \
+    SW_API_DESC(SW_API_PPPOE_SESSION_ADD) \
+    SW_API_DESC(SW_API_PPPOE_SESSION_DEL) \
+    SW_API_DESC(SW_API_PPPOE_SESSION_GET) \
+    SW_API_DESC(SW_API_PPPOE_SESSION_TABLE_ADD) \
+    SW_API_DESC(SW_API_PPPOE_SESSION_TABLE_DEL) \
+    SW_API_DESC(SW_API_PPPOE_SESSION_TABLE_GET) \
+    SW_API_DESC(SW_API_PPPOE_SESSION_ID_SET) \
+    SW_API_DESC(SW_API_PPPOE_SESSION_ID_GET) \
+    SW_API_DESC(SW_API_RTD_PPPOE_EN_SET) \
+    SW_API_DESC(SW_API_RTD_PPPOE_EN_GET) \
+    SW_API_DESC(SW_API_PPPOE_EN_SET) \
+    SW_API_DESC(SW_API_PPPOE_EN_GET)
+
+#else
+#define PPPOE_API
+#define PPPOE_API_PARAM
+#endif
+
 
 #define REG_API \
     SW_API_DEF(SW_API_PHY_GET, fal_phy_get), \
@@ -1677,6 +1691,7 @@ extern "C" {
     INTERFACECTRL_API \
     VSI_API \
     QM_API \
+    PPPOE_API \
     REG_API \
     CTRLPKT_API \
     SERVCODE_API \
@@ -1710,6 +1725,7 @@ extern "C" {
     INTERFACECTRL_API_PARAM \
     VSI_API_PARAM \
     QM_API_PARAM \
+    PPPOE_API_PARAM \
     REG_API_PARAM \
     CTRLPKT_API_PARAM \
     SERVCODE_API_PARAM \

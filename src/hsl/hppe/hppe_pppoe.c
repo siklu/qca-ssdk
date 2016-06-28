@@ -80,6 +80,34 @@ hppe_pppoe_session_ext_set(
 }
 
 sw_error_t
+hppe_pppoe_session_ext1_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union pppoe_session_ext1_u *value)
+{
+	if (index >= PPPOE_SESSION_EXT1_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+	return hppe_reg_get(
+				dev_id,
+				IPE_L3_BASE_ADDR + PPPOE_SESSION_EXT1_ADDRESS + \
+				index * PPPOE_SESSION_EXT1_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_pppoe_session_ext1_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union pppoe_session_ext1_u *value)
+{
+	return hppe_reg_set(
+				dev_id,
+				IPE_L3_BASE_ADDR + PPPOE_SESSION_EXT1_ADDRESS + \
+				index * PPPOE_SESSION_EXT1_INC,
+				value->val);
+}
+
+sw_error_t
 hppe_pppoe_session_session_id_get(
 		a_uint32_t dev_id,
 		a_uint32_t index,
@@ -235,6 +263,37 @@ hppe_pppoe_session_ext_mc_valid_set(
 }
 
 sw_error_t
+hppe_pppoe_session_ext_smac_valid_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union pppoe_session_ext_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_pppoe_session_ext_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.smac_valid;
+	return ret;
+}
+
+sw_error_t
+hppe_pppoe_session_ext_smac_valid_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union pppoe_session_ext_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_pppoe_session_ext_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.smac_valid = value;
+	ret = hppe_pppoe_session_ext_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
 hppe_pppoe_session_ext_l3_if_valid_get(
 		a_uint32_t dev_id,
 		a_uint32_t index,
@@ -262,6 +321,68 @@ hppe_pppoe_session_ext_l3_if_valid_set(
 		return ret;
 	reg_val.bf.l3_if_valid = value;
 	ret = hppe_pppoe_session_ext_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_pppoe_session_ext_smac_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union pppoe_session_ext_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_pppoe_session_ext_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.smac;
+	return ret;
+}
+
+sw_error_t
+hppe_pppoe_session_ext_smac_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union pppoe_session_ext_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_pppoe_session_ext_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.smac = value;
+	ret = hppe_pppoe_session_ext_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_pppoe_session_ext1_smac_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union pppoe_session_ext1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_pppoe_session_ext1_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.smac;
+	return ret;
+}
+
+sw_error_t
+hppe_pppoe_session_ext1_smac_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union pppoe_session_ext1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_pppoe_session_ext1_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.smac = value;
+	ret = hppe_pppoe_session_ext1_set(dev_id, index, &reg_val);
 	return ret;
 }
 

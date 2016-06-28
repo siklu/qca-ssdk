@@ -20,10 +20,11 @@
 #ifndef HPPE_PPPOE_REG_H
 #define HPPE_PPPOE_REG_H
 
+
 /*[register] PPPOE_SESSION*/
 #define PPPOE_SESSION
-#define PPPOE_SESSION_ADDRESS 0x348
-#define PPPOE_SESSION_NUM     4
+#define PPPOE_SESSION_ADDRESS 0xc20
+#define PPPOE_SESSION_NUM     16
 #define PPPOE_SESSION_INC     0x4
 #define PPPOE_SESSION_TYPE    REG_TYPE_RW
 #define PPPOE_SESSION_DEFAULT 0x0
@@ -56,8 +57,8 @@ union pppoe_session_u {
 
 /*[register] PPPOE_SESSION_EXT*/
 #define PPPOE_SESSION_EXT
-#define PPPOE_SESSION_EXT_ADDRESS 0x358
-#define PPPOE_SESSION_EXT_NUM     4
+#define PPPOE_SESSION_EXT_ADDRESS 0xc60
+#define PPPOE_SESSION_EXT_NUM     16
 #define PPPOE_SESSION_EXT_INC     0x4
 #define PPPOE_SESSION_EXT_TYPE    REG_TYPE_RW
 #define PPPOE_SESSION_EXT_DEFAULT 0x0
@@ -76,17 +77,51 @@ union pppoe_session_u {
 	#define PPPOE_SESSION_EXT_UC_VALID_OFFSET  2
 	#define PPPOE_SESSION_EXT_UC_VALID_LEN     1
 	#define PPPOE_SESSION_EXT_UC_VALID_DEFAULT 0x0
+	/*[field] SMAC_VALID*/
+	#define PPPOE_SESSION_EXT_SMAC_VALID
+	#define PPPOE_SESSION_EXT_SMAC_VALID_OFFSET  3
+	#define PPPOE_SESSION_EXT_SMAC_VALID_LEN     1
+	#define PPPOE_SESSION_EXT_SMAC_VALID_DEFAULT 0x0
+	/*[field] SMAC*/
+	#define PPPOE_SESSION_EXT_SMAC
+	#define PPPOE_SESSION_EXT_SMAC_OFFSET  16
+	#define PPPOE_SESSION_EXT_SMAC_LEN     16
+	#define PPPOE_SESSION_EXT_SMAC_DEFAULT 0x0
 
 struct pppoe_session_ext {
 	a_uint32_t  l3_if_valid:1;
 	a_uint32_t  mc_valid:1;
 	a_uint32_t  uc_valid:1;
-	a_uint32_t  _reserved0:29;
+	a_uint32_t  smac_valid:1;
+	a_uint32_t  _reserved0:12;
+	a_uint32_t  smac:16;
 };
 
 union pppoe_session_ext_u {
 	a_uint32_t val;
 	struct pppoe_session_ext bf;
+};
+
+/*[register] PPPOE_SESSION_EXT1*/
+#define PPPOE_SESSION_EXT1
+#define PPPOE_SESSION_EXT1_ADDRESS 0xca0
+#define PPPOE_SESSION_EXT1_NUM     16
+#define PPPOE_SESSION_EXT1_INC     0x4
+#define PPPOE_SESSION_EXT1_TYPE    REG_TYPE_RW
+#define PPPOE_SESSION_EXT1_DEFAULT 0x0
+	/*[field] SMAC*/
+	#define PPPOE_SESSION_EXT1_SMAC
+	#define PPPOE_SESSION_EXT1_SMAC_OFFSET  0
+	#define PPPOE_SESSION_EXT1_SMAC_LEN     32
+	#define PPPOE_SESSION_EXT1_SMAC_DEFAULT 0x0
+
+struct pppoe_session_ext1 {
+	a_uint32_t  smac:32;
+};
+
+union pppoe_session_ext1_u {
+	a_uint32_t val;
+	struct pppoe_session_ext1 bf;
 };
 
 #endif
