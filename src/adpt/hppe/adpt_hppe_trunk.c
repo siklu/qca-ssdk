@@ -171,6 +171,15 @@ adpt_hppe_trunk_group_set(a_uint32_t dev_id, a_uint32_t trunk_id,
 		}
 	}
 
+	for (i = 0; i < FAL_MAX_PORT_NUMBER; i++)
+	{
+		hppe_port_trunk_id_get(dev_id, i, &port_trunk_id);
+		if (port_trunk_id.bf.trunk_id == trunk_id) {
+			port_trunk_id.bf.trunk_en = A_FALSE;
+			hppe_port_trunk_id_set(dev_id, i, &port_trunk_id);
+		}
+	}
+
 	for (j = 0; j < FAL_MAX_PORT_NUMBER; j++)
 	{
 		if (member & (0x1 << j))
@@ -200,6 +209,7 @@ adpt_hppe_trunk_group_set(a_uint32_t dev_id, a_uint32_t trunk_id,
 				trunk_member.bf.member_5_port_id = data[0];
 				trunk_member.bf.member_6_port_id = data[0];
 				trunk_member.bf.member_7_port_id = data[0];
+				break;
 			case 2:
 				trunk_member.bf.member_0_port_id = data[0];
 				trunk_member.bf.member_1_port_id = data[1];
@@ -209,6 +219,7 @@ adpt_hppe_trunk_group_set(a_uint32_t dev_id, a_uint32_t trunk_id,
 				trunk_member.bf.member_5_port_id = data[1];
 				trunk_member.bf.member_6_port_id = data[0];
 				trunk_member.bf.member_7_port_id = data[1];
+				break;
 			case 3:
 				trunk_member.bf.member_0_port_id = data[0];
 				trunk_member.bf.member_1_port_id = data[1];
@@ -218,6 +229,7 @@ adpt_hppe_trunk_group_set(a_uint32_t dev_id, a_uint32_t trunk_id,
 				trunk_member.bf.member_5_port_id = data[2];
 				trunk_member.bf.member_6_port_id = data[0];
 				trunk_member.bf.member_7_port_id = data[1];
+				break;
 			case 4:
 				trunk_member.bf.member_0_port_id = data[0];
 				trunk_member.bf.member_1_port_id = data[1];
@@ -227,6 +239,7 @@ adpt_hppe_trunk_group_set(a_uint32_t dev_id, a_uint32_t trunk_id,
 				trunk_member.bf.member_5_port_id = data[1];
 				trunk_member.bf.member_6_port_id = data[2];
 				trunk_member.bf.member_7_port_id = data[3];
+				break;
 		}
 	}
 
