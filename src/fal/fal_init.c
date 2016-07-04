@@ -24,7 +24,6 @@
 #include "hsl_api.h"
 #include "adpt.h"
 
-#define ESS_ONLY_FPGA
 /**
  * @brief Init fal layer.
  * @details Comments:

@@ -141,7 +141,6 @@ isisc_hw_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 
 #endif
 
-#define ESS_ONLY_FPGA
 static sw_error_t
 isisc_dev_init(a_uint32_t dev_id, hsl_init_mode cpu_mode)
 {

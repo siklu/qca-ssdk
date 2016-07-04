@@ -162,7 +162,6 @@ ssdk_dt_cfg ssdk_dt_global = {0};
 u8  __iomem      *hw_addr = NULL;
 u8  __iomem      *psgmii_hw_addr = NULL;
 
-#define ESS_ONLY_FPGA
 
 #ifdef ESS_ONLY_FPGA
 
@@ -2006,6 +2005,11 @@ static uint32_t switch_chip_id_adjuest(void)
 
 static int miibus_get(void)
 {
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
+	return 0;
+#endif
+
+
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 	struct device_node *mdio_node = NULL;
 	struct platform_device *mdio_plat = NULL;
@@ -2430,6 +2434,17 @@ ssdk_plat_init(ssdk_init_cfg *cfg)
 	if(miibus_get())
 		return -ENODEV;
 
+	#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
+	hw_addr = ioremap_nocache(ssdk_dt_global.switchreg_base_addr,
+				ssdk_dt_global.switchreg_size);
+	if (!hw_addr) {
+		printk("%s ioremap fail.", __func__);
+		return -1;
+	}
+	return 0;
+	#endif
+
+
 	#ifdef DESS
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
 		/* Enable ess clock here */
@@ -2601,6 +2616,15 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 	a_uint32_t len = 0,i = 0,j = 0;
 	const __be32 *reg_cfg, *mac_mode,*led_source,*led_mode, *led_speed, *led_freq, *phy_addr;
 	a_uint8_t *led_str;
+
+	#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
+	/*should use dts, temp change*/
+	ssdk_dt_global.switchreg_base_addr = 0x3a000000;
+	ssdk_dt_global.switchreg_size = 0x1000000;
+	ssdk_dt_global.switch_reg_access_mode = HSL_REG_LOCAL_BUS;
+	return 0;
+	#endif
+
 
 
 	/*
@@ -3494,7 +3518,9 @@ static int __init regi_init(void)
 	if(rv)
 		goto out;
 	#ifndef ESS_ONLY_FPGA
+	#if defined(CONFIG_OF) && (LINUX_VERSION_CODE <= KERNEL_VERSION(4,4,0))
 	ssdk_phy_id_get(&cfg);
+	#endif
 	#endif
 
 	memset(&chip_spec_cfg, 0, sizeof(garuda_init_spec_cfg));
@@ -3511,6 +3537,7 @@ static int __init regi_init(void)
 			printk("Initializing HPPE!!\n");
 			qca_hppe_hw_init(&cfg);
 			printk("Initializing HPPE Done!!\n");
+			goto out;
 		}
 		#endif
 		#ifdef DESS

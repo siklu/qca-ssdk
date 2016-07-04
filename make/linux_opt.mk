@@ -157,6 +157,10 @@ ifneq (TRUE, $(FAL))
   MODULE_CFLAG += -DHSL_STANDALONG
 endif
 
+ifeq (TRUE, $(ESS_ONLY_FPGA))
+  MODULE_CFLAG += -DESS_ONLY_FPGA
+endif
+
 ifeq (TRUE, $(UK_IF))
   MODULE_CFLAG += -DUK_IF
 endif
