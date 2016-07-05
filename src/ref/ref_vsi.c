@@ -45,7 +45,6 @@ _ref_vsi_member_update(a_uint32_t dev_id, a_uint32_t vsi_id,
 	rv = fal_vsi_member_get( dev_id, vsi_id, &vsi_member);
 	if( rv != SW_OK )
 		return rv;
-	printk("member = 0x%x\n", vsi_member.member_ports);
 	if( REF_VSI_DEL == op )
 	{
 		vsi_member.member_ports &= (~(1<<port_id));
@@ -60,7 +59,6 @@ _ref_vsi_member_update(a_uint32_t dev_id, a_uint32_t vsi_id,
 		vsi_member.umc_ports |= (1<<port_id);
 		vsi_member.uuc_ports |= (1<<port_id);
 	}
-	printk("member = 0x%x\n", vsi_member.member_ports);
 	rv = fal_vsi_member_set(dev_id, vsi_id, &vsi_member);
 	if( rv != SW_OK )
 		return rv;
