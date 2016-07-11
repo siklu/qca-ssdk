@@ -41,6 +41,7 @@ extern "C" {
 #include "fal_stp.h"
 #include "fal_vsi.h"
 #include "fal_pppoe.h"
+#include "fal_sec.h"
 
 #define ADPT_DEV_ID_CHECK(dev_id) \
 do { \
@@ -599,6 +600,20 @@ typedef sw_error_t (*adpt_pppoe_en_get_func)(
 		a_uint32_t l3_if,
 		a_uint32_t *enable);
 
+typedef sw_error_t (*adpt_sec_l3_excep_parser_ctrl_set_func)(
+		a_uint32_t dev_id,
+		fal_l3_excep_parser_ctrl *ctrl);
+typedef sw_error_t (*adpt_sec_l3_excep_ctrl_get_func)(
+		a_uint32_t dev_id, a_uint32_t excep_type, fal_l3_excep_ctrl_t *ctrl);
+typedef sw_error_t (*adpt_sec_l3_excep_parser_ctrl_get_func)(
+		a_uint32_t dev_id, fal_l3_excep_parser_ctrl *ctrl);
+typedef sw_error_t (*adpt_sec_l4_excep_parser_ctrl_set_func)(
+		a_uint32_t dev_id, fal_l4_excep_parser_ctrl *ctrl);
+typedef sw_error_t (*adpt_sec_l3_excep_ctrl_set_func)(
+		a_uint32_t dev_id, a_uint32_t excep_type, fal_l3_excep_ctrl_t *ctrl);
+typedef sw_error_t (*adpt_sec_l4_excep_parser_ctrl_get_func)(
+		a_uint32_t dev_id, fal_l4_excep_parser_ctrl *ctrl);
+
 typedef struct
 {
 	adpt_fdb_first_func adpt_fdb_first;
@@ -860,6 +875,13 @@ typedef struct
 	adpt_pppoe_session_table_get_func adpt_pppoe_session_table_get;
 	adpt_pppoe_en_set_func adpt_pppoe_en_set;
 	adpt_pppoe_en_get_func adpt_pppoe_en_get;
+
+	adpt_sec_l3_excep_parser_ctrl_set_func adpt_sec_l3_excep_parser_ctrl_set;
+	adpt_sec_l3_excep_ctrl_get_func adpt_sec_l3_excep_ctrl_get;
+	adpt_sec_l3_excep_parser_ctrl_get_func adpt_sec_l3_excep_parser_ctrl_get;
+	adpt_sec_l4_excep_parser_ctrl_set_func adpt_sec_l4_excep_parser_ctrl_set;
+	adpt_sec_l3_excep_ctrl_set_func adpt_sec_l3_excep_ctrl_set;
+	adpt_sec_l4_excep_parser_ctrl_get_func adpt_sec_l4_excep_parser_ctrl_get;
 
 }adpt_api_t;
 

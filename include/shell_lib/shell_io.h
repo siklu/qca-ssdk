@@ -216,6 +216,15 @@ cmd_data_check_sec_icmp4(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size);
 
 sw_error_t
 cmd_data_check_sec_icmp6(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size);
+
+sw_error_t
+cmd_data_check_l3_parser(char *cmd_str, void * val, a_uint32_t size);
+
+sw_error_t
+cmd_data_check_l4_parser(char *cmd_str, void * val, a_uint32_t size);
+
+sw_error_t
+cmd_data_check_exp_ctrl(char *cmd_str, void * val, a_uint32_t size);
 #endif
 #ifdef IN_COSMAP
 sw_error_t

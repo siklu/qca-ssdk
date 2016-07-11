@@ -1124,7 +1124,13 @@ extern "C" {
     SW_API_DEF(SW_API_SEC_ICMP4_SET, fal_sec_norm_item_set), \
     SW_API_DEF(SW_API_SEC_ICMP4_GET, fal_sec_norm_item_get), \
     SW_API_DEF(SW_API_SEC_ICMP6_SET, fal_sec_norm_item_set), \
-    SW_API_DEF(SW_API_SEC_ICMP6_GET, fal_sec_norm_item_get),
+    SW_API_DEF(SW_API_SEC_ICMP6_GET, fal_sec_norm_item_get), \
+    SW_API_DEF(SW_API_SEC_L3_PARSER_CTRL_GET, fal_sec_l3_excep_parser_ctrl_get), \
+    SW_API_DEF(SW_API_SEC_L3_PARSER_CTRL_SET, fal_sec_l3_excep_parser_ctrl_set), \
+    SW_API_DEF(SW_API_SEC_L4_PARSER_CTRL_GET, fal_sec_l4_excep_parser_ctrl_get), \
+    SW_API_DEF(SW_API_SEC_L4_PARSER_CTRL_SET, fal_sec_l4_excep_parser_ctrl_set), \
+    SW_API_DEF(SW_API_SEC_EXP_CTRL_GET, fal_sec_l3_excep_ctrl_get), \
+    SW_API_DEF(SW_API_SEC_EXP_CTRL_SET, fal_sec_l3_excep_ctrl_set),
 
 #define SEC_API_PARAM \
     SW_API_DESC(SW_API_SEC_NORM_SET) \
@@ -1144,7 +1150,13 @@ extern "C" {
     SW_API_DESC(SW_API_SEC_ICMP4_SET) \
     SW_API_DESC(SW_API_SEC_ICMP4_GET) \
     SW_API_DESC(SW_API_SEC_ICMP6_SET) \
-    SW_API_DESC(SW_API_SEC_ICMP6_GET)
+    SW_API_DESC(SW_API_SEC_ICMP6_GET) \
+    SW_API_DESC(SW_API_SEC_L3_PARSER_CTRL_GET) \
+    SW_API_DESC(SW_API_SEC_L3_PARSER_CTRL_SET) \
+    SW_API_DESC(SW_API_SEC_L4_PARSER_CTRL_GET) \
+    SW_API_DESC(SW_API_SEC_L4_PARSER_CTRL_SET) \
+    SW_API_DESC(SW_API_SEC_EXP_CTRL_GET) \
+    SW_API_DESC(SW_API_SEC_EXP_CTRL_SET)
 #else
 #define SEC_API
 #define SEC_API_PARAM

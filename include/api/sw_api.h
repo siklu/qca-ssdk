@@ -168,6 +168,9 @@ extern "C" {
 		SW_PARSE_SERVICE,
 		SW_INGRESS_SERVICE,
 		SW_EGRESS_SERVICE,
+	SW_L3_PARSER,
+	SW_L4_PARSER,
+	SW_EXP_CTRL,
     } sw_data_type_e;
 
     typedef struct

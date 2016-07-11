@@ -61,6 +61,10 @@ ifeq (TRUE, $(IN_SERVCODE))
   SRC_LIST += adpt_hppe_servcode.c
 endif
 
+ifeq (TRUE, $(IN_SEC))
+  SRC_LIST += adpt_hppe_sec.c
+endif
+
 ifeq (, $(findstring HPPE, $(SUPPORT_CHIP)))
   SRC_LIST=
 endif

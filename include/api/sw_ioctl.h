@@ -509,6 +509,12 @@ extern "C" {
 #define SW_API_SEC_ICMP4_GET          (15  + SW_API_SEC_OFFSET)
 #define SW_API_SEC_ICMP6_SET          (16  + SW_API_SEC_OFFSET)
 #define SW_API_SEC_ICMP6_GET          (17  + SW_API_SEC_OFFSET)
+#define SW_API_SEC_L3_PARSER_CTRL_GET          (18  + SW_API_SEC_OFFSET)
+#define SW_API_SEC_L3_PARSER_CTRL_SET          (19  + SW_API_SEC_OFFSET)
+#define SW_API_SEC_L4_PARSER_CTRL_GET          (20  + SW_API_SEC_OFFSET)
+#define SW_API_SEC_L4_PARSER_CTRL_SET          (21  + SW_API_SEC_OFFSET)
+#define SW_API_SEC_EXP_CTRL_GET          (22  + SW_API_SEC_OFFSET)
+#define SW_API_SEC_EXP_CTRL_SET          (23  + SW_API_SEC_OFFSET)
 
     /* ip */
 #define SW_API_IP_OFFSET             1600

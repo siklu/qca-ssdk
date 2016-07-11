@@ -897,6 +897,9 @@ struct sub_cmd_des_t g_sec_des[] =
 	{"udp", "set", SW_API_SEC_UDP_SET, NULL},
 	{"icmp4", "set", SW_API_SEC_ICMP4_SET, NULL},
 	{"icmp6", "set", SW_API_SEC_ICMP6_SET, NULL},
+	{"l3parser", "set", SW_API_SEC_L3_PARSER_CTRL_SET, NULL},
+	{"l4parser", "set", SW_API_SEC_L4_PARSER_CTRL_SET, NULL},
+	{"expctrl", "set", SW_API_SEC_EXP_CTRL_SET, NULL},
 	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
 };
 #endif
