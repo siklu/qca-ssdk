@@ -711,6 +711,10 @@ extern "C" {
 #define SW_API_FLOW_GLOBAL_CFG_GET         (9  + SW_API_FLOW_OFFSET)
 #define SW_API_FLOW_GLOBAL_CFG_SET         (10  + SW_API_FLOW_OFFSET)
 
+#define SW_API_FLOW_HOST_ADD         (20  + SW_API_FLOW_OFFSET)
+#define SW_API_FLOW_HOST_DEL         (21  + SW_API_FLOW_OFFSET)
+#define SW_API_FLOW_HOST_GET         (22  + SW_API_FLOW_OFFSET)
+
 /*pppoe*/
 #define SW_API_PPPOE_OFFSET        2300
 #define SW_API_PPPOE_CMD_SET          (0  + SW_API_PPPOE_OFFSET)

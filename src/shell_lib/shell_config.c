@@ -1057,6 +1057,8 @@ struct sub_cmd_des_t g_flow_des[] =
 	{"flowactrl", "set", SW_API_FLOW_CTRL_SET, NULL},
 	{"entry", "add", SW_API_FLOW_ENTRY_ADD, NULL},
 	{"entry", "del", SW_API_FLOW_ENTRY_DEL, NULL},
+	{"host", "add", SW_API_FLOW_HOST_ADD, NULL},
+	{"host", "del", SW_API_FLOW_HOST_DEL, NULL},
 	{"global", "set", SW_API_FLOW_GLOBAL_CFG_SET, NULL},
 	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
 };

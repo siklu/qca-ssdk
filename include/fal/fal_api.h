@@ -1331,7 +1331,10 @@ extern "C" {
     SW_API_DEF(SW_API_FLOW_ENTRY_DEL, fal_flow_entry_del), \
     SW_API_DEF(SW_API_FLOW_ENTRY_GET, fal_flow_entry_get), \
     SW_API_DEF(SW_API_FLOW_GLOBAL_CFG_GET, fal_flow_global_cfg_get), \
-    SW_API_DEF(SW_API_FLOW_GLOBAL_CFG_SET, fal_flow_global_cfg_set),
+    SW_API_DEF(SW_API_FLOW_GLOBAL_CFG_SET, fal_flow_global_cfg_set), \
+    SW_API_DEF(SW_API_FLOW_HOST_ADD, fal_flow_host_add), \
+    SW_API_DEF(SW_API_FLOW_HOST_GET, fal_flow_host_get), \
+    SW_API_DEF(SW_API_FLOW_HOST_DEL, fal_flow_host_del),
 
 #define FLOW_API_PARAM \
     SW_API_DESC(SW_API_FLOW_STATUS_SET) \
@@ -1344,7 +1347,10 @@ extern "C" {
     SW_API_DESC(SW_API_FLOW_ENTRY_DEL) \
     SW_API_DESC(SW_API_FLOW_ENTRY_GET) \
     SW_API_DESC(SW_API_FLOW_GLOBAL_CFG_GET) \
-    SW_API_DESC(SW_API_FLOW_GLOBAL_CFG_SET)
+    SW_API_DESC(SW_API_FLOW_GLOBAL_CFG_SET) \
+    SW_API_DESC(SW_API_FLOW_HOST_ADD) \
+    SW_API_DESC(SW_API_FLOW_HOST_GET) \
+    SW_API_DESC(SW_API_FLOW_HOST_DEL)
 #else
 #define FLOW_API
 #define FLOW_API_PARAM
