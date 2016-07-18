@@ -339,27 +339,12 @@ qca_ar8327_sw_hw_apply(struct switch_dev *dev)
 
         if (priv->vlan) {
             pvid = priv->vlan_id[priv->pvid[i]];
-            if (priv->vlan_tagged[priv->pvid[i]] & (1 << i)) {
-                egressMode = FAL_EG_TAGGED;
-            } else {
-                egressMode = FAL_EG_UNTAGGED;
-            }
-
             ingressMode = FAL_1Q_SECURE;
         } else {
             pvid = 0;
-            egressMode = FAL_EG_UNTOUCHED;
             ingressMode = FAL_1Q_DISABLE;
         }
-
-        /*If VLAN 0 existes, change member port
-           *egress mode as UNTOUCHED*/
-        if (priv->vlan_id[0] == 0 &&
-              priv->vlan_table[0] &&
-              ((0x1 << i) & priv->vlan_table[0]) &&
-              priv->vlan) {
-            egressMode = FAL_EG_UNTOUCHED;
-        }
+        egressMode = FAL_EG_UNTOUCHED;
 
         fal_port_1qmode_set(0, i, ingressMode);
         fal_port_egvlanmode_set(0, i, egressMode);
