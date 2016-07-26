@@ -42,6 +42,7 @@ extern "C" {
 #include "fal_vsi.h"
 #include "fal_pppoe.h"
 #include "fal_sec.h"
+#include "fal_acl.h"
 
 #define ADPT_DEV_ID_CHECK(dev_id) \
 do { \
@@ -614,6 +615,24 @@ typedef sw_error_t (*adpt_sec_l3_excep_ctrl_set_func)(
 typedef sw_error_t (*adpt_sec_l4_excep_parser_ctrl_get_func)(
 		a_uint32_t dev_id, fal_l4_excep_parser_ctrl *ctrl);
 
+typedef sw_error_t (*adpt_acl_list_bind_func)(a_uint32_t dev_id, a_uint32_t list_id, fal_acl_direc_t direc, fal_acl_bind_obj_t obj_t, a_uint32_t obj_idx);
+typedef sw_error_t (*adpt_acl_port_udf_profile_get_func)(a_uint32_t dev_id, fal_port_t port_id,	 fal_acl_udf_type_t udf_type, a_uint32_t * offset, a_uint32_t * length);
+typedef sw_error_t (*adpt_acl_rule_src_filter_sts_get_func)(a_uint32_t dev_id, a_uint32_t rule_id, a_bool_t* enable);
+typedef sw_error_t (*adpt_acl_rule_deactive_func)(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_id, a_uint32_t rule_nr);
+typedef sw_error_t (*adpt_acl_list_dump_func)(a_uint32_t dev_id);
+typedef sw_error_t (*adpt_acl_status_get_func)(a_uint32_t dev_id, a_bool_t * enable);
+typedef sw_error_t (*adpt_acl_status_set_func)(a_uint32_t dev_id, a_bool_t enable);
+typedef sw_error_t (*adpt_acl_rule_query_func)(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_id, fal_acl_rule_t * rule);
+typedef sw_error_t (*adpt_acl_list_unbind_func)(a_uint32_t dev_id, a_uint32_t list_id, fal_acl_direc_t direc, fal_acl_bind_obj_t obj_t, a_uint32_t obj_idx);
+typedef sw_error_t (*adpt_acl_rule_active_func)(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_id, a_uint32_t rule_nr);
+typedef sw_error_t (*adpt_acl_rule_add_func)(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_id, a_uint32_t rule_nr, fal_acl_rule_t * rule);
+typedef sw_error_t (*adpt_acl_rule_delete_func)(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_id, a_uint32_t rule_nr);
+typedef sw_error_t (*adpt_acl_rule_dump_func)(a_uint32_t dev_id);
+typedef sw_error_t (*adpt_acl_list_creat_func)(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t list_pri);
+typedef sw_error_t (*adpt_acl_rule_src_filter_sts_set_func)(a_uint32_t dev_id, a_uint32_t rule_id, a_bool_t enable);
+typedef sw_error_t (*adpt_acl_list_destroy_func)(a_uint32_t dev_id, a_uint32_t list_id);
+typedef sw_error_t (*adpt_acl_port_udf_profile_set_func)(a_uint32_t dev_id, fal_port_t port_id, fal_acl_udf_type_t udf_type, a_uint32_t offset, a_uint32_t length);
+
 typedef struct
 {
 	adpt_fdb_first_func adpt_fdb_first;
@@ -883,6 +902,24 @@ typedef struct
 	adpt_sec_l3_excep_ctrl_set_func adpt_sec_l3_excep_ctrl_set;
 	adpt_sec_l4_excep_parser_ctrl_get_func adpt_sec_l4_excep_parser_ctrl_get;
 
+	/*acl*/
+	adpt_acl_list_bind_func adpt_acl_list_bind;
+	adpt_acl_port_udf_profile_get_func adpt_acl_port_udf_profile_get;
+	adpt_acl_rule_src_filter_sts_get_func adpt_acl_rule_src_filter_sts_get;
+	adpt_acl_rule_deactive_func adpt_acl_rule_deactive;
+	adpt_acl_list_dump_func adpt_acl_list_dump;
+	adpt_acl_status_get_func adpt_acl_status_get;
+	adpt_acl_status_set_func adpt_acl_status_set;
+	adpt_acl_rule_query_func adpt_acl_rule_query;
+	adpt_acl_list_unbind_func adpt_acl_list_unbind;
+	adpt_acl_rule_active_func adpt_acl_rule_active;
+	adpt_acl_rule_add_func adpt_acl_rule_add;
+	adpt_acl_rule_delete_func adpt_acl_rule_delete;
+	adpt_acl_rule_dump_func adpt_acl_rule_dump;
+	adpt_acl_list_creat_func adpt_acl_list_creat;
+	adpt_acl_rule_src_filter_sts_set_func adpt_acl_rule_src_filter_sts_set;
+	adpt_acl_list_destroy_func adpt_acl_list_destroy;
+	adpt_acl_port_udf_profile_set_func adpt_acl_port_udf_profile_set;
 }adpt_api_t;
 
 

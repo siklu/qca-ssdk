@@ -116,6 +116,30 @@ extern "C" {
 #define    FAL_ACL_FIELD_MAC_CTAG_CFI   29
 #define    FAL_ACL_FIELD_MAC_CTAGGED    30
 #define    FAL_ACL_FIELD_INVERSE_ALL    31
+/*new add for hawkeye*/
+#define    FAL_ACL_FIELD_POST_ROURING_EN    32
+#define    FAL_ACL_FIELD_RES_CHAIN    	    33
+#define    FAL_ACL_FIELD_FAKE_MAC_HEADER    34
+#define    FAL_ACL_FIELD_SNAP    35
+#define    FAL_ACL_FIELD_ETHERNET    36
+#define    FAL_ACL_FIELD_IPV6    37
+#define    FAL_ACL_FIELD_IP    38
+#define    FAL_ACL_FIELD_VSI    39
+#define    FAL_ACL_FIELD_PPPOE_SESSIONID    40
+#define    FAL_ACL_FIELD_L3_FRAGMENT    41
+#define    FAL_ACL_FIELD_AH_HEADER    42
+#define    FAL_ACL_FIELD_ESP_HEADER    43
+#define    FAL_ACL_FIELD_MOBILITY_HEADER    44
+#define    FAL_ACL_FIELD_FRAGMENT_HEADER    45
+#define    FAL_ACL_FIELD_OTHER_EXT_HEADER    45
+#define    FAL_ACL_FIELD_L3_TTL    46
+#define    FAL_ACL_FIELD_IPV4_OPTION    47
+#define    FAL_ACL_FIELD_FIRST_FRAGMENT    48
+#define    FAL_ACL_FIELD_L3_LENGTH    49
+#define    FAL_ACL_FIELD_VSI_VALID    50
+#define    FAL_ACL_FIELD_IP_PKT_TYPE    51
+
+#define    FAL_ACL_FIELD_NUM    52
 
 
 #define    FAL_ACL_ACTION_PERMIT        0
@@ -263,7 +287,7 @@ extern "C" {
         a_uint16_t         resv0;
 
         /* fields of enhanced mac rule*/
-        a_uint8_t          stagged_val;
+        a_uint8_t          stagged_val; /*for s17c : 0-untag, 1-tag, for hawkeye: 2-pritag, 3-utag+pritag, 4- untag+tag, 5-tag+pritag, 6-all*/
         a_uint8_t          stagged_mask;
         a_uint8_t          ctagged_val;
         a_uint8_t          ctagged_mask;
@@ -350,6 +374,66 @@ extern "C" {
         a_uint8_t             rsv;
         fal_policy_forward_t  policy_fwd;
         fal_combined_t    combined;
+
+	/*new add for hawkeye*/
+        a_uint8_t pri; /*rule priority 0-511*/
+
+	a_uint8_t is_ip_val;
+	a_uint8_t is_ip_mask;
+
+	a_uint8_t is_ipv6_val;
+	a_uint8_t is_ipv6_mask;
+
+	a_uint8_t is_fake_mac_header_val;
+	a_uint8_t is_fake_mac_header_mask;
+
+	a_uint8_t is_snap_val;
+	a_uint8_t is_snap_mask;
+
+	a_uint8_t is_ethernet_val;
+	a_uint8_t is_ethernet_mask;
+
+	a_uint8_t is_fragement_val;
+	a_uint8_t is_fragement_mask;
+
+	a_uint8_t is_ah_header_val;
+	a_uint8_t is_ah_header_mask;
+
+	a_uint8_t is_esp_header_val;
+	a_uint8_t is_esp_header_mask;
+
+	a_uint8_t is_mobility_header_val;
+	a_uint8_t is_mobility_header_mask;
+
+	a_uint8_t is_fragment_header_val;
+	a_uint8_t is_fragment_header_mask;
+
+	a_uint8_t is_other_header_val;
+	a_uint8_t is_other_header_mask;
+
+	a_uint8_t is_ipv4_option_val;
+	a_uint8_t is_ipv4_option_mask;
+
+	a_uint8_t is_first_frag_val;
+	a_uint8_t is_first_frag_mask;
+
+	/*fields of VLAN rule*/
+        a_uint8_t vsi_valid;
+        a_uint8_t vsi_valid_mask;
+        a_uint8_t vsi; /*0-31*/
+        a_uint8_t vsi_mask; /*0-31*/
+        /*fields of L2 MISC rule*/
+        a_uint16_t pppoe_sessionid;
+        a_uint16_t pppoe_sessionid_mask;
+        fal_acl_field_op_t icmp_type_code_op;
+        /*fields of IP MISC rule*/
+        a_uint8_t l3_ttl;
+        a_uint8_t l3_ttl_mask;
+        fal_acl_field_op_t l3_length_op;
+        a_uint16_t l3_length;
+        a_uint16_t l3_length_mask;
+        a_uint16_t l3_pkt_type;
+        a_uint16_t l3_pkt_type_mask;
     } fal_acl_rule_t;
 
 
@@ -372,85 +456,51 @@ extern "C" {
         FAL_ACL_BIND_PORT = 0,  /**<   Acl wil work on particular port */
     } fal_acl_bind_obj_t;
 
+sw_error_t
+fal_acl_list_creat(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t list_pri);
 
-    sw_error_t
-    fal_acl_list_creat(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t list_pri);
+sw_error_t
+fal_acl_list_destroy(a_uint32_t dev_id, a_uint32_t list_id);
 
+sw_error_t
+fal_acl_rule_add(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_id, a_uint32_t rule_nr, fal_acl_rule_t * rule);
 
-    sw_error_t
-    fal_acl_list_destroy(a_uint32_t dev_id, a_uint32_t list_id);
+sw_error_t
+fal_acl_rule_delete(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_id, a_uint32_t rule_nr);
 
+sw_error_t
+fal_acl_rule_query(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_id, fal_acl_rule_t * rule);
 
+sw_error_t
+fal_acl_list_bind(a_uint32_t dev_id, a_uint32_t list_id, fal_acl_direc_t direc, fal_acl_bind_obj_t obj_t, a_uint32_t obj_idx);
 
-    sw_error_t
-    fal_acl_rule_add(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_id,
-                     a_uint32_t rule_nr, fal_acl_rule_t * rule);
+sw_error_t
+fal_acl_list_unbind(a_uint32_t dev_id, a_uint32_t list_id, fal_acl_direc_t direc, fal_acl_bind_obj_t obj_t, a_uint32_t obj_idx);
 
+sw_error_t
+fal_acl_status_set(a_uint32_t dev_id, a_bool_t enable);
 
-    sw_error_t
-    fal_acl_rule_delete(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_id,
-                        a_uint32_t rule_nr);
+sw_error_t
+fal_acl_status_get(a_uint32_t dev_id, a_bool_t * enable);
 
+sw_error_t
+fal_acl_list_dump(a_uint32_t dev_id);
 
-    sw_error_t
-    fal_acl_rule_query(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_id,
-                       fal_acl_rule_t * rule);
+sw_error_t
+fal_acl_rule_dump(a_uint32_t dev_id);
 
-
-
-    sw_error_t
-    fal_acl_list_bind(a_uint32_t dev_id, a_uint32_t list_id,
-                      fal_acl_direc_t direc, fal_acl_bind_obj_t obj_t,
-                      a_uint32_t obj_idx);
-
-
-    sw_error_t
-    fal_acl_list_unbind(a_uint32_t dev_id, a_uint32_t list_id,
-                        fal_acl_direc_t direc, fal_acl_bind_obj_t obj_t,
-                        a_uint32_t obj_idx);
-
-
-    sw_error_t
-    fal_acl_status_set(a_uint32_t dev_id, a_bool_t enable);
-
-
-    sw_error_t
-    fal_acl_status_get(a_uint32_t dev_id, a_bool_t * enable);
-
-
-    sw_error_t
-    fal_acl_list_dump(a_uint32_t dev_id);
-
-
-    sw_error_t
-    fal_acl_rule_dump(a_uint32_t dev_id);
-
-
-    sw_error_t
-    fal_acl_port_udf_profile_set(a_uint32_t dev_id, fal_port_t port_id,
-                                 fal_acl_udf_type_t udf_type,
-                                 a_uint32_t offset, a_uint32_t length);
-
-    sw_error_t
-    fal_acl_port_udf_profile_get(a_uint32_t dev_id, fal_port_t port_id,
-                                 fal_acl_udf_type_t udf_type,
-                                 a_uint32_t * offset, a_uint32_t * length);
-
-    sw_error_t
-    fal_acl_rule_active(a_uint32_t dev_id, a_uint32_t list_id,
-                        a_uint32_t rule_id, a_uint32_t rule_nr);
-
-    sw_error_t
-    fal_acl_rule_deactive(a_uint32_t dev_id, a_uint32_t list_id,
-                          a_uint32_t rule_id, a_uint32_t rule_nr);
-
-    sw_error_t
-    fal_acl_rule_src_filter_sts_set(a_uint32_t dev_id,
-                                    a_uint32_t rule_id, a_bool_t enable);
-
-    sw_error_t
-    fal_acl_rule_src_filter_sts_get(a_uint32_t dev_id,
-                                    a_uint32_t rule_id, a_bool_t* enable);
+sw_error_t
+fal_acl_port_udf_profile_set(a_uint32_t dev_id, fal_port_t port_id, fal_acl_udf_type_t udf_type, a_uint32_t offset, a_uint32_t length);
+sw_error_t
+fal_acl_port_udf_profile_get(a_uint32_t dev_id, fal_port_t port_id,	 fal_acl_udf_type_t udf_type, a_uint32_t * offset, a_uint32_t * length);
+sw_error_t
+fal_acl_rule_active(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_id, a_uint32_t rule_nr);
+sw_error_t
+fal_acl_rule_deactive(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_id, a_uint32_t rule_nr);
+sw_error_t
+fal_acl_rule_src_filter_sts_set(a_uint32_t dev_id, a_uint32_t rule_id, a_bool_t enable);
+sw_error_t
+fal_acl_rule_src_filter_sts_get(a_uint32_t dev_id, a_uint32_t rule_id, a_bool_t* enable);
 
 
 #ifdef __cplusplus

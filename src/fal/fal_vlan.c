@@ -80,7 +80,7 @@ _fal_vlan_following(a_uint32_t dev_id, fal_vlan_t * vlan_entry)
 
     if (A_TRUE == p_dev->hw_vlan_query)
     {
-        return SW_OK;
+        return SW_NOT_SUPPORTED;
     }
 
     sll_lock(vlan_list[dev_id]);
