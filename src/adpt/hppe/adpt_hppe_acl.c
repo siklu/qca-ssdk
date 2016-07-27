@@ -1715,12 +1715,6 @@ sw_error_t adpt_hppe_acl_init(a_uint32_t dev_id)
 	p_adpt_api->adpt_acl_list_destroy = adpt_hppe_acl_list_destroy;
 	p_adpt_api->adpt_acl_port_udf_profile_set = adpt_hppe_acl_port_udf_profile_set;
 
-	_acl_slice_ext_bitmap_gen(3);
-	_acl_slice_ext_bitmap_gen(4);
-	_acl_slice_ext_bitmap_gen(5);
-	_acl_slice_ext_bitmap_gen(6);
-	_acl_slice_ext_bitmap_gen(7);
-	_acl_slice_ext_bitmap_gen(8);
 	return SW_OK;
 }
 
