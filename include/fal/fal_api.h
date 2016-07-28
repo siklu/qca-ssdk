@@ -1501,10 +1501,10 @@ extern "C" {
 #define VSI_API \
     SW_API_DEF(SW_API_VSI_ALLOC, ref_vsi_alloc), \
     SW_API_DEF(SW_API_VSI_FREE, ref_vsi_free), \
-    SW_API_DEF(SW_API_PORT_VSI_SET, ref_port_vsi_set), \
-    SW_API_DEF(SW_API_PORT_VSI_GET, ref_port_vsi_get), \
-    SW_API_DEF(SW_API_PORT_VLAN_VSI_SET, ref_port_vlan_vsi_set), \
-    SW_API_DEF(SW_API_PORT_VLAN_VSI_GET, ref_port_vlan_vsi_get), \
+    SW_API_DEF(SW_API_PORT_VSI_SET, fal_port_vsi_set), \
+    SW_API_DEF(SW_API_PORT_VSI_GET, fal_port_vsi_get), \
+    SW_API_DEF(SW_API_PORT_VLAN_VSI_SET, fal_port_vlan_vsi_set), \
+    SW_API_DEF(SW_API_PORT_VLAN_VSI_GET, fal_port_vlan_vsi_get), \
     SW_API_DEF(SW_API_VSI_TBL_DUMP, ref_vsi_tbl_dump), \
     SW_API_DEF(SW_API_VSI_NEWADDR_LRN_GET, fal_vsi_newaddr_lrn_get), \
     SW_API_DEF(SW_API_VSI_NEWADDR_LRN_SET, fal_vsi_newaddr_lrn_set), \
