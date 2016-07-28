@@ -3288,7 +3288,9 @@ qca_hppe_hw_init(ssdk_init_cfg *cfg)
 	}
 
 	qca_hppe_fdb_hw_init();
+#ifdef ESS_ONLY_FPGA
 	qca_hppe_vsi_hw_init();
+#endif
 
 	qca_hppe_portctrl_hw_init();
 
