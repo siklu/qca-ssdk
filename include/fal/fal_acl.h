@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2014, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -166,6 +166,14 @@ extern "C" {
 #define    FAL_ACL_ACTION_POLICY_FORWARD_EN   21
 #define    FAL_ACL_ACTION_BYPASS_EGRESS_TRANS 22
 #define    FAL_ACL_ACTION_MATCH_TRIGGER_INTR  23
+/*new add for hawkeye*/
+#define    FAL_ACL_ACTION_BYPASS_BITMAP 24
+#define    FAL_ACL_ACTION_ENQUEUE_PRI 25
+#define    FAL_ACL_ACTION_INT_DP 26
+#define    FAL_ACL_ACTION_SERVICE_CODE 27
+#define    FAL_ACL_ACTION_CPU_CODE 28
+#define    FAL_ACL_ACTION_SYN_TOGGLE 29
+#define    FAL_ACL_ACTION_METADATA_EN 30
 
 
 
@@ -354,29 +362,10 @@ extern "C" {
         a_uint8_t udf_val[FAL_ACL_UDF_MAX_LENGTH];
         a_uint8_t udf_mask[FAL_ACL_UDF_MAX_LENGTH];
 
-        /* fields of action */
-        fal_acl_action_map_t  action_flg;
-        fal_pbmp_t            ports;
-        a_uint32_t            match_cnt;
-        a_uint16_t            vid;
-        a_uint8_t             up;
-        a_uint8_t             queue;
-        a_uint16_t            stag_vid;
-        a_uint8_t             stag_pri;
-        a_uint8_t             stag_dei;
-        a_uint16_t            ctag_vid;
-        a_uint8_t             ctag_pri;
-        a_uint8_t             ctag_cfi;
-        a_uint16_t            policer_ptr;
-        a_uint16_t            arp_ptr;
-        a_uint16_t            wcmp_ptr;
-        a_uint8_t             dscp;
-        a_uint8_t             rsv;
-        fal_policy_forward_t  policy_fwd;
-        fal_combined_t    combined;
-
-	/*new add for hawkeye*/
+	/*new add match fields for hawkeye*/
         a_uint8_t pri; /*rule priority 0-511*/
+        a_uint8_t post_routing;
+        a_uint8_t res_chain;
 
 	a_uint8_t is_ip_val;
 	a_uint8_t is_ip_mask;
@@ -434,6 +423,35 @@ extern "C" {
         a_uint16_t l3_length_mask;
         a_uint16_t l3_pkt_type;
         a_uint16_t l3_pkt_type_mask;
+
+        /* fields of action */
+        fal_acl_action_map_t  action_flg;
+        fal_pbmp_t            ports; /*high 2bits, 00-port bitmap, 01-nexthop, 10-vp*/
+        a_uint32_t            match_cnt;
+        a_uint16_t            vid;
+        a_uint8_t             up;
+        a_uint8_t             queue;
+        a_uint16_t            stag_vid;
+        a_uint8_t             stag_pri;
+        a_uint8_t             stag_dei;
+        a_uint16_t            ctag_vid;
+        a_uint8_t             ctag_pri;
+        a_uint8_t             ctag_cfi;
+        a_uint16_t            policer_ptr;
+        a_uint16_t            arp_ptr;
+        a_uint16_t            wcmp_ptr;
+        a_uint8_t             dscp;
+        a_uint8_t             rsv;
+        fal_policy_forward_t  policy_fwd;
+        fal_combined_t    combined;
+	/*new add acl action for hawkeye*/
+        a_uint32_t            bypass_bitmap;
+        a_uint8_t             enqueue_pri;
+        a_uint8_t             stag_fmt;
+        a_uint8_t             ctag_fmt;
+        a_uint8_t             int_dp;
+        a_uint8_t             service_code;
+        a_uint8_t             cpu_code;
     } fal_acl_rule_t;
 
 
@@ -453,7 +471,10 @@ extern "C" {
     */
     typedef enum
     {
-        FAL_ACL_BIND_PORT = 0,  /**<   Acl wil work on particular port */
+        FAL_ACL_BIND_PORT = 0,  /**<   Acl wil work on particular port and virtual port */
+        FAL_ACL_BIND_PORTBITMAP = 1,  /**<   Acl wil work on port bitmap */
+        FAL_ACL_BIND_SERVICE_CODE = 2,  /**<   Acl wil work on service code */
+        FAL_ACL_BIND_L3_IF = 3,  /**<   Acl wil work on l3 interface */
     } fal_acl_bind_obj_t;
 
 sw_error_t

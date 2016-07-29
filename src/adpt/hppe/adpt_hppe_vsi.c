@@ -142,13 +142,14 @@ adpt_hppe_port_vlan_vsi_get(a_uint32_t dev_id, fal_port_t port_id,
 			if(xlt_action.bf.vsi_cmd == A_TRUE)
 			{
 				*vsi_id = xlt_action.bf.vsi;
-				return;
+				return SW_OK;
 			}
 		}
 	}
 
 	/*not found*/
-	return FAL_VSI_INVALID;
+	*vsi_id = FAL_VSI_INVALID;
+	return SW_NOT_FOUND;
 }
 
 sw_error_t
@@ -156,13 +157,27 @@ adpt_hppe_port_vlan_vsi_set(a_uint32_t dev_id, fal_port_t port_id,
 				a_uint32_t vlan_id, a_uint32_t vsi_id)
 {
 	sw_error_t rv;
+	a_uint32_t org_vsi;
 
 	ADPT_DEV_ID_CHECK(dev_id);
 
-	if(FAL_VSI_INVALID == vsi_id)
-		rv = _adpt_hppe_vsi_xlt_update(dev_id, vsi_id, vlan_id, port_id,ADPT_VSI_DEL);
-	else
+	adpt_hppe_port_vlan_vsi_get(dev_id, port_id, vlan_id, &org_vsi);
+
+	if(org_vsi == vsi_id)
+	{
+		return SW_OK;
+	}
+
+	if(FAL_VSI_INVALID == vsi_id || org_vsi != FAL_VSI_INVALID)
+	{
+		rv = _adpt_hppe_vsi_xlt_update(dev_id, org_vsi, vlan_id, port_id,ADPT_VSI_DEL);
+		if(rv != SW_OK)
+			return rv;
+	}
+	if(vsi_id != FAL_VSI_INVALID)
+	{
 		rv = _adpt_hppe_vsi_xlt_update(dev_id, vsi_id, vlan_id, port_id,ADPT_VSI_ADD);
+	}
 
 	return rv;
 }
