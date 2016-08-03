@@ -363,7 +363,7 @@ extern "C" {
         a_uint8_t udf_mask[FAL_ACL_UDF_MAX_LENGTH];
 
 	/*new add match fields for hawkeye*/
-        a_uint8_t pri; /*rule priority 0-511*/
+        a_uint8_t pri; /*rule priority 0-7*/
         a_uint8_t post_routing;
         a_uint8_t res_chain;
 
