@@ -101,7 +101,9 @@ extern "C" {
     SW_API_DEF(SW_API_PT_MTU_SET, fal_port_mtu_set), \
     SW_API_DEF(SW_API_PT_MTU_GET, fal_port_mtu_get), \
     SW_API_DEF(SW_API_PT_MRU_SET, fal_port_mru_set), \
-    SW_API_DEF(SW_API_PT_MRU_GET, fal_port_mru_get),
+    SW_API_DEF(SW_API_PT_MRU_GET, fal_port_mru_get), \
+    SW_API_DEF(SW_API_PT_SOURCE_FILTER_GET, fal_port_source_filter_get), \
+    SW_API_DEF(SW_API_PT_SOURCE_FILTER_SET, fal_port_source_filter_set),
 
 #define PORTCONTROL_API_PARAM \
     SW_API_DESC(SW_API_PT_DUPLEX_GET) \
@@ -181,7 +183,9 @@ extern "C" {
     SW_API_DESC(SW_API_PT_MTU_SET) \
     SW_API_DESC(SW_API_PT_MTU_GET) \
     SW_API_DESC(SW_API_PT_MRU_SET) \
-    SW_API_DESC(SW_API_PT_MRU_GET)
+    SW_API_DESC(SW_API_PT_MRU_GET) \
+    SW_API_DESC(SW_API_PT_SOURCE_FILTER_GET) \
+    SW_API_DESC(SW_API_PT_SOURCE_FILTER_SET)
 #else
 #define PORTCONTROL_API \
     SW_API_DEF(SW_API_PT_DUPLEX_SET, fal_port_duplex_set), \

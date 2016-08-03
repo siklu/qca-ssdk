@@ -36,6 +36,7 @@
 #define MRU_MTU_CTRL_TBL_MAX_ENTRY	256
 #define RX_FIFO_CFG_MAX_ENTRY	8
 #define TDM_CFG_MAX_ENTRY	128
+#define PORT_IN_FORWARD_MAX_ENTRY	8
 
 sw_error_t
 hppe_mac_enable_get(
@@ -1068,6 +1069,30 @@ hppe_tdm_cfg_dir_get(
 
 sw_error_t
 hppe_tdm_cfg_dir_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_port_in_forward_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union port_in_forward_u *value);
+
+sw_error_t
+hppe_port_in_forward_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union port_in_forward_u *value);
+
+sw_error_t
+hppe_port_in_forward_source_filtering_bypass_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_port_in_forward_source_filtering_bypass_set(
 		a_uint32_t dev_id,
 		a_uint32_t index,
 		a_uint32_t value);

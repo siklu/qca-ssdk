@@ -262,6 +262,10 @@ typedef sw_error_t (*adpt_port_mdix_set_func)(a_uint32_t dev_id, fal_port_t port
 				  fal_port_mdix_mode_t mode);
 typedef sw_error_t (*adpt_port_wol_status_get_func)(a_uint32_t dev_id, fal_port_t port_id,
 				  a_bool_t * enable);
+typedef sw_error_t (*adpt_port_source_filter_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+				a_bool_t * enable);
+typedef sw_error_t (*adpt_port_source_filter_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+				a_bool_t enable);
 // mirror
 typedef sw_error_t (*adpt_mirr_eg_analysis_port_get_func)(a_uint32_t dev_id, fal_port_t *port_id);
 typedef sw_error_t (*adpt_mirr_port_in_get_func)(a_uint32_t dev_id, fal_port_t port_id,
@@ -755,6 +759,8 @@ typedef struct
 	adpt_port_speed_get_func adpt_port_speed_get;
 	adpt_port_mdix_set_func adpt_port_mdix_set;
 	adpt_port_wol_status_get_func adpt_port_wol_status_get;
+	adpt_port_source_filter_set_func adpt_port_source_filter_set;
+	adpt_port_source_filter_get_func adpt_port_source_filter_get;
 // mirror
 	adpt_mirr_eg_analysis_port_get_func adpt_mirr_eg_analysis_port_get;
 	adpt_mirr_port_in_get_func adpt_mirr_port_in_get;

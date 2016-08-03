@@ -921,6 +921,44 @@ adpt_hppe_port_wol_status_get(a_uint32_t dev_id, fal_port_t port_id,
 
 }
 
+sw_error_t
+adpt_hppe_port_source_filter_get(a_uint32_t dev_id,
+				fal_port_t port_id, a_bool_t * enable)
+{
+	sw_error_t rv = SW_OK;
+	union port_in_forward_u port_in_forward = {0};
+
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	rv = hppe_port_in_forward_get(dev_id, port_id, &port_in_forward);
+
+	if (rv != SW_OK)
+		return rv;
+
+	if (port_in_forward.bf.source_filtering_bypass == A_TRUE)
+		*enable = A_FALSE;
+	else
+		*enable = A_TRUE;
+
+	return SW_OK;
+}
+
+sw_error_t
+adpt_hppe_port_source_filter_set(a_uint32_t dev_id,
+				fal_port_t port_id, a_bool_t enable)
+{
+	union port_in_forward_u port_in_forward = {0};
+
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	if (enable == A_TRUE)
+		port_in_forward.bf.source_filtering_bypass = A_FALSE;
+	else
+		port_in_forward.bf.source_filtering_bypass = A_TRUE;
+
+	return hppe_port_in_forward_set(dev_id, port_id, &port_in_forward);
+}
+
 sw_error_t adpt_hppe_port_ctrl_init(a_uint32_t dev_id)
 {
 	adpt_api_t *p_adpt_api = NULL;
@@ -992,6 +1030,8 @@ sw_error_t adpt_hppe_port_ctrl_init(a_uint32_t dev_id)
 	p_adpt_api->adpt_port_wol_status_get = adpt_hppe_port_wol_status_get;
 	p_adpt_api->adpt_port_max_frame_size_set = adpt_hppe_port_max_frame_size_set;
 	p_adpt_api->adpt_port_max_frame_size_get = adpt_hppe_port_max_frame_size_get;
+	p_adpt_api->adpt_port_source_filter_get = adpt_hppe_port_source_filter_get;
+	p_adpt_api->adpt_port_source_filter_set = adpt_hppe_port_source_filter_set;
 
 
 	return SW_OK;
