@@ -583,6 +583,14 @@ sw_error_t
 fal_port_counter_show(a_uint32_t dev_id, fal_port_t port_id,
 				 fal_port_counter_info_t * counter_info);
 
+sw_error_t
+fal_port_source_filter_get(a_uint32_t dev_id,
+				fal_port_t port_id, a_bool_t * enable);
+
+sw_error_t
+fal_port_source_filter_set(a_uint32_t dev_id,
+				fal_port_t port_id, a_bool_t enable);
+
 #ifdef __cplusplus
 }
 #endif				/* __cplusplus */

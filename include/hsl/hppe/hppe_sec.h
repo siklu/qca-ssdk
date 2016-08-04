@@ -26,7 +26,6 @@
 #define L3_EXP_L2_FLOW_CTRL_MAX_ENTRY	72
 #define L3_EXP_L3_FLOW_CTRL_MAX_ENTRY	72
 #define L3_EXP_MULTICAST_CTRL_MAX_ENTRY	72
-#define PORT_IN_FORWARD_MAX_ENTRY	8
 
 sw_error_t
 hppe_l3_exception_cmd_get(
@@ -180,30 +179,6 @@ hppe_l3_exp_multicast_ctrl_excep_en_get(
 
 sw_error_t
 hppe_l3_exp_multicast_ctrl_excep_en_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t value);
-
-sw_error_t
-hppe_port_in_forward_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union port_in_forward_u *value);
-
-sw_error_t
-hppe_port_in_forward_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union port_in_forward_u *value);
-
-sw_error_t
-hppe_port_in_forward_source_filtering_bypass_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t *value);
-
-sw_error_t
-hppe_port_in_forward_source_filtering_bypass_set(
 		a_uint32_t dev_id,
 		a_uint32_t index,
 		a_uint32_t value);

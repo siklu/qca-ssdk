@@ -534,6 +534,29 @@ union mac_jumbo_size_u {
 	struct mac_jumbo_size bf;
 };
 
+/*[register] PORT_IN_FORWARD*/
+#define PORT_IN_FORWARD
+#define PORT_IN_FORWARD_ADDRESS 0x700
+#define PORT_IN_FORWARD_NUM     8
+#define PORT_IN_FORWARD_INC     0x4
+#define PORT_IN_FORWARD_TYPE    REG_TYPE_RW
+#define PORT_IN_FORWARD_DEFAULT 0x0
+	/*[field] SOURCE_FILTERING_BYPASS*/
+	#define PORT_IN_FORWARD_SOURCE_FILTERING_BYPASS
+	#define PORT_IN_FORWARD_SOURCE_FILTERING_BYPASS_OFFSET  0
+	#define PORT_IN_FORWARD_SOURCE_FILTERING_BYPASS_LEN     1
+	#define PORT_IN_FORWARD_SOURCE_FILTERING_BYPASS_DEFAULT 0x0
+
+struct port_in_forward {
+	a_uint32_t  source_filtering_bypass:1;
+	a_uint32_t  _reserved0:31;
+};
+
+union port_in_forward_u {
+	a_uint32_t val;
+	struct port_in_forward bf;
+};
+
 /*[table] MRU_MTU_CTRL_TBL*/
 #define MRU_MTU_CTRL_TBL
 #define MRU_MTU_CTRL_TBL_ADDRESS 0x3000
