@@ -552,13 +552,33 @@ static sw_error_t _adpt_hppe_acl_mac_rule_hw_2_sw(a_uint32_t is_mac_da,
 
 	if(is_mac_da)
 	{
-		memcpy(rule->dest_mac_val.uc, macrule->mac, 6);
-		memcpy(rule->dest_mac_mask.uc, macrule_mask->mac_mask, 6);
+		rule->dest_mac_val.uc[0] = macrule->mac[5];
+		rule->dest_mac_val.uc[1] = macrule->mac[4];
+		rule->dest_mac_val.uc[2] = macrule->mac[3];
+		rule->dest_mac_val.uc[3] = macrule->mac[2];
+		rule->dest_mac_val.uc[4] = macrule->mac[1];
+		rule->dest_mac_val.uc[5] = macrule->mac[0];
+		rule->dest_mac_mask.uc[0] = macrule_mask->mac_mask[5];
+		rule->dest_mac_mask.uc[1] = macrule_mask->mac_mask[4];
+		rule->dest_mac_mask.uc[2] = macrule_mask->mac_mask[3];
+		rule->dest_mac_mask.uc[3] = macrule_mask->mac_mask[2];
+		rule->dest_mac_mask.uc[4] = macrule_mask->mac_mask[1];
+		rule->dest_mac_mask.uc[5] = macrule_mask->mac_mask[0];
 	}
 	else
 	{
-		memcpy(rule->src_mac_val.uc, macrule->mac, 6);
-		memcpy(rule->src_mac_mask.uc, macrule_mask->mac_mask, 6);
+		rule->src_mac_val.uc[0] = macrule->mac[5];
+		rule->src_mac_val.uc[1] = macrule->mac[4];
+		rule->src_mac_val.uc[2] = macrule->mac[3];
+		rule->src_mac_val.uc[3] = macrule->mac[2];
+		rule->src_mac_val.uc[4] = macrule->mac[1];
+		rule->src_mac_val.uc[5] = macrule->mac[0];
+		rule->src_mac_mask.uc[0] = macrule_mask->mac_mask[5];
+		rule->src_mac_mask.uc[1] = macrule_mask->mac_mask[4];
+		rule->src_mac_mask.uc[2] = macrule_mask->mac_mask[3];
+		rule->src_mac_mask.uc[3] = macrule_mask->mac_mask[2];
+		rule->src_mac_mask.uc[4] = macrule_mask->mac_mask[1];
+		rule->src_mac_mask.uc[5] = macrule_mask->mac_mask[0];
 	}
 	if(A_FALSE == _adpt_acl_zero_addr(rule->dest_mac_mask))
 		FAL_FIELD_FLG_SET(rule->field_flg, FAL_ACL_FIELD_MAC_DA);
@@ -1182,6 +1202,7 @@ _adpt_hppe_acl_action_hw_2_sw(union ipo_action_u *hw_act, fal_acl_rule_t *rule)
 	if(hw_act->bf.fwd_cmd == 3)
 	{
 		FAL_ACTION_FLG_SET(rule->action_flg, FAL_ACL_ACTION_RDTCPU);
+		FAL_ACTION_FLG_CLR(rule->action_flg, FAL_ACL_ACTION_REDPT);/*clear this bit if rdtcpu*/
 	}
 	if(hw_act->bf.fwd_cmd == 2)
 	{
@@ -1190,6 +1211,7 @@ _adpt_hppe_acl_action_hw_2_sw(union ipo_action_u *hw_act, fal_acl_rule_t *rule)
 	if(hw_act->bf.fwd_cmd == 1)
 	{
 		FAL_ACTION_FLG_SET(rule->action_flg, FAL_ACL_ACTION_DENY);
+		FAL_ACTION_FLG_CLR(rule->action_flg, FAL_ACL_ACTION_REDPT);/*clear this bit if drop*/
 	}
 	if(hw_act->bf.fwd_cmd == 0)
 	{
@@ -1683,16 +1705,36 @@ static sw_error_t _adpt_hppe_acl_mac_rule_sw_2_hw(fal_acl_rule_t *rule, a_uint32
 	{
 		if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_MAC_DA))
 		{
-			memcpy(macrule->mac, rule->dest_mac_val.uc, 6);
-			memcpy(macrule_mask->mac_mask, rule->dest_mac_mask.uc, 6);
+			macrule->mac[5] = rule->dest_mac_val.uc[0];
+			macrule->mac[4] = rule->dest_mac_val.uc[1];
+			macrule->mac[3] = rule->dest_mac_val.uc[2];
+			macrule->mac[2] = rule->dest_mac_val.uc[3];
+			macrule->mac[1] = rule->dest_mac_val.uc[4];
+			macrule->mac[0] = rule->dest_mac_val.uc[5];
+			macrule_mask->mac_mask[5] = rule->dest_mac_mask.uc[0];
+			macrule_mask->mac_mask[4] = rule->dest_mac_mask.uc[1];
+			macrule_mask->mac_mask[3] = rule->dest_mac_mask.uc[2];
+			macrule_mask->mac_mask[2] = rule->dest_mac_mask.uc[3];
+			macrule_mask->mac_mask[1] = rule->dest_mac_mask.uc[4];
+			macrule_mask->mac_mask[0] = rule->dest_mac_mask.uc[5];
 		}
 	}
 	else
 	{
 		if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_MAC_SA))
 		{
-			memcpy(macrule->mac, rule->src_mac_val.uc, 6);
-			memcpy(macrule_mask->mac_mask, rule->src_mac_mask.uc, 6);
+			macrule->mac[5] = rule->src_mac_val.uc[0];
+			macrule->mac[4] = rule->src_mac_val.uc[1];
+			macrule->mac[3] = rule->src_mac_val.uc[2];
+			macrule->mac[2] = rule->src_mac_val.uc[3];
+			macrule->mac[1] = rule->src_mac_val.uc[4];
+			macrule->mac[0] = rule->src_mac_val.uc[5];
+			macrule_mask->mac_mask[5] = rule->src_mac_mask.uc[0];
+			macrule_mask->mac_mask[4] = rule->src_mac_mask.uc[1];
+			macrule_mask->mac_mask[3] = rule->src_mac_mask.uc[2];
+			macrule_mask->mac_mask[2] = rule->src_mac_mask.uc[3];
+			macrule_mask->mac_mask[1] = rule->src_mac_mask.uc[4];
+			macrule_mask->mac_mask[0] = rule->src_mac_mask.uc[5];
 		}
 	}
 
@@ -2722,13 +2764,14 @@ adpt_hppe_acl_rule_delete(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule
 		rv |= hppe_rule_ext_4_reg_set(dev_id, list_id, &ext_4);
 	}
 
+	g_acl_list[dev_id][list_id].free_hw_entry_bitmap |=
+			g_acl_list[dev_id][list_id].rule_hw_entry[rule_id];
+	g_acl_list[dev_id][list_id].free_hw_entry_count +=
+		_acl_bits_count(g_acl_list[dev_id][list_id].rule_hw_entry[rule_id], 8, 0);
 	g_acl_list[dev_id][list_id].rule_hw_entry[rule_id] = 0;
 	g_acl_list[dev_id][list_id].ext1_val[rule_id] = 0;
 	g_acl_list[dev_id][list_id].ext2_val[rule_id] = 0;
 	g_acl_list[dev_id][list_id].ext4_val[rule_id] = 0;
-	g_acl_list[dev_id][list_id].free_hw_entry_bitmap |= g_acl_list[dev_id][list_id].rule_hw_entry[rule_id];
-	g_acl_list[dev_id][list_id].free_hw_entry_count +=
-		_acl_bits_count(g_acl_list[dev_id][list_id].rule_hw_entry[rule_id], 8, 0);
 
 	return SW_OK;
 }
