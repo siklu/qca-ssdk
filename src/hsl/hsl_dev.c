@@ -173,12 +173,11 @@ hsl_dev_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 #if defined DESS
             rv = dess_init(dev_id, cfg);
 #endif
-
+            break;
         case CHIP_HPPE:
 #if defined HPPE
             rv = hppe_init(dev_id, cfg);
 #endif
-
             break;
 
         case CHIP_UNSPECIFIED:

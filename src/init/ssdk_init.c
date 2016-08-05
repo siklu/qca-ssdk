@@ -2006,7 +2006,8 @@ static uint32_t switch_chip_id_adjuest(void)
 static int miibus_get(void)
 {
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
-	return 0;
+	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS)
+		return 0;
 #endif
 
 
@@ -2435,13 +2436,16 @@ ssdk_plat_init(ssdk_init_cfg *cfg)
 		return -ENODEV;
 
 	#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
-	hw_addr = ioremap_nocache(ssdk_dt_global.switchreg_base_addr,
-				ssdk_dt_global.switchreg_size);
-	if (!hw_addr) {
-		printk("%s ioremap fail.", __func__);
-		return -1;
+	/* for hppe */
+	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
+		hw_addr = ioremap_nocache(ssdk_dt_global.switchreg_base_addr,
+					ssdk_dt_global.switchreg_size);
+		if (!hw_addr) {
+			printk("%s ioremap fail.", __func__);
+			return -1;
+		}
+		return 0;
 	}
-	return 0;
 	#endif
 
 
@@ -2561,15 +2565,13 @@ ssdk_init(a_uint32_t dev_id, ssdk_init_cfg * cfg)
 
 	rv = fal_init(dev_id, cfg);
 	if (rv != SW_OK)
-		printk("ssdk fal init failed \r\n");
+		printk("ssdk fal init failed: %d. \r\n", rv);
 
-	#ifndef ESS_ONLY_FPGA
-
-	ssdk_phy_init(cfg);
-	if (rv != SW_OK)
-		printk("ssdk phy init failed \r\n");
-
-	#endif
+	if (cfg->chip_type != CHIP_HPPE) {
+		rv = ssdk_phy_init(cfg);
+		if (rv != SW_OK)
+			printk("ssdk phy init failed: %d. \r\n", rv);
+	}
 
 	return rv;
 }
@@ -2617,16 +2619,6 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 	const __be32 *reg_cfg, *mac_mode,*led_source,*led_mode, *led_speed, *led_freq, *phy_addr;
 	a_uint8_t *led_str;
 
-	#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
-	/*should use dts, temp change*/
-	ssdk_dt_global.switchreg_base_addr = 0x3a000000;
-	ssdk_dt_global.switchreg_size = 0x1000000;
-	ssdk_dt_global.switch_reg_access_mode = HSL_REG_LOCAL_BUS;
-	return 0;
-	#endif
-
-
-
 	/*
 	 * Get reference to ESS SWITCH device node
 	 */
@@ -2651,9 +2643,11 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 		return SW_BAD_PARAM;
 	}
 
+#if 0
 	ssdk_dt_global.ess_clk = of_clk_get_by_name(switch_node, "ess_clk");
 	if (IS_ERR(ssdk_dt_global.ess_clk))
 		printk("Getting ess_clk failed!\n");
+#endif
 
 	printk("switchreg_base_addr: 0x%x\n", ssdk_dt_global.switchreg_base_addr);
 	printk("switchreg_size: 0x%x\n", ssdk_dt_global.switchreg_size);
@@ -2665,6 +2659,7 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 	else
 		ssdk_dt_global.switch_reg_access_mode = HSL_REG_MDIO;
 
+#if 0
 	if (of_property_read_u32(switch_node, "switch_cpu_bmp", &cfg->port_cfg.cpu_bmp)
 		|| of_property_read_u32(switch_node, "switch_lan_bmp", &cfg->port_cfg.lan_bmp)
 		|| of_property_read_u32(switch_node, "switch_wan_bmp", &cfg->port_cfg.wan_bmp)) {
@@ -2758,6 +2753,7 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 		if (j >= 5)
 			break;
 	}
+#endif
 	return SW_OK;
 }
 #endif
@@ -3504,8 +3500,8 @@ static int __init regi_init(void)
 	ssdk_init_cfg cfg;
 	int rv = 0;
 	garuda_init_spec_cfg chip_spec_cfg;
-	ssdk_dt_global.switch_reg_access_mode = HSL_REG_LOCAL_BUS;
-	ssdk_dt_global.psgmii_reg_access_mode = HSL_REG_LOCAL_BUS;
+	ssdk_dt_global.switch_reg_access_mode = HSL_REG_MDIO;
+	ssdk_dt_global.psgmii_reg_access_mode = HSL_REG_MDIO;
 	a_uint8_t chip_version = 0;
 
 	ssdk_cfg_default_init(&cfg);
@@ -3516,6 +3512,11 @@ static int __init regi_init(void)
 	#endif
 	#endif
 
+	#ifdef ESS_ONLY_FPGA
+	ssdk_dt_global.switch_reg_access_mode = HSL_REG_LOCAL_BUS;
+	ssdk_dt_global.psgmii_reg_access_mode = HSL_REG_LOCAL_BUS;
+	#endif
+
 	rv = ssdk_plat_init(&cfg);
 	if(rv)
 		goto out;
@@ -3524,9 +3525,8 @@ static int __init regi_init(void)
 	if(rv)
 		goto out;
 	#ifndef ESS_ONLY_FPGA
-	#if defined(CONFIG_OF) && (LINUX_VERSION_CODE <= KERNEL_VERSION(4,4,0))
-	ssdk_phy_id_get(&cfg);
-	#endif
+	if(cfg.chip_type != CHIP_HPPE)
+		ssdk_phy_id_get(&cfg);
 	#endif
 
 	memset(&chip_spec_cfg, 0, sizeof(garuda_init_spec_cfg));
