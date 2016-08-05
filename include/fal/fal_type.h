@@ -111,6 +111,13 @@ extern "C" {
 		a_int8_t   reg_name[32];
 	}fal_debug_reg_dump_t;
 
+typedef struct{
+	a_uint32_t phy_count;
+	a_uint32_t phy_base;
+	a_uint32_t phy_end;
+	a_uint16_t phy_value[256];
+	a_int8_t   phy_name[32];
+}fal_phy_dump_t;
 
 
 

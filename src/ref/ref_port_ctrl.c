@@ -197,7 +197,7 @@ static int qca_switch_force_mac_status(struct switch_dev *dev, a_uint32_t port_i
 	a_uint32_t reg, value;
 	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 
-	if (port_id < 0 || port_id > 6)
+	if (port_id < 1 || port_id > 5)
 		return -1;
 	if (priv->version == 0x14)
 	{

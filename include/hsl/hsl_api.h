@@ -1979,6 +1979,9 @@ typedef sw_error_t
   typedef sw_error_t
     (*hsl_debug_psgmii_self_test) (a_uint32_t dev_id, a_bool_t enable,
 			    a_uint32_t times, a_uint32_t *result);
+  typedef sw_error_t
+    (*hsl_phy_dump)(a_uint32_t dev_id, a_uint32_t phy_addr,
+			a_uint32_t idx,fal_phy_dump_t *phy_dump);
 
   typedef struct
   {
@@ -2539,6 +2542,7 @@ typedef sw_error_t
 	hsl_register_dump	register_dump;
 	hsl_debug_register_dump	debug_register_dump;
 	hsl_debug_psgmii_self_test	debug_psgmii_self_test;
+	hsl_phy_dump	 phy_dump;
 
 
       /*INIT*/ hsl_dev_reset dev_reset;

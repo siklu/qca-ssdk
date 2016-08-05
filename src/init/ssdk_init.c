@@ -2433,6 +2433,7 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 	struct device_node *child = NULL;
 	a_uint32_t len = 0,i = 0,j = 0;
 	const __be32 *reg_cfg, *mac_mode,*led_source,*phy_addr;
+	const __be32 *led_number;
 	a_uint8_t *led_str;
 
 
@@ -2516,6 +2517,9 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 		led_source = of_get_property(child, "source", &len);
 		if (led_source)
 			cfg->led_source_cfg[i].led_source_id = be32_to_cpup(led_source);
+		led_number = of_get_property(child, "led", &len);
+		if (led_number)
+			cfg->led_source_cfg[i].led_num = be32_to_cpup(led_number);
 		if (!of_property_read_string(child, "mode", (const char **)&led_str)) {
 			if (!strcmp(led_str, "normal"))
 			cfg->led_source_cfg[i].led_pattern.mode = LED_PATTERN_MAP_EN;
@@ -2649,6 +2653,7 @@ static int ssdk_dess_led_init(ssdk_init_cfg *cfg)
 	if(cfg->led_source_num != 0) {
 		for (i = 0; i < cfg->led_source_num; i++) {
 
+			led_num = cfg->led_source_cfg[i].led_num;
 			led_source_id = cfg->led_source_cfg[i].led_source_id;
 			pattern.mode = cfg->led_source_cfg[i].led_pattern.mode;
 			pattern.map = cfg->led_source_cfg[i].led_pattern.map;
@@ -2656,7 +2661,6 @@ static int ssdk_dess_led_init(ssdk_init_cfg *cfg)
 			#ifdef IN_LED
 			fal_led_source_pattern_set(0, led_source_id,&pattern);
 			#endif
-			led_num = ((led_source_id-1)/3) + 3;
 			source_id = led_source_id%3;
 			if (source_id == 1) {
 				if (led_source_id == 1) {
