@@ -270,6 +270,7 @@ static sw_data_type_t sw_data_type[] =
     SW_TYPE_DEF(SW_MRU_INFO, NULL, NULL),
     SW_TYPE_DEF(SW_MTU_ENTRY, cmd_data_check_mtu_entry, NULL),
     SW_TYPE_DEF(SW_MRU_ENTRY, cmd_data_check_mru_entry, NULL),
+    SW_TYPE_DEF(SW_ACL_UDF_PKT_TYPE, NULL, NULL),
 };
 
 sw_data_type_t *

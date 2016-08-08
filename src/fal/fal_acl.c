@@ -201,15 +201,6 @@ _fal_acl_status_set(a_uint32_t dev_id, a_bool_t enable)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
-    adpt_api_t *p_adpt_api;
-
-    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
-        if (NULL == p_adpt_api->adpt_acl_status_set)
-            return SW_NOT_SUPPORTED;
-
-        rv = p_adpt_api->adpt_acl_status_set(dev_id, enable);
-        return rv;
-    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -225,15 +216,6 @@ _fal_acl_status_get(a_uint32_t dev_id, a_bool_t * enable)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
-    adpt_api_t *p_adpt_api;
-
-    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
-        if (NULL == p_adpt_api->adpt_acl_status_get)
-            return SW_NOT_SUPPORTED;
-
-        rv = p_adpt_api->adpt_acl_status_get(dev_id, enable);
-        return rv;
-    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -251,15 +233,6 @@ _fal_acl_port_udf_profile_set(a_uint32_t dev_id, fal_port_t port_id,
 {
     sw_error_t rv;
     hsl_api_t *p_api;
-    adpt_api_t *p_adpt_api;
-
-    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
-        if (NULL == p_adpt_api->adpt_acl_port_udf_profile_set)
-            return SW_NOT_SUPPORTED;
-
-        rv = p_adpt_api->adpt_acl_port_udf_profile_set(dev_id, port_id, udf_type, offset, length);
-        return rv;
-    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -277,15 +250,6 @@ _fal_acl_port_udf_profile_get(a_uint32_t dev_id, fal_port_t port_id,
 {
     sw_error_t rv;
     hsl_api_t *p_api;
-    adpt_api_t *p_adpt_api;
-
-    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
-        if (NULL == p_adpt_api->adpt_acl_port_udf_profile_get)
-            return SW_NOT_SUPPORTED;
-
-        rv = p_adpt_api->adpt_acl_port_udf_profile_get(dev_id, port_id, udf_type, offset, length);
-        return rv;
-    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -302,15 +266,6 @@ _fal_acl_rule_active(a_uint32_t dev_id, a_uint32_t list_id,
 {
     sw_error_t rv;
     hsl_api_t *p_api;
-    adpt_api_t *p_adpt_api;
-
-    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
-        if (NULL == p_adpt_api->adpt_acl_rule_active)
-            return SW_NOT_SUPPORTED;
-
-        rv = p_adpt_api->adpt_acl_rule_active(dev_id, list_id, rule_id, rule_nr);
-        return rv;
-    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -327,15 +282,6 @@ _fal_acl_rule_deactive(a_uint32_t dev_id, a_uint32_t list_id,
 {
     sw_error_t rv;
     hsl_api_t *p_api;
-    adpt_api_t *p_adpt_api;
-
-    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
-        if (NULL == p_adpt_api->adpt_acl_rule_deactive)
-            return SW_NOT_SUPPORTED;
-
-        rv = p_adpt_api->adpt_acl_rule_deactive(dev_id, list_id, rule_id, rule_nr);
-        return rv;
-    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -352,15 +298,6 @@ _fal_acl_rule_src_filter_sts_set(a_uint32_t dev_id,
 {
     sw_error_t rv;
     hsl_api_t *p_api;
-    adpt_api_t *p_adpt_api;
-
-    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
-        if (NULL == p_adpt_api->adpt_acl_rule_src_filter_sts_set)
-            return SW_NOT_SUPPORTED;
-
-        rv = p_adpt_api->adpt_acl_rule_src_filter_sts_set(dev_id, rule_id, enable);
-        return rv;
-    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -377,15 +314,6 @@ _fal_acl_rule_src_filter_sts_get(a_uint32_t dev_id,
 {
     sw_error_t rv;
     hsl_api_t *p_api;
-    adpt_api_t *p_adpt_api;
-
-    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
-        if (NULL == p_adpt_api->adpt_acl_rule_src_filter_sts_get)
-            return SW_NOT_SUPPORTED;
-
-        rv = p_adpt_api->adpt_acl_rule_src_filter_sts_get(dev_id, rule_id, enable);
-        return rv;
-    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -396,6 +324,34 @@ _fal_acl_rule_src_filter_sts_get(a_uint32_t dev_id,
     return rv;
 }
 
+sw_error_t
+_fal_acl_udf_profile_set(a_uint32_t dev_id, fal_acl_udf_pkt_type_t pkt_type,a_uint32_t udf_idx, fal_acl_udf_type_t udf_type, a_uint32_t offset)
+{
+    adpt_api_t *p_api;
+	sw_error_t rv = SW_OK;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_acl_udf_profile_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_acl_udf_profile_set(dev_id, pkt_type, udf_idx, udf_type, offset);
+    return rv;
+}
+sw_error_t
+_fal_acl_udf_profile_get(a_uint32_t dev_id, fal_acl_udf_pkt_type_t pkt_type,a_uint32_t udf_idx, fal_acl_udf_type_t *udf_type, a_uint32_t *offset)
+{
+    adpt_api_t *p_api;
+	sw_error_t rv = SW_OK;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_acl_udf_profile_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_acl_udf_profile_get(dev_id, pkt_type, udf_idx, udf_type, offset);
+    return rv;
+}
 /*insert flag for inner fal, don't remove it*/
 
 sw_error_t
@@ -742,11 +698,25 @@ fal_acl_rule_src_filter_sts_get(a_uint32_t dev_id,
     return rv;
 }
 
+sw_error_t
+fal_acl_udf_profile_set(a_uint32_t dev_id, fal_acl_udf_pkt_type_t pkt_type,a_uint32_t udf_idx, fal_acl_udf_type_t udf_type, a_uint32_t offset)
+{
+    sw_error_t rv = SW_OK;
 
-/**
- * @}
- */
+    FAL_API_LOCK;
+    rv = _fal_acl_udf_profile_set(dev_id, pkt_type, udf_idx, udf_type, offset);
+    FAL_API_UNLOCK;
+    return rv;
+}
+sw_error_t
+fal_acl_udf_profile_get(a_uint32_t dev_id, fal_acl_udf_pkt_type_t pkt_type,a_uint32_t udf_idx, fal_acl_udf_type_t *udf_type, a_uint32_t *offset)
+{
+    sw_error_t rv = SW_OK;
 
-
+    FAL_API_LOCK;
+    rv = _fal_acl_udf_profile_get(dev_id, pkt_type, udf_idx, udf_type, offset);
+    FAL_API_UNLOCK;
+    return rv;
+}
 /*insert flag for outter fal, don't remove it*/
 

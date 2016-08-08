@@ -575,6 +575,8 @@ extern "C" {
     SW_API_DEF(SW_API_ACL_RULE_DEACTIVE, fal_acl_rule_deactive),\
     SW_API_DEF(SW_API_ACL_RULE_SRC_FILTER_STS_SET, fal_acl_rule_src_filter_sts_set),\
     SW_API_DEF(SW_API_ACL_RULE_SRC_FILTER_STS_GET, fal_acl_rule_src_filter_sts_get),\
+    SW_API_DEF(SW_API_ACL_UDF_SET, fal_acl_udf_profile_set),\
+    SW_API_DEF(SW_API_ACL_UDF_GET, fal_acl_udf_profile_get),
 
 #define ACL_API_PARAM \
     SW_API_DESC(SW_API_ACL_LIST_CREAT) \
@@ -593,7 +595,9 @@ extern "C" {
     SW_API_DESC(SW_API_ACL_RULE_ACTIVE)    \
     SW_API_DESC(SW_API_ACL_RULE_DEACTIVE) \
     SW_API_DESC(SW_API_ACL_RULE_SRC_FILTER_STS_SET)\
-    SW_API_DESC(SW_API_ACL_RULE_SRC_FILTER_STS_GET)
+    SW_API_DESC(SW_API_ACL_RULE_SRC_FILTER_STS_GET)\
+    SW_API_DESC(SW_API_ACL_UDF_SET)    \
+    SW_API_DESC(SW_API_ACL_UDF_GET)
 
 #else
 #define ACL_API

@@ -84,6 +84,16 @@ extern "C" {
         FAL_ACL_UDF_TYPE_BUTT,
     } fal_acl_udf_type_t;
 
+    /**
+    @brief This enum defines the ACL rule type.
+    */
+    typedef enum {
+        FAL_ACL_UDF_NON_IP = 0,
+        FAL_ACL_UDF_IP4,
+        FAL_ACL_UDF_IP6,
+        FAL_ACL_UDF_BUTT,
+    }fal_acl_udf_pkt_type_t;
+
 #define    FAL_ACL_FIELD_MAC_DA         0
 #define    FAL_ACL_FIELD_MAC_SA         1
 #define    FAL_ACL_FIELD_MAC_ETHTYPE    2
@@ -139,7 +149,12 @@ extern "C" {
 #define    FAL_ACL_FIELD_VSI_VALID    50
 #define    FAL_ACL_FIELD_IP_PKT_TYPE    51
 
-#define    FAL_ACL_FIELD_NUM    52
+#define    FAL_ACL_FIELD_UDF0            52
+#define    FAL_ACL_FIELD_UDF1            53
+#define    FAL_ACL_FIELD_UDF2            54
+#define    FAL_ACL_FIELD_UDF3            55
+
+#define    FAL_ACL_FIELD_NUM    56
 
 
 #define    FAL_ACL_ACTION_PERMIT        0
@@ -423,6 +438,17 @@ extern "C" {
         a_uint16_t l3_length_mask;
         a_uint16_t l3_pkt_type;
         a_uint16_t l3_pkt_type_mask;
+        /*field of udf*/
+        fal_acl_field_op_t udf0_op;
+        a_uint16_t udf0_val;
+        a_uint16_t udf0_mask;
+        fal_acl_field_op_t udf1_op;
+        a_uint16_t udf1_val;
+        a_uint16_t udf1_mask;
+        a_uint16_t udf2_val;
+        a_uint16_t udf2_mask;
+        a_uint16_t udf3_val;
+        a_uint16_t udf3_mask;
 
         /* fields of action */
         fal_acl_action_map_t  action_flg;
@@ -514,6 +540,13 @@ sw_error_t
 fal_acl_port_udf_profile_set(a_uint32_t dev_id, fal_port_t port_id, fal_acl_udf_type_t udf_type, a_uint32_t offset, a_uint32_t length);
 sw_error_t
 fal_acl_port_udf_profile_get(a_uint32_t dev_id, fal_port_t port_id,	 fal_acl_udf_type_t udf_type, a_uint32_t * offset, a_uint32_t * length);
+
+sw_error_t
+fal_acl_udf_profile_set(a_uint32_t dev_id, fal_acl_udf_pkt_type_t pkt_type,a_uint32_t udf_idx, fal_acl_udf_type_t udf_type, a_uint32_t offset);
+
+sw_error_t
+fal_acl_udf_profile_get(a_uint32_t dev_id, fal_acl_udf_pkt_type_t pkt_type,a_uint32_t udf_idx, fal_acl_udf_type_t *udf_type, a_uint32_t *offset);
+
 sw_error_t
 fal_acl_rule_active(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_id, a_uint32_t rule_nr);
 sw_error_t

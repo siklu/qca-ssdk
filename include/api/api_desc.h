@@ -1169,6 +1169,20 @@ extern "C" {
     SW_PARAM_DEF(SW_API_ACL_RULE_SRC_FILTER_STS_GET, SW_UINT32, 4, SW_PARAM_IN, "Rule ID"),\
     SW_PARAM_DEF(SW_API_ACL_RULE_SRC_FILTER_STS_GET, SW_ENABLE, 4, SW_PARAM_PTR|SW_PARAM_OUT, "Enable"),
 
+#define SW_API_ACL_UDF_SET_DESC \
+    SW_PARAM_DEF(SW_API_ACL_UDF_SET, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"),\
+    SW_PARAM_DEF(SW_API_ACL_UDF_SET, SW_ACL_UDF_PKT_TYPE, sizeof(fal_acl_udf_pkt_type_t), SW_PARAM_IN, "udf_packet_type"),\
+    SW_PARAM_DEF(SW_API_ACL_UDF_SET, SW_UINT32, 4, SW_PARAM_IN, "udf_index"),\
+    SW_PARAM_DEF(SW_API_ACL_UDF_SET, SW_ACL_UDF_TYPE, sizeof(fal_acl_udf_type_t), SW_PARAM_IN, "udf_type"),\
+    SW_PARAM_DEF(SW_API_ACL_UDF_SET, SW_UINT32, 4, SW_PARAM_IN, "udf_offset"),
+
+#define SW_API_ACL_UDF_GET_DESC \
+    SW_PARAM_DEF(SW_API_ACL_UDF_GET, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"),\
+    SW_PARAM_DEF(SW_API_ACL_UDF_GET, SW_ACL_UDF_PKT_TYPE, sizeof(fal_acl_udf_pkt_type_t), SW_PARAM_IN, "udf_packet_type"),\
+    SW_PARAM_DEF(SW_API_ACL_UDF_GET, SW_UINT32, 4, SW_PARAM_IN, "udf_index"),\
+    SW_PARAM_DEF(SW_API_ACL_UDF_GET, SW_ACL_UDF_TYPE, sizeof(fal_acl_udf_type_t), SW_PARAM_PTR|SW_PARAM_OUT, "udf_type"),\
+    SW_PARAM_DEF(SW_API_ACL_UDF_GET, SW_UINT32, 4, SW_PARAM_PTR|SW_PARAM_OUT, "udf_offset"),
+
 #define SW_API_QOS_SCH_MODE_SET_DESC \
     SW_PARAM_DEF(SW_API_QOS_SCH_MODE_SET, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"),\
     SW_PARAM_DEF(SW_API_QOS_SCH_MODE_SET, SW_SCH, sizeof(fal_sch_mode_t), SW_PARAM_IN, "Schedule mode"),\

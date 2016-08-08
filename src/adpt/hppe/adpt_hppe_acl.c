@@ -155,6 +155,29 @@ typedef struct{
 }ADPT_HPPE_ACL_IPV4_RULE_MASK;
 
 typedef struct{
+	a_uint32_t udf0:16;
+	a_uint32_t udf1:16;
+	a_uint32_t udf2:16;
+	a_uint32_t udf0_valid:1;
+	a_uint32_t udf1_valid:1;
+	a_uint32_t udf2_valid:1;
+	a_uint32_t is_ipv6:1;
+	a_uint32_t is_ip:1;
+}ADPT_HPPE_ACL_UDF_RULE;
+
+typedef struct{
+	a_uint32_t udf0_mask:16;
+	a_uint32_t udf1_mask:16;
+	a_uint32_t udf2_mask:16;
+	a_uint32_t udf0_valid:1;
+	a_uint32_t udf1_valid:1;
+	a_uint32_t udf2_valid:1;
+	a_uint32_t is_ipv6:1;
+	a_uint32_t is_ip:1;
+}ADPT_HPPE_ACL_UDF_RULE_MASK;
+
+
+typedef struct{
 	union{
 		struct{
 			a_uint32_t ip_32bits:32;
@@ -494,54 +517,6 @@ adpt_hppe_acl_list_bind(a_uint32_t dev_id, a_uint32_t list_id, fal_acl_direc_t d
 			_adpt_hppe_acl_rule_bind(dev_id, list_id, rule_id, direc, obj_t, obj_idx);
 	}
 	return SW_OK;
-}
-sw_error_t
-adpt_hppe_acl_port_udf_profile_get(a_uint32_t dev_id, fal_port_t port_id,
-		fal_acl_udf_type_t udf_type, a_uint32_t * offset, a_uint32_t * length)
-{
-
-	ADPT_DEV_ID_CHECK(dev_id);
-	ADPT_NULL_POINT_CHECK(offset);
-	ADPT_NULL_POINT_CHECK(length);
-
-	return SW_OK;
-}
-
-sw_error_t
-adpt_hppe_acl_rule_src_filter_sts_get(a_uint32_t dev_id, a_uint32_t rule_id, a_bool_t* enable)
-{
-
-	ADPT_DEV_ID_CHECK(dev_id);
-	ADPT_NULL_POINT_CHECK(enable);
-
-	return SW_NOT_SUPPORTED;
-}
-
-sw_error_t
-adpt_hppe_acl_rule_deactive(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_id, a_uint32_t rule_nr)
-{
-
-	ADPT_DEV_ID_CHECK(dev_id);
-
-	return SW_NOT_SUPPORTED;
-}
-sw_error_t
-adpt_hppe_acl_status_get(a_uint32_t dev_id, a_bool_t * enable)
-{
-
-	ADPT_DEV_ID_CHECK(dev_id);
-	ADPT_NULL_POINT_CHECK(enable);
-
-	return SW_NOT_SUPPORTED;
-}
-
-sw_error_t
-adpt_hppe_acl_status_set(a_uint32_t dev_id, a_bool_t enable)
-{
-
-	ADPT_DEV_ID_CHECK(dev_id);
-
-	return SW_NOT_SUPPORTED;
 }
 
 static sw_error_t _adpt_hppe_acl_mac_rule_hw_2_sw(a_uint32_t is_mac_da,
@@ -1179,6 +1154,116 @@ static sw_error_t _adpt_hppe_acl_ipmisc_rule_hw_2_sw(union ipo_rule_reg_u *hw_re
 	return SW_OK;
 }
 
+static sw_error_t _adpt_hppe_acl_udf_rule_hw_2_sw(union ipo_rule_reg_u *hw_reg, a_uint32_t is_win1,
+		union ipo_mask_reg_u *hw_mask, fal_acl_rule_t *rule)
+{
+	ADPT_HPPE_ACL_UDF_RULE * udfrule = (ADPT_HPPE_ACL_UDF_RULE *)hw_reg;
+	ADPT_HPPE_ACL_UDF_RULE_MASK *udfrule_mask = (ADPT_HPPE_ACL_UDF_RULE_MASK *)hw_mask;
+
+	if(is_win1)
+	{
+		if(udfrule->udf2_valid == 1)
+		{
+			FAL_FIELD_FLG_SET(rule->field_flg, FAL_ACL_FIELD_UDF3);
+			rule->udf3_val = udfrule->udf2;
+			rule->udf3_mask = udfrule_mask->udf2_mask;
+		}
+		if(udfrule->udf1_valid == 1)
+		{
+			FAL_FIELD_FLG_SET(rule->field_flg, FAL_ACL_FIELD_UDF2);
+			rule->udf2_val = udfrule->udf1;
+			rule->udf2_mask = udfrule_mask->udf1_mask;
+		}
+		if(udfrule->udf0_valid == 1)
+		{
+			FAL_FIELD_FLG_SET(rule->field_flg, FAL_ACL_FIELD_UDF1);
+			if(hw_reg->bf.range_en == 1)
+			{
+				if(udfrule->udf0 == 0)
+				{
+					rule->udf1_op = FAL_ACL_FIELD_LE;
+					rule->udf1_val = udfrule_mask->udf0_mask;
+				}
+				else if(rule->udf1_mask == 0xffff)
+				{
+					rule->udf1_op = FAL_ACL_FIELD_GE;
+					rule->udf1_val = udfrule->udf0;
+				}
+				else
+				{
+					rule->udf1_op = FAL_ACL_FIELD_RANGE;
+					rule->udf1_val = udfrule->udf0;
+					rule->udf1_mask = udfrule_mask->udf0_mask;
+				}
+			}
+			else
+			{
+				rule->udf1_op = FAL_ACL_FIELD_MASK;
+				rule->udf1_val = udfrule->udf0;
+				rule->udf1_mask = udfrule_mask->udf0_mask;
+			}
+
+		}
+	}
+	else
+	{
+		if(udfrule->udf2_valid == 1)
+		{
+			FAL_FIELD_FLG_SET(rule->field_flg, FAL_ACL_FIELD_UDF2);
+			rule->udf2_val = udfrule->udf2;
+			rule->udf2_mask = udfrule_mask->udf2_mask;
+		}
+		if(udfrule->udf1_valid == 1)
+		{
+			FAL_FIELD_FLG_SET(rule->field_flg, FAL_ACL_FIELD_UDF1);
+			rule->udf1_val = udfrule->udf1;
+			rule->udf1_mask = udfrule_mask->udf1_mask;
+		}
+		if(udfrule->udf0_valid == 1)
+		{
+			FAL_FIELD_FLG_SET(rule->field_flg, FAL_ACL_FIELD_UDF0);
+			if(hw_reg->bf.range_en == 1)
+			{
+				if(udfrule->udf0 == 0)
+				{
+					rule->udf0_op = FAL_ACL_FIELD_LE;
+					rule->udf0_val = udfrule_mask->udf0_mask;
+				}
+				else if(rule->udf0_mask == 0xffff)
+				{
+					rule->udf0_op = FAL_ACL_FIELD_GE;
+					rule->udf0_val = udfrule->udf0;
+				}
+				else
+				{
+					rule->udf0_op = FAL_ACL_FIELD_RANGE;
+					rule->udf0_val = udfrule->udf0;
+					rule->udf0_mask = udfrule_mask->udf0_mask;
+				}
+			}
+			else
+			{
+				rule->udf0_op = FAL_ACL_FIELD_MASK;
+				rule->udf0_val = udfrule->udf0;
+				rule->udf0_mask = udfrule_mask->udf0_mask;
+			}
+
+		}
+	}
+
+	if(udfrule_mask->is_ip)
+	{
+		rule->is_ip_val = udfrule->is_ip;
+		FAL_FIELD_FLG_SET(rule->field_flg, FAL_ACL_FIELD_IP);
+	}
+	if(udfrule_mask->is_ipv6)
+	{
+		udfrule->is_ipv6= rule->is_ipv6_val;
+		FAL_FIELD_FLG_SET(rule->field_flg, FAL_ACL_FIELD_IPV6);
+	}
+	return SW_OK;
+}
+
 static sw_error_t
 _adpt_hppe_acl_action_hw_2_sw(union ipo_action_u *hw_act, fal_acl_rule_t *rule)
 {
@@ -1362,6 +1447,10 @@ adpt_hppe_acl_rule_query(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_
 			_adpt_hppe_acl_ipv6_rule_hw_2_sw(0, 2, &hw_reg, &hw_mask, rule);
 		if(hw_reg.bf.rule_type == ADPT_ACL_HPPE_IPMISC_RULE)
 			_adpt_hppe_acl_ipmisc_rule_hw_2_sw(&hw_reg, &hw_mask, rule);
+		if(hw_reg.bf.rule_type == ADPT_ACL_HPPE_UDF0_RULE)
+			_adpt_hppe_acl_udf_rule_hw_2_sw(&hw_reg, 0, &hw_mask, rule);
+		if(hw_reg.bf.rule_type == ADPT_ACL_HPPE_UDF1_RULE)
+			_adpt_hppe_acl_udf_rule_hw_2_sw(&hw_reg, 1, &hw_mask, rule);
 		_adpt_hppe_acl_action_hw_2_sw(&hw_act, rule);
 		hw_entries &= (~(1<<hw_index));
 
@@ -1460,6 +1549,22 @@ static sw_error_t _adpt_hppe_acl_rule_range_match(a_uint32_t dev_id, a_uint32_t 
 	if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_L4_SPORT))
 	{
 		if (FAL_ACL_FIELD_MASK != rule->src_l4port_op)
+		{
+			rangecount++;
+		}
+	}
+
+	if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_UDF0))
+	{
+		if (FAL_ACL_FIELD_MASK != rule->udf0_op)
+		{
+			rangecount++;
+		}
+	}
+
+	if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_UDF1))
+	{
+		if (FAL_ACL_FIELD_MASK != rule->udf1_op)
 		{
 			rangecount++;
 		}
@@ -1687,6 +1792,40 @@ _adpt_hppe_acl_ipv6_fields_check(a_uint32_t dev_id, a_uint32_t list_id, a_uint32
 		if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_L3_FRAGMENT))
 		{
 			*rule_type_map |= (1<<ADPT_ACL_HPPE_IPV6_DIP0_RULE);
+		}
+	}
+
+	printk("%s, %d: rule_type_map = 0x%x\n", __FUNCTION__, __LINE__, *rule_type_map);
+
+	return SW_OK;
+}
+
+static sw_error_t
+_adpt_hppe_acl_udf_fields_check(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_id, a_uint32_t rule_nr,
+				fal_acl_rule_t * rule, a_uint32_t *rule_type_map)
+{
+	printk("%s, %d: fields[0] = 0x%x, fields[1] = 0x%x\n", __FUNCTION__, __LINE__, rule->field_flg[0], rule->field_flg[1]);
+
+	if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_UDF0))
+	{
+		*rule_type_map |= (1<<ADPT_ACL_HPPE_UDF0_RULE);
+	}
+	if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_UDF3))
+	{
+		*rule_type_map |= (1<<ADPT_ACL_HPPE_UDF1_RULE);
+	}
+	if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_UDF1) &&
+		rule->udf1_op != FAL_ACL_FIELD_MASK)
+	{
+		*rule_type_map |= (1<<ADPT_ACL_HPPE_UDF1_RULE);
+	}
+
+	if(rule_type_map == 0)
+	{
+		if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_UDF1) ||
+			FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_UDF2))
+		{
+			*rule_type_map |= (1<<ADPT_ACL_HPPE_UDF0_RULE);
 		}
 	}
 
@@ -2366,6 +2505,129 @@ static sw_error_t _adpt_hppe_acl_ipmisc_rule_sw_2_hw(fal_acl_rule_t *rule,
 	return SW_OK;
 }
 
+static sw_error_t _adpt_hppe_acl_udf_rule_sw_2_hw(fal_acl_rule_t *rule, a_uint32_t is_win1,
+		union ipo_rule_reg_u *hw_reg, union ipo_mask_reg_u *hw_mask)
+{
+	ADPT_HPPE_ACL_UDF_RULE * udfrule = (ADPT_HPPE_ACL_UDF_RULE *)hw_reg;
+	ADPT_HPPE_ACL_UDF_RULE_MASK *udfrule_mask = (ADPT_HPPE_ACL_UDF_RULE_MASK *)hw_mask;
+
+	if(is_win1)
+	{
+		if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_UDF3))
+		{
+			udfrule->udf2_valid = 1;
+			udfrule->udf2 = rule->udf3_val;
+			udfrule_mask->udf2_valid = 1;
+			udfrule_mask->udf2_mask = rule->udf3_mask;
+		}
+		if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_UDF2))
+		{
+			udfrule->udf1_valid = 1;
+			udfrule->udf1 = rule->udf2_val;
+			udfrule_mask->udf1_valid = 1;
+			udfrule_mask->udf1_mask = rule->udf2_mask;
+		}
+
+		if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_UDF1))
+		{
+			udfrule->udf0_valid = 1;
+			udfrule_mask->udf0_valid = 1;
+			if(FAL_ACL_FIELD_MASK == rule->udf1_op)
+			{
+				udfrule->udf0 = rule->udf1_val;
+				udfrule_mask->udf0_mask = rule->udf1_mask;
+			}
+			else
+			{
+				a_uint16_t min, max;
+				if(FAL_ACL_FIELD_LE == rule->udf1_op)
+				{
+					min = 0;
+					max = rule->udf1_val;
+				}
+				if(FAL_ACL_FIELD_GE == rule->udf1_op)
+				{
+					min = rule->udf1_val;
+					max = 0xffff;
+				}
+				if(FAL_ACL_FIELD_RANGE == rule->udf1_op)
+				{
+					min = rule->udf1_val;
+					max = rule->udf1_mask;
+				}
+				else
+					return SW_NOT_SUPPORTED;
+				udfrule->udf0 = min;
+				udfrule_mask->udf0_mask = max;
+				hw_reg->bf.range_en = 1;
+			}
+		}
+	}
+	else
+	{
+		if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_UDF1))
+		{
+			udfrule->udf1_valid = 1;
+			udfrule->udf1 = rule->udf1_val;
+			udfrule_mask->udf1_valid = 1;
+			udfrule_mask->udf1_mask = rule->udf1_mask;
+		}
+		if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_UDF2))
+		{
+			udfrule->udf2_valid = 1;
+			udfrule->udf2 = rule->udf2_val;
+			udfrule_mask->udf2_valid = 1;
+			udfrule_mask->udf2_mask = rule->udf2_mask;
+		}
+
+		if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_UDF0))
+		{
+			udfrule->udf0_valid = 1;
+			udfrule_mask->udf0_valid = 1;
+			if(FAL_ACL_FIELD_MASK == rule->udf0_op)
+			{
+				udfrule->udf0 = rule->udf0_val;
+				udfrule_mask->udf0_mask = rule->udf0_mask;
+			}
+			else
+			{
+				a_uint16_t min, max;
+				if(FAL_ACL_FIELD_LE == rule->udf0_op)
+				{
+					min = 0;
+					max = rule->udf0_val;
+				}
+				if(FAL_ACL_FIELD_GE == rule->udf0_op)
+				{
+					min = rule->udf0_val;
+					max = 0xffff;
+				}
+				if(FAL_ACL_FIELD_RANGE == rule->udf0_op)
+				{
+					min = rule->udf0_val;
+					max = rule->udf0_mask;
+				}
+				else
+					return SW_NOT_SUPPORTED;
+				udfrule->udf0 = min;
+				udfrule_mask->udf0_mask = max;
+				hw_reg->bf.range_en = 1;
+			}
+		}
+	}
+
+	if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_IP))
+	{
+		udfrule->is_ip = rule->is_ip_val;
+		udfrule_mask->is_ip = 1;
+	}
+	if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_IPV6))
+	{
+		udfrule->is_ipv6= rule->is_ipv6_val;
+		udfrule_mask->is_ipv6 = 1;
+	}
+	return SW_OK;
+}
 static sw_error_t
 _adpt_hppe_acl_action_sw_2_hw(fal_acl_rule_t *rule, union ipo_action_u *hw_act)
 {
@@ -2580,6 +2842,16 @@ _adpt_hppe_acl_rule_hw_add(a_uint32_t dev_id, a_uint32_t list_id,
 			hw_reg.bf.rule_type = 12;
 			_adpt_hppe_acl_ipmisc_rule_sw_2_hw(rule, &hw_reg, &hw_mask);
 		}
+		else if(i == ADPT_ACL_HPPE_UDF0_RULE)
+		{
+			hw_reg.bf.rule_type = 13;
+			_adpt_hppe_acl_udf_rule_sw_2_hw(rule, 0, &hw_reg, &hw_mask);
+		}
+		else if(i == ADPT_ACL_HPPE_UDF1_RULE)
+		{
+			hw_reg.bf.rule_type = 14;
+			_adpt_hppe_acl_udf_rule_sw_2_hw(rule, 1, &hw_reg, &hw_mask);
+		}
 
 		if(!hw_reg.bf.range_en)
 		{
@@ -2645,6 +2917,8 @@ adpt_hppe_acl_rule_add(a_uint32_t dev_id, a_uint32_t list_id,
 		_adpt_hppe_acl_ipv4_fields_check(dev_id, list_id, rule_id, rule_nr, rule, &rule_type_map);
 	else if(rule->rule_type == FAL_ACL_RULE_IP6)/*input ipv6 type*/
 		_adpt_hppe_acl_ipv6_fields_check(dev_id, list_id, rule_id, rule_nr, rule, &rule_type_map);
+	else if(rule->rule_type == FAL_ACL_RULE_UDF)/*input udf type*/
+		_adpt_hppe_acl_udf_fields_check(dev_id, list_id, rule_id, rule_nr, rule, &rule_type_map);
 	_adpt_hppe_acl_l2_fields_check(dev_id, list_id, rule_id, rule_nr, rule, &rule_type_map);
 
 	if(rule_type_map == 0)
@@ -2856,15 +3130,6 @@ adpt_hppe_acl_list_creat(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t list_
 }
 
 sw_error_t
-adpt_hppe_acl_rule_src_filter_sts_set(a_uint32_t dev_id, a_uint32_t rule_id, a_bool_t enable)
-{
-
-	ADPT_DEV_ID_CHECK(dev_id);
-
-	return SW_NOT_SUPPORTED;
-}
-
-sw_error_t
 adpt_hppe_acl_list_destroy(a_uint32_t dev_id, a_uint32_t list_id)
 {
 	a_uint32_t rule_id = 0;
@@ -2881,14 +3146,96 @@ adpt_hppe_acl_list_destroy(a_uint32_t dev_id, a_uint32_t list_id)
 	}
 	return SW_OK;
 }
+
+struct udf_ctrl_reg {
+	a_uint32_t  udf_base:2;
+	a_uint32_t  _reserved0:6;
+	a_uint32_t  udf_offset:6;
+	a_uint32_t  _reserved1:18;
+};
+
+union udf_ctrl_reg_u {
+	a_uint32_t val;
+	struct udf_ctrl_reg bf;
+};
+
+typedef sw_error_t (*hppe_acl_udp_set_func)(a_uint32_t dev_id,void *udf_ctrl);
+typedef sw_error_t (*hppe_acl_udp_get_func)(a_uint32_t dev_id,void *udf_ctrl);
+
+hppe_acl_udp_set_func g_udf_set_func[FAL_ACL_UDF_BUTT][4] = {
+	{hppe_non_ip_udf0_ctrl_reg_set, hppe_non_ip_udf1_ctrl_reg_set, hppe_non_ip_udf2_ctrl_reg_set, hppe_non_ip_udf3_ctrl_reg_set},
+	{hppe_ipv4_udf0_ctrl_reg_set, hppe_ipv4_udf1_ctrl_reg_set, hppe_ipv4_udf2_ctrl_reg_set, hppe_ipv4_udf3_ctrl_reg_set},
+	{hppe_ipv6_udf0_ctrl_reg_set, hppe_ipv6_udf1_ctrl_reg_set, hppe_ipv6_udf2_ctrl_reg_set, hppe_ipv6_udf3_ctrl_reg_set},
+};
+
+hppe_acl_udp_get_func g_udf_get_func[FAL_ACL_UDF_BUTT][4] = {
+	{hppe_non_ip_udf0_ctrl_reg_get, hppe_non_ip_udf1_ctrl_reg_get, hppe_non_ip_udf2_ctrl_reg_get, hppe_non_ip_udf3_ctrl_reg_get},
+	{hppe_ipv4_udf0_ctrl_reg_get, hppe_ipv4_udf1_ctrl_reg_get, hppe_ipv4_udf2_ctrl_reg_get, hppe_ipv4_udf3_ctrl_reg_get},
+	{hppe_ipv6_udf0_ctrl_reg_get, hppe_ipv6_udf1_ctrl_reg_get, hppe_ipv6_udf2_ctrl_reg_get, hppe_ipv6_udf3_ctrl_reg_get},
+};
+
 sw_error_t
-adpt_hppe_acl_port_udf_profile_set(a_uint32_t dev_id, fal_port_t port_id, fal_acl_udf_type_t udf_type, a_uint32_t offset, a_uint32_t length)
+adpt_hppe_acl_udf_profile_get(a_uint32_t dev_id, fal_acl_udf_pkt_type_t pkt_type,a_uint32_t udf_idx,
+			fal_acl_udf_type_t *udf_type, a_uint32_t *offset)
 {
+	union udf_ctrl_reg_u udf_ctrl = {0};
+	sw_error_t rv = SW_OK;
 
 	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(udf_type);
+	ADPT_NULL_POINT_CHECK(offset);
+
+	rv = g_udf_get_func[pkt_type][udf_idx](dev_id, &udf_ctrl);
+
+	if(rv != SW_OK)
+		return rv;
+
+	if(udf_ctrl.bf.udf_base == 0)
+	{
+		*udf_type = FAL_ACL_UDF_TYPE_L2;
+	}
+	else if(udf_ctrl.bf.udf_base == 1)
+	{
+		*udf_type = FAL_ACL_UDF_TYPE_L3;
+	}
+	else if(udf_ctrl.bf.udf_base == 2)
+	{
+		*udf_type = FAL_ACL_UDF_TYPE_L4;
+	}
+
+	*offset = udf_ctrl.bf.udf_offset;
 
 	return SW_OK;
 }
+
+
+sw_error_t
+adpt_hppe_acl_udf_profile_set(a_uint32_t dev_id, fal_acl_udf_pkt_type_t pkt_type,a_uint32_t udf_idx,
+			fal_acl_udf_type_t udf_type, a_uint32_t offset)
+{
+	ADPT_DEV_ID_CHECK(dev_id);
+	union udf_ctrl_reg_u udf_ctrl = {0};
+
+	if(udf_type == FAL_ACL_UDF_TYPE_L2)
+	{
+		udf_ctrl.bf.udf_base = 0;
+	}
+	else if(udf_type == FAL_ACL_UDF_TYPE_L3)
+	{
+		udf_ctrl.bf.udf_base = 1;
+	}
+	else if(udf_type == FAL_ACL_UDF_TYPE_L4)
+	{
+		udf_ctrl.bf.udf_base = 2;
+	}
+	else
+		return SW_NOT_SUPPORTED;
+
+	udf_ctrl.bf.udf_offset = offset;
+
+	return g_udf_set_func[pkt_type][udf_idx](dev_id, &udf_ctrl);
+}
+
 sw_error_t adpt_hppe_acl_init(a_uint32_t dev_id)
 {
 	adpt_api_t *p_adpt_api = NULL;
@@ -2899,22 +3246,16 @@ sw_error_t adpt_hppe_acl_init(a_uint32_t dev_id)
 		return SW_FAIL;
 
 	p_adpt_api->adpt_acl_list_bind = adpt_hppe_acl_list_bind;
-	p_adpt_api->adpt_acl_port_udf_profile_get = adpt_hppe_acl_port_udf_profile_get;
-	p_adpt_api->adpt_acl_rule_src_filter_sts_get = adpt_hppe_acl_rule_src_filter_sts_get;
-	p_adpt_api->adpt_acl_rule_deactive = adpt_hppe_acl_rule_deactive;
 	p_adpt_api->adpt_acl_list_dump = adpt_hppe_acl_list_dump;
-	p_adpt_api->adpt_acl_status_get = adpt_hppe_acl_status_get;
-	p_adpt_api->adpt_acl_status_set = adpt_hppe_acl_status_set;
 	p_adpt_api->adpt_acl_rule_query = adpt_hppe_acl_rule_query;
 	p_adpt_api->adpt_acl_list_unbind = adpt_hppe_acl_list_unbind;
-	p_adpt_api->adpt_acl_rule_active = adpt_hppe_acl_rule_active;
 	p_adpt_api->adpt_acl_rule_add = adpt_hppe_acl_rule_add;
 	p_adpt_api->adpt_acl_rule_delete = adpt_hppe_acl_rule_delete;
 	p_adpt_api->adpt_acl_rule_dump = adpt_hppe_acl_rule_dump;
 	p_adpt_api->adpt_acl_list_creat = adpt_hppe_acl_list_creat;
-	p_adpt_api->adpt_acl_rule_src_filter_sts_set = adpt_hppe_acl_rule_src_filter_sts_set;
 	p_adpt_api->adpt_acl_list_destroy = adpt_hppe_acl_list_destroy;
-	p_adpt_api->adpt_acl_port_udf_profile_set = adpt_hppe_acl_port_udf_profile_set;
+	p_adpt_api->adpt_acl_udf_profile_set = adpt_hppe_acl_udf_profile_set;
+	p_adpt_api->adpt_acl_udf_profile_get = adpt_hppe_acl_udf_profile_get;
 
 	return SW_OK;
 }
