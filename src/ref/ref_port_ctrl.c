@@ -568,6 +568,7 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 				port_link_down[i]=0;
 				if(priv->version != 0x14){
 					/* Check queue buffer */
+					a_uint16_t value = 0;
 					qm_err_cnt[i] = 0;
 					qca_switch_get_qm_status(dev, i, &qm_buffer_err);
 
@@ -575,17 +576,16 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 						port_qm_buf[i] = QM_NOT_EMPTY;
 					}
 					else {
-						a_uint16_t value = 0;
 						port_qm_buf[i] = QM_EMPTY;
 
 						/* Force MAC 1000M Full before auto negotiation */
 						qca_switch_force_mac_1000M_full(dev, i);
 						mdelay(10);
 						// printk("%s, %d, port %d link down\n",__FUNCTION__,__LINE__,i);
-						qca_ar8327_phy_dbg_read(0, i-1, 0, &value);
-						value &= (~(1<<12));
-						qca_ar8327_phy_dbg_write(0, i-1, 0, value);
 					}
+					qca_ar8327_phy_dbg_read(0, i-1, 0, &value);
+					value &= (~(1<<12));
+					qca_ar8327_phy_dbg_write(0, i-1, 0, value);
 				}
 			}
 			/* Down --> Up */
