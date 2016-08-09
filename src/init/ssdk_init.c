@@ -3121,31 +3121,37 @@ qca_dess_hw_init(ssdk_init_cfg *cfg)
 #ifdef HPPE
 static int qca_hppe_vsi_hw_init(void)
 {
-	ref_vsi_init(0);
+//	ref_vsi_init(0);
+#ifdef ESS_ONLY_FPGA
+	a_uint32_t port_default_vsi[6] = {2, 2, 2, 2, 3, 3};
+#else
+	a_uint32_t port_default_vsi[6] = {0, 1, 2, 3, 4, 5};
+#endif
+	a_uint32_t port_id = 0;
 
-	fal_vsi_newaddr_lrn_t newaddr_lrn;
-	fal_vsi_stamove_t stamove;
+	fal_vsi_newaddr_lrn_t newaddr_lrn = {0};
+	fal_vsi_stamove_t stamove = {0};
+	fal_vsi_member_t member = {0};
 	newaddr_lrn.action = 0;
 	newaddr_lrn.lrn_en = 1;
-	fal_vsi_newaddr_lrn_set(0, 1, &newaddr_lrn);
-	fal_vsi_newaddr_lrn_set(0, 2, &newaddr_lrn);
-	fal_vsi_newaddr_lrn_set(0, 3, &newaddr_lrn);
 	stamove.action = 0;
 	stamove.stamove_en = 1;
-	fal_vsi_stamove_set(0, 1, &stamove);
-	fal_vsi_stamove_set(0, 2, &stamove);
-	fal_vsi_stamove_set(0, 3, &stamove);
 
-	ref_port_vsi_set(0, 0, 1);
-	ref_port_vsi_set(0, 7, 1);
-	ref_port_vsi_set(0, 1, 2);
-	ref_port_vsi_set(0, 2, 2);
-	ref_port_vsi_set(0, 3, 2);
-	ref_port_vsi_set(0, 4, 2);
-	ref_port_vsi_set(0, 0x02000041, 2);
-	ref_port_vsi_set(0, 5, 3);
-	ref_port_vsi_set(0, 6, 3);
-	ref_port_vsi_set(0, 0x02000042, 3);
+	for(port_id = 1; port_id <= 6; port_id++)/*clean vsi table as zero*/
+		fal_vsi_member_set(0, port_default_vsi[port_id-1], &member);
+
+	for(port_id = 1; port_id <= 6; port_id++)
+	{
+		fal_vsi_newaddr_lrn_set(0, port_default_vsi[port_id-1], &newaddr_lrn);
+		fal_vsi_stamove_set(0, port_default_vsi[port_id-1], &stamove);
+		fal_port_vsi_set(0, port_id, port_default_vsi[port_id-1]);
+		fal_vsi_member_get(0, port_default_vsi[port_id-1], &member);
+		member.member_ports |= ((1<<port_id)|0x1);
+		member.bc_ports |= ((1<<port_id)|0x1);
+		member.umc_ports |= ((1<<port_id)|0x1);
+		member.uuc_ports |= ((1<<port_id)|0x1);
+		fal_vsi_member_set(0, port_default_vsi[port_id-1], &member);
+	}
 
 	return 0;
 }
@@ -3288,9 +3294,7 @@ qca_hppe_hw_init(ssdk_init_cfg *cfg)
 	}
 
 	qca_hppe_fdb_hw_init();
-#ifdef ESS_ONLY_FPGA
 	qca_hppe_vsi_hw_init();
-#endif
 
 	qca_hppe_portctrl_hw_init();
 
