@@ -66,12 +66,12 @@ adpt_rfdb_profile_set(a_uint32_t dev_id, a_uint32_t profile_id,
 
 	ADPT_DEV_ID_CHECK(dev_id);
 
-	value = ((((a_uint64_t)(addr->uc[5])) << 40) |
-			(((a_uint64_t)(addr->uc[4])) << 32) |
-			(((a_uint64_t)(addr->uc[3])) << 24) |
-			(((a_uint64_t)(addr->uc[2])) << 16) |
-			(((a_uint64_t)(addr->uc[1])) << 8) |
-			(((a_uint64_t)(addr->uc[0])) << 0));
+	value = ((((a_uint64_t)(addr->uc[5])) << 0) |
+			(((a_uint64_t)(addr->uc[4])) << 8) |
+			(((a_uint64_t)(addr->uc[3])) << 16) |
+			(((a_uint64_t)(addr->uc[2])) << 24) |
+			(((a_uint64_t)(addr->uc[1])) << 32) |
+			(((a_uint64_t)(addr->uc[0])) << 40));
 
 	SW_RTN_ON_ERROR(hppe_rfdb_tbl_mac_addr_set(dev_id, profile_id, value));
 	SW_RTN_ON_ERROR(hppe_rfdb_tbl_valid_set(dev_id, profile_id, (a_uint32_t)enable));
@@ -91,12 +91,12 @@ adpt_rfdb_profile_get(a_uint32_t dev_id, a_uint32_t profile_id,
 	ADPT_NULL_POINT_CHECK(enable);
 
 	SW_RTN_ON_ERROR(hppe_rfdb_tbl_mac_addr_get(dev_id, profile_id, &value));
-	addr->uc[0] = (a_uint8_t)(value & 0xff);
-	addr->uc[1] = (a_uint8_t)((value >> 8) & 0xff);
-	addr->uc[2] = (a_uint8_t)((value >> 16) & 0xff);
-	addr->uc[3] = (a_uint8_t)((value >> 24) & 0xff);
-	addr->uc[4] = (a_uint8_t)((value >> 32) & 0xff);
-	addr->uc[5] = (a_uint8_t)((value >> 40) & 0xff);
+	addr->uc[0] = (a_uint8_t)((value >> 40)& 0xff);
+	addr->uc[1] = (a_uint8_t)((value >> 32) & 0xff);
+	addr->uc[2] = (a_uint8_t)((value >> 24) & 0xff);
+	addr->uc[3] = (a_uint8_t)((value >> 16) & 0xff);
+	addr->uc[4] = (a_uint8_t)((value >> 8) & 0xff);
+	addr->uc[5] = (a_uint8_t)((value >> 0) & 0xff);
 
 	SW_RTN_ON_ERROR(hppe_rfdb_tbl_valid_get(dev_id, profile_id, (a_uint32_t *)enable));
 
@@ -179,6 +179,7 @@ adpt_ctrlpkt_profile_get(a_uint32_t dev_id, a_uint32_t profile_id,
 	SW_RTN_ON_ERROR(hppe_app_ctrl_get(dev_id, profile_id,
 						&entry));
 
+	ctrlpkt->valid = entry.bf.valid;
 	ctrlpkt->cmd.cmd = entry.bf.cmd;
 	ctrlpkt->cmd.sg_byp = entry.bf.sg_byp;
 	ctrlpkt->cmd.l2_filter_byp = entry.bf.l2_sec_byp;
