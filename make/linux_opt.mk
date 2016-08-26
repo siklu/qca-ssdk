@@ -252,7 +252,9 @@ ifeq (KSLIB, $(MODULE_TYPE))
 	    MODULE_INC += -I$(SYS_PATH) \
 	          -I$(TOOL_PATH)/../lib/gcc/arm-openwrt-linux-uclibcgnueabi/4.8.3/include/ \
 		  -I$(TOOL_PATH)/../lib/gcc/arm-openwrt-linux-uclibcgnueabi/5.2.0/include/ \
+		  -I$(TOOL_PATH)/../../lib/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/5.3.0/include/ \
 	          -I$(SYS_PATH)/include \
+              -I$(SYS_PATH)/source/ \
               -I$(SYS_PATH)/source/include \
               -I$(SYS_PATH)/source/arch/arm/mach-msm/include \
               -I$(SYS_PATH)/arch/arm/mach-msm/include \
@@ -262,9 +264,19 @@ ifeq (KSLIB, $(MODULE_TYPE))
               -I$(SYS_PATH)/arch/arm/include/generated \
               -I$(SYS_PATH)/include/generated/uapi \
               -I$(SYS_PATH)/include/uapi \
+              -I$(SYS_PATH)/source/include/uapi \
+              -I$(SYS_PATH)/source/include/generated \
+              -I$(SYS_PATH)/include/genearted \
               -I$(SYS_PATH)/arch/arm/include/uapi \
-              -I$(SYS_PATH)/source/arch/arm/include/asm/mach \
-	          -include $(SYS_PATH)/include/linux/kconfig.h
+              -I$(SYS_PATH)/source/arch/arm/include/uapi \
+              -I$(SYS_PATH)/source/arch/arm/include/asm/mach
+	ifneq ($(wildcard $(SYS_PATH)/include/linux/kconfig.h),)
+		MODULE_INC += \
+			-include $(SYS_PATH)/include/linux/kconfig.h
+	else
+		MODULE_INC += \
+			-include $(SYS_PATH)/source/include/linux/kconfig.h
+	endif
 
   endif
 
