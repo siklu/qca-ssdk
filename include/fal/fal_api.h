@@ -642,7 +642,24 @@ extern "C" {
     SW_API_DEF(SW_API_QOS_PT_FORCE_CPRI_ST_SET, fal_qos_port_force_cpri_status_set), \
     SW_API_DEF(SW_API_QOS_PT_FORCE_CPRI_ST_GET, fal_qos_port_force_cpri_status_get), \
     SW_API_DEF(SW_API_QOS_QUEUE_REMARK_SET, fal_qos_queue_remark_table_set), \
-    SW_API_DEF(SW_API_QOS_QUEUE_REMARK_GET, fal_qos_queue_remark_table_get),
+    SW_API_DEF(SW_API_QOS_QUEUE_REMARK_GET, fal_qos_queue_remark_table_get), \
+    SW_API_DEF(SW_API_QOS_PORT_GROUP_GET, fal_qos_port_group_get), \
+    SW_API_DEF(SW_API_QOS_PORT_GROUP_SET, fal_qos_port_group_set), \
+    SW_API_DEF(SW_API_QOS_PORT_PRI_GET, fal_qos_port_pri_precedence_get), \
+    SW_API_DEF(SW_API_QOS_PORT_PRI_SET, fal_qos_port_pri_precedence_set), \
+    SW_API_DEF(SW_API_QOS_PORT_REMARK_GET, fal_qos_port_remark_get), \
+    SW_API_DEF(SW_API_QOS_PORT_REMARK_SET, fal_qos_port_remark_set), \
+    SW_API_DEF(SW_API_QOS_PCP_MAP_GET, fal_qos_cosmap_pcp_get), \
+    SW_API_DEF(SW_API_QOS_PCP_MAP_SET, fal_qos_cosmap_pcp_set), \
+    SW_API_DEF(SW_API_QOS_FLOW_MAP_GET, fal_qos_cosmap_flow_get), \
+    SW_API_DEF(SW_API_QOS_FLOW_MAP_SET, fal_qos_cosmap_flow_set), \
+    SW_API_DEF(SW_API_QOS_DSCP_MAP_GET, fal_qos_cosmap_dscp_get), \
+    SW_API_DEF(SW_API_QOS_DSCP_MAP_SET, fal_qos_cosmap_dscp_set), \
+    SW_API_DEF(SW_API_QOS_QUEUE_SCHEDULER_GET, fal_queue_scheduler_get), \
+    SW_API_DEF(SW_API_QOS_QUEUE_SCHEDULER_SET, fal_queue_scheduler_set), \
+    SW_API_DEF(SW_API_QOS_RING_QUEUE_MAP_GET, fal_edma_ring_queue_map_get), \
+    SW_API_DEF(SW_API_QOS_RING_QUEUE_MAP_SET, fal_edma_ring_queue_map_set), \
+    SW_API_DEF(SW_API_QOS_PORT_QUEUES_GET, fal_port_queues_get),
 
 #define QOS_API_PARAM \
     SW_API_DESC(SW_API_QOS_SCH_MODE_SET) \
@@ -680,7 +697,24 @@ extern "C" {
     SW_API_DESC(SW_API_QOS_PT_FORCE_CPRI_ST_SET)  \
     SW_API_DESC(SW_API_QOS_PT_FORCE_CPRI_ST_GET)  \
     SW_API_DESC(SW_API_QOS_QUEUE_REMARK_SET) \
-    SW_API_DESC(SW_API_QOS_QUEUE_REMARK_GET)
+    SW_API_DESC(SW_API_QOS_QUEUE_REMARK_GET) \
+    SW_API_DESC(SW_API_QOS_PORT_GROUP_GET) \
+    SW_API_DESC(SW_API_QOS_PORT_GROUP_SET) \
+    SW_API_DESC(SW_API_QOS_PORT_PRI_GET) \
+    SW_API_DESC(SW_API_QOS_PORT_PRI_SET) \
+    SW_API_DESC(SW_API_QOS_PORT_REMARK_GET) \
+    SW_API_DESC(SW_API_QOS_PORT_REMARK_SET) \
+    SW_API_DESC(SW_API_QOS_PCP_MAP_GET) \
+    SW_API_DESC(SW_API_QOS_PCP_MAP_SET) \
+    SW_API_DESC(SW_API_QOS_FLOW_MAP_GET) \
+    SW_API_DESC(SW_API_QOS_FLOW_MAP_SET) \
+    SW_API_DESC(SW_API_QOS_DSCP_MAP_GET) \
+    SW_API_DESC(SW_API_QOS_DSCP_MAP_SET) \
+    SW_API_DESC(SW_API_QOS_QUEUE_SCHEDULER_GET) \
+    SW_API_DESC(SW_API_QOS_QUEUE_SCHEDULER_SET) \
+    SW_API_DESC(SW_API_QOS_RING_QUEUE_MAP_GET) \
+    SW_API_DESC(SW_API_QOS_RING_QUEUE_MAP_SET) \
+    SW_API_DESC(SW_API_QOS_PORT_QUEUES_GET)
 #else
 #define QOS_API \
     SW_API_DEF(SW_API_QOS_PT_MODE_SET, fal_qos_port_mode_set),
@@ -1544,46 +1578,58 @@ extern "C" {
 
 #ifdef IN_QM
 #define QM_API \
-    SW_API_DEF(SW_API_UCAST_QUEUE_MAP_SET, fal_ucast_queue_map_set), \
-    SW_API_DEF(SW_API_UCAST_QUEUE_MAP_GET, fal_ucast_queue_map_get), \
-    SW_API_DEF(SW_API_UCAST_PRIORITY_MAP_SET, fal_ucast_priority_map_set), \
-    SW_API_DEF(SW_API_UCAST_PRIORITY_MAP_GET, fal_ucast_priority_map_get), \
+    SW_API_DEF(SW_API_UCAST_QUEUE_BASE_PROFILE_SET, fal_ucast_queue_base_profile_set), \
+    SW_API_DEF(SW_API_UCAST_QUEUE_BASE_PROFILE_GET, fal_ucast_queue_base_profile_get), \
+    SW_API_DEF(SW_API_UCAST_PRIORITY_CLASS_SET, fal_ucast_priority_class_set), \
+    SW_API_DEF(SW_API_UCAST_PRIORITY_CLASS_GET, fal_ucast_priority_class_get), \
     SW_API_DEF(SW_API_MCAST_PRIORITY_CLASS_SET, fal_port_mcast_priority_class_set), \
     SW_API_DEF(SW_API_MCAST_PRIORITY_CLASS_GET, fal_port_mcast_priority_class_get), \
-    SW_API_DEF(SW_API_QUEUE_FLUSH, SW_API_QUEUE_FLUSH), \
-    SW_API_DEF(SW_API_UNI_QUEUE_AC_SET, fal_unicast_queue_ac_cfg_set), \
-    SW_API_DEF(SW_API_UNI_QUEUE_AC_GET, fal_unicast_queue_ac_cfg_get), \
-    SW_API_DEF(SW_API_MULTI_QUEUE_AC_SET, fal_multicast_queue_ac_cfg_set), \
-    SW_API_DEF(SW_API_MULTI_QUEUE_AC_GET, fal_multicast_queue_ac_cfg_get), \
-    SW_API_DEF(SW_API_GROUP_AC_SET, fal_group_ac_cfg_set), \
-    SW_API_DEF(SW_API_GROUP_AC_GET, fal_group_ac_cfg_get), \
+    SW_API_DEF(SW_API_QUEUE_FLUSH, fal_queue_flush), \
     SW_API_DEF(SW_API_UCAST_HASH_MAP_SET, fal_ucast_hash_map_set), \
     SW_API_DEF(SW_API_UCAST_HASH_MAP_GET, fal_ucast_hash_map_get), \
     SW_API_DEF(SW_API_UCAST_DFLT_HASH_MAP_SET, fal_ucast_default_hash_set), \
     SW_API_DEF(SW_API_UCAST_DFLT_HASH_MAP_GET, fal_ucast_default_hash_get), \
-    SW_API_DEF(SW_API_MCAST_QUEUE_MAP_SET, fal_mcast_queue_map_set), \
-    SW_API_DEF(SW_API_MCAST_QUEUE_MAP_GET, fal_mcast_queue_map_get),
+    SW_API_DEF(SW_API_MCAST_CPUCODE_CLASS_SET, fal_mcast_cpu_code_class_set), \
+    SW_API_DEF(SW_API_MCAST_CPUCODE_CLASS_GET, fal_mcast_cpu_code_class_get), \
+    SW_API_DEF(SW_API_AC_CTRL_SET, fal_ac_ctrl_set), \
+    SW_API_DEF(SW_API_AC_CTRL_GET, fal_ac_ctrl_get), \
+    SW_API_DEF(SW_API_AC_PRE_BUFFER_SET, fal_ac_prealloc_buffer_set), \
+    SW_API_DEF(SW_API_AC_PRE_BUFFER_GET, fal_ac_prealloc_buffer_get), \
+    SW_API_DEF(SW_API_QUEUE_GROUP_SET, fal_ac_queue_group_set), \
+    SW_API_DEF(SW_API_QUEUE_GROUP_GET, fal_ac_queue_group_get), \
+    SW_API_DEF(SW_API_STATIC_THRESH_SET, fal_ac_static_threshold_set), \
+    SW_API_DEF(SW_API_STATIC_THRESH_GET, fal_ac_static_threshold_get), \
+    SW_API_DEF(SW_API_DYNAMIC_THRESH_SET, fal_ac_dynamic_threshold_set), \
+    SW_API_DEF(SW_API_DYNAMIC_THRESH_GET, fal_ac_dynamic_threshold_get), \
+    SW_API_DEF(SW_API_GOURP_BUFFER_SET, fal_ac_group_buffer_set), \
+    SW_API_DEF(SW_API_GOURP_BUFFER_GET, fal_ac_group_buffer_get),
 
 #define QM_API_PARAM \
-    SW_API_DESC(SW_API_UCAST_QUEUE_MAP_SET) \
-    SW_API_DESC(SW_API_UCAST_QUEUE_MAP_GET) \
-    SW_API_DESC(SW_API_UCAST_PRIORITY_MAP_SET) \
-    SW_API_DESC(SW_API_UCAST_PRIORITY_MAP_GET) \
+    SW_API_DESC(SW_API_UCAST_QUEUE_BASE_PROFILE_SET) \
+    SW_API_DESC(SW_API_UCAST_QUEUE_BASE_PROFILE_GET) \
+    SW_API_DESC(SW_API_UCAST_PRIORITY_CLASS_SET) \
+    SW_API_DESC(SW_API_UCAST_PRIORITY_CLASS_GET) \
     SW_API_DESC(SW_API_MCAST_PRIORITY_CLASS_SET) \
     SW_API_DESC(SW_API_MCAST_PRIORITY_CLASS_GET) \
     SW_API_DESC(SW_API_QUEUE_FLUSH) \
-    SW_API_DESC(SW_API_UNI_QUEUE_AC_SET) \
-    SW_API_DESC(SW_API_UNI_QUEUE_AC_GET) \
-    SW_API_DESC(SW_API_MULTI_QUEUE_AC_SET) \
-    SW_API_DESC(SW_API_MULTI_QUEUE_AC_GET) \
-    SW_API_DESC(SW_API_GROUP_AC_SET) \
-    SW_API_DESC(SW_API_GROUP_AC_GET) \
     SW_API_DESC(SW_API_UCAST_HASH_MAP_SET) \
     SW_API_DESC(SW_API_UCAST_HASH_MAP_GET) \
     SW_API_DESC(SW_API_UCAST_DFLT_HASH_MAP_SET) \
     SW_API_DESC(SW_API_UCAST_DFLT_HASH_MAP_GET) \
-    SW_API_DESC(SW_API_MCAST_QUEUE_MAP_SET) \
-    SW_API_DESC(SW_API_MCAST_QUEUE_MAP_GET)
+    SW_API_DESC(SW_API_MCAST_CPUCODE_CLASS_SET) \
+    SW_API_DESC(SW_API_MCAST_CPUCODE_CLASS_GET) \
+    SW_API_DESC(SW_API_AC_CTRL_SET) \
+    SW_API_DESC(SW_API_AC_CTRL_GET) \
+    SW_API_DESC(SW_API_AC_PRE_BUFFER_SET) \
+    SW_API_DESC(SW_API_AC_PRE_BUFFER_GET) \
+    SW_API_DESC(SW_API_QUEUE_GROUP_SET) \
+    SW_API_DESC(SW_API_QUEUE_GROUP_GET) \
+    SW_API_DESC(SW_API_STATIC_THRESH_SET) \
+    SW_API_DESC(SW_API_STATIC_THRESH_GET) \
+    SW_API_DESC(SW_API_DYNAMIC_THRESH_SET) \
+    SW_API_DESC(SW_API_DYNAMIC_THRESH_GET) \
+    SW_API_DESC(SW_API_GOURP_BUFFER_SET) \
+    SW_API_DESC(SW_API_GOURP_BUFFER_GET)
 
 #else
 #define QM_API

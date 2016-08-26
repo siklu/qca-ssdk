@@ -1475,6 +1475,225 @@ union psch_tdm_cfg_tbl_u {
 	struct psch_tdm_cfg_tbl bf;
 };
 
+/*[register] PORT_QOS_CTRL*/
+#define PORT_QOS_CTRL
+#define PORT_QOS_CTRL_ADDRESS 0x900
+#define PORT_QOS_CTRL_NUM     8
+#define PORT_QOS_CTRL_INC     0x10
+#define PORT_QOS_CTRL_TYPE    REG_TYPE_RW
+#define PORT_QOS_CTRL_DEFAULT 0x23440
+	/*[field] PCP_QOS_GROUP_ID*/
+	#define PORT_QOS_CTRL_PCP_QOS_GROUP_ID
+	#define PORT_QOS_CTRL_PCP_QOS_GROUP_ID_OFFSET  0
+	#define PORT_QOS_CTRL_PCP_QOS_GROUP_ID_LEN     1
+	#define PORT_QOS_CTRL_PCP_QOS_GROUP_ID_DEFAULT 0x0
+	/*[field] DSCP_QOS_GROUP_ID*/
+	#define PORT_QOS_CTRL_DSCP_QOS_GROUP_ID
+	#define PORT_QOS_CTRL_DSCP_QOS_GROUP_ID_OFFSET  1
+	#define PORT_QOS_CTRL_DSCP_QOS_GROUP_ID_LEN     1
+	#define PORT_QOS_CTRL_DSCP_QOS_GROUP_ID_DEFAULT 0x0
+	/*[field] FLOW_QOS_GROUP_ID*/
+	#define PORT_QOS_CTRL_FLOW_QOS_GROUP_ID
+	#define PORT_QOS_CTRL_FLOW_QOS_GROUP_ID_OFFSET  2
+	#define PORT_QOS_CTRL_FLOW_QOS_GROUP_ID_LEN     1
+	#define PORT_QOS_CTRL_FLOW_QOS_GROUP_ID_DEFAULT 0x0
+	/*[field] PORT_DSCP_QOS_PRI*/
+	#define PORT_QOS_CTRL_PORT_DSCP_QOS_PRI
+	#define PORT_QOS_CTRL_PORT_DSCP_QOS_PRI_OFFSET  3
+	#define PORT_QOS_CTRL_PORT_DSCP_QOS_PRI_LEN     3
+	#define PORT_QOS_CTRL_PORT_DSCP_QOS_PRI_DEFAULT 0x0
+	/*[field] PORT_PCP_QOS_PRI*/
+	#define PORT_QOS_CTRL_PORT_PCP_QOS_PRI
+	#define PORT_QOS_CTRL_PORT_PCP_QOS_PRI_OFFSET  6
+	#define PORT_QOS_CTRL_PORT_PCP_QOS_PRI_LEN     3
+	#define PORT_QOS_CTRL_PORT_PCP_QOS_PRI_DEFAULT 0x1
+	/*[field] PORT_PREHEADER_QOS_PRI*/
+	#define PORT_QOS_CTRL_PORT_PREHEADER_QOS_PRI
+	#define PORT_QOS_CTRL_PORT_PREHEADER_QOS_PRI_OFFSET  9
+	#define PORT_QOS_CTRL_PORT_PREHEADER_QOS_PRI_LEN     3
+	#define PORT_QOS_CTRL_PORT_PREHEADER_QOS_PRI_DEFAULT 0x2
+	/*[field] PORT_FLOW_QOS_PRI*/
+	#define PORT_QOS_CTRL_PORT_FLOW_QOS_PRI
+	#define PORT_QOS_CTRL_PORT_FLOW_QOS_PRI_OFFSET  12
+	#define PORT_QOS_CTRL_PORT_FLOW_QOS_PRI_LEN     3
+	#define PORT_QOS_CTRL_PORT_FLOW_QOS_PRI_DEFAULT 0x3
+	/*[field] PORT_ACL_QOS_PRI*/
+	#define PORT_QOS_CTRL_PORT_ACL_QOS_PRI
+	#define PORT_QOS_CTRL_PORT_ACL_QOS_PRI_OFFSET  15
+	#define PORT_QOS_CTRL_PORT_ACL_QOS_PRI_LEN     3
+	#define PORT_QOS_CTRL_PORT_ACL_QOS_PRI_DEFAULT 0x4
+	/*[field] PORT_PCP_CHANGE_EN*/
+	#define PORT_QOS_CTRL_PORT_PCP_CHANGE_EN
+	#define PORT_QOS_CTRL_PORT_PCP_CHANGE_EN_OFFSET  18
+	#define PORT_QOS_CTRL_PORT_PCP_CHANGE_EN_LEN     1
+	#define PORT_QOS_CTRL_PORT_PCP_CHANGE_EN_DEFAULT 0x0
+	/*[field] PORT_DEI_CHANGE_EN*/
+	#define PORT_QOS_CTRL_PORT_DEI_CHANGE_EN
+	#define PORT_QOS_CTRL_PORT_DEI_CHANGE_EN_OFFSET  19
+	#define PORT_QOS_CTRL_PORT_DEI_CHANGE_EN_LEN     1
+	#define PORT_QOS_CTRL_PORT_DEI_CHANGE_EN_DEFAULT 0x0
+	/*[field] PORT_DSCP_CHANGE_EN*/
+	#define PORT_QOS_CTRL_PORT_DSCP_CHANGE_EN
+	#define PORT_QOS_CTRL_PORT_DSCP_CHANGE_EN_OFFSET  20
+	#define PORT_QOS_CTRL_PORT_DSCP_CHANGE_EN_LEN     1
+	#define PORT_QOS_CTRL_PORT_DSCP_CHANGE_EN_DEFAULT 0x0
 
+struct port_qos_ctrl {
+	a_uint32_t  pcp_qos_group_id:1;
+	a_uint32_t  dscp_qos_group_id:1;
+	a_uint32_t  flow_qos_group_id:1;
+	a_uint32_t  port_dscp_qos_pri:3;
+	a_uint32_t  port_pcp_qos_pri:3;
+	a_uint32_t  port_preheader_qos_pri:3;
+	a_uint32_t  port_flow_qos_pri:3;
+	a_uint32_t  port_acl_qos_pri:3;
+	a_uint32_t  port_pcp_change_en:1;
+	a_uint32_t  port_dei_change_en:1;
+	a_uint32_t  port_dscp_change_en:1;
+	a_uint32_t  _reserved0:11;
+};
+
+union port_qos_ctrl_u {
+	a_uint32_t val;
+	struct port_qos_ctrl bf;
+};
+
+/*[register] PCP_QOS_GROUP_0*/
+#define PCP_QOS_GROUP_0
+#define PCP_QOS_GROUP_0_ADDRESS 0xb00
+#define PCP_QOS_GROUP_0_NUM     16
+#define PCP_QOS_GROUP_0_INC     0x4
+#define PCP_QOS_GROUP_0_TYPE    REG_TYPE_RW
+#define PCP_QOS_GROUP_0_DEFAULT 0x0
+	/*[field] QOS_INFO*/
+	#define PCP_QOS_GROUP_0_QOS_INFO
+	#define PCP_QOS_GROUP_0_QOS_INFO_OFFSET  0
+	#define PCP_QOS_GROUP_0_QOS_INFO_LEN     16
+	#define PCP_QOS_GROUP_0_QOS_INFO_DEFAULT 0x0
+
+struct pcp_qos_group_0 {
+	a_uint32_t  qos_info:16;
+	a_uint32_t  _reserved0:16;
+};
+
+union pcp_qos_group_0_u {
+	a_uint32_t val;
+	struct pcp_qos_group_0 bf;
+};
+
+/*[register] PCP_QOS_GROUP_1*/
+#define PCP_QOS_GROUP_1
+#define PCP_QOS_GROUP_1_ADDRESS 0xc00
+#define PCP_QOS_GROUP_1_NUM     16
+#define PCP_QOS_GROUP_1_INC     0x4
+#define PCP_QOS_GROUP_1_TYPE    REG_TYPE_RW
+#define PCP_QOS_GROUP_1_DEFAULT 0x0
+	/*[field] QOS_INFO*/
+	#define PCP_QOS_GROUP_1_QOS_INFO
+	#define PCP_QOS_GROUP_1_QOS_INFO_OFFSET  0
+	#define PCP_QOS_GROUP_1_QOS_INFO_LEN     16
+	#define PCP_QOS_GROUP_1_QOS_INFO_DEFAULT 0x0
+
+struct pcp_qos_group_1 {
+	a_uint32_t  qos_info:16;
+	a_uint32_t  _reserved0:16;
+};
+
+union pcp_qos_group_1_u {
+	a_uint32_t val;
+	struct pcp_qos_group_1 bf;
+};
+
+/*[register] FLOW_QOS_GROUP_0*/
+#define FLOW_QOS_GROUP_0
+#define FLOW_QOS_GROUP_0_ADDRESS 0xd00
+#define FLOW_QOS_GROUP_0_NUM     32
+#define FLOW_QOS_GROUP_0_INC     0x4
+#define FLOW_QOS_GROUP_0_TYPE    REG_TYPE_RW
+#define FLOW_QOS_GROUP_0_DEFAULT 0x0
+	/*[field] QOS_INFO*/
+	#define FLOW_QOS_GROUP_0_QOS_INFO
+	#define FLOW_QOS_GROUP_0_QOS_INFO_OFFSET  0
+	#define FLOW_QOS_GROUP_0_QOS_INFO_LEN     16
+	#define FLOW_QOS_GROUP_0_QOS_INFO_DEFAULT 0x0
+
+struct flow_qos_group_0 {
+	a_uint32_t  qos_info:16;
+	a_uint32_t  _reserved0:16;
+};
+
+union flow_qos_group_0_u {
+	a_uint32_t val;
+	struct flow_qos_group_0 bf;
+};
+
+/*[register] FLOW_QOS_GROUP_1*/
+#define FLOW_QOS_GROUP_1
+#define FLOW_QOS_GROUP_1_ADDRESS 0xe00
+#define FLOW_QOS_GROUP_1_NUM     32
+#define FLOW_QOS_GROUP_1_INC     0x4
+#define FLOW_QOS_GROUP_1_TYPE    REG_TYPE_RW
+#define FLOW_QOS_GROUP_1_DEFAULT 0x0
+	/*[field] QOS_INFO*/
+	#define FLOW_QOS_GROUP_1_QOS_INFO
+	#define FLOW_QOS_GROUP_1_QOS_INFO_OFFSET  0
+	#define FLOW_QOS_GROUP_1_QOS_INFO_LEN     16
+	#define FLOW_QOS_GROUP_1_QOS_INFO_DEFAULT 0x0
+
+struct flow_qos_group_1 {
+	a_uint32_t  qos_info:16;
+	a_uint32_t  _reserved0:16;
+};
+
+union flow_qos_group_1_u {
+	a_uint32_t val;
+	struct flow_qos_group_1 bf;
+};
+
+/*[register] DSCP_QOS_GROUP_0*/
+#define DSCP_QOS_GROUP_0
+#define DSCP_QOS_GROUP_0_ADDRESS 0x2000
+#define DSCP_QOS_GROUP_0_NUM     64
+#define DSCP_QOS_GROUP_0_INC     0x10
+#define DSCP_QOS_GROUP_0_TYPE    REG_TYPE_RW
+#define DSCP_QOS_GROUP_0_DEFAULT 0x0
+	/*[field] QOS_INFO*/
+	#define DSCP_QOS_GROUP_0_QOS_INFO
+	#define DSCP_QOS_GROUP_0_QOS_INFO_OFFSET  0
+	#define DSCP_QOS_GROUP_0_QOS_INFO_LEN     16
+	#define DSCP_QOS_GROUP_0_QOS_INFO_DEFAULT 0x0
+
+struct dscp_qos_group_0 {
+	a_uint32_t  qos_info:16;
+	a_uint32_t  _reserved0:16;
+};
+
+union dscp_qos_group_0_u {
+	a_uint32_t val;
+	struct dscp_qos_group_0 bf;
+};
+
+/*[register] DSCP_QOS_GROUP_1*/
+#define DSCP_QOS_GROUP_1
+#define DSCP_QOS_GROUP_1_ADDRESS 0x2800
+#define DSCP_QOS_GROUP_1_NUM     64
+#define DSCP_QOS_GROUP_1_INC     0x10
+#define DSCP_QOS_GROUP_1_TYPE    REG_TYPE_RW
+#define DSCP_QOS_GROUP_1_DEFAULT 0x0
+	/*[field] QOS_INFO*/
+	#define DSCP_QOS_GROUP_1_QOS_INFO
+	#define DSCP_QOS_GROUP_1_QOS_INFO_OFFSET  0
+	#define DSCP_QOS_GROUP_1_QOS_INFO_LEN     16
+	#define DSCP_QOS_GROUP_1_QOS_INFO_DEFAULT 0x0
+
+struct dscp_qos_group_1 {
+	a_uint32_t  qos_info:16;
+	a_uint32_t  _reserved0:16;
+};
+
+union dscp_qos_group_1_u {
+	a_uint32_t val;
+	struct dscp_qos_group_1 bf;
+};
 
 #endif

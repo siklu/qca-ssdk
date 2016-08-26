@@ -117,6 +117,10 @@ ifeq (TRUE, $(IN_SEC))
   MODULE_CFLAG += -DIN_SEC
 endif
 
+ifeq (TRUE, $(IN_QM))
+  MODULE_CFLAG += -DIN_QM
+endif
+
 ifeq (TRUE, $(IN_NAT_HELPER))
   MODULE_CFLAG += -DIN_NAT_HELPER
 endif

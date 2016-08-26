@@ -814,6 +814,14 @@ struct sub_cmd_des_t g_qos_des[] =
 	{"ptFSpriSts", "set",   SW_API_QOS_PT_FORCE_SPRI_ST_SET, NULL},
 	{"ptFCpriSts", "set",   SW_API_QOS_PT_FORCE_CPRI_ST_SET, NULL},
 	{"ptQuRemark", "set",   SW_API_QOS_QUEUE_REMARK_SET, NULL},
+	{"ptGroup", "set", SW_API_QOS_PORT_GROUP_SET, NULL},
+	{"ptPri", "set", SW_API_QOS_PORT_PRI_SET, NULL},
+	{"ptRemark", "set", SW_API_QOS_PORT_REMARK_SET, NULL},
+	{"pcpmap", "set", SW_API_QOS_PCP_MAP_SET, NULL},
+	{"flowmap", "set", SW_API_QOS_FLOW_MAP_SET, NULL},
+	{"dscpmap", "set", SW_API_QOS_DSCP_MAP_SET, NULL},
+	{"qscheduler", "set", SW_API_QOS_QUEUE_SCHEDULER_SET, NULL},
+	{"ringqueue", "set", SW_API_QOS_RING_QUEUE_MAP_SET, NULL},
 #endif
 	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
 };
@@ -1159,19 +1167,22 @@ struct sub_cmd_des_t g_pppoe_des[] =
 struct sub_cmd_des_t g_qm_des[] =
 {
 
-    {"ucastqmap", "set", SW_API_UCAST_QUEUE_MAP_SET, NULL},
-    {"ucastprimap", "set", SW_API_UCAST_PRIORITY_MAP_SET, NULL},
+    {"ucastqbase", "set", SW_API_UCAST_QUEUE_BASE_PROFILE_SET, NULL},
+    {"ucastpriclass", "set", SW_API_UCAST_PRIORITY_CLASS_SET, NULL},
     {"mcastpriclass", "set", SW_API_MCAST_PRIORITY_CLASS_SET, NULL},
     {"queue", "flush", SW_API_QUEUE_FLUSH, NULL},
-    {"ucastqac", "set", SW_API_UNI_QUEUE_AC_SET, NULL},
-    {"mcastqac", "set", SW_API_MULTI_QUEUE_AC_SET, NULL},
-    {"groupac", "set", SW_API_GROUP_AC_SET, NULL},
     {"ucasthash", "set", SW_API_UCAST_HASH_MAP_SET, NULL},
     {"ucastdflthash", "set", SW_API_UCAST_DFLT_HASH_MAP_SET, NULL},
-    {"mcastqmap", "set", SW_API_MCAST_QUEUE_MAP_SET, NULL},
+    {"mcastcpucode", "set", SW_API_MCAST_CPUCODE_CLASS_SET, NULL},
+    {"acctrl", "set", SW_API_AC_CTRL_SET, NULL},
+    {"acprebuffer", "set", SW_API_AC_PRE_BUFFER_SET, NULL},
+    {"acqgroup", "set", SW_API_QUEUE_GROUP_SET, NULL},
+    {"acsthresh", "set", SW_API_STATIC_THRESH_SET, NULL},
+    {"acdthresh", "set", SW_API_DYNAMIC_THRESH_SET, NULL},
+    {"acgbuff", "set", SW_API_GOURP_BUFFER_SET, NULL},
     {NULL, NULL, (int)NULL, NULL},/*end of desc*/
 
-},
+};
 #endif
 
 

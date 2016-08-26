@@ -24,6 +24,202 @@
 #include "hppe_qos.h"
 
 sw_error_t
+hppe_dscp_qos_group_0_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union dscp_qos_group_0_u *value)
+{
+	if (index >= DSCP_QOS_GROUP_0_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+	return hppe_reg_get(
+				dev_id,
+				IPE_L2_BASE_ADDR + DSCP_QOS_GROUP_0_ADDRESS + \
+				index * DSCP_QOS_GROUP_0_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_dscp_qos_group_0_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union dscp_qos_group_0_u *value)
+{
+	return hppe_reg_set(
+				dev_id,
+				IPE_L2_BASE_ADDR + DSCP_QOS_GROUP_0_ADDRESS + \
+				index * DSCP_QOS_GROUP_0_INC,
+				value->val);
+}
+
+sw_error_t
+hppe_dscp_qos_group_1_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union dscp_qos_group_1_u *value)
+{
+	if (index >= DSCP_QOS_GROUP_1_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+	return hppe_reg_get(
+				dev_id,
+				IPE_L2_BASE_ADDR + DSCP_QOS_GROUP_1_ADDRESS + \
+				index * DSCP_QOS_GROUP_1_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_dscp_qos_group_1_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union dscp_qos_group_1_u *value)
+{
+	return hppe_reg_set(
+				dev_id,
+				IPE_L2_BASE_ADDR + DSCP_QOS_GROUP_1_ADDRESS + \
+				index * DSCP_QOS_GROUP_1_INC,
+				value->val);
+}
+
+sw_error_t
+hppe_pcp_qos_group_0_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union pcp_qos_group_0_u *value)
+{
+	if (index >= PCP_QOS_GROUP_0_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+	return hppe_reg_get(
+				dev_id,
+				IPE_L2_BASE_ADDR + PCP_QOS_GROUP_0_ADDRESS + \
+				index * PCP_QOS_GROUP_0_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_pcp_qos_group_0_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union pcp_qos_group_0_u *value)
+{
+	return hppe_reg_set(
+				dev_id,
+				IPE_L2_BASE_ADDR + PCP_QOS_GROUP_0_ADDRESS + \
+				index * PCP_QOS_GROUP_0_INC,
+				value->val);
+}
+
+sw_error_t
+hppe_pcp_qos_group_1_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union pcp_qos_group_1_u *value)
+{
+	if (index >= PCP_QOS_GROUP_1_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+	return hppe_reg_get(
+				dev_id,
+				IPE_L2_BASE_ADDR + PCP_QOS_GROUP_1_ADDRESS + \
+				index * PCP_QOS_GROUP_1_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_pcp_qos_group_1_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union pcp_qos_group_1_u *value)
+{
+	return hppe_reg_set(
+				dev_id,
+				IPE_L2_BASE_ADDR + PCP_QOS_GROUP_1_ADDRESS + \
+				index * PCP_QOS_GROUP_1_INC,
+				value->val);
+}
+
+sw_error_t
+hppe_flow_qos_group_0_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union flow_qos_group_0_u *value)
+{
+	if (index >= FLOW_QOS_GROUP_0_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+	return hppe_reg_get(
+				dev_id,
+				IPE_L2_BASE_ADDR + FLOW_QOS_GROUP_0_ADDRESS + \
+				index * FLOW_QOS_GROUP_0_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_flow_qos_group_0_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union flow_qos_group_0_u *value)
+{
+	return hppe_reg_set(
+				dev_id,
+				IPE_L2_BASE_ADDR + FLOW_QOS_GROUP_0_ADDRESS + \
+				index * FLOW_QOS_GROUP_0_INC,
+				value->val);
+}
+
+sw_error_t
+hppe_flow_qos_group_1_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union flow_qos_group_1_u *value)
+{
+	if (index >= FLOW_QOS_GROUP_1_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+	return hppe_reg_get(
+				dev_id,
+				IPE_L2_BASE_ADDR + FLOW_QOS_GROUP_1_ADDRESS + \
+				index * FLOW_QOS_GROUP_1_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_flow_qos_group_1_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union flow_qos_group_1_u *value)
+{
+	return hppe_reg_set(
+				dev_id,
+				IPE_L2_BASE_ADDR + FLOW_QOS_GROUP_1_ADDRESS + \
+				index * FLOW_QOS_GROUP_1_INC,
+				value->val);
+}
+
+sw_error_t
+hppe_port_qos_ctrl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union port_qos_ctrl_u *value)
+{
+	if (index >= PORT_QOS_CTRL_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+	return hppe_reg_get(
+				dev_id,
+				IPE_L2_BASE_ADDR + PORT_QOS_CTRL_ADDRESS + \
+				index * PORT_QOS_CTRL_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_port_qos_ctrl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union port_qos_ctrl_u *value)
+{
+	return hppe_reg_set(
+				dev_id,
+				IPE_L2_BASE_ADDR + PORT_QOS_CTRL_ADDRESS + \
+				index * PORT_QOS_CTRL_INC,
+				value->val);
+}
+
+sw_error_t
 hppe_tdm_depth_cfg_get(
 		a_uint32_t dev_id,
 		union tdm_depth_cfg_u *value)
@@ -3874,3 +4070,529 @@ hppe_psch_tdm_cfg_tbl_ens_port_bitmap_set(
 	return ret;
 }
 
+sw_error_t
+hppe_port_qos_ctrl_port_flow_qos_pri_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union port_qos_ctrl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_qos_ctrl_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.port_flow_qos_pri;
+	return ret;
+}
+
+sw_error_t
+hppe_port_qos_ctrl_port_flow_qos_pri_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union port_qos_ctrl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_qos_ctrl_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.port_flow_qos_pri = value;
+	ret = hppe_port_qos_ctrl_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_port_qos_ctrl_port_dscp_qos_pri_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union port_qos_ctrl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_qos_ctrl_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.port_dscp_qos_pri;
+	return ret;
+}
+
+sw_error_t
+hppe_port_qos_ctrl_port_dscp_qos_pri_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union port_qos_ctrl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_qos_ctrl_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.port_dscp_qos_pri = value;
+	ret = hppe_port_qos_ctrl_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_port_qos_ctrl_port_dscp_change_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union port_qos_ctrl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_qos_ctrl_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.port_dscp_change_en;
+	return ret;
+}
+
+sw_error_t
+hppe_port_qos_ctrl_port_dscp_change_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union port_qos_ctrl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_qos_ctrl_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.port_dscp_change_en = value;
+	ret = hppe_port_qos_ctrl_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_port_qos_ctrl_port_pcp_change_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union port_qos_ctrl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_qos_ctrl_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.port_pcp_change_en;
+	return ret;
+}
+
+sw_error_t
+hppe_port_qos_ctrl_port_pcp_change_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union port_qos_ctrl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_qos_ctrl_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.port_pcp_change_en = value;
+	ret = hppe_port_qos_ctrl_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_port_qos_ctrl_port_acl_qos_pri_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union port_qos_ctrl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_qos_ctrl_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.port_acl_qos_pri;
+	return ret;
+}
+
+sw_error_t
+hppe_port_qos_ctrl_port_acl_qos_pri_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union port_qos_ctrl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_qos_ctrl_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.port_acl_qos_pri = value;
+	ret = hppe_port_qos_ctrl_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_port_qos_ctrl_flow_qos_group_id_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union port_qos_ctrl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_qos_ctrl_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.flow_qos_group_id;
+	return ret;
+}
+
+sw_error_t
+hppe_port_qos_ctrl_flow_qos_group_id_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union port_qos_ctrl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_qos_ctrl_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.flow_qos_group_id = value;
+	ret = hppe_port_qos_ctrl_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_port_qos_ctrl_port_preheader_qos_pri_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union port_qos_ctrl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_qos_ctrl_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.port_preheader_qos_pri;
+	return ret;
+}
+
+sw_error_t
+hppe_port_qos_ctrl_port_preheader_qos_pri_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union port_qos_ctrl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_qos_ctrl_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.port_preheader_qos_pri = value;
+	ret = hppe_port_qos_ctrl_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_port_qos_ctrl_pcp_qos_group_id_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union port_qos_ctrl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_qos_ctrl_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.pcp_qos_group_id;
+	return ret;
+}
+
+sw_error_t
+hppe_port_qos_ctrl_pcp_qos_group_id_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union port_qos_ctrl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_qos_ctrl_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.pcp_qos_group_id = value;
+	ret = hppe_port_qos_ctrl_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_port_qos_ctrl_dscp_qos_group_id_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union port_qos_ctrl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_qos_ctrl_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.dscp_qos_group_id;
+	return ret;
+}
+
+sw_error_t
+hppe_port_qos_ctrl_dscp_qos_group_id_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union port_qos_ctrl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_qos_ctrl_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.dscp_qos_group_id = value;
+	ret = hppe_port_qos_ctrl_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_port_qos_ctrl_port_pcp_qos_pri_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union port_qos_ctrl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_qos_ctrl_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.port_pcp_qos_pri;
+	return ret;
+}
+
+sw_error_t
+hppe_port_qos_ctrl_port_pcp_qos_pri_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union port_qos_ctrl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_qos_ctrl_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.port_pcp_qos_pri = value;
+	ret = hppe_port_qos_ctrl_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_port_qos_ctrl_port_dei_change_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union port_qos_ctrl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_qos_ctrl_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.port_dei_change_en;
+	return ret;
+}
+
+sw_error_t
+hppe_port_qos_ctrl_port_dei_change_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union port_qos_ctrl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_port_qos_ctrl_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.port_dei_change_en = value;
+	ret = hppe_port_qos_ctrl_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_pcp_qos_group_0_qos_info_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union pcp_qos_group_0_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_pcp_qos_group_0_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.qos_info;
+	return ret;
+}
+
+sw_error_t
+hppe_pcp_qos_group_0_qos_info_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union pcp_qos_group_0_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_pcp_qos_group_0_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.qos_info = value;
+	ret = hppe_pcp_qos_group_0_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_pcp_qos_group_1_qos_info_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union pcp_qos_group_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_pcp_qos_group_1_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.qos_info;
+	return ret;
+}
+
+sw_error_t
+hppe_pcp_qos_group_1_qos_info_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union pcp_qos_group_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_pcp_qos_group_1_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.qos_info = value;
+	ret = hppe_pcp_qos_group_1_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_flow_qos_group_0_qos_info_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union flow_qos_group_0_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_flow_qos_group_0_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.qos_info;
+	return ret;
+}
+
+sw_error_t
+hppe_flow_qos_group_0_qos_info_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union flow_qos_group_0_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_flow_qos_group_0_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.qos_info = value;
+	ret = hppe_flow_qos_group_0_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_flow_qos_group_1_qos_info_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union flow_qos_group_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_flow_qos_group_1_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.qos_info;
+	return ret;
+}
+
+sw_error_t
+hppe_flow_qos_group_1_qos_info_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union flow_qos_group_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_flow_qos_group_1_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.qos_info = value;
+	ret = hppe_flow_qos_group_1_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_dscp_qos_group_0_qos_info_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union dscp_qos_group_0_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_dscp_qos_group_0_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.qos_info;
+	return ret;
+}
+
+sw_error_t
+hppe_dscp_qos_group_0_qos_info_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union dscp_qos_group_0_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_dscp_qos_group_0_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.qos_info = value;
+	ret = hppe_dscp_qos_group_0_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_dscp_qos_group_1_qos_info_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union dscp_qos_group_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_dscp_qos_group_1_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.qos_info;
+	return ret;
+}
+
+sw_error_t
+hppe_dscp_qos_group_1_qos_info_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union dscp_qos_group_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_dscp_qos_group_1_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.qos_info = value;
+	ret = hppe_dscp_qos_group_1_set(dev_id, index, &reg_val);
+	return ret;
+}

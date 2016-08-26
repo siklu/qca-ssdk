@@ -43,6 +43,7 @@ extern "C" {
 #include "fal_pppoe.h"
 #include "fal_sec.h"
 #include "fal_acl.h"
+#include "fal_qos.h"
 
 #define ADPT_DEV_ID_CHECK(dev_id) \
 do { \
@@ -427,72 +428,111 @@ typedef sw_error_t (*adpt_flow_entry_add_func)(
 		a_uint32_t dev_id,
 		a_uint32_t add_mode, /*index or hash*/
 		fal_flow_entry_t *flow_entry);
-typedef sw_error_t (*adpt_mcast_queue_map_set_func)(
-		a_uint32_t dev_id,
-		fal_mcast_queue_map_t *queue_map);
-typedef sw_error_t (*adpt_ucast_priority_map_get_func)(
-		a_uint32_t dev_id,
-		fal_ucast_priority_map_t *priority_map);
 typedef sw_error_t (*adpt_ucast_hash_map_set_func)(
 		a_uint32_t dev_id,
-		fal_ucast_hash_map_t *hash_map);
+		a_uint8_t profile,
+		a_uint8_t rss_hash,
+		a_int8_t queue_hash);
+typedef sw_error_t (*adpt_ac_dynamic_threshold_get_func)(
+		a_uint32_t dev_id,
+		a_uint32_t queue_id,
+		fal_ac_dynamic_threshold_t *cfg);
+typedef sw_error_t (*adpt_ucast_queue_base_profile_get_func)(
+		a_uint32_t dev_id,
+		fal_ucast_queue_dest_t *queue_dest,
+		a_uint32_t *queue_base, a_uint8_t *profile);
 typedef sw_error_t (*adpt_port_mcast_priority_class_get_func)(
 		a_uint32_t dev_id,
 		fal_port_t port,
-		fal_mcast_priority_map_t *pri_map);
+		a_uint8_t priority,
+		a_uint8_t *queue_class);
+typedef sw_error_t (*adpt_ac_dynamic_threshold_set_func)(
+		a_uint32_t dev_id,
+		a_uint32_t queue_id,
+		fal_ac_dynamic_threshold_t *cfg);
+typedef sw_error_t (*adpt_ac_prealloc_buffer_set_func)(
+		a_uint32_t dev_id,
+		fal_ac_obj_t *obj,
+		a_uint16_t num);
 typedef sw_error_t (*adpt_ucast_default_hash_get_func)(
 		a_uint32_t dev_id,
 		a_uint8_t *hash_value);
-typedef sw_error_t (*adpt_ucast_queue_map_get_func)(
-		a_uint32_t dev_id,
-		fal_ucast_queue_map_t *queue_map);
 typedef sw_error_t (*adpt_ucast_default_hash_set_func)(
 		a_uint32_t dev_id,
 		a_uint8_t hash_value);
-typedef sw_error_t (*adpt_mcast_queue_map_get_func)(
+typedef sw_error_t (*adpt_ac_queue_group_get_func)(
 		a_uint32_t dev_id,
-		fal_mcast_queue_map_t *queue_map);
-typedef sw_error_t (*adpt_ucast_priority_map_set_func)(
+		a_uint32_t queue_id,
+		a_uint8_t *group_id);
+typedef sw_error_t (*adpt_ac_ctrl_get_func)(
 		a_uint32_t dev_id,
-		fal_ucast_priority_map_t *priority_map);
+		fal_ac_obj_t *obj,
+		fal_ac_ctrl_t *cfg);
+typedef sw_error_t (*adpt_ac_prealloc_buffer_get_func)(
+		a_uint32_t dev_id,
+		fal_ac_obj_t *obj,
+		a_uint16_t *num);
 typedef sw_error_t (*adpt_port_mcast_priority_class_set_func)(
 		a_uint32_t dev_id,
 		fal_port_t port,
-		fal_mcast_priority_map_t *pri_map);
-typedef sw_error_t (*adpt_ucast_queue_map_set_func)(
-		a_uint32_t dev_id,
-		fal_ucast_queue_map_t *queue_map);
+		a_uint8_t priority,
+		a_uint8_t queue_class);
 typedef sw_error_t (*adpt_ucast_hash_map_get_func)(
 		a_uint32_t dev_id,
-		fal_ucast_hash_map_t *hash_map);
-typedef sw_error_t (*adpt_unicast_queue_ac_cfg_get_func)(
+		a_uint8_t profile,
+		a_uint8_t rss_hash,
+		a_int8_t *queue_hash);
+typedef sw_error_t (*adpt_ac_static_threshold_set_func)(
+		a_uint32_t dev_id,
+		fal_ac_obj_t *obj,
+		fal_ac_static_threshold_t *cfg);
+typedef sw_error_t (*adpt_ac_queue_group_set_func)(
 		a_uint32_t dev_id,
 		a_uint32_t queue_id,
-		fal_uni_queue_ac_cfg_t *cfg);
+		a_uint8_t group_id);
+typedef sw_error_t (*adpt_ac_group_buffer_get_func)(
+		a_uint32_t dev_id,
+		a_uint8_t group_id,
+		fal_ac_group_buffer_t *cfg);
+typedef sw_error_t (*adpt_mcast_cpu_code_class_get_func)(
+		a_uint32_t dev_id,
+		a_uint8_t cpu_code,
+		a_uint8_t *queue_class);
+typedef sw_error_t (*adpt_ac_ctrl_set_func)(
+		a_uint32_t dev_id,
+		fal_ac_obj_t *obj,
+		fal_ac_ctrl_t *cfg);
+typedef sw_error_t (*adpt_ucast_priority_class_get_func)(
+		a_uint32_t dev_id,
+		a_uint8_t profile,
+		a_uint8_t priority,
+		a_uint8_t *class);
 typedef sw_error_t (*adpt_queue_flush_func)(
 		a_uint32_t dev_id,
 		fal_port_t port,
 		fal_queue_flush_dst_t *flush_dst);
-typedef sw_error_t (*adpt_unicast_queue_ac_cfg_set_func)(
+typedef sw_error_t (*adpt_mcast_cpu_code_class_set_func)(
 		a_uint32_t dev_id,
-		a_uint32_t queue_id,
-		fal_uni_queue_ac_cfg_t *cfg);
-typedef sw_error_t (*adpt_group_ac_cfg_set_func)(
+		a_uint8_t cpu_code,
+		a_uint8_t queue_class);
+typedef sw_error_t (*adpt_ucast_priority_class_set_func)(
+		a_uint32_t dev_id,
+		a_uint8_t profile,
+		a_uint8_t priority,
+		a_uint8_t class);
+typedef sw_error_t (*adpt_ac_static_threshold_get_func)(
+		a_uint32_t dev_id,
+		fal_ac_obj_t *obj,
+		fal_ac_static_threshold_t *cfg);
+typedef sw_error_t (*adpt_ucast_queue_base_profile_set_func)(
+		a_uint32_t dev_id,
+		fal_ucast_queue_dest_t *queue_dest,
+		a_uint32_t queue_base, a_uint8_t profile);
+typedef sw_error_t (*adpt_ac_group_buffer_set_func)(
 		a_uint32_t dev_id,
 		a_uint8_t group_id,
-		fal_group_ac_cfg_t *cfg);
-typedef sw_error_t (*adpt_group_ac_cfg_get_func)(
-		a_uint32_t dev_id,
-		a_uint8_t group_id,
-		fal_group_ac_cfg_t *cfg);
-typedef sw_error_t (*adpt_multicast_queue_ac_cfg_get_func)(
-		a_uint32_t dev_id,
-		a_uint32_t queue_id,
-		fal_multi_queue_ac_cfg_t *cfg);
-typedef sw_error_t (*adpt_multicast_queue_ac_cfg_set_func)(
-		a_uint32_t dev_id,
-		a_uint32_t queue_id,
-		fal_multi_queue_ac_cfg_t *cfg);
+		fal_ac_group_buffer_t *cfg);
+
 
 /*portvlan module begin*/
 typedef sw_error_t (*adpt_global_qinq_mode_set_func)(a_uint32_t dev_id, fal_global_qinq_mode_t *mode);
@@ -630,6 +670,49 @@ typedef sw_error_t (*adpt_acl_rule_dump_func)(a_uint32_t dev_id);
 typedef sw_error_t (*adpt_acl_udf_profile_get_func)(a_uint32_t dev_id, fal_acl_udf_pkt_type_t pkt_type,a_uint32_t udf_idx, fal_acl_udf_type_t *udf_type, a_uint32_t *offset);
 typedef sw_error_t (*adpt_acl_list_creat_func)(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t list_pri);
 typedef sw_error_t (*adpt_acl_list_destroy_func)(a_uint32_t dev_id, a_uint32_t list_id);
+
+typedef sw_error_t (*adpt_qos_port_pri_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+					fal_qos_pri_precedence_t *pri);
+typedef sw_error_t (*adpt_qos_port_pri_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+					fal_qos_pri_precedence_t *pri);
+typedef sw_error_t (*adpt_qos_cosmap_pcp_get_func)(a_uint32_t dev_id, a_uint8_t group_id,
+					a_uint8_t pcp, fal_qos_cosmap_t *cosmap);
+typedef sw_error_t (*adpt_queue_scheduler_set_func)(a_uint32_t dev_id,
+					a_uint32_t node_id,
+					fal_queue_scheduler_level_t level,
+					fal_port_t port_id,
+					fal_qos_scheduler_cfg_t *scheduler_cfg);
+typedef sw_error_t (*adpt_queue_scheduler_get_func)(a_uint32_t dev_id,
+					a_uint32_t node_id,
+					fal_queue_scheduler_level_t level,
+					fal_port_t *port_id,
+					fal_qos_scheduler_cfg_t *scheduler_cfg);
+typedef sw_error_t (*adpt_port_queues_get_func)(a_uint32_t dev_id,
+					fal_port_t port_id,
+					fal_queue_bmp_t *queue_bmp);
+typedef sw_error_t (*adpt_qos_cosmap_pcp_set_func)(a_uint32_t dev_id, a_uint8_t group_id,
+					a_uint8_t pcp, fal_qos_cosmap_t *cosmap);
+typedef sw_error_t (*adpt_qos_port_remark_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+					fal_qos_remark_enable_t *remark);
+typedef sw_error_t (*adpt_qos_cosmap_dscp_get_func)(a_uint32_t dev_id, a_uint8_t group_id,
+					a_uint8_t dscp, fal_qos_cosmap_t *cosmap);
+typedef sw_error_t (*adpt_qos_cosmap_flow_set_func)(a_uint32_t dev_id, a_uint8_t group_id,
+					a_uint8_t flow, fal_qos_cosmap_t *cosmap);
+typedef sw_error_t (*adpt_qos_port_group_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+					fal_qos_group_t *group);
+typedef sw_error_t (*adpt_ring_queue_map_set_func)(a_uint32_t dev_id, 
+					a_uint32_t ring_id, fal_queue_bmp_t *queue_bmp);
+typedef sw_error_t (*adpt_qos_cosmap_dscp_set_func)(a_uint32_t dev_id, a_uint8_t group_id,
+					a_uint8_t dscp, fal_qos_cosmap_t *cosmap);
+typedef sw_error_t (*adpt_qos_port_remark_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+					fal_qos_remark_enable_t *remark);
+typedef sw_error_t (*adpt_qos_cosmap_flow_get_func)(a_uint32_t dev_id, a_uint8_t group_id,
+					a_uint8_t flow, fal_qos_cosmap_t *cosmap);
+typedef sw_error_t (*adpt_qos_port_group_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+					fal_qos_group_t *group);
+typedef sw_error_t (*adpt_ring_queue_map_get_func)(a_uint32_t dev_id, 
+					a_uint32_t ring_id, fal_queue_bmp_t *queue_bmp);
+
 typedef struct
 {
 	adpt_fdb_first_func adpt_fdb_first;
@@ -820,25 +903,32 @@ typedef struct
 	adpt_flow_entry_add_func adpt_flow_entry_add;
 	adpt_flow_global_cfg_get_func adpt_flow_global_cfg_get;
 	adpt_flow_global_cfg_set_func adpt_flow_global_cfg_set;
-	adpt_mcast_queue_map_set_func adpt_mcast_queue_map_set;
-	adpt_ucast_priority_map_get_func adpt_ucast_priority_map_get;
+
 	adpt_ucast_hash_map_set_func adpt_ucast_hash_map_set;
+	adpt_ac_dynamic_threshold_get_func adpt_ac_dynamic_threshold_get;
+	adpt_ucast_queue_base_profile_get_func adpt_ucast_queue_base_profile_get;
 	adpt_port_mcast_priority_class_get_func adpt_port_mcast_priority_class_get;
+	adpt_ac_dynamic_threshold_set_func adpt_ac_dynamic_threshold_set;
+	adpt_ac_prealloc_buffer_set_func adpt_ac_prealloc_buffer_set;
 	adpt_ucast_default_hash_get_func adpt_ucast_default_hash_get;
-	adpt_ucast_queue_map_get_func adpt_ucast_queue_map_get;
 	adpt_ucast_default_hash_set_func adpt_ucast_default_hash_set;
-	adpt_mcast_queue_map_get_func adpt_mcast_queue_map_get;
-	adpt_ucast_priority_map_set_func adpt_ucast_priority_map_set;
+	adpt_ac_queue_group_get_func adpt_ac_queue_group_get;
+	adpt_ac_ctrl_get_func adpt_ac_ctrl_get;
+	adpt_ac_prealloc_buffer_get_func adpt_ac_prealloc_buffer_get;
 	adpt_port_mcast_priority_class_set_func adpt_port_mcast_priority_class_set;
-	adpt_ucast_queue_map_set_func adpt_ucast_queue_map_set;
 	adpt_ucast_hash_map_get_func adpt_ucast_hash_map_get;
-	adpt_unicast_queue_ac_cfg_get_func adpt_unicast_queue_ac_cfg_get;
+	adpt_ac_static_threshold_set_func adpt_ac_static_threshold_set;
+	adpt_ac_queue_group_set_func adpt_ac_queue_group_set;
+	adpt_ac_group_buffer_get_func adpt_ac_group_buffer_get;
+	adpt_mcast_cpu_code_class_get_func adpt_mcast_cpu_code_class_get;
+	adpt_ac_ctrl_set_func adpt_ac_ctrl_set;
+	adpt_ucast_priority_class_get_func adpt_ucast_priority_class_get;
 	adpt_queue_flush_func adpt_queue_flush;
-	adpt_unicast_queue_ac_cfg_set_func adpt_unicast_queue_ac_cfg_set;
-	adpt_group_ac_cfg_set_func adpt_group_ac_cfg_set;
-	adpt_group_ac_cfg_get_func adpt_group_ac_cfg_get;
-	adpt_multicast_queue_ac_cfg_get_func adpt_multicast_queue_ac_cfg_get;
-	adpt_multicast_queue_ac_cfg_set_func adpt_multicast_queue_ac_cfg_set;
+	adpt_mcast_cpu_code_class_set_func adpt_mcast_cpu_code_class_set;
+	adpt_ucast_priority_class_set_func adpt_ucast_priority_class_set;
+	adpt_ac_static_threshold_get_func adpt_ac_static_threshold_get;
+	adpt_ucast_queue_base_profile_set_func adpt_ucast_queue_base_profile_set;
+	adpt_ac_group_buffer_set_func adpt_ac_group_buffer_set;	
 
 	/*portvlan module begin*/
 	adpt_global_qinq_mode_set_func adpt_global_qinq_mode_set;
@@ -913,6 +1003,24 @@ typedef struct
 	adpt_acl_udf_profile_get_func adpt_acl_udf_profile_get;
 	adpt_acl_list_creat_func adpt_acl_list_creat;
 	adpt_acl_list_destroy_func adpt_acl_list_destroy;
+
+	adpt_qos_port_pri_set_func adpt_qos_port_pri_set;
+	adpt_qos_port_pri_get_func adpt_qos_port_pri_get;
+	adpt_qos_cosmap_pcp_get_func adpt_qos_cosmap_pcp_get;
+	adpt_queue_scheduler_set_func adpt_queue_scheduler_set;
+	adpt_queue_scheduler_get_func adpt_queue_scheduler_get;
+	adpt_port_queues_get_func adpt_port_queues_get;
+	adpt_qos_cosmap_pcp_set_func adpt_qos_cosmap_pcp_set;
+	adpt_qos_port_remark_get_func adpt_qos_port_remark_get;
+	adpt_qos_cosmap_dscp_get_func adpt_qos_cosmap_dscp_get;
+	adpt_qos_cosmap_flow_set_func adpt_qos_cosmap_flow_set;
+	adpt_qos_port_group_set_func adpt_qos_port_group_set;
+	adpt_ring_queue_map_set_func adpt_ring_queue_map_set;
+	adpt_qos_cosmap_dscp_set_func adpt_qos_cosmap_dscp_set;
+	adpt_qos_port_remark_set_func adpt_qos_port_remark_set;
+	adpt_qos_cosmap_flow_get_func adpt_qos_cosmap_flow_get;
+	adpt_qos_port_group_get_func adpt_qos_port_group_get;
+	adpt_ring_queue_map_get_func adpt_ring_queue_map_get;
 }adpt_api_t;
 
 

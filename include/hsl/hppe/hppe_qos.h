@@ -61,6 +61,98 @@
 #define L1_FLOW_STATUS_TBL_MAX_ENTRY	64
 #define PSCH_TDM_CFG_TBL_MAX_ENTRY	128
 
+#define PORT_QOS_CTRL_MAX_ENTRY	8
+#define PCP_QOS_GROUP_0_MAX_ENTRY	16
+#define PCP_QOS_GROUP_1_MAX_ENTRY	16
+#define FLOW_QOS_GROUP_0_MAX_ENTRY	32
+#define FLOW_QOS_GROUP_1_MAX_ENTRY	32
+#define DSCP_QOS_GROUP_0_MAX_ENTRY	64
+#define DSCP_QOS_GROUP_1_MAX_ENTRY	64
+
+sw_error_t
+hppe_dscp_qos_group_0_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union dscp_qos_group_0_u *value);
+
+sw_error_t
+hppe_dscp_qos_group_0_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union dscp_qos_group_0_u *value);
+
+sw_error_t
+hppe_dscp_qos_group_1_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union dscp_qos_group_1_u *value);
+
+sw_error_t
+hppe_dscp_qos_group_1_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union dscp_qos_group_1_u *value);
+
+
+sw_error_t
+hppe_pcp_qos_group_0_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union pcp_qos_group_0_u *value);
+
+sw_error_t
+hppe_pcp_qos_group_0_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union pcp_qos_group_0_u *value);
+
+sw_error_t
+hppe_pcp_qos_group_1_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union pcp_qos_group_1_u *value);
+
+sw_error_t
+hppe_pcp_qos_group_1_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union pcp_qos_group_1_u *value);
+
+sw_error_t
+hppe_flow_qos_group_0_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union flow_qos_group_0_u *value);
+
+sw_error_t
+hppe_flow_qos_group_0_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union flow_qos_group_0_u *value);
+
+sw_error_t
+hppe_flow_qos_group_1_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union flow_qos_group_1_u *value);
+
+sw_error_t
+hppe_flow_qos_group_1_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union flow_qos_group_1_u *value);
+
+sw_error_t
+hppe_port_qos_ctrl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union port_qos_ctrl_u *value);
+
+sw_error_t
+hppe_port_qos_ctrl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union port_qos_ctrl_u *value);
 
 sw_error_t
 hppe_tdm_depth_cfg_get(
@@ -1881,6 +1973,211 @@ hppe_psch_tdm_cfg_tbl_ens_port_bitmap_set(
 		a_uint32_t dev_id,
 		a_uint32_t index,
 		a_uint32_t value);
+
+sw_error_t
+hppe_port_qos_ctrl_port_flow_qos_pri_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_port_qos_ctrl_port_flow_qos_pri_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_port_qos_ctrl_port_dscp_qos_pri_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_port_qos_ctrl_port_dscp_qos_pri_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_port_qos_ctrl_port_dscp_change_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_port_qos_ctrl_port_dscp_change_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_port_qos_ctrl_port_pcp_change_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_port_qos_ctrl_port_pcp_change_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_port_qos_ctrl_port_acl_qos_pri_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_port_qos_ctrl_port_acl_qos_pri_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_port_qos_ctrl_flow_qos_group_id_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_port_qos_ctrl_flow_qos_group_id_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_port_qos_ctrl_port_preheader_qos_pri_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_port_qos_ctrl_port_preheader_qos_pri_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_port_qos_ctrl_pcp_qos_group_id_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_port_qos_ctrl_pcp_qos_group_id_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_port_qos_ctrl_dscp_qos_group_id_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_port_qos_ctrl_dscp_qos_group_id_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_port_qos_ctrl_port_pcp_qos_pri_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_port_qos_ctrl_port_pcp_qos_pri_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_port_qos_ctrl_port_dei_change_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_port_qos_ctrl_port_dei_change_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_pcp_qos_group_0_qos_info_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_pcp_qos_group_0_qos_info_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_pcp_qos_group_1_qos_info_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_pcp_qos_group_1_qos_info_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_flow_qos_group_0_qos_info_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_flow_qos_group_0_qos_info_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_flow_qos_group_1_qos_info_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_flow_qos_group_1_qos_info_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_dscp_qos_group_0_qos_info_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_dscp_qos_group_0_qos_info_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_dscp_qos_group_1_qos_info_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_dscp_qos_group_1_qos_info_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
 
 #endif
 

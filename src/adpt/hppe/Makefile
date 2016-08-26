@@ -69,6 +69,10 @@ ifeq (TRUE, $(IN_ACL))
   SRC_LIST += adpt_hppe_acl.c
 endif
 
+ifeq (TRUE, $(IN_QOS))
+  SRC_LIST += adpt_hppe_qos.c
+endif
+
 ifeq (, $(findstring HPPE, $(SUPPORT_CHIP)))
   SRC_LIST=
 endif
