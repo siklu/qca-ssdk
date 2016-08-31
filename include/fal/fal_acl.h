@@ -382,47 +382,47 @@ extern "C" {
         a_uint8_t post_routing;
         a_uint8_t res_chain;
 
-	a_uint8_t is_ip_val;
+	a_bool_t is_ip_val;
 	a_uint8_t is_ip_mask;
 
-	a_uint8_t is_ipv6_val;
+	a_bool_t is_ipv6_val;
 	a_uint8_t is_ipv6_mask;
 
-	a_uint8_t is_fake_mac_header_val;
+	a_bool_t is_fake_mac_header_val;
 	a_uint8_t is_fake_mac_header_mask;
 
-	a_uint8_t is_snap_val;
+	a_bool_t is_snap_val;
 	a_uint8_t is_snap_mask;
 
-	a_uint8_t is_ethernet_val;
+	a_bool_t is_ethernet_val;
 	a_uint8_t is_ethernet_mask;
 
-	a_uint8_t is_fragement_val;
+	a_bool_t is_fragement_val;
 	a_uint8_t is_fragement_mask;
 
-	a_uint8_t is_ah_header_val;
+	a_bool_t is_ah_header_val;
 	a_uint8_t is_ah_header_mask;
 
-	a_uint8_t is_esp_header_val;
+	a_bool_t is_esp_header_val;
 	a_uint8_t is_esp_header_mask;
 
-	a_uint8_t is_mobility_header_val;
+	a_bool_t is_mobility_header_val;
 	a_uint8_t is_mobility_header_mask;
 
-	a_uint8_t is_fragment_header_val;
+	a_bool_t is_fragment_header_val;
 	a_uint8_t is_fragment_header_mask;
 
-	a_uint8_t is_other_header_val;
+	a_bool_t is_other_header_val;
 	a_uint8_t is_other_header_mask;
 
-	a_uint8_t is_ipv4_option_val;
+	a_bool_t is_ipv4_option_val;
 	a_uint8_t is_ipv4_option_mask;
 
-	a_uint8_t is_first_frag_val;
+	a_bool_t is_first_frag_val;
 	a_uint8_t is_first_frag_mask;
 
 	/*fields of VLAN rule*/
-        a_uint8_t vsi_valid;
+        a_bool_t vsi_valid;
         a_uint8_t vsi_valid_mask;
         a_uint8_t vsi; /*0-31*/
         a_uint8_t vsi_mask; /*0-31*/

@@ -178,32 +178,18 @@ typedef struct{
 
 
 typedef struct{
-	union{
-		struct{
-			a_uint32_t ip_32bits:32;
-			a_uint32_t ip_16bits:16;
-		};
-		struct{
-			a_uint32_t l4_port:16;
-			a_uint32_t ip_hi32bits:32;
-		};
-	} ip_port;
+	a_uint32_t ip_port:16; /*it is port when DIP_2_RULE or SIP_2_RULE*/
+	a_uint32_t ip_ext_1:16;
+	a_uint32_t ip_ext_2:16;
 	a_uint32_t l3_fragment:1;
 	a_uint32_t l3_packet_type:3;
 	a_uint32_t reserved:1;
 }ADPT_HPPE_ACL_IPV6_RULE;
 
 typedef struct{
-	union{
-		struct{
-			a_uint32_t ip_32bits:32;
-			a_uint32_t ip_16bits:16;
-		};
-		struct{
-			a_uint32_t l4_port:16;
-			a_uint32_t ip_hi32bits:32;
-		};
-	} ip_port_mask;
+	a_uint32_t ip_port_mask:16; /*it is port when DIP_2_RULE or SIP_2_RULE*/
+	a_uint32_t ip_ext_1_mask:16;
+	a_uint32_t ip_ext_2_mask:16;
 	a_uint32_t l3_fragment_mask:1;
 	a_uint32_t l3_packet_type_mask:3;
 	a_uint32_t reserved:1;
@@ -569,13 +555,13 @@ static sw_error_t _adpt_hppe_acl_mac_rule_hw_2_sw(a_uint32_t is_mac_da,
 	if(macrule_mask->is_ipv6_mask)
 	{
 		FAL_FIELD_FLG_SET(rule->field_flg, FAL_ACL_FIELD_IPV6);
-		rule->is_ipv6_val = macrule->is_ip;
+		rule->is_ipv6_val = macrule->is_ipv6;
 	}
 
 	if(macrule_mask->is_ethernet_mask)
 	{
 		FAL_FIELD_FLG_SET(rule->field_flg, FAL_ACL_FIELD_ETHERNET);
-		rule->is_ipv6_val = macrule->is_ethernet;
+		rule->is_ethernet_val = macrule->is_ethernet;
 	}
 
 	if(macrule_mask->is_snap_mask)
@@ -912,59 +898,67 @@ static sw_error_t _adpt_hppe_acl_ipv6_rule_hw_2_sw(a_uint32_t is_ip_da, a_uint32
 	{
 		if(ip_bit_range == 0)
 		{
-			if(ipv6rule_mask->ip_port_mask.ip_32bits ||
-				ipv6rule_mask->ip_port_mask.ip_16bits)
+			if(ipv6rule_mask->ip_port_mask
+				|| ipv6rule_mask->ip_ext_1_mask
+				|| ipv6rule_mask->ip_ext_2_mask)
 			{
 				FAL_FIELD_FLG_SET(rule->field_flg, FAL_ACL_FIELD_IP6_DIP);
 			}
-			memcpy((a_uint8_t *)&rule->dest_ip6_val.ul[0], &ipv6rule->ip_port, 6);
-			memcpy((a_uint8_t *)&rule->dest_ip6_mask.ul[0], &ipv6rule_mask->ip_port_mask, 6);
+
+			rule->dest_ip6_val.ul[3] = ipv6rule->ip_ext_1<<16|ipv6rule->ip_port;
+			rule->dest_ip6_val.ul[2] |= (ipv6rule->ip_ext_2)&0xffff;
+			rule->dest_ip6_mask.ul[3] = ipv6rule_mask->ip_ext_1_mask<<16|ipv6rule_mask->ip_port_mask;
+			rule->dest_ip6_mask.ul[2] |= (ipv6rule_mask->ip_ext_2_mask)&0xffff;
 		}
 		else if(ip_bit_range == 1)
 		{
-			if(ipv6rule_mask->ip_port_mask.ip_32bits ||
-				ipv6rule_mask->ip_port_mask.ip_16bits)
+			if(ipv6rule_mask->ip_port_mask
+				|| ipv6rule_mask->ip_ext_1_mask
+				|| ipv6rule_mask->ip_ext_2_mask)
 			{
 				FAL_FIELD_FLG_SET(rule->field_flg, FAL_ACL_FIELD_IP6_DIP);
 			}
-			memcpy(((a_uint8_t *)&rule->dest_ip6_val.ul[0])+6, &ipv6rule->ip_port, 6);
-			memcpy(((a_uint8_t *)&rule->dest_ip6_mask.ul[0])+6, &ipv6rule_mask->ip_port_mask, 6);
+			rule->dest_ip6_val.ul[2] |= (ipv6rule->ip_port<<16)&0xffff0000;
+			rule->dest_ip6_val.ul[1] = ipv6rule->ip_ext_2<<16|ipv6rule->ip_ext_1;
+			rule->dest_ip6_mask.ul[2] |= (ipv6rule_mask->ip_port_mask<<16)&0xffff0000;
+			rule->dest_ip6_mask.ul[1] = ipv6rule_mask->ip_ext_2_mask<<16|ipv6rule_mask->ip_ext_1_mask;
 		}
 		else if(ip_bit_range == 2)
 		{
-			if(ipv6rule_mask->ip_port_mask.ip_hi32bits)
+			if(ipv6rule_mask->ip_ext_1_mask
+				|| ipv6rule_mask->ip_ext_2_mask)
 			{
 				FAL_FIELD_FLG_SET(rule->field_flg, FAL_ACL_FIELD_IP6_DIP);
-				rule->dest_ip6_val.ul[3] = ipv6rule->ip_port.ip_hi32bits;
-				rule->dest_ip6_mask.ul[3] = ipv6rule_mask->ip_port_mask.ip_hi32bits;
+				rule->dest_ip6_val.ul[0] = ipv6rule->ip_ext_2<<16|ipv6rule->ip_ext_1;
+				rule->dest_ip6_mask.ul[0] = ipv6rule_mask->ip_ext_2_mask<<16|ipv6rule_mask->ip_ext_1_mask;
 			}
-			if(ipv6rule_mask->ip_port_mask.l4_port)
+			if(ipv6rule_mask->ip_port_mask)
 			{
 				FAL_FIELD_FLG_SET(rule->field_flg, FAL_ACL_FIELD_L4_DPORT);
-				rule->dest_l4port_mask = ipv6rule_mask->ip_port_mask.l4_port;
+				rule->dest_l4port_mask = ipv6rule_mask->ip_port_mask;
 			}
 			if(hw_reg->bf.range_en)
 			{
-				if(ipv6rule->ip_port.l4_port == 0)
+				if(ipv6rule->ip_port == 0)
 				{
 					rule->dest_l4port_op = FAL_ACL_FIELD_LE;
-					rule->dest_l4port_val = ipv6rule_mask->ip_port_mask.l4_port;
+					rule->dest_l4port_val = ipv6rule_mask->ip_port_mask;
 				}
-				else if(ipv6rule_mask->ip_port_mask.l4_port == 0xffff)
+				else if(ipv6rule_mask->ip_port_mask == 0xffff)
 				{
 					rule->dest_l4port_op = FAL_ACL_FIELD_GE;
-					rule->dest_l4port_val= ipv6rule->ip_port.l4_port;
+					rule->dest_l4port_val= ipv6rule->ip_port;
 				}
 				else
 				{
 					rule->dest_l4port_op = FAL_ACL_FIELD_RANGE;
-					rule->dest_l4port_val= ipv6rule->ip_port.l4_port;
+					rule->dest_l4port_val= ipv6rule->ip_port;
 				}
 			}
 			else
 			{
 				rule->dest_l4port_op = FAL_ACL_FIELD_MASK;
-				rule->dest_l4port_val = ipv6rule->ip_port.l4_port;
+				rule->dest_l4port_val = ipv6rule->ip_port;
 			}
 
 		}
@@ -973,59 +967,66 @@ static sw_error_t _adpt_hppe_acl_ipv6_rule_hw_2_sw(a_uint32_t is_ip_da, a_uint32
 	{
 		if(ip_bit_range == 0)
 		{
-			if(ipv6rule_mask->ip_port_mask.ip_32bits ||
-				ipv6rule_mask->ip_port_mask.ip_16bits)
+			if(ipv6rule_mask->ip_port_mask
+				|| ipv6rule_mask->ip_ext_1_mask
+				|| ipv6rule_mask->ip_ext_2_mask)
 			{
 				FAL_FIELD_FLG_SET(rule->field_flg, FAL_ACL_FIELD_IP6_SIP);
 			}
-			memcpy((a_uint8_t *)&rule->src_ip6_val.ul[0], &ipv6rule->ip_port, 6);
-			memcpy((a_uint8_t *)&rule->src_ip6_mask.ul[0], &ipv6rule_mask->ip_port_mask, 6);
+			rule->src_ip6_val.ul[3] = ipv6rule->ip_ext_1<<16|ipv6rule->ip_port;
+			rule->src_ip6_val.ul[2] |= (ipv6rule->ip_ext_2<<16)&0xffff0000;
+			rule->src_ip6_mask.ul[3] = ipv6rule_mask->ip_ext_1_mask<<16|ipv6rule_mask->ip_port_mask;
+			rule->src_ip6_mask.ul[2] |= (ipv6rule_mask->ip_ext_2_mask<<16)&0xffff0000;
 		}
 		else if(ip_bit_range == 1)
 		{
-			if(ipv6rule_mask->ip_port_mask.ip_32bits ||
-				ipv6rule_mask->ip_port_mask.ip_16bits)
+			if(ipv6rule_mask->ip_port_mask
+				|| ipv6rule_mask->ip_ext_1_mask
+				|| ipv6rule_mask->ip_ext_2_mask)
 			{
 				FAL_FIELD_FLG_SET(rule->field_flg, FAL_ACL_FIELD_IP6_SIP);
 			}
-			memcpy(((a_uint8_t *)&rule->src_ip6_val.ul[0])+6, &ipv6rule->ip_port, 6);
-			memcpy(((a_uint8_t *)&rule->src_ip6_mask.ul[0])+6, &ipv6rule_mask->ip_port_mask, 6);
+			rule->src_ip6_val.ul[2] |= ipv6rule->ip_port;
+			rule->src_ip6_val.ul[1] = ipv6rule->ip_ext_2<<16|ipv6rule->ip_ext_1;
+			rule->src_ip6_mask.ul[2] |= ipv6rule_mask->ip_port_mask;
+			rule->src_ip6_mask.ul[1] = ipv6rule_mask->ip_ext_2_mask<<16|ipv6rule_mask->ip_ext_1_mask;
 		}
 		else if(ip_bit_range == 2)
 		{
-			if(ipv6rule_mask->ip_port_mask.ip_hi32bits)
+			if(ipv6rule_mask->ip_ext_1_mask
+				|| ipv6rule_mask->ip_ext_2_mask)
 			{
 				FAL_FIELD_FLG_SET(rule->field_flg, FAL_ACL_FIELD_IP6_SIP);
-				rule->src_ip6_val.ul[3] = ipv6rule->ip_port.ip_hi32bits;
-				rule->src_ip6_mask.ul[3] = ipv6rule_mask->ip_port_mask.ip_hi32bits;
+				rule->src_ip6_val.ul[0] = ipv6rule->ip_ext_2<<16|ipv6rule->ip_ext_1;
+				rule->src_ip6_mask.ul[0] = ipv6rule_mask->ip_ext_2_mask<<16|ipv6rule_mask->ip_ext_1_mask;
 			}
-			if(ipv6rule_mask->ip_port_mask.l4_port)
+			if(ipv6rule_mask->ip_port_mask)
 			{
 				FAL_FIELD_FLG_SET(rule->field_flg, FAL_ACL_FIELD_L4_SPORT);
-				rule->src_l4port_mask = ipv6rule_mask->ip_port_mask.l4_port;
+				rule->src_l4port_mask = ipv6rule_mask->ip_port_mask;
 			}
 			if(hw_reg->bf.range_en)
 			{
-				if(ipv6rule->ip_port.l4_port == 0)
+				if(ipv6rule->ip_port == 0)
 				{
 					rule->src_l4port_op = FAL_ACL_FIELD_LE;
-					rule->src_l4port_val = ipv6rule_mask->ip_port_mask.l4_port;
+					rule->src_l4port_val = ipv6rule_mask->ip_port_mask;
 				}
-				else if(ipv6rule_mask->ip_port_mask.l4_port == 0xffff)
+				else if(ipv6rule_mask->ip_port_mask == 0xffff)
 				{
 					rule->src_l4port_op = FAL_ACL_FIELD_GE;
-					rule->src_l4port_val= ipv6rule->ip_port.l4_port;
+					rule->src_l4port_val= ipv6rule->ip_port;
 				}
 				else
 				{
 					rule->src_l4port_op = FAL_ACL_FIELD_RANGE;
-					rule->src_l4port_val= ipv6rule->ip_port.l4_port;
+					rule->src_l4port_val= ipv6rule->ip_port;
 				}
 			}
 			else
 			{
 				rule->src_l4port_op = FAL_ACL_FIELD_MASK;
-				rule->src_l4port_val = ipv6rule->ip_port.l4_port;
+				rule->src_l4port_val = ipv6rule->ip_port;
 			}
 
 		}
@@ -1634,7 +1635,8 @@ _adpt_hppe_acl_l2_fields_check(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t
 		(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_MAC_CTAG_PRI)) ||
 		(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_MAC_CTAG_CFI)) ||
 		(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_MAC_CTAGGED)) ||
-		(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_VSI)))
+		(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_VSI)) ||
+		(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_VSI_VALID)))
 	{
 		printk("%s, %d: select VLAN rule\n", __FUNCTION__, __LINE__);
 		*rule_type_map |= (1<<ADPT_ACL_HPPE_VLAN_RULE);
@@ -1652,8 +1654,16 @@ _adpt_hppe_acl_l2_fields_check(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t
 	{
 		if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_MAC_STAG_VID))
 		{
-			printk("%s, %d: select VLAN rule\n", __FUNCTION__, __LINE__);
-			*rule_type_map |= (1<<ADPT_ACL_HPPE_VLAN_RULE);
+			if(rule->stag_vid_op == FAL_ACL_FIELD_MASK)
+			{
+				printk("%s, %d: select VLAN rule\n", __FUNCTION__, __LINE__);
+				*rule_type_map |= (1<<ADPT_ACL_HPPE_VLAN_RULE);
+			}
+			else
+			{
+				printk("%s, %d: select L2 MISC rule\n", __FUNCTION__, __LINE__);
+				*rule_type_map |= (1<<ADPT_ACL_HPPE_L2_MISC_RULE);
+			}
 		}
 	}
 
@@ -1737,11 +1747,11 @@ _adpt_hppe_acl_ipv6_fields_check(a_uint32_t dev_id, a_uint32_t list_id, a_uint32
 
 	if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_IP6_SIP))
 	{
-		if(rule->src_ip6_mask.ul[0] != 0 || rule->src_ip6_mask.ul[1]&0xffff0000)
+		if(rule->src_ip6_mask.ul[3] != 0 || rule->src_ip6_mask.ul[2]&0x0000ffff)
 			*rule_type_map |= (1<<ADPT_ACL_HPPE_IPV6_SIP0_RULE);
-		if(rule->src_ip6_mask.ul[2] != 0 || rule->src_ip6_mask.ul[1]&0x0000ffff)
+		if(rule->src_ip6_mask.ul[1] != 0 || rule->src_ip6_mask.ul[2]&0xffff0000)
 			*rule_type_map |= (1<<ADPT_ACL_HPPE_IPV6_SIP1_RULE);
-		if(rule->src_ip6_mask.ul[3] != 0 )
+		if(rule->src_ip6_mask.ul[0] != 0 )
 			*rule_type_map |= (1<<ADPT_ACL_HPPE_IPV6_SIP2_RULE);
 	}
 	if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_L4_DPORT))
@@ -1750,11 +1760,11 @@ _adpt_hppe_acl_ipv6_fields_check(a_uint32_t dev_id, a_uint32_t list_id, a_uint32
 	}
 	if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_IP6_DIP))
 	{
-		if(rule->dest_ip6_mask.ul[0] != 0 || rule->dest_ip6_mask.ul[1]&0xffff0000)
+		if(rule->dest_ip6_mask.ul[3] != 0 || rule->dest_ip6_mask.ul[2]&0x0000ffff)
 			*rule_type_map |= (1<<ADPT_ACL_HPPE_IPV6_DIP0_RULE);
-		if(rule->dest_ip6_mask.ul[2] != 0 || rule->dest_ip6_mask.ul[1]&0x0000ffff)
+		if(rule->dest_ip6_mask.ul[1] != 0 || rule->dest_ip6_mask.ul[2]&0xffff0000)
 			*rule_type_map |= (1<<ADPT_ACL_HPPE_IPV6_DIP1_RULE);
-		if(rule->dest_ip6_mask.ul[3] != 0 )
+		if(rule->dest_ip6_mask.ul[0] != 0 )
 			*rule_type_map |= (1<<ADPT_ACL_HPPE_IPV6_DIP2_RULE);
 	}
 
@@ -1884,12 +1894,12 @@ static sw_error_t _adpt_hppe_acl_mac_rule_sw_2_hw(fal_acl_rule_t *rule, a_uint32
 	}
 	if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_IPV6))
 	{
-		macrule->is_ip = rule->is_ipv6_val;
+		macrule->is_ipv6 = rule->is_ipv6_val;
 		macrule_mask->is_ipv6_mask = 1;
 	}
 	if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_ETHERNET))
 	{
-		macrule->is_ethernet = rule->is_ipv6_val;
+		macrule->is_ethernet = rule->is_ethernet_val;
 		macrule_mask->is_ethernet_mask = 1;
 	}
 	if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_SNAP))
@@ -1928,12 +1938,12 @@ static sw_error_t _adpt_hppe_acl_vlan_rule_sw_2_hw(fal_acl_rule_t *rule,
 				min = 0;
 				max = rule->ctag_vid_val;
 			}
-			if(FAL_ACL_FIELD_GE == rule->ctag_vid_op)
+			else if(FAL_ACL_FIELD_GE == rule->ctag_vid_op)
 			{
 				min = rule->ctag_vid_val;
 				max = 0xfff;
 			}
-			if(FAL_ACL_FIELD_RANGE == rule->ctag_vid_op)
+			else if(FAL_ACL_FIELD_RANGE == rule->ctag_vid_op)
 			{
 				min = rule->ctag_vid_val;
 				max = rule->ctag_vid_mask;
@@ -2044,18 +2054,20 @@ static sw_error_t _adpt_hppe_acl_l2_misc_rule_sw_2_hw(fal_acl_rule_t *rule,
 				min = 0;
 				max = rule->stag_vid_val;
 			}
-			if(FAL_ACL_FIELD_GE == rule->stag_vid_op)
+			else if(FAL_ACL_FIELD_GE == rule->stag_vid_op)
 			{
 				min = rule->stag_vid_val;
 				max = 0xfff;
 			}
-			if(FAL_ACL_FIELD_RANGE == rule->stag_vid_op)
+			else if(FAL_ACL_FIELD_RANGE == rule->stag_vid_op)
 			{
 				min = rule->stag_vid_val;
 				max = rule->stag_vid_mask;
 			}
 			else
+			{
 				return SW_NOT_SUPPORTED;
+			}
 			l2misc_rule->svid = min;
 			l2misc_mask->svid_mask = max;
 			hw_reg->bf.range_en = 1;
@@ -2125,12 +2137,12 @@ static sw_error_t _adpt_hppe_acl_ipv4_rule_sw_2_hw(fal_acl_rule_t *rule, a_uint3
 					min = 0;
 					max = rule->dest_l4port_val;
 				}
-				if(FAL_ACL_FIELD_GE == rule->dest_l4port_op)
+				else if(FAL_ACL_FIELD_GE == rule->dest_l4port_op)
 				{
 					min = rule->dest_l4port_val;
 					max = 0xffff;
 				}
-				if(FAL_ACL_FIELD_RANGE == rule->dest_l4port_op)
+				else if(FAL_ACL_FIELD_RANGE == rule->dest_l4port_op)
 				{
 					min = rule->dest_l4port_val;
 					max = rule->dest_l4port_mask;
@@ -2167,12 +2179,12 @@ static sw_error_t _adpt_hppe_acl_ipv4_rule_sw_2_hw(fal_acl_rule_t *rule, a_uint3
 					min = 0;
 					max = rule->src_l4port_val;
 				}
-				if(FAL_ACL_FIELD_GE == rule->src_l4port_op)
+				else if(FAL_ACL_FIELD_GE == rule->src_l4port_op)
 				{
 					min = rule->src_l4port_val;
 					max = 0xffff;
 				}
-				if(FAL_ACL_FIELD_RANGE == rule->src_l4port_op)
+				else if(FAL_ACL_FIELD_RANGE == rule->src_l4port_op)
 				{
 					min = rule->src_l4port_val;
 					max = rule->src_l4port_mask;
@@ -2202,12 +2214,12 @@ static sw_error_t _adpt_hppe_acl_ipv4_rule_sw_2_hw(fal_acl_rule_t *rule, a_uint3
 				min = 0;
 				max = (rule->icmp_type_val<<8)|rule->icmp_code_val;
 			}
-			if(FAL_ACL_FIELD_GE == rule->icmp_type_code_op)
+			else if(FAL_ACL_FIELD_GE == rule->icmp_type_code_op)
 			{
 				min = (rule->icmp_type_val<<8)|rule->icmp_code_val;
 				max = 0xffff;
 			}
-			if(FAL_ACL_FIELD_RANGE == rule->icmp_type_code_op)
+			else if(FAL_ACL_FIELD_RANGE == rule->icmp_type_code_op)
 			{
 				min = (rule->icmp_type_val<<8)|rule->icmp_code_val;
 				max = (rule->icmp_type_mask<<8)|rule->icmp_code_mask;
@@ -2252,26 +2264,36 @@ static sw_error_t _adpt_hppe_acl_ipv6_rule_sw_2_hw(fal_acl_rule_t *rule, a_uint3
 		{
 			if(ip_bit_range == 0)
 			{
-				memcpy(&ipv6rule->ip_port, (a_uint8_t *)&rule->dest_ip6_val.ul[0], 6);
-				memcpy(&ipv6rule_mask->ip_port_mask, (a_uint8_t *)&rule->dest_ip6_mask.ul[0], 6);
+				ipv6rule->ip_port = rule->dest_ip6_val.ul[3]&0xffff;
+				ipv6rule->ip_ext_1 = (rule->dest_ip6_val.ul[3]>>16)&0xffff;
+				ipv6rule->ip_ext_2 = (rule->dest_ip6_val.ul[2])&0xffff;
+				ipv6rule_mask->ip_port_mask = rule->dest_ip6_mask.ul[3]&0xffff;
+				ipv6rule_mask->ip_ext_1_mask = (rule->dest_ip6_mask.ul[3]>>16)&0xffff;
+				ipv6rule_mask->ip_ext_2_mask = (rule->dest_ip6_mask.ul[2])&0xffff;
 			}
 			else if(ip_bit_range == 1)
 			{
-				memcpy(&ipv6rule->ip_port, ((a_uint8_t *)&rule->dest_ip6_val.ul[0])+6, 6);
-				memcpy(&ipv6rule_mask->ip_port_mask, ((a_uint8_t *)&rule->dest_ip6_mask.ul[0])+6, 6);
+				ipv6rule->ip_port = (rule->dest_ip6_val.ul[2]>>16)&0xffff;
+				ipv6rule->ip_ext_1 = (rule->dest_ip6_val.ul[1])&0xffff;
+				ipv6rule->ip_ext_2 = (rule->dest_ip6_val.ul[1]>>16)&0xffff;
+				ipv6rule_mask->ip_port_mask = (rule->dest_ip6_mask.ul[2]>>16)&0xffff;
+				ipv6rule_mask->ip_ext_1_mask = (rule->dest_ip6_mask.ul[1])&0xffff;
+				ipv6rule_mask->ip_ext_2_mask = (rule->dest_ip6_mask.ul[1]>>16)&0xffff;
 			}
 			else if(ip_bit_range == 2)
 			{
-				ipv6rule->ip_port.ip_hi32bits = rule->dest_ip6_val.ul[3];
-				ipv6rule_mask->ip_port_mask.ip_hi32bits = rule->dest_ip6_mask.ul[3];
+				ipv6rule->ip_ext_1 = (rule->dest_ip6_val.ul[0])&0xffff;
+				ipv6rule->ip_ext_2 = (rule->dest_ip6_val.ul[0]>>16)&0xffff;
+				ipv6rule_mask->ip_ext_1_mask = (rule->dest_ip6_mask.ul[0])&0xffff;
+				ipv6rule_mask->ip_ext_2_mask = (rule->dest_ip6_mask.ul[0]>>16)&0xffff;
 			}
 		}
 		if((ip_bit_range == 2) && (FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_L4_DPORT)))
 		{
 			if(FAL_ACL_FIELD_MASK == rule->dest_l4port_op)
 			{
-				ipv6rule->ip_port.l4_port = rule->dest_l4port_val;
-				ipv6rule_mask->ip_port_mask.l4_port = rule->dest_l4port_mask;
+				ipv6rule->ip_port = rule->dest_l4port_val;
+				ipv6rule_mask->ip_port_mask = rule->dest_l4port_mask;
 			}
 			else
 			{
@@ -2281,20 +2303,20 @@ static sw_error_t _adpt_hppe_acl_ipv6_rule_sw_2_hw(fal_acl_rule_t *rule, a_uint3
 					min = 0;
 					max = rule->dest_l4port_val;
 				}
-				if(FAL_ACL_FIELD_GE == rule->dest_l4port_op)
+				else if(FAL_ACL_FIELD_GE == rule->dest_l4port_op)
 				{
 					min = rule->dest_l4port_val;
 					max = 0xffff;
 				}
-				if(FAL_ACL_FIELD_RANGE == rule->dest_l4port_op)
+				else if(FAL_ACL_FIELD_RANGE == rule->dest_l4port_op)
 				{
 					min = rule->dest_l4port_val;
 					max = rule->dest_l4port_mask;
 				}
 				else
 					return SW_NOT_SUPPORTED;
-				ipv6rule->ip_port.l4_port = min;
-				ipv6rule_mask->ip_port_mask.l4_port = max;
+				ipv6rule->ip_port = min;
+				ipv6rule_mask->ip_port_mask = max;
 				hw_reg->bf.range_en = 1;
 			}
 		}
@@ -2305,26 +2327,36 @@ static sw_error_t _adpt_hppe_acl_ipv6_rule_sw_2_hw(fal_acl_rule_t *rule, a_uint3
 		{
 			if(ip_bit_range == 0)
 			{
-				memcpy(&ipv6rule->ip_port, (a_uint8_t *)&rule->src_ip6_val.ul[0], 6);
-				memcpy(&ipv6rule_mask->ip_port_mask, (a_uint8_t *)&rule->src_ip6_mask.ul[0], 6);
+				ipv6rule->ip_port = rule->src_ip6_val.ul[3]&0xffff;
+				ipv6rule->ip_ext_1 = (rule->src_ip6_val.ul[3]>>16)&0xffff;
+				ipv6rule->ip_ext_2 = (rule->src_ip6_val.ul[2])&0xffff;
+				ipv6rule_mask->ip_port_mask = rule->src_ip6_mask.ul[3]&0xffff;
+				ipv6rule_mask->ip_ext_1_mask = (rule->src_ip6_mask.ul[3]>>16)&0xffff;
+				ipv6rule_mask->ip_ext_2_mask = (rule->src_ip6_mask.ul[2])&0xffff;
 			}
 			else if(ip_bit_range == 1)
 			{
-				memcpy(&ipv6rule->ip_port, ((a_uint8_t *)&rule->src_ip6_val.ul[0])+6, 6);
-				memcpy(&ipv6rule_mask->ip_port_mask, ((a_uint8_t *)&rule->src_ip6_mask.ul[0])+6, 6);
+				ipv6rule->ip_port = (rule->src_ip6_val.ul[2]>>16)&0xffff;
+				ipv6rule->ip_ext_1 = (rule->src_ip6_val.ul[1])&0xffff;
+				ipv6rule->ip_ext_2 = (rule->src_ip6_val.ul[1]>>16)&0xffff;
+				ipv6rule_mask->ip_port_mask = (rule->src_ip6_mask.ul[2]>>16)&0xffff;
+				ipv6rule_mask->ip_ext_1_mask = (rule->src_ip6_mask.ul[1])&0xffff;
+				ipv6rule_mask->ip_ext_2_mask = (rule->src_ip6_mask.ul[1]>>16)&0xffff;
 			}
 			else if(ip_bit_range == 2)
 			{
-				ipv6rule->ip_port.ip_hi32bits = rule->src_ip6_val.ul[3];
-				ipv6rule_mask->ip_port_mask.ip_hi32bits = rule->src_ip6_mask.ul[3];
+				ipv6rule->ip_ext_1 = (rule->src_ip6_val.ul[0])&0xffff;
+				ipv6rule->ip_ext_2 = (rule->src_ip6_val.ul[0]>>16)&0xffff;
+				ipv6rule_mask->ip_ext_1_mask = (rule->src_ip6_mask.ul[0])&0xffff;
+				ipv6rule_mask->ip_ext_2_mask = (rule->src_ip6_mask.ul[0]>>16)&0xffff;
 			}
 		}
 		if((ip_bit_range == 2) && (FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_L4_SPORT)))
 		{
 			if(FAL_ACL_FIELD_MASK == rule->src_l4port_op)
 			{
-				ipv6rule->ip_port.l4_port = rule->src_l4port_val;
-				ipv6rule_mask->ip_port_mask.l4_port = rule->src_l4port_mask;
+				ipv6rule->ip_port = rule->src_l4port_val;
+				ipv6rule_mask->ip_port_mask = rule->src_l4port_mask;
 			}
 			else
 			{
@@ -2334,20 +2366,20 @@ static sw_error_t _adpt_hppe_acl_ipv6_rule_sw_2_hw(fal_acl_rule_t *rule, a_uint3
 					min = 0;
 					max = rule->src_l4port_val;
 				}
-				if(FAL_ACL_FIELD_GE == rule->src_l4port_op)
+				else if(FAL_ACL_FIELD_GE == rule->src_l4port_op)
 				{
 					min = rule->src_l4port_val;
 					max = 0xffff;
 				}
-				if(FAL_ACL_FIELD_RANGE == rule->src_l4port_op)
+				else if(FAL_ACL_FIELD_RANGE == rule->src_l4port_op)
 				{
 					min = rule->src_l4port_val;
 					max = rule->src_l4port_mask;
 				}
 				else
 					return SW_NOT_SUPPORTED;
-				ipv6rule->ip_port.l4_port = min;
-				ipv6rule_mask->ip_port_mask.l4_port = max;
+				ipv6rule->ip_port = min;
+				ipv6rule_mask->ip_port_mask = max;
 				hw_reg->bf.range_en = 1;
 			}
 		}
@@ -2358,8 +2390,8 @@ static sw_error_t _adpt_hppe_acl_ipv6_rule_sw_2_hw(fal_acl_rule_t *rule, a_uint3
 	{
 		if(FAL_ACL_FIELD_MASK == rule->icmp_type_code_op)
 		{
-			ipv6rule->ip_port.l4_port = (rule->icmp_type_val<<8)|rule->icmp_code_val;
-			ipv6rule_mask->ip_port_mask.l4_port = (rule->icmp_type_mask<<8)|rule->icmp_code_mask;
+			ipv6rule->ip_port = (rule->icmp_type_val<<8)|rule->icmp_code_val;
+			ipv6rule_mask->ip_port_mask = (rule->icmp_type_mask<<8)|rule->icmp_code_mask;
 		}
 		else
 		{
@@ -2369,20 +2401,20 @@ static sw_error_t _adpt_hppe_acl_ipv6_rule_sw_2_hw(fal_acl_rule_t *rule, a_uint3
 				min = 0;
 				max = (rule->icmp_type_val<<8)|rule->icmp_code_val;
 			}
-			if(FAL_ACL_FIELD_GE == rule->icmp_type_code_op)
+			else if(FAL_ACL_FIELD_GE == rule->icmp_type_code_op)
 			{
 				min = (rule->icmp_type_val<<8)|rule->icmp_code_val;
 				max = 0xffff;
 			}
-			if(FAL_ACL_FIELD_RANGE == rule->icmp_type_code_op)
+			else if(FAL_ACL_FIELD_RANGE == rule->icmp_type_code_op)
 			{
 				min = (rule->icmp_type_val<<8)|rule->icmp_code_val;
 				max = (rule->icmp_type_mask<<8)|rule->icmp_code_mask;
 			}
 			else
 				return SW_NOT_SUPPORTED;
-			ipv6rule->ip_port.l4_port = min;
-			ipv6rule_mask->ip_port_mask.l4_port = max;
+			ipv6rule->ip_port = min;
+			ipv6rule_mask->ip_port_mask = max;
 			hw_reg->bf.range_en = 1;
 		}
 	}
@@ -2420,12 +2452,12 @@ static sw_error_t _adpt_hppe_acl_ipmisc_rule_sw_2_hw(fal_acl_rule_t *rule,
 				min = 0;
 				max = rule->l3_length;
 			}
-			if(FAL_ACL_FIELD_GE == rule->l3_length_op)
+			else if(FAL_ACL_FIELD_GE == rule->l3_length_op)
 			{
 				min = rule->l3_length;
 				max = 0xffff;
 			}
-			if(FAL_ACL_FIELD_RANGE == rule->l3_length_op)
+			else if(FAL_ACL_FIELD_RANGE == rule->l3_length_op)
 			{
 				min = rule->l3_length;
 				max = rule->l3_length_mask;
@@ -2545,12 +2577,12 @@ static sw_error_t _adpt_hppe_acl_udf_rule_sw_2_hw(fal_acl_rule_t *rule, a_uint32
 					min = 0;
 					max = rule->udf1_val;
 				}
-				if(FAL_ACL_FIELD_GE == rule->udf1_op)
+				else if(FAL_ACL_FIELD_GE == rule->udf1_op)
 				{
 					min = rule->udf1_val;
 					max = 0xffff;
 				}
-				if(FAL_ACL_FIELD_RANGE == rule->udf1_op)
+				else if(FAL_ACL_FIELD_RANGE == rule->udf1_op)
 				{
 					min = rule->udf1_val;
 					max = rule->udf1_mask;
@@ -2597,12 +2629,12 @@ static sw_error_t _adpt_hppe_acl_udf_rule_sw_2_hw(fal_acl_rule_t *rule, a_uint32
 					min = 0;
 					max = rule->udf0_val;
 				}
-				if(FAL_ACL_FIELD_GE == rule->udf0_op)
+				else if(FAL_ACL_FIELD_GE == rule->udf0_op)
 				{
 					min = rule->udf0_val;
 					max = 0xffff;
 				}
-				if(FAL_ACL_FIELD_RANGE == rule->udf0_op)
+				else if(FAL_ACL_FIELD_RANGE == rule->udf0_op)
 				{
 					min = rule->udf0_val;
 					max = rule->udf0_mask;
@@ -3073,13 +3105,13 @@ _adpt_hppe_acl_rule_dump(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_
 					list_id*ADPT_ACL_ENTRY_NUM_PER_LIST+i, &hw_mask);
 				hppe_ipo_action_get(dev_id,
 					list_id*ADPT_ACL_ENTRY_NUM_PER_LIST+i, &hw_act);
-				printk("hw_entry %d\n", i);
+				printk("hw_entry %d\n", list_id*ADPT_ACL_ENTRY_NUM_PER_LIST+i);
 				_adpt_acl_reg_dump((u_int8_t *)&hw_reg, sizeof(hw_reg));
 				printk("\n");
-				printk("hw_entry_mask %d\n", i);
+				printk("hw_entry_mask %d\n", list_id*ADPT_ACL_ENTRY_NUM_PER_LIST+i);
 				_adpt_acl_reg_dump((u_int8_t *)&hw_mask, sizeof(hw_mask));
 				printk("\n");
-				printk("hw_action %d\n", i);
+				printk("hw_action %d\n", list_id*ADPT_ACL_ENTRY_NUM_PER_LIST+i);
 				_adpt_acl_reg_dump((u_int8_t *)&hw_act, sizeof(hw_act));
 				printk("\n");
 			}
