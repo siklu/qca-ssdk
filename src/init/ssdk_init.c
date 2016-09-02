@@ -2646,11 +2646,9 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 		return SW_BAD_PARAM;
 	}
 
-#if 0
 	ssdk_dt_global.ess_clk = of_clk_get_by_name(switch_node, "ess_clk");
 	if (IS_ERR(ssdk_dt_global.ess_clk))
 		printk("Getting ess_clk failed!\n");
-#endif
 
 	printk("switchreg_base_addr: 0x%x\n", ssdk_dt_global.switchreg_base_addr);
 	printk("switchreg_size: 0x%x\n", ssdk_dt_global.switchreg_size);
@@ -2662,7 +2660,6 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 	else
 		ssdk_dt_global.switch_reg_access_mode = HSL_REG_MDIO;
 
-#if 0
 	if (of_property_read_u32(switch_node, "switch_cpu_bmp", &cfg->port_cfg.cpu_bmp)
 		|| of_property_read_u32(switch_node, "switch_lan_bmp", &cfg->port_cfg.lan_bmp)
 		|| of_property_read_u32(switch_node, "switch_wan_bmp", &cfg->port_cfg.wan_bmp)) {
@@ -2756,7 +2753,7 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 		if (j >= 5)
 			break;
 	}
-#endif
+
 	return SW_OK;
 }
 #endif
