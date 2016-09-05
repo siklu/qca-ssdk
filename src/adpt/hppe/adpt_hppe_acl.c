@@ -3235,7 +3235,7 @@ adpt_hppe_acl_udf_profile_get(a_uint32_t dev_id, fal_acl_udf_pkt_type_t pkt_type
 		*udf_type = FAL_ACL_UDF_TYPE_L4;
 	}
 
-	*offset = udf_ctrl.bf.udf_offset;
+	*offset = udf_ctrl.bf.udf_offset*2;
 
 	return SW_OK;
 }
@@ -3263,7 +3263,9 @@ adpt_hppe_acl_udf_profile_set(a_uint32_t dev_id, fal_acl_udf_pkt_type_t pkt_type
 	else
 		return SW_NOT_SUPPORTED;
 
-	udf_ctrl.bf.udf_offset = offset;
+	if(offset % 2)/*only support even data*/
+		return SW_BAD_VALUE;
+	udf_ctrl.bf.udf_offset = offset/2;
 
 	return g_udf_set_func[pkt_type][udf_idx](dev_id, &udf_ctrl);
 }
