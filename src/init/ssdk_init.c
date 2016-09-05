@@ -43,6 +43,9 @@
 #ifdef IN_LED
 #include "fal_led.h"
 #endif
+#ifdef IN_SHAPER
+#include "fal_shaper.h"
+#endif
 #include "hsl.h"
 #include "hsl_dev.h"
 #include "ssdk_init.h"
@@ -3197,6 +3200,24 @@ qca_hppe_portctrl_hw_init()
 
 	return 0;
 }
+static int
+qca_hppe_shaper_hw_init()
+{
+	fal_shaper_token_number_t token_number;
+	a_uint32_t i = 0;
+
+	token_number.c_token_number_negative_en = 0;
+	token_number.c_token_number = 0xfffffff;
+
+	fal_port_shaper_time_slot_set(0, 8);
+	fal_flow_shaper_time_slot_set(0, 64);
+	fal_queue_shaper_time_slot_set(0, 300);
+	for(i = 0; i < 8; i ++)
+	{
+		fal_port_shaper_token_number_set(0, i, &token_number);
+	}
+	return 0;
+}
 
 static int
 qca_hppe_hw_init(ssdk_init_cfg *cfg)
@@ -3293,6 +3314,7 @@ qca_hppe_hw_init(ssdk_init_cfg *cfg)
 	qca_hppe_vsi_hw_init();
 
 	qca_hppe_portctrl_hw_init();
+	qca_hppe_shaper_hw_init();
 
 	return 0;
 }

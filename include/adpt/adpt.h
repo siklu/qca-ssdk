@@ -44,6 +44,7 @@ extern "C" {
 #include "fal_sec.h"
 #include "fal_acl.h"
 #include "fal_qos.h"
+#include "fal_shaper.h"
 
 #define ADPT_DEV_ID_CHECK(dev_id) \
 do { \
@@ -713,6 +714,41 @@ typedef sw_error_t (*adpt_qos_port_group_get_func)(a_uint32_t dev_id, fal_port_t
 typedef sw_error_t (*adpt_ring_queue_map_get_func)(a_uint32_t dev_id, 
 					a_uint32_t ring_id, fal_queue_bmp_t *queue_bmp);
 
+//shaper
+
+typedef sw_error_t (*adpt_flow_shaper_set_func)(a_uint32_t dev_id, a_uint32_t flow_id,
+					fal_shaper_config_t * shaper);
+typedef sw_error_t (*adpt_queue_shaper_get_func)(a_uint32_t dev_id, a_uint32_t queue_id,
+					fal_shaper_config_t * shaper);
+typedef sw_error_t (*adpt_queue_shaper_token_number_set_func)(a_uint32_t dev_id,a_uint32_t queue_id,
+					fal_shaper_token_number_t *token_number);
+typedef sw_error_t (*adpt_port_shaper_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+					fal_shaper_config_t * shaper);
+typedef sw_error_t (*adpt_flow_shaper_time_slot_get_func)(a_uint32_t dev_id, a_uint32_t *time_slot);
+typedef sw_error_t (*adpt_port_shaper_time_slot_get_func)(a_uint32_t dev_id, a_uint32_t *time_slot);
+typedef sw_error_t (*adpt_flow_shaper_time_slot_set_func)(a_uint32_t dev_id, a_uint32_t time_slot);
+typedef sw_error_t (*adpt_port_shaper_token_number_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+					fal_shaper_token_number_t *token_number);
+typedef sw_error_t (*adpt_queue_shaper_token_number_get_func)(a_uint32_t dev_id, a_uint32_t queue_id,
+					fal_shaper_token_number_t *token_number);
+typedef sw_error_t (*adpt_queue_shaper_time_slot_get_func)(a_uint32_t dev_id, a_uint32_t *time_slot);
+typedef sw_error_t (*adpt_port_shaper_token_number_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+					fal_shaper_token_number_t *token_number);
+typedef sw_error_t (*adpt_flow_shaper_token_number_set_func)(a_uint32_t dev_id, a_uint32_t flow_id,
+					fal_shaper_token_number_t *token_number);
+typedef sw_error_t (*adpt_flow_shaper_token_number_get_func)(a_uint32_t dev_id, a_uint32_t flow_id,
+					fal_shaper_token_number_t *token_number);
+typedef sw_error_t (*adpt_port_shaper_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+					fal_shaper_config_t * shaper);
+typedef sw_error_t (*adpt_port_shaper_time_slot_set_func)(a_uint32_t dev_id, a_uint32_t time_slot);
+typedef sw_error_t (*adpt_flow_shaper_get_func)(a_uint32_t dev_id, a_uint32_t flow_id,
+					fal_shaper_config_t * shaper);
+typedef sw_error_t (*adpt_queue_shaper_set_func)(a_uint32_t dev_id,a_uint32_t queue_id,
+					fal_shaper_config_t * shaper);
+typedef sw_error_t (*adpt_queue_shaper_time_slot_set_func)(a_uint32_t dev_id, a_uint32_t time_slot);
+typedef sw_error_t (*adpt_shaper_ipg_preamble_length_get_func)(a_uint32_t dev_id, a_uint32_t *ipg_pre_length);
+typedef sw_error_t (*adpt_shaper_ipg_preamble_length_set_func)(a_uint32_t dev_id, a_uint32_t ipg_pre_length);
+
 typedef struct
 {
 	adpt_fdb_first_func adpt_fdb_first;
@@ -1021,6 +1057,29 @@ typedef struct
 	adpt_qos_cosmap_flow_get_func adpt_qos_cosmap_flow_get;
 	adpt_qos_port_group_get_func adpt_qos_port_group_get;
 	adpt_ring_queue_map_get_func adpt_ring_queue_map_get;
+
+//shaper
+
+	adpt_flow_shaper_set_func adpt_flow_shaper_set;
+	adpt_queue_shaper_get_func adpt_queue_shaper_get;
+	adpt_queue_shaper_token_number_set_func adpt_queue_shaper_token_number_set;
+	adpt_port_shaper_get_func adpt_port_shaper_get;
+	adpt_flow_shaper_time_slot_get_func adpt_flow_shaper_time_slot_get;
+	adpt_port_shaper_time_slot_get_func adpt_port_shaper_time_slot_get;
+	adpt_flow_shaper_time_slot_set_func adpt_flow_shaper_time_slot_set;
+	adpt_shaper_ipg_preamble_length_set_func adpt_shaper_ipg_preamble_length_set;
+	adpt_port_shaper_token_number_set_func adpt_port_shaper_token_number_set;
+	adpt_queue_shaper_token_number_get_func adpt_queue_shaper_token_number_get;
+	adpt_queue_shaper_time_slot_get_func adpt_queue_shaper_time_slot_get;
+	adpt_port_shaper_token_number_get_func adpt_port_shaper_token_number_get;
+	adpt_flow_shaper_token_number_set_func adpt_flow_shaper_token_number_set;
+	adpt_flow_shaper_token_number_get_func adpt_flow_shaper_token_number_get;
+	adpt_shaper_ipg_preamble_length_get_func adpt_shaper_ipg_preamble_length_get;
+	adpt_port_shaper_set_func adpt_port_shaper_set;
+	adpt_port_shaper_time_slot_set_func adpt_port_shaper_time_slot_set;
+	adpt_flow_shaper_get_func adpt_flow_shaper_get;
+	adpt_queue_shaper_set_func adpt_queue_shaper_set;
+	adpt_queue_shaper_time_slot_set_func adpt_queue_shaper_time_slot_set;
 }adpt_api_t;
 
 

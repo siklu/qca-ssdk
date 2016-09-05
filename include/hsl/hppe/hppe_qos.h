@@ -175,16 +175,6 @@ hppe_min_max_mode_cfg_set(
 		union min_max_mode_cfg_u *value);
 
 sw_error_t
-hppe_ipg_pre_len_cfg_get(
-		a_uint32_t dev_id,
-		union ipg_pre_len_cfg_u *value);
-
-sw_error_t
-hppe_ipg_pre_len_cfg_set(
-		a_uint32_t dev_id,
-		union ipg_pre_len_cfg_u *value);
-
-sw_error_t
 hppe_tm_dbg_addr_get(
 		a_uint32_t dev_id,
 		union tm_dbg_addr_u *value);
@@ -709,16 +699,6 @@ hppe_min_max_mode_cfg_min_max_mode_get(
 
 sw_error_t
 hppe_min_max_mode_cfg_min_max_mode_set(
-		a_uint32_t dev_id,
-		unsigned int value);
-
-sw_error_t
-hppe_ipg_pre_len_cfg_ipg_pre_len_get(
-		a_uint32_t dev_id,
-		unsigned int *value);
-
-sw_error_t
-hppe_ipg_pre_len_cfg_ipg_pre_len_set(
 		a_uint32_t dev_id,
 		unsigned int value);
 

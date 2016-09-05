@@ -1162,6 +1162,22 @@ struct sub_cmd_des_t g_pppoe_des[] =
 };
 #endif
 
+#ifdef IN_SHAPER
+	struct sub_cmd_des_t g_shaper_des[] =
+	{
+		{"PortTimeslot", "set",   SW_API_PORT_SHAPER_TIMESLOT_SET, NULL},
+		{"FlowTimeslot", "set",   SW_API_FLOW_SHAPER_TIMESLOT_SET, NULL},
+		{"QueueTimeslot", "set",	 SW_API_QUEUE_SHAPER_TIMESLOT_SET, NULL},
+		{"PortToken", "set",   SW_API_PORT_SHAPER_TOKEN_NUMBER_SET, NULL},
+		{"FlowToken", "set",   SW_API_FLOW_SHAPER_TOKEN_NUMBER_SET, NULL},
+		{"QueueToken", "set",   SW_API_QUEUE_SHAPER_TOKEN_NUMBER_SET, NULL},
+		{"PortShaper", "set",   SW_API_PORT_SHAPER_SET, NULL},
+		{"FlowShaper", "set",   SW_API_FLOW_SHAPER_SET, NULL},
+		{"QueueShaper", "set",   SW_API_QUEUE_SHAPER_SET, NULL},
+		{"Ipg", "set",   SW_API_SHAPER_IPG_PRE_SET, NULL},
+		{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
+	};
+#endif
     /*QM*/
 #ifdef IN_QM
 struct sub_cmd_des_t g_qm_des[] =
@@ -1348,6 +1364,12 @@ struct cmd_des_t gcmd_des[] =
     },
 #endif
 
+     /*shaper*/
+#ifdef IN_SHAPER
+    {
+        "shaper", g_shaper_des,
+    },
+#endif
         /*qm Control*/
 #ifdef IN_QM
     {

@@ -442,6 +442,58 @@ hppe_psch_comp_cfg_tbl_set(
 }
 
 sw_error_t
+hppe_ipg_pre_len_cfg_get(
+		a_uint32_t dev_id,
+		union ipg_pre_len_cfg_u *value)
+{
+	return hppe_reg_get(
+				dev_id,
+				TRAFFIC_MANAGER_BASE_ADDR + IPG_PRE_LEN_CFG_ADDRESS,
+				&value->val);
+}
+
+sw_error_t
+hppe_ipg_pre_len_cfg_set(
+		a_uint32_t dev_id,
+		union ipg_pre_len_cfg_u *value)
+{
+	return hppe_reg_set(
+				dev_id,
+				TRAFFIC_MANAGER_BASE_ADDR + IPG_PRE_LEN_CFG_ADDRESS,
+				value->val);
+}
+
+sw_error_t
+hppe_ipg_pre_len_cfg_ipg_pre_len_get(
+		a_uint32_t dev_id,
+		a_uint32_t *value)
+{
+	union ipg_pre_len_cfg_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_ipg_pre_len_cfg_get(dev_id, &reg_val);
+	*value = reg_val.bf.ipg_pre_len;
+	return ret;
+}
+
+sw_error_t
+hppe_ipg_pre_len_cfg_ipg_pre_len_set(
+		a_uint32_t dev_id,
+		a_uint32_t value)
+{
+	union ipg_pre_len_cfg_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_ipg_pre_len_cfg_get(dev_id, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.ipg_pre_len = value;
+	ret = hppe_ipg_pre_len_cfg_set(dev_id, &reg_val);
+	return ret;
+}
+
+
+sw_error_t
 hppe_shp_slot_cfg_l0_l0_shp_slot_time_get(
 		a_uint32_t dev_id,
 		a_uint32_t *value)

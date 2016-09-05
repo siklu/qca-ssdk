@@ -704,4 +704,27 @@ union psch_comp_cfg_tbl_u {
 	struct psch_comp_cfg_tbl bf;
 };
 
+/*[register] IPG_PRE_LEN_CFG*/
+#define IPG_PRE_LEN_CFG
+#define IPG_PRE_LEN_CFG_ADDRESS 0x8
+#define IPG_PRE_LEN_CFG_NUM     1
+#define IPG_PRE_LEN_CFG_INC     0x4
+#define IPG_PRE_LEN_CFG_TYPE    REG_TYPE_RW
+#define IPG_PRE_LEN_CFG_DEFAULT 0x0
+	/*[field] IPG_PRE_LEN*/
+	#define IPG_PRE_LEN_CFG_IPG_PRE_LEN
+	#define IPG_PRE_LEN_CFG_IPG_PRE_LEN_OFFSET  0
+	#define IPG_PRE_LEN_CFG_IPG_PRE_LEN_LEN     5
+	#define IPG_PRE_LEN_CFG_IPG_PRE_LEN_DEFAULT 0x0
+
+struct ipg_pre_len_cfg {
+	a_uint32_t  ipg_pre_len:5;
+	a_uint32_t  _reserved0:27;
+};
+
+union ipg_pre_len_cfg_u {
+	a_uint32_t val;
+	struct ipg_pre_len_cfg bf;
+};
+
 #endif

@@ -109,6 +109,9 @@ ifeq (TRUE, $(IN_PPPOE))
   SRC_LIST += fal_pppoe.c
 endif
 
+ifeq (TRUE, $(IN_SHAPER))
+  SRC_LIST += fal_shaper.c
+endif
 include $(PRJ_PATH)/make/components.mk
 include $(PRJ_PATH)/make/defs.mk
 include $(PRJ_PATH)/make/target.mk
