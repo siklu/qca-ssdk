@@ -25,6 +25,7 @@
 #include "isisc_reg.h"
 #include "isisc_fdb_prv.h"
 
+#ifndef IN_FDB_MINI
 static sw_error_t
 _isisc_wl_feature_check(a_uint32_t dev_id)
 {
@@ -44,6 +45,7 @@ _isisc_wl_feature_check(a_uint32_t dev_id)
         return SW_NOT_SUPPORTED;
     }
 }
+#endif
 
 static a_bool_t
 _isisc_fdb_is_zeroaddr(fal_mac_addr_t addr)
@@ -75,6 +77,7 @@ _isisc_fdb_fill_addr(fal_mac_addr_t addr, a_uint32_t * reg0, a_uint32_t * reg1)
     return;
 }
 
+#ifndef IN_FDB_MINI
 static sw_error_t
 _isisc_atu_sw_to_hw(a_uint32_t dev_id, const fal_fdb_entry_t * entry,
                    a_uint32_t reg[])
@@ -195,6 +198,7 @@ _isisc_atu_sw_to_hw(a_uint32_t dev_id, const fal_fdb_entry_t * entry,
     _isisc_fdb_fill_addr(entry->addr, &reg[0], &reg[1]);
     return SW_OK;
 }
+#endif
 
 static void
 _isisc_atu_hw_to_sw(const a_uint32_t reg[], fal_fdb_entry_t * entry)
@@ -541,6 +545,7 @@ _isisc_fdb_get(a_uint32_t dev_id, fal_fdb_op_t * option, fal_fdb_entry_t * entry
     return SW_OK;
 }
 
+#ifndef IN_FDB_MINI
 static sw_error_t
 _isisc_fdb_add(a_uint32_t dev_id, const fal_fdb_entry_t * entry)
 {
@@ -558,6 +563,7 @@ _isisc_fdb_add(a_uint32_t dev_id, const fal_fdb_entry_t * entry)
     rv = _isisc_fdb_commit(dev_id, ARL_LOAD_ENTRY);
     return rv;
 }
+#endif
 
 static sw_error_t
 _isisc_fdb_del_all(a_uint32_t dev_id, a_uint32_t flag)
