@@ -441,6 +441,7 @@ _isisc_qos_port_mode_set(a_uint32_t dev_id, fal_port_t port_id,
     return rv;
 }
 
+#ifndef IN_QOS_MINI
 static sw_error_t
 _isisc_qos_port_mode_get(a_uint32_t dev_id, fal_port_t port_id,
                         fal_qos_mode_t mode, a_bool_t * enable)
@@ -487,7 +488,7 @@ _isisc_qos_port_mode_get(a_uint32_t dev_id, fal_port_t port_id,
 
     return SW_OK;
 }
-#ifndef IN_QOS_MINI
+
 static sw_error_t
 _isisc_qos_port_mode_pri_set(a_uint32_t dev_id, fal_port_t port_id,
                             fal_qos_mode_t mode, a_uint32_t pri)

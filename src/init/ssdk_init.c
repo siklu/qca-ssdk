@@ -1296,6 +1296,7 @@ qca_phy_config_init(struct phy_device *pdev)
 
 struct qca_phy_priv *qca_phy_priv_global;
 
+#ifdef DESS
 static int ssdk_switch_register(void)
 {
 	struct switch_dev *sw_dev;
@@ -1377,6 +1378,7 @@ static int ssdk_switch_unregister(void)
 	kfree(qca_phy_priv_global);
 	return 0;
 }
+#endif
 
 static int
 qca_phy_read_status(struct phy_device *pdev)
@@ -2597,6 +2599,7 @@ static int chip_ver_get(ssdk_init_cfg* cfg)
 	return rv;
 }
 
+#ifdef DESS
 static int ssdk_flow_default_act_init(void)
 {
 	a_uint32_t vrf_id = 0;
@@ -2639,6 +2642,8 @@ static int ssdk_portvlan_init(a_uint32_t cpu_bmp, a_uint32_t lan_bmp, a_uint32_t
 	}
 	return 0;
 }
+#endif
+
 #ifdef DESS
 static int ssdk_dess_led_init(ssdk_init_cfg *cfg)
 {
@@ -3083,6 +3088,7 @@ void ssdk_intf_set(struct net_device *dev, char op)
 
 }
 
+#ifdef DESS
 static int ssdk_inet_event(struct notifier_block *this, unsigned long event, void *ptr)
 {
 	struct net_device *dev = ((struct in_ifaddr *)ptr)->ifa_dev->dev;
@@ -3100,6 +3106,7 @@ static int ssdk_inet_event(struct notifier_block *this, unsigned long event, voi
 	}
 	return NOTIFY_DONE;
 }
+#endif
 #endif
 
 //#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
@@ -3140,7 +3147,9 @@ static int __init regi_init(void)
 	ssdk_init_cfg cfg;
 	int rv = 0;
 	garuda_init_spec_cfg chip_spec_cfg;
+	#ifdef DESS
 	a_uint32_t psgmii_result = 0;
+	#endif
 	ssdk_dt_global.switch_reg_access_mode = HSL_REG_MDIO;
 	ssdk_dt_global.psgmii_reg_access_mode = HSL_REG_MDIO;
 
