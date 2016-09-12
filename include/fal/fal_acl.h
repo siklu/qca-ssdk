@@ -141,20 +141,20 @@ extern "C" {
 #define    FAL_ACL_FIELD_ESP_HEADER    43
 #define    FAL_ACL_FIELD_MOBILITY_HEADER    44
 #define    FAL_ACL_FIELD_FRAGMENT_HEADER    45
-#define    FAL_ACL_FIELD_OTHER_EXT_HEADER    45
-#define    FAL_ACL_FIELD_L3_TTL    46
-#define    FAL_ACL_FIELD_IPV4_OPTION    47
-#define    FAL_ACL_FIELD_FIRST_FRAGMENT    48
-#define    FAL_ACL_FIELD_L3_LENGTH    49
-#define    FAL_ACL_FIELD_VSI_VALID    50
-#define    FAL_ACL_FIELD_IP_PKT_TYPE    51
+#define    FAL_ACL_FIELD_OTHER_EXT_HEADER    46
+#define    FAL_ACL_FIELD_L3_TTL    47
+#define    FAL_ACL_FIELD_IPV4_OPTION    48
+#define    FAL_ACL_FIELD_FIRST_FRAGMENT    49
+#define    FAL_ACL_FIELD_L3_LENGTH    50
+#define    FAL_ACL_FIELD_VSI_VALID    51
+#define    FAL_ACL_FIELD_IP_PKT_TYPE    52
 
-#define    FAL_ACL_FIELD_UDF0            52
-#define    FAL_ACL_FIELD_UDF1            53
-#define    FAL_ACL_FIELD_UDF2            54
-#define    FAL_ACL_FIELD_UDF3            55
+#define    FAL_ACL_FIELD_UDF0            53
+#define    FAL_ACL_FIELD_UDF1            54
+#define    FAL_ACL_FIELD_UDF2            55
+#define    FAL_ACL_FIELD_UDF3            56
 
-#define    FAL_ACL_FIELD_NUM    56
+#define    FAL_ACL_FIELD_NUM    57
 
 
 #define    FAL_ACL_ACTION_PERMIT        0
@@ -379,7 +379,7 @@ extern "C" {
 
 	/*new add match fields for hawkeye*/
         a_uint8_t pri; /*rule priority 0-7*/
-        a_uint8_t post_routing;
+        a_bool_t post_routing;
         a_uint8_t res_chain;
 
 	a_bool_t is_ip_val;
