@@ -21,7 +21,11 @@
 #include "fal_qos.h"
 #include "hppe_qos_reg.h"
 #include "hppe_qos.h"
+#include "hppe_shaper_reg.h"
+#include "hppe_shaper.h"
 #include "adpt.h"
+
+static fal_queue_bmp_t port_queue_map[8] = {0};
 
 sw_error_t
 adpt_hppe_l1_flow_map_get(a_uint32_t dev_id,
@@ -33,6 +37,7 @@ adpt_hppe_l1_flow_map_get(a_uint32_t dev_id,
 	union l1_c_sp_cfg_tbl_u l1_c_sp_cfg_tbl;
 	union l1_e_sp_cfg_tbl_u l1_e_sp_cfg_tbl;
 	union l1_flow_port_map_tbl_u port_map;
+	union l1_comp_cfg_tbl_u l1_comp_cfg_tbl;
 	a_uint32_t c_sp_id, e_sp_id;
 
 	memset(&l1_flow_map_tbl, 0, sizeof(l1_flow_map_tbl));
@@ -60,6 +65,9 @@ adpt_hppe_l1_flow_map_get(a_uint32_t dev_id,
 
 	hppe_l1_flow_port_map_tbl_get(dev_id, node_id, &port_map);
 	*port_id = port_map.bf.port_num;
+
+	hppe_l1_comp_cfg_tbl_get(dev_id, node_id, &l1_comp_cfg_tbl);
+	scheduler_cfg->drr_frame_mode = l1_comp_cfg_tbl.bf.drr_meter_len;
 
 	return SW_OK;
 }
@@ -156,7 +164,9 @@ adpt_hppe_l0_queue_map_set(a_uint32_t dev_id,
 	union l0_c_sp_cfg_tbl_u l0_c_sp_cfg_tbl;
 	union l0_e_sp_cfg_tbl_u l0_e_sp_cfg_tbl;
 	union l0_flow_port_map_tbl_u l0_flow_port_map_tbl;
+	union l0_comp_cfg_tbl_u l0_comp_cfg_tbl;
 	a_uint32_t c_sp_id, e_sp_id;
+	a_uint32_t i, j, k;
 
 	memset(&l0_flow_map_tbl, 0, sizeof(l0_flow_map_tbl));
 	ADPT_DEV_ID_CHECK(dev_id);
@@ -184,6 +194,19 @@ adpt_hppe_l0_queue_map_set(a_uint32_t dev_id,
 	l0_flow_port_map_tbl.bf.port_num = port_id;
 	hppe_l0_flow_port_map_tbl_set(dev_id, node_id, &l0_flow_port_map_tbl);
 
+	hppe_l0_comp_cfg_tbl_get(dev_id, node_id, &l0_comp_cfg_tbl);
+	l0_comp_cfg_tbl.bf.drr_meter_len = scheduler_cfg->drr_frame_mode;
+	hppe_l0_comp_cfg_tbl_set(dev_id, node_id, &l0_comp_cfg_tbl);
+
+	i = node_id / 32;
+	j = node_id % 32;
+	port_queue_map[port_id].bmp[i] |= 1 << j;
+	for (k = 0; k < 8; k++) {
+		if (k != port_id) {
+			port_queue_map[k].bmp[i] &= ~(1 << j);
+		}
+	}
+
 	return SW_OK;
 }
 
@@ -197,6 +220,7 @@ adpt_hppe_l0_queue_map_get(a_uint32_t dev_id,
 	union l0_c_sp_cfg_tbl_u l0_c_sp_cfg_tbl;
 	union l0_e_sp_cfg_tbl_u l0_e_sp_cfg_tbl;
 	union l0_flow_port_map_tbl_u l0_flow_port_map_tbl;
+	union l0_comp_cfg_tbl_u l0_comp_cfg_tbl;
 	a_uint32_t c_sp_id, e_sp_id;
 
 	memset(&l0_flow_map_tbl, 0, sizeof(l0_flow_map_tbl));
@@ -224,6 +248,9 @@ adpt_hppe_l0_queue_map_get(a_uint32_t dev_id,
 
 	hppe_l0_flow_port_map_tbl_get(dev_id, node_id, &l0_flow_port_map_tbl);
 	*port_id = l0_flow_port_map_tbl.bf.port_num;
+
+	hppe_l0_comp_cfg_tbl_get(dev_id, node_id, &l0_comp_cfg_tbl);
+	scheduler_cfg->drr_frame_mode = l0_comp_cfg_tbl.bf.drr_meter_len;
 
 	return SW_OK;
 }
@@ -452,6 +479,7 @@ adpt_hppe_l1_flow_map_set(a_uint32_t dev_id,
 	union l1_c_sp_cfg_tbl_u l1_c_sp_cfg_tbl;
 	union l1_e_sp_cfg_tbl_u l1_e_sp_cfg_tbl;
 	union l1_flow_port_map_tbl_u l1_flow_port_map_tbl;
+	union l1_comp_cfg_tbl_u l1_comp_cfg_tbl;
 	a_uint32_t c_sp_id, e_sp_id;
 
 	memset(&l1_flow_map_tbl, 0, sizeof(l1_flow_map_tbl));
@@ -479,6 +507,10 @@ adpt_hppe_l1_flow_map_set(a_uint32_t dev_id,
 
 	l1_flow_port_map_tbl.bf.port_num = port_id;
 	hppe_l1_flow_port_map_tbl_set(dev_id, node_id, &l1_flow_port_map_tbl);
+
+	hppe_l1_comp_cfg_tbl_get(dev_id, node_id, &l1_comp_cfg_tbl);
+	l1_comp_cfg_tbl.bf.drr_meter_len = scheduler_cfg->drr_frame_mode;
+	hppe_l1_comp_cfg_tbl_set(dev_id, node_id, &l1_comp_cfg_tbl);
 
 	return SW_OK;
 }
@@ -592,21 +624,69 @@ sw_error_t
 adpt_hppe_port_queues_get(a_uint32_t dev_id, 
 				fal_port_t port_id, fal_queue_bmp_t *queue_bmp)
 {
-	a_uint32_t i = 0;
-	union l0_flow_port_map_tbl_u port_map;
-
+	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(queue_bmp);
-	memset(queue_bmp, 0, sizeof(fal_queue_bmp_t));
 
-	for (i = 0; i < L0_FLOW_PORT_MAP_TBL_MAX_ENTRY; i++) {
-		hppe_l0_flow_port_map_tbl_get(dev_id, i, &port_map);
-		if (port_map.bf.port_num == port_id) {
-			a_uint32_t j = 0, k = 0;
-			j = i /32;
-			k = i %32;
-			queue_bmp->bmp[j] |= 1 << k;
-		}
-	}
+	*queue_bmp = port_queue_map[port_id];
+	
+	return SW_OK;
+}
+
+sw_error_t
+adpt_hppe_tdm_tick_num_set(a_uint32_t dev_id, a_uint32_t tick_num)
+{
+	union tdm_depth_cfg_u tdm_depth_cfg;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	tdm_depth_cfg.bf.tdm_depth = tick_num;
+	return hppe_tdm_depth_cfg_set(dev_id, &tdm_depth_cfg);
+}
+
+sw_error_t
+adpt_hppe_tdm_tick_num_get(a_uint32_t dev_id, a_uint32_t *tick_num)
+{
+	union tdm_depth_cfg_u tdm_depth_cfg;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(tick_num);
+
+	hppe_tdm_depth_cfg_get(dev_id, &tdm_depth_cfg);
+	*tick_num = tdm_depth_cfg.bf.tdm_depth;
+
+	return SW_OK;
+}
+
+sw_error_t
+adpt_hppe_port_scheduler_cfg_set(a_uint32_t dev_id,
+				a_uint32_t tick_index,
+				fal_port_scheduler_cfg_t *cfg)
+{
+	union psch_tdm_cfg_tbl_u psch_tdm_cfg;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(cfg);
+
+	psch_tdm_cfg.bf.ens_port_bitmap = cfg->en_scheduler_port_bmp;
+	psch_tdm_cfg.bf.ens_port = cfg->en_scheduler_port;
+	psch_tdm_cfg.bf.des_port = cfg->de_scheduler_port;
+	return hppe_psch_tdm_cfg_tbl_set(dev_id, tick_index, &psch_tdm_cfg);
+}
+
+sw_error_t
+adpt_hppe_port_scheduler_cfg_get(a_uint32_t dev_id,
+				a_uint32_t tick_index,
+				fal_port_scheduler_cfg_t *cfg)
+{
+	union psch_tdm_cfg_tbl_u psch_tdm_cfg;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(cfg);
+
+	hppe_psch_tdm_cfg_tbl_get(dev_id, tick_index, &psch_tdm_cfg);
+	cfg->en_scheduler_port_bmp = psch_tdm_cfg.bf.ens_port_bitmap;
+	cfg->en_scheduler_port = psch_tdm_cfg.bf.ens_port;
+	cfg->de_scheduler_port = psch_tdm_cfg.bf.des_port;
 
 	return SW_OK;
 }
@@ -637,6 +717,10 @@ sw_error_t adpt_hppe_qos_init(a_uint32_t dev_id)
 	p_adpt_api->adpt_qos_cosmap_flow_get = adpt_hppe_qos_cosmap_flow_get;
 	p_adpt_api->adpt_qos_port_group_get = adpt_hppe_qos_port_group_get;
 	p_adpt_api->adpt_ring_queue_map_get = adpt_hppe_ring_queue_map_get;
+	p_adpt_api->adpt_tdm_tick_num_set = adpt_hppe_tdm_tick_num_set;
+	p_adpt_api->adpt_tdm_tick_num_get = adpt_hppe_tdm_tick_num_get;
+	p_adpt_api->adpt_port_scheduler_cfg_set = adpt_hppe_port_scheduler_cfg_set;
+	p_adpt_api->adpt_port_scheduler_cfg_get = adpt_hppe_port_scheduler_cfg_get;
 
 	return SW_OK;
 }

@@ -80,6 +80,12 @@ typedef struct {
 	a_uint8_t internal_dp;
 } fal_qos_cosmap_t;
 
+typedef enum {
+	FAL_DRR_IPG_PREAMBLE_FRAME_CRC = 0, /* IPG + Preamble + Frame + CRC */
+	FAL_DRR_FRAME_CRC, /* Frame + CRC */
+	FAL_DRR_L3_EXCLUDE_CRC  /* after Ethernet type excude CRC*/
+} fal_qos_drr_frame_mode_t;
+
 typedef struct {
 	a_uint8_t sp_id; /* SP id L0:0~63 L1:0~7 */
 	a_uint8_t e_pri; /*SP priority for E path:0~7 low to high */
@@ -90,7 +96,14 @@ typedef struct {
 	a_uint16_t c_drr_wt; /* DRR weight in C DRR: 0~1023 */
 	a_uint8_t c_drr_unit; /* 0:byte based; 1:packet based */
 	a_uint8_t e_drr_unit; /* 0:byte based; 1:packet based */
+	fal_qos_drr_frame_mode_t drr_frame_mode;
 } fal_qos_scheduler_cfg_t;
+
+typedef struct {
+	a_uint32_t en_scheduler_port_bmp; /* port bitmap of en-scheduler */
+	a_uint32_t en_scheduler_port; /* port of en-scheduler */
+	a_uint32_t de_scheduler_port; /* port of de-shceduler */
+} fal_port_scheduler_cfg_t;
 
 typedef enum {
 	FAL_QUEUE_SCHEDULER_LEVEL0 = 0,

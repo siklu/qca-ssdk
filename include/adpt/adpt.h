@@ -45,6 +45,7 @@ extern "C" {
 #include "fal_acl.h"
 #include "fal_qos.h"
 #include "fal_shaper.h"
+#include "fal_bm.h"
 
 #define ADPT_DEV_ID_CHECK(dev_id) \
 do { \
@@ -749,6 +750,36 @@ typedef sw_error_t (*adpt_queue_shaper_time_slot_set_func)(a_uint32_t dev_id, a_
 typedef sw_error_t (*adpt_shaper_ipg_preamble_length_get_func)(a_uint32_t dev_id, a_uint32_t *ipg_pre_length);
 typedef sw_error_t (*adpt_shaper_ipg_preamble_length_set_func)(a_uint32_t dev_id, a_uint32_t ipg_pre_length);
 
+typedef sw_error_t (*adpt_tdm_tick_num_set_func)(a_uint32_t dev_id, a_uint32_t tick_num);
+typedef sw_error_t (*adpt_tdm_tick_num_get_func)(a_uint32_t dev_id, a_uint32_t *tick_num);
+typedef sw_error_t (*adpt_port_scheduler_cfg_set_func)(a_uint32_t dev_id, a_uint32_t tick_index,
+					fal_port_scheduler_cfg_t *cfg);
+typedef sw_error_t (*adpt_port_scheduler_cfg_get_func)(a_uint32_t dev_id, a_uint32_t tick_index,
+					fal_port_scheduler_cfg_t *cfg);
+typedef sw_error_t (*adpt_port_bufgroup_map_get_func)(a_uint32_t dev_id, fal_port_t port,
+			a_uint8_t *group);
+typedef sw_error_t (*adpt_bm_port_reserved_buffer_get_func)(a_uint32_t dev_id, fal_port_t port,
+			a_uint16_t *prealloc_buff, a_uint16_t *react_buff);
+typedef sw_error_t (*adpt_bm_bufgroup_buffer_get_func)(a_uint32_t dev_id, a_uint8_t group,
+			a_uint16_t *buff_num);
+typedef sw_error_t (*adpt_bm_port_dynamic_thresh_get_func)(a_uint32_t dev_id, fal_port_t port,
+			fal_bm_dynamic_cfg_t *cfg);
+typedef sw_error_t (*adpt_port_bm_ctrl_get_func)(a_uint32_t dev_id, fal_port_t port, a_bool_t *enable);
+typedef sw_error_t (*adpt_bm_bufgroup_buffer_set_func)(a_uint32_t dev_id, a_uint8_t group,
+			a_uint16_t buff_num);
+typedef sw_error_t (*adpt_port_bufgroup_map_set_func)(a_uint32_t dev_id, fal_port_t port,
+			a_uint8_t group);
+typedef sw_error_t (*adpt_bm_port_static_thresh_get_func)(a_uint32_t dev_id, fal_port_t port,
+			fal_bm_static_cfg_t *cfg);
+typedef sw_error_t (*adpt_bm_port_reserved_buffer_set_func)(a_uint32_t dev_id, fal_port_t port,
+			a_uint16_t prealloc_buff, a_uint16_t react_buff);
+typedef sw_error_t (*adpt_bm_port_static_thresh_set_func)(a_uint32_t dev_id, fal_port_t port,
+			fal_bm_static_cfg_t *cfg);
+typedef sw_error_t (*adpt_bm_port_dynamic_thresh_set_func)(a_uint32_t dev_id, fal_port_t port,
+			fal_bm_dynamic_cfg_t *cfg);
+typedef sw_error_t (*adpt_port_bm_ctrl_set_func)(a_uint32_t dev_id, fal_port_t port, a_bool_t enable);
+
+
 typedef struct
 {
 	adpt_fdb_first_func adpt_fdb_first;
@@ -1057,6 +1088,23 @@ typedef struct
 	adpt_qos_cosmap_flow_get_func adpt_qos_cosmap_flow_get;
 	adpt_qos_port_group_get_func adpt_qos_port_group_get;
 	adpt_ring_queue_map_get_func adpt_ring_queue_map_get;
+	adpt_tdm_tick_num_set_func adpt_tdm_tick_num_set;
+	adpt_tdm_tick_num_get_func adpt_tdm_tick_num_get;
+	adpt_port_scheduler_cfg_set_func adpt_port_scheduler_cfg_set;
+	adpt_port_scheduler_cfg_get_func adpt_port_scheduler_cfg_get;
+
+	adpt_port_bufgroup_map_get_func adpt_port_bufgroup_map_get;
+	adpt_bm_port_reserved_buffer_get_func adpt_bm_port_reserved_buffer_get;
+	adpt_bm_bufgroup_buffer_get_func adpt_bm_bufgroup_buffer_get;
+	adpt_bm_port_dynamic_thresh_get_func adpt_bm_port_dynamic_thresh_get;
+	adpt_port_bm_ctrl_get_func adpt_port_bm_ctrl_get;
+	adpt_bm_bufgroup_buffer_set_func adpt_bm_bufgroup_buffer_set;
+	adpt_port_bufgroup_map_set_func adpt_port_bufgroup_map_set;
+	adpt_bm_port_static_thresh_get_func adpt_bm_port_static_thresh_get;
+	adpt_bm_port_reserved_buffer_set_func adpt_bm_port_reserved_buffer_set;
+	adpt_bm_port_static_thresh_set_func adpt_bm_port_static_thresh_set;
+	adpt_bm_port_dynamic_thresh_set_func adpt_bm_port_dynamic_thresh_set;
+	adpt_port_bm_ctrl_set_func adpt_port_bm_ctrl_set;
 
 //shaper
 

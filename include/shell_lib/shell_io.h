@@ -319,6 +319,12 @@ sw_error_t
 cmd_data_check_vsi_member(char *cmd_str, void * val, a_uint32_t size);
 
 #endif
+#ifdef IN_BM
+sw_error_t
+cmd_data_check_bm_dynamic_thresh(char *cmd_str, void * val, a_uint32_t size);
+sw_error_t
+cmd_data_check_bm_static_thresh(char *cmd_str, void * val, a_uint32_t size);
+#endif
 #ifdef IN_QM
 sw_error_t
 cmd_data_check_u_qmap(char *cmd_str, void * val, a_uint32_t size);

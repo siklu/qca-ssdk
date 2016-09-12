@@ -27,7 +27,7 @@
 #define CPU_CODE_QUEUE_OFFSET         1024
 #define VP_PORT_QUEUE_OFFSET            0
 
-#define UCAST_QUEUE_ID_MAX	255
+#define UCAST_QUEUE_ID_MAX	256
 
 sw_error_t
 adpt_hppe_ucast_hash_map_set(
@@ -220,7 +220,7 @@ adpt_hppe_ac_prealloc_buffer_set(
 		return hppe_ac_grp_cfg_tbl_set(dev_id, obj->obj_id, &ac_grp_cfg_tbl);
 		
 	} else if (obj->type == FAL_AC_QUEUE) {
-		if (obj->obj_id <= UCAST_QUEUE_ID_MAX) {
+		if (obj->obj_id < UCAST_QUEUE_ID_MAX) {
 			union ac_uni_queue_cfg_tbl_u ac_uni_queue_cfg_tbl;
 			hppe_ac_uni_queue_cfg_tbl_get(dev_id,
 					obj->obj_id,
@@ -292,7 +292,7 @@ adpt_hppe_ac_queue_group_get(
 	ADPT_NULL_POINT_CHECK(group_id);
 
 
-	if (queue_id <= UCAST_QUEUE_ID_MAX) {
+	if (queue_id < UCAST_QUEUE_ID_MAX) {
 		union ac_uni_queue_cfg_tbl_u ac_uni_queue_cfg_tbl;
 		rv = hppe_ac_uni_queue_cfg_tbl_get(dev_id,
 				queue_id,
@@ -329,7 +329,7 @@ adpt_hppe_ac_ctrl_get(
 		cfg->ac_en = ac_grp_cfg_tbl.bf.ac_cfg_ac_en;
 		cfg->ac_fc_en = ac_grp_cfg_tbl.bf.ac_cfg_force_ac_en;
 	} else if (obj->type == FAL_AC_QUEUE) {
-		if (obj->obj_id <= UCAST_QUEUE_ID_MAX) {
+		if (obj->obj_id < UCAST_QUEUE_ID_MAX) {
 			union ac_uni_queue_cfg_tbl_u ac_uni_queue_cfg_tbl;
 			rv = hppe_ac_uni_queue_cfg_tbl_get(dev_id,
 					obj->obj_id,
@@ -371,7 +371,7 @@ adpt_hppe_ac_prealloc_buffer_get(
 		return rv;
 		
 	} else if (obj->type == FAL_AC_QUEUE) {
-		if (obj->obj_id <= UCAST_QUEUE_ID_MAX) {
+		if (obj->obj_id < UCAST_QUEUE_ID_MAX) {
 			union ac_uni_queue_cfg_tbl_u ac_uni_queue_cfg_tbl;
 			rv = hppe_ac_uni_queue_cfg_tbl_get(dev_id,
 					obj->obj_id,
@@ -480,7 +480,7 @@ adpt_hppe_ac_static_threshold_set(
 		return hppe_ac_grp_cfg_tbl_set(dev_id, obj->obj_id, &ac_grp_cfg_tbl);
 		
 	} else if (obj->type == FAL_AC_QUEUE) {
-		if (obj->obj_id <= UCAST_QUEUE_ID_MAX) {
+		if (obj->obj_id < UCAST_QUEUE_ID_MAX) {
 			union ac_uni_queue_cfg_tbl_u ac_uni_queue_cfg_tbl;
 			hppe_ac_uni_queue_cfg_tbl_get(dev_id,
 					obj->obj_id,
@@ -536,7 +536,7 @@ adpt_hppe_ac_queue_group_set(
 	ADPT_DEV_ID_CHECK(dev_id);
 
 
-	if (queue_id <= UCAST_QUEUE_ID_MAX) {
+	if (queue_id < UCAST_QUEUE_ID_MAX) {
 		union ac_uni_queue_cfg_tbl_u ac_uni_queue_cfg_tbl;
 		hppe_ac_uni_queue_cfg_tbl_get(dev_id,
 				queue_id,
@@ -625,7 +625,7 @@ adpt_hppe_ac_ctrl_set(
 		ac_grp_cfg_tbl.bf.ac_cfg_force_ac_en = cfg->ac_fc_en;
 		return hppe_ac_grp_cfg_tbl_set(dev_id, obj->obj_id, &ac_grp_cfg_tbl);
 	} else if (obj->type == FAL_AC_QUEUE) {
-		if (obj->obj_id <= UCAST_QUEUE_ID_MAX) {
+		if (obj->obj_id < UCAST_QUEUE_ID_MAX) {
 			union ac_uni_queue_cfg_tbl_u ac_uni_queue_cfg_tbl;
 			hppe_ac_uni_queue_cfg_tbl_get(dev_id,
 					obj->obj_id,
@@ -772,7 +772,7 @@ adpt_hppe_ac_static_threshold_get(
 		return rv;
 		
 	} else if (obj->type == FAL_AC_QUEUE) {
-		if (obj->obj_id <= UCAST_QUEUE_ID_MAX) {
+		if (obj->obj_id < UCAST_QUEUE_ID_MAX) {
 			union ac_uni_queue_cfg_tbl_u ac_uni_queue_cfg_tbl;
 			rv = hppe_ac_uni_queue_cfg_tbl_get(dev_id,
 					obj->obj_id,

@@ -73,6 +73,10 @@ ifeq (TRUE, $(IN_QOS))
   SRC_LIST += adpt_hppe_qos.c
 endif
 
+ifeq (TRUE, $(IN_BM))
+  SRC_LIST += adpt_hppe_bm.c
+endif
+
 ifeq (TRUE, $(IN_SHAPER))
   SRC_LIST += adpt_hppe_shaper.c
 endif

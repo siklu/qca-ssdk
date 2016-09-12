@@ -1201,6 +1201,22 @@ struct sub_cmd_des_t g_qm_des[] =
 };
 #endif
 
+/*BM*/
+#ifdef IN_BM
+struct sub_cmd_des_t g_bm_des[] =
+{
+
+    {"bmctrl", "set", SW_API_BM_CTRL_SET, NULL},
+    {"portgroupmap", "set", SW_API_BM_PORTGROUP_MAP_SET, NULL},
+    {"groupbuff", "set", SW_API_BM_GROUP_BUFFER_SET, NULL},
+    {"portrsvbuff", "set", SW_API_BM_PORT_RSVBUFFER_SET, NULL},
+    {"portsthresh", "set", SW_API_BM_STATIC_THRESH_SET, NULL},
+    {"portdthresh", "set", SW_API_BM_DYNAMIC_THRESH_SET, NULL},
+    {NULL, NULL, (int)NULL, NULL},/*end of desc*/
+
+};
+#endif
+
 
 struct cmd_des_t gcmd_des[] =
 {
@@ -1374,6 +1390,13 @@ struct cmd_des_t gcmd_des[] =
 #ifdef IN_QM
     {
         "qm", g_qm_des,
+    },
+#endif
+
+	/*bm Control*/
+#ifdef IN_BM
+    {
+        "bm", g_bm_des,
     },
 #endif
 

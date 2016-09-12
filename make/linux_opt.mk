@@ -157,6 +157,10 @@ ifeq (TRUE, $(IN_PPPOE))
   MODULE_CFLAG += -DIN_PPPOE
 endif
 
+ifeq (TRUE, $(IN_BM))
+  MODULE_CFLAG += -DIN_BM
+endif
+
 ifeq (TRUE, $(IN_SHAPER))
   MODULE_CFLAG += -DIN_SHAPER
 endif

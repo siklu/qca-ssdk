@@ -51,6 +51,7 @@ extern "C" {
 #include "fal_servcode.h"
 #include "fal_vsi.h"
 #include "fal_pppoe.h"
+#include "fal_bm.h"
 #include "fal_shaper.h"
 
 #ifdef __cplusplus

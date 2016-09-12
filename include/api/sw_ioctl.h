@@ -801,6 +801,22 @@ extern "C" {
 #define SW_API_QUEUE_SHAPER_GET               (17  + SW_API_SHAPER_OFFSET)
 #define SW_API_SHAPER_IPG_PRE_SET               (18  + SW_API_SHAPER_OFFSET)
 #define SW_API_SHAPER_IPG_PRE_GET               (19  + SW_API_SHAPER_OFFSET)
+
+/* bm */
+#define SW_API_BM_OFFSET            2300
+#define SW_API_BM_CTRL_SET         (0  + SW_API_BM_OFFSET)
+#define SW_API_BM_CTRL_GET         (1  + SW_API_BM_OFFSET)
+#define SW_API_BM_PORTGROUP_MAP_SET         (2  + SW_API_BM_OFFSET)
+#define SW_API_BM_PORTGROUP_MAP_GET         (3  + SW_API_BM_OFFSET)
+#define SW_API_BM_GROUP_BUFFER_SET         (4  + SW_API_BM_OFFSET)
+#define SW_API_BM_GROUP_BUFFER_GET         (5  + SW_API_BM_OFFSET)
+#define SW_API_BM_PORT_RSVBUFFER_SET         (6  + SW_API_BM_OFFSET)
+#define SW_API_BM_PORT_RSVBUFFER_GET         (7  + SW_API_BM_OFFSET)
+#define SW_API_BM_STATIC_THRESH_SET         (8  + SW_API_BM_OFFSET)
+#define SW_API_BM_STATIC_THRESH_GET         (9  + SW_API_BM_OFFSET)
+#define SW_API_BM_DYNAMIC_THRESH_SET         (10  + SW_API_BM_OFFSET)
+#define SW_API_BM_DYNAMIC_THRESH_GET         (11  + SW_API_BM_OFFSET)
+
     /*debug*/
 #define SW_API_DEBUG_OFFSET        10000
 #define SW_API_PHY_GET             (0  + SW_API_DEBUG_OFFSET)

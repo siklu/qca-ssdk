@@ -264,6 +264,10 @@ static sw_data_type_t sw_data_type[] =
     SW_TYPE_DEF(SW_AC_OBJ, cmd_data_check_ac_obj, NULL),
     SW_TYPE_DEF(SW_UCAST_QUEUE_MAP, cmd_data_check_u_qmap, NULL),
     #endif
+    #ifdef IN_BM
+    SW_TYPE_DEF(SW_BMSTHRESH, cmd_data_check_bm_static_thresh, NULL),
+    SW_TYPE_DEF(SW_BMDTHRESH, cmd_data_check_bm_dynamic_thresh, NULL),
+    #endif
     #ifdef IN_FLOW
     SW_TYPE_DEF(SW_FLOW_AGE, cmd_data_check_flow_age, NULL),
     SW_TYPE_DEF(SW_FLOW_CTRL, cmd_data_check_flow_ctrl, NULL),
@@ -1618,6 +1622,31 @@ cmd_data_check_queue_scheduler(char *cmd_str, void * val, a_uint32_t size)
                                        sizeof (a_uint8_t));
             if (SW_OK != rv)
                 dprintf("usage: e drr unit\n");
+        }
+
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    do
+    {
+        cmd = get_sub_cmd("drr frame mode", "0");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: drr frame mode\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint32(cmd, &(entry.drr_frame_mode),
+                                       sizeof (a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: drr frame mode\n");
         }
 
     }
@@ -8922,6 +8951,186 @@ cmd_data_check_flow_age(char *cmd_str, void * val, a_uint32_t size)
     return SW_OK;
 }
 
+#endif
+
+#ifdef IN_BM
+sw_error_t
+cmd_data_check_bm_static_thresh(char *cmd_str, void * val, a_uint32_t size)
+{
+    char *cmd;
+    a_uint32_t tmp;
+    sw_error_t rv;
+    fal_bm_static_cfg_t entry;
+
+    aos_mem_zero(&entry, sizeof (fal_bm_static_cfg_t));
+
+    do
+    {
+        cmd = get_sub_cmd("max thresh", "0");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: max thresh\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint16(cmd, &(entry.max_thresh),
+                                       sizeof (a_uint16_t));
+            if (SW_OK != rv)
+                dprintf("usage: max thresh\n");
+        }
+
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    do
+    {
+        cmd = get_sub_cmd("resume offset", "0");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: resume offset\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint16(cmd, &(entry.resume_off),
+                                       sizeof (a_uint16_t));
+            if (SW_OK != rv)
+                dprintf("usage: resume offset\n");
+        }
+
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    *(fal_bm_static_cfg_t *)val = entry;
+    return SW_OK;
+}
+
+sw_error_t
+cmd_data_check_bm_dynamic_thresh(char *cmd_str, void * val, a_uint32_t size)
+{
+    char *cmd;
+    a_uint32_t tmp;
+    sw_error_t rv;
+    fal_bm_dynamic_cfg_t entry;
+
+    aos_mem_zero(&entry, sizeof (fal_bm_dynamic_cfg_t));
+
+    do
+    {
+        cmd = get_sub_cmd("weight", "0");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: weight\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint8(cmd, &(entry.weight),
+                                       sizeof (a_uint8_t));
+            if (SW_OK != rv)
+                dprintf("usage: weight\n");
+        }
+
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    do
+    {
+        cmd = get_sub_cmd("shared ceiling", "0");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: shared ceiling\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint16(cmd, &(entry.shared_ceiling),
+                                       sizeof (a_uint16_t));
+            if (SW_OK != rv)
+                dprintf("usage: shared ceiling\n");
+        }
+
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    do
+    {
+        cmd = get_sub_cmd("resume offset", "0");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: resume offset\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint16(cmd, &(entry.resume_off),
+                                       sizeof (a_uint16_t));
+            if (SW_OK != rv)
+                dprintf("usage: resume offset\n");
+        }
+
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    do
+    {
+        cmd = get_sub_cmd("resume min thresh", "0");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: resmue min thresh\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint16(cmd, &(entry.resume_min_thresh),
+                                       sizeof (a_uint16_t));
+            if (SW_OK != rv)
+                dprintf("usage: resume min thresh\n");
+        }
+
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    *(fal_bm_dynamic_cfg_t *)val = entry;
+    return SW_OK;
+}
 #endif
 
 #ifdef IN_QM
