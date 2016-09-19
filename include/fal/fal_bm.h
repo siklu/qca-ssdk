@@ -41,6 +41,22 @@ typedef struct
 	a_uint16_t resume_min_thresh; /* Minumum thresh for resume */
 } fal_bm_dynamic_cfg_t;
 
+typedef struct
+{
+	a_bool_t enable;
+	a_uint32_t offset;
+	a_uint32_t depth;
+} fal_port_tdm_ctrl_t;
+
+#define FAL_PORT_TDB_DIR_INGRESS	0
+#define FAL_PORT_TDB_DIR_EGRESS	1
+typedef struct
+{
+	a_uint8_t valid; /* 0 for invalid and 1 for valid*/
+	a_uint8_t direction; /* 0 for ingreee and 1 for egress */
+	fal_port_t port;
+} fal_port_tdm_tick_cfg_t;
+
 sw_error_t
 fal_port_bm_ctrl_set(a_uint32_t dev_id, fal_port_t port, a_bool_t enable);
 

@@ -778,8 +778,9 @@ typedef sw_error_t (*adpt_bm_port_static_thresh_set_func)(a_uint32_t dev_id, fal
 typedef sw_error_t (*adpt_bm_port_dynamic_thresh_set_func)(a_uint32_t dev_id, fal_port_t port,
 			fal_bm_dynamic_cfg_t *cfg);
 typedef sw_error_t (*adpt_port_bm_ctrl_set_func)(a_uint32_t dev_id, fal_port_t port, a_bool_t enable);
-
-
+typedef sw_error_t (*adpt_port_tdm_ctrl_set_func)(a_uint32_t dev_id, fal_port_tdm_ctrl_t *ctrl);
+typedef sw_error_t (*adpt_port_tdm_tick_cfg_set_func)(a_uint32_t dev_id, a_uint32_t tick_index,
+			fal_port_tdm_tick_cfg_t *cfg);
 typedef struct
 {
 	adpt_fdb_first_func adpt_fdb_first;
@@ -1105,6 +1106,8 @@ typedef struct
 	adpt_bm_port_static_thresh_set_func adpt_bm_port_static_thresh_set;
 	adpt_bm_port_dynamic_thresh_set_func adpt_bm_port_dynamic_thresh_set;
 	adpt_port_bm_ctrl_set_func adpt_port_bm_ctrl_set;
+	adpt_port_tdm_ctrl_set_func adpt_port_tdm_ctrl_set;
+	adpt_port_tdm_tick_cfg_set_func adpt_port_tdm_tick_cfg_set;
 
 //shaper
 

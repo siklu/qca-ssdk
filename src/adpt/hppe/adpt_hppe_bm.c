@@ -21,6 +21,8 @@
 #include "fal_bm.h"
 #include "hppe_bm_reg.h"
 #include "hppe_bm.h"
+#include "hppe_portctrl_reg.h"
+#include "hppe_portctrl.h"
 #include "adpt.h"
 
 sw_error_t
@@ -272,6 +274,35 @@ adpt_hppe_port_bm_ctrl_set(a_uint32_t dev_id, fal_port_t port, a_bool_t enable)
 	return hppe_port_fc_mode_set(dev_id, port, &port_fc_mode);
 }
 
+sw_error_t
+adpt_hppe_port_tdm_ctrl_set(a_uint32_t dev_id, fal_port_tdm_ctrl_t *ctrl)
+{
+	union tdm_ctrl_u tdm_ctrl;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+	memset(&tdm_ctrl, 0, sizeof(tdm_ctrl));
+
+	tdm_ctrl.bf.tdm_en = ctrl->enable;
+	tdm_ctrl.bf.tdm_offset = ctrl->offset;
+	tdm_ctrl.bf.tdm_depth = ctrl->depth;
+	return hppe_tdm_ctrl_set(dev_id, &tdm_ctrl);
+}
+
+sw_error_t
+adpt_hppe_port_tdm_tick_cfg_set(a_uint32_t dev_id, a_uint32_t tick_index,
+			fal_port_tdm_tick_cfg_t *cfg)
+{
+	union tdm_cfg_u tdm_cfg;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+	memset(&tdm_cfg, 0, sizeof(tdm_cfg));
+
+	tdm_cfg.bf.valid = cfg->valid;
+	tdm_cfg.bf.dir = cfg->direction;
+	tdm_cfg.bf.port_num = cfg->port;
+	return hppe_tdm_cfg_set(dev_id, tick_index, &tdm_cfg);
+}
+
 sw_error_t adpt_hppe_bm_init(a_uint32_t dev_id)
 {
 	adpt_api_t *p_adpt_api = NULL;
@@ -293,7 +324,8 @@ sw_error_t adpt_hppe_bm_init(a_uint32_t dev_id)
 	p_adpt_api->adpt_bm_port_static_thresh_set = adpt_hppe_bm_port_static_thresh_set;
 	p_adpt_api->adpt_bm_port_dynamic_thresh_set = adpt_hppe_bm_port_dynamic_thresh_set;
 	p_adpt_api->adpt_port_bm_ctrl_set = adpt_hppe_port_bm_ctrl_set;
-
+	p_adpt_api->adpt_port_tdm_ctrl_set = adpt_hppe_port_tdm_ctrl_set;
+	p_adpt_api->adpt_port_tdm_tick_cfg_set = adpt_hppe_port_tdm_tick_cfg_set;
 
 	return SW_OK;
 }
