@@ -332,8 +332,11 @@ static uint32_t get_next_hop( uint32_t daddr , uint32_t saddr )
 #endif
     struct net    * net = dev_net(multi_route_indev);
     struct fib_nh *mrnh = NULL;
-
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,4,0))
     if (fib_lookup(net, &fl, &res) != 0)
+#else
+   if (fib_lookup(net, &fl, &res,0) != 0)
+#endif
     {
         return 0;
     }
@@ -1454,7 +1457,9 @@ static struct
 {
     .hook = (nf_hookfn *)arp_in,
     .hooknum = NF_ARP_IN,
+    #if (LINUX_VERSION_CODE < KERNEL_VERSION(4,4,0))
     .owner = THIS_MODULE,
+    #endif
     .pf = NFPROTO_ARP,
     .priority = NF_IP_PRI_FILTER,
 };
@@ -1991,7 +1996,9 @@ static unsigned int ipv6_bg_handle(struct nat_helper_bg_msg *msg)
 static struct nf_hook_ops ipv6_inhook =
 {
     .hook = ipv6_handle,
+    #if (LINUX_VERSION_CODE < KERNEL_VERSION(4,4,0))
     .owner = THIS_MODULE,
+    #endif
     .pf = PF_INET6,
     .hooknum = NF_INET_PRE_ROUTING,
     .priority = NF_IP6_PRI_CONNTRACK,
