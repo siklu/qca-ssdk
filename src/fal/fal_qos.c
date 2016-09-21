@@ -1809,6 +1809,40 @@ fal_port_queues_get(a_uint32_t dev_id,
 	FAL_API_UNLOCK;
 	return rv;
 }
+	    EXPORT_SYMBOL(fal_queue_scheduler_set);
+
+	    EXPORT_SYMBOL(fal_queue_scheduler_get);
+
+	    EXPORT_SYMBOL(fal_port_queues_get);
+
+	    EXPORT_SYMBOL(fal_qos_port_pri_precedence_set);
+
+	    EXPORT_SYMBOL(fal_qos_port_tx_buf_status_get);
+
+	    EXPORT_SYMBOL(fal_qos_port_pri_precedence_get);
+
+	    EXPORT_SYMBOL(fal_qos_port_group_set);
+
+	    EXPORT_SYMBOL(fal_qos_port_group_get);
+
+	    EXPORT_SYMBOL(fal_qos_cosmap_pcp_set);
+
+	    EXPORT_SYMBOL(fal_qos_cosmap_pcp_get);
+
+	    EXPORT_SYMBOL(fal_qos_cosmap_dscp_set);
+
+	    EXPORT_SYMBOL(fal_qos_cosmap_dscp_get);
+
+	    EXPORT_SYMBOL(fal_qos_cosmap_flow_set);
+
+	    EXPORT_SYMBOL(fal_qos_port_remark_set);
+
+	    EXPORT_SYMBOL(fal_qos_port_remark_get);
+
+	    EXPORT_SYMBOL(fal_edma_ring_queue_map_set);
+
+	    EXPORT_SYMBOL(fal_edma_ring_queue_map_get);
+
 /*insert flag for outter fal, don't remove it*/
 /**
  * @}
