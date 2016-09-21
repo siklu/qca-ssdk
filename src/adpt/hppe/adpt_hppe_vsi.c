@@ -35,15 +35,62 @@ enum{
 	ADPT_VSI_DEL
 };
 
+static a_bool_t _adpt_hppe_vsi_xlt_match(a_uint32_t dev_id, fal_port_t port_id,
+				a_uint32_t stag_vid, a_uint32_t ctag_vid, union xlt_rule_tbl_u *xlt_rule)
+{
+	if(stag_vid != FAL_VLAN_INVALID)
+	{
+		if((xlt_rule->bf.skey_vid_incl) &&
+			(xlt_rule->bf.skey_vid == stag_vid))
+		{
+			if(ctag_vid != FAL_VLAN_INVALID)
+			{
+				if((xlt_rule->bf.ckey_vid_incl) &&
+					(xlt_rule->bf.ckey_vid == ctag_vid))
+				{
+					return A_TRUE;
+				}
+			}
+			else
+			{
+				if(!(xlt_rule->bf.ckey_vid_incl))
+				{
+					return A_TRUE;
+				}
+			}
+		}
+	}
+	else
+	{
+		if(!(xlt_rule->bf.skey_vid_incl))
+		{
+			if(ctag_vid != FAL_VLAN_INVALID)
+			{
+				if((xlt_rule->bf.ckey_vid_incl) &&
+					(xlt_rule->bf.ckey_vid == ctag_vid))
+				{
+					return A_TRUE;
+				}
+			}
+		}
+	}
+	return A_FALSE;
+}
 
-static sw_error_t _adpt_hppe_vsi_xlt_update(a_uint32_t dev_id, a_uint32_t vsi_id,
-					a_uint32_t vlan_id, a_uint32_t port_id, a_uint32_t op)
+static sw_error_t _adpt_hppe_vsi_xlt_update(a_uint32_t dev_id,
+				a_uint32_t vsi_id, a_uint32_t port_id,
+				a_uint32_t stag_vid, a_uint32_t ctag_vid,
+				a_uint32_t op)
 {
 	a_uint32_t index = 0;
 	a_uint32_t new_entry = XLT_RULE_TBL_NUM;
 	sw_error_t rv;
 	union xlt_rule_tbl_u xlt_rule;
 	union xlt_action_tbl_u xlt_action;
+
+	/*printk("%s,%d: port_id 0x%x svlan %d cvlan %d vsi %d op %d\n",
+			__FUNCTION__, __LINE__, port_id, stag_vid, ctag_vid, vsi_id, op);*/
+
 	for(index = 0; index < XLT_RULE_TBL_NUM; index++)
 	{
 		rv = hppe_xlt_rule_tbl_get(dev_id, index, &xlt_rule);
@@ -56,11 +103,15 @@ static sw_error_t _adpt_hppe_vsi_xlt_update(a_uint32_t dev_id, a_uint32_t vsi_id
 		{
 			new_entry = index;
 		}
-		if((xlt_rule.bf.valid == A_TRUE) && (xlt_rule.bf.ckey_vid_incl) &&
-			(xlt_rule.bf.ckey_vid == vlan_id) &&
-			(xlt_action.bf.vsi_cmd == A_TRUE) && (xlt_action.bf.vsi == vsi_id))
+		if(xlt_rule.bf.valid == A_TRUE)
 		{
-			break;
+			if(_adpt_hppe_vsi_xlt_match(dev_id, port_id,
+				stag_vid, ctag_vid, &xlt_rule))
+			{
+				if((xlt_action.bf.vsi_cmd == A_TRUE) &&
+					(xlt_action.bf.vsi == vsi_id))
+					break;
+			}
 		}
 	}
 
@@ -68,6 +119,8 @@ static sw_error_t _adpt_hppe_vsi_xlt_update(a_uint32_t dev_id, a_uint32_t vsi_id
 	{
 		if(op == ADPT_VSI_DEL)/*Delete*/
 		{
+			/*printk("%s,%d: port_id 0x%x svlan %d cvlan %d vsi %d op %d\n",
+				__FUNCTION__, __LINE__, port_id, stag_vid, ctag_vid, vsi_id, op);*/
 			if(!(xlt_rule.bf.port_bitmap & (1<<port_id)))
 				return SW_OK;
 			xlt_rule.bf.port_bitmap &= (~(1<<port_id));
@@ -79,10 +132,12 @@ static sw_error_t _adpt_hppe_vsi_xlt_update(a_uint32_t dev_id, a_uint32_t vsi_id
 		}
 		else/*add*/
 		{
+			/*printk("%s,%d: port_id 0x%x svlan %d cvlan %d vsi %d op %d\n",
+				__FUNCTION__, __LINE__, port_id, stag_vid, ctag_vid, vsi_id, op);*/
 			xlt_rule.bf.port_bitmap |= (1<<port_id);
 		}
-		//printk("%s,%d: port_map 0x%x vlan %d vsi %d xlt table update index %d\n",
-		//		__FUNCTION__, __LINE__, xlt_rule.bf.port_bitmap, vlan_id, vsi_id, index);
+		/*printk("%s,%d: port_map 0x%x svlan %d cvlan %d vsi %d xlt table update index %d\n",
+				__FUNCTION__, __LINE__, xlt_rule.bf.port_bitmap, stag_vid, ctag_vid, vsi_id, index);*/
 		rv = hppe_xlt_rule_tbl_port_bitmap_set(dev_id, index, xlt_rule.bf.port_bitmap);
 		return rv;
 	}
@@ -92,18 +147,26 @@ static sw_error_t _adpt_hppe_vsi_xlt_update(a_uint32_t dev_id, a_uint32_t vsi_id
 			return SW_OK;
 		if(new_entry >= XLT_RULE_TBL_NUM)
 		{
-			printk("%s,%d: port_id 0x%x vlan %d vsi %d xlt table is full\n",
-					__FUNCTION__, __LINE__, port_id, vlan_id, vsi_id);
+			printk("%s,%d: port_id 0x%x svlan %d cvlan %d vsi %d xlt table is full\n",
+					__FUNCTION__, __LINE__, port_id, stag_vid, ctag_vid, vsi_id);
 			return SW_NO_RESOURCE;
 		}
 		else/*new entry exist*/
 		{
 			aos_mem_zero(&xlt_rule, sizeof(union xlt_rule_tbl_u));
-			//printk("%s,%d: port_id 0x%x vlan %d vsi %d xlt table add index %d\n",
-			//		__FUNCTION__, __LINE__, port_id, vlan_id, vsi_id, new_entry);
+			/*printk("%s,%d: port_id 0x%x svlan %d cvlan %d vsi %d xlt table add index %d\n",
+					__FUNCTION__, __LINE__, port_id, stag_vid, ctag_vid, vsi_id, new_entry);*/
 			xlt_rule.bf.valid = A_TRUE;
-			xlt_rule.bf.ckey_vid_incl = A_TRUE;
-			xlt_rule.bf.ckey_vid = vlan_id;
+			if(ctag_vid != FAL_VLAN_INVALID)
+			{
+				xlt_rule.bf.ckey_vid_incl = A_TRUE;
+				xlt_rule.bf.ckey_vid = ctag_vid;
+			}
+			if(stag_vid != FAL_VLAN_INVALID)
+			{
+				xlt_rule.bf.skey_vid_incl = A_TRUE;
+				xlt_rule.bf.skey_vid = stag_vid;
+			}
 			xlt_rule.bf.port_bitmap = (1<<port_id);
 			xlt_rule.bf.skey_fmt = 0x7;
 			xlt_rule.bf.ckey_fmt_0 = 0x1;
@@ -122,7 +185,7 @@ static sw_error_t _adpt_hppe_vsi_xlt_update(a_uint32_t dev_id, a_uint32_t vsi_id
 
 sw_error_t
 adpt_hppe_port_vlan_vsi_get(a_uint32_t dev_id, fal_port_t port_id,
-				a_uint32_t vlan_id, a_uint32_t *vsi_id)
+				a_uint32_t stag_vid, a_uint32_t ctag_vid, a_uint32_t *vsi_id)
 {
 	a_uint32_t index = 0;
 	sw_error_t rv;
@@ -136,13 +199,17 @@ adpt_hppe_port_vlan_vsi_get(a_uint32_t dev_id, fal_port_t port_id,
 		rv = hppe_xlt_action_tbl_get(dev_id, index, &xlt_action);
 		if( rv != SW_OK )
 			return rv;
-		if((xlt_rule.bf.valid == A_TRUE) && (xlt_rule.bf.ckey_vid_incl) &&
-			(xlt_rule.bf.ckey_vid == vlan_id))
+		if(xlt_rule.bf.valid == A_TRUE)
 		{
-			if(xlt_action.bf.vsi_cmd == A_TRUE)
+			if(_adpt_hppe_vsi_xlt_match(dev_id, port_id,
+					stag_vid, ctag_vid, &xlt_rule))
 			{
-				*vsi_id = xlt_action.bf.vsi;
-				return SW_OK;
+				if((xlt_rule.bf.port_bitmap&(1<<port_id))&&
+					(xlt_action.bf.vsi_cmd == A_TRUE))
+				{
+					*vsi_id = xlt_action.bf.vsi;
+					return SW_OK;
+				}
 			}
 		}
 	}
@@ -154,14 +221,14 @@ adpt_hppe_port_vlan_vsi_get(a_uint32_t dev_id, fal_port_t port_id,
 
 sw_error_t
 adpt_hppe_port_vlan_vsi_set(a_uint32_t dev_id, fal_port_t port_id,
-				a_uint32_t vlan_id, a_uint32_t vsi_id)
+				a_uint32_t stag_vid, a_uint32_t ctag_vid, a_uint32_t vsi_id)
 {
 	sw_error_t rv;
 	a_uint32_t org_vsi;
 
 	ADPT_DEV_ID_CHECK(dev_id);
 
-	adpt_hppe_port_vlan_vsi_get(dev_id, port_id, vlan_id, &org_vsi);
+	adpt_hppe_port_vlan_vsi_get(dev_id, port_id, stag_vid, ctag_vid, &org_vsi);
 
 	if(org_vsi == vsi_id)
 	{
@@ -170,13 +237,13 @@ adpt_hppe_port_vlan_vsi_set(a_uint32_t dev_id, fal_port_t port_id,
 
 	if(FAL_VSI_INVALID == vsi_id || org_vsi != FAL_VSI_INVALID)
 	{
-		rv = _adpt_hppe_vsi_xlt_update(dev_id, org_vsi, vlan_id, port_id,ADPT_VSI_DEL);
+		rv = _adpt_hppe_vsi_xlt_update(dev_id, org_vsi, port_id, stag_vid, ctag_vid, ADPT_VSI_DEL);
 		if(rv != SW_OK)
 			return rv;
 	}
 	if(vsi_id != FAL_VSI_INVALID)
 	{
-		rv = _adpt_hppe_vsi_xlt_update(dev_id, vsi_id, vlan_id, port_id,ADPT_VSI_ADD);
+		rv = _adpt_hppe_vsi_xlt_update(dev_id, vsi_id, port_id, stag_vid, ctag_vid, ADPT_VSI_ADD);
 	}
 
 	return rv;
@@ -377,7 +444,6 @@ adpt_hppe_vsi_member_get(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_member_t 
 sw_error_t adpt_hppe_vsi_init(a_uint32_t dev_id)
 {
 	adpt_api_t *p_adpt_api = NULL;
-	a_uint32_t vsi_id;
 
 	p_adpt_api = adpt_api_ptr_get(dev_id);
 

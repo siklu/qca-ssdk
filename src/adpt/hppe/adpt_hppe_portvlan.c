@@ -22,6 +22,142 @@
 #include "hppe_portvlan.h"
 #include "adpt.h"
 
+a_uint32_t
+_get_port_vlan_ingress_trans_by_index(a_uint32_t dev_id, a_uint32_t index, fal_vlan_trans_entry_t *entry)
+{
+	union xlt_rule_tbl_u in_vlan_xlt_rule;
+	union xlt_action_tbl_u in_vlan_xlt_action;
+
+	/*rule part*/
+	SW_RTN_ON_ERROR(hppe_xlt_rule_tbl_get(dev_id, index, &in_vlan_xlt_rule));
+	if (!in_vlan_xlt_rule.bf.valid) {
+		memset(&in_vlan_xlt_rule, 0, sizeof(struct xlt_rule_tbl));
+	}
+
+	entry->trans_direction = 0;
+	entry->frmtype_enable = in_vlan_xlt_rule.bf.frm_type_incl;
+	entry->frmtype = in_vlan_xlt_rule.bf.frm_type;
+	entry->protocol_enable = in_vlan_xlt_rule.bf.prot_incl;
+	entry->protocol = ((in_vlan_xlt_rule.bf.prot_value_1 << 7) |
+			(in_vlan_xlt_rule.bf.prot_value_0));
+
+	entry->port_bitmap = in_vlan_xlt_rule.bf.port_bitmap;
+	entry->c_tagged = in_vlan_xlt_rule.bf.ckey_fmt_0 | (in_vlan_xlt_rule.bf.ckey_fmt_1 << 1);
+	entry->s_tagged = in_vlan_xlt_rule.bf.skey_fmt;
+
+	entry->c_vid_enable = in_vlan_xlt_rule.bf.ckey_vid_incl;
+	entry->c_vid = in_vlan_xlt_rule.bf.ckey_vid;
+	entry->c_pcp_enable = in_vlan_xlt_rule.bf.ckey_pcp_incl;
+	entry->c_pcp = in_vlan_xlt_rule.bf.ckey_pcp;
+	entry->c_dei_enable = in_vlan_xlt_rule.bf.ckey_dei_incl;
+	entry->c_dei = in_vlan_xlt_rule.bf.ckey_dei;
+
+	entry->s_vid_enable = in_vlan_xlt_rule.bf.skey_vid_incl;
+	entry->s_vid = in_vlan_xlt_rule.bf.skey_vid;
+	entry->s_pcp_enable = in_vlan_xlt_rule.bf.skey_pcp_incl;
+	entry->s_pcp = in_vlan_xlt_rule.bf.skey_pcp;
+	entry->s_dei_enable = in_vlan_xlt_rule.bf.skey_dei_incl;
+	entry->s_dei = in_vlan_xlt_rule.bf.skey_dei;
+
+	/*action part*/
+	SW_RTN_ON_ERROR(hppe_xlt_action_tbl_get(dev_id, index, &in_vlan_xlt_action));
+	if (!in_vlan_xlt_rule.bf.valid) {
+		memset(&in_vlan_xlt_action, 0, sizeof(struct xlt_action_tbl));
+	}
+
+	entry->counter_enable = in_vlan_xlt_action.bf.counter_en;
+	entry->counter_id = in_vlan_xlt_action.bf.counter_id;
+	entry->vsi_action_enable = in_vlan_xlt_action.bf.vsi_cmd;
+	entry->vsi_action = in_vlan_xlt_action.bf.vsi;
+
+	entry->cdei_xlt_enable = in_vlan_xlt_action.bf.xlt_cdei_cmd;
+	entry->cdei_xlt = in_vlan_xlt_action.bf.xlt_cdei;
+	entry->sdei_xlt_enable = in_vlan_xlt_action.bf.xlt_sdei_cmd;
+	entry->sdei_xlt = in_vlan_xlt_action.bf.xlt_sdei;
+	entry->swap_sdei_cdei = in_vlan_xlt_action.bf.dei_swap_cmd;
+
+	entry->cpcp_xlt_enable = in_vlan_xlt_action.bf.xlt_cpcp_cmd;
+	entry->cpcp_xlt = in_vlan_xlt_action.bf.xlt_cpcp;
+	entry->spcp_xlt_enable = in_vlan_xlt_action.bf.xlt_spcp_cmd;
+	entry->spcp_xlt = (in_vlan_xlt_action.bf.xlt_spcp_0 | (in_vlan_xlt_action.bf.xlt_spcp_1 << 1));
+	entry->swap_spcp_cpcp = in_vlan_xlt_action.bf.pcp_swap_cmd;
+
+	entry->cvid_xlt_cmd = in_vlan_xlt_action.bf.xlt_cvid_cmd;
+	entry->cvid_xlt = in_vlan_xlt_action.bf.xlt_cvid;
+	entry->svid_xlt_cmd = in_vlan_xlt_action.bf.xlt_svid_cmd;
+	entry->svid_xlt = in_vlan_xlt_action.bf.xlt_svid;
+	entry->swap_svid_cvid = in_vlan_xlt_action.bf.vid_swap_cmd;
+
+	return in_vlan_xlt_rule.bf.valid;
+}
+
+a_uint32_t
+_get_port_vlan_egress_trans_by_index(a_uint32_t dev_id, a_uint32_t index, fal_vlan_trans_entry_t *entry)
+{
+	union eg_vlan_xlt_rule_u eg_vlan_xlt_rule;
+	union eg_vlan_xlt_action_u eg_vlan_xlt_action;
+
+	/*rule part*/
+	SW_RTN_ON_ERROR(hppe_eg_vlan_xlt_rule_get(dev_id, index, &eg_vlan_xlt_rule));
+	if (!eg_vlan_xlt_rule.bf.valid) {
+		memset(&eg_vlan_xlt_rule, 0, sizeof(struct eg_vlan_xlt_rule));
+	}
+
+	entry->trans_direction = 1;
+
+	entry->port_bitmap = eg_vlan_xlt_rule.bf.port_bitmap;
+
+	entry->vsi_enable = eg_vlan_xlt_rule.bf.vsi_incl;
+	entry->vsi = eg_vlan_xlt_rule.bf.vsi;
+	entry->vsi_valid = eg_vlan_xlt_rule.bf.vsi_valid;
+
+	entry->c_tagged = eg_vlan_xlt_rule.bf.ckey_fmt;
+	entry->s_tagged = eg_vlan_xlt_rule.bf.skey_fmt;
+
+	entry->c_vid_enable = eg_vlan_xlt_rule.bf.ckey_vid_incl;
+	entry->c_vid = eg_vlan_xlt_rule.bf.ckey_vid;
+	entry->c_pcp_enable = eg_vlan_xlt_rule.bf.ckey_pcp_incl;
+	entry->c_pcp = eg_vlan_xlt_rule.bf.ckey_pcp;
+	entry->c_dei_enable = eg_vlan_xlt_rule.bf.ckey_dei_incl;
+	entry->c_dei = eg_vlan_xlt_rule.bf.ckey_dei;
+
+	entry->s_vid_enable = eg_vlan_xlt_rule.bf.skey_vid_incl;
+	entry->s_vid = eg_vlan_xlt_rule.bf.skey_vid;
+	entry->s_pcp_enable = eg_vlan_xlt_rule.bf.skey_pcp_incl;
+	entry->s_pcp = eg_vlan_xlt_rule.bf.skey_pcp;
+	entry->s_dei_enable = eg_vlan_xlt_rule.bf.skey_dei_incl;
+	entry->s_dei = eg_vlan_xlt_rule.bf.skey_dei;
+
+	/*action part*/
+	SW_RTN_ON_ERROR(hppe_eg_vlan_xlt_action_get(dev_id, index, &eg_vlan_xlt_action));
+	if (!eg_vlan_xlt_rule.bf.valid) {
+		memset(&eg_vlan_xlt_action, 0, sizeof(struct eg_vlan_xlt_action));
+	}
+
+	entry->counter_enable = eg_vlan_xlt_action.bf.counter_en;
+	entry->counter_id = eg_vlan_xlt_action.bf.counter_id;
+
+	entry->cdei_xlt_enable = eg_vlan_xlt_action.bf.xlt_cdei_cmd;
+	entry->cdei_xlt = eg_vlan_xlt_action.bf.xlt_cdei;
+	entry->sdei_xlt_enable = eg_vlan_xlt_action.bf.xlt_sdei_cmd;
+	entry->sdei_xlt = eg_vlan_xlt_action.bf.xlt_sdei;
+	entry->swap_sdei_cdei = eg_vlan_xlt_action.bf.dei_swap_cmd;
+
+	entry->cpcp_xlt_enable = eg_vlan_xlt_action.bf.xlt_cpcp_cmd;
+	entry->cpcp_xlt = eg_vlan_xlt_action.bf.xlt_cpcp;
+	entry->spcp_xlt_enable = eg_vlan_xlt_action.bf.xlt_spcp_cmd;
+	entry->spcp_xlt = (eg_vlan_xlt_action.bf.xlt_spcp_0 | (eg_vlan_xlt_action.bf.xlt_spcp_1 << 1));
+	entry->swap_spcp_cpcp = eg_vlan_xlt_action.bf.pcp_swap_cmd;
+
+	entry->cvid_xlt_cmd = eg_vlan_xlt_action.bf.xlt_cvid_cmd;
+	entry->cvid_xlt = eg_vlan_xlt_action.bf.xlt_cvid;
+	entry->svid_xlt_cmd = eg_vlan_xlt_action.bf.xlt_svid_cmd;
+	entry->svid_xlt = eg_vlan_xlt_action.bf.xlt_svid;
+	entry->swap_svid_cvid = eg_vlan_xlt_action.bf.vid_swap_cmd;
+
+	return eg_vlan_xlt_rule.bf.valid;
+}
+
 sw_error_t
 adpt_hppe_global_qinq_mode_set(a_uint32_t dev_id, fal_global_qinq_mode_t *mode)
 {
@@ -53,34 +189,34 @@ adpt_hppe_global_qinq_mode_get(a_uint32_t dev_id, fal_global_qinq_mode_t *mode)
 	SW_RTN_ON_ERROR(hppe_bridge_config_bridge_type_get(dev_id,
 					(a_uint32_t *)&mode->ingress_mode));
 
-	SW_RTN_ON_ERROR(hppe_bridge_config_bridge_type_get(dev_id,
+	SW_RTN_ON_ERROR(hppe_eg_bridge_config_bridge_type_get(dev_id,
 					(a_uint32_t *)&mode->egress_mode));
 
 	return rtn;
 }
 
 sw_error_t
-adpt_hppe_port_qinq_mode_set(a_uint32_t dev_id, fal_port_t port_id, fal_port_qinq_mode_t *mode)
+adpt_hppe_port_qinq_mode_set(a_uint32_t dev_id, fal_port_t port_id, fal_port_qinq_role_t *mode)
 {
 	sw_error_t rtn = SW_OK;
 
 	ADPT_DEV_ID_CHECK(dev_id);
 
-	if (FAL_FLG_TST(mode->mask, FAL_PORT_QINQ_MODE_INGRESS_EN)) {
+	if (FAL_FLG_TST(mode->mask, FAL_PORT_QINQ_ROLE_INGRESS_EN)) {
 		SW_RTN_ON_ERROR(hppe_port_parsing_reg_port_role_set(dev_id, port_id,
-									(a_uint32_t)mode->ingress_mode));
+									(a_uint32_t)mode->ingress_port_role));
 	}
 
-	if (FAL_FLG_TST(mode->mask, FAL_PORT_QINQ_MODE_EGRESS_EN)) {
+	if (FAL_FLG_TST(mode->mask, FAL_PORT_QINQ_ROLE_EGRESS_EN)) {
 		SW_RTN_ON_ERROR(hppe_port_eg_vlan_port_vlan_type_set(dev_id, port_id,
-									(a_uint32_t)mode->egress_mode));
+									(a_uint32_t)mode->egress_port_role));
 	}
 
 	return rtn;
 }
 
 sw_error_t
-adpt_hppe_port_qinq_mode_get(a_uint32_t dev_id, fal_port_t port_id, fal_port_qinq_mode_t *mode)
+adpt_hppe_port_qinq_mode_get(a_uint32_t dev_id, fal_port_t port_id, fal_port_qinq_role_t *mode)
 {
 	sw_error_t rtn = SW_OK;
 
@@ -88,10 +224,10 @@ adpt_hppe_port_qinq_mode_get(a_uint32_t dev_id, fal_port_t port_id, fal_port_qin
 	ADPT_NULL_POINT_CHECK(mode);
 
 	SW_RTN_ON_ERROR(hppe_port_parsing_reg_port_role_get(dev_id, port_id,
-								(a_uint32_t *)&mode->ingress_mode));
+								(a_uint32_t *)&mode->ingress_port_role));
 
 	SW_RTN_ON_ERROR(hppe_port_eg_vlan_port_vlan_type_get(dev_id, port_id,
-								(a_uint32_t *)&mode->egress_mode));
+								(a_uint32_t *)&mode->egress_port_role));
 
 	return rtn;
 }
@@ -106,10 +242,14 @@ adpt_hppe_tpid_set(a_uint32_t dev_id, fal_tpid_t *tpid)
 	if (FAL_FLG_TST(tpid->mask, FAL_TPID_CTAG_EN)) {
 		SW_RTN_ON_ERROR(hppe_vlan_tpid_reg_ctag_tpid_set(dev_id,
 						(a_uint32_t)tpid->ctpid));
+		SW_RTN_ON_ERROR(hppe_eg_vlan_tpid_ctpid_set(dev_id,
+						(a_uint32_t)tpid->ctpid));
 	}
 
 	if (FAL_FLG_TST(tpid->mask, FAL_TPID_STAG_EN)) {
 		SW_RTN_ON_ERROR(hppe_vlan_tpid_reg_stag_tpid_set(dev_id,
+						(a_uint32_t)tpid->stpid));
+		SW_RTN_ON_ERROR(hppe_eg_vlan_tpid_stpid_set(dev_id,
 						(a_uint32_t)tpid->stpid));
 	}
 
@@ -141,11 +281,15 @@ adpt_hppe_egress_tpid_set(a_uint32_t dev_id, fal_tpid_t *tpid)
 	ADPT_DEV_ID_CHECK(dev_id);
 
 	if (FAL_FLG_TST(tpid->mask, FAL_TPID_CTAG_EN)) {
+		SW_RTN_ON_ERROR(hppe_vlan_tpid_reg_ctag_tpid_set(dev_id,
+						(a_uint32_t)tpid->ctpid));
 		SW_RTN_ON_ERROR(hppe_eg_vlan_tpid_ctpid_set(dev_id,
 						(a_uint32_t)tpid->ctpid));
 	}
 
 	if (FAL_FLG_TST(tpid->mask, FAL_TPID_STAG_EN)) {
+		SW_RTN_ON_ERROR(hppe_vlan_tpid_reg_stag_tpid_set(dev_id,
+						(a_uint32_t)tpid->stpid));
 		SW_RTN_ON_ERROR(hppe_eg_vlan_tpid_stpid_set(dev_id,
 						(a_uint32_t)tpid->stpid));
 	}
@@ -171,15 +315,15 @@ adpt_hppe_egress_tpid_get(a_uint32_t dev_id, fal_tpid_t *tpid)
 }
 
 sw_error_t
-adpt_hppe_port_ingress_filter_set(a_uint32_t dev_id, fal_port_t port_id,
-										fal_ingress_filter_t *filter)
+adpt_hppe_port_ingress_vlan_filter_set(a_uint32_t dev_id, fal_port_t port_id,
+										fal_ingress_vlan_filter_t *filter)
 {
 	sw_error_t rtn = SW_OK;
 
 	ADPT_DEV_ID_CHECK(dev_id);
 
 	SW_RTN_ON_ERROR(hppe_port_vlan_config_port_in_vlan_fltr_cmd_set(dev_id,
-						port_id, (a_uint32_t)filter->mask));
+						port_id, (a_uint32_t)filter->membership_filter));
 	SW_RTN_ON_ERROR(hppe_port_vlan_config_port_untag_fltr_cmd_set(dev_id,
 						port_id, (a_uint32_t)filter->untagged_filter));
 	SW_RTN_ON_ERROR(hppe_port_vlan_config_port_tag_fltr_cmd_set(dev_id,
@@ -191,8 +335,8 @@ adpt_hppe_port_ingress_filter_set(a_uint32_t dev_id, fal_port_t port_id,
 }
 
 sw_error_t
-adpt_hppe_port_ingress_filter_get(a_uint32_t dev_id, fal_port_t port_id,
-										fal_ingress_filter_t *filter)
+adpt_hppe_port_ingress_vlan_filter_get(a_uint32_t dev_id, fal_port_t port_id,
+										fal_ingress_vlan_filter_t *filter)
 {
 	sw_error_t rtn = SW_OK;
 
@@ -200,7 +344,7 @@ adpt_hppe_port_ingress_filter_get(a_uint32_t dev_id, fal_port_t port_id,
 	ADPT_NULL_POINT_CHECK(filter);
 
 	SW_RTN_ON_ERROR(hppe_port_vlan_config_port_in_vlan_fltr_cmd_get(dev_id,
-						port_id, (a_uint32_t *)&filter->mask));
+						port_id, (a_uint32_t *)&filter->membership_filter));
 	SW_RTN_ON_ERROR(hppe_port_vlan_config_port_untag_fltr_cmd_get(dev_id,
 						port_id, (a_uint32_t *)&filter->untagged_filter));
 	SW_RTN_ON_ERROR(hppe_port_vlan_config_port_tag_fltr_cmd_get(dev_id,
@@ -212,134 +356,238 @@ adpt_hppe_port_ingress_filter_get(a_uint32_t dev_id, fal_port_t port_id,
 }
 
 sw_error_t
-adpt_hppe_port_ingress_default_tag_set(a_uint32_t dev_id, fal_port_t port_id,
-                                 fal_port_ingress_default_tag_t *default_tag)
+adpt_hppe_port_default_vlantag_set(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_direction_t direction,
+                                 fal_port_default_vid_enable_t *default_vid_en, fal_port_vlan_tag_t *default_tag)
 {
 	sw_error_t rtn = SW_OK;
 
 	ADPT_DEV_ID_CHECK(dev_id);
 
-	if (FAL_FLG_TST(default_tag->mask, FAL_PORT_INGRESS_DEFAULT_CVID_EN)) {
-		SW_RTN_ON_ERROR(hppe_port_def_vid_port_def_cvid_set(dev_id, port_id,
-					(a_uint32_t)default_tag->default_cvid));
+	if (direction == FAL_PORT_VLAN_EGRESS)
+	{
+		if (!FAL_FLG_TST(default_tag->mask, FAL_PORT_VLAN_TAG_CVID_EN) && 
+			!FAL_FLG_TST(default_tag->mask, FAL_PORT_VLAN_TAG_SVID_EN))
+			return SW_NOT_SUPPORTED;
 	}
 
-	if (FAL_FLG_TST(default_tag->mask, FAL_PORT_INGRESS_DEFAULT_SVID_EN)) {
-		SW_RTN_ON_ERROR(hppe_port_def_vid_port_def_svid_set(dev_id, port_id,
-					(a_uint32_t)default_tag->default_svid));
+	if (direction == FAL_PORT_VLAN_ALL || direction == FAL_PORT_VLAN_INGRESS)
+	{
+		SW_RTN_ON_ERROR(hppe_port_def_vid_port_def_cvid_en_set(dev_id, port_id,
+					(a_uint32_t)default_vid_en->default_cvid_en));
+		SW_RTN_ON_ERROR(hppe_port_def_vid_port_def_svid_en_set(dev_id, port_id,
+					(a_uint32_t)default_vid_en->default_svid_en));
+
+		if (FAL_FLG_TST(default_tag->mask, FAL_PORT_VLAN_TAG_CVID_EN)) {
+			SW_RTN_ON_ERROR(hppe_port_def_vid_port_def_cvid_set(dev_id, port_id,
+						(a_uint32_t)default_tag->cvid));
+		}
+
+		if (FAL_FLG_TST(default_tag->mask, FAL_PORT_VLAN_TAG_SVID_EN)) {
+			SW_RTN_ON_ERROR(hppe_port_def_vid_port_def_svid_set(dev_id, port_id,
+						(a_uint32_t)default_tag->svid));
+		}
+
+		if (FAL_FLG_TST(default_tag->mask, FAL_PORT_VLAN_TAG_CPCP_EN)) {
+			SW_RTN_ON_ERROR(hppe_port_def_pcp_port_def_cpcp_set(dev_id, port_id,
+						(a_uint32_t)default_tag->cpri));
+		}
+
+		if (FAL_FLG_TST(default_tag->mask, FAL_PORT_VLAN_TAG_SPCP_EN)) {
+			SW_RTN_ON_ERROR(hppe_port_def_pcp_port_def_spcp_set(dev_id, port_id,
+						(a_uint32_t)default_tag->spri));
+		}
+
+		if (FAL_FLG_TST(default_tag->mask, FAL_PORT_VLAN_TAG_CDEI_EN)) {
+			SW_RTN_ON_ERROR(hppe_port_def_pcp_port_def_cdei_set(dev_id, port_id,
+						(a_uint32_t)default_tag->cdei));
+		}
+
+		if (FAL_FLG_TST(default_tag->mask, FAL_PORT_VLAN_TAG_SDEI_EN)) {
+			SW_RTN_ON_ERROR(hppe_port_def_pcp_port_def_sdei_set(dev_id, port_id,
+						(a_uint32_t)default_tag->sdei));
+		}
 	}
 
-	if (FAL_FLG_TST(default_tag->mask, FAL_PORT_INGRESS_DEFAULT_CPCP_EN)) {
-		SW_RTN_ON_ERROR(hppe_port_def_pcp_port_def_cpcp_set(dev_id, port_id,
-					(a_uint32_t)default_tag->default_cpri));
+	if (direction == FAL_PORT_VLAN_ALL || direction == FAL_PORT_VLAN_EGRESS)
+	{
+		SW_RTN_ON_ERROR(hppe_port_eg_def_vid_port_def_cvid_en_set(dev_id,
+					port_id, (a_uint32_t)default_vid_en->default_cvid_en));
+		SW_RTN_ON_ERROR(hppe_port_eg_def_vid_port_def_svid_en_set(dev_id,
+					port_id, (a_uint32_t)default_vid_en->default_svid_en));
+
+		if (FAL_FLG_TST(default_tag->mask, FAL_PORT_VLAN_TAG_CVID_EN)) {
+			SW_RTN_ON_ERROR(hppe_port_eg_def_vid_port_def_cvid_set(dev_id, port_id,
+						(a_uint32_t)default_tag->cvid));
+		}
+
+		if (FAL_FLG_TST(default_tag->mask, FAL_PORT_VLAN_TAG_SVID_EN)) {
+			SW_RTN_ON_ERROR(hppe_port_eg_def_vid_port_def_svid_set(dev_id, port_id,
+						(a_uint32_t)default_tag->svid));
+		}
 	}
-
-	if (FAL_FLG_TST(default_tag->mask, FAL_PORT_INGRESS_DEFAULT_SPCP_EN)) {
-		SW_RTN_ON_ERROR(hppe_port_def_pcp_port_def_spcp_set(dev_id, port_id,
-					(a_uint32_t)default_tag->default_spri));
-	}
-
-	if (FAL_FLG_TST(default_tag->mask, FAL_PORT_INGRESS_DEFAULT_CDEI_EN)) {
-		SW_RTN_ON_ERROR(hppe_port_def_pcp_port_def_cdei_set(dev_id, port_id,
-					(a_uint32_t)default_tag->default_cdei));
-	}
-
-	if (FAL_FLG_TST(default_tag->mask, FAL_PORT_INGRESS_DEFAULT_SDEI_EN)) {
-		SW_RTN_ON_ERROR(hppe_port_def_pcp_port_def_sdei_set(dev_id, port_id,
-					(a_uint32_t)default_tag->default_sdei));
-	}
-
-	SW_RTN_ON_ERROR(hppe_port_def_vid_port_def_cvid_en_set(dev_id, port_id,
-					(a_uint32_t)default_tag->apply_default_cvid));
-
-	SW_RTN_ON_ERROR(hppe_port_def_vid_port_def_svid_en_set(dev_id, port_id,
-					(a_uint32_t)default_tag->apply_default_svid));
 
 	return rtn;
 }
 
 sw_error_t
-adpt_hppe_port_ingress_default_tag_get(a_uint32_t dev_id, fal_port_t port_id,
-                                 fal_port_ingress_default_tag_t *default_tag)
+adpt_hppe_port_default_vlantag_get(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_direction_t direction,
+                                 fal_port_default_vid_enable_t *default_vid_en, fal_port_vlan_tag_t *default_tag)
 {
 	sw_error_t rtn = SW_OK;
 
 	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(default_vid_en);
 	ADPT_NULL_POINT_CHECK(default_tag);
 
-	SW_RTN_ON_ERROR(hppe_port_def_vid_port_def_cvid_get(dev_id, port_id,
-				(a_uint32_t *)&default_tag->default_cvid));
+	if (direction == FAL_PORT_VLAN_ALL)
+		return SW_NOT_SUPPORTED;
 
-	SW_RTN_ON_ERROR(hppe_port_def_vid_port_def_svid_get(dev_id, port_id,
-				(a_uint32_t *)&default_tag->default_svid));
+	if (direction == FAL_PORT_VLAN_INGRESS) {
+		SW_RTN_ON_ERROR(hppe_port_def_vid_port_def_cvid_en_get(dev_id, port_id,
+					(a_uint32_t *)&default_vid_en->default_cvid_en));
 
-	SW_RTN_ON_ERROR(hppe_port_def_pcp_port_def_cpcp_get(dev_id, port_id,
-				(a_uint32_t *)&default_tag->default_cpri));
+		SW_RTN_ON_ERROR(hppe_port_def_vid_port_def_svid_en_get(dev_id, port_id,
+					(a_uint32_t *)&default_vid_en->default_svid_en));
 
-	SW_RTN_ON_ERROR(hppe_port_def_pcp_port_def_spcp_get(dev_id, port_id,
-				(a_uint32_t *)&default_tag->default_spri));
+		SW_RTN_ON_ERROR(hppe_port_def_vid_port_def_cvid_get(dev_id, port_id,
+					(a_uint32_t *)&default_tag->cvid));
 
-	SW_RTN_ON_ERROR(hppe_port_def_pcp_port_def_cdei_get(dev_id, port_id,
-				(a_uint32_t *)&default_tag->default_cdei));
+		SW_RTN_ON_ERROR(hppe_port_def_vid_port_def_svid_get(dev_id, port_id,
+					(a_uint32_t *)&default_tag->svid));
 
-	SW_RTN_ON_ERROR(hppe_port_def_pcp_port_def_sdei_get(dev_id, port_id,
-				(a_uint32_t *)&default_tag->default_sdei));
+		SW_RTN_ON_ERROR(hppe_port_def_pcp_port_def_cpcp_get(dev_id, port_id,
+					(a_uint32_t *)&default_tag->cpri));
 
-	SW_RTN_ON_ERROR(hppe_port_def_vid_port_def_cvid_en_get(dev_id, port_id,
-					(a_uint32_t *)&default_tag->apply_default_cvid));
+		SW_RTN_ON_ERROR(hppe_port_def_pcp_port_def_spcp_get(dev_id, port_id,
+					(a_uint32_t *)&default_tag->spri));
 
-	SW_RTN_ON_ERROR(hppe_port_def_vid_port_def_svid_en_get(dev_id, port_id,
-					(a_uint32_t *)&default_tag->apply_default_svid));
+		SW_RTN_ON_ERROR(hppe_port_def_pcp_port_def_cdei_get(dev_id, port_id,
+					(a_uint32_t *)&default_tag->cdei));
+
+		SW_RTN_ON_ERROR(hppe_port_def_pcp_port_def_sdei_get(dev_id, port_id,
+					(a_uint32_t *)&default_tag->sdei));
+	}
+	else if (direction == FAL_PORT_VLAN_EGRESS) {
+		SW_RTN_ON_ERROR(hppe_port_eg_def_vid_port_def_cvid_en_get(dev_id, port_id,
+					(a_uint32_t *)&default_vid_en->default_cvid_en));
+
+		SW_RTN_ON_ERROR(hppe_port_eg_def_vid_port_def_svid_en_get(dev_id, port_id,
+					(a_uint32_t *)&default_vid_en->default_svid_en));
+
+		SW_RTN_ON_ERROR(hppe_port_eg_def_vid_port_def_cvid_get(dev_id, port_id,
+					(a_uint32_t *)&default_tag->cvid));
+
+		SW_RTN_ON_ERROR(hppe_port_eg_def_vid_port_def_svid_get(dev_id, port_id,
+					(a_uint32_t *)&default_tag->svid));
+
+	}
+	else
+		return SW_NOT_SUPPORTED;
 
 	return rtn;
 }
 
 sw_error_t
-adpt_hppe_port_tag_propagation_set(a_uint32_t dev_id, fal_port_t port_id,
-                                 fal_tag_propagation_t *prop)
+adpt_hppe_port_tag_propagation_set(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_direction_t direction,
+                                 fal_vlantag_propagation_t *prop)
 {
 	sw_error_t rtn = SW_OK;
+	a_uint32_t value_pcp, value_dei = 0;
 
 	ADPT_DEV_ID_CHECK(dev_id);
 
-	if (FAL_FLG_TST(prop->mask, FAL_PORT_PROPOGATION_VID_EN)) {
+	if (prop->pri_propagation == FAL_VLAN_PROPAGATION_DISABLE)
+		value_pcp = 0;
+	else if (prop->pri_propagation == FAL_VLAN_PROPAGATION_CLONE)
+		value_pcp = 1;
+	else
 		return SW_NOT_SUPPORTED;
+
+	if (prop->dei_propagation == FAL_VLAN_PROPAGATION_DISABLE)
+		value_dei = 0;
+	else if (prop->dei_propagation == FAL_VLAN_PROPAGATION_CLONE)
+		value_dei = 1;
+	else
+		return SW_NOT_SUPPORTED;
+
+	if (direction == FAL_PORT_VLAN_ALL || direction == FAL_PORT_VLAN_INGRESS)
+	{
+		if (FAL_FLG_TST(prop->mask, FAL_PORT_PROPAGATION_PCP_EN)) {
+			SW_RTN_ON_ERROR(hppe_port_vlan_config_port_in_pcp_prop_cmd_set(dev_id,
+					port_id, value_pcp));
+		}
+		if (FAL_FLG_TST(prop->mask, FAL_PORT_PROPAGATION_DEI_EN)) {
+			SW_RTN_ON_ERROR(hppe_port_vlan_config_port_in_dei_prop_cmd_set(dev_id,
+					port_id, value_dei));
+		}
 	}
 
-	if (FAL_FLG_TST(prop->mask, FAL_PORT_PROPOGATION_PCP_EN)) {
-		SW_RTN_ON_ERROR(hppe_port_vlan_config_port_in_pcp_prop_cmd_set(dev_id,
-					port_id, (a_uint32_t)prop->pri_prop));
-	}
-
-	if (FAL_FLG_TST(prop->mask, FAL_PORT_PROPOGATION_DEI_EN)) {
-		SW_RTN_ON_ERROR(hppe_port_vlan_config_port_in_dei_prop_cmd_set(dev_id,
-					port_id, (a_uint32_t)prop->dei_prop));
+	if (direction == FAL_PORT_VLAN_ALL || direction == FAL_PORT_VLAN_EGRESS)
+	{
+		if (FAL_FLG_TST(prop->mask, FAL_PORT_PROPAGATION_PCP_EN)) {
+			SW_RTN_ON_ERROR(hppe_port_eg_vlan_port_eg_pcp_prop_cmd_set(dev_id,
+					port_id, value_pcp));
+		}
+		if (FAL_FLG_TST(prop->mask, FAL_PORT_PROPAGATION_DEI_EN)) {
+			SW_RTN_ON_ERROR(hppe_port_eg_vlan_port_eg_dei_prop_cmd_set(dev_id,
+					port_id, value_dei));
+		}
 	}
 
 	return rtn;
 }
 
 sw_error_t
-adpt_hppe_port_tag_propagation_get(a_uint32_t dev_id, fal_port_t port_id,
-                                 fal_tag_propagation_t *prop)
+adpt_hppe_port_tag_propagation_get(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_direction_t direction,
+                                 fal_vlantag_propagation_t *prop)
 {
 	sw_error_t rtn = SW_OK;
+	a_uint32_t value_pcp = 0, value_dei = 0;
 
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(prop);
 
-	SW_RTN_ON_ERROR(hppe_port_vlan_config_port_in_pcp_prop_cmd_get(dev_id,
-				port_id, (a_uint32_t *)&prop->pri_prop));
+	if (direction == FAL_PORT_VLAN_ALL)
+		return SW_NOT_SUPPORTED;
 
-	SW_RTN_ON_ERROR(hppe_port_vlan_config_port_in_dei_prop_cmd_get(dev_id,
-				port_id, (a_uint32_t *)&prop->dei_prop));
+	if (direction == FAL_PORT_VLAN_INGRESS) {
+		SW_RTN_ON_ERROR(hppe_port_vlan_config_port_in_pcp_prop_cmd_get(dev_id,
+					port_id, &value_pcp));
+
+		SW_RTN_ON_ERROR(hppe_port_vlan_config_port_in_dei_prop_cmd_get(dev_id,
+					port_id, &value_dei));
+	}
+	else if (direction == FAL_PORT_VLAN_EGRESS) {
+		SW_RTN_ON_ERROR(hppe_port_eg_vlan_port_eg_pcp_prop_cmd_get(dev_id,
+					port_id, &value_pcp));
+
+		SW_RTN_ON_ERROR(hppe_port_eg_vlan_port_eg_dei_prop_cmd_get(dev_id,
+					port_id, &value_dei));
+	}
+	else
+		return SW_NOT_SUPPORTED;
+
+	if (value_pcp == 0)
+		prop->pri_propagation = FAL_VLAN_PROPAGATION_DISABLE;
+	else if (value_pcp == 1)
+		prop->pri_propagation = FAL_VLAN_PROPAGATION_CLONE;
+	else
+		return SW_FAIL;
+
+	if (value_dei == 0)
+		prop->dei_propagation = FAL_VLAN_PROPAGATION_DISABLE;
+	else if (value_dei == 1)
+		prop->dei_propagation = FAL_VLAN_PROPAGATION_CLONE;
+	else
+		return SW_FAIL;
+
 
 	return rtn;
 }
 
 sw_error_t
-adpt_hppe_port_tag_egvlanmode_set(a_uint32_t dev_id, fal_port_t port_id,
-                            fal_egressmode_t *port_egvlanmode)
+adpt_hppe_port_vlantag_egmode_set(a_uint32_t dev_id, fal_port_t port_id,
+                            fal_vlantag_egress_mode_t *port_egvlanmode)
 {
 	sw_error_t rtn = SW_OK;
 	a_uint32_t value = 0;
@@ -384,8 +632,8 @@ adpt_hppe_port_tag_egvlanmode_set(a_uint32_t dev_id, fal_port_t port_id,
 }
 
 sw_error_t
-adpt_hppe_port_tag_egvlanmode_get(a_uint32_t dev_id, fal_port_t port_id,
-                            fal_egressmode_t *port_egvlanmode)
+adpt_hppe_port_vlantag_egmode_get(a_uint32_t dev_id, fal_port_t port_id,
+                            fal_vlantag_egress_mode_t *port_egvlanmode)
 {
 	sw_error_t rtn = SW_OK;
 	a_uint32_t value = 0;
@@ -423,49 +671,6 @@ adpt_hppe_port_tag_egvlanmode_get(a_uint32_t dev_id, fal_port_t port_id,
 	} else {
 		return SW_FAIL;
 	}
-
-	return rtn;
-}
-
-sw_error_t
-adpt_hppe_port_egress_tag_propagation_set(a_uint32_t dev_id, fal_port_t port_id,
-                                 fal_tag_propagation_t *eg_prop)
-{
-	sw_error_t rtn = SW_OK;
-
-	ADPT_DEV_ID_CHECK(dev_id);
-
-	if (FAL_FLG_TST(eg_prop->mask, FAL_PORT_PROPOGATION_VID_EN)) {
-		return SW_NOT_SUPPORTED;
-	}
-
-	if (FAL_FLG_TST(eg_prop->mask, FAL_PORT_PROPOGATION_PCP_EN)) {
-		SW_RTN_ON_ERROR(hppe_port_eg_vlan_port_eg_pcp_prop_cmd_set(dev_id,
-					port_id, (a_uint32_t)eg_prop->pri_prop));
-	}
-
-	if (FAL_FLG_TST(eg_prop->mask, FAL_PORT_PROPOGATION_DEI_EN)) {
-		SW_RTN_ON_ERROR(hppe_port_eg_vlan_port_eg_dei_prop_cmd_set(dev_id,
-					port_id, (a_uint32_t)eg_prop->dei_prop));
-	}
-
-	return rtn;
-}
-
-sw_error_t
-adpt_hppe_port_egress_tag_propagation_get(a_uint32_t dev_id, fal_port_t port_id,
-                                 fal_tag_propagation_t *eg_prop)
-{
-	sw_error_t rtn = SW_OK;
-
-	ADPT_DEV_ID_CHECK(dev_id);
-	ADPT_NULL_POINT_CHECK(eg_prop);
-
-	SW_RTN_ON_ERROR(hppe_port_eg_vlan_port_eg_pcp_prop_cmd_get(dev_id,
-				port_id, (a_uint32_t *)&eg_prop->pri_prop));
-
-	SW_RTN_ON_ERROR(hppe_port_eg_vlan_port_eg_dei_prop_cmd_get(dev_id,
-				port_id, (a_uint32_t *)&eg_prop->dei_prop));
 
 	return rtn;
 }
@@ -526,62 +731,50 @@ adpt_hppe_port_vlan_xlt_miss_cmd_get(a_uint32_t dev_id, fal_port_t port_id,
 }
 
 sw_error_t
-adpt_hppe_port_egress_default_vid_set(a_uint32_t dev_id, fal_port_t port_id,
-                                 fal_port_egress_default_vid_t *default_vid)
-{
-	sw_error_t rtn = SW_OK;
-
-	ADPT_DEV_ID_CHECK(dev_id);
-
-	if (FAL_FLG_TST(default_vid->mask, FAL_PORT_EGRESS_DEFAULT_CVID_EN)) {
-		SW_RTN_ON_ERROR(hppe_port_eg_def_vid_port_def_cvid_set(dev_id,
-					port_id, (a_uint32_t)default_vid->default_cvid));
-
-		SW_RTN_ON_ERROR(hppe_port_eg_def_vid_port_def_cvid_en_set(dev_id,
-					port_id, (a_uint32_t)default_vid->trip_cvid));
-	}
-
-	if (FAL_FLG_TST(default_vid->mask, FAL_PORT_EGRESS_DEFAULT_SVID_EN)) {
-		SW_RTN_ON_ERROR(hppe_port_eg_def_vid_port_def_svid_set(dev_id,
-					port_id, (a_uint32_t)default_vid->default_svid));
-
-		SW_RTN_ON_ERROR(hppe_port_eg_def_vid_port_def_svid_en_set(dev_id,
-					port_id, (a_uint32_t)default_vid->trip_svid));
-	}
-
-	return rtn;
-}
-sw_error_t
-adpt_hppe_port_egress_default_vid_get(a_uint32_t dev_id, fal_port_t port_id,
-                                 fal_port_egress_default_vid_t *default_vid)
-{
-	sw_error_t rtn = SW_OK;
-
-	ADPT_DEV_ID_CHECK(dev_id);
-	ADPT_NULL_POINT_CHECK(default_vid);
-
-	SW_RTN_ON_ERROR(hppe_port_eg_def_vid_port_def_cvid_get(dev_id,
-				port_id, (a_uint32_t *)&default_vid->default_cvid));
-
-	SW_RTN_ON_ERROR(hppe_port_eg_def_vid_port_def_cvid_en_get(dev_id,
-				port_id, (a_uint32_t *)&default_vid->trip_cvid));
-
-	SW_RTN_ON_ERROR(hppe_port_eg_def_vid_port_def_svid_get(dev_id,
-				port_id, (a_uint32_t *)&default_vid->default_svid));
-
-	SW_RTN_ON_ERROR(hppe_port_eg_def_vid_port_def_svid_en_get(dev_id,
-				port_id, (a_uint32_t *)&default_vid->trip_svid));
-
-	return rtn;
-}
-
-sw_error_t
 adpt_hppe_port_vlan_trans_iterate(a_uint32_t dev_id, fal_port_t port_id,
                                 a_uint32_t * iterator, fal_vlan_trans_entry_t *entry)
 {
-	sw_error_t rtn = SW_OK;
+	a_uint32_t idx, eg_tbl_num, rule_valid;
 
-	return rtn;
+	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(iterator);
+	ADPT_NULL_POINT_CHECK(entry);
+
+	eg_tbl_num = XLT_RULE_TBL_NUM * 2;
+
+	if (*iterator < XLT_RULE_TBL_NUM) {
+		for (idx = *iterator; idx < XLT_RULE_TBL_NUM; idx++) {
+			aos_mem_zero(entry, sizeof (fal_vlan_trans_entry_t));
+			rule_valid = _get_port_vlan_ingress_trans_by_index(dev_id, idx, entry);
+			if (rule_valid == 1) {
+				if (SW_IS_PBMP_MEMBER(entry->port_bitmap, port_id))
+					break;
+			}
+		}
+
+		if (idx == XLT_RULE_TBL_NUM)
+			return SW_NO_MORE;
+	}
+	else if (*iterator < eg_tbl_num) {
+		for (idx = *iterator; idx < eg_tbl_num; idx++) {
+			aos_mem_zero(entry, sizeof (fal_vlan_trans_entry_t));
+			rule_valid = _get_port_vlan_egress_trans_by_index(dev_id, idx - XLT_RULE_TBL_NUM, entry);
+			if (rule_valid == 1) {
+				if (SW_IS_PBMP_MEMBER(entry->port_bitmap, port_id))
+					break;
+			}
+		}
+
+		if (idx == eg_tbl_num)
+			return SW_NO_MORE;
+	}
+	else {
+		return SW_OUT_OF_RANGE;
+	}
+
+	*iterator = idx + 1;
+
+	return SW_OK;
 }
 
 sw_error_t
@@ -592,19 +785,40 @@ adpt_hppe_port_vlan_trans_add(a_uint32_t dev_id, fal_port_t port_id, fal_vlan_tr
 	union eg_vlan_xlt_rule_u eg_vlan_xlt_rule;
 	union xlt_action_tbl_u in_vlan_xlt_action;
 	union eg_vlan_xlt_action_u eg_vlan_xlt_action;
-
-	memset(&in_vlan_xlt_rule, 0, sizeof(struct xlt_rule_tbl));
-	memset(&eg_vlan_xlt_rule, 0, sizeof(struct eg_vlan_xlt_rule));
-	memset(&in_vlan_xlt_action, 0, sizeof(struct xlt_action_tbl));
-	memset(&eg_vlan_xlt_action, 0, sizeof(struct eg_vlan_xlt_action));
+	a_uint32_t idx, entry_idx, entry_sign, rule_valid;
+	fal_vlan_trans_entry_t temp;
 
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(entry);
 
-	if (entry->forward_dir) {
+	if (entry->trans_direction == 0) {
 		/*rule part*/
+		entry_sign = 0;
+		for (idx = 0; idx < XLT_RULE_TBL_NUM; idx++) {
+			aos_mem_zero(&temp, sizeof (fal_vlan_trans_entry_t));
+			rule_valid = _get_port_vlan_ingress_trans_by_index(dev_id, idx, &temp);
+			if (rule_valid == 1) {
+				if (!aos_mem_cmp(entry, &temp, sizeof (fal_vlan_trans_entry_t))) {
+					if (SW_IS_PBMP_MEMBER(temp.port_bitmap, port_id))
+						return SW_ALREADY_EXIST;
+					entry_idx = idx;
+					entry_sign = 1;
+					break;
+				}
+			}
+			else {
+				if (entry_sign == 0) {
+					entry_idx = idx;
+					entry_sign = 1;
+				}
+			}
+		}
+
+		if (entry_sign == 0)
+			return SW_NO_RESOURCE;
+
 		in_vlan_xlt_rule.bf.valid = A_TRUE;
-		in_vlan_xlt_rule.bf.port_bitmap = entry->port_bitmap;
+		in_vlan_xlt_rule.bf.port_bitmap = entry->port_bitmap | (0x1 << port_id);
 
 		in_vlan_xlt_rule.bf.prot_incl = entry->protocol_enable;
 		in_vlan_xlt_rule.bf.prot_value_0 = (entry->protocol  & 0x7f);
@@ -630,7 +844,7 @@ adpt_hppe_port_vlan_trans_add(a_uint32_t dev_id, fal_port_t port_id, fal_vlan_tr
 		in_vlan_xlt_rule.bf.skey_dei_incl = entry->s_dei_enable;
 		in_vlan_xlt_rule.bf.skey_dei = entry->s_dei;
 
-		SW_RTN_ON_ERROR(hppe_xlt_rule_tbl_set(dev_id, port_id, &in_vlan_xlt_rule));
+		SW_RTN_ON_ERROR(hppe_xlt_rule_tbl_set(dev_id, entry_idx, &in_vlan_xlt_rule));
 
 		/*action part*/
 		in_vlan_xlt_action.bf.counter_en = entry->counter_enable;
@@ -657,13 +871,36 @@ adpt_hppe_port_vlan_trans_add(a_uint32_t dev_id, fal_port_t port_id, fal_vlan_tr
 		in_vlan_xlt_action.bf.xlt_svid = entry->svid_xlt;
 		in_vlan_xlt_action.bf.vid_swap_cmd = entry->swap_svid_cvid;
 
-		SW_RTN_ON_ERROR(hppe_xlt_action_tbl_set(dev_id, port_id, &in_vlan_xlt_action));
+		SW_RTN_ON_ERROR(hppe_xlt_action_tbl_set(dev_id, entry_idx, &in_vlan_xlt_action));
 	}
-
-	if (entry->reverse_dir) {
+	else {
 		/*rule part*/
+		entry_sign = 0;
+		for (idx = 0; idx < XLT_RULE_TBL_NUM; idx++) {
+			aos_mem_zero(&temp, sizeof (fal_vlan_trans_entry_t));
+			rule_valid = _get_port_vlan_egress_trans_by_index(dev_id, idx, &temp);
+			if (rule_valid == 1) {
+				if (!aos_mem_cmp(entry, &temp, sizeof (fal_vlan_trans_entry_t))) {
+					if (SW_IS_PBMP_MEMBER(temp.port_bitmap, port_id))
+						return SW_ALREADY_EXIST;
+					entry_idx = idx;
+					entry_sign = 1;
+					break;
+				}
+			}
+			else {
+				if (entry_sign == 0) {
+					entry_idx = idx;
+					entry_sign = 1;
+				}
+			}
+		}
+
+		if (entry_sign == 0)
+			return SW_NO_RESOURCE;
+
 		eg_vlan_xlt_rule.bf.valid = A_TRUE;
-		eg_vlan_xlt_rule.bf.port_bitmap = entry->port_bitmap;
+		eg_vlan_xlt_rule.bf.port_bitmap = entry->port_bitmap | (0x1 << port_id);
 
 		eg_vlan_xlt_rule.bf.vsi_incl = entry->vsi_enable;
 		eg_vlan_xlt_rule.bf.vsi = entry->vsi;
@@ -686,9 +923,12 @@ adpt_hppe_port_vlan_trans_add(a_uint32_t dev_id, fal_port_t port_id, fal_vlan_tr
 		eg_vlan_xlt_rule.bf.skey_dei_incl = entry->s_dei_enable;
 		eg_vlan_xlt_rule.bf.skey_dei = entry->s_dei;
 
-		SW_RTN_ON_ERROR(hppe_eg_vlan_xlt_rule_set(dev_id, port_id, &eg_vlan_xlt_rule));
+		SW_RTN_ON_ERROR(hppe_eg_vlan_xlt_rule_set(dev_id, entry_idx, &eg_vlan_xlt_rule));
 
 		/*action part*/
+		eg_vlan_xlt_action.bf.counter_en = entry->counter_enable;
+		eg_vlan_xlt_action.bf.counter_id = entry->counter_id;
+
 		eg_vlan_xlt_action.bf.xlt_cdei_cmd = entry->cdei_xlt_enable;
 		eg_vlan_xlt_action.bf.xlt_cdei = entry->cdei_xlt;
 		eg_vlan_xlt_action.bf.xlt_sdei_cmd = entry->sdei_xlt_enable;
@@ -708,7 +948,7 @@ adpt_hppe_port_vlan_trans_add(a_uint32_t dev_id, fal_port_t port_id, fal_vlan_tr
 		eg_vlan_xlt_action.bf.xlt_svid = entry->svid_xlt;
 		eg_vlan_xlt_action.bf.vid_swap_cmd = entry->swap_svid_cvid;
 
-		SW_RTN_ON_ERROR(hppe_eg_vlan_xlt_action_set(dev_id, port_id, &eg_vlan_xlt_action));
+		SW_RTN_ON_ERROR(hppe_eg_vlan_xlt_action_set(dev_id, entry_idx, &eg_vlan_xlt_action));
 	}
 
 	return rtn;
@@ -717,144 +957,49 @@ adpt_hppe_port_vlan_trans_add(a_uint32_t dev_id, fal_port_t port_id, fal_vlan_tr
 sw_error_t
 adpt_hppe_port_vlan_trans_get(a_uint32_t dev_id, fal_port_t port_id, fal_vlan_trans_entry_t *entry)
 {
-	sw_error_t rtn = SW_OK;
-
-	union xlt_rule_tbl_u in_vlan_xlt_rule;
-	union eg_vlan_xlt_rule_u eg_vlan_xlt_rule;
-	union xlt_action_tbl_u in_vlan_xlt_action;
-	union eg_vlan_xlt_action_u eg_vlan_xlt_action;
-
-	memset(&in_vlan_xlt_rule, 0, sizeof(struct xlt_rule_tbl));
-	memset(&eg_vlan_xlt_rule, 0, sizeof(struct eg_vlan_xlt_rule));
-	memset(&in_vlan_xlt_action, 0, sizeof(struct xlt_action_tbl));
-	memset(&eg_vlan_xlt_action, 0, sizeof(struct eg_vlan_xlt_action));
+	a_uint32_t idx, rule_valid;
+	fal_vlan_trans_entry_t temp;
 
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(entry);
 
-	if (entry->forward_dir) {
-		/*rule part*/
-		SW_RTN_ON_ERROR(hppe_xlt_rule_tbl_get(dev_id, port_id, &in_vlan_xlt_rule));
-		if (!in_vlan_xlt_rule.bf.valid) {
-			memset(&in_vlan_xlt_rule, 0, sizeof(struct xlt_rule_tbl));
+	if (entry->trans_direction == 0) {
+		for (idx = 0; idx < XLT_RULE_TBL_NUM; idx++) {
+			aos_mem_zero(&temp, sizeof (fal_vlan_trans_entry_t));
+			rule_valid = _get_port_vlan_ingress_trans_by_index(dev_id, idx, &temp);
+			if (rule_valid == 1) {
+				if (!aos_mem_cmp(entry, &temp, sizeof (fal_vlan_trans_entry_t))) {
+					if (SW_IS_PBMP_MEMBER(temp.port_bitmap, port_id)) {
+						aos_mem_copy(entry, &temp, sizeof (fal_vlan_trans_entry_t));
+						return SW_OK;
+					}
+				}
+			}
 		}
-
-		entry->frmtype_enable = in_vlan_xlt_rule.bf.frm_type_incl;
-		entry->frmtype = in_vlan_xlt_rule.bf.frm_type;
-		entry->protocol_enable = in_vlan_xlt_rule.bf.prot_incl;
-		entry->protocol = ((in_vlan_xlt_rule.bf.prot_value_1 << 7) |
-							(in_vlan_xlt_rule.bf.prot_value_0));
-
-		entry->port_bitmap = in_vlan_xlt_rule.bf.port_bitmap;
-		entry->c_tagged = in_vlan_xlt_rule.bf.ckey_fmt_0 | (in_vlan_xlt_rule.bf.ckey_fmt_1 << 1);
-		entry->s_tagged = in_vlan_xlt_rule.bf.skey_fmt;
-
-		entry->c_vid_enable = in_vlan_xlt_rule.bf.ckey_vid_incl;
-		entry->c_vid = in_vlan_xlt_rule.bf.ckey_vid;
-		entry->c_pcp_enable = in_vlan_xlt_rule.bf.ckey_pcp_incl;
-		entry->c_pcp = in_vlan_xlt_rule.bf.ckey_pcp;
-		entry->c_dei_enable = in_vlan_xlt_rule.bf.ckey_dei_incl;
-		entry->c_dei = in_vlan_xlt_rule.bf.ckey_dei;
-
-		entry->s_vid_enable = in_vlan_xlt_rule.bf.skey_vid_incl;
-		entry->s_vid = in_vlan_xlt_rule.bf.skey_vid;
-		entry->s_pcp_enable = in_vlan_xlt_rule.bf.skey_pcp_incl;
-		entry->s_pcp = in_vlan_xlt_rule.bf.skey_pcp;
-		entry->s_dei_enable = in_vlan_xlt_rule.bf.skey_dei_incl;
-		entry->s_dei = in_vlan_xlt_rule.bf.skey_dei;
-
-		/*action part*/
-		SW_RTN_ON_ERROR(hppe_xlt_action_tbl_get(dev_id, port_id, &in_vlan_xlt_action));
-		if (!in_vlan_xlt_rule.bf.valid) {
-			memset(&in_vlan_xlt_action, 0, sizeof(struct xlt_action_tbl));
+	}
+	else {
+		for (idx = 0; idx < XLT_RULE_TBL_NUM; idx++) {
+			aos_mem_zero(&temp, sizeof (fal_vlan_trans_entry_t));
+			rule_valid = _get_port_vlan_egress_trans_by_index(dev_id, idx, &temp);
+			if (rule_valid == 1) {
+				if (!aos_mem_cmp(entry, &temp, sizeof (fal_vlan_trans_entry_t))) {
+					if (SW_IS_PBMP_MEMBER(temp.port_bitmap, port_id)) {
+						aos_mem_copy(entry, &temp, sizeof (fal_vlan_trans_entry_t));
+						return SW_OK;
+					}
+				}
+			}
 		}
-
-		entry->counter_enable = in_vlan_xlt_action.bf.counter_en;
-		entry->counter_id = in_vlan_xlt_action.bf.counter_id;
-		entry->vsi_action_enable = in_vlan_xlt_action.bf.vsi_cmd;
-		entry->vsi_action = in_vlan_xlt_action.bf.vsi;
-
-		entry->cdei_xlt_enable = in_vlan_xlt_action.bf.xlt_cdei_cmd;
-		entry->cdei_xlt = in_vlan_xlt_action.bf.xlt_cdei;
-		entry->sdei_xlt_enable = in_vlan_xlt_action.bf.xlt_sdei_cmd;
-		entry->sdei_xlt = in_vlan_xlt_action.bf.xlt_sdei;
-		entry->swap_sdei_cdei = in_vlan_xlt_action.bf.dei_swap_cmd;
-
-		entry->cpcp_xlt_enable = in_vlan_xlt_action.bf.xlt_cpcp_cmd;
-		entry->cpcp_xlt = in_vlan_xlt_action.bf.xlt_cpcp;
-		entry->spcp_xlt_enable = in_vlan_xlt_action.bf.xlt_spcp_cmd;
-		entry->spcp_xlt = (in_vlan_xlt_action.bf.xlt_spcp_0 | (in_vlan_xlt_action.bf.xlt_spcp_1 << 1));
-		entry->swap_spcp_cpcp = in_vlan_xlt_action.bf.pcp_swap_cmd;
-
-		entry->cvid_xlt_cmd = in_vlan_xlt_action.bf.xlt_cvid_cmd;
-		entry->cvid_xlt = in_vlan_xlt_action.bf.xlt_cvid;
-		entry->svid_xlt_cmd = in_vlan_xlt_action.bf.xlt_svid_cmd;
-		entry->svid_xlt = in_vlan_xlt_action.bf.xlt_svid;
-		entry->swap_svid_cvid = in_vlan_xlt_action.bf.vid_swap_cmd;
 	}
 
-	if (entry->reverse_dir) {
-		/*rule part*/
-		SW_RTN_ON_ERROR(hppe_eg_vlan_xlt_rule_get(dev_id, port_id, &eg_vlan_xlt_rule));
-		if (!eg_vlan_xlt_rule.bf.valid) {
-			memset(&eg_vlan_xlt_rule, 0, sizeof(struct eg_vlan_xlt_rule));
-		}
-
-		entry->port_bitmap = eg_vlan_xlt_rule.bf.port_bitmap;
-
-		entry->vsi_enable = eg_vlan_xlt_rule.bf.vsi_incl;
-		entry->vsi = eg_vlan_xlt_rule.bf.vsi;
-		entry->vsi_valid = eg_vlan_xlt_rule.bf.vsi_valid;
-
-		entry->c_tagged = eg_vlan_xlt_rule.bf.ckey_fmt;
-		entry->s_tagged = eg_vlan_xlt_rule.bf.skey_fmt;
-
-		entry->c_vid_enable = eg_vlan_xlt_rule.bf.ckey_vid_incl;
-		entry->c_vid = eg_vlan_xlt_rule.bf.ckey_vid;
-		entry->c_pcp_enable = eg_vlan_xlt_rule.bf.ckey_pcp_incl;
-		entry->c_pcp = eg_vlan_xlt_rule.bf.ckey_pcp;
-		entry->c_dei_enable = eg_vlan_xlt_rule.bf.ckey_dei_incl;
-		entry->c_dei = eg_vlan_xlt_rule.bf.ckey_dei;
-
-		entry->s_vid_enable = eg_vlan_xlt_rule.bf.skey_vid_incl;
-		entry->s_vid = eg_vlan_xlt_rule.bf.skey_vid;
-		entry->s_pcp_enable = eg_vlan_xlt_rule.bf.skey_pcp_incl;
-		entry->s_pcp = eg_vlan_xlt_rule.bf.skey_pcp;
-		entry->s_dei_enable = eg_vlan_xlt_rule.bf.skey_dei_incl;
-		entry->s_dei = eg_vlan_xlt_rule.bf.skey_dei;
-
-		/*action part*/
-		SW_RTN_ON_ERROR(hppe_eg_vlan_xlt_action_get(dev_id, port_id, &eg_vlan_xlt_action));
-		if (!eg_vlan_xlt_rule.bf.valid) {
-			memset(&eg_vlan_xlt_action, 0, sizeof(struct eg_vlan_xlt_action));
-		}
-
-		entry->cdei_xlt_enable = eg_vlan_xlt_action.bf.xlt_cdei_cmd;
-		entry->cdei_xlt = eg_vlan_xlt_action.bf.xlt_cdei;
-		entry->sdei_xlt_enable = eg_vlan_xlt_action.bf.xlt_sdei_cmd;
-		entry->sdei_xlt = eg_vlan_xlt_action.bf.xlt_sdei;
-		entry->swap_sdei_cdei = eg_vlan_xlt_action.bf.dei_swap_cmd;
-
-		entry->cpcp_xlt_enable = eg_vlan_xlt_action.bf.xlt_cpcp_cmd;
-		entry->cpcp_xlt = eg_vlan_xlt_action.bf.xlt_cpcp;
-		entry->spcp_xlt_enable = eg_vlan_xlt_action.bf.xlt_spcp_cmd;
-		entry->spcp_xlt = (in_vlan_xlt_action.bf.xlt_spcp_0 | (in_vlan_xlt_action.bf.xlt_spcp_1 << 1));
-		entry->swap_spcp_cpcp = eg_vlan_xlt_action.bf.pcp_swap_cmd;
-
-		entry->cvid_xlt_cmd = eg_vlan_xlt_action.bf.xlt_cvid_cmd;
-		entry->cvid_xlt = eg_vlan_xlt_action.bf.xlt_cvid;
-		entry->svid_xlt_cmd = eg_vlan_xlt_action.bf.xlt_svid_cmd;
-		entry->svid_xlt = eg_vlan_xlt_action.bf.xlt_svid;
-		entry->swap_svid_cvid = eg_vlan_xlt_action.bf.vid_swap_cmd;
-	}
-
-	return rtn;
+	return SW_NOT_FOUND;
 }
 
 sw_error_t
 adpt_hppe_port_vlan_trans_del(a_uint32_t dev_id, fal_port_t port_id, fal_vlan_trans_entry_t *entry)
 {
-	sw_error_t rtn = SW_OK;
+	a_uint32_t idx, rule_valid;
+	fal_vlan_trans_entry_t temp;
 
 	union xlt_rule_tbl_u in_vlan_xlt_rule;
 	union eg_vlan_xlt_rule_u eg_vlan_xlt_rule;
@@ -869,15 +1014,246 @@ adpt_hppe_port_vlan_trans_del(a_uint32_t dev_id, fal_port_t port_id, fal_vlan_tr
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(entry);
 
-	if (entry->forward_dir) {
-		SW_RTN_ON_ERROR(hppe_xlt_rule_tbl_set(dev_id, port_id, &in_vlan_xlt_rule));
-		SW_RTN_ON_ERROR(hppe_xlt_action_tbl_set(dev_id, port_id, &in_vlan_xlt_action));
+	if (entry->trans_direction == 0) {
+		for (idx = 0; idx < XLT_RULE_TBL_NUM; idx++) {
+			aos_mem_zero(&temp, sizeof (fal_vlan_trans_entry_t));
+			rule_valid = _get_port_vlan_ingress_trans_by_index(dev_id, idx, &temp);
+			if (rule_valid == 1) {
+				if (!aos_mem_cmp(entry, &temp, sizeof (fal_vlan_trans_entry_t))) {
+					if (SW_IS_PBMP_MEMBER(temp.port_bitmap, port_id)) {
+						SW_RTN_ON_ERROR(hppe_xlt_rule_tbl_set(dev_id, idx, &in_vlan_xlt_rule));
+						SW_RTN_ON_ERROR(hppe_xlt_action_tbl_set(dev_id, idx, &in_vlan_xlt_action));
+						return SW_OK;
+					}
+				}
+			}
+		}
+	}
+	else {
+		for (idx = 0; idx < XLT_RULE_TBL_NUM; idx++) {
+			aos_mem_zero(&temp, sizeof (fal_vlan_trans_entry_t));
+			rule_valid = _get_port_vlan_egress_trans_by_index(dev_id, idx, &temp);
+			if (rule_valid == 1) {
+				if (!aos_mem_cmp(entry, &temp, sizeof (fal_vlan_trans_entry_t))) {
+					if (SW_IS_PBMP_MEMBER(temp.port_bitmap, port_id)) {
+						SW_RTN_ON_ERROR(hppe_eg_vlan_xlt_rule_set(dev_id, idx, &eg_vlan_xlt_rule));
+						SW_RTN_ON_ERROR(hppe_eg_vlan_xlt_action_set(dev_id, idx, &eg_vlan_xlt_action));
+						return SW_OK;
+					}
+				}
+			}
+		}
 	}
 
-	if (entry->reverse_dir) {
-		SW_RTN_ON_ERROR(hppe_eg_vlan_xlt_rule_set(dev_id, port_id, &in_vlan_xlt_rule));
-		SW_RTN_ON_ERROR(hppe_eg_vlan_xlt_action_set(dev_id, port_id, &in_vlan_xlt_action));
+	return SW_NOT_FOUND;
+}
+
+sw_error_t
+adpt_hppe_port_vsi_egmode_set(a_uint32_t dev_id, a_uint32_t vsi, a_uint32_t port_id, fal_pt_1q_egmode_t egmode)
+{
+	sw_error_t rtn = SW_OK;
+	a_uint32_t value, tag_value;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+
+
+	if (egmode == FAL_EG_UNMODIFIED) {
+		value = 2;
+	} else if (egmode == FAL_EG_UNTOUCHED) {
+		value = 3;
+	} else if (egmode == FAL_EG_UNTAGGED) {
+		value = 0;
+	} else if (egmode == FAL_EG_TAGGED) {
+		value = 1;
+	} else {
+		return SW_FAIL;
 	}
+
+	SW_RTN_ON_ERROR(hppe_eg_vsi_tag_tagged_mode_port_bitmap_get(dev_id, vsi, &tag_value));
+
+	tag_value &= ~(0x3 << (port_id * 2));
+	tag_value |= (value << (port_id * 2));
+
+	SW_RTN_ON_ERROR(hppe_eg_vsi_tag_tagged_mode_port_bitmap_set(dev_id, vsi, tag_value));
+
+	return rtn;
+}
+
+sw_error_t
+adpt_hppe_port_vsi_egmode_get(a_uint32_t dev_id, a_uint32_t vsi, a_uint32_t port_id, fal_pt_1q_egmode_t * egmode)
+{
+	sw_error_t rtn = SW_OK;
+	a_uint32_t value, tag_value;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(egmode);
+
+	SW_RTN_ON_ERROR(hppe_eg_vsi_tag_tagged_mode_port_bitmap_get(dev_id, vsi, &tag_value));
+
+	value = (tag_value >> (port_id * 2)) & 0x3;
+
+	if (value == 0)
+		*egmode = FAL_EG_UNTAGGED;
+	else if (value == 1)
+		*egmode = FAL_EG_TAGGED;
+	else if (value == 2)
+		*egmode = FAL_EG_UNMODIFIED;
+	else if (value == 3)
+		*egmode = FAL_EG_UNTOUCHED;
+	else
+		return SW_FAIL;
+
+	return rtn;
+}
+
+sw_error_t
+adpt_hppe_port_vlantag_vsi_egmode_enable_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+{
+	sw_error_t rtn = SW_OK;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	SW_RTN_ON_ERROR(hppe_port_eg_vlan_vsi_tag_mode_en_set(dev_id, port_id, enable));
+
+	return rtn;
+}
+
+sw_error_t
+adpt_hppe_port_vlantag_vsi_egmode_enable_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
+{
+	sw_error_t rtn = SW_OK;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(enable);
+
+	SW_RTN_ON_ERROR(hppe_port_eg_vlan_vsi_tag_mode_en_get(dev_id, port_id, enable));
+
+	return rtn;
+}
+
+sw_error_t
+adpt_hppe_qinq_mode_set(a_uint32_t dev_id, fal_qinq_mode_t mode)
+{
+	sw_error_t rtn = SW_OK;
+	fal_global_qinq_mode_t global_mode;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	global_mode.mask = 0x3;
+	global_mode.ingress_mode = mode;
+	global_mode.egress_mode = mode;
+	adpt_hppe_global_qinq_mode_set(dev_id, &global_mode);
+
+	return rtn;
+}
+
+sw_error_t
+adpt_hppe_qinq_mode_get(a_uint32_t dev_id, fal_qinq_mode_t * mode)
+{
+	sw_error_t rtn = SW_OK;
+	fal_global_qinq_mode_t global_mode;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	adpt_hppe_global_qinq_mode_get(dev_id, &global_mode);
+
+	if (global_mode.ingress_mode == global_mode.egress_mode)
+		*mode = global_mode.ingress_mode;
+	else
+		return SW_FAIL;
+
+	return rtn;
+}
+
+sw_error_t
+adpt_hppe_port_qinq_role_set(a_uint32_t dev_id, fal_port_t port_id, fal_qinq_port_role_t role)
+{
+	sw_error_t rtn = SW_OK;
+	fal_port_qinq_role_t port_role;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	port_role.mask = 0x3;
+	port_role.ingress_port_role = role;
+	port_role.egress_port_role = role;
+	adpt_hppe_port_qinq_mode_set(dev_id, port_id, &port_role);
+
+	return rtn;
+}
+
+sw_error_t
+adpt_hppe_port_qinq_role_get(a_uint32_t dev_id, fal_port_t port_id, fal_qinq_port_role_t * role)
+{
+	sw_error_t rtn = SW_OK;
+	fal_port_qinq_role_t port_role;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	adpt_hppe_port_qinq_mode_get(dev_id, port_id, &port_role);
+
+	if (port_role.ingress_port_role == port_role.egress_port_role)
+		*role = port_role.ingress_port_role;
+	else
+		return SW_FAIL;
+
+	return rtn;
+}
+
+sw_error_t
+adpt_hppe_port_invlan_mode_set(a_uint32_t dev_id, fal_port_t port_id, fal_pt_invlan_mode_t mode)
+{
+	sw_error_t rtn = SW_OK;
+	fal_ingress_vlan_filter_t filter;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	if (mode == FAL_INVLAN_ADMIT_ALL)
+	{
+		filter.tagged_filter = A_FALSE;
+		filter.untagged_filter = A_FALSE;
+		filter.priority_filter = A_FALSE;
+	}
+	else if (mode == FAL_INVLAN_ADMIT_TAGGED)
+	{
+		filter.tagged_filter = A_FALSE;
+		filter.untagged_filter = A_TRUE;
+		filter.priority_filter = A_TRUE;
+	}
+	else if (mode == FAL_INVLAN_ADMIT_UNTAGGED)
+	{
+		filter.tagged_filter = A_TRUE;
+		filter.untagged_filter = A_FALSE;
+		filter.priority_filter = A_FALSE;
+	}
+	else
+		return SW_FAIL;
+
+	adpt_hppe_port_ingress_vlan_filter_set(dev_id, port_id, &filter);
+
+	return rtn;
+}
+
+sw_error_t
+adpt_hppe_port_invlan_mode_get(a_uint32_t dev_id, fal_port_t port_id, fal_pt_invlan_mode_t * mode)
+{
+	sw_error_t rtn = SW_OK;
+	fal_ingress_vlan_filter_t filter;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	adpt_hppe_port_ingress_vlan_filter_get(dev_id, port_id, &filter);
+
+	if (filter.tagged_filter == A_FALSE && filter.untagged_filter == A_FALSE && 
+		filter.priority_filter  == A_FALSE)
+		*mode = FAL_INVLAN_ADMIT_ALL;
+	else if (filter.tagged_filter == A_FALSE && filter.untagged_filter == A_TRUE &&
+		filter.priority_filter  == A_TRUE)
+		*mode = FAL_INVLAN_ADMIT_TAGGED;
+	else if (filter.tagged_filter == A_TRUE && filter.untagged_filter == A_FALSE &&
+		filter.priority_filter  == A_FALSE)
+		*mode = FAL_INVLAN_ADMIT_UNTAGGED;
+	else
+		return SW_FAIL;
 
 	return rtn;
 }
@@ -899,25 +1275,32 @@ sw_error_t adpt_hppe_portvlan_init(a_uint32_t dev_id)
 	p_adpt_api->adpt_tpid_get = adpt_hppe_tpid_get;
 	p_adpt_api->adpt_egress_tpid_set = adpt_hppe_egress_tpid_set;
 	p_adpt_api->adpt_egress_tpid_get = adpt_hppe_egress_tpid_get;
-	p_adpt_api->adpt_port_ingress_filter_set = adpt_hppe_port_ingress_filter_set;
-	p_adpt_api->adpt_port_ingress_filter_get = adpt_hppe_port_ingress_filter_get;
-	p_adpt_api->adpt_port_ingress_default_tag_set = adpt_hppe_port_ingress_default_tag_set;
-	p_adpt_api->adpt_port_ingress_default_tag_get = adpt_hppe_port_ingress_default_tag_get;
+	p_adpt_api->adpt_port_ingress_vlan_filter_set = adpt_hppe_port_ingress_vlan_filter_set;
+	p_adpt_api->adpt_port_ingress_vlan_filter_get = adpt_hppe_port_ingress_vlan_filter_get;
+	p_adpt_api->adpt_port_default_vlantag_set = adpt_hppe_port_default_vlantag_set;
+	p_adpt_api->adpt_port_default_vlantag_get = adpt_hppe_port_default_vlantag_get;
 	p_adpt_api->adpt_port_tag_propagation_set = adpt_hppe_port_tag_propagation_set;
 	p_adpt_api->adpt_port_tag_propagation_get = adpt_hppe_port_tag_propagation_get;
-	p_adpt_api->adpt_port_egress_tag_propagation_set = adpt_hppe_port_egress_tag_propagation_set;
-	p_adpt_api->adpt_port_egress_tag_propagation_get = adpt_hppe_port_egress_tag_propagation_get;
-	p_adpt_api->adpt_port_tag_egvlanmode_set = adpt_hppe_port_tag_egvlanmode_set;
-	p_adpt_api->adpt_port_tag_egvlanmode_get = adpt_hppe_port_tag_egvlanmode_get;
+	p_adpt_api->adpt_port_vlantag_egmode_set = adpt_hppe_port_vlantag_egmode_set;
+	p_adpt_api->adpt_port_vlantag_egmode_get = adpt_hppe_port_vlantag_egmode_get;
 	p_adpt_api->adpt_port_vlan_xlt_miss_cmd_set = adpt_hppe_port_vlan_xlt_miss_cmd_set;
 	p_adpt_api->adpt_port_vlan_xlt_miss_cmd_get = adpt_hppe_port_vlan_xlt_miss_cmd_get;
-	p_adpt_api->adpt_port_egress_default_vid_set = adpt_hppe_port_egress_default_vid_set;
-	p_adpt_api->adpt_port_egress_default_vid_get = adpt_hppe_port_egress_default_vid_get;
-
 	p_adpt_api->adpt_port_vlan_trans_iterate = adpt_hppe_port_vlan_trans_iterate;
 	p_adpt_api->adpt_port_vlan_trans_add = adpt_hppe_port_vlan_trans_add;
 	p_adpt_api->adpt_port_vlan_trans_get = adpt_hppe_port_vlan_trans_get;
 	p_adpt_api->adpt_port_vlan_trans_del = adpt_hppe_port_vlan_trans_del;
+
+	p_adpt_api->adpt_port_vsi_egmode_set = adpt_hppe_port_vsi_egmode_set;
+	p_adpt_api->adpt_port_vsi_egmode_get = adpt_hppe_port_vsi_egmode_get;
+	p_adpt_api->adpt_port_vlantag_vsi_egmode_enable_set = adpt_hppe_port_vlantag_vsi_egmode_enable_set;
+	p_adpt_api->adpt_port_vlantag_vsi_egmode_enable_get = adpt_hppe_port_vlantag_vsi_egmode_enable_get;
+
+	p_adpt_api->adpt_qinq_mode_set = adpt_hppe_qinq_mode_set;
+	p_adpt_api->adpt_qinq_mode_get = adpt_hppe_qinq_mode_get;
+	p_adpt_api->adpt_port_qinq_role_set = adpt_hppe_port_qinq_role_set;
+	p_adpt_api->adpt_port_qinq_role_get = adpt_hppe_port_qinq_role_get;
+	p_adpt_api->adpt_port_invlan_mode_set = adpt_hppe_port_invlan_mode_set;
+	p_adpt_api->adpt_port_invlan_mode_get = adpt_hppe_port_invlan_mode_get;
 
 	return SW_OK;
 }

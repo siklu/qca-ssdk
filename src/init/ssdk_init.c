@@ -3125,7 +3125,8 @@ qca_dess_hw_init(ssdk_init_cfg *cfg)
 #ifdef HPPE
 static int qca_hppe_vsi_hw_init(void)
 {
-//	ref_vsi_init(0);
+	return ppe_vsi_init(0);
+#if 0
 #ifdef ESS_ONLY_FPGA
 	a_uint32_t port_default_vsi[6] = {2, 2, 2, 2, 3, 3};
 #else
@@ -3158,6 +3159,7 @@ static int qca_hppe_vsi_hw_init(void)
 	}
 
 	return 0;
+#endif
 }
 
 static int qca_hppe_fdb_hw_init(void)

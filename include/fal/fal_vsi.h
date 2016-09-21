@@ -28,6 +28,7 @@ extern "C" {
 #include "fal/fal_type.h"
 
 #define FAL_VSI_INVALID 0xffff
+#define FAL_VLAN_INVALID 0xffff
 
 typedef struct{
 	a_uint32_t lrn_en;
@@ -59,10 +60,10 @@ sw_error_t
 fal_port_vsi_get(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t *vsi_id);
 
 sw_error_t
-fal_port_vlan_vsi_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vlan_id, a_uint32_t vsi_id);
+fal_port_vlan_vsi_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t stag_vid, a_uint32_t ctag_vid, a_uint32_t vsi_id);
 
 sw_error_t
-fal_port_vlan_vsi_get(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vlan_id, a_uint32_t *vsi_id);
+fal_port_vlan_vsi_get(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t stag_vid, a_uint32_t ctag_vid, a_uint32_t *vsi_id);
 
 sw_error_t
 fal_vsi_tbl_dump(a_uint32_t dev_id);

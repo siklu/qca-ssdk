@@ -125,8 +125,8 @@ typedef sw_error_t (*adpt_stp_port_state_get_func)(a_uint32_t dev_id, a_uint32_t
 typedef sw_error_t (*adpt_stp_port_state_set_func)(a_uint32_t dev_id, a_uint32_t st_id,
                      fal_port_t port_id, fal_stp_state_t state);
 
-typedef sw_error_t (*adpt_port_vlan_vsi_set_func)(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vlan_id, a_uint32_t vsi_id);
-typedef sw_error_t (*adpt_port_vlan_vsi_get_func)(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vlan_id, a_uint32_t *vsi_id);
+typedef sw_error_t (*adpt_port_vlan_vsi_set_func)(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t stag_vid, a_uint32_t ctag_vid, a_uint32_t vsi_id);
+typedef sw_error_t (*adpt_port_vlan_vsi_get_func)(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t stag_vid, a_uint32_t ctag_vid, a_uint32_t *vsi_id);
 typedef sw_error_t (*adpt_port_vsi_set_func)(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vsi_id);
 typedef sw_error_t (*adpt_port_vsi_get_func)(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t *vsi_id);
 typedef sw_error_t (*adpt_vsi_stamove_set_func)(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_stamove_t *stamove);
@@ -543,26 +543,22 @@ typedef sw_error_t (*adpt_tpid_set_func)(a_uint32_t dev_id, fal_tpid_t *tpid);
 typedef sw_error_t (*adpt_tpid_get_func)(a_uint32_t dev_id, fal_tpid_t *tpid);
 typedef sw_error_t (*adpt_egress_tpid_set_func)(a_uint32_t dev_id, fal_tpid_t *tpid);
 typedef sw_error_t (*adpt_egress_tpid_get_func)(a_uint32_t dev_id, fal_tpid_t *tpid);
-typedef sw_error_t (*adpt_port_qinq_mode_set_func)(a_uint32_t dev_id, fal_port_t port_id, fal_port_qinq_mode_t *mode);
-typedef sw_error_t (*adpt_port_qinq_mode_get_func)(a_uint32_t dev_id, fal_port_t port_id, fal_port_qinq_mode_t *mode);
-typedef sw_error_t (*adpt_port_ingress_filter_set_func)(a_uint32_t dev_id, fal_port_t port_id, fal_ingress_filter_t *filter);
-typedef sw_error_t (*adpt_port_ingress_filter_get_func)(a_uint32_t dev_id, fal_port_t port_id, fal_ingress_filter_t *filter);
-typedef sw_error_t (*adpt_port_ingress_default_tag_set_func)(a_uint32_t dev_id, fal_port_t port_id,
-                                 fal_port_ingress_default_tag_t *default_tag);
-typedef sw_error_t (*adpt_port_ingress_default_tag_get_func)(a_uint32_t dev_id, fal_port_t port_id,
-                                 fal_port_ingress_default_tag_t *default_tag);
-typedef sw_error_t (*adpt_port_tag_propagation_set_func)(a_uint32_t dev_id, fal_port_t port_id,
-                                 fal_tag_propagation_t *prop);
-typedef sw_error_t (*adpt_port_tag_propagation_get_func)(a_uint32_t dev_id, fal_port_t port_id,
-                                 fal_tag_propagation_t *prop);
-typedef sw_error_t (*adpt_port_tag_egvlanmode_set_func)(a_uint32_t dev_id, fal_port_t port_id,
-                            fal_egressmode_t *port_egvlanmode);
-typedef sw_error_t (*adpt_port_tag_egvlanmode_get_func)(a_uint32_t dev_id, fal_port_t port_id,
-                            fal_egressmode_t *port_egvlanmode);
-typedef sw_error_t (*adpt_port_egress_tag_propagation_set_func)(a_uint32_t dev_id, fal_port_t port_id,
-                                 fal_tag_propagation_t *eg_prop);
-typedef sw_error_t (*adpt_port_egress_tag_propagation_get_func)(a_uint32_t dev_id, fal_port_t port_id,
-                                 fal_tag_propagation_t *eg_prop);
+typedef sw_error_t (*adpt_port_qinq_mode_set_func)(a_uint32_t dev_id, fal_port_t port_id, fal_port_qinq_role_t *mode);
+typedef sw_error_t (*adpt_port_qinq_mode_get_func)(a_uint32_t dev_id, fal_port_t port_id, fal_port_qinq_role_t *mode);
+typedef sw_error_t (*adpt_port_ingress_vlan_filter_set_func)(a_uint32_t dev_id, fal_port_t port_id, fal_ingress_vlan_filter_t *filter);
+typedef sw_error_t (*adpt_port_ingress_vlan_filter_get_func)(a_uint32_t dev_id, fal_port_t port_id, fal_ingress_vlan_filter_t *filter);
+typedef sw_error_t (*adpt_port_default_vlantag_set_func)(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_direction_t direction,
+                                 fal_port_default_vid_enable_t *default_vid_en, fal_port_vlan_tag_t *default_tag);
+typedef sw_error_t (*adpt_port_default_vlantag_get_func)(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_direction_t direction,
+                                 fal_port_default_vid_enable_t *default_vid_en, fal_port_vlan_tag_t *default_tag);
+typedef sw_error_t (*adpt_port_tag_propagation_set_func)(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_direction_t direction,
+                                 fal_vlantag_propagation_t *prop);
+typedef sw_error_t (*adpt_port_tag_propagation_get_func)(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_direction_t direction,
+                                 fal_vlantag_propagation_t *prop);
+typedef sw_error_t (*adpt_port_vlantag_egmode_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+                            fal_vlantag_egress_mode_t *port_egvlanmode);
+typedef sw_error_t (*adpt_port_vlantag_egmode_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+                            fal_vlantag_egress_mode_t *port_egvlanmode);
 typedef sw_error_t (*adpt_port_vlan_xlt_miss_cmd_get_func)(a_uint32_t dev_id, fal_port_t port_id,
                                  fal_fwd_cmd_t *cmd);
 typedef sw_error_t (*adpt_port_vlan_xlt_miss_cmd_set_func)(a_uint32_t dev_id, fal_port_t port_id,
@@ -572,10 +568,16 @@ typedef sw_error_t (*adpt_port_vlan_trans_get_func)(a_uint32_t dev_id, fal_port_
 typedef sw_error_t (*adpt_port_vlan_trans_del_func)(a_uint32_t dev_id, fal_port_t port_id, fal_vlan_trans_entry_t *entry);
 typedef sw_error_t (*adpt_port_vlan_trans_iterate_func)(a_uint32_t dev_id, fal_port_t port_id,
                                 a_uint32_t * iterator, fal_vlan_trans_entry_t *entry);
-typedef sw_error_t (*adpt_port_egress_default_vid_set_func)(a_uint32_t dev_id, fal_port_t port_id,
-                                 fal_port_egress_default_vid_t *default_vid);
-typedef sw_error_t (*adpt_port_egress_default_vid_get_func)(a_uint32_t dev_id, fal_port_t port_id,
-                                 fal_port_egress_default_vid_t *default_vid);
+typedef sw_error_t (*adpt_port_vsi_egmode_set_func)(a_uint32_t dev_id, a_uint32_t vsi, a_uint32_t port_id, fal_pt_1q_egmode_t egmode);
+typedef sw_error_t (*adpt_port_vsi_egmode_get_func)(a_uint32_t dev_id, a_uint32_t vsi, a_uint32_t port_id, fal_pt_1q_egmode_t * egmode);
+typedef sw_error_t (*adpt_port_vlantag_vsi_egmode_enable_set_func)(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable);
+typedef sw_error_t (*adpt_port_vlantag_vsi_egmode_enable_get_func)(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable);
+typedef sw_error_t (*adpt_qinq_mode_set_func)(a_uint32_t dev_id, fal_qinq_mode_t mode);
+typedef sw_error_t (*adpt_qinq_mode_get_func)(a_uint32_t dev_id, fal_qinq_mode_t * mode);
+typedef sw_error_t (*adpt_port_qinq_role_set_func)(a_uint32_t dev_id, fal_port_t port_id, fal_qinq_port_role_t role);
+typedef sw_error_t (*adpt_port_qinq_role_get_func)(a_uint32_t dev_id, fal_port_t port_id, fal_qinq_port_role_t * role);
+typedef sw_error_t (*adpt_port_invlan_mode_set_func)(a_uint32_t dev_id, fal_port_t port_id, fal_pt_invlan_mode_t mode);
+typedef sw_error_t (*adpt_port_invlan_mode_get_func)(a_uint32_t dev_id, fal_port_t port_id, fal_pt_invlan_mode_t * mode);
 /*portvlan module end*/
 
 /*ctrlpkt module end*/
@@ -702,7 +704,7 @@ typedef sw_error_t (*adpt_qos_cosmap_flow_set_func)(a_uint32_t dev_id, a_uint8_t
 					a_uint8_t flow, fal_qos_cosmap_t *cosmap);
 typedef sw_error_t (*adpt_qos_port_group_set_func)(a_uint32_t dev_id, fal_port_t port_id,
 					fal_qos_group_t *group);
-typedef sw_error_t (*adpt_ring_queue_map_set_func)(a_uint32_t dev_id, 
+typedef sw_error_t (*adpt_ring_queue_map_set_func)(a_uint32_t dev_id,
 					a_uint32_t ring_id, fal_queue_bmp_t *queue_bmp);
 typedef sw_error_t (*adpt_qos_cosmap_dscp_set_func)(a_uint32_t dev_id, a_uint8_t group_id,
 					a_uint8_t dscp, fal_qos_cosmap_t *cosmap);
@@ -712,7 +714,7 @@ typedef sw_error_t (*adpt_qos_cosmap_flow_get_func)(a_uint32_t dev_id, a_uint8_t
 					a_uint8_t flow, fal_qos_cosmap_t *cosmap);
 typedef sw_error_t (*adpt_qos_port_group_get_func)(a_uint32_t dev_id, fal_port_t port_id,
 					fal_qos_group_t *group);
-typedef sw_error_t (*adpt_ring_queue_map_get_func)(a_uint32_t dev_id, 
+typedef sw_error_t (*adpt_ring_queue_map_get_func)(a_uint32_t dev_id,
 					a_uint32_t ring_id, fal_queue_bmp_t *queue_bmp);
 
 //shaper
@@ -996,7 +998,7 @@ typedef struct
 	adpt_ucast_priority_class_set_func adpt_ucast_priority_class_set;
 	adpt_ac_static_threshold_get_func adpt_ac_static_threshold_get;
 	adpt_ucast_queue_base_profile_set_func adpt_ucast_queue_base_profile_set;
-	adpt_ac_group_buffer_set_func adpt_ac_group_buffer_set;	
+	adpt_ac_group_buffer_set_func adpt_ac_group_buffer_set;
 
 	/*portvlan module begin*/
 	adpt_global_qinq_mode_set_func adpt_global_qinq_mode_set;
@@ -1007,24 +1009,30 @@ typedef struct
 	adpt_egress_tpid_get_func adpt_egress_tpid_get;
 	adpt_port_qinq_mode_set_func adpt_port_qinq_mode_set;
 	adpt_port_qinq_mode_get_func adpt_port_qinq_mode_get;
-	adpt_port_ingress_filter_set_func adpt_port_ingress_filter_set;
-	adpt_port_ingress_filter_get_func adpt_port_ingress_filter_get;
-	adpt_port_ingress_default_tag_set_func adpt_port_ingress_default_tag_set;
-	adpt_port_ingress_default_tag_get_func adpt_port_ingress_default_tag_get;
+	adpt_port_ingress_vlan_filter_set_func adpt_port_ingress_vlan_filter_set;
+	adpt_port_ingress_vlan_filter_get_func adpt_port_ingress_vlan_filter_get;
+	adpt_port_default_vlantag_set_func adpt_port_default_vlantag_set;
+	adpt_port_default_vlantag_get_func adpt_port_default_vlantag_get;
 	adpt_port_tag_propagation_set_func adpt_port_tag_propagation_set;
 	adpt_port_tag_propagation_get_func adpt_port_tag_propagation_get;
-	adpt_port_tag_egvlanmode_set_func adpt_port_tag_egvlanmode_set;
-	adpt_port_tag_egvlanmode_get_func adpt_port_tag_egvlanmode_get;
-	adpt_port_egress_tag_propagation_set_func adpt_port_egress_tag_propagation_set;
-	adpt_port_egress_tag_propagation_get_func adpt_port_egress_tag_propagation_get;
+	adpt_port_vlantag_egmode_set_func adpt_port_vlantag_egmode_set;
+	adpt_port_vlantag_egmode_get_func adpt_port_vlantag_egmode_get;
 	adpt_port_vlan_xlt_miss_cmd_set_func adpt_port_vlan_xlt_miss_cmd_set;
 	adpt_port_vlan_xlt_miss_cmd_get_func adpt_port_vlan_xlt_miss_cmd_get;
 	adpt_port_vlan_trans_add_func adpt_port_vlan_trans_add;
 	adpt_port_vlan_trans_get_func adpt_port_vlan_trans_get;
 	adpt_port_vlan_trans_del_func adpt_port_vlan_trans_del;
 	adpt_port_vlan_trans_iterate_func adpt_port_vlan_trans_iterate;
-	adpt_port_egress_default_vid_set_func adpt_port_egress_default_vid_set;
-	adpt_port_egress_default_vid_get_func adpt_port_egress_default_vid_get;
+	adpt_port_vsi_egmode_set_func adpt_port_vsi_egmode_set;
+	adpt_port_vsi_egmode_get_func adpt_port_vsi_egmode_get;
+	adpt_port_vlantag_vsi_egmode_enable_set_func adpt_port_vlantag_vsi_egmode_enable_set;
+	adpt_port_vlantag_vsi_egmode_enable_get_func adpt_port_vlantag_vsi_egmode_enable_get;
+	adpt_qinq_mode_set_func adpt_qinq_mode_set;
+	adpt_qinq_mode_get_func adpt_qinq_mode_get;
+	adpt_port_qinq_role_set_func adpt_port_qinq_role_set;
+	adpt_port_qinq_role_get_func adpt_port_qinq_role_get;
+	adpt_port_invlan_mode_set_func adpt_port_invlan_mode_set;
+	adpt_port_invlan_mode_get_func adpt_port_invlan_mode_get;
 	/*portvlan module end*/
 
 	/*ctrlpkt module begin*/

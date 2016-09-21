@@ -85,6 +85,13 @@ extern "C" {
         FAL_VID_XLT_CMD_DELETE = 2,
     } fal_vid_xlt_cmd_t;
 
+    typedef enum
+    {
+        FAL_PORT_VLAN_ALL = 0,
+        FAL_PORT_VLAN_INGRESS = 1,
+        FAL_PORT_VLAN_EGRESS = 2,
+    } fal_port_vlan_direction_t;
+
 
     /**
       @details  Fields description:
@@ -114,6 +121,9 @@ extern "C" {
         a_bool_t   s_vid_enable;
         a_bool_t   c_vid_enable;
         a_bool_t   one_2_one_vlan;
+
+	/*direction check*/
+	a_uint32_t trans_direction;
 
         /*vsi check*/
         a_bool_t   vsi_valid;
@@ -441,13 +451,13 @@ extern "C" {
 	    fal_qinq_mode_t egress_mode;
 	} fal_global_qinq_mode_t;
 
-#define FAL_PORT_QINQ_MODE_INGRESS_EN (0x1UL << 0)
-#define FAL_PORT_QINQ_MODE_EGRESS_EN (0x1UL << 1)
+#define FAL_PORT_QINQ_ROLE_INGRESS_EN (0x1UL << 0)
+#define FAL_PORT_QINQ_ROLE_EGRESS_EN (0x1UL << 1)
 	typedef struct {
 	    a_uint32_t mask;/*bit 0 for ingress and bit 1 for egress*/
-	    fal_qinq_port_role_t ingress_mode;
-	    fal_qinq_port_role_t egress_mode;
-	} fal_port_qinq_mode_t;
+	    fal_qinq_port_role_t ingress_port_role;
+	    fal_qinq_port_role_t egress_port_role;
+	} fal_port_qinq_role_t;
 
 #define FAL_TPID_CTAG_EN (0x1UL << 0)
 #define FAL_TPID_STAG_EN (0x1UL << 1)
@@ -459,56 +469,51 @@ extern "C" {
 	} fal_tpid_t;
 
 	typedef struct {
-		a_bool_t mask;/*when mask is false, no filter should be performed*/
+		a_bool_t membership_filter;
 		a_bool_t tagged_filter;
 		a_bool_t untagged_filter;
 		a_bool_t priority_filter;
-	} fal_ingress_filter_t;
+	} fal_ingress_vlan_filter_t;
 
-#define FAL_PORT_INGRESS_DEFAULT_CVID_EN (0x1UL << 0)
-#define FAL_PORT_INGRESS_DEFAULT_SVID_EN (0x1UL << 1)
-#define FAL_PORT_INGRESS_DEFAULT_CPCP_EN (0x1UL << 2)
-#define FAL_PORT_INGRESS_DEFAULT_SPCP_EN (0x1UL << 3)
-#define FAL_PORT_INGRESS_DEFAULT_CDEI_EN (0x1UL << 4)
-#define FAL_PORT_INGRESS_DEFAULT_SDEI_EN (0x1UL << 5)
+#define FAL_PORT_VLAN_TAG_CVID_EN (0x1UL << 0)
+#define FAL_PORT_VLAN_TAG_SVID_EN (0x1UL << 1)
+#define FAL_PORT_VLAN_TAG_CPCP_EN (0x1UL << 2)
+#define FAL_PORT_VLAN_TAG_SPCP_EN (0x1UL << 3)
+#define FAL_PORT_VLAN_TAG_CDEI_EN (0x1UL << 4)
+#define FAL_PORT_VLAN_TAG_SDEI_EN (0x1UL << 5)
     typedef struct
 	{
-    	a_uint32_t mask; /*bit 0 for ctag vid and bit 1 for stag vid;
-							*bit 2 for ctag priority and bit 3 for stag priority;
-							*bit 4 for ctag dei and bit 5 for stag dei*/
-		a_bool_t apply_default_cvid;
-		a_uint16_t default_cvid;
-		a_bool_t apply_default_svid;
-		a_uint16_t default_svid;
-		a_uint16_t default_cpri;
-		a_uint16_t default_spri;
-		a_uint16_t default_cdei;
-		a_uint16_t default_sdei;
-	} fal_port_ingress_default_tag_t;
+		a_uint32_t mask;	/*bit 0 for ctag vid;
+					 *bit 1 for stag vid;
+					 *bit 2 for ctag priority;
+					 *bit 3 for stag priority;
+					 *bit 4 for ctag dei;
+					 *bit 5 for stag dei*/
+		a_uint16_t cvid;
+		a_uint16_t svid;
+		a_uint16_t cpri;
+		a_uint16_t spri;
+		a_uint16_t cdei;
+		a_uint16_t sdei;
+	} fal_port_vlan_tag_t;
 
-#define FAL_PORT_PROPOGATION_VID_EN (0x1UL << 0)
-#define FAL_PORT_PROPOGATION_PCP_EN (0x1UL << 1)
-#define FAL_PORT_PROPOGATION_DEI_EN (0x1UL << 2)
+	typedef struct {
+		a_bool_t default_cvid_en;
+		a_bool_t default_svid_en;
+	} fal_port_default_vid_enable_t;
+
+#define FAL_PORT_PROPAGATION_VID_EN (0x1UL << 0)
+#define FAL_PORT_PROPAGATION_PCP_EN (0x1UL << 1)
+#define FAL_PORT_PROPAGATION_DEI_EN (0x1UL << 2)
     typedef struct
 	{
     	a_uint32_t mask; /*bit 0 for vid;
 							*bit 1 for priority;
 							*bit 2 for dei*/
-		a_bool_t vid_prop;
-		a_bool_t pri_prop;
-		a_bool_t dei_prop;
-	} fal_tag_propagation_t;
-
-#define FAL_PORT_EGRESS_DEFAULT_CVID_EN (0x1UL << 0)
-#define FAL_PORT_EGRESS_DEFAULT_SVID_EN (0x1UL << 1)
-    typedef struct
-	{
-		a_uint32_t mask; /*bit 0 for ctag vid and bit 1 for stag vidi*/
-		a_bool_t trip_cvid;
-		a_uint16_t default_cvid;
-		a_bool_t trip_svid;
-		a_uint16_t default_svid;
-	} fal_port_egress_default_vid_t;
+		fal_vlan_propagation_mode_t vid_propagation;
+		fal_vlan_propagation_mode_t pri_propagation;
+		fal_vlan_propagation_mode_t dei_propagation;
+	} fal_vlantag_propagation_t;
 
 #define FAL_EGRESSMODE_CTAG_EN (0x1UL << 0)
 #define FAL_EGRESSMODE_STAG_EN (0x1UL << 1)
@@ -517,7 +522,7 @@ extern "C" {
     	a_uint32_t mask; /*bit 0 for ctag and bit 1 for stag*/
 		fal_pt_1q_egmode_t     stag_mode;
 		fal_pt_1q_egmode_t     ctag_mode;
-	} fal_egressmode_t;
+	} fal_vlantag_egress_mode_t;
 
     sw_error_t
     fal_global_qinq_mode_set(a_uint32_t dev_id, fal_global_qinq_mode_t *mode);
@@ -525,9 +530,9 @@ extern "C" {
     fal_global_qinq_mode_get(a_uint32_t dev_id, fal_global_qinq_mode_t *mode);
 
     sw_error_t
-    fal_port_qinq_mode_set(a_uint32_t dev_id, fal_port_t port_id, fal_port_qinq_mode_t *mode);
+    fal_port_qinq_mode_set(a_uint32_t dev_id, fal_port_t port_id, fal_port_qinq_role_t *mode);
     sw_error_t
-    fal_port_qinq_mode_get(a_uint32_t dev_id, fal_port_t port_id, fal_port_qinq_mode_t *mode);
+    fal_port_qinq_mode_get(a_uint32_t dev_id, fal_port_t port_id, fal_port_qinq_role_t *mode);
 
     sw_error_t
     fal_tpid_set(a_uint32_t dev_id, fal_tpid_t *tpid);
@@ -540,37 +545,25 @@ extern "C" {
     fal_egress_tpid_get(a_uint32_t dev_id, fal_tpid_t *tpid);
 
     sw_error_t
-    fal_port_ingress_filter_set(a_uint32_t dev_id, fal_port_t port_id, fal_ingress_filter_t *filter);
+    fal_port_ingress_vlan_filter_set(a_uint32_t dev_id, fal_port_t port_id, fal_ingress_vlan_filter_t *filter);
     sw_error_t
-    fal_port_ingress_filter_get(a_uint32_t dev_id, fal_port_t port_id, fal_ingress_filter_t *filter);
+    fal_port_ingress_vlan_filter_get(a_uint32_t dev_id, fal_port_t port_id, fal_ingress_vlan_filter_t *filter);
 
     sw_error_t
-    fal_port_ingress_default_tag_set(a_uint32_t dev_id, fal_port_t port_id,
-                                 fal_port_ingress_default_tag_t *default_tag);
+    fal_port_default_vlantag_set(a_uint32_t dev_id, fal_port_t port_id,
+                                 fal_port_vlan_direction_t direction, fal_port_default_vid_enable_t *default_vid_en,
+                                 fal_port_vlan_tag_t *default_tag);
     sw_error_t
-    fal_port_ingress_default_tag_get(a_uint32_t dev_id, fal_port_t port_id,
-                                 fal_port_ingress_default_tag_t *default_tag);
+    fal_port_default_vlantag_get(a_uint32_t dev_id, fal_port_t port_id,
+                                 fal_port_vlan_direction_t direction, fal_port_default_vid_enable_t *default_vid_en,
+                                 fal_port_vlan_tag_t *default_tag);
 
     sw_error_t
-    fal_port_tag_propagation_set(a_uint32_t dev_id, fal_port_t port_id,
-                                 fal_tag_propagation_t *prop);
+    fal_port_tag_propagation_set(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_direction_t direction,
+                                 fal_vlantag_propagation_t *prop);
     sw_error_t
-    fal_port_tag_propagation_get(a_uint32_t dev_id, fal_port_t port_id,
-                                 fal_tag_propagation_t *prop);
-
-    sw_error_t
-    fal_port_egress_tag_propagation_set(a_uint32_t dev_id, fal_port_t port_id,
-                                 fal_tag_propagation_t *eg_prop);
-    sw_error_t
-    fal_port_egress_tag_propagation_get(a_uint32_t dev_id, fal_port_t port_id,
-                                 fal_tag_propagation_t *eg_prop);
-
-    sw_error_t
-    fal_port_egress_default_vid_set(a_uint32_t dev_id, fal_port_t port_id,
-                                 fal_port_egress_default_vid_t *default_vid);
-    sw_error_t
-    fal_port_egress_default_vid_get(a_uint32_t dev_id, fal_port_t port_id,
-                                 fal_port_egress_default_vid_t *default_vid);
+    fal_port_tag_propagation_get(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_direction_t direction,
+                                 fal_vlantag_propagation_t *prop);
 
     sw_error_t
     fal_port_vlan_xlt_miss_cmd_set(a_uint32_t dev_id, fal_port_t port_id,
@@ -580,11 +573,23 @@ extern "C" {
                                  fal_fwd_cmd_t *cmd);
 
     sw_error_t
-    fal_port_tag_egvlanmode_set(a_uint32_t dev_id, fal_port_t port_id,
-                            fal_egressmode_t *port_egvlanmode);
+    fal_port_vlantag_egmode_set(a_uint32_t dev_id, fal_port_t port_id,
+                            fal_vlantag_egress_mode_t *port_egvlanmode);
     sw_error_t
-    fal_port_tag_egvlanmode_get(a_uint32_t dev_id, fal_port_t port_id,
-                            fal_egressmode_t *port_egvlanmode);
+    fal_port_vlantag_egmode_get(a_uint32_t dev_id, fal_port_t port_id,
+                            fal_vlantag_egress_mode_t *port_egvlanmode);
+
+    sw_error_t
+    fal_port_vsi_egmode_set(a_uint32_t dev_id, a_uint32_t vsi, a_uint32_t port_id, fal_pt_1q_egmode_t egmode);
+
+    sw_error_t
+    fal_port_vsi_egmode_get(a_uint32_t dev_id, a_uint32_t vsi, a_uint32_t port_id, fal_pt_1q_egmode_t * egmode);
+
+    sw_error_t
+    fal_port_vlantag_vsi_egmode_enable_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable);
+
+    sw_error_t
+    fal_port_vlantag_vsi_egmode_enable_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable);
 
 #ifdef __cplusplus
 }

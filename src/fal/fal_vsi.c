@@ -16,7 +16,7 @@
 #include "hsl_api.h"
 
 sw_error_t
-_fal_port_vlan_vsi_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vlan_id, a_uint32_t vsi_id)
+_fal_port_vlan_vsi_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t stag_vid, a_uint32_t ctag_vid, a_uint32_t vsi_id)
 {
     adpt_api_t *p_api;
 	sw_error_t rv = SW_OK;
@@ -26,11 +26,11 @@ _fal_port_vlan_vsi_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vlan_id
     if (NULL == p_api->adpt_port_vlan_vsi_set)
         return SW_NOT_SUPPORTED;
 
-    rv = p_api->adpt_port_vlan_vsi_set(dev_id, port_id, vlan_id, vsi_id);
+    rv = p_api->adpt_port_vlan_vsi_set(dev_id, port_id, stag_vid, ctag_vid, vsi_id);
     return rv;
 }
 sw_error_t
-_fal_port_vlan_vsi_get(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vlan_id, a_uint32_t *vsi_id)
+_fal_port_vlan_vsi_get(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t stag_vid, a_uint32_t ctag_vid, a_uint32_t *vsi_id)
 {
     adpt_api_t *p_api;
 	sw_error_t rv = SW_OK;
@@ -40,7 +40,7 @@ _fal_port_vlan_vsi_get(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vlan_id
     if (NULL == p_api->adpt_port_vlan_vsi_get)
         return SW_NOT_SUPPORTED;
 
-    rv = p_api->adpt_port_vlan_vsi_get(dev_id, port_id, vlan_id, vsi_id);
+    rv = p_api->adpt_port_vlan_vsi_get(dev_id, port_id, stag_vid, ctag_vid, vsi_id);
     return rv;
 }
 
@@ -160,22 +160,22 @@ _fal_vsi_member_get(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_member_t *vsi_
 /*insert flag for inner fal, don't remove it*/
 
 sw_error_t
-fal_port_vlan_vsi_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vlan_id, a_uint32_t vsi_id)
+fal_port_vlan_vsi_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t stag_vid, a_uint32_t ctag_vid, a_uint32_t vsi_id)
 {
     sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
-    rv = _fal_port_vlan_vsi_set(dev_id, port_id, vlan_id, vsi_id);
+    rv = _fal_port_vlan_vsi_set(dev_id, port_id, stag_vid, ctag_vid, vsi_id);
     FAL_API_UNLOCK;
     return rv;
 }
 sw_error_t
-fal_port_vlan_vsi_get(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vlan_id, a_uint32_t *vsi_id)
+fal_port_vlan_vsi_get(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t stag_vid, a_uint32_t ctag_vid, a_uint32_t *vsi_id)
 {
     sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
-    rv = _fal_port_vlan_vsi_get(dev_id, port_id, vlan_id, vsi_id);
+    rv = _fal_port_vlan_vsi_get(dev_id, port_id, stag_vid, ctag_vid, vsi_id);
     FAL_API_UNLOCK;
     return rv;
 }

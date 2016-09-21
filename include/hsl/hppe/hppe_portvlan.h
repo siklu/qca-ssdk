@@ -886,6 +886,18 @@ hppe_eg_vlan_xlt_rule_set(
 		union eg_vlan_xlt_rule_u *value);
 
 sw_error_t
+hppe_eg_vsi_tag_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union eg_vsi_tag_u *value);
+
+sw_error_t
+hppe_eg_vsi_tag_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union eg_vsi_tag_u *value);
+
+sw_error_t
 hppe_port_eg_def_vid_get(
 		a_uint32_t dev_id,
 		a_uint32_t index,
@@ -1165,6 +1177,18 @@ hppe_eg_vlan_xlt_rule_vsi_valid_get(
 
 sw_error_t
 hppe_eg_vlan_xlt_rule_vsi_valid_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_eg_vsi_tag_tagged_mode_port_bitmap_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_eg_vsi_tag_tagged_mode_port_bitmap_set(
 		a_uint32_t dev_id,
 		a_uint32_t index,
 		a_uint32_t value);

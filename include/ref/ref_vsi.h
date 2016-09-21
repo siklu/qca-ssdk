@@ -37,16 +37,13 @@ do { \
 } while (0)
 
 
-
-#define REF_VSI_MAX 31
-#define REF_VSI_RESERVE_MAX 5
-
 enum{
-	REF_VSI_ADD,
-	REF_VSI_DEL
+	PPE_VSI_ADD,
+	PPE_VSI_DEL
 };
 typedef struct REF_VLAN_INFO_T {
-	a_uint32_t vlan_id;
+	a_uint32_t stag_vid;
+	a_uint32_t ctag_vid;
 	a_uint32_t vport_bitmap; /*vlan based vsi*/
 	struct REF_VLAN_INFO_T *pNext;
 } ref_vlan_info_t;
@@ -57,20 +54,20 @@ typedef struct{
 	ref_vlan_info_t *pHead;
 } ref_vsi_t;
 
-#define REF_VSI_PPORT_NR 6
-#define REF_VSI_DELETE FAL_VSI_INVALID
+#define PPE_VSI_PPORT_NR 6
+#define PPE_VSI_INVALID FAL_VSI_INVALID
 
-sw_error_t
-ref_port_vlan_vsi_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vlan_id, a_uint32_t vsi_id);
-sw_error_t
-ref_port_vlan_vsi_get(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vlan_id, a_uint32_t *vsi_id);
-sw_error_t
-ref_port_vsi_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vsi_id);
-sw_error_t
-ref_port_vsi_get(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t *vsi_id);
-sw_error_t ref_vsi_alloc(a_uint32_t dev_id, a_uint32_t *vsi);
-sw_error_t ref_vsi_free(a_uint32_t dev_id, a_uint32_t vsi_id);
-sw_error_t ref_vsi_tbl_dump(a_uint32_t dev_id);
+sw_error_t ppe_port_vlan_vsi_set(a_uint32_t dev_id, fal_port_t port_id,
+		a_uint32_t stag_vid, a_uint32_t ctag_vid, a_uint32_t vsi_id);
+sw_error_t ppe_port_vlan_vsi_get(a_uint32_t dev_id, fal_port_t port_id,
+		a_uint32_t stag_vid, a_uint32_t ctag_vid, a_uint32_t *vsi_id);
+sw_error_t ppe_port_vsi_set(a_uint32_t dev_id, fal_port_t port_id,
+		a_uint32_t vsi_id);
+sw_error_t ppe_port_vsi_get(a_uint32_t dev_id, fal_port_t port_id,
+		a_uint32_t *vsi_id);
+sw_error_t ppe_vsi_alloc(a_uint32_t dev_id, a_uint32_t *vsi);
+sw_error_t ppe_vsi_free(a_uint32_t dev_id, a_uint32_t vsi_id);
+sw_error_t ppe_vsi_tbl_dump(a_uint32_t dev_id);
 
 #endif
 

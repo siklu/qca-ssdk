@@ -2198,6 +2198,34 @@ hppe_eg_vlan_xlt_rule_set(
 }
 
 sw_error_t
+hppe_eg_vsi_tag_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union eg_vsi_tag_u *value)
+{
+	if (index >= EG_VSI_TAG_NUM)
+		return SW_OUT_OF_RANGE;
+	return hppe_reg_get(
+				dev_id,
+				NSS_PTX_CSR_BASE_ADDR + EG_VSI_TAG_ADDRESS + \
+				index * EG_VSI_TAG_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_eg_vsi_tag_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union eg_vsi_tag_u *value)
+{
+	return hppe_reg_set(
+				dev_id,
+				NSS_PTX_CSR_BASE_ADDR + EG_VSI_TAG_ADDRESS + \
+				index * EG_VSI_TAG_INC,
+				value->val);
+}
+
+sw_error_t
 hppe_port_eg_def_vid_get(
 		a_uint32_t dev_id,
 		a_uint32_t index,
@@ -2911,6 +2939,37 @@ hppe_eg_vlan_xlt_rule_vsi_valid_set(
 		return ret;
 	reg_val.bf.vsi_valid = value;
 	ret = hppe_eg_vlan_xlt_rule_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vsi_tag_tagged_mode_port_bitmap_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union eg_vsi_tag_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vsi_tag_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.tagged_mode_port_bitmap;
+	return ret;
+}
+
+sw_error_t
+hppe_eg_vsi_tag_tagged_mode_port_bitmap_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union eg_vsi_tag_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_eg_vsi_tag_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.tagged_mode_port_bitmap = value;
+	ret = hppe_eg_vsi_tag_set(dev_id, index, &reg_val);
 	return ret;
 }
 

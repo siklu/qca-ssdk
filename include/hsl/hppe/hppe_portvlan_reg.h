@@ -705,6 +705,29 @@ union eg_vlan_xlt_rule_u {
 	struct eg_vlan_xlt_rule bf;
 };
 
+/*[register] EG_VSI_TAG*/
+#define EG_VSI_TAG
+#define EG_VSI_TAG_ADDRESS	0x0
+#define EG_VSI_TAG_NUM		32
+#define EG_VSI_TAG_INC		0x4
+#define EG_VSI_TAG_TYPE		REG_TYPE_RW
+#define EG_VSI_TAG_DEFAULT	0xaaaa
+	/*[field] TAGGED_MODE_PORT_BITMAP*/
+	#define EG_VSI_TAG_TAGGED_MODE_PORT_BITMAP
+	#define EG_VSI_TAG_TAGGED_MODE_PORT_BITMAP_OFFSET	0
+	#define EG_VSI_TAG_TAGGED_MODE_PORT_BITMAP_LEN		16
+	#define EG_VSI_TAG_TAGGED_MODE_PORT_BITMAP_DEFAULT	0xaaaa
+
+struct eg_vsi_tag {
+	a_uint32_t tagged_mode_port_bitmap:16;
+	a_uint32_t _reserved0:16;
+};
+
+union eg_vsi_tag_u {
+	a_uint32_t val;
+	struct eg_vsi_tag bf;
+};
+
 /*[register] PORT_EG_DEF_VID*/
 #define PORT_EG_DEF_VID
 #define PORT_EG_DEF_VID_ADDRESS 0x400
