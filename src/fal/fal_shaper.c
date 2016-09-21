@@ -535,4 +535,44 @@ fal_shaper_ipg_preamble_length_get(a_uint32_t dev_id, a_uint32_t *ipg_pre_length
     return rv;
 }
 
+EXPORT_SYMBOL(fal_port_shaper_set);
+
+EXPORT_SYMBOL(fal_port_shaper_get);
+
+EXPORT_SYMBOL(fal_queue_shaper_set);
+
+EXPORT_SYMBOL(fal_queue_shaper_get);
+
+EXPORT_SYMBOL(fal_flow_shaper_set);
+
+EXPORT_SYMBOL(fal_flow_shaper_get);
+
+EXPORT_SYMBOL(fal_queue_shaper_token_number_set);
+
+EXPORT_SYMBOL(fal_queue_shaper_token_number_get);
+
+EXPORT_SYMBOL(fal_flow_shaper_token_number_set);
+
+EXPORT_SYMBOL(fal_flow_shaper_token_number_get);
+
+EXPORT_SYMBOL(fal_port_shaper_token_number_set);
+
+EXPORT_SYMBOL(fal_port_shaper_token_number_get);
+
+EXPORT_SYMBOL(fal_port_shaper_time_slot_set);
+
+EXPORT_SYMBOL(fal_port_shaper_time_slot_get);
+
+EXPORT_SYMBOL(fal_queue_shaper_time_slot_set);
+
+EXPORT_SYMBOL(fal_queue_shaper_time_slot_get);
+
+EXPORT_SYMBOL(fal_flow_shaper_time_slot_set);
+
+EXPORT_SYMBOL(fal_flow_shaper_time_slot_get);
+
+EXPORT_SYMBOL(fal_shaper_ipg_preamble_length_set);
+
+EXPORT_SYMBOL(fal_shaper_ipg_preamble_length_get);
+
 /*insert flag for outter fal, don't remove it*/

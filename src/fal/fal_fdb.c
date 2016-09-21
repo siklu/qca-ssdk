@@ -1844,6 +1844,83 @@ fal_port_fdb_learn_counter_get(a_uint32_t dev_id, fal_port_t port_id,
     FAL_API_UNLOCK;
     return rv;
 }
+
+#ifndef IN_FDB_MINI
+
+    EXPORT_SYMBOL(fal_fdb_add);
+
+    EXPORT_SYMBOL(fal_fdb_del_by_port);
+
+    EXPORT_SYMBOL(fal_fdb_del_by_mac);
+
+    EXPORT_SYMBOL(fal_fdb_find);
+
+    EXPORT_SYMBOL(fal_fdb_port_learn_get);
+
+    EXPORT_SYMBOL(fal_fdb_port_newaddr_lrn_set);
+
+#endif
+
+    EXPORT_SYMBOL(fal_fdb_del_all);
+
+    EXPORT_SYMBOL(fal_fdb_first);
+
+    EXPORT_SYMBOL(fal_fdb_next);
+
+    EXPORT_SYMBOL(fal_fdb_port_learn_set);
+
+    EXPORT_SYMBOL(fal_fdb_age_mode_set);
+
+    EXPORT_SYMBOL(fal_fdb_age_mode_get);
+
+    EXPORT_SYMBOL(fal_fdb_learn_ctrl_set);
+
+    EXPORT_SYMBOL(fal_fdb_learn_ctrl_get);
+
+    EXPORT_SYMBOL(fal_fdb_learn_mode_set);
+
+    EXPORT_SYMBOL(fal_fdb_learn_mode_get);
+
+    EXPORT_SYMBOL(fal_fdb_iterate);
+
+    EXPORT_SYMBOL(fal_fdb_extend_next);
+
+    EXPORT_SYMBOL(fal_fdb_extend_first);
+
+#ifndef IN_FDB_MINI
+
+    EXPORT_SYMBOL(fal_fdb_port_newaddr_lrn_get);
+
+    EXPORT_SYMBOL(fal_fdb_port_stamove_set);
+
+    EXPORT_SYMBOL(fal_fdb_port_stamove_get);
+
+    EXPORT_SYMBOL(fal_fdb_age_ctrl_set);
+
+    EXPORT_SYMBOL(fal_fdb_age_ctrl_get);
+
+    EXPORT_SYMBOL(fal_fdb_age_time_set);
+
+    EXPORT_SYMBOL(fal_fdb_age_time_get);
+
+    EXPORT_SYMBOL(fal_fdb_transfer);
+
+    EXPORT_SYMBOL(fal_port_fdb_learn_limit_set);
+
+    EXPORT_SYMBOL(fal_port_fdb_learn_limit_get);
+
+    EXPORT_SYMBOL(fal_port_fdb_learn_exceed_cmd_set);
+
+    EXPORT_SYMBOL(fal_port_fdb_learn_exceed_cmd_get);
+
+    EXPORT_SYMBOL(fal_fdb_port_add);
+
+    EXPORT_SYMBOL(fal_fdb_port_del);
+
+#endif
+
+    EXPORT_SYMBOL(fal_port_fdb_learn_counter_get);
+
 /*insert flag for outter fal, don't remove it*/
 
 /**
