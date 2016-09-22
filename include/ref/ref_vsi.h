@@ -12,7 +12,7 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 #ifndef REF_VSI_H
-#define RE_VSI_H
+#define REF_VSI_H
 #include "common/sw.h"
 #include "fal/fal_type.h"
 #include "fal/fal_vsi.h"
