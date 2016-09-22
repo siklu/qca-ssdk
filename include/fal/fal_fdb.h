@@ -99,9 +99,10 @@ extern "C" {
         INVALID_VLAN_IVL
     } fal_fdb_smode;
 
+
 #ifndef IN_FDB_MINI
     sw_error_t
-    fal_fdb_add(a_uint32_t dev_id, const fal_fdb_entry_t * entry);
+    fal_fdb_entry_add(a_uint32_t dev_id, const fal_fdb_entry_t * entry);
 
 	sw_error_t
     fal_fdb_rfs_set(a_uint32_t dev_id, const fal_fdb_rfs_t * entry);
@@ -111,29 +112,29 @@ extern "C" {
 #endif
 
     sw_error_t
-    fal_fdb_del_all(a_uint32_t dev_id, a_uint32_t flag);
+    fal_fdb_entry_flush(a_uint32_t dev_id, a_uint32_t flag);
 
 
 #ifndef IN_FDB_MINI
     sw_error_t
-    fal_fdb_del_by_port(a_uint32_t dev_id, a_uint32_t port_id, a_uint32_t flag);
+    fal_fdb_entry_del_byport(a_uint32_t dev_id, a_uint32_t port_id, a_uint32_t flag);
 
 
     sw_error_t
-    fal_fdb_del_by_mac(a_uint32_t dev_id, const fal_fdb_entry_t *entry);
+    fal_fdb_entry_del_bymac(a_uint32_t dev_id, const fal_fdb_entry_t *entry);
 #endif
 
     sw_error_t
-    fal_fdb_first(a_uint32_t dev_id, fal_fdb_entry_t * entry);
+    fal_fdb_entry_getfirst(a_uint32_t dev_id, fal_fdb_entry_t * entry);
 
 
 #ifndef IN_FDB_MINI
     sw_error_t
-    fal_fdb_next(a_uint32_t dev_id, fal_fdb_entry_t * entry);
+    fal_fdb_entry_getnext(a_uint32_t dev_id, fal_fdb_entry_t * entry);
 
 
     sw_error_t
-    fal_fdb_find(a_uint32_t dev_id, fal_fdb_entry_t * entry);
+    fal_fdb_entry_search(a_uint32_t dev_id, fal_fdb_entry_t * entry);
 #endif
 
 sw_error_t
@@ -145,44 +146,44 @@ sw_error_t
     fal_fdb_port_learn_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable);
 
     sw_error_t
-    fal_fdb_port_newaddr_lrn_set(a_uint32_t dev_id, fal_port_t port_id,
+    fal_fdb_port_learning_ctrl_set(a_uint32_t dev_id, fal_port_t port_id,
                                  a_bool_t enable, fal_fwd_cmd_t cmd);
 
     sw_error_t
-    fal_fdb_port_newaddr_lrn_get(a_uint32_t dev_id, fal_port_t port_id,
+    fal_fdb_port_learning_ctrl_get(a_uint32_t dev_id, fal_port_t port_id,
                                  a_bool_t *enable, fal_fwd_cmd_t *cmd);
 
     sw_error_t
-    fal_fdb_port_stamove_set(a_uint32_t dev_id, fal_port_t port_id,
+    fal_fdb_port_stamove_ctrl_set(a_uint32_t dev_id, fal_port_t port_id,
                                  a_bool_t enable, fal_fwd_cmd_t cmd);
 
     sw_error_t
-    fal_fdb_port_stamove_get(a_uint32_t dev_id, fal_port_t port_id,
+    fal_fdb_port_stamove_ctrl_get(a_uint32_t dev_id, fal_port_t port_id,
                                  a_bool_t *enable, fal_fwd_cmd_t *cmd);
 
     sw_error_t
-    fal_fdb_age_ctrl_set(a_uint32_t dev_id, a_bool_t enable);
+    fal_fdb_aging_ctrl_set(a_uint32_t dev_id, a_bool_t enable);
 
     sw_error_t
-    fal_fdb_age_ctrl_get(a_uint32_t dev_id, a_bool_t * enable);
+    fal_fdb_aging_ctrl_get(a_uint32_t dev_id, a_bool_t * enable);
 
     sw_error_t
-    fal_fdb_age_mode_set(a_uint32_t dev_id, a_uint32_t age_mode);
+    fal_fdb_aging_mode_set(a_uint32_t dev_id, a_uint32_t age_mode);
 
     sw_error_t
-    fal_fdb_age_mode_get(a_uint32_t dev_id, a_uint32_t * age_mode);
+    fal_fdb_aging_mode_get(a_uint32_t dev_id, a_uint32_t * age_mode);
 
     sw_error_t
-    fal_fdb_learn_ctrl_set(a_uint32_t dev_id, a_bool_t enable);
+    fal_fdb_learning_ctrl_set(a_uint32_t dev_id, a_bool_t enable);
 
     sw_error_t
-    fal_fdb_learn_ctrl_get(a_uint32_t dev_id, a_bool_t * enable);
+    fal_fdb_learning_ctrl_get(a_uint32_t dev_id, a_bool_t * enable);
 
     sw_error_t
-    fal_fdb_learn_mode_set(a_uint32_t dev_id, a_uint32_t learn_mode);
+    fal_fdb_learning_mode_set(a_uint32_t dev_id, a_uint32_t learn_mode);
 
     sw_error_t
-    fal_fdb_learn_mode_get(a_uint32_t dev_id, a_uint32_t * learn_mode);
+    fal_fdb_learning_mode_get(a_uint32_t dev_id, a_uint32_t * learn_mode);
 
     sw_error_t
     fal_fdb_vlan_ivl_svl_set(a_uint32_t dev_id, fal_fdb_smode smode);
@@ -191,26 +192,26 @@ sw_error_t
     fal_fdb_vlan_ivl_svl_get(a_uint32_t dev_id, fal_fdb_smode * smode);
 
     sw_error_t
-    fal_fdb_age_time_set(a_uint32_t dev_id, a_uint32_t * time);
+    fal_fdb_aging_time_set(a_uint32_t dev_id, a_uint32_t * time);
 
 
     sw_error_t
-    fal_fdb_age_time_get(a_uint32_t dev_id, a_uint32_t * time);
+    fal_fdb_aging_time_get(a_uint32_t dev_id, a_uint32_t * time);
 #endif
     sw_error_t
-    fal_fdb_iterate(a_uint32_t dev_id, a_uint32_t * iterator, fal_fdb_entry_t * entry);
+    fal_fdb_entry_getnext_byindex(a_uint32_t dev_id, a_uint32_t * iterator, fal_fdb_entry_t * entry);
 
     sw_error_t
-    fal_fdb_extend_next(a_uint32_t dev_id, fal_fdb_op_t * option,
+    fal_fdb_entry_extend_getnext(a_uint32_t dev_id, fal_fdb_op_t * option,
                         fal_fdb_entry_t * entry);
 
     sw_error_t
-    fal_fdb_extend_first(a_uint32_t dev_id, fal_fdb_op_t * option,
+    fal_fdb_entry_extend_getfirst(a_uint32_t dev_id, fal_fdb_op_t * option,
                          fal_fdb_entry_t * entry);
 
 #ifndef IN_FDB_MINI
     sw_error_t
-    fal_fdb_transfer(a_uint32_t dev_id, fal_port_t old_port, fal_port_t new_port,
+    fal_fdb_entry_update_byport(a_uint32_t dev_id, fal_port_t old_port, fal_port_t new_port,
                      a_uint32_t fid, fal_fdb_op_t * option);
 
     sw_error_t
@@ -272,6 +273,22 @@ sw_error_t
     sw_error_t
     fal_fdb_port_del(a_uint32_t dev_id, a_uint32_t fid, fal_mac_addr_t * addr, fal_port_t port_id);
 #endif
+
+#define fal_fdb_add 	fal_fdb_entry_add
+#define fal_fdb_del_all	fal_fdb_entry_flush
+#define fal_fdb_del_by_port	fal_fdb_entry_del_byport
+#define fal_fdb_del_by_mac	fal_fdb_entry_del_bymac
+#define fal_fdb_first		fal_fdb_entry_getfirst
+#define fal_fdb_next		fal_fdb_entry_getnext
+#define fal_fdb_find		fal_fdb_entry_search
+#define fal_fdb_age_ctrl_set		fal_fdb_aging_ctrl_set
+#define fal_fdb_age_ctrl_get		fal_fdb_aging_ctrl_get
+#define fal_fdb_age_time_set		fal_fdb_aging_time_set
+#define fal_fdb_age_time_get		fal_fdb_aging_time_get
+#define fal_fdb_iterate			fal_fdb_entry_getnext_byindex
+#define fal_fdb_extend_next		fal_fdb_entry_extend_getnext
+#define fal_fdb_extend_first		fal_fdb_entry_extend_getfirst
+#define fal_fdb_transfer		fal_fdb_entry_update_byport
 
 #ifdef __cplusplus
 }

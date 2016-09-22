@@ -2426,7 +2426,7 @@ void clear_self_test_config()
 	}
 
 	/* clear fdb entry */
-	fal_fdb_del_all(0,1);
+	fal_fdb_entry_flush(0,1);
 }
 #endif
 

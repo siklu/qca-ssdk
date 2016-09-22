@@ -445,35 +445,35 @@ extern "C" {
 #ifdef IN_FDB
 #ifndef IN_FDB_MINI
 #define FDB_API \
-    SW_API_DEF(SW_API_FDB_ADD, fal_fdb_add), \
-    SW_API_DEF(SW_API_FDB_DELALL, fal_fdb_del_all), \
-    SW_API_DEF(SW_API_FDB_DELPORT,fal_fdb_del_by_port), \
-    SW_API_DEF(SW_API_FDB_DELMAC, fal_fdb_del_by_mac), \
-    SW_API_DEF(SW_API_FDB_FIRST,  fal_fdb_first), \
-    SW_API_DEF(SW_API_FDB_NEXT,   fal_fdb_next), \
-    SW_API_DEF(SW_API_FDB_FIND,   fal_fdb_find), \
+    SW_API_DEF(SW_API_FDB_ADD, fal_fdb_entry_add), \
+    SW_API_DEF(SW_API_FDB_DELALL, fal_fdb_entry_flush), \
+    SW_API_DEF(SW_API_FDB_DELPORT,fal_fdb_entry_del_byport), \
+    SW_API_DEF(SW_API_FDB_DELMAC, fal_fdb_entry_del_bymac), \
+    SW_API_DEF(SW_API_FDB_FIRST,  fal_fdb_entry_getfirst), \
+    SW_API_DEF(SW_API_FDB_NEXT,   fal_fdb_entry_getnext), \
+    SW_API_DEF(SW_API_FDB_FIND,   fal_fdb_entry_search), \
     SW_API_DEF(SW_API_FDB_PT_LEARN_SET,   fal_fdb_port_learn_set), \
     SW_API_DEF(SW_API_FDB_PT_LEARN_GET,   fal_fdb_port_learn_get), \
-    SW_API_DEF(SW_API_FDB_PT_NEWADDR_LEARN_SET, fal_fdb_port_newaddr_lrn_set), \
-    SW_API_DEF(SW_API_FDB_PT_NEWADDR_LEARN_GET, fal_fdb_port_newaddr_lrn_get), \
-    SW_API_DEF(SW_API_FDB_PT_STAMOVE_SET,       fal_fdb_port_stamove_set), \
-    SW_API_DEF(SW_API_FDB_PT_STAMOVE_GET,       fal_fdb_port_stamove_get), \
-    SW_API_DEF(SW_API_FDB_AGE_MODE_SET,   fal_fdb_age_mode_set), \
-    SW_API_DEF(SW_API_FDB_AGE_MODE_GET,   fal_fdb_age_mode_get), \
-    SW_API_DEF(SW_API_FDB_AGE_CTRL_SET,   fal_fdb_age_ctrl_set), \
-    SW_API_DEF(SW_API_FDB_AGE_CTRL_GET,   fal_fdb_age_ctrl_get), \
-    SW_API_DEF(SW_API_FDB_LEARN_CTRL_SET,  fal_fdb_learn_ctrl_set), \
-    SW_API_DEF(SW_API_FDB_LEARN_CTRL_GET,  fal_fdb_learn_ctrl_get), \
-    SW_API_DEF(SW_API_FDB_LEARN_MODE_SET,  fal_fdb_learn_mode_set), \
-    SW_API_DEF(SW_API_FDB_LEARN_MODE_GET,  fal_fdb_learn_mode_get), \
+    SW_API_DEF(SW_API_FDB_PT_NEWADDR_LEARN_SET, fal_fdb_port_learning_ctrl_set), \
+    SW_API_DEF(SW_API_FDB_PT_NEWADDR_LEARN_GET, fal_fdb_port_learning_ctrl_get), \
+    SW_API_DEF(SW_API_FDB_PT_STAMOVE_SET,       fal_fdb_port_stamove_ctrl_set), \
+    SW_API_DEF(SW_API_FDB_PT_STAMOVE_GET,       fal_fdb_port_stamove_ctrl_get), \
+    SW_API_DEF(SW_API_FDB_AGE_MODE_SET,   fal_fdb_aging_mode_set), \
+    SW_API_DEF(SW_API_FDB_AGE_MODE_GET,   fal_fdb_aging_mode_get), \
+    SW_API_DEF(SW_API_FDB_AGE_CTRL_SET,   fal_fdb_aging_ctrl_set), \
+    SW_API_DEF(SW_API_FDB_AGE_CTRL_GET,   fal_fdb_aging_ctrl_get), \
+    SW_API_DEF(SW_API_FDB_LEARN_CTRL_SET,  fal_fdb_learning_ctrl_set), \
+    SW_API_DEF(SW_API_FDB_LEARN_CTRL_GET,  fal_fdb_learning_ctrl_get), \
+    SW_API_DEF(SW_API_FDB_LEARN_MODE_SET,  fal_fdb_learning_mode_set), \
+    SW_API_DEF(SW_API_FDB_LEARN_MODE_GET,  fal_fdb_learning_mode_get), \
     SW_API_DEF(SW_API_FDB_VLAN_IVL_SVL_SET, fal_fdb_vlan_ivl_svl_set),\
     SW_API_DEF(SW_API_FDB_VLAN_IVL_SVL_GET, fal_fdb_vlan_ivl_svl_get),\
-    SW_API_DEF(SW_API_FDB_AGE_TIME_SET,   fal_fdb_age_time_set), \
-    SW_API_DEF(SW_API_FDB_AGE_TIME_GET,   fal_fdb_age_time_get), \
-    SW_API_DEF(SW_API_FDB_ITERATE,        fal_fdb_iterate), \
-    SW_API_DEF(SW_API_FDB_EXTEND_NEXT,    fal_fdb_extend_next),  \
-    SW_API_DEF(SW_API_FDB_EXTEND_FIRST,   fal_fdb_extend_first), \
-    SW_API_DEF(SW_API_FDB_TRANSFER,       fal_fdb_transfer), \
+    SW_API_DEF(SW_API_FDB_AGE_TIME_SET,   fal_fdb_aging_time_set), \
+    SW_API_DEF(SW_API_FDB_AGE_TIME_GET,   fal_fdb_aging_time_get), \
+    SW_API_DEF(SW_API_FDB_ITERATE,        fal_fdb_entry_getnext_byindex), \
+    SW_API_DEF(SW_API_FDB_EXTEND_NEXT,    fal_fdb_entry_extend_getnext),  \
+    SW_API_DEF(SW_API_FDB_EXTEND_FIRST,   fal_fdb_entry_extend_getfirst), \
+    SW_API_DEF(SW_API_FDB_TRANSFER,       fal_fdb_entry_update_byport), \
     SW_API_DEF(SW_API_PT_FDB_LEARN_COUNTER_GET,  fal_port_fdb_learn_counter_get), \
     SW_API_DEF(SW_API_PT_FDB_LEARN_LIMIT_SET,    fal_port_fdb_learn_limit_set),  \
     SW_API_DEF(SW_API_PT_FDB_LEARN_LIMIT_GET,    fal_port_fdb_learn_limit_get),  \

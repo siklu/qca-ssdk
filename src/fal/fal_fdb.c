@@ -28,7 +28,7 @@
 
 #ifndef IN_FDB_MINI
 static sw_error_t
-_fal_fdb_add(a_uint32_t dev_id, const fal_fdb_entry_t * entry)
+_fal_fdb_entry_add(a_uint32_t dev_id, const fal_fdb_entry_t * entry)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
@@ -53,7 +53,7 @@ _fal_fdb_add(a_uint32_t dev_id, const fal_fdb_entry_t * entry)
 #endif
 
 static sw_error_t
-_fal_fdb_del_all(a_uint32_t dev_id, a_uint32_t flag)
+_fal_fdb_entry_flush(a_uint32_t dev_id, a_uint32_t flag)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
@@ -78,7 +78,7 @@ _fal_fdb_del_all(a_uint32_t dev_id, a_uint32_t flag)
 
 #ifndef IN_FDB_MINI
 static sw_error_t
-_fal_fdb_del_by_port(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t flag)
+_fal_fdb_entry_del_byport(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t flag)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
@@ -103,7 +103,7 @@ _fal_fdb_del_by_port(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t flag)
 
 
 static sw_error_t
-_fal_fdb_del_by_mac(a_uint32_t dev_id, const fal_fdb_entry_t * entry)
+_fal_fdb_entry_del_bymac(a_uint32_t dev_id, const fal_fdb_entry_t * entry)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
@@ -128,7 +128,7 @@ _fal_fdb_del_by_mac(a_uint32_t dev_id, const fal_fdb_entry_t * entry)
 #endif
 
 static sw_error_t
-_fal_fdb_first(a_uint32_t dev_id, fal_fdb_entry_t * entry)
+_fal_fdb_entry_getfirst(a_uint32_t dev_id, fal_fdb_entry_t * entry)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
@@ -153,7 +153,7 @@ _fal_fdb_first(a_uint32_t dev_id, fal_fdb_entry_t * entry)
 
 #ifndef IN_FDB_MINI
 static sw_error_t
-_fal_fdb_next(a_uint32_t dev_id, fal_fdb_entry_t * entry)
+_fal_fdb_entry_getnext(a_uint32_t dev_id, fal_fdb_entry_t * entry)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
@@ -178,7 +178,7 @@ _fal_fdb_next(a_uint32_t dev_id, fal_fdb_entry_t * entry)
 
 
 static sw_error_t
-_fal_fdb_find(a_uint32_t dev_id, fal_fdb_entry_t * entry)
+_fal_fdb_entry_search(a_uint32_t dev_id, fal_fdb_entry_t * entry)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
@@ -252,7 +252,7 @@ _fal_fdb_port_learn_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable
 }
 
 static sw_error_t
-_fal_fdb_port_newaddr_lrn_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable, fal_fwd_cmd_t cmd)
+_fal_fdb_port_learning_ctrl_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable, fal_fwd_cmd_t cmd)
 {
     adpt_api_t *p_api;
     sw_error_t rv = SW_OK;
@@ -267,7 +267,7 @@ _fal_fdb_port_newaddr_lrn_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t en
 }
 
 static sw_error_t
-_fal_fdb_port_newaddr_lrn_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable, fal_fwd_cmd_t *cmd)
+_fal_fdb_port_learning_ctrl_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable, fal_fwd_cmd_t *cmd)
 {
     adpt_api_t *p_api;
     sw_error_t rv = SW_OK;
@@ -282,7 +282,7 @@ _fal_fdb_port_newaddr_lrn_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *e
 }
 
 static sw_error_t
-_fal_fdb_port_stamove_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable, fal_fwd_cmd_t cmd)
+_fal_fdb_port_stamove_ctrl_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable, fal_fwd_cmd_t cmd)
 {
     adpt_api_t *p_api;
     sw_error_t rv = SW_OK;
@@ -297,7 +297,7 @@ _fal_fdb_port_stamove_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable
 }
 
 static sw_error_t
-_fal_fdb_port_stamove_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable, fal_fwd_cmd_t *cmd)
+_fal_fdb_port_stamove_ctrl_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable, fal_fwd_cmd_t *cmd)
 {
     adpt_api_t *p_api;
     sw_error_t rv = SW_OK;
@@ -312,7 +312,7 @@ _fal_fdb_port_stamove_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enabl
 }
 
 static sw_error_t
-_fal_fdb_age_ctrl_set(a_uint32_t dev_id, a_bool_t enable)
+_fal_fdb_aging_ctrl_set(a_uint32_t dev_id, a_bool_t enable)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
@@ -337,7 +337,7 @@ _fal_fdb_age_ctrl_set(a_uint32_t dev_id, a_bool_t enable)
 
 
 static sw_error_t
-_fal_fdb_age_ctrl_get(a_uint32_t dev_id, a_bool_t * enable)
+_fal_fdb_aging_ctrl_get(a_uint32_t dev_id, a_bool_t * enable)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
@@ -391,7 +391,7 @@ _fal_fdb_vlan_ivl_svl_get(a_uint32_t dev_id, fal_fdb_smode* smode)
 }
 
 static sw_error_t
-_fal_fdb_age_time_set(a_uint32_t dev_id, a_uint32_t * time)
+_fal_fdb_aging_time_set(a_uint32_t dev_id, a_uint32_t * time)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
@@ -416,7 +416,7 @@ _fal_fdb_age_time_set(a_uint32_t dev_id, a_uint32_t * time)
 
 
 static sw_error_t
-_fal_fdb_age_time_get(a_uint32_t dev_id, a_uint32_t * time)
+_fal_fdb_aging_time_get(a_uint32_t dev_id, a_uint32_t * time)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
@@ -441,7 +441,7 @@ _fal_fdb_age_time_get(a_uint32_t dev_id, a_uint32_t * time)
 #endif
 
 static sw_error_t
-_fal_fdb_iterate(a_uint32_t dev_id, a_uint32_t * iterator, fal_fdb_entry_t * entry)
+_fal_fdb_entry_getnext_byindex(a_uint32_t dev_id, a_uint32_t * iterator, fal_fdb_entry_t * entry)
 {
     sw_error_t rv;
     hsl_api_t *p_api;
@@ -465,7 +465,7 @@ _fal_fdb_iterate(a_uint32_t dev_id, a_uint32_t * iterator, fal_fdb_entry_t * ent
 }
 
 static sw_error_t
-_fal_fdb_extend_next(a_uint32_t dev_id, fal_fdb_op_t * option,
+_fal_fdb_entry_extend_getnext(a_uint32_t dev_id, fal_fdb_op_t * option,
                      fal_fdb_entry_t * entry)
 {
     sw_error_t rv;
@@ -490,7 +490,7 @@ _fal_fdb_extend_next(a_uint32_t dev_id, fal_fdb_op_t * option,
 }
 
 static sw_error_t
-_fal_fdb_extend_first(a_uint32_t dev_id, fal_fdb_op_t * option,
+_fal_fdb_entry_extend_getfirst(a_uint32_t dev_id, fal_fdb_op_t * option,
                       fal_fdb_entry_t * entry)
 {
     sw_error_t rv;
@@ -516,7 +516,7 @@ _fal_fdb_extend_first(a_uint32_t dev_id, fal_fdb_op_t * option,
 
 #ifndef IN_FDB_MINI
 static sw_error_t
-_fal_fdb_transfer(a_uint32_t dev_id, fal_port_t old_port, fal_port_t new_port,
+_fal_fdb_entry_update_byport(a_uint32_t dev_id, fal_port_t old_port, fal_port_t new_port,
                   a_uint32_t fid, fal_fdb_op_t * option)
 {
     sw_error_t rv;
@@ -872,7 +872,7 @@ _fal_fdb_rfs_del(a_uint32_t dev_id, const fal_fdb_rfs_t * entry)
 }
 
 sw_error_t
-_fal_fdb_learn_ctrl_set(a_uint32_t dev_id, a_bool_t enable)
+_fal_fdb_learning_ctrl_set(a_uint32_t dev_id, a_bool_t enable)
 {
     adpt_api_t *p_api;
 	sw_error_t rv = SW_OK;
@@ -886,7 +886,7 @@ _fal_fdb_learn_ctrl_set(a_uint32_t dev_id, a_bool_t enable)
     return rv;
 }
 sw_error_t
-_fal_fdb_age_mode_get(a_uint32_t dev_id, a_uint32_t * age_mode)
+_fal_fdb_aging_mode_get(a_uint32_t dev_id, a_uint32_t * age_mode)
 {
     adpt_api_t *p_api;
 	sw_error_t rv = SW_OK;
@@ -900,7 +900,7 @@ _fal_fdb_age_mode_get(a_uint32_t dev_id, a_uint32_t * age_mode)
     return rv;
 }
 sw_error_t
-_fal_fdb_learn_ctrl_get(a_uint32_t dev_id, a_bool_t * enable)
+_fal_fdb_learning_ctrl_get(a_uint32_t dev_id, a_bool_t * enable)
 {
     adpt_api_t *p_api;
 	sw_error_t rv = SW_OK;
@@ -914,7 +914,7 @@ _fal_fdb_learn_ctrl_get(a_uint32_t dev_id, a_bool_t * enable)
     return rv;
 }
 sw_error_t
-_fal_fdb_age_mode_set(a_uint32_t dev_id, a_uint32_t age_mode)
+_fal_fdb_aging_mode_set(a_uint32_t dev_id, a_uint32_t age_mode)
 {
     adpt_api_t *p_api;
 	sw_error_t rv = SW_OK;
@@ -928,7 +928,7 @@ _fal_fdb_age_mode_set(a_uint32_t dev_id, a_uint32_t age_mode)
     return rv;
 }
 sw_error_t
-_fal_fdb_learn_mode_set(a_uint32_t dev_id, a_uint32_t learn_mode)
+_fal_fdb_learning_mode_set(a_uint32_t dev_id, a_uint32_t learn_mode)
 {
     adpt_api_t *p_api;
 	sw_error_t rv = SW_OK;
@@ -942,7 +942,7 @@ _fal_fdb_learn_mode_set(a_uint32_t dev_id, a_uint32_t learn_mode)
     return rv;
 }
 sw_error_t
-_fal_fdb_learn_mode_get(a_uint32_t dev_id, a_uint32_t * learn_mode)
+_fal_fdb_learning_mode_get(a_uint32_t dev_id, a_uint32_t * learn_mode)
 {
     adpt_api_t *p_api;
 	sw_error_t rv = SW_OK;
@@ -980,12 +980,12 @@ _fal_port_fdb_learn_counter_get(a_uint32_t dev_id, fal_port_t port_id,
  * @return SW_OK or error code
  */
 sw_error_t
-fal_fdb_add(a_uint32_t dev_id, const fal_fdb_entry_t * entry)
+fal_fdb_entry_add(a_uint32_t dev_id, const fal_fdb_entry_t * entry)
 {
     sw_error_t rv;
 
     FAL_API_LOCK;
-    rv = _fal_fdb_add(dev_id, entry);
+    rv = _fal_fdb_entry_add(dev_id, entry);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -1001,12 +1001,12 @@ fal_fdb_add(a_uint32_t dev_id, const fal_fdb_entry_t * entry)
  * @return SW_OK or error code
  */
 sw_error_t
-fal_fdb_del_all(a_uint32_t dev_id, a_uint32_t flag)
+fal_fdb_entry_flush(a_uint32_t dev_id, a_uint32_t flag)
 {
     sw_error_t rv;
 
     FAL_API_LOCK;
-    rv = _fal_fdb_del_all(dev_id, flag);
+    rv = _fal_fdb_entry_flush(dev_id, flag);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -1023,12 +1023,12 @@ fal_fdb_del_all(a_uint32_t dev_id, a_uint32_t flag)
  * @return SW_OK or error code
  */
 sw_error_t
-fal_fdb_del_by_port(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t flag)
+fal_fdb_entry_del_byport(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t flag)
 {
     sw_error_t rv;
 
     FAL_API_LOCK;
-    rv = _fal_fdb_del_by_port(dev_id, port_id, flag);
+    rv = _fal_fdb_entry_del_byport(dev_id, port_id, flag);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -1043,12 +1043,12 @@ fal_fdb_del_by_port(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t flag)
  * @return SW_OK or error code
  */
 sw_error_t
-fal_fdb_del_by_mac(a_uint32_t dev_id, const fal_fdb_entry_t * entry)
+fal_fdb_entry_del_bymac(a_uint32_t dev_id, const fal_fdb_entry_t * entry)
 {
     sw_error_t rv;
 
     FAL_API_LOCK;
-    rv = _fal_fdb_del_by_mac(dev_id, entry);
+    rv = _fal_fdb_entry_del_bymac(dev_id, entry);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -1061,12 +1061,12 @@ fal_fdb_del_by_mac(a_uint32_t dev_id, const fal_fdb_entry_t * entry)
  * @return SW_OK or error code
  */
 sw_error_t
-fal_fdb_first(a_uint32_t dev_id, fal_fdb_entry_t * entry)
+fal_fdb_entry_getfirst(a_uint32_t dev_id, fal_fdb_entry_t * entry)
 {
     sw_error_t rv;
 
     FAL_API_LOCK;
-    rv = _fal_fdb_first(dev_id, entry);
+    rv = _fal_fdb_entry_getfirst(dev_id, entry);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -1081,12 +1081,12 @@ fal_fdb_first(a_uint32_t dev_id, fal_fdb_entry_t * entry)
  * @return SW_OK or error code
  */
 sw_error_t
-fal_fdb_next(a_uint32_t dev_id, fal_fdb_entry_t * entry)
+fal_fdb_entry_getnext(a_uint32_t dev_id, fal_fdb_entry_t * entry)
 {
     sw_error_t rv;
 
     FAL_API_LOCK;
-    rv = _fal_fdb_next(dev_id, entry);
+    rv = _fal_fdb_entry_getnext(dev_id, entry);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -1101,12 +1101,12 @@ fal_fdb_next(a_uint32_t dev_id, fal_fdb_entry_t * entry)
  * @return SW_OK or error code
  */
 sw_error_t
-fal_fdb_find(a_uint32_t dev_id, fal_fdb_entry_t * entry)
+fal_fdb_entry_search(a_uint32_t dev_id, fal_fdb_entry_t * entry)
 {
     sw_error_t rv;
 
     FAL_API_LOCK;
-    rv = _fal_fdb_find(dev_id, entry);
+    rv = _fal_fdb_entry_search(dev_id, entry);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -1161,12 +1161,12 @@ fal_fdb_port_learn_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
  * @return SW_OK or error code
  */
 sw_error_t
-fal_fdb_port_newaddr_lrn_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable, fal_fwd_cmd_t cmd)
+fal_fdb_port_learning_ctrl_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable, fal_fwd_cmd_t cmd)
 {
     sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
-    rv = _fal_fdb_port_newaddr_lrn_set(dev_id, port_id, enable, cmd);
+    rv = _fal_fdb_port_learning_ctrl_set(dev_id, port_id, enable, cmd);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -1180,12 +1180,12 @@ fal_fdb_port_newaddr_lrn_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t ena
  * @return SW_OK or error code
  */
 sw_error_t
-fal_fdb_port_newaddr_lrn_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable, fal_fwd_cmd_t *cmd)
+fal_fdb_port_learning_ctrl_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable, fal_fwd_cmd_t *cmd)
 {
     sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
-    rv = _fal_fdb_port_newaddr_lrn_get(dev_id, port_id, enable, cmd);
+    rv = _fal_fdb_port_learning_ctrl_get(dev_id, port_id, enable, cmd);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -1199,12 +1199,12 @@ fal_fdb_port_newaddr_lrn_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *en
  * @return SW_OK or error code
  */
 sw_error_t
-fal_fdb_port_stamove_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable, fal_fwd_cmd_t cmd)
+fal_fdb_port_stamove_ctrl_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable, fal_fwd_cmd_t cmd)
 {
     sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
-    rv = _fal_fdb_port_stamove_set(dev_id, port_id, enable, cmd);
+    rv = _fal_fdb_port_stamove_ctrl_set(dev_id, port_id, enable, cmd);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -1218,12 +1218,12 @@ fal_fdb_port_stamove_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable,
  * @return SW_OK or error code
  */
 sw_error_t
-fal_fdb_port_stamove_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable, fal_fwd_cmd_t *cmd)
+fal_fdb_port_stamove_ctrl_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable, fal_fwd_cmd_t *cmd)
 {
     sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
-    rv = _fal_fdb_port_stamove_get(dev_id, port_id, enable, cmd);
+    rv = _fal_fdb_port_stamove_ctrl_get(dev_id, port_id, enable, cmd);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -1238,12 +1238,12 @@ fal_fdb_port_stamove_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable
  * @return SW_OK or error code
  */
 sw_error_t
-fal_fdb_age_ctrl_set(a_uint32_t dev_id, a_bool_t enable)
+fal_fdb_aging_ctrl_set(a_uint32_t dev_id, a_bool_t enable)
 {
     sw_error_t rv;
 
     FAL_API_LOCK;
-    rv = _fal_fdb_age_ctrl_set(dev_id, enable);
+    rv = _fal_fdb_aging_ctrl_set(dev_id, enable);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -1255,12 +1255,12 @@ fal_fdb_age_ctrl_set(a_uint32_t dev_id, a_bool_t enable)
  * @return SW_OK or error code
  */
 sw_error_t
-fal_fdb_age_ctrl_get(a_uint32_t dev_id, a_bool_t * enable)
+fal_fdb_aging_ctrl_get(a_uint32_t dev_id, a_bool_t * enable)
 {
     sw_error_t rv;
 
     FAL_API_LOCK;
-    rv = _fal_fdb_age_ctrl_get(dev_id, enable);
+    rv = _fal_fdb_aging_ctrl_get(dev_id, enable);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -1313,12 +1313,12 @@ fal_fdb_vlan_ivl_svl_get(a_uint32_t dev_id, fal_fdb_smode* smode)
  * @return SW_OK or error code
  */
 sw_error_t
-fal_fdb_age_time_set(a_uint32_t dev_id, a_uint32_t * time)
+fal_fdb_aging_time_set(a_uint32_t dev_id, a_uint32_t * time)
 {
     sw_error_t rv;
 
     FAL_API_LOCK;
-    rv = _fal_fdb_age_time_set(dev_id, time);
+    rv = _fal_fdb_aging_time_set(dev_id, time);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -1330,12 +1330,12 @@ fal_fdb_age_time_set(a_uint32_t dev_id, a_uint32_t * time)
  * @return SW_OK or error code
  */
 sw_error_t
-fal_fdb_age_time_get(a_uint32_t dev_id, a_uint32_t * time)
+fal_fdb_aging_time_get(a_uint32_t dev_id, a_uint32_t * time)
 {
     sw_error_t rv;
 
     FAL_API_LOCK;
-    rv = _fal_fdb_age_time_get(dev_id, time);
+    rv = _fal_fdb_aging_time_get(dev_id, time);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -1350,12 +1350,12 @@ fal_fdb_age_time_get(a_uint32_t dev_id, a_uint32_t * time)
  * @return SW_OK or error code
  */
 sw_error_t
-fal_fdb_iterate(a_uint32_t dev_id, a_uint32_t * iterator, fal_fdb_entry_t * entry)
+fal_fdb_entry_getnext_byindex(a_uint32_t dev_id, a_uint32_t * iterator, fal_fdb_entry_t * entry)
 {
     sw_error_t rv;
 
     FAL_API_LOCK;
-    rv = _fal_fdb_iterate(dev_id, iterator, entry);
+    rv = _fal_fdb_entry_getnext_byindex(dev_id, iterator, entry);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -1368,13 +1368,13 @@ fal_fdb_iterate(a_uint32_t dev_id, a_uint32_t * iterator, fal_fdb_entry_t * entr
  * @return SW_OK or error code
  */
 sw_error_t
-fal_fdb_extend_next(a_uint32_t dev_id, fal_fdb_op_t * option,
+fal_fdb_entry_extend_getnext(a_uint32_t dev_id, fal_fdb_op_t * option,
                     fal_fdb_entry_t * entry)
 {
     sw_error_t rv;
 
     FAL_API_LOCK;
-    rv = _fal_fdb_extend_next(dev_id, option, entry);
+    rv = _fal_fdb_entry_extend_getnext(dev_id, option, entry);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -1387,13 +1387,13 @@ fal_fdb_extend_next(a_uint32_t dev_id, fal_fdb_op_t * option,
  * @return SW_OK or error code
  */
 sw_error_t
-fal_fdb_extend_first(a_uint32_t dev_id, fal_fdb_op_t * option,
+fal_fdb_entry_extend_getfirst(a_uint32_t dev_id, fal_fdb_op_t * option,
                      fal_fdb_entry_t * entry)
 {
     sw_error_t rv;
 
     FAL_API_LOCK;
-    rv = _fal_fdb_extend_first(dev_id, option, entry);
+    rv = _fal_fdb_entry_extend_getfirst(dev_id, option, entry);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -1409,13 +1409,13 @@ fal_fdb_extend_first(a_uint32_t dev_id, fal_fdb_op_t * option,
  * @return SW_OK or error code
  */
 sw_error_t
-fal_fdb_transfer(a_uint32_t dev_id, fal_port_t old_port, fal_port_t new_port,
+fal_fdb_entry_update_byport(a_uint32_t dev_id, fal_port_t old_port, fal_port_t new_port,
                  a_uint32_t fid, fal_fdb_op_t * option)
 {
     sw_error_t rv;
 
     FAL_API_LOCK;
-    rv = _fal_fdb_transfer(dev_id, old_port, new_port, fid, option);
+    rv = _fal_fdb_entry_update_byport(dev_id, old_port, new_port, fid, option);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -1774,62 +1774,62 @@ EXPORT_SYMBOL(ssdk_rfs_mac_rule_del);
 #endif
 
 sw_error_t
-fal_fdb_learn_ctrl_set(a_uint32_t dev_id, a_bool_t enable)
+fal_fdb_learning_ctrl_set(a_uint32_t dev_id, a_bool_t enable)
 {
     sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
-    rv = _fal_fdb_learn_ctrl_set(dev_id, enable);
+    rv = _fal_fdb_learning_ctrl_set(dev_id, enable);
     FAL_API_UNLOCK;
     return rv;
 }
 sw_error_t
-fal_fdb_age_mode_get(a_uint32_t dev_id, a_uint32_t * age_mode)
+fal_fdb_aging_mode_get(a_uint32_t dev_id, a_uint32_t * age_mode)
 {
     sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
-    rv = _fal_fdb_age_mode_get(dev_id, age_mode);
+    rv = _fal_fdb_aging_mode_get(dev_id, age_mode);
     FAL_API_UNLOCK;
     return rv;
 }
 sw_error_t
-fal_fdb_learn_ctrl_get(a_uint32_t dev_id, a_bool_t * enable)
+fal_fdb_learning_ctrl_get(a_uint32_t dev_id, a_bool_t * enable)
 {
     sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
-    rv = _fal_fdb_learn_ctrl_get(dev_id, enable);
+    rv = _fal_fdb_learning_ctrl_get(dev_id, enable);
     FAL_API_UNLOCK;
     return rv;
 }
 sw_error_t
-fal_fdb_age_mode_set(a_uint32_t dev_id, a_uint32_t age_mode)
+fal_fdb_aging_mode_set(a_uint32_t dev_id, a_uint32_t age_mode)
 {
     sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
-    rv = _fal_fdb_age_mode_set(dev_id, age_mode);
+    rv = _fal_fdb_aging_mode_set(dev_id, age_mode);
     FAL_API_UNLOCK;
     return rv;
 }
 sw_error_t
-fal_fdb_learn_mode_set(a_uint32_t dev_id, a_uint32_t learn_mode)
+fal_fdb_learning_mode_set(a_uint32_t dev_id, a_uint32_t learn_mode)
 {
     sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
-    rv = _fal_fdb_learn_mode_set(dev_id, learn_mode);
+    rv = _fal_fdb_learning_mode_set(dev_id, learn_mode);
     FAL_API_UNLOCK;
     return rv;
 }
 sw_error_t
-fal_fdb_learn_mode_get(a_uint32_t dev_id, a_uint32_t * learn_mode)
+fal_fdb_learning_mode_get(a_uint32_t dev_id, a_uint32_t * learn_mode)
 {
     sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
-    rv = _fal_fdb_learn_mode_get(dev_id, learn_mode);
+    rv = _fal_fdb_learning_mode_get(dev_id, learn_mode);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -1847,63 +1847,63 @@ fal_port_fdb_learn_counter_get(a_uint32_t dev_id, fal_port_t port_id,
 
 #ifndef IN_FDB_MINI
 
-    EXPORT_SYMBOL(fal_fdb_add);
+    EXPORT_SYMBOL(fal_fdb_entry_add);
 
-    EXPORT_SYMBOL(fal_fdb_del_by_port);
+    EXPORT_SYMBOL(fal_fdb_entry_del_byport);
 
-    EXPORT_SYMBOL(fal_fdb_del_by_mac);
+    EXPORT_SYMBOL(fal_fdb_entry_del_bymac);
 
-    EXPORT_SYMBOL(fal_fdb_find);
+    EXPORT_SYMBOL(fal_fdb_entry_search);
 
     EXPORT_SYMBOL(fal_fdb_port_learn_get);
 
-    EXPORT_SYMBOL(fal_fdb_port_newaddr_lrn_set);
+    EXPORT_SYMBOL(fal_fdb_port_learning_ctrl_set);
 
 #endif
 
-    EXPORT_SYMBOL(fal_fdb_del_all);
+    EXPORT_SYMBOL(fal_fdb_entry_flush);
 
-    EXPORT_SYMBOL(fal_fdb_first);
+    EXPORT_SYMBOL(fal_fdb_entry_getfirst);
 
-    EXPORT_SYMBOL(fal_fdb_next);
+    EXPORT_SYMBOL(fal_fdb_entry_getnext);
 
     EXPORT_SYMBOL(fal_fdb_port_learn_set);
 
-    EXPORT_SYMBOL(fal_fdb_age_mode_set);
+    EXPORT_SYMBOL(fal_fdb_aging_mode_set);
 
-    EXPORT_SYMBOL(fal_fdb_age_mode_get);
+    EXPORT_SYMBOL(fal_fdb_aging_mode_get);
 
-    EXPORT_SYMBOL(fal_fdb_learn_ctrl_set);
+    EXPORT_SYMBOL(fal_fdb_learning_ctrl_set);
 
-    EXPORT_SYMBOL(fal_fdb_learn_ctrl_get);
+    EXPORT_SYMBOL(fal_fdb_learning_ctrl_get);
 
-    EXPORT_SYMBOL(fal_fdb_learn_mode_set);
+    EXPORT_SYMBOL(fal_fdb_learning_mode_set);
 
-    EXPORT_SYMBOL(fal_fdb_learn_mode_get);
+    EXPORT_SYMBOL(fal_fdb_learning_mode_get);
 
-    EXPORT_SYMBOL(fal_fdb_iterate);
+    EXPORT_SYMBOL(fal_fdb_entry_getnext_byindex);
 
-    EXPORT_SYMBOL(fal_fdb_extend_next);
+    EXPORT_SYMBOL(fal_fdb_entry_extend_getnext);
 
-    EXPORT_SYMBOL(fal_fdb_extend_first);
+    EXPORT_SYMBOL(fal_fdb_entry_extend_getfirst);
 
 #ifndef IN_FDB_MINI
 
-    EXPORT_SYMBOL(fal_fdb_port_newaddr_lrn_get);
+    EXPORT_SYMBOL(fal_fdb_port_learning_ctrl_get);
 
-    EXPORT_SYMBOL(fal_fdb_port_stamove_set);
+    EXPORT_SYMBOL(fal_fdb_port_stamove_ctrl_set);
 
-    EXPORT_SYMBOL(fal_fdb_port_stamove_get);
+    EXPORT_SYMBOL(fal_fdb_port_stamove_ctrl_get);
 
-    EXPORT_SYMBOL(fal_fdb_age_ctrl_set);
+    EXPORT_SYMBOL(fal_fdb_aging_ctrl_set);
 
-    EXPORT_SYMBOL(fal_fdb_age_ctrl_get);
+    EXPORT_SYMBOL(fal_fdb_aging_ctrl_get);
 
-    EXPORT_SYMBOL(fal_fdb_age_time_set);
+    EXPORT_SYMBOL(fal_fdb_aging_time_set);
 
-    EXPORT_SYMBOL(fal_fdb_age_time_get);
+    EXPORT_SYMBOL(fal_fdb_aging_time_get);
 
-    EXPORT_SYMBOL(fal_fdb_transfer);
+    EXPORT_SYMBOL(fal_fdb_entry_update_byport);
 
     EXPORT_SYMBOL(fal_port_fdb_learn_limit_set);
 
