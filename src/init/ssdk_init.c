@@ -3415,6 +3415,40 @@ qca_hppe_tdm_hw_init()
 	return 0;
 }
 
+static int
+qca_hppe_xgmac_hw_init()
+{
+	a_uint32_t val = 0, i = 0;
+	a_uint32_t xgmac_addr_delta = 0x4000;
+
+	val = 0x15;
+	qca_switch_reg_write(0, 0x00000010, (a_uint8_t *)&val, 4);
+
+	for (i = 0; i < 2; i ++)
+	{
+		val = 0x80010001;
+		qca_switch_reg_write(0, 0x00003000 + (xgmac_addr_delta*i), (a_uint8_t *)&val, 4);
+		val = 0x271c00c7;
+		qca_switch_reg_write(0, 0x00003004 + (xgmac_addr_delta*i), (a_uint8_t *)&val, 4);
+		val = 0x00000001;
+		qca_switch_reg_write(0, 0x00003008 + (xgmac_addr_delta*i), (a_uint8_t *)&val, 4);
+		val = 0x00000001;
+#if 0
+		qca_switch_reg_write(0, 0x00003090 + (xgmac_addr_delta*i), (a_uint8_t *)&val, 4);
+		val = 0x00000002;
+		qca_switch_reg_write(0, 0x00003070 + (xgmac_addr_delta*i), (a_uint8_t *)&val, 4);
+		val = 0x40000;
+		qca_switch_reg_write(0, 0x00003050 + (xgmac_addr_delta*i), (a_uint8_t *)&val, 4);
+#endif
+	}
+
+	val = 0x0;
+	qca_switch_reg_write(0, 0x00001800, (a_uint8_t *)&val, 4);
+	val = 0x0;
+	qca_switch_reg_write(0, 0x00001a00, (a_uint8_t *)&val, 4);
+
+	return 0;
+}
 
 static int
 qca_hppe_hw_init(ssdk_init_cfg *cfg)
@@ -3530,6 +3564,11 @@ qca_hppe_hw_init(ssdk_init_cfg *cfg)
 
 	qca_hppe_portctrl_hw_init();
 	qca_hppe_shaper_hw_init();
+
+#ifndef ESS_ONLY_FPGA
+	qca_hppe_xgmac_hw_init();
+	printk("hppe xgmac init success\n");
+#endif
 
 	return 0;
 }
