@@ -310,6 +310,28 @@ qca_ar8327_phy_fixup(struct qca_phy_priv *priv, int phy)
 		break;
 	}
 }
+static void qca_port_isolate(a_uint32_t dev_id)
+{
+	a_uint32_t port_id, mem_port_id, mem_port_map[AR8327_NUM_PORTS]={0};
+
+	for(port_id = 0; port_id < AR8327_NUM_PORTS; port_id++)
+	{
+		if(port_id == 6)
+			for(mem_port_id = 1; mem_port_id<= 4; mem_port_id++)
+				mem_port_map[port_id]  |= (1 << mem_port_id);
+		else if (port_id == 0)
+			mem_port_map[port_id]  |= (1 << 5);
+		else if (port_id >= 1 && port_id <= 4)
+			mem_port_map[port_id]  |= (1 << 6);
+		else
+			mem_port_map[port_id]  |= 1;
+	}
+
+	for(port_id = 0; port_id < AR8327_NUM_PORTS; port_id++)
+
+		 fal_portvlan_member_update(dev_id, port_id, mem_port_map[port_id]);
+
+}
 
 sw_error_t
 qca_switch_init(a_uint32_t dev_id)
@@ -618,7 +640,7 @@ int qca_ar8327_hw_init(struct qca_phy_priv *priv)
 	}
 
 	qca_switch_init(0);
-
+	qca_port_isolate(0);
 	qca_ar8327_phy_enable(priv);
 
 	return 0;
