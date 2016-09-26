@@ -474,7 +474,7 @@ extern "C" {
     SW_API_DEF(SW_API_FDB_EXTEND_NEXT,    fal_fdb_entry_extend_getnext),  \
     SW_API_DEF(SW_API_FDB_EXTEND_FIRST,   fal_fdb_entry_extend_getfirst), \
     SW_API_DEF(SW_API_FDB_TRANSFER,       fal_fdb_entry_update_byport), \
-    SW_API_DEF(SW_API_PT_FDB_LEARN_COUNTER_GET,  fal_port_fdb_learn_counter_get), \
+    SW_API_DEF(SW_API_PT_FDB_LEARN_COUNTER_GET,  fal_fdb_port_learned_mac_counter_get), \
     SW_API_DEF(SW_API_PT_FDB_LEARN_LIMIT_SET,    fal_port_fdb_learn_limit_set),  \
     SW_API_DEF(SW_API_PT_FDB_LEARN_LIMIT_GET,    fal_port_fdb_learn_limit_get),  \
     SW_API_DEF(SW_API_PT_FDB_LEARN_EXCEED_CMD_SET,    fal_port_fdb_learn_exceed_cmd_set),  \
@@ -492,7 +492,9 @@ extern "C" {
     SW_API_DEF(SW_API_FDB_PORT_ADD,   fal_fdb_port_add), \
     SW_API_DEF(SW_API_FDB_PORT_DEL,   fal_fdb_port_del), \
     SW_API_DEF(SW_API_FDB_RFS_SET,   fal_fdb_rfs_set),   \
-    SW_API_DEF(SW_API_FDB_RFS_DEL,   fal_fdb_rfs_del),
+    SW_API_DEF(SW_API_FDB_RFS_DEL,   fal_fdb_rfs_del),   \
+    SW_API_DEF(SW_API_FDB_PT_MACLIMIT_CTRL_SET, fal_fdb_port_maclimit_ctrl_set), \
+    SW_API_DEF(SW_API_FDB_PT_MACLIMIT_CTRL_GET, fal_fdb_port_maclimit_ctrl_get),
 
 #define FDB_API_PARAM \
     SW_API_DESC(SW_API_FDB_ADD) \
@@ -542,7 +544,9 @@ extern "C" {
     SW_API_DESC(SW_API_FDB_PORT_ADD)  \
     SW_API_DESC(SW_API_FDB_PORT_DEL)  \
     SW_API_DESC(SW_API_FDB_RFS_SET)   \
-    SW_API_DESC(SW_API_FDB_RFS_DEL)
+    SW_API_DESC(SW_API_FDB_RFS_DEL)   \
+    SW_API_DESC(SW_API_FDB_PT_MACLIMIT_CTRL_SET) \
+    SW_API_DESC(SW_API_FDB_PT_MACLIMIT_CTRL_GET)
 #else
 #define FDB_API \
     SW_API_DEF(SW_API_FDB_PT_LEARN_SET,   fal_fdb_port_learn_set),

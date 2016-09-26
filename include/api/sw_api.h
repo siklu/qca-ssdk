@@ -56,6 +56,7 @@ extern "C" {
         SW_MIB,
         SW_MACADDR,
         SW_FDBENTRY,
+        SW_MACLIMIT_CTRL,
         SW_SCH,
         SW_QOS,
         SW_STORM,

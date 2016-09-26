@@ -149,12 +149,7 @@ _adpt_hppe_fdb_tbl_op_data_reg_set(a_uint32_t dev_id, fal_fdb_entry_t * entry)
 	}
 	reg_value[1] += (0x1 << (FDB_TBL_ENTRY_VALID_OFFSET - 32)) + (0x1 << (FDB_TBL_LOOKUP_VALID_OFFSET -32)) +
 			(entry->fid << (FDB_TBL_VSI_OFFSET - 32));
-	if (entry->nexthop_en == A_TRUE)
-	{
-		port_value = entry->port.nexthop;
-		dst_type = 0x1;
-	}
-	else if (entry->portmap_en == A_TRUE)
+	if (entry->portmap_en == A_TRUE)
 	{
 		port_value = entry->port.map;
 		dst_type = 0x3;
@@ -252,22 +247,14 @@ _adpt_hppe_fdb_tbl_rd_op_rslt_data_reg_get(a_uint32_t dev_id, fal_fdb_entry_t * 
 			entry->static_en = A_TRUE;
 		else
 			entry->static_en = A_FALSE;
-		if (dst_info_encode == 0x1)
+		if (dst_info_encode == 0x2)
 		{
-			entry->nexthop_en = A_TRUE;
-			entry->portmap_en = A_FALSE;
-			entry->port.nexthop = ((rslt_data[2] & 0x7) << 9) + ((rslt_data[1] >> (FDB_TBL_DST_INFO_OFFSET - 32)) & 0x1ff);
-		}
-		else if (dst_info_encode == 0x2)
-		{
-			entry->nexthop_en = A_FALSE;
 			entry->portmap_en = A_FALSE;
 			entry->port.id = ((rslt_data[2] & 0x7) << 9) + ((rslt_data[1] >> (FDB_TBL_DST_INFO_OFFSET - 32)) & 0x1ff);
 		}
 		else
 		{
 			entry->portmap_en = A_TRUE;
-			entry->nexthop_en = A_FALSE;
 			entry->port.map = ((rslt_data[2] & 0x7) << 9) + ((rslt_data[1] >> (FDB_TBL_DST_INFO_OFFSET - 32)) & 0x1ff);
 		}
 		for (i = 2; i < 6; i++)
@@ -378,7 +365,6 @@ _adpt_hppe_fdb_extend_first_next(a_uint32_t dev_id, fal_fdb_entry_t * entry, fal
 	if (hwop == ARL_EXTENDFIRST_ENTRY || hwop == ARL_EXTENDNEXT_ENTRY)
 	{
 		ori_entry.portmap_en = entry->portmap_en;
-		ori_entry.nexthop_en = entry->nexthop_en;
 		ori_entry.port.id = entry->port.id;
 		ori_entry.fid = entry->fid;
 	}
@@ -406,7 +392,7 @@ _adpt_hppe_fdb_extend_first_next(a_uint32_t dev_id, fal_fdb_entry_t * entry, fal
 				if (option->fid_en == A_TRUE && ori_entry.fid != entry->fid)
 					continue;
 				if (option->port_en == A_TRUE && !(ori_entry.portmap_en == entry->portmap_en &&
-					ori_entry.nexthop_en == entry->nexthop_en && ori_entry.port.id == entry->port.id))
+					ori_entry.port.id == entry->port.id))
 					continue;
 			}
 			break;
@@ -474,11 +460,7 @@ adpt_hppe_fdb_del_by_port(a_uint32_t dev_id, a_uint32_t port_id, a_uint32_t flag
 			continue;
 		else if (rv == SW_OK)
 		{
-			if (entry.nexthop_en == A_TRUE)
-			{
-				continue;
-			}
-			else if (entry.portmap_en == A_TRUE)
+			if (entry.portmap_en == A_TRUE)
 			{
 				if (((entry.port.map >> port_id) & 0x1) == 1)
 				{
@@ -590,11 +572,7 @@ adpt_hppe_fdb_transfer(a_uint32_t dev_id, fal_port_t old_port, fal_port_t new_po
 		{
 			if (option->fid_en == A_TRUE && entry.fid != fid)
 				continue;
-			if (entry.nexthop_en == A_TRUE)
-			{
-				continue;
-			}
-			else if (entry.portmap_en == A_TRUE)
+			if (entry.portmap_en == A_TRUE)
 			{
 				if (((entry.port.map >> old_port) & 0x1) == 1)
 				{
@@ -806,19 +784,18 @@ adpt_hppe_port_fdb_learn_limit_set(a_uint32_t dev_id, fal_port_t port_id,
                                  a_bool_t enable, a_uint32_t cnt)
 {
 	sw_error_t rv = SW_OK;
-	union port_lrn_limit_ctrl_u port_lrn_limit_ctrl = {0};
+	fal_maclimit_ctrl_t maclimit_ctrl;
 
 	ADPT_DEV_ID_CHECK(dev_id);
 
-	rv = hppe_port_lrn_limit_ctrl_get(dev_id, port_id, &port_lrn_limit_ctrl);
-
+	rv = adpt_hppe_fdb_port_maclimit_ctrl_get(dev_id, port_id, &maclimit_ctrl);
 	if( rv != SW_OK )
 		return rv;
 
-	port_lrn_limit_ctrl.bf.lrn_lmt_en = enable;
-	port_lrn_limit_ctrl.bf.lrn_lmt_cnt = cnt;
+	maclimit_ctrl.enable = enable;
+	maclimit_ctrl.limit_num = cnt;
 
-	return hppe_port_lrn_limit_ctrl_set(dev_id, port_id, &port_lrn_limit_ctrl);
+	return adpt_hppe_fdb_port_maclimit_ctrl_set(dev_id, port_id, &maclimit_ctrl);
 }
 
 sw_error_t
@@ -826,19 +803,18 @@ adpt_hppe_port_fdb_learn_limit_get(a_uint32_t dev_id, fal_port_t port_id,
                                  a_bool_t * enable, a_uint32_t * cnt)
 {
 	sw_error_t rv = SW_OK;
-	union port_lrn_limit_ctrl_u port_lrn_limit_ctrl = {0};
+	fal_maclimit_ctrl_t maclimit_ctrl;
 
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(enable);
 	ADPT_NULL_POINT_CHECK(cnt);
 
-	rv = hppe_port_lrn_limit_ctrl_get(dev_id, port_id, &port_lrn_limit_ctrl);
-
+	rv = adpt_hppe_fdb_port_maclimit_ctrl_get(dev_id, port_id, &maclimit_ctrl);
 	if( rv != SW_OK )
 		return rv;
 
-	*enable = port_lrn_limit_ctrl.bf.lrn_lmt_en;
-	*cnt = port_lrn_limit_ctrl.bf.lrn_lmt_cnt;
+	*enable = maclimit_ctrl.enable;
+	*cnt = maclimit_ctrl.limit_num;
 
 	return SW_OK;
 }
@@ -905,11 +881,7 @@ adpt_hppe_fdb_port_add(a_uint32_t dev_id, a_uint32_t fid, fal_mac_addr_t * addr,
 	if (rv != SW_OK)
 		return rv;
 
-	if (entry.nexthop_en == A_TRUE)
-	{
-		return SW_FAIL;
-	}
-	else if (entry.portmap_en == A_TRUE)
+	if (entry.portmap_en == A_TRUE)
 	{
 		if (port_id >= 12)
 			return SW_FAIL;
@@ -920,7 +892,6 @@ adpt_hppe_fdb_port_add(a_uint32_t dev_id, a_uint32_t fid, fal_mac_addr_t * addr,
 		if (port_id >= 12 || entry.port.id >= 12)
 			return SW_FAIL;
 		entry.portmap_en = A_TRUE;
-		entry.nexthop_en = A_FALSE;
 		id = entry.port.id;
 		entry.port.map = 0;
 		entry.port.map |= (0x1 << id);
@@ -955,11 +926,7 @@ adpt_hppe_fdb_port_del(a_uint32_t dev_id, a_uint32_t fid, fal_mac_addr_t * addr,
 	if (rv != SW_OK)
 		return rv;
 
-	if (entry.nexthop_en == A_TRUE)
-	{
-		rv = SW_FAIL;
-	}
-	else if (entry.portmap_en == A_TRUE)
+	if (entry.portmap_en == A_TRUE)
 	{
 		if (((entry.port.map >> port_id) & 0x1) == 1)
 		{
@@ -1131,18 +1098,17 @@ adpt_hppe_port_fdb_learn_exceed_cmd_set(a_uint32_t dev_id, fal_port_t port_id,
                                       fal_fwd_cmd_t cmd)
 {
 	sw_error_t rv = SW_OK;
-	union port_lrn_limit_ctrl_u port_lrn_limit_ctrl = {0};
+	fal_maclimit_ctrl_t maclimit_ctrl;
 
 	ADPT_DEV_ID_CHECK(dev_id);
 
-	rv = hppe_port_lrn_limit_ctrl_get(dev_id, port_id, &port_lrn_limit_ctrl);
-
+	rv = adpt_hppe_fdb_port_maclimit_ctrl_get(dev_id, port_id, &maclimit_ctrl);
 	if( rv != SW_OK )
 		return rv;
 
-	port_lrn_limit_ctrl.bf.lrn_lmt_exceed_fwd = cmd;
+	maclimit_ctrl.action = cmd;
 
-	return hppe_port_lrn_limit_ctrl_set(dev_id, port_id, &port_lrn_limit_ctrl);
+	return adpt_hppe_fdb_port_maclimit_ctrl_set(dev_id, port_id, &maclimit_ctrl);
 }
 
 sw_error_t
@@ -1150,17 +1116,16 @@ adpt_hppe_port_fdb_learn_exceed_cmd_get(a_uint32_t dev_id, fal_port_t port_id,
                                       fal_fwd_cmd_t * cmd)
 {
 	sw_error_t rv = SW_OK;
-	union port_lrn_limit_ctrl_u port_lrn_limit_ctrl = {0};
+	fal_maclimit_ctrl_t maclimit_ctrl;
 
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(cmd);
 
-	rv = hppe_port_lrn_limit_ctrl_get(dev_id, port_id, &port_lrn_limit_ctrl);
-
+	rv = adpt_hppe_fdb_port_maclimit_ctrl_get(dev_id, port_id, &maclimit_ctrl);
 	if( rv != SW_OK )
 		return rv;
 
-	*cmd = port_lrn_limit_ctrl.bf.lrn_lmt_exceed_fwd;
+	*cmd = maclimit_ctrl.action;
 
 	return SW_OK;
 }
@@ -1198,6 +1163,47 @@ adpt_hppe_fdb_age_ctrl_get(a_uint32_t dev_id, a_bool_t * enable)
 		return rv;
 
 	*enable = l2_global_conf.bf.age_en;
+
+	return SW_OK;
+}
+
+sw_error_t
+adpt_hppe_fdb_port_maclimit_ctrl_set(a_uint32_t dev_id, fal_port_t port_id, fal_maclimit_ctrl_t * maclimit_ctrl)
+{
+	sw_error_t rv = SW_OK;
+	union port_lrn_limit_ctrl_u port_lrn_limit_ctrl = {0};
+
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	rv = hppe_port_lrn_limit_ctrl_get(dev_id, port_id, &port_lrn_limit_ctrl);
+
+	if( rv != SW_OK )
+		return rv;
+
+	port_lrn_limit_ctrl.bf.lrn_lmt_en = maclimit_ctrl->enable;
+	port_lrn_limit_ctrl.bf.lrn_lmt_cnt = maclimit_ctrl->limit_num;
+	port_lrn_limit_ctrl.bf.lrn_lmt_exceed_fwd = maclimit_ctrl->action;
+
+	return hppe_port_lrn_limit_ctrl_set(dev_id, port_id, &port_lrn_limit_ctrl);
+}
+
+sw_error_t
+adpt_hppe_fdb_port_maclimit_ctrl_get(a_uint32_t dev_id, fal_port_t port_id, fal_maclimit_ctrl_t * maclimit_ctrl)
+{
+	sw_error_t rv = SW_OK;
+	union port_lrn_limit_ctrl_u port_lrn_limit_ctrl = {0};
+
+	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(maclimit_ctrl);
+
+	rv = hppe_port_lrn_limit_ctrl_get(dev_id, port_id, &port_lrn_limit_ctrl);
+
+	if( rv != SW_OK )
+		return rv;
+
+	maclimit_ctrl->enable = port_lrn_limit_ctrl.bf.lrn_lmt_en;
+	maclimit_ctrl->limit_num = port_lrn_limit_ctrl.bf.lrn_lmt_cnt;
+	maclimit_ctrl->action = port_lrn_limit_ctrl.bf.lrn_lmt_exceed_fwd;
 
 	return SW_OK;
 }
@@ -1245,6 +1251,8 @@ sw_error_t adpt_hppe_fdb_init(a_uint32_t dev_id)
 	p_adpt_api->adpt_port_fdb_learn_exceed_cmd_get = adpt_hppe_port_fdb_learn_exceed_cmd_get;
 	p_adpt_api->adpt_fdb_age_ctrl_set = adpt_hppe_fdb_age_ctrl_set;
 	p_adpt_api->adpt_fdb_age_ctrl_get = adpt_hppe_fdb_age_ctrl_get;
+	p_adpt_api->adpt_fdb_port_maclimit_ctrl_set = adpt_hppe_fdb_port_maclimit_ctrl_set;
+	p_adpt_api->adpt_fdb_port_maclimit_ctrl_get = adpt_hppe_fdb_port_maclimit_ctrl_get;
 
 	return SW_OK;
 }

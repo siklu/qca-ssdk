@@ -47,34 +47,31 @@ extern "C" {
     @brief This structure defines the Fdb entry.
 
     */
-
     typedef struct
     {
-        fal_mac_addr_t addr;
-        a_uint16_t    fid;
-        fal_fwd_cmd_t dacmd;
-        fal_fwd_cmd_t sacmd;
+        fal_mac_addr_t addr; /* mac address of fdb entry */
+        a_uint16_t    fid; /* vlan_id/vsi value of fdb entry */
+        fal_fwd_cmd_t dacmd; /* source address command */
+        fal_fwd_cmd_t sacmd; /* dest address command */
         union
         {
-            fal_port_t id;
-            fal_pbmp_t map;
-            fal_nexthop_t nexthop;
+            fal_port_t id; /* union value is port id value */
+            fal_pbmp_t map; /* union value is bitmap value */
         } port;
-        a_bool_t portmap_en;
-        a_bool_t is_multicast;
-        a_bool_t static_en;
-        a_bool_t leaky_en;
-        a_bool_t mirror_en;
-        a_bool_t clone_en;
-        a_bool_t cross_pt_state;
-        a_bool_t da_pri_en;
-        a_uint8_t da_queue;
-        a_bool_t white_list_en;
-        a_bool_t load_balance_en;
-        a_uint8_t load_balance;
-        a_bool_t entry_valid;
-        a_bool_t lookup_valid;
-        a_bool_t nexthop_en;
+        a_bool_t portmap_en; /* use port bitmap or not */
+        a_bool_t is_multicast; /* if it is a multicast mac fdb entry */
+        a_bool_t static_en; /* enable static or not */
+        a_bool_t leaky_en; /* enable leaky or not */
+        a_bool_t mirror_en; /* enable mirror or not */
+        a_bool_t clone_en; /* enable clone or not */
+        a_bool_t cross_pt_state; /* cross port state */
+        a_bool_t da_pri_en; /* enable da pri or not */
+        a_uint8_t da_queue; /* da queue value */
+        a_bool_t white_list_en; /* enable white list or not */
+        a_bool_t load_balance_en; /* enable load balance value or not */
+        a_uint8_t load_balance; /* load balance value */
+        a_bool_t entry_valid; /* check if entry is value */
+        a_bool_t lookup_valid; /* check if entry is lookup */
     } fal_fdb_entry_t;
 
     typedef struct
@@ -84,13 +81,20 @@ extern "C" {
         a_uint8_t load_balance;
     } fal_fdb_rfs_t;
 
+    typedef struct
+    {
+        a_bool_t enable; /* enable port learn limit or not */
+        a_uint32_t limit_num; /* port learn limit number */
+        fal_fwd_cmd_t action; /* the action when port learn number exceed limit*/
+    } fal_maclimit_ctrl_t;
+
 #define FAL_FDB_DEL_STATIC   0x1
 
     typedef struct
     {
-        a_bool_t port_en;
-        a_bool_t fid_en;
-        a_bool_t multicast_en;
+        a_bool_t port_en; /* enable port value matching or not */
+        a_bool_t fid_en; /* enable fid value matching or not */
+        a_bool_t multicast_en; /* enable multicast value matching or not */
     } fal_fdb_op_t;
 
     typedef enum
@@ -232,7 +236,7 @@ sw_error_t
                                       fal_fwd_cmd_t * cmd);
 
     sw_error_t
-    fal_port_fdb_learn_counter_get(a_uint32_t dev_id, fal_port_t port_id,
+    fal_fdb_port_learned_mac_counter_get(a_uint32_t dev_id, fal_port_t port_id,
                                   a_uint32_t * cnt);
 
     sw_error_t
@@ -272,6 +276,12 @@ sw_error_t
 
     sw_error_t
     fal_fdb_port_del(a_uint32_t dev_id, a_uint32_t fid, fal_mac_addr_t * addr, fal_port_t port_id);
+
+    sw_error_t
+    fal_fdb_port_maclimit_ctrl_set(a_uint32_t dev_id, fal_port_t port_id, fal_maclimit_ctrl_t * maclimit_ctrl);
+
+    sw_error_t
+    fal_fdb_port_maclimit_ctrl_get(a_uint32_t dev_id, fal_port_t port_id, fal_maclimit_ctrl_t * maclimit_ctrl);
 #endif
 
 #define fal_fdb_add 	fal_fdb_entry_add
