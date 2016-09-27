@@ -1555,6 +1555,14 @@ static sw_error_t _adpt_hppe_acl_rule_range_match(a_uint32_t dev_id, a_uint32_t 
 		}
 	}
 
+	if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_L3_LENGTH))
+	{
+		if (FAL_ACL_FIELD_MASK != rule->l3_length_op)
+		{
+			rangecount++;
+		}
+	}
+
 	if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_UDF0))
 	{
 		if (FAL_ACL_FIELD_MASK != rule->udf0_op)
