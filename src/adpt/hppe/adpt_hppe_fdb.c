@@ -40,6 +40,44 @@
 #define ARL_EXTENDFIRST_ENTRY	0x2
 #define ARL_EXTENDNEXT_ENTRY	0x3
 
+
+
+/*
+ * Remove port type.
+ * Current fal_port_t format:
+ * 1) highest 8 bits is defined as port type.
+ * 2) lowest 24 bits for port id value.
+ * The range of physical port id is 0-7, the range of trunk id is 32-33, and the range of virtual port is 64-255.
+ * Port type: 0 is physical port, 1 is trunk port, 2 is virtual port.
+ */
+sw_error_t
+_remove_port_type(fal_port_t * port_id)
+{
+	*port_id = FAL_PORT_ID_VALUE(*port_id);
+	return SW_OK;
+}
+
+/*
+ * Add port type.
+ * Current fal_port_t format:
+ * 1) highest 8 bits is defined as port type.
+ * 2) lowest 24 bits for port id value.
+ * The range of physical port id is 0-7, the range of trunk id is 32-33, and the range of virtual port is 64-255.
+ * Port type: 0 is physical port, 1 is trunk port, 2 is virtual port.
+ */
+sw_error_t
+_add_port_type(a_bool_t bitmap, fal_port_t * port_id)
+{
+	if (bitmap == A_TRUE)
+		return SW_OK;
+
+	if (*port_id == 32 || *port_id == 33)
+		*port_id = FAL_PORT_ID(FAL_PORT_TYPE_TRUNK, *port_id);
+	else if (*port_id >= 64)
+		*port_id = FAL_PORT_ID(FAL_PORT_TYPE_VPORT, *port_id);
+	return SW_OK;
+}
+
 /*
  * set values to register FDB_TBL_OP
  */
@@ -410,35 +448,50 @@ sw_error_t
 adpt_hppe_fdb_first(a_uint32_t dev_id, fal_fdb_entry_t * entry)
 {
 	fal_fdb_op_t option;
+	sw_error_t rv;
 
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(entry);
 
 	aos_mem_zero(&option, sizeof (fal_fdb_op_t));
 
-	return _adpt_hppe_fdb_extend_first_next(dev_id, entry, &option, ARL_FIRST_ENTRY);
+	_remove_port_type(&entry->port.id);
+	rv = _adpt_hppe_fdb_extend_first_next(dev_id, entry, &option, ARL_FIRST_ENTRY);
+	_add_port_type(entry->portmap_en, &entry->port.id);
+
+	return rv;
 }
 
 sw_error_t
 adpt_hppe_fdb_next(a_uint32_t dev_id, fal_fdb_entry_t * entry)
 {
 	fal_fdb_op_t option;
+	sw_error_t rv;
 
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(entry);
 
 	aos_mem_zero(&option, sizeof (fal_fdb_op_t));
 
-	return _adpt_hppe_fdb_extend_first_next(dev_id, entry, &option, ARL_NEXT_ENTRY);
+	_remove_port_type(&entry->port.id);
+	rv = _adpt_hppe_fdb_extend_first_next(dev_id, entry, &option, ARL_NEXT_ENTRY);
+	_add_port_type(entry->portmap_en, &entry->port.id);
+
+	return rv;
 }
 
 sw_error_t
 adpt_hppe_fdb_add(a_uint32_t dev_id, const fal_fdb_entry_t * entry)
 {
+	sw_error_t rv = SW_OK;
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(entry);
 
-	return _modify_fdb_table_entry(dev_id, entry, OP_TYPE_ADD, 0x0);
+	_remove_port_type(&entry->port.id);
+	rv = _modify_fdb_table_entry(dev_id, entry, OP_TYPE_ADD, 0x0);
+	_add_port_type(entry->portmap_en, &entry->port.id);
+
+	return rv;
 }
 
 sw_error_t
@@ -449,6 +502,8 @@ adpt_hppe_fdb_del_by_port(a_uint32_t dev_id, a_uint32_t port_id, a_uint32_t flag
 	fal_fdb_entry_t entry;
 
 	ADPT_DEV_ID_CHECK(dev_id);
+
+	_remove_port_type(&port_id);
 
 	for (entry_index = 0; entry_index < FDB_TBL_NUM; entry_index++)
 	{
@@ -504,10 +559,15 @@ adpt_hppe_fdb_del_by_port(a_uint32_t dev_id, a_uint32_t port_id, a_uint32_t flag
 sw_error_t
 adpt_hppe_fdb_del_by_mac(a_uint32_t dev_id, const fal_fdb_entry_t *entry)
 {
+	sw_error_t rv = SW_OK;
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(entry);
 
-	return _modify_fdb_table_entry(dev_id, entry, OP_TYPE_DEL, 0x0);
+	_remove_port_type(&entry->port.id);
+	rv = _modify_fdb_table_entry(dev_id, entry, OP_TYPE_DEL, 0x0);
+	_add_port_type(entry->portmap_en, &entry->port.id);
+
+	return rv;
 }
 
 sw_error_t
@@ -560,6 +620,9 @@ adpt_hppe_fdb_transfer(a_uint32_t dev_id, fal_port_t old_port, fal_port_t new_po
 	if (option->port_en == A_TRUE)
 		return SW_NOT_SUPPORTED;
 
+	_remove_port_type(&old_port);
+	_remove_port_type(&new_port);
+
 	for (entry_index = 0; entry_index < FDB_TBL_NUM; entry_index++)
 	{
 		cmd_id = entry_index % OP_CMD_ID_SIZE;
@@ -608,13 +671,17 @@ adpt_hppe_fdb_find(a_uint32_t dev_id, fal_fdb_entry_t * entry)
 	a_uint32_t cmd_id = 0x0;
 	a_uint32_t entry_index = 0x0;
 
+	_remove_port_type(&entry->port.id);
 	rv = _get_fdb_table_entryindex_by_entry(dev_id, entry, &entry_index, cmd_id);
 	if (rv != SW_OK)
 		return rv;
 
 	cmd_id = entry_index % OP_CMD_ID_SIZE;
 
-	return _get_fdb_table_entry_by_entryindex(dev_id, entry, entry_index, cmd_id);
+	rv = _get_fdb_table_entry_by_entryindex(dev_id, entry, entry_index, cmd_id);
+	_add_port_type(entry->portmap_en, &entry->port.id);
+
+	return rv;
 }
 
 sw_error_t
@@ -628,6 +695,7 @@ adpt_hppe_fdb_iterate(a_uint32_t dev_id, a_uint32_t * iterator, fal_fdb_entry_t 
 	ADPT_NULL_POINT_CHECK(iterator);
 	ADPT_NULL_POINT_CHECK(entry);
 
+	_remove_port_type(&entry->port.id);
 	for (entry_index = *iterator; entry_index < FDB_TBL_NUM; entry_index++)
 	{
 		cmd_id = entry_index % OP_CMD_ID_SIZE;
@@ -643,6 +711,7 @@ adpt_hppe_fdb_iterate(a_uint32_t dev_id, a_uint32_t * iterator, fal_fdb_entry_t 
 	if (entry_index == FDB_TBL_NUM)
 		return SW_NO_MORE;
 
+	_add_port_type(entry->portmap_en, &entry->port.id);
 	*iterator = entry_index + 1;
 	return SW_OK;
 }
@@ -686,22 +755,34 @@ sw_error_t
 adpt_hppe_fdb_extend_first(a_uint32_t dev_id, fal_fdb_op_t * option,
                          fal_fdb_entry_t * entry)
 {
+	sw_error_t rv;
+
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(option);
 	ADPT_NULL_POINT_CHECK(entry);
 
-	return _adpt_hppe_fdb_extend_first_next(dev_id, entry, option, ARL_EXTENDFIRST_ENTRY);
+	_remove_port_type(&entry->port.id);
+	rv = _adpt_hppe_fdb_extend_first_next(dev_id, entry, option, ARL_EXTENDFIRST_ENTRY);
+	_add_port_type(entry->portmap_en, &entry->port.id);
+
+	return rv;
 }
 
 sw_error_t
 adpt_hppe_fdb_extend_next(a_uint32_t dev_id, fal_fdb_op_t * option,
                         fal_fdb_entry_t * entry)
 {
+	sw_error_t rv;
+
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(option);
 	ADPT_NULL_POINT_CHECK(entry);
 
-	return _adpt_hppe_fdb_extend_first_next(dev_id, entry, option, ARL_EXTENDNEXT_ENTRY);
+	_remove_port_type(&entry->port.id);
+	rv = _adpt_hppe_fdb_extend_first_next(dev_id, entry, option, ARL_EXTENDNEXT_ENTRY);
+	_add_port_type(entry->portmap_en, &entry->port.id);
+
+	return rv;
 }
 
 sw_error_t
@@ -866,6 +947,8 @@ adpt_hppe_fdb_port_add(a_uint32_t dev_id, a_uint32_t fid, fal_mac_addr_t * addr,
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(addr);
 
+	_remove_port_type(&port_id);
+
 	aos_mem_zero(&entry, sizeof (fal_fdb_entry_t));
 
 	entry.fid = fid;
@@ -910,6 +993,8 @@ adpt_hppe_fdb_port_del(a_uint32_t dev_id, a_uint32_t fid, fal_mac_addr_t * addr,
 
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(addr);
+
+	_remove_port_type(&port_id);
 
 	aos_mem_zero(&entry, sizeof (fal_fdb_entry_t));
 
