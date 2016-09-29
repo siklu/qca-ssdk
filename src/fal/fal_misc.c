@@ -166,6 +166,21 @@ _fal_cpu_port_status_set(a_uint32_t dev_id, a_bool_t enable)
     return rv;
 }
 
+static sw_error_t
+_fal_pppoe_status_set(a_uint32_t dev_id, a_bool_t enable)
+{
+    sw_error_t rv;
+    hsl_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+
+    if (NULL == p_api->pppoe_status_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->pppoe_status_set(dev_id, enable);
+    return rv;
+}
+
 #ifndef IN_MISC_MINI
 static sw_error_t
 _fal_port_unk_sa_cmd_get(a_uint32_t dev_id, fal_port_t port_id,
@@ -310,22 +325,6 @@ _fal_pppoe_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd)
         return SW_NOT_SUPPORTED;
 
     rv = p_api->pppoe_cmd_get(dev_id, cmd);
-    return rv;
-}
-
-
-static sw_error_t
-_fal_pppoe_status_set(a_uint32_t dev_id, a_bool_t enable)
-{
-    sw_error_t rv;
-    hsl_api_t *p_api;
-
-    SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
-
-    if (NULL == p_api->pppoe_status_set)
-        return SW_NOT_SUPPORTED;
-
-    rv = p_api->pppoe_status_set(dev_id, enable);
     return rv;
 }
 
@@ -1188,6 +1187,25 @@ fal_cpu_port_status_set(a_uint32_t dev_id, a_bool_t enable)
     return rv;
 }
 
+/**
+ * @brief Set pppoe packets hardware acknowledgement status on particular device.
+ * @details     comments:
+ *   Particular device may only support parts of pppoe packets.
+ * @param[in] dev_id device id
+ * @param[in] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_pppoe_status_set(a_uint32_t dev_id, a_bool_t enable)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_pppoe_status_set(dev_id, enable);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
 #ifndef IN_MISC_MINI
 /**
  * @brief Get forwarding command for packets which source address is unknown on a particular port.
@@ -1354,25 +1372,6 @@ fal_pppoe_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd)
 
     FAL_API_LOCK;
     rv = _fal_pppoe_cmd_get(dev_id, cmd);
-    FAL_API_UNLOCK;
-    return rv;
-}
-
-/**
- * @brief Set pppoe packets hardware acknowledgement status on particular device.
- * @details     comments:
- *   Particular device may only support parts of pppoe packets.
- * @param[in] dev_id device id
- * @param[in] enable A_TRUE or A_FALSE
- * @return SW_OK or error code
- */
-sw_error_t
-fal_pppoe_status_set(a_uint32_t dev_id, a_bool_t enable)
-{
-    sw_error_t rv;
-
-    FAL_API_LOCK;
-    rv = _fal_pppoe_status_set(dev_id, enable);
     FAL_API_UNLOCK;
     return rv;
 }

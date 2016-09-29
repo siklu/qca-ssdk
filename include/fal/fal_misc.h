@@ -102,6 +102,9 @@ extern "C" {
     fal_cpu_port_status_set(a_uint32_t dev_id, a_bool_t enable);
 
 
+sw_error_t
+fal_pppoe_status_set(a_uint32_t dev_id, a_bool_t enable);
+
 #ifndef IN_MISC_MINI
     sw_error_t
     fal_cpu_port_status_get(a_uint32_t dev_id, a_bool_t * enable);
@@ -125,11 +128,6 @@ extern "C" {
 
     sw_error_t
     fal_pppoe_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd);
-
-
-
-    sw_error_t
-    fal_pppoe_status_set(a_uint32_t dev_id, a_bool_t enable);
 
 
 

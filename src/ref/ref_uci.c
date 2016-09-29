@@ -79,11 +79,13 @@ char command_name[COMMAND_NAME_MAX_LEN] = {0};
 char whole_command_line[COMMAND_LINE_MAX_LEN] = {0};
 char *val_ptr[SWITCH_CFG_LEN_MAX] = {0};
 static unsigned int parameter_length = 0;
+#ifdef IN_NAT
 static char *vrf_dflt_str = "0";
 static char *lb_dflt_str = "0";
 static char *cookie_dflt_str = "0";
 static char *priority_dflt_str = "no";
 static char *param_dflt_str = " ";
+#endif
 
 #ifdef IN_QOS
 #ifndef IN_QOS_MINI

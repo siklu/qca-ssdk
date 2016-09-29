@@ -71,7 +71,10 @@
 #ifdef IN_MALIBU_PHY
 #include <malibu_phy.h>
 #endif
-#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
+#include <linux/switch.h>
+#include <linux/of.h>
+#elif defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 #include <linux/switch.h>
 #include <linux/of.h>
 #include <drivers/leds/leds-ipq40xx.h>
@@ -1296,6 +1299,7 @@ qca_phy_config_init(struct phy_device *pdev)
 
 struct qca_phy_priv *qca_phy_priv_global;
 
+#ifdef DESS
 static int ssdk_switch_register(void)
 {
 	struct switch_dev *sw_dev;
@@ -1377,6 +1381,7 @@ static int ssdk_switch_unregister(void)
 	kfree(qca_phy_priv_global);
 	return 0;
 }
+#endif
 
 static int
 qca_phy_read_status(struct phy_device *pdev)
@@ -2601,6 +2606,7 @@ static int chip_ver_get(ssdk_init_cfg* cfg)
 	return rv;
 }
 
+#ifdef DESS
 static int ssdk_flow_default_act_init(void)
 {
 	a_uint32_t vrf_id = 0;
@@ -2643,17 +2649,17 @@ static int ssdk_portvlan_init(a_uint32_t cpu_bmp, a_uint32_t lan_bmp, a_uint32_t
 	}
 	return 0;
 }
+#endif
+
 #ifdef DESS
 static int ssdk_dess_led_init(ssdk_init_cfg *cfg)
 {
-#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 	a_uint32_t i,led_num, led_source_id,source_id;
 	led_ctrl_pattern_t  pattern;
 
 	if(cfg->led_source_num != 0) {
 		for (i = 0; i < cfg->led_source_num; i++) {
 
-			led_num = cfg->led_source_cfg[i].led_num;
 			led_source_id = cfg->led_source_cfg[i].led_source_id;
 			pattern.mode = cfg->led_source_cfg[i].led_pattern.mode;
 			pattern.map = cfg->led_source_cfg[i].led_pattern.map;
@@ -2661,7 +2667,9 @@ static int ssdk_dess_led_init(ssdk_init_cfg *cfg)
 			#ifdef IN_LED
 			fal_led_source_pattern_set(0, led_source_id,&pattern);
 			#endif
+			led_num = ((led_source_id-1)/3) + 3;
 			source_id = led_source_id%3;
+		#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) && (LINUX_VERSION_CODE <= KERNEL_VERSION(4,0,0))
 			if (source_id == 1) {
 				if (led_source_id == 1) {
 					ipq40xx_led_source_select(led_num, LAN0_1000_LNK_ACTIVITY);
@@ -2713,9 +2721,9 @@ static int ssdk_dess_led_init(ssdk_init_cfg *cfg)
 					ipq40xx_led_source_select(led_num, WAN_10_LNK_ACTIVITY);
 				}
 			}
+		#endif
 		}
 	}
-#endif
 	return 0;
 }
 
@@ -3087,6 +3095,7 @@ void ssdk_intf_set(struct net_device *dev, char op)
 
 }
 
+#ifdef DESS
 static int ssdk_inet_event(struct notifier_block *this, unsigned long event, void *ptr)
 {
 	struct net_device *dev = ((struct in_ifaddr *)ptr)->ifa_dev->dev;
@@ -3105,6 +3114,7 @@ static int ssdk_inet_event(struct notifier_block *this, unsigned long event, voi
 	return NOTIFY_DONE;
 }
 #endif
+#endif
 
 //#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 static int ssdk_dev_event(struct notifier_block *this, unsigned long event, void *ptr)
@@ -3119,12 +3129,14 @@ static int ssdk_dev_event(struct notifier_block *this, unsigned long event, void
 #ifdef IN_RFS
 #if defined(CONFIG_RFS_ACCEL)
 		case NETDEV_UP:
+			#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,4,0))
 			if (strstr(dev->name, "eth")) {
 				if (dev->netdev_ops && dev->netdev_ops->ndo_register_rfs_filter) {
 					dev->netdev_ops->ndo_register_rfs_filter(dev,
 						ssdk_netdev_rfs_cb);
 				}
 			}
+			#endif
 			break;
 #endif
 #endif
@@ -3144,7 +3156,9 @@ static int __init regi_init(void)
 	ssdk_init_cfg cfg;
 	int rv = 0;
 	garuda_init_spec_cfg chip_spec_cfg;
+	#ifdef DESS
 	a_uint32_t psgmii_result = 0;
+	#endif
 	ssdk_dt_global.switch_reg_access_mode = HSL_REG_MDIO;
 	ssdk_dt_global.psgmii_reg_access_mode = HSL_REG_MDIO;
 
@@ -3269,6 +3283,5 @@ module_init(regi_init);
 module_exit(regi_exit);
 
 MODULE_DESCRIPTION("QCA SSDK Driver");
-MODULE_AUTHOR("Qualcomm Atheros Inc");
 MODULE_LICENSE("Dual BSD/GPL");
 

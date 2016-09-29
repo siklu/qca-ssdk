@@ -623,8 +623,10 @@ dess_reg_access_init(a_uint32_t dev_id, hsl_access_mode mode)
     p_api->reg_set = dess_reg_set;
     p_api->reg_field_get = dess_reg_field_get;
     p_api->reg_field_set = dess_reg_field_set;
+   #ifdef IN_INTERFACECONTROL
     p_api->psgmii_reg_get = dess_psgmii_reg_get;
     p_api->psgmii_reg_set = dess_psgmii_reg_set;
+   #endif
 	p_api->register_dump = dess_regsiter_dump;
 	p_api->debug_register_dump = dess_debug_regsiter_dump;
 	p_api->debug_psgmii_self_test = dess_debug_psgmii_self_test;

@@ -90,6 +90,7 @@ _isisc_port_misc_property_set(a_uint32_t dev_id, fal_port_t port_id,
     return rv;
 }
 
+#ifndef IN_MISC_MINI
 static sw_error_t
 _isisc_port_misc_property_get(a_uint32_t dev_id, fal_port_t port_id,
                              a_bool_t * enable, a_uint32_t item)
@@ -132,6 +133,7 @@ _isisc_port_misc_property_get(a_uint32_t dev_id, fal_port_t port_id,
 
     return SW_OK;
 }
+#endif
 
 static sw_error_t
 _isisc_frame_max_size_set(a_uint32_t dev_id, a_uint32_t size)
