@@ -137,6 +137,7 @@
 #include "adpt.h"
 #include "fal_qm.h"
 #include "fal_qos.h"
+#include "fal_bm.h"
 
 #define ISIS_CHIP_ID 0x18
 #define ISIS_CHIP_REG 0
@@ -3451,6 +3452,181 @@ qca_hppe_xgmac_hw_init()
 }
 
 static int
+qca_hppe_bm_hw_init()
+{
+	a_uint32_t i = 0;
+	fal_bm_dynamic_cfg_t cfg;
+
+	for (i = 0; i <  15; i++) {
+		/* enable fc */
+		fal_port_bm_ctrl_set(0, i, 1);
+		/* map to group 0 */
+		fal_port_bufgroup_map_set(0, i, 0);
+	}
+
+	fal_bm_bufgroup_buffer_set(0, 0, 1600);
+
+	/* set reserved buffer */
+	fal_bm_port_reserved_buffer_set(0, 0, 0, 52);
+	for (i = 1; i < 8; i++)
+		fal_bm_port_reserved_buffer_set(0, i, 0, 18);
+	for (i = 8; i < 14; i++)
+		fal_bm_port_reserved_buffer_set(0, i, 0, 163);
+	fal_bm_port_reserved_buffer_set(0, 14, 0, 40);
+
+	memset(&cfg, 0, sizeof(cfg));
+	cfg.resume_min_thresh = 0;
+	cfg.resume_off = 36;
+	cfg.weight= 4;
+	cfg.shared_ceiling = 250;
+	for (i = 0; i < 15; i++)
+		fal_bm_port_dynamic_thresh_set(0, i, &cfg);
+	return 0;
+}
+
+static int
+qca_hppe_qm_hw_init()
+{
+	a_uint32_t i, queue_base = 200, port;
+	fal_ucast_queue_dest_t queue_dst;
+	fal_ac_obj_t obj;
+	fal_ac_ctrl_t ac_ctrl;
+	fal_ac_group_buffer_t group_buff;
+	fal_ac_dynamic_threshold_t  dthresh_cfg;
+	fal_ac_static_threshold_t sthresh_cfg;
+
+	memset(&queue_dst, 0, sizeof(queue_dst));
+	fal_ucast_queue_base_profile_set(0, &queue_dst, 0, 0);
+	/*
+	 * Redirect service code 2 to queue 1
+	 * TODO: keep sync with  NSS
+	 */
+	queue_dst.service_code_en = A_TRUE;
+	queue_dst.service_code = 2;
+	fal_ucast_queue_base_profile_set(0, &queue_dst, 1, 0);
+
+	queue_dst.service_code_en = A_FALSE;
+	queue_dst.service_code = 0;
+	for(i = 1; i < 8; i++) {
+		queue_dst.dst_port = i;
+		fal_ucast_queue_base_profile_set(0, &queue_dst,
+						queue_base + (i-1) * 8, 0);
+	}
+
+	/* queue ac*/
+	ac_ctrl.ac_en = 1;
+	ac_ctrl.ac_fc_en = 1;
+	for (i = 0; i < 300; i++) {
+		obj.type = FAL_AC_QUEUE;
+		obj.obj_id = i;
+		fal_ac_ctrl_set(0, &obj, &ac_ctrl);
+		fal_ac_queue_group_set(0, i, 0);
+		fal_ac_prealloc_buffer_set(0, &obj, 0);
+	}
+
+	group_buff.prealloc_buffer = 0;
+	group_buff.total_buffer = 2000;
+	fal_ac_group_buffer_set(0, 0, &group_buff);
+
+	memset(&dthresh_cfg, 0, sizeof(dthresh_cfg));
+	dthresh_cfg.shared_weight = 4;
+	dthresh_cfg.ceiling = 250;
+	dthresh_cfg.green_resume_off = 36;
+	for (i = 0; i < 256; i++)
+		fal_ac_dynamic_threshold_set(0, i, &dthresh_cfg);
+
+	memset(&sthresh_cfg, 0, sizeof(sthresh_cfg));
+	sthresh_cfg.green_max = 250;
+	sthresh_cfg.green_resume_off = 36;
+	for (i = 256; i < 300; i++) {
+		obj.type = FAL_AC_QUEUE;
+		obj.obj_id = i;
+		fal_ac_static_threshold_set(0, &obj, &sthresh_cfg);
+	}
+
+	return 0;
+}
+
+static int
+qca_hppe_qos_scheduler_hw_init()
+{
+	a_uint32_t i = 0, j = 0;
+	fal_qos_scheduler_cfg_t cfg;
+	fal_qos_cosmap_t map;
+	fal_queue_bmp_t queue_bmp;
+	fal_qos_pri_precedence_t qos_pri;
+
+	memset(&cfg, 0, sizeof(cfg));
+
+	/* L1 shceduler */
+	for (i = 0; i < 8; i++) {
+		cfg.sp_id = i;
+		cfg.c_pri = 0;
+		cfg.e_pri = 0;
+		cfg.c_drr_id = i;
+		cfg.e_drr_id = i;
+		cfg.c_drr_wt = 1;
+		cfg.e_drr_wt = 1;
+		fal_queue_scheduler_set(0, i, 1, i, &cfg);
+	}
+
+	/* L0 shceduler */
+	/* cpu port unicast queue: 0 ~ 199 */
+	cfg.sp_id = 0;
+	cfg.c_drr_wt = 2;
+	cfg.e_drr_wt = 2;
+	for (i = 0; i < 200; i++) {
+		cfg.c_pri = i % 8;
+		cfg.e_pri = i % 8;
+		cfg.c_drr_id = i % 8;
+		cfg.e_drr_id = i % 8;
+		fal_queue_scheduler_set(0, i, 0, 0, &cfg);
+	}
+	/* cpu port multicast queue: 256 ~ 271 */
+	cfg.c_drr_wt = 1;
+	cfg.e_drr_wt = 1;
+	for (i = 256; i < 272; i++) {
+		cfg.c_pri = i % 8;
+		cfg.e_pri = i % 8;
+		cfg.c_drr_id = i % 8;
+		cfg.e_drr_id = i % 8;
+		fal_queue_scheduler_set(0, i, 0, 0, &cfg);
+	}
+	/* port 1~7 unicast queue: 200 ~ 255  */
+	/* port 1~7 multicast queue: 272 ~ 299  */
+	for (j = 1; j < 8; j++) {
+		cfg.sp_id = j;
+		cfg.c_drr_wt = 2;
+		cfg.e_drr_wt = 2;
+		for (i = 0; i < 8; i++) {
+			cfg.c_pri = i;
+			cfg.e_pri = i;
+			cfg.c_drr_id = i + 8 * j;
+			cfg.e_drr_id = i + 8 * j;
+			fal_queue_scheduler_set(0, 200 + i + (j-1)*8, 0, j, &cfg);
+		}
+
+		cfg.c_drr_wt = 1;
+		cfg.e_drr_wt = 1;
+		for (i = 0; i < 4; i++) {
+			cfg.c_pri = i;
+			cfg.e_pri = i;
+			cfg.c_drr_id = i + 8 * j;
+			cfg.e_drr_id = i + 8 * j;
+			fal_queue_scheduler_set(0,272 + i + (j-1)*4, 0, j, &cfg);
+		}
+	}
+
+	/* queue--edma ring mapping*/
+	memset(&queue_bmp, 0, sizeof(queue_bmp));
+	queue_bmp.bmp[0] = 1;
+	fal_edma_ring_queue_map_set(0, 0, &queue_bmp);
+	queue_bmp.bmp[0] = 2;
+	fal_edma_ring_queue_map_set(0, 1, &queue_bmp);
+	return 0;
+}
+
+static int
 qca_hppe_hw_init(ssdk_init_cfg *cfg)
 {
 	a_uint32_t i = 0, val, index, queue_base;
@@ -3485,78 +3661,9 @@ qca_hppe_hw_init(ssdk_init_cfg *cfg)
 	val = 0;
 	qca_switch_reg_write(0, 0x000008, (a_uint8_t *)&val, 4);
 
-	hppe_ucast_queue_map_tbl_queue_id_set(0, 0, 0);
-	index = 4;
-	queue_base = 0x80;
-	for(i = 1; i < 8; i++) {
-		hppe_ucast_queue_map_tbl_queue_id_set(0, i,
-						queue_base + (i-1) * 0x10);
-	}
-	reg_val.bf.class = 0;
-	hppe_ucast_priority_map_tbl_set(0, 0, &reg_val);
-
-	hppe_l0_flow_port_map_tbl_port_num_set(0, 0, 0);
-	l0_flow_map.bf.c_drr_wt = 1;
-	l0_flow_map.bf.e_drr_wt = 1;
-	l0_flow_map.bf.c_pri = 0;
-	l0_flow_map.bf.e_pri = 0;
-	l0_flow_map.bf.sp_id = 0;
-	hppe_l0_flow_map_tbl_set(0, 0, &l0_flow_map);
-
-	hppe_l1_flow_port_map_tbl_port_num_set(0, 0, 0);
-	l1_flow_map.bf.c_drr_wt = 1;
-	l1_flow_map.bf.e_drr_wt = 1;
-	l1_flow_map.bf.c_pri = 0;
-	l1_flow_map.bf.e_pri = 0;
-	l1_flow_map.bf.sp_id = 0;
-	hppe_l1_flow_map_tbl_set(0, 0, &l1_flow_map);
-
-	hppe_l0_c_sp_cfg_tbl_drr_id_set(0, 0, 0);
-	hppe_l0_e_sp_cfg_tbl_drr_id_set(0, 0, 1);
-	hppe_l1_c_sp_cfg_tbl_drr_id_set(0, 0, 0);
-	hppe_l1_e_sp_cfg_tbl_drr_id_set(0, 0, 1);
-
-	for(i = 1; i < 8; i++) {
-		hppe_l0_flow_port_map_tbl_port_num_set(0, queue_base + (i-1) * 0x10, i);
-		l0_flow_map.bf.c_drr_wt = 1;
-		l0_flow_map.bf.e_drr_wt = 1;
-		l0_flow_map.bf.sp_id = i;
-		l0_flow_map.bf.c_pri = 0;
-		l0_flow_map.bf.e_pri = 0;
-		hppe_l0_flow_map_tbl_set(0, queue_base + (i-1) * 0x10, &l0_flow_map);
-
-		hppe_l1_flow_port_map_tbl_port_num_set(0, i, i);
-		l1_flow_map.bf.c_drr_wt = 1;
-		l1_flow_map.bf.e_drr_wt = 1;
-		l1_flow_map.bf.sp_id = i;
-		l1_flow_map.bf.c_pri = 0;
-		l1_flow_map.bf.e_pri = 0;
-		hppe_l1_flow_map_tbl_set(0, i, &l1_flow_map);
-
-		hppe_l0_c_sp_cfg_tbl_drr_id_set(0, i*8, 0+i*2);
-		hppe_l0_e_sp_cfg_tbl_drr_id_set(0, i*8, 1+i*2);
-		hppe_l1_c_sp_cfg_tbl_drr_id_set(0, i*8, 0+i*2);
-		hppe_l1_e_sp_cfg_tbl_drr_id_set(0, i*8, 1+i*2);
-	}
-
-	hppe_l0_flow_port_map_tbl_port_num_set(0, 256, 0);
-	l0_flow_map.bf.c_drr_wt = 1;
-	l0_flow_map.bf.e_drr_wt = 1;
-	l0_flow_map.bf.sp_id = 0;
-	l0_flow_map.bf.c_pri = 0;
-	l0_flow_map.bf.e_pri = 0;
-	hppe_l0_flow_map_tbl_set(0, 256, &l0_flow_map);
-
-	for(i = 1; i < 8; i++) {
-		hppe_l0_flow_port_map_tbl_port_num_set(0, 272+(i-1)*4, i);
-		l0_flow_map.bf.c_drr_wt = 1;
-		l0_flow_map.bf.e_drr_wt = 1;
-		l0_flow_map.bf.sp_id = i;
-		l0_flow_map.bf.c_pri = 0;
-		l0_flow_map.bf.e_pri = 0;
-		hppe_l0_flow_map_tbl_set(0, 272+(i-1)*4, &l0_flow_map);
-	}
-
+	qca_hppe_bm_hw_init();
+	qca_hppe_qm_hw_init();
+	qca_hppe_qos_scheduler_hw_init();
 	qca_hppe_tdm_hw_init();
 
 	qca_hppe_fdb_hw_init();

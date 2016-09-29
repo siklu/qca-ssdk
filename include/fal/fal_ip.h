@@ -90,6 +90,7 @@ extern "C" {
         a_bool_t pppoe_en;
         a_uint32_t pppoe_id;
         fal_fwd_cmd_t action;
+        a_uint32_t dst_info; /*bit 12:13: 1.nexthop, 2.port id, 3.port bitmap*/
         a_uint8_t syn_toggle;
         a_uint8_t lan_wan;
         fal_host_mcast_t mcast_info;
@@ -250,7 +251,7 @@ typedef enum
 		a_bool_t valid;
 		a_uint8_t type;
 		fal_fwd_cmd_t fwd_cmd;
-		fal_port_t port;
+		a_uint32_t dst_info; /*bit 12:13: 1.nexthop, 2.port id, 3.port bitmap*/
 		a_uint8_t lan_wan;
 		union {
 			fal_ip4_addr_t ip4_addr;

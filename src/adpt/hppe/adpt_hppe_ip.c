@@ -90,7 +90,7 @@ adpt_hppe_ip_network_route_get(a_uint32_t dev_id,
 	entry->valid = network_route_ip_ext.bf.valid;
 	entry->fwd_cmd = (fal_fwd_cmd_t)network_route_action.bf.fwd_cmd;
 	entry->lan_wan = network_route_action.bf.lan_wan;
-	entry->port = network_route_action.bf.dst_info;
+	entry->dst_info = network_route_action.bf.dst_info;
 	entry->type = network_route_ip_ext.bf.entry_type;
 	if (type == 0) {
 		entry->route_addr.ip4_addr = network_route_ip.bf.ip_addr;
@@ -121,7 +121,7 @@ adpt_hppe_ip_host_add(a_uint32_t dev_id, fal_host_entry_t * host_entry)
 		entry.bf.key_type = 0;
 		entry.bf.fwd_cmd = host_entry->action;
 		entry.bf.syn_toggle = host_entry->syn_toggle;
-		entry.bf.dst_info = host_entry->port_id;
+		entry.bf.dst_info = host_entry->dst_info;
 		entry.bf.lan_wan = host_entry->lan_wan;
 		entry.bf.ip_addr = host_entry->ip4_addr;
 		rv = hppe_host_ipv4_add(dev_id, (a_uint32_t)mode, &host_entry->entry_id, &entry);
@@ -131,7 +131,7 @@ adpt_hppe_ip_host_add(a_uint32_t dev_id, fal_host_entry_t * host_entry)
 		entry.bf.key_type = 2;
 		entry.bf.fwd_cmd = host_entry->action;
 		entry.bf.syn_toggle = host_entry->syn_toggle;
-		entry.bf.dst_info = host_entry->port_id;
+		entry.bf.dst_info = host_entry->dst_info;
 		entry.bf.lan_wan = host_entry->lan_wan;
 		entry.bf.ipv6_addr_0 = host_entry->ip6_addr.ul[3];
 		entry.bf.ipv6_addr_1 = host_entry->ip6_addr.ul[3] >> 10 | \
@@ -148,7 +148,7 @@ adpt_hppe_ip_host_add(a_uint32_t dev_id, fal_host_entry_t * host_entry)
 		entry.bf.key_type = 1;
 		entry.bf.fwd_cmd = host_entry->action;
 		entry.bf.syn_toggle = host_entry->syn_toggle;
-		entry.bf.dst_info = host_entry->port_id;
+		entry.bf.dst_info = host_entry->dst_info;
 		entry.bf.lan_wan = host_entry->lan_wan;
 		entry.bf.gip_addr_0 = host_entry->ip4_addr;
 		entry.bf.gip_addr_1 = host_entry->ip4_addr >> 11;
@@ -162,7 +162,7 @@ adpt_hppe_ip_host_add(a_uint32_t dev_id, fal_host_entry_t * host_entry)
 		entry.bf.key_type = 3;
 		entry.bf.fwd_cmd = host_entry->action;
 		entry.bf.syn_toggle = host_entry->syn_toggle;
-		entry.bf.dst_info = host_entry->port_id;
+		entry.bf.dst_info = host_entry->dst_info;
 		entry.bf.lan_wan = host_entry->lan_wan;
 		entry.bf.gipv6_addr_0 = host_entry->ip6_addr.ul[3];
 		entry.bf.gipv6_addr_1 = host_entry->ip6_addr.ul[3] >> 20 | \
@@ -469,7 +469,7 @@ adpt_hppe_ip_network_route_set(a_uint32_t dev_id,
 		network_route_ip.bf.ip_addr_mask = entry->route_addr_mask.ip4_addr_mask;
 		network_route_ip_ext.bf.valid = entry->valid;
 		network_route_ip_ext.bf.entry_type = entry->type;
-		network_route_action.bf.dst_info = entry->port;
+		network_route_action.bf.dst_info = entry->dst_info;
 		network_route_action.bf.fwd_cmd = entry->fwd_cmd;
 		network_route_action.bf.lan_wan = entry->lan_wan;
 		hppe_network_route_ip_set(dev_id, index, &network_route_ip);
@@ -478,7 +478,7 @@ adpt_hppe_ip_network_route_set(a_uint32_t dev_id,
 	} else {
 		network_route_ip_ext.bf.valid = entry->valid;
 		network_route_ip_ext.bf.entry_type = entry->type;
-		network_route_action.bf.dst_info = entry->port;
+		network_route_action.bf.dst_info = entry->dst_info;
 		network_route_action.bf.fwd_cmd = entry->fwd_cmd;
 		network_route_action.bf.lan_wan = entry->lan_wan;
 		hppe_network_route_ip_ext_set(dev_id, index * 4, &network_route_ip_ext);
@@ -647,7 +647,7 @@ adpt_hppe_ip_host_del(a_uint32_t dev_id, a_uint32_t del_mode,
 		entry.bf.key_type = 0;
 		entry.bf.fwd_cmd = host_entry->action;
 		entry.bf.syn_toggle = host_entry->syn_toggle;
-		entry.bf.dst_info = host_entry->port_id;
+		entry.bf.dst_info = host_entry->dst_info;
 		entry.bf.lan_wan = host_entry->lan_wan;
 		entry.bf.ip_addr = host_entry->ip4_addr;
 		rv = hppe_host_ipv4_del(dev_id, (a_uint32_t)mode, &host_entry->entry_id, &entry);
@@ -657,7 +657,7 @@ adpt_hppe_ip_host_del(a_uint32_t dev_id, a_uint32_t del_mode,
 		entry.bf.key_type = 2;
 		entry.bf.fwd_cmd = host_entry->action;
 		entry.bf.syn_toggle = host_entry->syn_toggle;
-		entry.bf.dst_info = host_entry->port_id;
+		entry.bf.dst_info = host_entry->dst_info;
 		entry.bf.lan_wan = host_entry->lan_wan;
 		entry.bf.ipv6_addr_0 = host_entry->ip6_addr.ul[3];
 		entry.bf.ipv6_addr_1 = host_entry->ip6_addr.ul[3] >> 10 | \
@@ -674,7 +674,7 @@ adpt_hppe_ip_host_del(a_uint32_t dev_id, a_uint32_t del_mode,
 		entry.bf.key_type = 1;
 		entry.bf.fwd_cmd = host_entry->action;
 		entry.bf.syn_toggle = host_entry->syn_toggle;
-		entry.bf.dst_info = host_entry->port_id;
+		entry.bf.dst_info = host_entry->dst_info;
 		entry.bf.lan_wan = host_entry->lan_wan;
 		entry.bf.gip_addr_0 = host_entry->ip4_addr;
 		entry.bf.gip_addr_1 = host_entry->ip4_addr >> 11;
@@ -688,7 +688,7 @@ adpt_hppe_ip_host_del(a_uint32_t dev_id, a_uint32_t del_mode,
 		entry.bf.key_type = 3;
 		entry.bf.fwd_cmd = host_entry->action;
 		entry.bf.syn_toggle = host_entry->syn_toggle;
-		entry.bf.dst_info = host_entry->port_id;
+		entry.bf.dst_info = host_entry->dst_info;
 		entry.bf.lan_wan = host_entry->lan_wan;
 		entry.bf.gipv6_addr_0 = host_entry->ip6_addr.ul[3];
 		entry.bf.gipv6_addr_1 = host_entry->ip6_addr.ul[3] >> 20 | \
@@ -897,7 +897,7 @@ adpt_hppe_ip_host_get(a_uint32_t dev_id, a_uint32_t get_mode,
 			rv = SW_FAIL;
 		host_entry->ip4_addr = entry.bf.ip_addr;
 		host_entry->lan_wan = entry.bf.lan_wan;
-		host_entry->port_id = entry.bf.dst_info;
+		host_entry->dst_info = entry.bf.dst_info;
 		host_entry->syn_toggle = entry.bf.syn_toggle;
 		host_entry->action = entry.bf.fwd_cmd;
 		host_entry->status = entry.bf.valid;
@@ -920,7 +920,7 @@ adpt_hppe_ip_host_get(a_uint32_t dev_id, a_uint32_t get_mode,
 		host_entry->ip6_addr.ul[1] = entry.bf.ipv6_addr_2 >> 22 | entry.bf.ipv6_addr_3 << 10;
 		host_entry->ip6_addr.ul[0] = entry.bf.ipv6_addr_3 >> 22 | entry.bf.ipv6_addr_4 << 10;
 		host_entry->lan_wan = entry.bf.lan_wan;
-		host_entry->port_id = entry.bf.dst_info;
+		host_entry->dst_info = entry.bf.dst_info;
 		host_entry->syn_toggle = entry.bf.syn_toggle;
 		host_entry->action = entry.bf.fwd_cmd;
 		host_entry->status = entry.bf.valid;
@@ -936,7 +936,7 @@ adpt_hppe_ip_host_get(a_uint32_t dev_id, a_uint32_t get_mode,
 		if (!rv && (entry.bf.key_type != 1))
 			rv = SW_FAIL;
 		host_entry->lan_wan = entry.bf.lan_wan;
-		host_entry->port_id = entry.bf.dst_info;
+		host_entry->dst_info = entry.bf.dst_info;
 		host_entry->syn_toggle = entry.bf.syn_toggle;
 		host_entry->action = entry.bf.fwd_cmd;
 		host_entry->status = entry.bf.valid;
@@ -967,7 +967,7 @@ adpt_hppe_ip_host_get(a_uint32_t dev_id, a_uint32_t get_mode,
 		if (!rv && (entry.bf.key_type != 3))
 			rv = SW_FAIL;
 		host_entry->lan_wan = entry.bf.lan_wan;
-		host_entry->port_id = entry.bf.dst_info;
+		host_entry->dst_info = entry.bf.dst_info;
 		host_entry->syn_toggle = entry.bf.syn_toggle;
 		host_entry->action = entry.bf.fwd_cmd;
 		host_entry->status = entry.bf.valid;

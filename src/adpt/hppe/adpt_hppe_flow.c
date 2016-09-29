@@ -878,8 +878,12 @@ adpt_hppe_flow_entry_get(
 			flow_entry->route_nexthop = entry.bf2.next_hop3;
 			flow_entry->port_valid = entry.bf2.port_vp_valid1;
 			flow_entry->route_port = entry.bf2.port_vp1;
+			if (entry.bf2.port_vp1 >= 64)
+				flow_entry->route_port |= 0x1000000;
 		} else if (flow_entry->fwd_type == FAL_FLOW_BRIDGE) {
 			flow_entry->bridge_port = entry.bf1.port_vp2;
+			if (entry.bf1.port_vp2 >= 64)
+				flow_entry->bridge_port |= 0x1000000;
 		}
 		flow_entry->de_acce = entry.bf0.de_acce;
 		flow_entry->copy_tocpu = entry.bf0.copy_to_cpu_en;
@@ -928,8 +932,12 @@ adpt_hppe_flow_entry_get(
 			flow_entry->route_nexthop = entry.bf2.next_hop3;
 			flow_entry->port_valid = entry.bf2.port_vp_valid1;
 			flow_entry->route_port = entry.bf2.port_vp1;
+			if (entry.bf2.port_vp1 >= 64)
+				flow_entry->route_port |= 0x1000000;
 		} else if (flow_entry->fwd_type == FAL_FLOW_BRIDGE) {
 			flow_entry->bridge_port = entry.bf1.port_vp2;
+			if (entry.bf1.port_vp2 >= 64)
+				flow_entry->bridge_port |= 0x1000000;
 		}
 		flow_entry->de_acce = entry.bf0.de_acce;
 		flow_entry->copy_tocpu = entry.bf0.copy_to_cpu_en;
@@ -976,8 +984,12 @@ adpt_hppe_flow_entry_get(
 			flow_entry->route_nexthop = entry.bf2.next_hop3;
 			flow_entry->port_valid = entry.bf2.port_vp_valid1;
 			flow_entry->route_port = entry.bf2.port_vp1;
+			if (entry.bf2.port_vp1 >= 64)
+				flow_entry->route_port |= 0x1000000;
 		} else if (flow_entry->fwd_type == FAL_FLOW_BRIDGE) {
 			flow_entry->bridge_port = entry.bf1.port_vp2;
+			if (entry.bf1.port_vp2 >= 64)
+				flow_entry->bridge_port |= 0x1000000;
 		}
 		flow_entry->de_acce = entry.bf0.de_acce;
 		flow_entry->copy_tocpu = entry.bf0.copy_to_cpu_en;
@@ -1021,8 +1033,12 @@ adpt_hppe_flow_entry_get(
 			flow_entry->route_nexthop = entry.bf2.next_hop3;
 			flow_entry->port_valid = entry.bf2.port_vp_valid1;
 			flow_entry->route_port = entry.bf2.port_vp1;
+			if (entry.bf2.port_vp1 >= 64)
+				flow_entry->route_port |= 0x1000000;
 		} else if (flow_entry->fwd_type == FAL_FLOW_BRIDGE) {
 			flow_entry->bridge_port = entry.bf0.port_vp2;
+			if (entry.bf0.port_vp2 >= 64)
+				flow_entry->bridge_port |= 0x1000000;
 		}
 		flow_entry->de_acce = entry.bf0.de_acce;
 		flow_entry->copy_tocpu = entry.bf0.copy_to_cpu_en;
@@ -1090,9 +1106,9 @@ adpt_hppe_flow_entry_del(
 		} else if (flow_entry->fwd_type == FAL_FLOW_ROUTE) {
 			entry.bf2.next_hop3 = flow_entry->route_nexthop;
 			entry.bf2.port_vp_valid1= flow_entry->port_valid;
-			entry.bf2.port_vp1 = flow_entry->route_port;
+			entry.bf2.port_vp1 = flow_entry->route_port & 0xffffff;
 		} else if (flow_entry->fwd_type == FAL_FLOW_BRIDGE) {
-			entry.bf1.port_vp2 = flow_entry->bridge_port;
+			entry.bf1.port_vp2 = flow_entry->bridge_port & 0xffffff;
 		}
 		entry.bf0.de_acce = flow_entry->de_acce;
 		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu;
@@ -1124,9 +1140,9 @@ adpt_hppe_flow_entry_del(
 		} else if (flow_entry->fwd_type == FAL_FLOW_ROUTE) {
 			entry.bf2.next_hop3 = flow_entry->route_nexthop;
 			entry.bf2.port_vp_valid1= flow_entry->port_valid;
-			entry.bf2.port_vp1 = flow_entry->route_port;
+			entry.bf2.port_vp1 = flow_entry->route_port & 0xffffff;
 		} else if (flow_entry->fwd_type == FAL_FLOW_BRIDGE) {
-			entry.bf1.port_vp2 = flow_entry->bridge_port;
+			entry.bf1.port_vp2 = flow_entry->bridge_port & 0xffffff;
 		}
 		entry.bf0.de_acce = flow_entry->de_acce;
 		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu;
@@ -1164,9 +1180,9 @@ adpt_hppe_flow_entry_del(
 		} else if (flow_entry->fwd_type == FAL_FLOW_ROUTE) {
 			entry.bf2.next_hop3 = flow_entry->route_nexthop;
 			entry.bf2.port_vp_valid1= flow_entry->port_valid;
-			entry.bf2.port_vp1 = flow_entry->route_port;
+			entry.bf2.port_vp1 = flow_entry->route_port & 0xffffff;
 		} else if (flow_entry->fwd_type == FAL_FLOW_BRIDGE) {
-			entry.bf1.port_vp2 = flow_entry->bridge_port;
+			entry.bf1.port_vp2 = flow_entry->bridge_port & 0xffffff;
 		}
 		entry.bf0.de_acce = flow_entry->de_acce;
 		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu;
@@ -1196,9 +1212,9 @@ adpt_hppe_flow_entry_del(
 		} else if (flow_entry->fwd_type == FAL_FLOW_ROUTE) {
 			entry.bf2.next_hop3 = flow_entry->route_nexthop;
 			entry.bf2.port_vp_valid1= flow_entry->port_valid;
-			entry.bf2.port_vp1 = flow_entry->route_port;
+			entry.bf2.port_vp1 = flow_entry->route_port & 0xffffff;
 		} else if (flow_entry->fwd_type == FAL_FLOW_BRIDGE) {
-			entry.bf0.port_vp2 = flow_entry->bridge_port;
+			entry.bf0.port_vp2 = flow_entry->bridge_port & 0xffffff;
 		}
 		entry.bf0.de_acce = flow_entry->de_acce;
 		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu;
@@ -1436,9 +1452,9 @@ adpt_hppe_flow_entry_add(
 		} else if (flow_entry->fwd_type == FAL_FLOW_ROUTE) {
 			entry.bf2.next_hop3 = flow_entry->route_nexthop;
 			entry.bf2.port_vp_valid1= flow_entry->port_valid;
-			entry.bf2.port_vp1 = flow_entry->route_port;
+			entry.bf2.port_vp1 = flow_entry->route_port & 0xffffff;
 		} else if (flow_entry->fwd_type == FAL_FLOW_BRIDGE) {
-			entry.bf1.port_vp2 = flow_entry->bridge_port;
+			entry.bf1.port_vp2 = flow_entry->bridge_port & 0xffffff;
 		}
 		entry.bf0.de_acce = flow_entry->de_acce;
 		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu;
@@ -1470,9 +1486,9 @@ adpt_hppe_flow_entry_add(
 		} else if (flow_entry->fwd_type == FAL_FLOW_ROUTE) {
 			entry.bf2.next_hop3 = flow_entry->route_nexthop;
 			entry.bf2.port_vp_valid1= flow_entry->port_valid;
-			entry.bf2.port_vp1 = flow_entry->route_port;
+			entry.bf2.port_vp1 = flow_entry->route_port & 0xffffff;
 		} else if (flow_entry->fwd_type == FAL_FLOW_BRIDGE) {
-			entry.bf1.port_vp2 = flow_entry->bridge_port;
+			entry.bf1.port_vp2 = flow_entry->bridge_port & 0xffffff;
 		}
 		entry.bf0.de_acce = flow_entry->de_acce;
 		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu;
@@ -1510,9 +1526,9 @@ adpt_hppe_flow_entry_add(
 		} else if (flow_entry->fwd_type == FAL_FLOW_ROUTE) {
 			entry.bf2.next_hop3 = flow_entry->route_nexthop;
 			entry.bf2.port_vp_valid1= flow_entry->port_valid;
-			entry.bf2.port_vp1 = flow_entry->route_port;
+			entry.bf2.port_vp1 = flow_entry->route_port & 0xffffff;
 		} else if (flow_entry->fwd_type == FAL_FLOW_BRIDGE) {
-			entry.bf1.port_vp2 = flow_entry->bridge_port;
+			entry.bf1.port_vp2 = flow_entry->bridge_port & 0xffffff;
 		}
 		entry.bf0.de_acce = flow_entry->de_acce;
 		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu;
@@ -1542,9 +1558,9 @@ adpt_hppe_flow_entry_add(
 		} else if (flow_entry->fwd_type == FAL_FLOW_ROUTE) {
 			entry.bf2.next_hop3 = flow_entry->route_nexthop;
 			entry.bf2.port_vp_valid1= flow_entry->port_valid;
-			entry.bf2.port_vp1 = flow_entry->route_port;
+			entry.bf2.port_vp1 = flow_entry->route_port & 0xffffff;
 		} else if (flow_entry->fwd_type == FAL_FLOW_BRIDGE) {
-			entry.bf0.port_vp2 = flow_entry->bridge_port;
+			entry.bf0.port_vp2 = flow_entry->bridge_port & 0xffffff;
 		}
 		entry.bf0.de_acce = flow_entry->de_acce;
 		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu;

@@ -3311,16 +3311,23 @@ cmd_data_check_host_entry(char *cmd_str, void * val, a_uint32_t size)
             return rv;
     }
 
-    rv = __cmd_data_check_complex("lan_wan", "0",
+    rv = __cmd_data_check_complex("dst info", "0",
                         "usage: integer\n",
-                        cmd_data_check_uint8, &(entry.lan_wan),
-                        sizeof (a_uint8_t));
+                        cmd_data_check_uint32, &(entry.dst_info),
+                        sizeof (a_uint32_t));
     if (rv)
         return rv;
 
     rv = __cmd_data_check_complex("sync_toggle", "0",
                         "usage: integer\n",
                         cmd_data_check_uint8, &(entry.syn_toggle),
+                        sizeof (a_uint8_t));
+    if (rv)
+        return rv;
+
+    rv = __cmd_data_check_complex("lan_wan", "0",
+                        "usage: integer\n",
+                        cmd_data_check_uint8, &(entry.lan_wan),
                         sizeof (a_uint8_t));
     if (rv)
         return rv;
@@ -7365,7 +7372,7 @@ cmd_data_check_network_route(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint32(cmd, &(entry.port), sizeof (fal_port_t));
+            rv = cmd_data_check_uint32(cmd, &(entry.dst_info), sizeof (a_uint32_t));
             if (SW_OK != rv)
                 dprintf("usage: dst info \n");
         }
