@@ -315,8 +315,8 @@ extern "C" {
     SW_API_DEF(SW_API_GLOBAL_QINQ_MODE_GET, fal_global_qinq_mode_get), \
     SW_API_DEF(SW_API_PORT_QINQ_MODE_SET, fal_port_qinq_mode_set), \
     SW_API_DEF(SW_API_PORT_QINQ_MODE_GET, fal_port_qinq_mode_get), \
-    SW_API_DEF(SW_API_TPID_SET, fal_tpid_set), \
-    SW_API_DEF(SW_API_TPID_GET, fal_tpid_get), \
+    SW_API_DEF(SW_API_TPID_SET, fal_ingress_tpid_set), \
+    SW_API_DEF(SW_API_TPID_GET, fal_ingress_tpid_get), \
     SW_API_DEF(SW_API_EGRESS_TPID_SET, fal_egress_tpid_set), \
     SW_API_DEF(SW_API_EGRESS_TPID_GET, fal_egress_tpid_get), \
     SW_API_DEF(SW_API_PT_INGRESS_VLAN_FILTER_SET, fal_port_ingress_vlan_filter_set), \
@@ -332,7 +332,11 @@ extern "C" {
     SW_API_DEF(SW_API_PT_VSI_EGMODE_SET, fal_port_vsi_egmode_set), \
     SW_API_DEF(SW_API_PT_VSI_EGMODE_GET, fal_port_vsi_egmode_get), \
     SW_API_DEF(SW_API_PT_VLANTAG_VSI_EGMODE_EN_SET, fal_port_vlantag_vsi_egmode_enable_set), \
-    SW_API_DEF(SW_API_PT_VLANTAG_VSI_EGMODE_EN_GET, fal_port_vlantag_vsi_egmode_enable_get),
+    SW_API_DEF(SW_API_PT_VLANTAG_VSI_EGMODE_EN_GET, fal_port_vlantag_vsi_egmode_enable_get), \
+    SW_API_DEF(SW_API_PT_VLAN_TRANS_ADV_ADD, fal_port_vlan_trans_adv_add), \
+    SW_API_DEF(SW_API_PT_VLAN_TRANS_ADV_DEL, fal_port_vlan_trans_adv_del), \
+    SW_API_DEF(SW_API_PT_VLAN_TRANS_ADV_GETFIRST, fal_port_vlan_trans_adv_getfirst), \
+    SW_API_DEF(SW_API_PT_VLAN_TRANS_ADV_GETNEXT, fal_port_vlan_trans_adv_getnext),
 
 #define PORTVLAN_API_PARAM \
     SW_API_DESC(SW_API_PT_ING_MODE_GET) \
@@ -402,7 +406,11 @@ extern "C" {
     SW_API_DESC(SW_API_PT_VSI_EGMODE_SET) \
     SW_API_DESC(SW_API_PT_VSI_EGMODE_GET) \
     SW_API_DESC(SW_API_PT_VLANTAG_VSI_EGMODE_EN_SET) \
-    SW_API_DESC(SW_API_PT_VLANTAG_VSI_EGMODE_EN_GET)
+    SW_API_DESC(SW_API_PT_VLANTAG_VSI_EGMODE_EN_GET) \
+    SW_API_DESC(SW_API_PT_VLAN_TRANS_ADV_ADD) \
+    SW_API_DESC(SW_API_PT_VLAN_TRANS_ADV_DEL) \
+    SW_API_DESC(SW_API_PT_VLAN_TRANS_ADV_GETFIRST) \
+    SW_API_DESC(SW_API_PT_VLAN_TRANS_ADV_GETNEXT)
 
 #else
 #define PORTVLAN_API \

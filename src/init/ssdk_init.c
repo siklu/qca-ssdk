@@ -3227,6 +3227,62 @@ qca_hppe_shaper_hw_init()
 	return 0;
 }
 
+static int
+qca_hppe_portvlan_hw_init()
+{
+	a_uint32_t port_id = 0, vsi_idx = 0;
+	fal_global_qinq_mode_t global_qinq_mode;
+	fal_port_qinq_role_t port_qinq_role;
+	fal_tpid_t in_eg_tpid;
+	fal_vlantag_egress_mode_t vlantag_eg_mode;
+
+	/* configure ingress/egress global QinQ mode as ctag/ctag */
+	global_qinq_mode.mask = 0x3;
+	global_qinq_mode.ingress_mode = FAL_QINQ_CTAG_MODE;
+	global_qinq_mode.egress_mode = FAL_QINQ_CTAG_MODE;
+	fal_global_qinq_mode_set(0, &global_qinq_mode);
+
+	/* configure port0 - port7 ingress/egress QinQ role as edge/edge */
+	port_qinq_role.mask = 0x3;
+	port_qinq_role.ingress_port_role = FAL_QINQ_CORE_PORT;
+	port_qinq_role.egress_port_role = FAL_QINQ_CORE_PORT;
+	fal_port_qinq_mode_set(0, 0, &port_qinq_role);
+	port_qinq_role.mask = 0x3;
+	port_qinq_role.ingress_port_role = FAL_QINQ_EDGE_PORT;
+	port_qinq_role.egress_port_role = FAL_QINQ_EDGE_PORT;
+	for (port_id = 1; port_id < 8; port_id++)
+		fal_port_qinq_mode_set(0, port_id, &port_qinq_role);
+
+	/* configure ingress and egress stpid/ctpid as 0x88a8/0x8100 */
+	in_eg_tpid.mask = 0x3;
+	in_eg_tpid.ctpid = FAL_DEF_VLAN_CTPID;
+	in_eg_tpid.stpid = FAL_DEF_VLAN_STPID;
+	fal_ingress_tpid_set(0, &in_eg_tpid);
+	fal_egress_tpid_set(0, &in_eg_tpid);
+
+	/* configure port0 - port7 ingress vlan translation mismatched command as forward*/
+	for (port_id = 0; port_id < 8; port_id++)
+		fal_port_vlan_xlt_miss_cmd_set(0, port_id, FAL_MAC_FRWRD);
+
+	/* configure port0 - port7 stag/ctag egress mode as unmodified/unmodified */
+	vlantag_eg_mode.mask = 0x3;
+	vlantag_eg_mode.stag_mode = FAL_EG_UNMODIFIED;
+	vlantag_eg_mode.ctag_mode = FAL_EG_UNMODIFIED;
+	for (port_id = 0; port_id < 8; port_id++)
+		fal_port_vlantag_egmode_set(0, port_id, &vlantag_eg_mode);
+
+	/* configure the port0 - port7 of vsi0 - vsi31 to unmodified */
+	for (vsi_idx = 0; vsi_idx < 32; vsi_idx++)
+		for (port_id = 0; port_id < 8; port_id++)
+			fal_port_vsi_egmode_set(0, vsi_idx, port_id, FAL_EG_UNMODIFIED);
+
+	/* configure port0 - port7 vsi tag mode control to enable */
+	for (port_id = 0; port_id < 8; port_id++)
+		fal_port_vlantag_vsi_egmode_enable_set(0, port_id, A_TRUE);
+
+	return 0;
+}
+
 fal_port_scheduler_cfg_t port_scheduler_tbl[] = {
 	{0xee, 6, 0},
 	{0xde, 4, 5},
@@ -3668,6 +3724,7 @@ qca_hppe_hw_init(ssdk_init_cfg *cfg)
 
 	qca_hppe_fdb_hw_init();
 	qca_hppe_vsi_hw_init();
+	qca_hppe_portvlan_hw_init();
 
 	qca_hppe_portctrl_hw_init();
 	qca_hppe_shaper_hw_init();

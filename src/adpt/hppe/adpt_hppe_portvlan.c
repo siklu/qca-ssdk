@@ -158,6 +158,316 @@ _get_port_vlan_egress_trans_by_index(a_uint32_t dev_id, a_uint32_t index, fal_vl
 	return eg_vlan_xlt_rule.bf.valid;
 }
 
+a_uint32_t
+_get_port_vlan_trans_adv_rule_by_index(a_uint32_t dev_id, a_uint32_t index, fal_port_vlan_direction_t direction,
+				fal_vlan_trans_adv_rule_t *rule, fal_vlan_trans_adv_action_t * action)
+{
+	union xlt_rule_tbl_u in_vlan_xlt_rule;
+	union xlt_action_tbl_u in_vlan_xlt_action;
+	union eg_vlan_xlt_rule_u eg_vlan_xlt_rule;
+	union eg_vlan_xlt_action_u eg_vlan_xlt_action;
+
+	if (direction == FAL_PORT_VLAN_INGRESS) {
+		/*rule part*/
+		SW_RTN_ON_ERROR(hppe_xlt_rule_tbl_get(dev_id, index, &in_vlan_xlt_rule));
+		if (!in_vlan_xlt_rule.bf.valid) {
+			memset(&in_vlan_xlt_rule, 0, sizeof(struct xlt_rule_tbl));
+		}
+
+		rule->port_bitmap = in_vlan_xlt_rule.bf.port_bitmap;
+
+		rule->s_tagged = in_vlan_xlt_rule.bf.skey_fmt;
+		rule->s_vid_enable = in_vlan_xlt_rule.bf.skey_vid_incl;
+		rule->s_vid = in_vlan_xlt_rule.bf.skey_vid;
+		rule->s_pcp_enable = in_vlan_xlt_rule.bf.skey_pcp_incl;
+		rule->s_pcp = in_vlan_xlt_rule.bf.skey_pcp;
+		rule->s_dei_enable = in_vlan_xlt_rule.bf.skey_dei_incl;
+		rule->s_dei = in_vlan_xlt_rule.bf.skey_dei;
+
+		rule->c_tagged = in_vlan_xlt_rule.bf.ckey_fmt_0 | (in_vlan_xlt_rule.bf.ckey_fmt_1 << 1);
+		rule->c_vid_enable = in_vlan_xlt_rule.bf.ckey_vid_incl;
+		rule->c_vid = in_vlan_xlt_rule.bf.ckey_vid;
+		rule->c_pcp_enable = in_vlan_xlt_rule.bf.ckey_pcp_incl;
+		rule->c_pcp = in_vlan_xlt_rule.bf.ckey_pcp;
+		rule->c_dei_enable = in_vlan_xlt_rule.bf.ckey_dei_incl;
+		rule->c_dei = in_vlan_xlt_rule.bf.ckey_dei;
+
+		rule->frmtype_enable = in_vlan_xlt_rule.bf.frm_type_incl;
+		rule->frmtype = in_vlan_xlt_rule.bf.frm_type;
+		rule->protocol_enable = in_vlan_xlt_rule.bf.prot_incl;
+		rule->protocol = ((in_vlan_xlt_rule.bf.prot_value_1 << 7) |
+				(in_vlan_xlt_rule.bf.prot_value_0));
+
+		/*action part*/
+		SW_RTN_ON_ERROR(hppe_xlt_action_tbl_get(dev_id, index, &in_vlan_xlt_action));
+		if (!in_vlan_xlt_rule.bf.valid) {
+			memset(&in_vlan_xlt_action, 0, sizeof(struct xlt_action_tbl));
+		}
+
+		action->swap_svid_cvid = in_vlan_xlt_action.bf.vid_swap_cmd;
+		action->svid_xlt_cmd = in_vlan_xlt_action.bf.xlt_svid_cmd;
+		action->svid_xlt = in_vlan_xlt_action.bf.xlt_svid;
+		action->cvid_xlt_cmd = in_vlan_xlt_action.bf.xlt_cvid_cmd;
+		action->cvid_xlt = in_vlan_xlt_action.bf.xlt_cvid;
+
+		action->swap_spcp_cpcp = in_vlan_xlt_action.bf.pcp_swap_cmd;
+		action->spcp_xlt_enable = in_vlan_xlt_action.bf.xlt_spcp_cmd;
+		action->spcp_xlt = (in_vlan_xlt_action.bf.xlt_spcp_0 | (in_vlan_xlt_action.bf.xlt_spcp_1 << 1));
+		action->cpcp_xlt_enable = in_vlan_xlt_action.bf.xlt_cpcp_cmd;
+		action->cpcp_xlt = in_vlan_xlt_action.bf.xlt_cpcp;
+
+		action->swap_sdei_cdei = in_vlan_xlt_action.bf.dei_swap_cmd;
+		action->sdei_xlt_enable = in_vlan_xlt_action.bf.xlt_sdei_cmd;
+		action->sdei_xlt = in_vlan_xlt_action.bf.xlt_sdei;
+		action->cdei_xlt_enable = in_vlan_xlt_action.bf.xlt_cdei_cmd;
+		action->cdei_xlt = in_vlan_xlt_action.bf.xlt_cdei;
+
+		action->counter_enable = in_vlan_xlt_action.bf.counter_en;
+		action->counter_id = in_vlan_xlt_action.bf.counter_id;
+		action->vsi_xlt_enable = in_vlan_xlt_action.bf.vsi_cmd;
+		action->vsi_xlt = in_vlan_xlt_action.bf.vsi;
+
+		return in_vlan_xlt_rule.bf.valid;
+	}
+	else
+	{
+		/*rule part*/
+		SW_RTN_ON_ERROR(hppe_eg_vlan_xlt_rule_get(dev_id, index, &eg_vlan_xlt_rule));
+		if (!eg_vlan_xlt_rule.bf.valid) {
+			memset(&eg_vlan_xlt_rule, 0, sizeof(struct eg_vlan_xlt_rule));
+		}
+
+		rule->port_bitmap = eg_vlan_xlt_rule.bf.port_bitmap;
+
+		rule->s_tagged = eg_vlan_xlt_rule.bf.skey_fmt;
+		rule->s_vid_enable = eg_vlan_xlt_rule.bf.skey_vid_incl;
+		rule->s_vid = eg_vlan_xlt_rule.bf.skey_vid;
+		rule->s_pcp_enable = eg_vlan_xlt_rule.bf.skey_pcp_incl;
+		rule->s_pcp = eg_vlan_xlt_rule.bf.skey_pcp;
+		rule->s_dei_enable = eg_vlan_xlt_rule.bf.skey_dei_incl;
+		rule->s_dei = eg_vlan_xlt_rule.bf.skey_dei;
+
+		rule->c_tagged = eg_vlan_xlt_rule.bf.ckey_fmt;
+		rule->c_vid_enable = eg_vlan_xlt_rule.bf.ckey_vid_incl;
+		rule->c_vid = eg_vlan_xlt_rule.bf.ckey_vid;
+		rule->c_pcp_enable = eg_vlan_xlt_rule.bf.ckey_pcp_incl;
+		rule->c_pcp = eg_vlan_xlt_rule.bf.ckey_pcp;
+		rule->c_dei_enable = eg_vlan_xlt_rule.bf.ckey_dei_incl;
+		rule->c_dei = eg_vlan_xlt_rule.bf.ckey_dei;
+
+		rule->vsi_valid = eg_vlan_xlt_rule.bf.vsi_valid;
+		rule->vsi_enable = eg_vlan_xlt_rule.bf.vsi_incl;
+		rule->vsi = eg_vlan_xlt_rule.bf.vsi;
+
+		/*action part*/
+		SW_RTN_ON_ERROR(hppe_eg_vlan_xlt_action_get(dev_id, index, &eg_vlan_xlt_action));
+		if (!eg_vlan_xlt_rule.bf.valid) {
+			memset(&eg_vlan_xlt_action, 0, sizeof(struct eg_vlan_xlt_action));
+		}
+
+		action->swap_svid_cvid = eg_vlan_xlt_action.bf.vid_swap_cmd;
+		action->svid_xlt_cmd = eg_vlan_xlt_action.bf.xlt_svid_cmd;
+		action->svid_xlt = eg_vlan_xlt_action.bf.xlt_svid;
+		action->cvid_xlt_cmd = eg_vlan_xlt_action.bf.xlt_cvid_cmd;
+		action->cvid_xlt = eg_vlan_xlt_action.bf.xlt_cvid;
+
+		action->swap_spcp_cpcp = eg_vlan_xlt_action.bf.pcp_swap_cmd;
+		action->spcp_xlt_enable = eg_vlan_xlt_action.bf.xlt_spcp_cmd;
+		action->spcp_xlt = (eg_vlan_xlt_action.bf.xlt_spcp_0 | (eg_vlan_xlt_action.bf.xlt_spcp_1 << 1));
+		action->cpcp_xlt_enable = eg_vlan_xlt_action.bf.xlt_cpcp_cmd;
+		action->cpcp_xlt = eg_vlan_xlt_action.bf.xlt_cpcp;
+
+		action->swap_sdei_cdei = eg_vlan_xlt_action.bf.dei_swap_cmd;
+		action->sdei_xlt_enable = eg_vlan_xlt_action.bf.xlt_sdei_cmd;
+		action->sdei_xlt = eg_vlan_xlt_action.bf.xlt_sdei;
+		action->cdei_xlt_enable = eg_vlan_xlt_action.bf.xlt_cdei_cmd;
+		action->cdei_xlt = eg_vlan_xlt_action.bf.xlt_cdei;
+
+		action->counter_enable = eg_vlan_xlt_action.bf.counter_en;
+		action->counter_id = eg_vlan_xlt_action.bf.counter_id;
+
+		return eg_vlan_xlt_rule.bf.valid;
+	}
+}
+
+a_uint32_t
+_check_if_rule_equal(fal_port_vlan_direction_t direction, fal_vlan_trans_adv_rule_t * rule1,
+		fal_vlan_trans_adv_rule_t * rule2)
+{
+	if (!(rule1->s_tagged == rule2->s_tagged &&
+		rule1->s_vid_enable == rule2->s_vid_enable && rule1->s_vid == rule2->s_vid &&
+		rule1->s_pcp_enable == rule2->s_pcp_enable && rule1->s_pcp == rule2->s_pcp &&
+		rule1->s_dei_enable == rule2->s_dei_enable && rule1->s_dei == rule2->s_dei &&
+		rule1->c_tagged == rule2->c_tagged &&
+		rule1->c_vid_enable == rule2->c_vid_enable && rule1->c_vid == rule2->c_vid &&
+		rule1->c_pcp_enable == rule2->c_pcp_enable && rule1->c_pcp == rule2->c_pcp &&
+		rule1->c_dei_enable == rule2->c_dei_enable && rule1->c_dei == rule2->c_dei))
+		return 1;
+
+	if (direction == FAL_PORT_VLAN_INGRESS)
+	{
+		if (!(rule1->frmtype_enable == rule2->frmtype_enable && rule1->frmtype == rule2->frmtype &&
+			rule1->protocol_enable == rule2->protocol_enable && rule1->protocol == rule2->protocol))
+			return 1;
+	}
+	else
+	{
+		if (!(rule1->vsi_valid == rule2->vsi_valid && rule1->vsi_enable == rule2->vsi_enable &&
+			rule1->vsi == rule2->vsi))
+			return 1;
+	}
+
+	return 0;
+}
+
+a_uint32_t
+_check_if_action_equal(fal_port_vlan_direction_t direction, fal_vlan_trans_adv_action_t * action1,
+		fal_vlan_trans_adv_action_t * action2)
+{
+	if (!(action1->swap_svid_cvid == action2->swap_svid_cvid &&
+		action1->svid_xlt_cmd == action2->svid_xlt_cmd && action1->svid_xlt == action2->svid_xlt &&
+		action1->cvid_xlt_cmd == action2->cvid_xlt_cmd && action1->cvid_xlt == action2->cvid_xlt &&
+		action1->swap_sdei_cdei == action2->swap_sdei_cdei &&
+		action1->sdei_xlt_enable == action2->sdei_xlt_enable && action1->sdei_xlt == action2->sdei_xlt &&
+		action1->cdei_xlt_enable == action2->cdei_xlt_enable && action1->cdei_xlt == action2->cdei_xlt &&
+		action1->swap_spcp_cpcp == action2->swap_spcp_cpcp &&
+		action1->spcp_xlt_enable == action2->spcp_xlt_enable && action1->spcp_xlt == action2->spcp_xlt &&
+		action1->cpcp_xlt_enable == action2->cpcp_xlt_enable && action1->cpcp_xlt == action2->cpcp_xlt &&
+		action1->counter_enable == action2->counter_enable && action1->counter_id == action2->counter_id))
+		return 1;
+
+	if (direction == FAL_PORT_VLAN_INGRESS)
+	{
+		if (!(action1->vsi_xlt_enable == action2->vsi_xlt_enable && action1->vsi_xlt == action2->vsi_xlt))
+			return 1;
+	}
+
+	return 0;
+}
+
+a_uint32_t
+_insert_vlan_trans_adv_rule_action(a_uint32_t dev_id, a_uint32_t index, fal_port_vlan_direction_t direction,
+		fal_vlan_trans_adv_rule_t * rule, fal_vlan_trans_adv_action_t * action)
+{
+	a_uint32_t rtn = SW_OK;
+	union xlt_rule_tbl_u in_vlan_xlt_rule;
+	union eg_vlan_xlt_rule_u eg_vlan_xlt_rule;
+	union xlt_action_tbl_u in_vlan_xlt_action;
+	union eg_vlan_xlt_action_u eg_vlan_xlt_action;
+
+	if (direction == FAL_PORT_VLAN_INGRESS)
+	{
+		in_vlan_xlt_rule.bf.valid = A_TRUE;
+		in_vlan_xlt_rule.bf.port_bitmap = rule->port_bitmap;
+
+		in_vlan_xlt_rule.bf.skey_fmt = rule->s_tagged;
+		in_vlan_xlt_rule.bf.skey_vid_incl = rule->s_vid_enable;
+		in_vlan_xlt_rule.bf.skey_vid = rule->s_vid;
+		in_vlan_xlt_rule.bf.skey_pcp_incl = rule->s_pcp_enable;
+		in_vlan_xlt_rule.bf.skey_pcp = rule->s_pcp;
+		in_vlan_xlt_rule.bf.skey_dei_incl = rule->s_dei_enable;
+		in_vlan_xlt_rule.bf.skey_dei = rule->s_dei;
+
+		in_vlan_xlt_rule.bf.ckey_fmt_0 = (rule->c_tagged & 0x1);
+		in_vlan_xlt_rule.bf.ckey_fmt_1 = (rule->c_tagged >> 1);
+		in_vlan_xlt_rule.bf.ckey_vid_incl = rule->c_vid_enable;
+		in_vlan_xlt_rule.bf.ckey_vid = rule->c_vid;
+		in_vlan_xlt_rule.bf.ckey_pcp_incl = rule->c_pcp_enable;
+		in_vlan_xlt_rule.bf.ckey_pcp = rule->c_pcp;
+		in_vlan_xlt_rule.bf.ckey_dei_incl = rule->c_dei_enable;
+		in_vlan_xlt_rule.bf.ckey_dei = rule->c_dei;
+
+		in_vlan_xlt_rule.bf.prot_incl = rule->protocol_enable;
+		in_vlan_xlt_rule.bf.prot_value_0 = (rule->protocol  & 0x7f);
+		in_vlan_xlt_rule.bf.prot_value_1 = (rule->protocol >> 7);
+		in_vlan_xlt_rule.bf.frm_type_incl = rule->frmtype_enable;
+		in_vlan_xlt_rule.bf.frm_type = rule->frmtype;
+
+		SW_RTN_ON_ERROR(hppe_xlt_rule_tbl_set(dev_id, index, &in_vlan_xlt_rule));
+
+		/*action part*/
+		in_vlan_xlt_action.bf.vid_swap_cmd = action->swap_svid_cvid;
+		in_vlan_xlt_action.bf.xlt_svid_cmd = action->svid_xlt_cmd;
+		in_vlan_xlt_action.bf.xlt_svid = action->svid_xlt;
+		in_vlan_xlt_action.bf.xlt_cvid_cmd = action->cvid_xlt_cmd;
+		in_vlan_xlt_action.bf.xlt_cvid = action->cvid_xlt;
+
+		in_vlan_xlt_action.bf.pcp_swap_cmd = action->swap_spcp_cpcp;
+		in_vlan_xlt_action.bf.xlt_spcp_cmd = action->spcp_xlt_enable;
+		in_vlan_xlt_action.bf.xlt_spcp_0 = (action->spcp_xlt & 0x1);
+		in_vlan_xlt_action.bf.xlt_spcp_1 = (action->spcp_xlt >> 1);
+		in_vlan_xlt_action.bf.xlt_cpcp_cmd = action->cpcp_xlt_enable;
+		in_vlan_xlt_action.bf.xlt_cpcp = action->cpcp_xlt;
+
+		in_vlan_xlt_action.bf.dei_swap_cmd = action->swap_sdei_cdei;
+		in_vlan_xlt_action.bf.xlt_cdei_cmd = action->cdei_xlt_enable;
+		in_vlan_xlt_action.bf.xlt_cdei = action->cdei_xlt;
+		in_vlan_xlt_action.bf.xlt_sdei_cmd = action->sdei_xlt_enable;
+		in_vlan_xlt_action.bf.xlt_sdei = action->sdei_xlt;
+
+		in_vlan_xlt_action.bf.counter_en = action->counter_enable;
+		in_vlan_xlt_action.bf.counter_id = action->counter_id;
+		in_vlan_xlt_action.bf.vsi_cmd = action->vsi_xlt_enable;
+		in_vlan_xlt_action.bf.vsi = action->vsi_xlt;
+
+		SW_RTN_ON_ERROR(hppe_xlt_action_tbl_set(dev_id, index, &in_vlan_xlt_action));
+	}
+	else
+	{
+		eg_vlan_xlt_rule.bf.valid = A_TRUE;
+		eg_vlan_xlt_rule.bf.port_bitmap = rule->port_bitmap;
+
+		eg_vlan_xlt_rule.bf.skey_fmt = rule->s_tagged;
+		eg_vlan_xlt_rule.bf.skey_vid_incl = rule->s_vid_enable;
+		eg_vlan_xlt_rule.bf.skey_vid = rule->s_vid;
+		eg_vlan_xlt_rule.bf.skey_pcp_incl = rule->s_pcp_enable;
+		eg_vlan_xlt_rule.bf.skey_pcp = rule->s_pcp;
+		eg_vlan_xlt_rule.bf.skey_dei_incl = rule->s_dei_enable;
+		eg_vlan_xlt_rule.bf.skey_dei = rule->s_dei;
+
+		eg_vlan_xlt_rule.bf.ckey_fmt = rule->c_tagged;
+		eg_vlan_xlt_rule.bf.ckey_vid_incl = rule->c_vid_enable;
+		eg_vlan_xlt_rule.bf.ckey_vid = rule->c_vid;
+		eg_vlan_xlt_rule.bf.ckey_pcp_incl = rule->c_pcp_enable;
+		eg_vlan_xlt_rule.bf.ckey_pcp = rule->c_pcp;
+		eg_vlan_xlt_rule.bf.ckey_dei_incl = rule->c_dei_enable;
+		eg_vlan_xlt_rule.bf.ckey_dei = rule->c_dei;
+
+		eg_vlan_xlt_rule.bf.vsi_valid = rule->vsi_valid;
+		eg_vlan_xlt_rule.bf.vsi_incl = rule->vsi_enable;
+		eg_vlan_xlt_rule.bf.vsi = rule->vsi;
+
+		SW_RTN_ON_ERROR(hppe_eg_vlan_xlt_rule_set(dev_id, index, &eg_vlan_xlt_rule));
+
+		/*action part*/
+		eg_vlan_xlt_action.bf.vid_swap_cmd = action->swap_svid_cvid;
+		eg_vlan_xlt_action.bf.xlt_svid_cmd = action->svid_xlt_cmd;
+		eg_vlan_xlt_action.bf.xlt_svid = action->svid_xlt;
+		eg_vlan_xlt_action.bf.xlt_cvid_cmd = action->cvid_xlt_cmd;
+		eg_vlan_xlt_action.bf.xlt_cvid = action->cvid_xlt;
+
+		eg_vlan_xlt_action.bf.pcp_swap_cmd = action->swap_spcp_cpcp;
+		eg_vlan_xlt_action.bf.xlt_spcp_cmd = action->spcp_xlt_enable;
+		eg_vlan_xlt_action.bf.xlt_spcp_0 = (action->spcp_xlt & 0x1);
+		eg_vlan_xlt_action.bf.xlt_spcp_1 = (action->spcp_xlt >> 1);
+		eg_vlan_xlt_action.bf.xlt_cpcp_cmd = action->cpcp_xlt_enable;
+		eg_vlan_xlt_action.bf.xlt_cpcp = action->cpcp_xlt;
+
+		eg_vlan_xlt_action.bf.dei_swap_cmd = action->swap_sdei_cdei;
+		eg_vlan_xlt_action.bf.xlt_sdei_cmd = action->sdei_xlt_enable;
+		eg_vlan_xlt_action.bf.xlt_sdei = action->sdei_xlt;
+		eg_vlan_xlt_action.bf.xlt_cdei_cmd = action->cdei_xlt_enable;
+		eg_vlan_xlt_action.bf.xlt_cdei = action->cdei_xlt;
+
+		eg_vlan_xlt_action.bf.counter_en = action->counter_enable;
+		eg_vlan_xlt_action.bf.counter_id = action->counter_id;
+
+		SW_RTN_ON_ERROR(hppe_eg_vlan_xlt_action_set(dev_id, index, &eg_vlan_xlt_action));
+	}
+
+	return rtn;
+}
+
 sw_error_t
 adpt_hppe_global_qinq_mode_set(a_uint32_t dev_id, fal_global_qinq_mode_t *mode)
 {
@@ -1258,6 +1568,226 @@ adpt_hppe_port_invlan_mode_get(a_uint32_t dev_id, fal_port_t port_id, fal_pt_inv
 	return rtn;
 }
 
+sw_error_t
+adpt_hppe_port_vlan_trans_adv_add(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_direction_t direction,
+				fal_vlan_trans_adv_rule_t * rule, fal_vlan_trans_adv_action_t * action)
+{
+	sw_error_t rtn = SW_OK;
+	a_uint32_t idx, entry_idx, entry_sign, rule_valid;
+	fal_vlan_trans_adv_rule_t temp_rule;
+	fal_vlan_trans_adv_action_t temp_action;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	if (direction == FAL_PORT_VLAN_ALL)
+		return SW_FAIL;
+
+	entry_sign = 0;
+	for (idx = 0; idx < XLT_RULE_TBL_NUM; idx++) {
+		aos_mem_zero(&temp_rule, sizeof (fal_vlan_trans_adv_rule_t));
+		aos_mem_zero(&temp_action, sizeof (fal_vlan_trans_adv_action_t));
+		rule_valid = _get_port_vlan_trans_adv_rule_by_index(dev_id, idx, direction, &temp_rule, &temp_action);
+		if (rule_valid == 1)
+		{ /* existing rule */
+			if (!_check_if_rule_equal(direction, &temp_rule, rule))
+			{ /* rule equal */
+				if (!_check_if_action_equal(direction, &temp_action, action))
+				{ /* action equal */
+					if (SW_IS_PBMP_MEMBER(temp_rule.port_bitmap, port_id))
+					{ /* current port_bitmap includes this port_id, nothing need to do */
+						return SW_ALREADY_EXIST;
+					}
+					else
+					{ /* current port_bitmap doesn't include this port_id, add this port_id */
+						temp_rule.port_bitmap |= (0x1 << port_id);
+						_insert_vlan_trans_adv_rule_action(dev_id, idx, direction, &temp_rule, &temp_action);
+						return SW_OK;
+					}
+				}
+				else
+				{ /* action not equal */
+					if (temp_rule.port_bitmap == (0x1 << port_id))
+					{ /* port equal, need update action */
+						_insert_vlan_trans_adv_rule_action(dev_id, idx, direction, &temp_rule, action);
+						return SW_OK;
+					}
+					else
+					{ /* port not equal, need remove port from existing rule bitmap, insert new rule and action later */
+						temp_rule.port_bitmap &= ~(0x1 << port_id);
+						_insert_vlan_trans_adv_rule_action(dev_id, idx, direction, &temp_rule, &temp_action);
+					}
+				}
+			}
+			else
+			{ /* rule not equal, nothing need to do */
+				;
+			}
+		}
+		else
+		{ /* nonexist rule */
+			if (entry_sign == 0) {
+				entry_idx = idx;
+				entry_sign = 1;
+			}
+		}
+	}
+
+	if (entry_sign == 0)
+		return SW_NO_RESOURCE;
+
+	/* insert new rule and action */
+	rule->port_bitmap |= (0x1 << port_id);
+	_insert_vlan_trans_adv_rule_action(dev_id, entry_idx, direction, rule, action);
+
+	return rtn;
+}
+
+sw_error_t
+adpt_hppe_port_vlan_trans_adv_del(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_direction_t direction,
+				fal_vlan_trans_adv_rule_t * rule, fal_vlan_trans_adv_action_t * action)
+{
+	sw_error_t rtn = SW_OK;
+	a_uint32_t idx, rule_valid;
+	fal_vlan_trans_adv_rule_t temp_rule;
+	fal_vlan_trans_adv_action_t temp_action;
+	union xlt_rule_tbl_u in_vlan_xlt_rule;
+	union eg_vlan_xlt_rule_u eg_vlan_xlt_rule;
+	union xlt_action_tbl_u in_vlan_xlt_action;
+	union eg_vlan_xlt_action_u eg_vlan_xlt_action;
+
+	memset(&in_vlan_xlt_rule, 0, sizeof(struct xlt_rule_tbl));
+	memset(&eg_vlan_xlt_rule, 0, sizeof(struct eg_vlan_xlt_rule));
+	memset(&in_vlan_xlt_action, 0, sizeof(struct xlt_action_tbl));
+	memset(&eg_vlan_xlt_action, 0, sizeof(struct eg_vlan_xlt_action));
+
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	if (direction == FAL_PORT_VLAN_ALL)
+		return SW_FAIL;
+
+	for (idx = 0; idx < XLT_RULE_TBL_NUM; idx++) {
+		aos_mem_zero(&temp_rule, sizeof (fal_vlan_trans_adv_rule_t));
+		aos_mem_zero(&temp_action, sizeof (fal_vlan_trans_adv_action_t));
+		rule_valid = _get_port_vlan_trans_adv_rule_by_index(dev_id, idx, direction, &temp_rule, &temp_action);
+		if (rule_valid == 1)
+		{ /* existing rule */
+			if (!_check_if_rule_equal(direction, &temp_rule, rule))
+			{ /* rule equal */
+				if (!_check_if_action_equal(direction, &temp_action, action))
+				{ /* action equal */
+					if (temp_rule.port_bitmap == (0x1 << port_id))
+					{ /* port equal, need delete existing rule and action */
+						if (direction == FAL_PORT_VLAN_INGRESS)
+						{
+							SW_RTN_ON_ERROR(hppe_xlt_rule_tbl_set(dev_id, idx, &in_vlan_xlt_rule));
+							SW_RTN_ON_ERROR(hppe_xlt_action_tbl_set(dev_id, idx, &in_vlan_xlt_action));
+						}
+						else
+						{
+							SW_RTN_ON_ERROR(hppe_eg_vlan_xlt_rule_set(dev_id, idx, &eg_vlan_xlt_rule));
+							SW_RTN_ON_ERROR(hppe_eg_vlan_xlt_action_set(dev_id, idx, &eg_vlan_xlt_action));
+						}
+					}
+					else if (SW_IS_PBMP_MEMBER(temp_rule.port_bitmap, port_id))
+					{ /* current port_bitmap includes this port_id, remove port from port_bitmap and update rule and action */
+						temp_rule.port_bitmap &= ~(0x1 << port_id);
+						_insert_vlan_trans_adv_rule_action(dev_id, idx, direction, &temp_rule, &temp_action);
+					}
+					else
+					{ /* current port_bitmap doesn't include port_id, return SW_NOT_FOUND */
+						return SW_NOT_FOUND;
+					}
+					break;
+				}
+			}
+		}
+	}
+
+	if (idx == XLT_RULE_TBL_NUM)
+		return SW_NOT_FOUND;
+
+	return rtn;
+}
+
+sw_error_t
+adpt_hppe_port_vlan_trans_adv_getfirst(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_direction_t direction,
+				fal_vlan_trans_adv_rule_t * rule, fal_vlan_trans_adv_action_t * action)
+{
+	sw_error_t rtn = SW_OK;
+	a_uint32_t idx, rule_valid;
+	fal_vlan_trans_adv_rule_t temp_rule;
+	fal_vlan_trans_adv_action_t temp_action;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(rule);
+	ADPT_NULL_POINT_CHECK(action);
+
+	if (direction == FAL_PORT_VLAN_ALL)
+		return SW_FAIL;
+
+	for (idx = 0; idx < XLT_RULE_TBL_NUM; idx++) {
+		aos_mem_zero(&temp_rule, sizeof (fal_vlan_trans_adv_rule_t));
+		aos_mem_zero(&temp_action, sizeof (fal_vlan_trans_adv_action_t));
+		rule_valid = _get_port_vlan_trans_adv_rule_by_index(dev_id, idx, direction, &temp_rule, &temp_action);
+		if (rule_valid == 1 && SW_IS_PBMP_MEMBER(temp_rule.port_bitmap, port_id))
+		{
+			aos_mem_copy(rule, &temp_rule, sizeof (fal_vlan_trans_adv_rule_t));
+			aos_mem_copy(action, &temp_action, sizeof (fal_vlan_trans_adv_action_t));
+			break;
+		}
+	}
+
+	if (idx == XLT_RULE_TBL_NUM)
+		return SW_NOT_FOUND;
+
+	return rtn;
+}
+
+sw_error_t
+adpt_hppe_port_vlan_trans_adv_getnext(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_direction_t direction,
+				fal_vlan_trans_adv_rule_t * rule, fal_vlan_trans_adv_action_t * action)
+{
+	sw_error_t rtn = SW_OK, sign_tag = 0;
+	a_uint32_t idx, rule_valid;
+	fal_vlan_trans_adv_rule_t temp_rule;
+	fal_vlan_trans_adv_action_t temp_action;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(rule);
+	ADPT_NULL_POINT_CHECK(action);
+
+	if (direction == FAL_PORT_VLAN_ALL)
+		return SW_FAIL;
+
+	for (idx = 0; idx < XLT_RULE_TBL_NUM; idx++) {
+		aos_mem_zero(&temp_rule, sizeof (fal_vlan_trans_adv_rule_t));
+		aos_mem_zero(&temp_action, sizeof (fal_vlan_trans_adv_action_t));
+		rule_valid = _get_port_vlan_trans_adv_rule_by_index(dev_id, idx, direction, &temp_rule, &temp_action);
+		if (rule_valid == 1)
+		{ /* existing rule */
+			if (sign_tag == 1 && SW_IS_PBMP_MEMBER(temp_rule.port_bitmap, port_id))
+			{
+				aos_mem_copy(rule, &temp_rule, sizeof (fal_vlan_trans_adv_rule_t));
+				aos_mem_copy(action, &temp_action, sizeof (fal_vlan_trans_adv_action_t));
+				break;
+			}
+			if (!_check_if_rule_equal(direction, &temp_rule, rule))
+			{ /* rule equal */
+				if (!_check_if_action_equal(direction, &temp_action, action))
+				{ /* action equal */
+					if (SW_IS_PBMP_MEMBER(temp_rule.port_bitmap, port_id))
+						sign_tag = 1;
+				}
+			}
+		}
+	}
+
+	if (idx == XLT_RULE_TBL_NUM)
+		return SW_NOT_FOUND;
+
+	return rtn;
+}
+
 sw_error_t adpt_hppe_portvlan_init(a_uint32_t dev_id)
 {
 	adpt_api_t *p_adpt_api = NULL;
@@ -1301,6 +1831,11 @@ sw_error_t adpt_hppe_portvlan_init(a_uint32_t dev_id)
 	p_adpt_api->adpt_port_qinq_role_get = adpt_hppe_port_qinq_role_get;
 	p_adpt_api->adpt_port_invlan_mode_set = adpt_hppe_port_invlan_mode_set;
 	p_adpt_api->adpt_port_invlan_mode_get = adpt_hppe_port_invlan_mode_get;
+
+	p_adpt_api->adpt_port_vlan_trans_adv_add = adpt_hppe_port_vlan_trans_adv_add;
+	p_adpt_api->adpt_port_vlan_trans_adv_del = adpt_hppe_port_vlan_trans_adv_del;
+	p_adpt_api->adpt_port_vlan_trans_adv_getfirst = adpt_hppe_port_vlan_trans_adv_getfirst;
+	p_adpt_api->adpt_port_vlan_trans_adv_getnext = adpt_hppe_port_vlan_trans_adv_getnext;
 
 	return SW_OK;
 }

@@ -36,6 +36,9 @@ extern "C" {
 #define FAL_PORTVLAN_API_UNLOCK
 #endif
 
+#define FAL_DEF_VLAN_STPID 0x88a8
+#define FAL_DEF_VLAN_CTPID 0x8100
+
     /**
     @brief This enum defines 802.1q mode type.
     */
@@ -109,11 +112,12 @@ extern "C" {
     @brief This structure defines the vlan translation entry.
 
     */
+
     typedef struct
     {
         a_uint32_t o_vid;        /* original vid */
-        a_uint32_t s_vid;        /* server vid */
-        a_uint32_t c_vid;        /* client vid */
+        a_uint32_t s_vid;        /* service vid */
+        a_uint32_t c_vid;        /* customer vid */
         a_bool_t   bi_dir;       /* lookup can be forward and reverse */
         a_bool_t   forward_dir;  /* lookup direction only can be from o_vid to s_vid and/or c_vid*/
         a_bool_t   reverse_dir;  /* lookup direction only can be from s_vid and/or c_vid to o_vid*/
@@ -141,15 +145,15 @@ extern "C" {
         a_uint8_t   c_tagged; /* ctag type is untagged/pri tagged/tagged */
 
         /*cpcp and cdei*/
-        a_bool_t   c_pcp_enable; /* check if rule will include client pcp value */
-        a_uint8_t   c_pcp; /* client pcp value */
-        a_bool_t   c_dei_enable; /* check if rule will include client dei value */
-        a_uint8_t   c_dei; /* client dei value */
+        a_bool_t   c_pcp_enable; /* check if rule will include customer pcp value */
+        a_uint8_t   c_pcp; /* customer pcp value */
+        a_bool_t   c_dei_enable; /* check if rule will include customer dei value */
+        a_uint8_t   c_dei; /* customer dei value */
         /*spcp and sdei*/
-        a_bool_t   s_pcp_enable; /* check if rule will include server pcp value */
-        a_uint8_t   s_pcp; /* server pcp value */
-        a_bool_t   s_dei_enable; /* check if rule will include server dei value */
-        a_uint8_t   s_dei; /* server dei value */
+        a_bool_t   s_pcp_enable; /* check if rule will include service pcp value */
+        a_uint8_t   s_pcp; /* service pcp value */
+        a_bool_t   s_dei_enable; /* check if rule will include service dei value */
+        a_uint8_t   s_dei; /* service dei value */
 
         /*translation action*/
         /*counter action*/
@@ -464,8 +468,8 @@ extern "C" {
     typedef struct
 	{
 		a_uint32_t mask; /*bit 0 for ctpid and bit 1 for stpid*/
-		a_uint16_t ctpid; /* client tpid value */
-		a_uint16_t stpid; /* server tpid value */
+		a_uint16_t ctpid; /* customer tpid value */
+		a_uint16_t stpid; /* service tpid value */
 	} fal_tpid_t;
 
 	typedef struct {
@@ -489,12 +493,12 @@ extern "C" {
 					 *bit 3 for stag priority;
 					 *bit 4 for ctag dei;
 					 *bit 5 for stag dei*/
-		a_uint16_t cvid; /* client vid value */
-		a_uint16_t svid; /* server vid value */
-		a_uint16_t cpri; /* client pri value */
-		a_uint16_t spri; /* server pri value */
-		a_uint16_t cdei; /* client dei value */
-		a_uint16_t sdei; /* server dei value */
+		a_uint16_t cvid; /* customer vid value */
+		a_uint16_t svid; /* service vid value */
+		a_uint16_t cpri; /* customer pri value */
+		a_uint16_t spri; /* service pri value */
+		a_uint16_t cdei; /* customer dei value */
+		a_uint16_t sdei; /* service dei value */
 	} fal_port_vlan_tag_t;
 
 	typedef struct {
@@ -524,6 +528,67 @@ extern "C" {
 		fal_pt_1q_egmode_t     ctag_mode; /* ctag mode */
 	} fal_vlantag_egress_mode_t;
 
+	typedef struct
+	{
+		a_uint32_t	port_bitmap; /* rule need know which ports matched this rule */
+
+		a_uint8_t	s_tagged; /* rule need know stag type(untagged/pri_tagged/tagged) */
+		a_bool_t	s_vid_enable; /* check if rule will include service vid value */
+		a_uint32_t	s_vid; /* service vid */
+		a_bool_t	s_pcp_enable; /* check if rule will include service pcp value */
+		a_uint8_t	s_pcp; /* service pcp value */
+		a_bool_t	s_dei_enable; /* check if rule will include service dei value */
+		a_uint8_t	s_dei; /* service dei value */
+
+		a_uint8_t	c_tagged; /* rule need know ctag type(untagged/pri_tagged/tagged) */
+		a_bool_t	c_vid_enable; /* check if rule will include customer vid value */
+		a_uint32_t	c_vid; /* customer vid */
+		a_bool_t	c_pcp_enable; /* check if rule will include customer pcp value */
+		a_uint8_t	c_pcp; /* customer pcp value */
+		a_bool_t	c_dei_enable; /* check if rule will include customer dei value */
+		a_uint8_t	c_dei; /* customert dei value */
+
+		/* these four fields just for vlan ingress rule */
+		a_bool_t	frmtype_enable; /* check if rule will include frame type value */
+		fal_frametype_t	frmtype; /* frame type value */
+		a_bool_t	protocol_enable; /* check if rule will include protocol value */
+		a_uint16_t	protocol; /* protocol value */
+
+		/* these three fields just for vlan egress rule */
+		a_bool_t	vsi_valid; /* check if rule will include vsi value valid */
+		a_bool_t	vsi_enable; /* check if rule will include vsi value */
+		a_uint32_t	vsi; /* vsi value */
+	} fal_vlan_trans_adv_rule_t;
+
+	typedef struct
+	{
+		a_bool_t	swap_svid_cvid; /* check if action will do svid and cvid swap operation */
+		fal_vid_xlt_cmd_t	svid_xlt_cmd; /* check if action will do svid xlt operation */
+		a_uint16_t	svid_xlt; /* service vid xlt value */
+		fal_vid_xlt_cmd_t	cvid_xlt_cmd; /* check if action will do cvid xlt operation */
+		a_uint16_t	cvid_xlt; /* customer vid xlt value */
+
+		a_bool_t	swap_spcp_cpcp; /* check if action will do spcp and cpcp swap operation */
+		a_bool_t	spcp_xlt_enable; /* check if action will enable spcp xlt */
+		a_uint8_t	spcp_xlt; /* service pcp xlt value */
+		a_bool_t	cpcp_xlt_enable; /* check if action will enable cpcp xlt */
+		a_uint8_t	cpcp_xlt; /* customer pcp xlt value */
+
+
+		a_bool_t	swap_sdei_cdei; /* check if action will do sdei and cdei swap operation */
+		a_bool_t	sdei_xlt_enable; /* check if action will enable sdei xlt */
+		a_uint8_t	sdei_xlt; /* service dei xlt value */
+		a_bool_t	cdei_xlt_enable; /* check if action will enable cdei xlt */
+		a_uint8_t	cdei_xlt; /* customer dei xlt value */
+
+		a_bool_t	counter_enable; /* check if action will enable counter_id */
+		a_uint8_t	counter_id;  /* counter id */
+
+		/* these two fields just for vlan ingress action */
+		a_bool_t	vsi_xlt_enable; /* check if action will enable vsi xlt */
+		a_uint8_t	vsi_xlt; /* vsi xlt value */
+	} fal_vlan_trans_adv_action_t;
+
     sw_error_t
     fal_global_qinq_mode_set(a_uint32_t dev_id, fal_global_qinq_mode_t *mode);
     sw_error_t
@@ -535,9 +600,9 @@ extern "C" {
     fal_port_qinq_mode_get(a_uint32_t dev_id, fal_port_t port_id, fal_port_qinq_role_t *mode);
 
     sw_error_t
-    fal_tpid_set(a_uint32_t dev_id, fal_tpid_t *tpid);
+    fal_ingress_tpid_set(a_uint32_t dev_id, fal_tpid_t *tpid);
     sw_error_t
-    fal_tpid_get(a_uint32_t dev_id, fal_tpid_t *tpid);
+    fal_ingress_tpid_get(a_uint32_t dev_id, fal_tpid_t *tpid);
 
     sw_error_t
     fal_egress_tpid_set(a_uint32_t dev_id, fal_tpid_t *tpid);
@@ -590,6 +655,22 @@ extern "C" {
 
     sw_error_t
     fal_port_vlantag_vsi_egmode_enable_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable);
+
+    sw_error_t
+    fal_port_vlan_trans_adv_add(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_direction_t direction,
+                            fal_vlan_trans_adv_rule_t * rule, fal_vlan_trans_adv_action_t * action);
+
+    sw_error_t
+    fal_port_vlan_trans_adv_del(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_direction_t direction,
+                            fal_vlan_trans_adv_rule_t * rule, fal_vlan_trans_adv_action_t * action);
+
+    sw_error_t
+    fal_port_vlan_trans_adv_getfirst(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_direction_t direction,
+                            fal_vlan_trans_adv_rule_t * rule, fal_vlan_trans_adv_action_t * action);
+
+    sw_error_t
+    fal_port_vlan_trans_adv_getnext(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_direction_t direction,
+                            fal_vlan_trans_adv_rule_t * rule, fal_vlan_trans_adv_action_t * action);
 
 #ifdef __cplusplus
 }
