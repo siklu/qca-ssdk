@@ -849,10 +849,10 @@ adpt_hppe_ip_nexthop_get(a_uint32_t dev_id,
 	entry->cvid = in_nexthop_tbl.bf0.cvid;
 	entry->macaddr.uc[5] = in_nexthop_tbl.bf1.mac_addr_0;
 	entry->macaddr.uc[4] = in_nexthop_tbl.bf1.mac_addr_0 >> 8;
-	entry->macaddr.uc[3] = in_nexthop_tbl.bf1.mac_addr_0 >> 16;
-	entry->macaddr.uc[2] = in_nexthop_tbl.bf1.mac_addr_0 >> 24;
-	entry->macaddr.uc[1] = in_nexthop_tbl.bf1.mac_addr_1;
-	entry->macaddr.uc[0] = in_nexthop_tbl.bf1.mac_addr_1 >> 8;
+	entry->macaddr.uc[3] = in_nexthop_tbl.bf1.mac_addr_1;
+	entry->macaddr.uc[2] = in_nexthop_tbl.bf1.mac_addr_1 >> 8;
+	entry->macaddr.uc[1] = in_nexthop_tbl.bf1.mac_addr_1 >> 16;
+	entry->macaddr.uc[0] = in_nexthop_tbl.bf1.mac_addr_1 >> 24;
 	entry->dnat_ip = in_nexthop_tbl.bf0.ip_addr_dnat;
 
 	return SW_OK;
@@ -1213,12 +1213,12 @@ adpt_hppe_ip_nexthop_set(a_uint32_t dev_id,
 	in_nexthop_tbl.bf0.svid = entry->svid;
 	in_nexthop_tbl.bf0.ctag_fmt = entry->ctag_fmt;
 	in_nexthop_tbl.bf0.cvid = entry->cvid;
-	in_nexthop_tbl.bf0.mac_addr_0 = entry->macaddr.uc[5] | \
-								entry->macaddr.uc[4] << 8| \
-								entry->macaddr.uc[3] << 16| \
-								entry->macaddr.uc[2] << 24;
-	in_nexthop_tbl.bf0.mac_addr_1 = entry->macaddr.uc[1] | \
-								entry->macaddr.uc[0] << 8;
+	in_nexthop_tbl.bf0.mac_addr_0 = entry->macaddr.uc[5] |
+					entry->macaddr.uc[4] << 8;
+	in_nexthop_tbl.bf0.mac_addr_1 = entry->macaddr.uc[3] |
+					entry->macaddr.uc[2] << 8 |
+					entry->macaddr.uc[1] << 16 |
+					entry->macaddr.uc[0] << 24;
 	in_nexthop_tbl.bf0.ip_addr_dnat = entry->dnat_ip;
 
 	return hppe_in_nexthop_tbl_set(dev_id, index, &in_nexthop_tbl);
