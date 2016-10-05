@@ -14,7 +14,7 @@
 
 
 /**
- * @defgroup dess_init DESS_INIT
+ * @defgroup dess_init HPPE_INIT
  * @{
  */
 #include "sw.h"
@@ -26,6 +26,120 @@
 
 static ssdk_init_cfg * hppe_cfg[SW_MAX_NR_DEV] = { 0 };
 
+enum hppe_port_wrapper_cfg {
+	HPPE_PORT_SGMII = 0,
+	HPPE_PORT_QSGMII_2GMAC,
+	HPPE_PORT_PSGMII,
+	HPPE_PORT_PSGMII_SGMII,
+	HPPE_PORT_QSGMII_2SGMIIPLUS,
+	HPPE_PORT_QSGMII_3GMAC_2SGMIIPLUS,
+	HPPE_PORT_XFI,
+	HPPE_PORT_2XFI,
+	HPPE_PORT_2XFI_SGMII,
+	HPPE_PORT_QSGMII_2XFI,
+	HPPE_PORT_WRAPPER_MAX
+};
+
+
+a_uint32_t hppe_pbmp[HPPE_PORT_WRAPPER_MAX] = {
+	(1<<1), /*HPPE_PORT_SGMIII*/
+	((1<<1) | (1<<2)), /*HPPE_PORT_QSGMII_2GMAC*/
+	((1<<1) | (1<<2) | (1<<3) | (1<<4) | (1<<5)), /*HPPE_PORT_PSGMII*/
+	((1<<1) | (1<<2) | (1<<3) | (1<<4) | (1<<5) |(1<<6)), /*HPPE_PORT_PSGMII_SGMII*/
+	((1<<1) | (1<<2) | (1<<3) | (1<<4) | (1<<5) |(1<<6)), /*HPPE_PORT_QSGMII_2SGMIIPLUS*/
+	((1<<1) | (1<<2) | (1<<3) | (1<<4) | (1<<5)), /*HPPE_PORT_QSGMII_3GMAC_2SGMIIPLUS*/
+	(1<<1), /*HPPE_PORT_XFI*/
+	((1<<1) | (1<<2)), /*HPPE_PORT_2XFI*/
+	((1<<1) | (1<<2) | (1<<3)), /*HPPE_PORT_2XFI_SGMII*/
+	((1<<1) | (1<<2) | (1<<3) | (1<<4) | (1<<5) |(1<<6)), /*HPPE_PORT_QSGMII_2XFI*/
+	};
+
+enum hppe_port_wrapper_cfg hppe_get_port_config(void)
+{
+	return hppe_cfg[0]->mac_mode;
+}
+
+a_bool_t hppe_mac_port_valid_check(fal_port_t port_id)
+{
+	a_uint32_t bitmap = 0;
+	enum hppe_port_wrapper_cfg cfg;
+
+//	cfg = hppe_get_port_config();
+	cfg = HPPE_PORT_PSGMII;
+	bitmap = hppe_pbmp[cfg];
+
+	return SW_IS_PBMP_MEMBER(bitmap, port_id);
+
+}
+static sw_error_t
+hppe_portproperty_init(a_uint32_t dev_id)
+{
+	hsl_port_prop_t p_type;
+	hsl_dev_t *pdev = NULL;
+	fal_port_t port_id;
+	enum hppe_port_wrapper_cfg cfg;
+	a_uint32_t bitmap = 0;
+
+	pdev = hsl_dev_ptr_get(dev_id);
+	if (pdev == NULL)
+		return SW_NOT_INITIALIZED;
+
+//	cfg = hppe_get_port_config();
+	cfg = HPPE_PORT_PSGMII;
+	bitmap = hppe_pbmp[cfg];
+
+	/* for port property set, SSDK should not generate some limitations */
+	for (port_id = 0; port_id < pdev->nr_ports; port_id++)
+	{
+		hsl_port_prop_portmap_set(dev_id, port_id);
+
+		for (p_type = HSL_PP_PHY; p_type < HSL_PP_BUTT; p_type++)
+		{
+			switch (p_type)
+			{
+				case HSL_PP_PHY:
+	                    /* Only port0 without PHY device */
+	                    if (port_id != pdev->cpu_port_nr)
+	                    {
+					if(SW_IS_PBMP_MEMBER(bitmap, port_id))
+						SW_RTN_ON_ERROR(hsl_port_prop_set(dev_id, port_id, p_type));
+	                    }
+	                    break;
+
+				case HSL_PP_INCL_CPU:
+	                    /* include cpu port but exclude wan port in some cases */
+	                    /* but which port is wan port, we are no meaning */
+					if (port_id == pdev->cpu_port_nr)
+						SW_RTN_ON_ERROR(hsl_port_prop_set(dev_id, port_id, p_type));
+					if(SW_IS_PBMP_MEMBER(bitmap, port_id))
+						SW_RTN_ON_ERROR(hsl_port_prop_set(dev_id, port_id, p_type));
+				break;
+
+				case HSL_PP_EXCL_CPU:
+				/* exclude cpu port and wan port in some cases */
+	                    /* which port is wan port, we are no meaning but port0 is
+	                       always CPU port */
+					if (port_id != pdev->cpu_port_nr)
+					{
+						if(SW_IS_PBMP_MEMBER(bitmap, port_id))
+							SW_RTN_ON_ERROR(hsl_port_prop_set(dev_id, port_id, p_type));
+					}
+				break;
+
+				default:
+				break;
+			}
+		}
+
+		if (port_id != pdev->cpu_port_nr)
+		{
+			SW_RTN_ON_ERROR(hsl_port_prop_set_phyid
+			(dev_id, port_id, port_id - 1));
+		}
+	}
+
+	return SW_OK;
+}
 
 static sw_error_t
 hppe_dev_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
@@ -108,19 +222,22 @@ sw_error_t hppe_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
     SW_RTN_ON_ERROR(hppe_dev_init(dev_id, cfg));
 
 #if !(defined(KERNEL_MODULE) && defined(USER_MODE))
-    {
-        sw_error_t rv;
-	hsl_api_t *p_api;
+	{
+		sw_error_t rv;
+		hsl_api_t *p_api;
 
-        SW_RTN_ON_ERROR(hsl_port_prop_init());
-        SW_RTN_ON_ERROR(hsl_port_prop_init_by_dev(dev_id));
+		SW_RTN_ON_ERROR(hsl_port_prop_init());
+		SW_RTN_ON_ERROR(hsl_port_prop_init_by_dev(dev_id));
+		SW_RTN_ON_ERROR(hppe_portproperty_init(dev_id));
 
-	SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
-	p_api->dev_clean   = hppe_cleanup;
-	p_api->reg_get = sd_reg_hdr_get;
-	p_api->reg_set = sd_reg_hdr_set;
+		SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
+		p_api->dev_clean   = hppe_cleanup;
+		p_api->reg_get = sd_reg_hdr_get;
+		p_api->reg_set = sd_reg_hdr_set;
+		p_api->phy_get = sd_reg_mdio_get;
+		p_api->phy_set = sd_reg_mdio_set;
 
-    }
+	}
 #endif
 
     return SW_OK;
