@@ -1365,10 +1365,15 @@ _adpt_hppe_acl_action_hw_2_sw(union ipo_action_u *hw_act, fal_acl_rule_t *rule)
 		FAL_ACTION_FLG_SET(rule->action_flg, FAL_ACL_ACTION_REMARK_QUEUE);
 		rule->queue = hw_act->bf.qid;
 	}
+	if(hw_act->bf.enqueue_pri_change_en == 1)
+	{
+		FAL_ACTION_FLG_SET(rule->action_flg, FAL_ACL_ACTION_ENQUEUE_PRI);
+		rule->enqueue_pri = hw_act->bf.enqueue_pri;
+	}
 	if(hw_act->bf.service_code_en == 1)
 	{
 		FAL_ACTION_FLG_SET(rule->action_flg, FAL_ACL_ACTION_SERVICE_CODE);
-		rule->service_code = (hw_act->bf.service_code_1<<7)|hw_act->bf.service_code_0;
+		rule->service_code = (hw_act->bf.service_code_1<<1)|hw_act->bf.service_code_0;
 	}
 	if(hw_act->bf.syn_toggle)
 	{
@@ -2768,6 +2773,11 @@ _adpt_hppe_acl_action_sw_2_hw(fal_acl_rule_t *rule, union ipo_action_u *hw_act)
 	{
 		hw_act->bf.qid_en = 1;
 		hw_act->bf.qid = rule->queue;
+	}
+	if(FAL_ACTION_FLG_TST(rule->action_flg, FAL_ACL_ACTION_ENQUEUE_PRI))
+	{
+		hw_act->bf.enqueue_pri_change_en = 1;
+		hw_act->bf.enqueue_pri = rule->enqueue_pri;
 	}
 	if(FAL_ACTION_FLG_TST(rule->action_flg, FAL_ACL_ACTION_SERVICE_CODE))
 	{

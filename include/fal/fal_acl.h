@@ -377,6 +377,27 @@ extern "C" {
         a_uint8_t udf_val[FAL_ACL_UDF_MAX_LENGTH];
         a_uint8_t udf_mask[FAL_ACL_UDF_MAX_LENGTH];
 
+        /* fields of action */
+        fal_acl_action_map_t  action_flg;
+        fal_pbmp_t            ports; /*high 2bits, 00-port bitmap, 01-nexthop, 10-vp*/
+        a_uint32_t            match_cnt;
+        a_uint16_t            vid;
+        a_uint8_t             up;
+        a_uint8_t             queue;
+        a_uint16_t            stag_vid;
+        a_uint8_t             stag_pri;
+        a_uint8_t             stag_dei;
+        a_uint16_t            ctag_vid;
+        a_uint8_t             ctag_pri;
+        a_uint8_t             ctag_cfi;
+        a_uint16_t            policer_ptr;
+        a_uint16_t            arp_ptr;
+        a_uint16_t            wcmp_ptr;
+        a_uint8_t             dscp;
+        a_uint8_t             rsv;
+        fal_policy_forward_t  policy_fwd;
+        fal_combined_t    combined;
+
 	/*new add match fields for hawkeye*/
         a_uint8_t pri; /*rule priority 0-7*/
         a_bool_t post_routing;
@@ -450,27 +471,7 @@ extern "C" {
         a_uint16_t udf3_val;
         a_uint16_t udf3_mask;
 
-        /* fields of action */
-        fal_acl_action_map_t  action_flg;
-        fal_pbmp_t            ports; /*high 2bits, 00-port bitmap, 01-nexthop, 10-vp*/
-        a_uint32_t            match_cnt;
-        a_uint16_t            vid;
-        a_uint8_t             up;
-        a_uint8_t             queue;
-        a_uint16_t            stag_vid;
-        a_uint8_t             stag_pri;
-        a_uint8_t             stag_dei;
-        a_uint16_t            ctag_vid;
-        a_uint8_t             ctag_pri;
-        a_uint8_t             ctag_cfi;
-        a_uint16_t            policer_ptr;
-        a_uint16_t            arp_ptr;
-        a_uint16_t            wcmp_ptr;
-        a_uint8_t             dscp;
-        a_uint8_t             rsv;
-        fal_policy_forward_t  policy_fwd;
-        fal_combined_t    combined;
-	/*new add acl action for hawkeye*/
+        /*new add acl action for hawkeye*/
         a_uint32_t            bypass_bitmap;
         a_uint8_t             enqueue_pri;
         a_uint8_t             stag_fmt;
