@@ -85,13 +85,6 @@ typedef struct {
 	fal_port_t dst_port; /* destination physical or VP port */
 } fal_ucast_queue_dest_t;
 
-
-typedef struct {
-	a_uint8_t flush_mode;
-	a_uint8_t status;
-	a_uint16_t queue_id;
-} fal_queue_flush_dst_t;
-
 sw_error_t
 fal_ac_ctrl_set(
 		a_uint32_t dev_id,
@@ -234,7 +227,7 @@ sw_error_t
 fal_queue_flush(
 		a_uint32_t dev_id,
 		fal_port_t port,
-		fal_queue_flush_dst_t *flush_dst);
+		a_uint16_t queue_id);
 
 sw_error_t
 fal_ucast_default_hash_set(

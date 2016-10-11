@@ -256,7 +256,6 @@ static sw_data_type_t sw_data_type[] =
     SW_TYPE_DEF(SW_VSI_MEMBER, cmd_data_check_vsi_member, NULL),
     #endif
     #ifdef IN_QM
-    SW_TYPE_DEF(SW_QUEUE_FLUSH, cmd_data_check_queue_flush, NULL),
     SW_TYPE_DEF(SW_STATIC_THRESH, cmd_data_check_ac_static_thresh, NULL),
     SW_TYPE_DEF(SW_DYNAMIC_THRESH, cmd_data_check_ac_dynamic_thresh, NULL),
     SW_TYPE_DEF(SW_GROUP_BUFFER, cmd_data_check_ac_group_buff, NULL),
@@ -10025,91 +10024,6 @@ cmd_data_check_ac_obj(char *cmd_str, void * val, a_uint32_t size)
     *(fal_ac_obj_t *)val = entry;
     return SW_OK;
 }
-
-sw_error_t
-cmd_data_check_queue_flush(char *cmd_str, void * val, a_uint32_t size)
-{
-	char *cmd;
-    a_uint32_t tmp;
-    sw_error_t rv;
-    fal_queue_flush_dst_t entry;
-
-    aos_mem_zero(&entry, sizeof (fal_queue_flush_dst_t));
-
-    do
-    {
-        cmd = get_sub_cmd("flush mode", "0");
-        SW_RTN_ON_NULL_PARAM(cmd);
-
-        if (!strncasecmp(cmd, "quit", 4))
-        {
-            return SW_BAD_VALUE;
-        }
-        else if (!strncasecmp(cmd, "help", 4))
-        {
-            dprintf("usage: flush mode \n");
-            rv = SW_BAD_VALUE;
-        }
-        else
-        {
-            rv = cmd_data_check_uint8(cmd, &(entry.flush_mode), sizeof (a_uint8_t));
-            if (SW_OK != rv)
-                dprintf("usage: flush mode \n");
-        }
-    }
-    while (talk_mode && (SW_OK != rv));
-
-    do
-    {
-        cmd = get_sub_cmd("status", "0");
-        SW_RTN_ON_NULL_PARAM(cmd);
-
-        if (!strncasecmp(cmd, "quit", 4))
-        {
-            return SW_BAD_VALUE;
-        }
-        else if (!strncasecmp(cmd, "help", 4))
-        {
-            dprintf("usage: status \n");
-            rv = SW_BAD_VALUE;
-        }
-        else
-        {
-            rv = cmd_data_check_uint8(cmd, &(entry.status), sizeof (a_uint8_t));
-            if (SW_OK != rv)
-                dprintf("usage: status \n");
-        }
-    }
-    while (talk_mode && (SW_OK != rv));
-
-    do
-    {
-        cmd = get_sub_cmd("queue id", "0");
-        SW_RTN_ON_NULL_PARAM(cmd);
-
-        if (!strncasecmp(cmd, "quit", 4))
-        {
-            return SW_BAD_VALUE;
-        }
-        else if (!strncasecmp(cmd, "help", 4))
-        {
-            dprintf("usage: queue id \n");
-            rv = SW_BAD_VALUE;
-        }
-        else
-        {
-            rv = cmd_data_check_uint16(cmd, &(entry.queue_id), sizeof (a_uint16_t));
-            if (SW_OK != rv)
-                dprintf("usage: queue id \n");
-        }
-    }
-    while (talk_mode && (SW_OK != rv));
-
-    *(fal_queue_flush_dst_t *)val = entry;
-    return SW_OK;
-}
-
-
 
 #endif
 

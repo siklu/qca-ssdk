@@ -352,7 +352,7 @@ sw_error_t
 _fal_queue_flush(
 		a_uint32_t dev_id,
 		fal_port_t port,
-		fal_queue_flush_dst_t *flush_dst)
+		a_uint16_t queue_id)
 {
 	adpt_api_t *p_api;
 	sw_error_t rv = SW_OK;
@@ -362,7 +362,7 @@ _fal_queue_flush(
 	if (NULL == p_api->adpt_queue_flush)
 		return SW_NOT_SUPPORTED;
 
-	rv = p_api->adpt_queue_flush(dev_id, port, flush_dst);
+	rv = p_api->adpt_queue_flush(dev_id, port, queue_id);
 	return rv;
 }
 sw_error_t
@@ -707,12 +707,12 @@ sw_error_t
 fal_queue_flush(
 		a_uint32_t dev_id,
 		fal_port_t port,
-		fal_queue_flush_dst_t *flush_dst)
+		a_uint16_t queue_id)
 {
 	sw_error_t rv = SW_OK;
 
 	FAL_API_LOCK;
-	rv = _fal_queue_flush(dev_id, port, flush_dst);
+	rv = _fal_queue_flush(dev_id, port, queue_id);
 	FAL_API_UNLOCK;
 	return rv;
 }
@@ -826,5 +826,7 @@ EXPORT_SYMBOL(fal_mcast_cpu_code_class_get);
 EXPORT_SYMBOL(fal_port_mcast_priority_class_set);
 
 EXPORT_SYMBOL(fal_port_mcast_priority_class_get);
+
+EXPORT_SYMBOL(fal_queue_flush);
 
 /*insert flag for outter fal, don't remove it*/

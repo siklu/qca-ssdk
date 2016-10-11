@@ -514,7 +514,7 @@ typedef sw_error_t (*adpt_ucast_priority_class_get_func)(
 typedef sw_error_t (*adpt_queue_flush_func)(
 		a_uint32_t dev_id,
 		fal_port_t port,
-		fal_queue_flush_dst_t *flush_dst);
+		a_uint32_t queue_id);
 typedef sw_error_t (*adpt_mcast_cpu_code_class_set_func)(
 		a_uint32_t dev_id,
 		a_uint8_t cpu_code,

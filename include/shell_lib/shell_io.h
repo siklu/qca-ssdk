@@ -344,10 +344,6 @@ cmd_data_check_ac_ctrl(char *cmd_str, void * val, a_uint32_t size);
 sw_error_t
 cmd_data_check_ac_obj(char *cmd_str, void * val, a_uint32_t size);
 
-sw_error_t
-cmd_data_check_queue_flush(char *cmd_str, void * val, a_uint32_t size);
-
-
 #endif
 #ifdef IN_FLOW
 sw_error_t

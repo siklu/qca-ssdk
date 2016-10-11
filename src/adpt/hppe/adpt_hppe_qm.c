@@ -21,6 +21,8 @@
 #include "fal_qm.h"
 #include "hppe_qm_reg.h"
 #include "hppe_qm.h"
+#include "hppe_qos_reg.h"
+#include "hppe_qos.h"
 #include "adpt.h"
 
 #define SERVICE_CODE_QUEUE_OFFSET   2048
@@ -28,6 +30,7 @@
 #define VP_PORT_QUEUE_OFFSET            0
 
 #define UCAST_QUEUE_ID_MAX	256
+#define ALL_QUEUE_ID_MAX	300
 
 sw_error_t
 adpt_hppe_ucast_hash_map_set(
@@ -384,6 +387,7 @@ adpt_hppe_ac_prealloc_buffer_get(
 					&ac_mul_queue_cfg_tbl);
 			*num = ac_mul_queue_cfg_tbl.bf.ac_cfg_pre_alloc_limit;
 		}
+		return rv;
 	} else
 		return SW_FAIL;
 }
@@ -681,20 +685,59 @@ sw_error_t
 adpt_hppe_queue_flush(
 		a_uint32_t dev_id,
 		fal_port_t port,
-		fal_queue_flush_dst_t *flush_dst)
+		a_uint16_t queue_id)
 {
 	union flush_cfg_u flush_cfg;
 	a_uint32_t i = 0x100;
 	sw_error_t rv;
+	union oq_enq_opr_tbl_u enq;
+	union deq_dis_tbl_u deq;
+	adpt_api_t *p_api;
+	fal_queue_bmp_t queue_bmp;
 
 	memset(&flush_cfg, 0, sizeof(flush_cfg));
 	ADPT_DEV_ID_CHECK(dev_id);
-	ADPT_NULL_POINT_CHECK(flush_dst);
+
+	/* disable queue firstly */
+	if (queue_id == 0xffff) {
+		/* all queue in this port */
+		a_uint32_t i, j, k, tmp;
+		enq.bf.enq_disable = 1;
+		deq.bf.deq_dis = 1;
+		p_api = adpt_api_ptr_get(0);
+		if (!p_api || !p_api->adpt_port_queues_get)
+			return SW_FAIL;
+		p_api->adpt_port_queues_get(dev_id, port, &queue_bmp);
+		for (i = 0; i < ALL_QUEUE_ID_MAX; i++) {
+			j = i / 32;
+			k = i % 32;
+			tmp = queue_bmp.bmp[j];
+			if ((tmp & (1 << k)) == 0)
+				continue;
+			hppe_oq_enq_opr_tbl_set(dev_id, i, &enq);
+			hppe_deq_dis_tbl_set(dev_id, i, &deq);
+		}
+	} else {
+		/* single queue in this port */
+		enq.bf.enq_disable = 1;
+		deq.bf.deq_dis = 1;
+		if (queue_id >= ALL_QUEUE_ID_MAX)
+			return SW_BAD_VALUE;
+		hppe_oq_enq_opr_tbl_set(dev_id, queue_id, &enq);
+		hppe_deq_dis_tbl_set(dev_id, queue_id, &deq);
+	}
 
 	hppe_flush_cfg_get(dev_id, &flush_cfg);
 
-	flush_cfg.bf.flush_all_queues = flush_dst->flush_mode;
-	flush_cfg.bf.flush_qid = flush_dst->queue_id;
+	if (queue_id == 0xffff) {
+		flush_cfg.bf.flush_all_queues = 1;
+		flush_cfg.bf.flush_qid = 0;
+		i = 0x1000;
+	}
+	else {
+		flush_cfg.bf.flush_all_queues = 0;
+		flush_cfg.bf.flush_qid = queue_id;
+	}
 	flush_cfg.bf.flush_dst_port = port;
 	flush_cfg.bf.flush_busy = 1;
 	
@@ -707,7 +750,31 @@ adpt_hppe_queue_flush(
 	}
 	if (i == 0)
 		return SW_BUSY;
-	flush_dst->status = flush_cfg.bf.flush_status;
+	if (!flush_cfg.bf.flush_status)
+		return SW_FAIL;
+
+	/* enable queue again */
+	if (queue_id == 0xffff) {
+		/* all queue in this port */
+		a_uint32_t i, j, k, tmp;
+		enq.bf.enq_disable = 0;
+		deq.bf.deq_dis = 0;
+		for (i = 0; i < ALL_QUEUE_ID_MAX; i++) {
+			j = i / 32;
+			k = i % 32;
+			tmp = queue_bmp.bmp[j];
+			if ((tmp & (1 << k)) == 0)
+				continue;
+			hppe_oq_enq_opr_tbl_set(dev_id, i, &enq);
+			hppe_deq_dis_tbl_set(dev_id, i, &deq);
+		}
+	} else {
+		/* single queue in this port */
+		enq.bf.enq_disable = 0;
+		deq.bf.deq_dis = 0;
+		hppe_oq_enq_opr_tbl_set(dev_id, queue_id, &enq);
+		hppe_deq_dis_tbl_set(dev_id, queue_id, &deq);
+	}
 	return SW_OK;
 }
 
