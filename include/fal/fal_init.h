@@ -26,10 +26,26 @@ extern "C" {
 
 #include "init/ssdk_init.h"
 
+enum{
+	FAL_MODULE_ACL,
+	FAL_MODULE_VSI,
+
+	FAL_MODULE_MAX,
+};
+
+typedef struct
+{
+	a_uint32_t bitmap[3];
+}fal_func_ctrl_t;
+
 sw_error_t fal_init(a_uint32_t dev_id, ssdk_init_cfg * cfg);
 sw_error_t fal_reset(a_uint32_t dev_id);
 sw_error_t fal_ssdk_cfg(a_uint32_t dev_id, ssdk_cfg_t *ssdk_cfg);
 sw_error_t fal_cleanup(void);
+sw_error_t fal_module_func_ctrl_set(a_uint32_t dev_id,
+		a_uint32_t module, fal_func_ctrl_t *func_ctrl);
+sw_error_t fal_module_func_ctrl_get(a_uint32_t dev_id,
+		a_uint32_t module, fal_func_ctrl_t *func_ctrl);
 
 #ifdef __cplusplus
 }

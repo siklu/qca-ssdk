@@ -46,6 +46,7 @@ extern "C" {
 #include "fal_qos.h"
 #include "fal_shaper.h"
 #include "fal_bm.h"
+#include "fal_init.h"
 
 #define ADPT_DEV_ID_CHECK(dev_id) \
 do { \
@@ -1072,6 +1073,7 @@ typedef struct
 	adpt_sec_l4_excep_parser_ctrl_get_func adpt_sec_l4_excep_parser_ctrl_get;
 
 	/*acl*/
+	a_uint32_t adpt_acl_func_bitmap;
 	adpt_acl_list_bind_func adpt_acl_list_bind;
 	adpt_acl_list_dump_func adpt_acl_list_dump;
 	adpt_acl_udf_profile_set_func adpt_acl_udf_profile_set;
@@ -1148,6 +1150,10 @@ typedef struct
 
 adpt_api_t *adpt_api_ptr_get(a_uint32_t dev_id);
 sw_error_t adpt_init(a_uint32_t dev_id, ssdk_init_cfg *cfg);
+sw_error_t adpt_module_func_ctrl_set(a_uint32_t dev_id,
+		a_uint32_t module, fal_func_ctrl_t *func_ctrl);
+sw_error_t adpt_module_func_ctrl_get(a_uint32_t dev_id,
+		a_uint32_t module, fal_func_ctrl_t *func_ctrl);
 
 #ifdef __cplusplus
 }

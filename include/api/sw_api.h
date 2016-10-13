@@ -187,6 +187,8 @@ extern "C" {
 	SW_SHAPER_TOKEN_CONFIG,
 	SW_PORT_SHAPER_CONFIG,
 	SW_SHAPER_CONFIG,
+        SW_MODULE,
+        SW_FUNC_CTRL,
     } sw_data_type_e;
 
     typedef struct

@@ -1310,7 +1310,6 @@ _adpt_hppe_acl_action_hw_2_sw(union ipo_action_u *hw_act, fal_acl_rule_t *rule)
 	if(hw_act->bf.bypass_bitmap_0 != 0 ||
 		hw_act->bf.bypass_bitmap_1 != 0)
 	{
-		FAL_ACTION_FLG_SET(rule->action_flg, FAL_ACL_ACTION_BYPASS_BITMAP);
 		rule->bypass_bitmap = (hw_act->bf.bypass_bitmap_1<<14)|hw_act->bf.bypass_bitmap_0;
 	}
 	if(hw_act->bf.svid_change_en == 1)
@@ -2716,11 +2715,8 @@ _adpt_hppe_acl_action_sw_2_hw(fal_acl_rule_t *rule, union ipo_action_u *hw_act)
 	{
 		hw_act->bf.mirror_en= 1;
 	}
-	if(FAL_ACTION_FLG_TST(rule->action_flg, FAL_ACL_ACTION_BYPASS_BITMAP))
-	{
-		hw_act->bf.bypass_bitmap_0 = rule->bypass_bitmap & 0x3fff;
-		hw_act->bf.bypass_bitmap_1 = (rule->bypass_bitmap>>14) & 0x3ffff;
-	}
+	hw_act->bf.bypass_bitmap_0 = rule->bypass_bitmap & 0x3fff;
+	hw_act->bf.bypass_bitmap_1 = (rule->bypass_bitmap>>14) & 0x3ffff;
 	if(FAL_ACTION_FLG_TST(rule->action_flg, FAL_ACL_ACTION_REMARK_STAG_VID))
 	{
 		hw_act->bf.svid_change_en = 1;
@@ -3288,6 +3284,48 @@ adpt_hppe_acl_udf_profile_set(a_uint32_t dev_id, fal_acl_udf_pkt_type_t pkt_type
 	return g_udf_set_func[pkt_type][udf_idx](dev_id, &udf_ctrl);
 }
 
+void adpt_hppe_acl_func_bitmap_init(a_uint32_t dev_id)
+{
+	adpt_api_t *p_adpt_api = NULL;
+
+	p_adpt_api = adpt_api_ptr_get(dev_id);
+
+	if(p_adpt_api == NULL)
+		return;
+
+	p_adpt_api->adpt_acl_func_bitmap = ((1<<FUNC_ACL_LIST_CREAT)|
+						(1<<FUNC_ACL_LIST_DESTROY)|
+						(1<<FUNC_ACL_RULE_ADD)|
+						(1<<FUNC_ACL_RULE_DELETE)|
+						(1<<FUNC_ACL_RULE_QUERY)|
+						(1<<FUNC_ACL_RULE_DUMP)|
+						(1<<FUNC_ACL_LIST_BIND)|
+						(1<<FUNC_ACL_LIST_UNBIND)|
+						(1<<FUNC_ACL_UDF_PROFILE_SET)|
+						(1<<FUNC_ACL_UDF_PROFILE_GET));
+	return;
+}
+
+static void adpt_hppe_acl_func_unregister(a_uint32_t dev_id, adpt_api_t *p_adpt_api)
+{
+	if(p_adpt_api == NULL)
+		return;
+
+	p_adpt_api->adpt_acl_list_creat = NULL;
+	p_adpt_api->adpt_acl_list_destroy = NULL;
+	p_adpt_api->adpt_acl_rule_add = NULL;
+	p_adpt_api->adpt_acl_rule_delete = NULL;
+	p_adpt_api->adpt_acl_rule_query = NULL;
+	p_adpt_api->adpt_acl_rule_dump = NULL;
+	p_adpt_api->adpt_acl_list_dump = NULL;
+	p_adpt_api->adpt_acl_list_bind = NULL;
+	p_adpt_api->adpt_acl_list_unbind = NULL;
+	p_adpt_api->adpt_acl_udf_profile_set = NULL;
+	p_adpt_api->adpt_acl_udf_profile_get = NULL;
+
+	return;
+}
+
 sw_error_t adpt_hppe_acl_init(a_uint32_t dev_id)
 {
 	adpt_api_t *p_adpt_api = NULL;
@@ -3297,17 +3335,52 @@ sw_error_t adpt_hppe_acl_init(a_uint32_t dev_id)
 	if(p_adpt_api == NULL)
 		return SW_FAIL;
 
-	p_adpt_api->adpt_acl_list_bind = adpt_hppe_acl_list_bind;
-	p_adpt_api->adpt_acl_list_dump = adpt_hppe_acl_list_dump;
-	p_adpt_api->adpt_acl_rule_query = adpt_hppe_acl_rule_query;
-	p_adpt_api->adpt_acl_list_unbind = adpt_hppe_acl_list_unbind;
-	p_adpt_api->adpt_acl_rule_add = adpt_hppe_acl_rule_add;
-	p_adpt_api->adpt_acl_rule_delete = adpt_hppe_acl_rule_delete;
-	p_adpt_api->adpt_acl_rule_dump = adpt_hppe_acl_rule_dump;
-	p_adpt_api->adpt_acl_list_creat = adpt_hppe_acl_list_creat;
-	p_adpt_api->adpt_acl_list_destroy = adpt_hppe_acl_list_destroy;
-	p_adpt_api->adpt_acl_udf_profile_set = adpt_hppe_acl_udf_profile_set;
-	p_adpt_api->adpt_acl_udf_profile_get = adpt_hppe_acl_udf_profile_get;
+	adpt_hppe_acl_func_unregister(dev_id, p_adpt_api);
+
+	if(p_adpt_api->adpt_acl_func_bitmap & (1<<FUNC_ACL_LIST_BIND))
+	{
+		p_adpt_api->adpt_acl_list_bind = adpt_hppe_acl_list_bind;
+	}
+	if(p_adpt_api->adpt_acl_func_bitmap & (1<<FUNC_ACL_LIST_DUMP))
+	{
+		p_adpt_api->adpt_acl_list_dump = adpt_hppe_acl_list_dump;
+	}
+	if(p_adpt_api->adpt_acl_func_bitmap & (1<<FUNC_ACL_RULE_QUERY))
+	{
+		p_adpt_api->adpt_acl_rule_query = adpt_hppe_acl_rule_query;
+	}
+	if(p_adpt_api->adpt_acl_func_bitmap & (1<<FUNC_ACL_LIST_UNBIND))
+	{
+		p_adpt_api->adpt_acl_list_unbind = adpt_hppe_acl_list_unbind;
+	}
+	if(p_adpt_api->adpt_acl_func_bitmap & (1<<FUNC_ACL_RULE_ADD))
+	{
+		p_adpt_api->adpt_acl_rule_add = adpt_hppe_acl_rule_add;
+	}
+	if(p_adpt_api->adpt_acl_func_bitmap & (1<<FUNC_ACL_RULE_DELETE))
+	{
+		p_adpt_api->adpt_acl_rule_delete = adpt_hppe_acl_rule_delete;
+	}
+	if(p_adpt_api->adpt_acl_func_bitmap & (1<<FUNC_ACL_RULE_DUMP))
+	{
+		p_adpt_api->adpt_acl_rule_dump = adpt_hppe_acl_rule_dump;
+	}
+	if(p_adpt_api->adpt_acl_func_bitmap & (1<<FUNC_ACL_LIST_CREAT))
+	{
+		p_adpt_api->adpt_acl_list_creat = adpt_hppe_acl_list_creat;
+	}
+	if(p_adpt_api->adpt_acl_func_bitmap & (1<<FUNC_ACL_LIST_DESTROY))
+	{
+		p_adpt_api->adpt_acl_list_destroy = adpt_hppe_acl_list_destroy;
+	}
+	if(p_adpt_api->adpt_acl_func_bitmap & (1<<FUNC_ACL_UDF_PROFILE_SET))
+	{
+		p_adpt_api->adpt_acl_udf_profile_set = adpt_hppe_acl_udf_profile_set;
+	}
+	if(p_adpt_api->adpt_acl_func_bitmap & (1<<FUNC_ACL_UDF_PROFILE_GET))
+	{
+		p_adpt_api->adpt_acl_udf_profile_get = adpt_hppe_acl_udf_profile_get;
+	}
 
 	return SW_OK;
 }

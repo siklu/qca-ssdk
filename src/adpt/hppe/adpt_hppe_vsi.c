@@ -440,6 +440,19 @@ adpt_hppe_vsi_member_get(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_member_t 
 
 }
 
+void adpt_hppe_vsi_func_bitmap_init(a_uint32_t dev_id)
+{
+	adpt_api_t *p_adpt_api = NULL;
+
+	p_adpt_api = adpt_api_ptr_get(dev_id);
+
+	if(p_adpt_api == NULL)
+		return;
+
+	return;
+}
+
+
 
 sw_error_t adpt_hppe_vsi_init(a_uint32_t dev_id)
 {

@@ -26,6 +26,8 @@ extern "C" {
 #define SW_API_SWITCH_INIT         (0  + SW_API_INIT_OFFSET)
 #define SW_API_SWITCH_RESET        (1  + SW_API_INIT_OFFSET)
 #define SW_API_SSDK_CFG            (2  + SW_API_INIT_OFFSET)
+#define SW_API_MODULE_FUNC_CTRL_SET   (3  + SW_API_INIT_OFFSET)
+#define SW_API_MODULE_FUNC_CTRL_GET   (4  + SW_API_INIT_OFFSET)
 
     /*port ctrl*/
 #define SW_API_PORT_OFFSET          30

@@ -166,6 +166,8 @@ static sw_data_type_t sw_data_type[] =
     SW_TYPE_DEF(SW_CABLESTATUS, NULL, NULL),
     SW_TYPE_DEF(SW_CABLELEN, NULL, NULL),
     SW_TYPE_DEF(SW_SSDK_CFG, NULL, NULL),
+    SW_TYPE_DEF(SW_MODULE, NULL, NULL),
+    SW_TYPE_DEF(SW_FUNC_CTRL, NULL, NULL),
 	#ifdef IN_PORTCONTROL
     SW_TYPE_DEF(SW_HDRMODE, cmd_data_check_hdrmode, NULL),
 	#endif

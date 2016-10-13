@@ -1829,6 +1829,8 @@ extern "C" {
 #define SSDK_API \
     SW_API_DEF(SW_API_SWITCH_RESET, fal_reset), \
     SW_API_DEF(SW_API_SSDK_CFG, fal_ssdk_cfg), \
+    SW_API_DEF(SW_API_MODULE_FUNC_CTRL_SET, fal_module_func_ctrl_set), \
+    SW_API_DEF(SW_API_MODULE_FUNC_CTRL_GET, fal_module_func_ctrl_get), \
     PORTCONTROL_API \
     VLAN_API \
     PORTVLAN_API \
@@ -1865,6 +1867,12 @@ extern "C" {
     SW_PARAM_DEF(SW_API_SWITCH_RESET, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"), \
     SW_PARAM_DEF(SW_API_SSDK_CFG, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"), \
     SW_PARAM_DEF(SW_API_SSDK_CFG, SW_SSDK_CFG, sizeof(ssdk_cfg_t), SW_PARAM_PTR|SW_PARAM_OUT, "ssdk configuration"), \
+    SW_PARAM_DEF(SW_API_MODULE_FUNC_CTRL_SET, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"), \
+    SW_PARAM_DEF(SW_API_MODULE_FUNC_CTRL_SET, SW_MODULE, 4, SW_PARAM_IN, "Module"), \
+    SW_PARAM_DEF(SW_API_MODULE_FUNC_CTRL_SET, SW_FUNC_CTRL, sizeof(fal_func_ctrl_t), SW_PARAM_PTR|SW_PARAM_IN, "Function bitmap"), \
+    SW_PARAM_DEF(SW_API_MODULE_FUNC_CTRL_GET, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"), \
+    SW_PARAM_DEF(SW_API_MODULE_FUNC_CTRL_GET, SW_MODULE, 4, SW_PARAM_IN, "Module"), \
+    SW_PARAM_DEF(SW_API_MODULE_FUNC_CTRL_GET, SW_FUNC_CTRL, sizeof(fal_func_ctrl_t), SW_PARAM_PTR|SW_PARAM_OUT, "Function bitmap"), \
     MIB_API_PARAM \
     LEAKY_API_PARAM \
     MISC_API_PARAM \

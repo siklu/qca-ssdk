@@ -182,7 +182,6 @@ extern "C" {
 #define    FAL_ACL_ACTION_BYPASS_EGRESS_TRANS 22
 #define    FAL_ACL_ACTION_MATCH_TRIGGER_INTR  23
 /*new add for hawkeye*/
-#define    FAL_ACL_ACTION_BYPASS_BITMAP 24
 #define    FAL_ACL_ACTION_ENQUEUE_PRI 25
 #define    FAL_ACL_ACTION_INT_DP 26
 #define    FAL_ACL_ACTION_SERVICE_CODE 27
@@ -191,6 +190,27 @@ extern "C" {
 #define    FAL_ACL_ACTION_METADATA_EN 30
 
 
+enum{
+	FAL_ACL_BYPASS_IN_VLAN_MISS = 0,
+	FAL_ACL_BYPASS_SOUCE_GUARD,
+	FAL_ACL_BYPASS_MRU_MTU_CHECK,
+	FAL_ACL_BYPASS_EG_VSI_MEMBER_CHECK = 8,
+	FAL_ACL_BYPASS_EG_VLAN_TRANSLATION,
+	FAL_ACL_BYPASS_EG_VLAN_TAG_CTRL,
+	FAL_ACL_BYPASS_FDB_LEARNING = 11,
+	FAL_ACL_BYPASS_FDB_REFRESH,
+	FAL_ACL_BYPASS_L2_SECURITY,/*new address, station move, learn limit, hash full*/
+	FAL_ACL_BYPASS_MANAGEMENT_FWD,
+	FAL_ACL_BYPASS_L2_FWD = 15,
+	FAL_ACL_BYPASS_IN_STP_CHECK,
+	FAL_ACL_BYPASS_EG_STP_CHECK,
+	FAL_ACL_BYPASS_SOURCE_FILTER,
+	FAL_ACL_BYPASS_POLICYER,
+	FAL_ACL_BYPASS_L2_EDIT = 20,/*VLAN tag edit*/
+	FAL_ACL_BYPASS_L3_EDIT,/*Edit MAC address, PPPoE, IP address, TTL, DSCP, L4 port*/
+	FAL_ACL_BYPASS_POST_ACL_CHECK_ROUTING,
+	FAL_ACL_BYPASS_PORT_ISOLATION,
+};
 
     /**
       * @brief This type defines the action in Acl rule.
@@ -504,6 +524,23 @@ extern "C" {
         FAL_ACL_BIND_L3_IF = 3,  /**<   Acl wil work on l3 interface */
     } fal_acl_bind_obj_t;
 
+enum
+{
+	/*acl*/
+	FUNC_ACL_LIST_CREAT = 0,
+	FUNC_ACL_LIST_DESTROY,
+	FUNC_ACL_RULE_ADD,
+	FUNC_ACL_RULE_DELETE,
+	FUNC_ACL_RULE_QUERY,
+	FUNC_ACL_RULE_DUMP,
+	FUNC_ACL_LIST_BIND,
+	FUNC_ACL_LIST_UNBIND,
+	FUNC_ACL_LIST_DUMP,
+	FUNC_ACL_UDF_PROFILE_SET,
+	FUNC_ACL_UDF_PROFILE_GET,
+};
+
+
 sw_error_t
 fal_acl_list_creat(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t list_pri);
 
@@ -540,7 +577,7 @@ fal_acl_rule_dump(a_uint32_t dev_id);
 sw_error_t
 fal_acl_port_udf_profile_set(a_uint32_t dev_id, fal_port_t port_id, fal_acl_udf_type_t udf_type, a_uint32_t offset, a_uint32_t length);
 sw_error_t
-fal_acl_port_udf_profile_get(a_uint32_t dev_id, fal_port_t port_id,	 fal_acl_udf_type_t udf_type, a_uint32_t * offset, a_uint32_t * length);
+fal_acl_port_udf_profile_get(a_uint32_t dev_id, fal_port_t port_id, fal_acl_udf_type_t udf_type, a_uint32_t * offset, a_uint32_t * length);
 
 sw_error_t
 fal_acl_udf_profile_set(a_uint32_t dev_id, fal_acl_udf_pkt_type_t pkt_type,a_uint32_t udf_idx, fal_acl_udf_type_t udf_type, a_uint32_t offset);
