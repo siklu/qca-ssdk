@@ -38,9 +38,11 @@ sw_error_t adpt_hppe_port_ctrl_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_mirror_init(a_uint32_t dev_id);
 
 sw_error_t adpt_hppe_trunk_init(a_uint32_t dev_id);
-
+void adpt_hppe_ip_func_bitmap_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_ip_init(a_uint32_t dev_id);
+void adpt_hppe_qm_func_bitmap_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_qm_init(a_uint32_t dev_id);
+void adpt_hppe_flow_func_bitmap_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_flow_init(a_uint32_t dev_id);
 
 sw_error_t adpt_hppe_pppoe_init(a_uint32_t dev_id);
@@ -49,8 +51,9 @@ sw_error_t adpt_hppe_sec_init(a_uint32_t dev_id);
 
 void adpt_hppe_acl_func_bitmap_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_acl_init(a_uint32_t dev_id);
-
+void adpt_hppe_qos_func_bitmap_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_qos_init(a_uint32_t dev_id);
+void adpt_hppe_bm_func_bitmap_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_bm_init(a_uint32_t dev_id);
 
 sw_error_t adpt_hppe_shaper_init(a_uint32_t dev_id);

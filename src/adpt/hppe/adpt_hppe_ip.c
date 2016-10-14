@@ -1224,7 +1224,61 @@ adpt_hppe_ip_nexthop_set(a_uint32_t dev_id,
 	return hppe_in_nexthop_tbl_set(dev_id, index, &in_nexthop_tbl);
 }
 
+void adpt_hppe_ip_func_bitmap_init(a_uint32_t dev_id)
+{
+	adpt_api_t *p_adpt_api = NULL;
 
+	p_adpt_api = adpt_api_ptr_get(dev_id);
+
+	if(p_adpt_api == NULL)
+		return;
+
+	p_adpt_api->adpt_ip_func_bitmap[0] = 0;
+	p_adpt_api->adpt_ip_func_bitmap[1] = 0;
+	return;
+}
+
+static void adpt_hppe_ip_func_unregister(a_uint32_t dev_id, adpt_api_t *p_adpt_api)
+{
+	if(p_adpt_api == NULL)
+		return;
+
+	p_adpt_api->adpt_ip_network_route_get = NULL;
+	p_adpt_api->adpt_ip_host_add = NULL;
+	p_adpt_api->adpt_ip_vsi_sg_cfg_get = NULL;
+	p_adpt_api->adpt_ip_pub_addr_del = NULL;
+	p_adpt_api->adpt_ip_port_sg_cfg_set = NULL;
+	p_adpt_api->adpt_ip_port_intf_get = NULL;
+	p_adpt_api->adpt_ip_vsi_arp_sg_cfg_set = NULL;
+	p_adpt_api->adpt_ip_pub_addr_get = NULL;
+	p_adpt_api->adpt_ip_port_intf_set = NULL;
+	p_adpt_api->adpt_ip_vsi_sg_cfg_set = NULL;
+	p_adpt_api->adpt_ip_host_next = NULL;
+	p_adpt_api->adpt_ip_port_macaddr_set = NULL;
+	p_adpt_api->adpt_ip_vsi_intf_get = NULL;
+	p_adpt_api->adpt_ip_network_route_set = NULL;
+	p_adpt_api->adpt_ip_port_sg_cfg_get = NULL;
+	p_adpt_api->adpt_ip_intf_get = NULL;
+	p_adpt_api->adpt_ip_pub_addr_add = NULL;
+	p_adpt_api->adpt_ip_host_del = NULL;
+	p_adpt_api->adpt_ip_route_mismatch_get = NULL;
+	p_adpt_api->adpt_ip_vsi_arp_sg_cfg_get = NULL;
+	p_adpt_api->adpt_ip_port_arp_sg_cfg_set = NULL;
+	p_adpt_api->adpt_ip_vsi_mc_mode_set = NULL;
+	p_adpt_api->adpt_ip_vsi_intf_set = NULL;
+	p_adpt_api->adpt_ip_nexthop_get = NULL;
+	p_adpt_api->adpt_ip_route_mismatch_set = NULL;
+	p_adpt_api->adpt_ip_host_get = NULL;
+	p_adpt_api->adpt_ip_intf_set = NULL;
+	p_adpt_api->adpt_ip_vsi_mc_mode_get = NULL;
+	p_adpt_api->adpt_ip_port_macaddr_get = NULL;
+	p_adpt_api->adpt_ip_port_arp_sg_cfg_get = NULL;
+	p_adpt_api->adpt_ip_nexthop_set = NULL;
+	p_adpt_api->adpt_ip_global_ctrl_get = NULL;
+	p_adpt_api->adpt_ip_global_ctrl_set = NULL;
+
+	return;
+}
 sw_error_t adpt_hppe_ip_init(a_uint32_t dev_id)
 {
 	adpt_api_t *p_adpt_api = NULL;
@@ -1234,39 +1288,74 @@ sw_error_t adpt_hppe_ip_init(a_uint32_t dev_id)
 	if(p_adpt_api == NULL)
 		return SW_FAIL;
 
-	p_adpt_api->adpt_ip_network_route_get = adpt_hppe_ip_network_route_get;
-	p_adpt_api->adpt_ip_host_add = adpt_hppe_ip_host_add;
-	p_adpt_api->adpt_ip_vsi_sg_cfg_get = adpt_hppe_ip_vsi_sg_cfg_get;
-	p_adpt_api->adpt_ip_pub_addr_del = adpt_hppe_ip_pub_addr_del;
-	p_adpt_api->adpt_ip_port_sg_cfg_set = adpt_hppe_ip_port_sg_cfg_set;
-	p_adpt_api->adpt_ip_port_intf_get = adpt_hppe_ip_port_intf_get;
-	p_adpt_api->adpt_ip_vsi_arp_sg_cfg_set = adpt_hppe_ip_vsi_arp_sg_cfg_set;
-	p_adpt_api->adpt_ip_pub_addr_get = adpt_hppe_ip_pub_addr_get;
-	p_adpt_api->adpt_ip_port_intf_set = adpt_hppe_ip_port_intf_set;
-	p_adpt_api->adpt_ip_vsi_sg_cfg_set = adpt_hppe_ip_vsi_sg_cfg_set;
-	p_adpt_api->adpt_ip_host_next = adpt_hppe_ip_host_next;
-	p_adpt_api->adpt_ip_port_macaddr_set = adpt_hppe_ip_port_macaddr_set;
-	p_adpt_api->adpt_ip_vsi_intf_get = adpt_hppe_ip_vsi_intf_get;
-	p_adpt_api->adpt_ip_network_route_set = adpt_hppe_ip_network_route_set;
-	p_adpt_api->adpt_ip_port_sg_cfg_get = adpt_hppe_ip_port_sg_cfg_get;
-	p_adpt_api->adpt_ip_intf_get = adpt_hppe_ip_intf_get;
-	p_adpt_api->adpt_ip_pub_addr_add = adpt_hppe_ip_pub_addr_add;
-	p_adpt_api->adpt_ip_host_del = adpt_hppe_ip_host_del;
-	p_adpt_api->adpt_ip_route_mismatch_get = adpt_hppe_ip_route_mismatch_get;
-	p_adpt_api->adpt_ip_vsi_arp_sg_cfg_get = adpt_hppe_ip_vsi_arp_sg_cfg_get;
-	p_adpt_api->adpt_ip_port_arp_sg_cfg_set = adpt_hppe_ip_port_arp_sg_cfg_set;
-	p_adpt_api->adpt_ip_vsi_mc_mode_set = adpt_hppe_ip_vsi_mc_mode_set;
-	p_adpt_api->adpt_ip_vsi_intf_set = adpt_hppe_ip_vsi_intf_set;
-	p_adpt_api->adpt_ip_nexthop_get = adpt_hppe_ip_nexthop_get;
-	p_adpt_api->adpt_ip_route_mismatch_set = adpt_hppe_ip_route_mismatch_set;
-	p_adpt_api->adpt_ip_host_get = adpt_hppe_ip_host_get;
-	p_adpt_api->adpt_ip_intf_set = adpt_hppe_ip_intf_set;
-	p_adpt_api->adpt_ip_vsi_mc_mode_get = adpt_hppe_ip_vsi_mc_mode_get;
-	p_adpt_api->adpt_ip_port_macaddr_get = adpt_hppe_ip_port_macaddr_get;
-	p_adpt_api->adpt_ip_port_arp_sg_cfg_get = adpt_hppe_ip_port_arp_sg_cfg_get;
-	p_adpt_api->adpt_ip_nexthop_set = adpt_hppe_ip_nexthop_set;
-	p_adpt_api->adpt_ip_global_ctrl_get = adpt_hppe_ip_global_ctrl_get;
-	p_adpt_api->adpt_ip_global_ctrl_set = adpt_hppe_ip_global_ctrl_set;
+	adpt_hppe_ip_func_unregister(dev_id, p_adpt_api);
+
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_NETWORK_ROUTE_GET))
+		p_adpt_api->adpt_ip_network_route_get = adpt_hppe_ip_network_route_get;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_HOST_ADD))
+		p_adpt_api->adpt_ip_host_add = adpt_hppe_ip_host_add;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_VSI_SG_CFG_GET))
+		p_adpt_api->adpt_ip_vsi_sg_cfg_get = adpt_hppe_ip_vsi_sg_cfg_get;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_PUB_ADDR_DEL))
+		p_adpt_api->adpt_ip_pub_addr_del = adpt_hppe_ip_pub_addr_del;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_PORT_SG_CFG_SET))
+		p_adpt_api->adpt_ip_port_sg_cfg_set = adpt_hppe_ip_port_sg_cfg_set;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_PORT_INTF_GET))
+		p_adpt_api->adpt_ip_port_intf_get = adpt_hppe_ip_port_intf_get;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_VSI_ARP_SG_CFG_SET))
+		p_adpt_api->adpt_ip_vsi_arp_sg_cfg_set = adpt_hppe_ip_vsi_arp_sg_cfg_set;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_PUB_ADDR_GET))
+		p_adpt_api->adpt_ip_pub_addr_get = adpt_hppe_ip_pub_addr_get;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_PORT_INTF_SET))
+		p_adpt_api->adpt_ip_port_intf_set = adpt_hppe_ip_port_intf_set;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_VSI_SG_CFG_SET))
+		p_adpt_api->adpt_ip_vsi_sg_cfg_set = adpt_hppe_ip_vsi_sg_cfg_set;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_HOST_NEXT))
+		p_adpt_api->adpt_ip_host_next = adpt_hppe_ip_host_next;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_PORT_MACADDR_SET))
+		p_adpt_api->adpt_ip_port_macaddr_set = adpt_hppe_ip_port_macaddr_set;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_VSI_INTF_GET))
+		p_adpt_api->adpt_ip_vsi_intf_get = adpt_hppe_ip_vsi_intf_get;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_NETWORK_ROUTE_SET))
+		p_adpt_api->adpt_ip_network_route_set = adpt_hppe_ip_network_route_set;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_PORT_SG_CFG_GET))
+		p_adpt_api->adpt_ip_port_sg_cfg_get = adpt_hppe_ip_port_sg_cfg_get;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_INTF_GET))
+		p_adpt_api->adpt_ip_intf_get = adpt_hppe_ip_intf_get;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_PUB_ADDR_ADD))
+		p_adpt_api->adpt_ip_pub_addr_add = adpt_hppe_ip_pub_addr_add;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_HOST_DEL))
+		p_adpt_api->adpt_ip_host_del = adpt_hppe_ip_host_del;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_ROUTE_MISMATCH_GET))
+		p_adpt_api->adpt_ip_route_mismatch_get = adpt_hppe_ip_route_mismatch_get;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_VSI_ARP_SG_CFG_GET))
+		p_adpt_api->adpt_ip_vsi_arp_sg_cfg_get = adpt_hppe_ip_vsi_arp_sg_cfg_get;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_PORT_ARP_SG_CFG_SET))
+		p_adpt_api->adpt_ip_port_arp_sg_cfg_set = adpt_hppe_ip_port_arp_sg_cfg_set;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_VSI_MC_MODE_SET))
+		p_adpt_api->adpt_ip_vsi_mc_mode_set = adpt_hppe_ip_vsi_mc_mode_set;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_VSI_INTF_SET))
+		p_adpt_api->adpt_ip_vsi_intf_set = adpt_hppe_ip_vsi_intf_set;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_NEXTHOP_GET))
+		p_adpt_api->adpt_ip_nexthop_get = adpt_hppe_ip_nexthop_get;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_ROUTE_MISMATCH_SET))
+		p_adpt_api->adpt_ip_route_mismatch_set = adpt_hppe_ip_route_mismatch_set;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_HOST_GET))
+		p_adpt_api->adpt_ip_host_get = adpt_hppe_ip_host_get;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_INTF_SET))
+		p_adpt_api->adpt_ip_intf_set = adpt_hppe_ip_intf_set;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_VSI_MC_MODE_GET))
+		p_adpt_api->adpt_ip_vsi_mc_mode_get = adpt_hppe_ip_vsi_mc_mode_get;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_PORT_MACADDR_GET))
+		p_adpt_api->adpt_ip_port_macaddr_get = adpt_hppe_ip_port_macaddr_get;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_PORT_ARP_SG_CFG_GET))
+		p_adpt_api->adpt_ip_port_arp_sg_cfg_get = adpt_hppe_ip_port_arp_sg_cfg_get;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_NEXTHOP_SET))
+		p_adpt_api->adpt_ip_nexthop_set = adpt_hppe_ip_nexthop_set;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_GLOBAL_CTRL_GET))
+		p_adpt_api->adpt_ip_global_ctrl_get = adpt_hppe_ip_global_ctrl_get;
+	if (p_adpt_api->adpt_ip_func_bitmap[1] & (1 << (FUNC_IP_GLOBAL_CTRL_SET % 32)))
+		p_adpt_api->adpt_ip_global_ctrl_set = adpt_hppe_ip_global_ctrl_set;
 
 	return SW_OK;
 }
