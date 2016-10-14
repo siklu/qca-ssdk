@@ -691,6 +691,69 @@ adpt_hppe_port_scheduler_cfg_get(a_uint32_t dev_id,
 	return SW_OK;
 }
 
+void adpt_hppe_qos_func_bitmap_init(a_uint32_t dev_id)
+{
+	adpt_api_t *p_adpt_api = NULL;
+
+	p_adpt_api = adpt_api_ptr_get(dev_id);
+
+	if(p_adpt_api == NULL)
+		return;
+
+	p_adpt_api->adpt_qos_func_bitmap = ((1 << FUNC_QOS_PORT_PRI_SET) |
+						(1 << FUNC_QOS_PORT_PRI_GET) |
+						(1 << FUNC_QOS_COSMAP_PCP_GET) |
+						(1 << FUNC_QUEUE_SCHEDULER_SET) |
+						(1 << FUNC_QUEUE_SCHEDULER_GET) |
+						(1 << FUNC_PORT_QUEUES_GET) |
+						(1 << FUNC_QOS_COSMAP_PCP_SET) |
+						(1 << FUNC_QOS_PORT_REMARK_GET) |
+						(1 << FUNC_QOS_COSMAP_DSCP_GET) |
+						(1 << FUNC_QOS_COSMAP_FLOW_SET) |
+						(1 << FUNC_QOS_PORT_GROUP_SET) |
+						(1 << FUNC_RING_QUEUE_MAP_SET) |
+						(1 << FUNC_QOS_COSMAP_DSCP_SET) |
+						(1 << FUNC_QOS_PORT_REMARK_SET) |
+						(1 << FUNC_QOS_COSMAP_FLOW_GET) |
+						(1 << FUNC_QOS_PORT_GROUP_GET) |
+						(1 << FUNC_RING_QUEUE_MAP_GET) |
+						(1 << FUNC_TDM_TICK_NUM_SET) |
+						(1 << FUNC_TDM_TICK_NUM_GET) |
+						(1 << FUNC_PORT_SCHEDULER_CFG_SET) |
+						(1 << FUNC_PORT_SCHEDULER_CFG_GET));
+	return;
+}
+
+static void adpt_hppe_qos_func_unregister(a_uint32_t dev_id, adpt_api_t *p_adpt_api)
+{
+	if(p_adpt_api == NULL)
+		return;
+
+	p_adpt_api->adpt_qos_port_pri_set = NULL;
+	p_adpt_api->adpt_qos_port_pri_get = NULL;
+	p_adpt_api->adpt_qos_cosmap_pcp_get = NULL;
+	p_adpt_api->adpt_queue_scheduler_set = NULL;
+	p_adpt_api->adpt_queue_scheduler_get = NULL;
+	p_adpt_api->adpt_port_queues_get = NULL;
+	p_adpt_api->adpt_qos_cosmap_pcp_set = NULL;
+	p_adpt_api->adpt_qos_port_remark_get = NULL;
+	p_adpt_api->adpt_qos_cosmap_dscp_get = NULL;
+	p_adpt_api->adpt_qos_cosmap_flow_set = NULL;
+	p_adpt_api->adpt_qos_port_group_set = NULL;
+	p_adpt_api->adpt_ring_queue_map_set = NULL;
+	p_adpt_api->adpt_qos_cosmap_dscp_set = NULL;
+	p_adpt_api->adpt_qos_port_remark_set = NULL;
+	p_adpt_api->adpt_qos_cosmap_flow_get = NULL;
+	p_adpt_api->adpt_qos_port_group_get = NULL;
+	p_adpt_api->adpt_ring_queue_map_get = NULL;
+	p_adpt_api->adpt_tdm_tick_num_set = NULL;
+	p_adpt_api->adpt_tdm_tick_num_get = NULL;
+	p_adpt_api->adpt_port_scheduler_cfg_set = NULL;
+	p_adpt_api->adpt_port_scheduler_cfg_get = NULL;
+
+	return;
+}
+
 sw_error_t adpt_hppe_qos_init(a_uint32_t dev_id)
 {
 	adpt_api_t *p_adpt_api = NULL;
@@ -700,27 +763,50 @@ sw_error_t adpt_hppe_qos_init(a_uint32_t dev_id)
 	if(p_adpt_api == NULL)
 		return SW_FAIL;
 
-	p_adpt_api->adpt_qos_port_pri_set = adpt_hppe_qos_port_pri_set;
-	p_adpt_api->adpt_qos_port_pri_get = adpt_hppe_qos_port_pri_get;
-	p_adpt_api->adpt_qos_cosmap_pcp_get = adpt_hppe_qos_cosmap_pcp_get;
-	p_adpt_api->adpt_queue_scheduler_set = adpt_hppe_queue_scheduler_set;
-	p_adpt_api->adpt_queue_scheduler_get = adpt_hppe_queue_scheduler_get;
-	p_adpt_api->adpt_port_queues_get = adpt_hppe_port_queues_get;
-	p_adpt_api->adpt_qos_cosmap_pcp_set = adpt_hppe_qos_cosmap_pcp_set;
-	p_adpt_api->adpt_qos_port_remark_get = adpt_hppe_qos_port_remark_get;
-	p_adpt_api->adpt_qos_cosmap_dscp_get = adpt_hppe_qos_cosmap_dscp_get;
-	p_adpt_api->adpt_qos_cosmap_flow_set = adpt_hppe_qos_cosmap_flow_set;
-	p_adpt_api->adpt_qos_port_group_set = adpt_hppe_qos_port_group_set;
-	p_adpt_api->adpt_ring_queue_map_set = adpt_hppe_ring_queue_map_set;
-	p_adpt_api->adpt_qos_cosmap_dscp_set = adpt_hppe_qos_cosmap_dscp_set;
-	p_adpt_api->adpt_qos_port_remark_set = adpt_hppe_qos_port_remark_set;
-	p_adpt_api->adpt_qos_cosmap_flow_get = adpt_hppe_qos_cosmap_flow_get;
-	p_adpt_api->adpt_qos_port_group_get = adpt_hppe_qos_port_group_get;
-	p_adpt_api->adpt_ring_queue_map_get = adpt_hppe_ring_queue_map_get;
-	p_adpt_api->adpt_tdm_tick_num_set = adpt_hppe_tdm_tick_num_set;
-	p_adpt_api->adpt_tdm_tick_num_get = adpt_hppe_tdm_tick_num_get;
-	p_adpt_api->adpt_port_scheduler_cfg_set = adpt_hppe_port_scheduler_cfg_set;
-	p_adpt_api->adpt_port_scheduler_cfg_get = adpt_hppe_port_scheduler_cfg_get;
+	adpt_hppe_qos_func_unregister(dev_id, p_adpt_api);
+
+	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_QOS_PORT_PRI_SET))
+		p_adpt_api->adpt_qos_port_pri_set = adpt_hppe_qos_port_pri_set;
+	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_QOS_PORT_PRI_GET))
+		p_adpt_api->adpt_qos_port_pri_get = adpt_hppe_qos_port_pri_get;
+	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_QOS_COSMAP_PCP_GET))
+		p_adpt_api->adpt_qos_cosmap_pcp_get = adpt_hppe_qos_cosmap_pcp_get;
+	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_QUEUE_SCHEDULER_SET))
+		p_adpt_api->adpt_queue_scheduler_set = adpt_hppe_queue_scheduler_set;
+	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_QUEUE_SCHEDULER_GET))
+		p_adpt_api->adpt_queue_scheduler_get = adpt_hppe_queue_scheduler_get;
+	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_PORT_QUEUES_GET))
+		p_adpt_api->adpt_port_queues_get = adpt_hppe_port_queues_get;
+	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_QOS_COSMAP_PCP_SET))
+		p_adpt_api->adpt_qos_cosmap_pcp_set = adpt_hppe_qos_cosmap_pcp_set;
+	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_QOS_PORT_REMARK_GET))
+		p_adpt_api->adpt_qos_port_remark_get = adpt_hppe_qos_port_remark_get;
+	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_QOS_COSMAP_DSCP_GET))
+		p_adpt_api->adpt_qos_cosmap_dscp_get = adpt_hppe_qos_cosmap_dscp_get;
+	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_QOS_COSMAP_FLOW_SET))
+		p_adpt_api->adpt_qos_cosmap_flow_set = adpt_hppe_qos_cosmap_flow_set;
+	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_QOS_PORT_GROUP_SET))
+		p_adpt_api->adpt_qos_port_group_set = adpt_hppe_qos_port_group_set;
+	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_RING_QUEUE_MAP_SET))
+		p_adpt_api->adpt_ring_queue_map_set = adpt_hppe_ring_queue_map_set;
+	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_QOS_COSMAP_DSCP_SET))
+		p_adpt_api->adpt_qos_cosmap_dscp_set = adpt_hppe_qos_cosmap_dscp_set;
+	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_QOS_PORT_REMARK_SET))
+		p_adpt_api->adpt_qos_port_remark_set = adpt_hppe_qos_port_remark_set;
+	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_QOS_COSMAP_FLOW_GET))
+		p_adpt_api->adpt_qos_cosmap_flow_get = adpt_hppe_qos_cosmap_flow_get;
+	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_QOS_PORT_GROUP_GET))
+		p_adpt_api->adpt_qos_port_group_get = adpt_hppe_qos_port_group_get;
+	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_RING_QUEUE_MAP_GET))
+		p_adpt_api->adpt_ring_queue_map_get = adpt_hppe_ring_queue_map_get;
+	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_TDM_TICK_NUM_SET))
+		p_adpt_api->adpt_tdm_tick_num_set = adpt_hppe_tdm_tick_num_set;
+	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_TDM_TICK_NUM_GET))
+		p_adpt_api->adpt_tdm_tick_num_get = adpt_hppe_tdm_tick_num_get;
+	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_PORT_SCHEDULER_CFG_SET))
+		p_adpt_api->adpt_port_scheduler_cfg_set = adpt_hppe_port_scheduler_cfg_set;
+	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_PORT_SCHEDULER_CFG_GET))
+		p_adpt_api->adpt_port_scheduler_cfg_get = adpt_hppe_port_scheduler_cfg_get;
 
 	return SW_OK;
 }

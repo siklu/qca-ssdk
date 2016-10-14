@@ -931,6 +931,8 @@ typedef struct
 	adpt_trunk_fail_over_en_set_func adpt_trunk_fail_over_en_set;
 	adpt_trunk_hash_mode_set_func adpt_trunk_hash_mode_set;
 
+	/* ip */
+	a_uint32_t adpt_ip_func_bitmap[2];
 	adpt_ip_network_route_get_func adpt_ip_network_route_get;
 	adpt_ip_host_add_func adpt_ip_host_add;
 	adpt_ip_vsi_sg_cfg_get_func adpt_ip_vsi_sg_cfg_get;
@@ -964,6 +966,8 @@ typedef struct
 	adpt_ip_nexthop_set_func adpt_ip_nexthop_set;
 	adpt_ip_global_ctrl_get_func adpt_ip_global_ctrl_get;
 	adpt_ip_global_ctrl_set_func adpt_ip_global_ctrl_set;
+	/* flow */
+	a_uint32_t adpt_flow_func_bitmap;
 	adpt_flow_host_add_func adpt_flow_host_add;
 	adpt_flow_entry_get_func adpt_flow_entry_get;
 	adpt_flow_entry_del_func adpt_flow_entry_del;
@@ -979,6 +983,8 @@ typedef struct
 	adpt_flow_global_cfg_get_func adpt_flow_global_cfg_get;
 	adpt_flow_global_cfg_set_func adpt_flow_global_cfg_set;
 
+	/* qm */
+	a_uint32_t adpt_qm_func_bitmap;
 	adpt_ucast_hash_map_set_func adpt_ucast_hash_map_set;
 	adpt_ac_dynamic_threshold_get_func adpt_ac_dynamic_threshold_get;
 	adpt_ucast_queue_base_profile_get_func adpt_ucast_queue_base_profile_get;
@@ -1086,6 +1092,8 @@ typedef struct
 	adpt_acl_list_creat_func adpt_acl_list_creat;
 	adpt_acl_list_destroy_func adpt_acl_list_destroy;
 
+	/* qos */
+	a_uint32_t adpt_qos_func_bitmap;
 	adpt_qos_port_pri_set_func adpt_qos_port_pri_set;
 	adpt_qos_port_pri_get_func adpt_qos_port_pri_get;
 	adpt_qos_cosmap_pcp_get_func adpt_qos_cosmap_pcp_get;
@@ -1108,6 +1116,8 @@ typedef struct
 	adpt_port_scheduler_cfg_set_func adpt_port_scheduler_cfg_set;
 	adpt_port_scheduler_cfg_get_func adpt_port_scheduler_cfg_get;
 
+	/* bm */
+	a_uint32_t adpt_bm_func_bitmap;
 	adpt_port_bufgroup_map_get_func adpt_port_bufgroup_map_get;
 	adpt_bm_port_reserved_buffer_get_func adpt_bm_port_reserved_buffer_get;
 	adpt_bm_bufgroup_buffer_get_func adpt_bm_bufgroup_buffer_get;

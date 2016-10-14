@@ -133,6 +133,23 @@ typedef struct {
 	a_uint16_t unit;
 } fal_flow_age_timer_t;
 
+enum  {
+	FUNC_FLOW_HOST_ADD = 0,
+	FUNC_FLOW_ENTRY_GET,
+	FUNC_FLOW_ENTRY_DEL,
+	FUNC_FLOW_STATUS_GET,
+	FUNC_FLOW_CTRL_SET,
+	FUNC_FLOW_AGE_TIMER_GET,
+	FUNC_FLOW_STATUS_SET,
+	FUNC_FLOW_HOST_GET,
+	FUNC_FLOW_HOST_DEL,
+	FUNC_FLOW_CTRL_GET,
+	FUNC_FLOW_AGE_TIMER_SET,
+	FUNC_FLOW_ENTRY_ADD,
+	FUNC_FLOW_GLOBAL_CFG_GET,
+	FUNC_FLOW_GLOBAL_CFG_SET,
+};
+
 sw_error_t
 fal_flow_status_set(a_uint32_t dev_id, a_bool_t enable);
 
