@@ -1068,6 +1068,7 @@ typedef struct
 	/*ctrlpkt module end*/
 
 	/*servcode module begin*/
+	a_uint32_t adpt_servcode_func_bitmap;
 	adpt_parse_service_profile_set_func adpt_parse_service_profile_set;
 	adpt_parse_service_profile_get_func adpt_parse_service_profile_get;
 	adpt_ingress_service_profile_set_func adpt_ingress_service_profile_set;
@@ -1077,6 +1078,7 @@ typedef struct
 	/*servcode module end*/
 
 	//pppoe
+	a_uint32_t adpt_pppoe_func_bitmap;
 	adpt_pppoe_session_table_add_func adpt_pppoe_session_table_add;
 	adpt_pppoe_session_table_del_func adpt_pppoe_session_table_del;
 	adpt_pppoe_session_table_get_func adpt_pppoe_session_table_get;

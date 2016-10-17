@@ -57,6 +57,17 @@ typedef struct {
 	a_bool_t  tx_counting_en;
 } fal_egress_service_entry_t;
 
+enum
+{
+	/*servcode*/
+	FUNC_PARSE_SERVICE_PROFILE_SET = 0,
+	FUNC_PARSE_SERVICE_PROFILE_GET,
+	FUNC_INGRESS_SERVICE_PROFILE_SET,
+	FUNC_INGRESS_SERVICE_PROFILE_GET,
+	FUNC_EGRESS_SERVICE_PROFILE_SET,
+	FUNC_EGRESS_SERVICE_PROFILE_GET,
+};
+
 sw_error_t fal_parse_service_profile_set(a_uint32_t dev_id,
 										a_uint32_t profile_id,
 										fal_parse_service_entry_t *entry);

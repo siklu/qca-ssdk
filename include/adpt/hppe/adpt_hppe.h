@@ -27,6 +27,7 @@ extern "C" {
 sw_error_t adpt_hppe_fdb_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_portvlan_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_ctrlpkt_init(a_uint32_t dev_id);
+void adpt_hppe_servcode_func_bitmap_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_servcode_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_mib_init(a_uint32_t dev_id);
 
@@ -45,6 +46,7 @@ sw_error_t adpt_hppe_qm_init(a_uint32_t dev_id);
 void adpt_hppe_flow_func_bitmap_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_flow_init(a_uint32_t dev_id);
 
+void adpt_hppe_pppoe_func_bitmap_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_pppoe_init(a_uint32_t dev_id);
 
 sw_error_t adpt_hppe_sec_init(a_uint32_t dev_id);
