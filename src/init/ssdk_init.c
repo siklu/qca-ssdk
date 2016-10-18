@@ -3563,7 +3563,7 @@ qca_hppe_qm_hw_init()
 	for(i = 1; i < 8; i++) {
 		queue_dst.dst_port = i;
 		fal_ucast_queue_base_profile_set(0, &queue_dst,
-						queue_base + (i-1) * 8, 0);
+						queue_base + (i-1) * 8, i);
 	}
 
 	/* queue ac*/
@@ -3608,6 +3608,8 @@ qca_hppe_qos_scheduler_hw_init()
 	fal_qos_cosmap_t map;
 	fal_queue_bmp_t queue_bmp;
 	fal_qos_pri_precedence_t qos_pri;
+	fal_qos_group_t group_sel;
+	fal_qos_pri_precedence_t pri_pre;
 
 	memset(&cfg, 0, sizeof(cfg));
 
@@ -3676,6 +3678,22 @@ qca_hppe_qos_scheduler_hw_init()
 	fal_edma_ring_queue_map_set(0, 0, &queue_bmp);
 	queue_bmp.bmp[0] = 2;
 	fal_edma_ring_queue_map_set(0, 1, &queue_bmp);
+
+	/* chose qos group 0 */
+	group_sel.dscp_group = 0;
+	group_sel.flow_group = 0;
+	group_sel.pcp_group = 0;
+	for (i = 0; i < 8; i++)
+		fal_qos_port_group_get(0, i, &group_sel);
+	/* qos precedence */
+	pri_pre.flow_pri = 4;
+	pri_pre.acl_pri = 3;
+	pri_pre.dscp_pri = 2;
+	pri_pre.pcp_pri = 1;
+	pri_pre.preheader_pri = 0;
+	for (i = 0; i < 8; i++)
+		fal_qos_port_pri_precedence_set(0, i, &pri_pre);
+
 	return 0;
 }
 

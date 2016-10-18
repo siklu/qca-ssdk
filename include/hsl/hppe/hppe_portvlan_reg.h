@@ -869,10 +869,22 @@ union eg_vlan_tpid_u {
 	#define EG_BRIDGE_CONFIG_BRIDGE_TYPE_OFFSET  0
 	#define EG_BRIDGE_CONFIG_BRIDGE_TYPE_LEN     1
 	#define EG_BRIDGE_CONFIG_BRIDGE_TYPE_DEFAULT 0x0
+	/*[field] PKT_LE_EDIT_BYPASS*/
+	#define EG_BRIDGE_CONFIG_PKT_LE_EDIT_BYPASS
+	#define EG_BRIDGE_CONFIG_PKT_LE_EDIT_BYPASS_OFFSET  1
+	#define EG_BRIDGE_CONFIG_PKT_LE_EDIT_BYPASS_LEN     1
+	#define EG_BRIDGE_CONFIG_PKT_LE_EDIT_BYPASS_DEFAULT 0x0
+	/*[field] QUEUE_CNT_EN*/
+	#define EG_BRIDGE_CONFIG_QUEUE_CNT_EN
+	#define EG_BRIDGE_CONFIG_QUEUE_CNT_EN_OFFSET  2
+	#define EG_BRIDGE_CONFIG_QUEUE_CNT_EN_LEN     1
+	#define EG_BRIDGE_CONFIG_QUEUE_CNT_EN_DEFAULT 0x0
 
 struct eg_bridge_config {
 	a_uint32_t  bridge_type:1;
-	a_uint32_t  _reserved0:31;
+	a_uint32_t  pkt_le_edit_bypass:1;
+	a_uint32_t  queue_cnt_en:1;
+	a_uint32_t  _reserved0:29;
 };
 
 union eg_bridge_config_u {

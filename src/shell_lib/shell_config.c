@@ -1196,6 +1196,8 @@ struct sub_cmd_des_t g_qm_des[] =
     {"acsthresh", "set", SW_API_STATIC_THRESH_SET, NULL},
     {"acdthresh", "set", SW_API_DYNAMIC_THRESH_SET, NULL},
     {"acgbuff", "set", SW_API_GOURP_BUFFER_SET, NULL},
+    {"cntctrl", "set", SW_API_QUEUE_CNT_CTRL_SET, NULL},
+    {"cnt", "cleanup", SW_API_QUEUE_CNT_CLEANUP, NULL},
     {NULL, NULL, (int)NULL, NULL},/*end of desc*/
 
 };

@@ -537,6 +537,15 @@ typedef sw_error_t (*adpt_ac_group_buffer_set_func)(
 		a_uint32_t dev_id,
 		a_uint8_t group_id,
 		fal_ac_group_buffer_t *cfg);
+typedef sw_error_t (*adpt_queue_counter_cleanup_func)(
+		a_uint32_t dev_id, a_uint32_t queue_id);
+typedef sw_error_t (*adpt_queue_counter_get_func)(
+		a_uint32_t dev_id, a_uint32_t queue_id,
+		fal_queue_stats_t *info);
+typedef sw_error_t (*adpt_queue_counter_ctrl_get_func)(
+		a_uint32_t dev_id, a_bool_t *cnt_en);
+typedef sw_error_t (*adpt_queue_counter_ctrl_set_func)(
+		a_uint32_t dev_id, a_bool_t cnt_en);
 
 
 /*portvlan module begin*/
@@ -1019,6 +1028,10 @@ typedef struct
 	adpt_ac_static_threshold_get_func adpt_ac_static_threshold_get;
 	adpt_ucast_queue_base_profile_set_func adpt_ucast_queue_base_profile_set;
 	adpt_ac_group_buffer_set_func adpt_ac_group_buffer_set;
+	adpt_queue_counter_cleanup_func adpt_queue_counter_cleanup;
+	adpt_queue_counter_get_func adpt_queue_counter_get;
+	adpt_queue_counter_ctrl_get_func adpt_queue_counter_ctrl_get;
+	adpt_queue_counter_ctrl_set_func adpt_queue_counter_ctrl_set;
 
 	/*portvlan module begin*/
 	adpt_global_qinq_mode_set_func adpt_global_qinq_mode_set;

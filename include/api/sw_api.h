@@ -191,6 +191,7 @@ extern "C" {
 	SW_SHAPER_CONFIG,
         SW_MODULE,
         SW_FUNC_CTRL,
+        SW_QM_CNT,
     } sw_data_type_e;
 
     typedef struct

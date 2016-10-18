@@ -451,6 +451,69 @@ _fal_ac_group_buffer_set(
 	rv = p_api->adpt_ac_group_buffer_set(dev_id, group_id, cfg);
 	return rv;
 }
+
+sw_error_t
+_fal_queue_counter_ctrl_set(a_uint32_t dev_id, a_bool_t cnt_en)
+{
+	adpt_api_t *p_api;
+	sw_error_t rv = SW_OK;
+
+	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+	if (NULL == p_api->adpt_queue_counter_ctrl_set)
+		return SW_NOT_SUPPORTED;
+
+	rv = p_api->adpt_queue_counter_ctrl_set(dev_id, cnt_en);
+	return rv;
+}
+
+sw_error_t
+_fal_queue_counter_ctrl_get(a_uint32_t dev_id, a_bool_t *cnt_en)
+{
+	adpt_api_t *p_api;
+	sw_error_t rv = SW_OK;
+
+	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+	if (NULL == p_api->adpt_queue_counter_ctrl_get)
+		return SW_NOT_SUPPORTED;
+
+	rv = p_api->adpt_queue_counter_ctrl_get(dev_id, cnt_en);
+	return rv;
+}
+
+sw_error_t
+_fal_queue_counter_get(
+		a_uint32_t dev_id,
+		a_uint32_t queue_id,
+		fal_queue_stats_t *info)
+{
+	adpt_api_t *p_api;
+	sw_error_t rv = SW_OK;
+
+	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+	if (NULL == p_api->adpt_queue_counter_get)
+		return SW_NOT_SUPPORTED;
+
+	rv = p_api->adpt_queue_counter_get(dev_id, queue_id, info);
+	return rv;
+}
+
+sw_error_t
+_fal_queue_counter_cleanup(a_uint32_t dev_id, a_uint32_t queue_id)
+{
+	adpt_api_t *p_api;
+	sw_error_t rv = SW_OK;
+
+	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+	if (NULL == p_api->adpt_queue_counter_cleanup)
+		return SW_NOT_SUPPORTED;
+
+	rv = p_api->adpt_queue_counter_cleanup(dev_id, queue_id);
+	return rv;
+}
 /*insert flag for inner fal, don't remove it*/
 
 sw_error_t
@@ -783,6 +846,53 @@ fal_ac_group_buffer_set(
 	return rv;
 }
 
+sw_error_t
+fal_queue_counter_ctrl_set(a_uint32_t dev_id, a_bool_t cnt_en)
+{
+	sw_error_t rv = SW_OK;
+
+	FAL_API_LOCK;
+	rv = _fal_queue_counter_ctrl_set(dev_id, cnt_en);
+	FAL_API_UNLOCK;
+	return rv;
+}
+
+sw_error_t
+fal_queue_counter_ctrl_get(a_uint32_t dev_id, a_bool_t *cnt_en)
+{
+	sw_error_t rv = SW_OK;
+
+	FAL_API_LOCK;
+	rv = _fal_queue_counter_ctrl_get(dev_id, cnt_en);
+	FAL_API_UNLOCK;
+	return rv;
+}
+
+sw_error_t
+fal_queue_counter_get(
+		a_uint32_t dev_id,
+		a_uint32_t queue_id,
+		fal_queue_stats_t *info)
+{
+	sw_error_t rv = SW_OK;
+
+	FAL_API_LOCK;
+	rv = _fal_queue_counter_get(dev_id, queue_id, info);
+	FAL_API_UNLOCK;
+	return rv;
+}
+
+sw_error_t
+fal_queue_counter_cleanup(a_uint32_t dev_id, a_uint32_t queue_id)
+{
+	sw_error_t rv = SW_OK;
+
+	FAL_API_LOCK;
+	rv = _fal_queue_counter_cleanup(dev_id, queue_id);
+	FAL_API_UNLOCK;
+	return rv;
+}
+
 EXPORT_SYMBOL(fal_ac_ctrl_set);
 
 EXPORT_SYMBOL(fal_ac_ctrl_get);
@@ -828,5 +938,13 @@ EXPORT_SYMBOL(fal_port_mcast_priority_class_set);
 EXPORT_SYMBOL(fal_port_mcast_priority_class_get);
 
 EXPORT_SYMBOL(fal_queue_flush);
+
+EXPORT_SYMBOL(fal_queue_counter_ctrl_set);
+
+EXPORT_SYMBOL(fal_queue_counter_ctrl_get);
+
+EXPORT_SYMBOL(fal_queue_counter_get);
+
+EXPORT_SYMBOL(fal_queue_counter_cleanup);
 
 /*insert flag for outter fal, don't remove it*/

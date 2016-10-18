@@ -2715,6 +2715,34 @@ union uq_agg_profile_map_u {
 	struct uq_agg_profile_map bf;
 };
 
+/*[table] QUEUE_TX_COUNTER_TBL*/
+#define QUEUE_TX_COUNTER_TBL
+#define QUEUE_TX_COUNTER_TBL_ADDRESS 0x4000
+#define QUEUE_TX_COUNTER_TBL_NUM     300
+#define QUEUE_TX_COUNTER_TBL_INC     0x10
+#define QUEUE_TX_COUNTER_TBL_TYPE    REG_TYPE_RW
+#define QUEUE_TX_COUNTER_TBL_DEFAULT 0x0
+	/*[field] TX_PACKETS*/
+	#define QUEUE_TX_COUNTER_TBL_TX_PACKETS
+	#define QUEUE_TX_COUNTER_TBL_TX_PACKETS_OFFSET  0
+	#define QUEUE_TX_COUNTER_TBL_TX_PACKETS_LEN     32
+	#define QUEUE_TX_COUNTER_TBL_TX_PACKETS_DEFAULT 0x0
+	/*[field] TX_BYTES*/
+	#define QUEUE_TX_COUNTER_TBL_TX_BYTES
+	#define QUEUE_TX_COUNTER_TBL_TX_BYTES_OFFSET  32
+	#define QUEUE_TX_COUNTER_TBL_TX_BYTES_LEN     40
+	#define QUEUE_TX_COUNTER_TBL_TX_BYTES_DEFAULT 0x0
 
+struct queue_tx_counter_tbl {
+	a_uint32_t  tx_packets:32;
+	a_uint32_t  tx_bytes_0:32;
+	a_uint32_t  tx_bytes_1:8;
+	a_uint32_t  _reserved0:24;
+};
+
+union queue_tx_counter_tbl_u {
+	a_uint32_t val[3];
+	struct queue_tx_counter_tbl bf;
+};
 
 #endif

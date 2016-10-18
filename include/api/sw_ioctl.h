@@ -731,6 +731,10 @@ extern "C" {
 #define SW_API_DYNAMIC_THRESH_GET         (22 + SW_API_QM_OFFSET)
 #define SW_API_GOURP_BUFFER_SET         (23  + SW_API_QM_OFFSET)
 #define SW_API_GOURP_BUFFER_GET         (24 + SW_API_QM_OFFSET)
+#define SW_API_QUEUE_CNT_CTRL_GET         (25 + SW_API_QM_OFFSET)
+#define SW_API_QUEUE_CNT_CTRL_SET         (26 + SW_API_QM_OFFSET)
+#define SW_API_QUEUE_CNT_GET         (27 + SW_API_QM_OFFSET)
+#define SW_API_QUEUE_CNT_CLEANUP         (28 + SW_API_QM_OFFSET)
 
 /* flow */
 #define SW_API_FLOW_OFFSET            2200

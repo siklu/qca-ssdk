@@ -75,7 +75,19 @@
 #define MUL_P6_DROP_CNT_TBL_MAX_ENTRY	12
 #define MUL_P7_DROP_CNT_TBL_MAX_ENTRY	12
 #define UQ_AGG_PROFILE_MAP_MAX_ENTRY	256
+#define QUEUE_TX_COUNTER_TBL_MAX_ENTRY	300
 
+sw_error_t
+hppe_queue_tx_counter_tbl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union queue_tx_counter_tbl_u *value);
+
+sw_error_t
+hppe_queue_tx_counter_tbl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union queue_tx_counter_tbl_u *value);
 
 sw_error_t
 hppe_flush_cfg_get(
@@ -3767,6 +3779,30 @@ hppe_uq_agg_profile_map_enable_get(
 
 sw_error_t
 hppe_uq_agg_profile_map_enable_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_queue_tx_counter_tbl_tx_bytes_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint64_t *value);
+
+sw_error_t
+hppe_queue_tx_counter_tbl_tx_bytes_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint64_t value);
+
+sw_error_t
+hppe_queue_tx_counter_tbl_tx_packets_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_queue_tx_counter_tbl_tx_packets_set(
 		a_uint32_t dev_id,
 		a_uint32_t index,
 		a_uint32_t value);

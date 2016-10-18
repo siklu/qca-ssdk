@@ -23,6 +23,8 @@
 #include "hppe_qm.h"
 #include "hppe_qos_reg.h"
 #include "hppe_qos.h"
+#include "hppe_portvlan_reg.h"
+#include "hppe_portvlan.h"
 #include "adpt.h"
 
 #define SERVICE_CODE_QUEUE_OFFSET   2048
@@ -933,6 +935,94 @@ adpt_hppe_ac_group_buffer_set(
 	return hppe_ac_grp_cfg_tbl_set(dev_id, group_id, &ac_grp_cfg_tbl);;
 }
 
+sw_error_t
+adpt_hppe_queue_counter_cleanup(a_uint32_t dev_id, a_uint32_t queue_id)
+{
+	union queue_tx_counter_tbl_u tx_cnt;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	if (queue_id >= ALL_QUEUE_ID_MAX)
+		return SW_BAD_VALUE;
+
+	tx_cnt.bf.tx_packets = 0;
+	tx_cnt.bf.tx_bytes_0 = 0;
+	tx_cnt.bf.tx_bytes_1 = 0;
+
+	return hppe_queue_tx_counter_tbl_set(dev_id, queue_id, &tx_cnt);
+}
+sw_error_t
+adpt_hppe_queue_counter_get(a_uint32_t dev_id, a_uint32_t queue_id, fal_queue_stats_t *info)
+{
+	sw_error_t rv = SW_OK;
+	union queue_tx_counter_tbl_u tx_cnt;
+	union ac_mul_queue_cnt_tbl_u mul_cnt;
+	union ac_uni_queue_cnt_tbl_u uni_cnt;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(info);
+
+	if (queue_id >= ALL_QUEUE_ID_MAX)
+		return SW_BAD_VALUE;
+
+	rv = hppe_queue_tx_counter_tbl_get(dev_id, queue_id, &tx_cnt);
+	if( rv != SW_OK )
+		return rv;
+	if (queue_id >= UCAST_QUEUE_ID_MAX) {
+		rv = hppe_ac_mul_queue_cnt_tbl_get(dev_id,
+				queue_id - UCAST_QUEUE_ID_MAX, &mul_cnt);
+		if( rv != SW_OK )
+			return rv;
+		info->pending_buff_num = mul_cnt.bf.ac_mul_queue_cnt;
+	} else {
+		rv = hppe_ac_uni_queue_cnt_tbl_get(dev_id, queue_id, &uni_cnt);
+		if( rv != SW_OK )
+			return rv;
+		info->pending_buff_num = uni_cnt.bf.ac_uni_queue_cnt;
+	}
+	info->tx_packets = tx_cnt.bf.tx_packets;
+	info->tx_bytes = (a_uint64_t)tx_cnt.bf.tx_bytes_0 | (a_uint64_t)tx_cnt.bf.tx_bytes_1 << 32;
+
+	return SW_OK;
+}
+
+sw_error_t
+adpt_hppe_queue_counter_ctrl_get(a_uint32_t dev_id, a_bool_t *cnt_en)
+{
+	sw_error_t rv = SW_OK;
+	union eg_bridge_config_u eg_bridge_config;
+
+	memset(&eg_bridge_config, 0, sizeof(eg_bridge_config));
+	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(cnt_en);
+
+	rv = hppe_eg_bridge_config_get(dev_id, &eg_bridge_config);
+	if( rv != SW_OK )
+		return rv;
+
+	*cnt_en = eg_bridge_config.bf.queue_cnt_en;
+
+	return SW_OK;
+}
+
+sw_error_t
+adpt_hppe_queue_counter_ctrl_set(a_uint32_t dev_id, a_bool_t cnt_en)
+{
+	sw_error_t rv = SW_OK;
+	union eg_bridge_config_u eg_bridge_config;
+
+	memset(&eg_bridge_config, 0, sizeof(eg_bridge_config));
+	ADPT_DEV_ID_CHECK(dev_id);
+
+
+	rv = hppe_eg_bridge_config_get(dev_id, &eg_bridge_config);
+	if( rv != SW_OK )
+		return rv;
+
+	eg_bridge_config.bf.queue_cnt_en = cnt_en;
+	return hppe_eg_bridge_config_set(dev_id, &eg_bridge_config);
+}
+
 void adpt_hppe_qm_func_bitmap_init(a_uint32_t dev_id)
 {
 	adpt_api_t *p_adpt_api = NULL;
@@ -966,7 +1056,11 @@ void adpt_hppe_qm_func_bitmap_init(a_uint32_t dev_id)
 						(1 << FUNC_UCAST_PRIORITY_CLASS_SET) |
 						(1 << FUNC_AC_STATIC_THRESHOLD_GET) |
 						(1 << FUNC_UCAST_QUEUE_BASE_PROFILE_SET) |
-						(1 << FUNC_AC_GROUP_BUFFER_SET));
+						(1 << FUNC_AC_GROUP_BUFFER_SET) |
+						(1 << FUNC_QUEUE_COUNTER_CLEANUP) |
+						(1 << FUNC_QUEUE_COUNTER_GET) |
+						(1 << FUNC_QUEUE_COUNTER_CTRL_GET) |
+						(1 << FUNC_QUEUE_COUNTER_CTRL_SET));
 	return;
 }
 
@@ -1000,6 +1094,10 @@ static void adpt_hppe_qm_func_unregister(a_uint32_t dev_id, adpt_api_t *p_adpt_a
 	p_adpt_api->adpt_ac_static_threshold_get = NULL;
 	p_adpt_api->adpt_ucast_queue_base_profile_set = NULL;
 	p_adpt_api->adpt_ac_group_buffer_set = NULL;
+	p_adpt_api->adpt_queue_counter_cleanup = NULL;
+	p_adpt_api->adpt_queue_counter_get = NULL;
+	p_adpt_api->adpt_queue_counter_ctrl_get = NULL;
+	p_adpt_api->adpt_queue_counter_ctrl_set = NULL;
 
 	return;
 }
@@ -1065,6 +1163,14 @@ sw_error_t adpt_hppe_qm_init(a_uint32_t dev_id)
 		p_adpt_api->adpt_ucast_queue_base_profile_set = adpt_hppe_ucast_queue_base_profile_set;
 	if (p_adpt_api->adpt_qm_func_bitmap & (1 << FUNC_AC_GROUP_BUFFER_SET))
 		p_adpt_api->adpt_ac_group_buffer_set = adpt_hppe_ac_group_buffer_set;
+	if (p_adpt_api->adpt_qm_func_bitmap & (1 << FUNC_QUEUE_COUNTER_CLEANUP))
+		p_adpt_api->adpt_queue_counter_cleanup = adpt_hppe_queue_counter_cleanup;
+	if (p_adpt_api->adpt_qm_func_bitmap & (1 << FUNC_QUEUE_COUNTER_GET))
+		p_adpt_api->adpt_queue_counter_get = adpt_hppe_queue_counter_get;
+	if (p_adpt_api->adpt_qm_func_bitmap & (1 << FUNC_QUEUE_COUNTER_CTRL_GET))
+		p_adpt_api->adpt_queue_counter_ctrl_get = adpt_hppe_queue_counter_ctrl_get;
+	if (p_adpt_api->adpt_qm_func_bitmap & (1 << FUNC_QUEUE_COUNTER_CTRL_SET))
+		p_adpt_api->adpt_queue_counter_ctrl_set = adpt_hppe_queue_counter_ctrl_set;
 
 
 	return SW_OK;

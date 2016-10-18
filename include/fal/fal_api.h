@@ -1614,7 +1614,11 @@ extern "C" {
     SW_API_DEF(SW_API_DYNAMIC_THRESH_SET, fal_ac_dynamic_threshold_set), \
     SW_API_DEF(SW_API_DYNAMIC_THRESH_GET, fal_ac_dynamic_threshold_get), \
     SW_API_DEF(SW_API_GOURP_BUFFER_SET, fal_ac_group_buffer_set), \
-    SW_API_DEF(SW_API_GOURP_BUFFER_GET, fal_ac_group_buffer_get),
+    SW_API_DEF(SW_API_GOURP_BUFFER_GET, fal_ac_group_buffer_get), \
+    SW_API_DEF(SW_API_QUEUE_CNT_CTRL_GET, fal_queue_counter_ctrl_get), \
+    SW_API_DEF(SW_API_QUEUE_CNT_CTRL_SET, fal_queue_counter_ctrl_set), \
+    SW_API_DEF(SW_API_QUEUE_CNT_GET, fal_queue_counter_get), \
+    SW_API_DEF(SW_API_QUEUE_CNT_CLEANUP, fal_queue_counter_cleanup),
 
 #define QM_API_PARAM \
     SW_API_DESC(SW_API_UCAST_QUEUE_BASE_PROFILE_SET) \
@@ -1641,7 +1645,11 @@ extern "C" {
     SW_API_DESC(SW_API_DYNAMIC_THRESH_SET) \
     SW_API_DESC(SW_API_DYNAMIC_THRESH_GET) \
     SW_API_DESC(SW_API_GOURP_BUFFER_SET) \
-    SW_API_DESC(SW_API_GOURP_BUFFER_GET)
+    SW_API_DESC(SW_API_GOURP_BUFFER_GET) \
+    SW_API_DESC(SW_API_QUEUE_CNT_CTRL_GET) \
+    SW_API_DESC(SW_API_QUEUE_CNT_CTRL_SET) \
+    SW_API_DESC(SW_API_QUEUE_CNT_GET) \
+    SW_API_DESC(SW_API_QUEUE_CNT_CLEANUP)
 
 #else
 #define QM_API
