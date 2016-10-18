@@ -845,6 +845,7 @@ typedef struct
 	adpt_stp_port_state_get_func adpt_stp_port_state_get;
 	adpt_stp_port_state_set_func adpt_stp_port_state_set;
 
+	a_uint32_t adpt_vsi_func_bitmap;
 	adpt_port_vlan_vsi_set_func adpt_port_vlan_vsi_set;
 	adpt_port_vlan_vsi_get_func adpt_port_vlan_vsi_get;
 	adpt_port_vsi_set_func adpt_port_vsi_set;

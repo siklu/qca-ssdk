@@ -77,9 +77,11 @@ sw_error_t adpt_module_func_ctrl_set(a_uint32_t dev_id,
 	if(p_adpt_api == NULL)
 		return SW_FAIL;
 
-	if(module == FAL_MODULE_ACL)
+	if(module == FAL_MODULE_ACL){
 		p_adpt_api->adpt_acl_func_bitmap = func_ctrl->bitmap[0];
-	else if (module == FAL_MODULE_IP) {
+	} else if (module == FAL_MODULE_VSI) {
+		p_adpt_api->adpt_vsi_func_bitmap = func_ctrl->bitmap[0];
+	}else if (module == FAL_MODULE_IP) {
 		p_adpt_api->adpt_ip_func_bitmap[0] = func_ctrl->bitmap[0];
 		p_adpt_api->adpt_ip_func_bitmap[1] = func_ctrl->bitmap[1];
 	} else if (module == FAL_MODULE_FLOW) {
@@ -118,9 +120,11 @@ sw_error_t adpt_module_func_ctrl_get(a_uint32_t dev_id,
 	if(p_adpt_api == NULL)
 		return SW_FAIL;
 
-	if(module == FAL_MODULE_ACL)
+	if(module == FAL_MODULE_ACL){
 		func_ctrl->bitmap[0] = p_adpt_api->adpt_acl_func_bitmap;
-	else if (module == FAL_MODULE_IP) {
+	} else if (module == FAL_MODULE_VSI) {
+		func_ctrl->bitmap[0] = p_adpt_api->adpt_vsi_func_bitmap;
+	} else if (module == FAL_MODULE_IP) {
 		func_ctrl->bitmap[0] = p_adpt_api->adpt_ip_func_bitmap[0];
 		func_ctrl->bitmap[1] = p_adpt_api->adpt_ip_func_bitmap[1];
 	} else if (module == FAL_MODULE_FLOW) {

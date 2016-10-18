@@ -708,6 +708,36 @@ union ipo_glb_bypass_counter_reg_u {
 	struct ipo_glb_bypass_counter_reg bf;
 };
 
+/*[table] IPO_CNT_TBL*/
+#define IPO_CNT_TBL
+#define IPO_CNT_TBL_ADDRESS 0x74000
+#define IPO_CNT_TBL_NUM     512
+#define IPO_CNT_TBL_INC     0x10
+#define IPO_CNT_TBL_TYPE    REG_TYPE_RW
+#define IPO_CNT_TBL_DEFAULT 0x0
+	/*[field] HIT_PKT_CNT*/
+	#define IPO_CNT_TBL_HIT_PKT_CNT
+	#define IPO_CNT_TBL_HIT_PKT_CNT_OFFSET  0
+	#define IPO_CNT_TBL_HIT_PKT_CNT_LEN     32
+	#define IPO_CNT_TBL_HIT_PKT_CNT_DEFAULT 0x0
+	/*[field] HIT_BYTE_CNT*/
+	#define IPO_CNT_TBL_HIT_BYTE_CNT
+	#define IPO_CNT_TBL_HIT_BYTE_CNT_OFFSET  32
+	#define IPO_CNT_TBL_HIT_BYTE_CNT_LEN     40
+	#define IPO_CNT_TBL_HIT_BYTE_CNT_DEFAULT 0x0
+
+struct ipo_cnt_tbl {
+	a_uint32_t  hit_pkt_cnt:32;
+	a_uint32_t  hit_byte_cnt_0:32;
+	a_uint32_t  hit_byte_cnt_1:8;
+	a_uint32_t  _reserved0:24;
+};
+
+union ipo_cnt_tbl_u {
+	a_uint32_t val[3];
+	struct ipo_cnt_tbl bf;
+};
+
 /*[table] IPO_ACTION*/
 #define IPO_ACTION
 #define IPO_ACTION_ADDRESS 0x8000

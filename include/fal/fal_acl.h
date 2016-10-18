@@ -196,8 +196,8 @@ enum{
 	FAL_ACL_BYPASS_MRU_MTU_CHECK,
 	FAL_ACL_BYPASS_EG_VSI_MEMBER_CHECK = 8,
 	FAL_ACL_BYPASS_EG_VLAN_TRANSLATION,
-	FAL_ACL_BYPASS_EG_VLAN_TAG_CTRL,
-	FAL_ACL_BYPASS_FDB_LEARNING = 11,
+	FAL_ACL_BYPASS_EG_VLAN_TAG_CTRL = 10,
+	FAL_ACL_BYPASS_FDB_LEARNING,
 	FAL_ACL_BYPASS_FDB_REFRESH,
 	FAL_ACL_BYPASS_L2_SECURITY,/*new address, station move, learn limit, hash full*/
 	FAL_ACL_BYPASS_MANAGEMENT_FWD,
@@ -211,6 +211,7 @@ enum{
 	FAL_ACL_BYPASS_POST_ACL_CHECK_ROUTING,
 	FAL_ACL_BYPASS_PORT_ISOLATION,
 };
+
 
     /**
       * @brief This type defines the action in Acl rule.
@@ -499,6 +500,7 @@ enum{
         a_uint8_t             int_dp;
         a_uint8_t             service_code;
         a_uint8_t             cpu_code;
+        a_uint64_t            match_bytes;
     } fal_acl_rule_t;
 
 

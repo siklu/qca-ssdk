@@ -1397,6 +1397,7 @@ adpt_hppe_acl_rule_query(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_
 	union ipo_rule_reg_u hw_reg = {0};
 	union ipo_mask_reg_u hw_mask = {0};
 	union ipo_action_u hw_act = {0};
+	union ipo_cnt_tbl_u hw_match = {0};
 
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(rule);
@@ -1413,6 +1414,14 @@ adpt_hppe_acl_rule_query(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_
 		return SW_NOT_FOUND;
 
 	rule->rule_type = g_acl_list[dev_id][list_id].rule_type[rule_id];
+
+	hw_index = _acl_bit_index(hw_entries, 8, 0);
+	if(hw_index >= ADPT_ACL_ENTRY_NUM_PER_LIST)
+		return SW_FAIL;
+	hppe_ipo_cnt_tbl_get(dev_id, list_id*ADPT_ACL_ENTRY_NUM_PER_LIST+hw_index, &hw_match);
+
+	rule->match_cnt = hw_match.bf.hit_pkt_cnt;
+	rule->match_bytes = hw_match.bf.hit_byte_cnt_1<<32|hw_match.bf.hit_byte_cnt_0;
 
 	while(hw_entries != 0)
 	{
@@ -1458,7 +1467,6 @@ adpt_hppe_acl_rule_query(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_
 			_adpt_hppe_acl_udf_rule_hw_2_sw(&hw_reg, 1, &hw_mask, rule);
 		_adpt_hppe_acl_action_hw_2_sw(&hw_act, rule);
 		hw_entries &= (~(1<<hw_index));
-
 	}
 
 	return SW_OK;

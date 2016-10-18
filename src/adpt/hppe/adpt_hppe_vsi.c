@@ -449,9 +449,39 @@ void adpt_hppe_vsi_func_bitmap_init(a_uint32_t dev_id)
 	if(p_adpt_api == NULL)
 		return;
 
+
+	p_adpt_api->adpt_vsi_func_bitmap = ((1<<FUNC_PORT_VLAN_VSI_SET)|
+						(1<<FUNC_PORT_VLAN_VSI_GET)|
+						(1<<FUNC_PORT_VSI_SET)|
+						(1<<FUNC_PORT_VSI_GET)|
+						(1<<FUNC_VSI_STAMOVE_SET)|
+						(1<<FUNC_VSI_STAMOVE_GET)|
+						(1<<FUNC_VSI_NEWADDR_LRN_SET)|
+						(1<<FUNC_VSI_NEWADDR_LRN_GET)|
+						(1<<FUNC_VSI_MEMBER_SET)|
+						(1<<FUNC_VSI_MEMBER_GET));
+
 	return;
 }
 
+static void adpt_hppe_vsi_func_unregister(a_uint32_t dev_id, adpt_api_t *p_adpt_api)
+{
+	if(p_adpt_api == NULL)
+		return;
+
+	p_adpt_api->adpt_port_vlan_vsi_set = NULL;
+	p_adpt_api->adpt_port_vlan_vsi_get = NULL;
+	p_adpt_api->adpt_port_vsi_set = NULL;
+	p_adpt_api->adpt_port_vsi_get = NULL;
+	p_adpt_api->adpt_vsi_stamove_set = NULL;
+	p_adpt_api->adpt_vsi_stamove_get = NULL;
+	p_adpt_api->adpt_vsi_newaddr_lrn_get = NULL;
+	p_adpt_api->adpt_vsi_newaddr_lrn_set = NULL;
+	p_adpt_api->adpt_vsi_member_set = NULL;
+	p_adpt_api->adpt_vsi_member_get = NULL;
+
+	return;
+}
 
 
 sw_error_t adpt_hppe_vsi_init(a_uint32_t dev_id)
@@ -463,17 +493,28 @@ sw_error_t adpt_hppe_vsi_init(a_uint32_t dev_id)
 	if(p_adpt_api == NULL)
 		return SW_FAIL;
 
-	p_adpt_api->adpt_port_vlan_vsi_set = adpt_hppe_port_vlan_vsi_set;
-	p_adpt_api->adpt_port_vlan_vsi_get = adpt_hppe_port_vlan_vsi_get;
-	p_adpt_api->adpt_port_vsi_set = adpt_hppe_port_vsi_set;
-	p_adpt_api->adpt_port_vsi_get = adpt_hppe_port_vsi_get;
-	p_adpt_api->adpt_vsi_stamove_set = adpt_hppe_vsi_stamove_set;
-	p_adpt_api->adpt_vsi_stamove_get = adpt_hppe_vsi_stamove_get;
-	p_adpt_api->adpt_vsi_newaddr_lrn_get = adpt_hppe_vsi_newaddr_lrn_get;
-	p_adpt_api->adpt_vsi_newaddr_lrn_set = adpt_hppe_vsi_newaddr_lrn_set;
-	p_adpt_api->adpt_vsi_member_set = adpt_hppe_vsi_member_set;
-	p_adpt_api->adpt_vsi_member_get = adpt_hppe_vsi_member_get;
+	adpt_hppe_vsi_func_unregister(dev_id, p_adpt_api);
 
+	if(p_adpt_api->adpt_vsi_func_bitmap & (1<<FUNC_PORT_VLAN_VSI_SET))
+		p_adpt_api->adpt_port_vlan_vsi_set = adpt_hppe_port_vlan_vsi_set;
+	if(p_adpt_api->adpt_vsi_func_bitmap & (1<<FUNC_PORT_VLAN_VSI_GET))
+		p_adpt_api->adpt_port_vlan_vsi_get = adpt_hppe_port_vlan_vsi_get;
+	if(p_adpt_api->adpt_vsi_func_bitmap & (1<<FUNC_PORT_VSI_SET))
+		p_adpt_api->adpt_port_vsi_set = adpt_hppe_port_vsi_set;
+	if(p_adpt_api->adpt_vsi_func_bitmap & (1<<FUNC_PORT_VSI_GET))
+		p_adpt_api->adpt_port_vsi_get = adpt_hppe_port_vsi_get;
+	if(p_adpt_api->adpt_vsi_func_bitmap & (1<<FUNC_VSI_STAMOVE_SET))
+		p_adpt_api->adpt_vsi_stamove_set = adpt_hppe_vsi_stamove_set;
+	if(p_adpt_api->adpt_vsi_func_bitmap & (1<<FUNC_VSI_STAMOVE_GET))
+		p_adpt_api->adpt_vsi_stamove_get = adpt_hppe_vsi_stamove_get;
+	if(p_adpt_api->adpt_vsi_func_bitmap & (1<<FUNC_VSI_NEWADDR_LRN_SET))
+		p_adpt_api->adpt_vsi_newaddr_lrn_set = adpt_hppe_vsi_newaddr_lrn_set;
+	if(p_adpt_api->adpt_vsi_func_bitmap & (1<<FUNC_VSI_NEWADDR_LRN_GET))
+		p_adpt_api->adpt_vsi_newaddr_lrn_get = adpt_hppe_vsi_newaddr_lrn_get;
+	if(p_adpt_api->adpt_vsi_func_bitmap & (1<<FUNC_VSI_MEMBER_SET))
+		p_adpt_api->adpt_vsi_member_set = adpt_hppe_vsi_member_set;
+	if(p_adpt_api->adpt_vsi_func_bitmap & (1<<FUNC_VSI_MEMBER_GET))
+		p_adpt_api->adpt_vsi_member_get = adpt_hppe_vsi_member_get;
 
 	return SW_OK;
 }

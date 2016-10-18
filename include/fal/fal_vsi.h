@@ -31,21 +31,34 @@ extern "C" {
 #define FAL_VLAN_INVALID 0xffff
 
 typedef struct{
-	a_uint32_t lrn_en;
-	a_uint32_t action;
+	a_uint32_t lrn_en; /*0: disable new address learn, 1: enable new address learn*/
+	a_uint32_t action;/*0:forward, 1:drop, 2: copy to CPU, 3: redirect to CPU*/
 }fal_vsi_newaddr_lrn_t;
 
 typedef struct{
-	a_uint32_t stamove_en;
-	a_uint32_t action;
+	a_uint32_t stamove_en;/*0:disable station move, 1: enable station move*/
+	a_uint32_t action;/*0:forward, 1:drop, 2: copy to CPU, 3: redirect to CPU*/
 }fal_vsi_stamove_t;
 
 typedef struct{
-	a_uint32_t member_ports;
-	a_uint32_t uuc_ports;
-	a_uint32_t umc_ports;
-	a_uint32_t bc_ports;
+	a_uint32_t member_ports;/*VSI member ports for known unicast and multicast*/
+	a_uint32_t uuc_ports;/*VSI member ports for unknown unicast*/
+	a_uint32_t umc_ports;/*VSI member ports for unknown multicast*/
+	a_uint32_t bc_ports;/*VSI member ports for broadcast*/
 }fal_vsi_member_t;
+
+enum{
+	FUNC_PORT_VLAN_VSI_SET,
+	FUNC_PORT_VLAN_VSI_GET,
+	FUNC_PORT_VSI_SET,
+	FUNC_PORT_VSI_GET,
+	FUNC_VSI_STAMOVE_SET,
+	FUNC_VSI_STAMOVE_GET,
+	FUNC_VSI_NEWADDR_LRN_SET,
+	FUNC_VSI_NEWADDR_LRN_GET,
+	FUNC_VSI_MEMBER_SET,
+	FUNC_VSI_MEMBER_GET,
+};
 
 sw_error_t
 fal_vsi_alloc(a_uint32_t dev_id, a_uint32_t *vsi);

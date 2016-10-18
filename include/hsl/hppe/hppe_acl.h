@@ -26,6 +26,7 @@
 #define RULE_EXT_2_REG_MAX_ENTRY	64
 #define RULE_EXT_4_REG_MAX_ENTRY	64
 #define IPO_ACTION_MAX_ENTRY	512
+#define IPO_CNT_TBL_MAX_ENTRY	512
 
 sw_error_t
 hppe_non_ip_udf0_ctrl_reg_get(
@@ -386,7 +387,7 @@ sw_error_t
 hppe_ipv6_udf3_ctrl_reg_udf3_offset_set(
 		a_uint32_t dev_id,
 		unsigned int value);
-		
+
 sw_error_t
 hppe_ipo_rule_reg_get(
 		a_uint32_t dev_id,
@@ -507,6 +508,41 @@ hppe_ipo_glb_bypass_counter_reg_set(
 		a_uint32_t dev_id,
 		union ipo_glb_bypass_counter_reg_u *value);
 
+sw_error_t
+hppe_ipo_cnt_tbl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union ipo_cnt_tbl_u *value);
+
+sw_error_t
+hppe_ipo_cnt_tbl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union ipo_cnt_tbl_u *value);
+
+sw_error_t
+hppe_ipo_cnt_tbl_hit_byte_cnt_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint64_t *value);
+
+sw_error_t
+hppe_ipo_cnt_tbl_hit_byte_cnt_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint64_t value);
+
+sw_error_t
+hppe_ipo_cnt_tbl_hit_pkt_cnt_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_ipo_cnt_tbl_hit_pkt_cnt_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
 sw_error_t
 hppe_ipo_rule_reg_src_get(
 		a_uint32_t dev_id,
