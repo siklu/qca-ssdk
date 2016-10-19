@@ -857,6 +857,8 @@ typedef struct
 	adpt_vsi_member_set_func adpt_vsi_member_set;
 	adpt_vsi_member_get_func adpt_vsi_member_get;
 
+	// port_ctrl
+	a_uint32_t adpt_port_ctrl_func_bitmap[3];
 	adpt_port_local_loopback_get_func adpt_port_local_loopback_get;
 	adpt_port_autoneg_restart_func adpt_port_autoneg_restart;
 	adpt_port_duplex_set_func adpt_port_duplex_set;
@@ -1148,8 +1150,8 @@ typedef struct
 	adpt_port_tdm_ctrl_set_func adpt_port_tdm_ctrl_set;
 	adpt_port_tdm_tick_cfg_set_func adpt_port_tdm_tick_cfg_set;
 
-//shaper
-
+	//shaper
+	a_uint32_t adpt_shaper_func_bitmap;
 	adpt_flow_shaper_set_func adpt_flow_shaper_set;
 	adpt_queue_shaper_get_func adpt_queue_shaper_get;
 	adpt_queue_shaper_token_number_set_func adpt_queue_shaper_token_number_set;
