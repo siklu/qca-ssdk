@@ -46,18 +46,22 @@ static sw_error_t adpt_hppe_module_func_register(a_uint32_t dev_id, a_uint32_t m
 		case FAL_MODULE_PPPOE:
 			rv = adpt_hppe_pppoe_init(dev_id);
 			break;
+		case FAL_MODULE_PORTCTRL:
+			rv = adpt_hppe_port_ctrl_init(dev_id);
+			break;
+		case FAL_MODULE_SHAPER:
+			rv = adpt_hppe_shaper_init( dev_id);
+			break;
 
 		default:
 			rv = adpt_hppe_fdb_init(dev_id);
 			rv = adpt_hppe_mib_init(dev_id);
 			rv = adpt_hppe_stp_init(dev_id);
-			rv = adpt_hppe_port_ctrl_init(dev_id);
 			rv = adpt_hppe_mirror_init( dev_id);
 			rv = adpt_hppe_trunk_init( dev_id);
 			rv = adpt_hppe_portvlan_init(dev_id);
 			rv = adpt_hppe_ctrlpkt_init( dev_id);
 			rv = adpt_hppe_sec_init(dev_id);
-			rv = adpt_hppe_shaper_init( dev_id);
 			break;
 	}
 
@@ -96,6 +100,11 @@ sw_error_t adpt_module_func_ctrl_set(a_uint32_t dev_id,
 		p_adpt_api->adpt_servcode_func_bitmap = func_ctrl->bitmap[0];
 	} else if (module == FAL_MODULE_PPPOE) {
 		p_adpt_api->adpt_pppoe_func_bitmap = func_ctrl->bitmap[0];
+	} else if (module == FAL_MODULE_PORTCTRL) {
+		p_adpt_api->adpt_port_ctrl_func_bitmap[0] = func_ctrl->bitmap[0];
+		p_adpt_api->adpt_port_ctrl_func_bitmap[1] = func_ctrl->bitmap[1];
+	} else if (module == FAL_MODULE_SHAPER) {
+		p_adpt_api->adpt_shaper_func_bitmap = func_ctrl->bitmap[0];
 	}
 
 	switch (g_chip_type)
@@ -139,6 +148,11 @@ sw_error_t adpt_module_func_ctrl_get(a_uint32_t dev_id,
 		func_ctrl->bitmap[0] = p_adpt_api->adpt_servcode_func_bitmap;
 	} else if (module == FAL_MODULE_PPPOE) {
 		func_ctrl->bitmap[0] = p_adpt_api->adpt_pppoe_func_bitmap;
+	} else if (module == FAL_MODULE_PORTCTRL) {
+		func_ctrl->bitmap[0] = p_adpt_api->adpt_port_ctrl_func_bitmap[0];
+		func_ctrl->bitmap[1] = p_adpt_api->adpt_port_ctrl_func_bitmap[1];
+	} else if (module == FAL_MODULE_SHAPER) {
+		func_ctrl->bitmap[0] = p_adpt_api->adpt_shaper_func_bitmap;
 	}
 
 	return SW_OK;
@@ -194,6 +208,14 @@ sw_error_t adpt_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 
 			adpt_hppe_pppoe_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_PPPOE);
+			SW_RTN_ON_ERROR(rv);
+
+			adpt_hppe_port_ctrl_func_bitmap_init(dev_id);
+			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_PORTCTRL);
+			SW_RTN_ON_ERROR(rv);
+
+			adpt_hppe_shaper_func_bitmap_init(dev_id);
+			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_SHAPER);
 			SW_RTN_ON_ERROR(rv);
 
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_MAX);
