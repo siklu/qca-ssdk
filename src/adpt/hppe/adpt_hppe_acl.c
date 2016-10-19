@@ -1421,8 +1421,8 @@ adpt_hppe_acl_rule_query(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_
 	hppe_ipo_cnt_tbl_get(dev_id, list_id*ADPT_ACL_ENTRY_NUM_PER_LIST+hw_index, &hw_match);
 
 	rule->match_cnt = hw_match.bf.hit_pkt_cnt;
-	rule->match_bytes = hw_match.bf.hit_byte_cnt_1<<32|hw_match.bf.hit_byte_cnt_0;
-
+	rule->match_bytes = hw_match.bf.hit_byte_cnt_1;
+	rule->match_bytes = rule->match_bytes<<32|hw_match.bf.hit_byte_cnt_0;
 	while(hw_entries != 0)
 	{
 		hw_index = _acl_bit_index(hw_entries, 8, 0);
