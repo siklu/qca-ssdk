@@ -228,6 +228,44 @@ adpt_hppe_get_rx_mib_info(a_uint32_t dev_id, fal_port_t port_id,
 
 }
 
+void adpt_hppe_mib_func_bitmap_init(a_uint32_t dev_id)
+{
+	adpt_api_t *p_adpt_api = NULL;
+
+	p_adpt_api = adpt_api_ptr_get(dev_id);
+
+	if(p_adpt_api == NULL)
+		return;
+
+	p_adpt_api->adpt_mib_func_bitmap = ((1<<FUNC_GET_MIB_INFO)|
+						(1<<FUNC_GET_RX_MIB_INFO)|
+						(1<<FUNC_GET_TX_MIB_INFO)|
+						(1<<FUNC_MIB_STATUS_SET)|
+						(1<<FUNC_MIB_STATUS_GET)|
+						(1<<FUNC_MIB_PORT_FLUSH_COUNTERS)|
+						(1<<FUNC_MIB_CPUKEEP_SET)|
+						(1<<FUNC_MIB_CPUKEEP_GET)
+						);
+	return;
+}
+
+static void adpt_hppe_mib_func_unregister(a_uint32_t dev_id, adpt_api_t *p_adpt_api)
+{
+	if(p_adpt_api == NULL)
+		return;
+
+	p_adpt_api->adpt_get_mib_info = NULL;
+	p_adpt_api->adpt_get_rx_mib_info = NULL;
+	p_adpt_api->adpt_get_tx_mib_info = NULL;
+	p_adpt_api->adpt_mib_status_set = NULL;
+	p_adpt_api->adpt_mib_status_get = NULL;
+	p_adpt_api->adpt_mib_port_flush_counters = NULL;
+	p_adpt_api->adpt_mib_cpukeep_set = NULL;
+	p_adpt_api->adpt_mib_cpukeep_get = NULL;
+
+	return;
+}
+
 sw_error_t adpt_hppe_mib_init(a_uint32_t dev_id)
 {
 	adpt_api_t *p_adpt_api = NULL;
@@ -237,15 +275,40 @@ sw_error_t adpt_hppe_mib_init(a_uint32_t dev_id)
 	if(p_adpt_api == NULL)
 		return SW_FAIL;
 
-	p_adpt_api->adpt_mib_cpukeep_get = adpt_hppe_mib_cpukeep_get;
-	p_adpt_api->adpt_mib_cpukeep_set = adpt_hppe_mib_cpukeep_set;
-	p_adpt_api->adpt_get_mib_info = adpt_hppe_get_mib_info;
-	p_adpt_api->adpt_get_tx_mib_info = adpt_hppe_get_tx_mib_info;
-	p_adpt_api->adpt_mib_status_set = adpt_hppe_mib_status_set;
-	p_adpt_api->adpt_mib_port_flush_counters = adpt_hppe_mib_port_flush_counters;
-	p_adpt_api->adpt_mib_status_get = adpt_hppe_mib_status_get;
-	p_adpt_api->adpt_get_rx_mib_info = adpt_hppe_get_rx_mib_info;
+	adpt_hppe_mib_func_unregister(dev_id, p_adpt_api);
 
+	if(p_adpt_api->adpt_mib_func_bitmap & (1<<FUNC_GET_MIB_INFO))
+	{
+		p_adpt_api->adpt_get_mib_info = adpt_hppe_get_mib_info;
+	}
+	if(p_adpt_api->adpt_mib_func_bitmap & (1<<FUNC_GET_RX_MIB_INFO))
+	{
+		p_adpt_api->adpt_get_rx_mib_info = adpt_hppe_get_rx_mib_info;
+	}
+	if(p_adpt_api->adpt_mib_func_bitmap & (1<<FUNC_GET_TX_MIB_INFO))
+	{
+		p_adpt_api->adpt_get_tx_mib_info = adpt_hppe_get_tx_mib_info;
+	}
+	if(p_adpt_api->adpt_mib_func_bitmap & (1<<FUNC_MIB_STATUS_SET))
+	{
+		p_adpt_api->adpt_mib_status_set = adpt_hppe_mib_status_set;
+	}
+	if(p_adpt_api->adpt_mib_func_bitmap & (1<<FUNC_MIB_STATUS_GET))
+	{
+		p_adpt_api->adpt_mib_status_get = adpt_hppe_mib_status_get;
+	}
+	if(p_adpt_api->adpt_mib_func_bitmap & (1<<FUNC_MIB_PORT_FLUSH_COUNTERS))
+	{
+		p_adpt_api->adpt_mib_port_flush_counters = adpt_hppe_mib_port_flush_counters;
+	}
+	if(p_adpt_api->adpt_mib_func_bitmap & (1<<FUNC_MIB_CPUKEEP_SET))
+	{
+		p_adpt_api->adpt_mib_cpukeep_set = adpt_hppe_mib_cpukeep_set;
+	}
+	if(p_adpt_api->adpt_mib_func_bitmap & (1<<FUNC_MIB_CPUKEEP_GET))
+	{
+		p_adpt_api->adpt_mib_cpukeep_get = adpt_hppe_mib_cpukeep_get;
+	}
 
 	return SW_OK;
 }

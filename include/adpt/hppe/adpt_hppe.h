@@ -29,6 +29,7 @@ sw_error_t adpt_hppe_portvlan_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_ctrlpkt_init(a_uint32_t dev_id);
 void adpt_hppe_servcode_func_bitmap_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_servcode_init(a_uint32_t dev_id);
+void adpt_hppe_mib_func_bitmap_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_mib_init(a_uint32_t dev_id);
 
 sw_error_t adpt_hppe_stp_init(a_uint32_t dev_id);

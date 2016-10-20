@@ -78,7 +78,18 @@ extern "C" {
         a_uint32_t RxJumboFcsErr;	/* add for  Hawkeye*/
         a_uint32_t RxJumboAligenErr;		/* add for Hawkeye*/
     } fal_mib_info_t;
-
+enum
+{
+	/*mib*/
+	FUNC_GET_MIB_INFO = 0,
+	FUNC_GET_RX_MIB_INFO,
+	FUNC_GET_TX_MIB_INFO,
+	FUNC_MIB_STATUS_SET,
+	FUNC_MIB_STATUS_GET,
+	FUNC_MIB_PORT_FLUSH_COUNTERS,
+	FUNC_MIB_CPUKEEP_SET,
+	FUNC_MIB_CPUKEEP_GET
+};
 sw_error_t
 fal_get_mib_info(a_uint32_t dev_id, fal_port_t port_id,
                      fal_mib_info_t * mib_info );

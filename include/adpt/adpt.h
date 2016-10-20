@@ -841,7 +841,8 @@ typedef struct
 	adpt_fdb_age_ctrl_get_func adpt_fdb_age_ctrl_get;
 	adpt_fdb_port_maclimit_ctrl_set_func adpt_fdb_port_maclimit_ctrl_set;
 	adpt_fdb_port_maclimit_ctrl_get_func adpt_fdb_port_maclimit_ctrl_get;
-
+	/*mib*/
+	a_uint32_t adpt_mib_func_bitmap;
 	adpt_mib_cpukeep_get_func adpt_mib_cpukeep_get;
 	adpt_mib_cpukeep_set_func adpt_mib_cpukeep_set;
 	adpt_get_mib_info_func adpt_get_mib_info;
