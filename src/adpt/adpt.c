@@ -227,6 +227,9 @@ sw_error_t adpt_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_MIB);
 			SW_RTN_ON_ERROR(rv);
 
+			rv =  adpt_hppe_policer_init( dev_id);
+			SW_RTN_ON_ERROR(rv);
+
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_MAX);
 			SW_RTN_ON_ERROR(rv);
 			break;

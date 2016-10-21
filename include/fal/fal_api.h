@@ -1842,6 +1842,37 @@ extern "C" {
 #define SHAPER_API_PARAM
 #endif
 
+#ifdef IN_POLICER
+#define POLICER_API \
+    SW_API_DEF(SW_API_POLICER_TIMESLOT_SET, fal_policer_timeslot_set), \
+    SW_API_DEF(SW_API_POLICER_TIMESLOT_GET, fal_policer_timeslot_get), \
+    SW_API_DEF(SW_API_POLICER_PORT_COUNTER_GET, fal_port_policer_counter_get), \
+    SW_API_DEF(SW_API_POLICER_ACL_COUNTER_GET, fal_acl_policer_counter_get), \
+    SW_API_DEF(SW_API_POLICER_COMPENSATION_SET, fal_port_policer_compensation_byte_set), \
+    SW_API_DEF(SW_API_POLICER_COMPENSATION_GET, fal_port_policer_compensation_byte_get), \
+    SW_API_DEF(SW_API_POLICER_PORT_ENTRY_SET, fal_port_policer_entry_set), \
+    SW_API_DEF(SW_API_POLICER_PORT_ENTRY_GET, fal_port_policer_entry_get), \
+    SW_API_DEF(SW_API_POLICER_ACL_ENTRY_SET, fal_acl_policer_entry_set), \
+    SW_API_DEF(SW_API_POLICER_ACL_ENTRY_GET,fal_acl_policer_entry_get),
+
+
+#define POLICER_API_PARAM \
+    SW_API_DESC(SW_API_POLICER_TIMESLOT_SET)  \
+    SW_API_DESC(SW_API_POLICER_TIMESLOT_GET)  \
+    SW_API_DESC(SW_API_POLICER_PORT_COUNTER_GET) \
+    SW_API_DESC(SW_API_POLICER_ACL_COUNTER_GET) \
+    SW_API_DESC(SW_API_POLICER_COMPENSATION_SET) \
+    SW_API_DESC(SW_API_POLICER_COMPENSATION_GET) \
+    SW_API_DESC(SW_API_POLICER_PORT_ENTRY_SET) \
+    SW_API_DESC(SW_API_POLICER_PORT_ENTRY_GET) \
+    SW_API_DESC(SW_API_POLICER_ACL_ENTRY_SET) \
+    SW_API_DESC(SW_API_POLICER_ACL_ENTRY_GET)
+
+#else
+#define POLICER_API
+#define POLICER_API_PARAM
+#endif
+
 #define SSDK_API \
     SW_API_DEF(SW_API_SWITCH_RESET, fal_reset), \
     SW_API_DEF(SW_API_SSDK_CFG, fal_ssdk_cfg), \
@@ -1875,7 +1906,8 @@ extern "C" {
     REG_API \
     CTRLPKT_API \
     SERVCODE_API \
-    SHAPER_API \
+	POLICER_API \
+	SHAPER_API \
     SW_API_DEF(SW_API_MAX, NULL),
 
 
@@ -1917,7 +1949,8 @@ extern "C" {
     REG_API_PARAM \
     CTRLPKT_API_PARAM \
     SERVCODE_API_PARAM \
-    SHAPER_API_PARAM \
+	POLICER_API_PARAM \
+	SHAPER_API_PARAM \
     SW_PARAM_DEF(SW_API_MAX, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"),
 
 

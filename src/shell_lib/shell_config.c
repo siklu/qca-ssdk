@@ -1162,6 +1162,16 @@ struct sub_cmd_des_t g_pppoe_des[] =
 };
 #endif
 
+#ifdef IN_POLICER
+struct sub_cmd_des_t g_policer_des[] =
+{
+	{"timeslot", "set",   SW_API_POLICER_TIMESLOT_SET, NULL},
+	{"compensation", "set",   SW_API_POLICER_COMPENSATION_SET, NULL},
+	{"portentry", "set",   SW_API_POLICER_PORT_ENTRY_SET, NULL},
+	{"aclentry", "set",   SW_API_POLICER_ACL_ENTRY_SET, NULL},
+	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
+};
+#endif
 #ifdef IN_SHAPER
 	struct sub_cmd_des_t g_shaper_des[] =
 	{
@@ -1380,6 +1390,13 @@ struct cmd_des_t gcmd_des[] =
     {
         "pppoe", g_pppoe_des,
     },
+#endif
+
+	/*policer*/
+#ifdef IN_POLICER
+		{
+			"policer", g_policer_des,
+		},
 #endif
 
      /*shaper*/

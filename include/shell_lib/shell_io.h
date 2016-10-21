@@ -355,6 +355,19 @@ cmd_data_check_flow(char *cmd_str, void * val, a_uint32_t size);
 sw_error_t
 cmd_data_check_flow_global(char *cmd_str, void * val, a_uint32_t size);
 #endif
+
+#ifdef IN_POLICER
+sw_error_t
+cmd_data_check_port_policer_config(char *cmd_str, void * val, a_uint32_t size);
+
+sw_error_t
+cmd_data_check_policer_cmd_config(char *cmd_str, void * val, a_uint32_t size);
+
+sw_error_t
+cmd_data_check_acl_policer_config(char *cmd_str, void * val, a_uint32_t size);
+
+#endif
+
 #ifdef IN_SHAPER
 sw_error_t
 cmd_data_check_port_shaper_token_config(char *cmd_str, void * val, a_uint32_t size);

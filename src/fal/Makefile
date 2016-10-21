@@ -116,6 +116,11 @@ endif
 ifeq (TRUE, $(IN_SHAPER))
   SRC_LIST += fal_shaper.c
 endif
+
+ifeq (TRUE, $(IN_POLICER))
+  SRC_LIST += fal_policer.c
+endif
+
 include $(PRJ_PATH)/make/components.mk
 include $(PRJ_PATH)/make/defs.mk
 include $(PRJ_PATH)/make/target.mk

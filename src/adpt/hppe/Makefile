@@ -81,6 +81,10 @@ ifeq (TRUE, $(IN_SHAPER))
   SRC_LIST += adpt_hppe_shaper.c
 endif
 
+ifeq (TRUE, $(IN_POLICER))
+  SRC_LIST += adpt_hppe_policer.c
+endif
+
 ifeq (, $(findstring HPPE, $(SUPPORT_CHIP)))
   SRC_LIST=
 endif

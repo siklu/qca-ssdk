@@ -65,6 +65,8 @@ void adpt_hppe_port_ctrl_func_bitmap_init(a_uint32_t dev_id);
 
 void adpt_hppe_shaper_func_bitmap_init(a_uint32_t dev_id);
 
+sw_error_t adpt_hppe_policer_init(a_uint32_t dev_id);
+
 
 #ifdef __cplusplus
 }

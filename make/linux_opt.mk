@@ -165,6 +165,10 @@ ifeq (TRUE, $(IN_SHAPER))
   MODULE_CFLAG += -DIN_SHAPER
 endif
 
+ifeq (TRUE, $(IN_POLICER))
+  MODULE_CFLAG += -DIN_POLICER
+endif
+
 ifneq (TRUE, $(FAL))
   MODULE_CFLAG += -DHSL_STANDALONG
 endif

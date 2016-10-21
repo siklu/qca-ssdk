@@ -43,6 +43,10 @@
 #ifdef IN_LED
 #include "fal_led.h"
 #endif
+#ifdef IN_POLICER
+#include "fal_policer.h"
+#endif
+
 #ifdef IN_SHAPER
 #include "fal_shaper.h"
 #endif
@@ -3205,6 +3209,16 @@ qca_hppe_portctrl_hw_init()
 
 	return 0;
 }
+
+static int
+qca_hppe_policer_hw_init()
+{
+
+	fal_policer_timeslot_set(0, 600);
+
+	return 0;
+}
+
 static int
 qca_hppe_shaper_hw_init()
 {
@@ -3742,6 +3756,9 @@ qca_hppe_hw_init(ssdk_init_cfg *cfg)
 	qca_hppe_portvlan_hw_init();
 
 	qca_hppe_portctrl_hw_init();
+
+	qca_hppe_policer_hw_init();
+
 	qca_hppe_shaper_hw_init();
 
 #ifndef ESS_ONLY_FPGA

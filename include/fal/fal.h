@@ -53,6 +53,7 @@ extern "C" {
 #include "fal_pppoe.h"
 #include "fal_bm.h"
 #include "fal_shaper.h"
+#include "fal_policer.h"
 
 #ifdef __cplusplus
 }

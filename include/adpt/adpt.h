@@ -47,6 +47,7 @@ extern "C" {
 #include "fal_shaper.h"
 #include "fal_bm.h"
 #include "fal_init.h"
+#include "fal_policer.h"
 
 #define ADPT_DEV_ID_CHECK(dev_id) \
 do { \
@@ -803,6 +804,27 @@ typedef sw_error_t (*adpt_port_bm_ctrl_set_func)(a_uint32_t dev_id, fal_port_t p
 typedef sw_error_t (*adpt_port_tdm_ctrl_set_func)(a_uint32_t dev_id, fal_port_tdm_ctrl_t *ctrl);
 typedef sw_error_t (*adpt_port_tdm_tick_cfg_set_func)(a_uint32_t dev_id, a_uint32_t tick_index,
 			fal_port_tdm_tick_cfg_t *cfg);
+
+//policer
+typedef sw_error_t (*adpt_acl_policer_counter_get_func)(a_uint32_t dev_id, a_uint32_t index,
+		fal_policer_counter_t *counter);
+typedef sw_error_t (*adpt_port_policer_counter_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+		fal_policer_counter_t *counter);
+typedef sw_error_t (*adpt_port_compensation_byte_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+		a_uint32_t  *length);
+typedef sw_error_t (*adpt_port_policer_entry_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+		fal_policer_config_t *policer, fal_policer_action_t *ation);
+typedef sw_error_t (*adpt_port_policer_entry_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+		fal_policer_config_t *policer, fal_policer_action_t *ation);
+typedef sw_error_t (*adpt_acl_policer_entry_get_func)(a_uint32_t dev_id, a_uint32_t index,
+		fal_policer_config_t *policer, fal_policer_action_t *ation);
+typedef sw_error_t (*adpt_acl_policer_entry_set_func)(a_uint32_t dev_id, a_uint32_t index,
+		fal_policer_config_t *policer, fal_policer_action_t *ation);
+typedef sw_error_t (*adpt_policer_time_slot_get_func)(a_uint32_t dev_id, a_uint32_t *time_slot);
+typedef sw_error_t (*adpt_port_compensation_byte_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+		a_uint32_t  length);
+typedef sw_error_t (*adpt_policer_time_slot_set_func)(a_uint32_t dev_id, a_uint32_t time_slot);
+
 typedef struct
 {
 	adpt_fdb_first_func adpt_fdb_first;
@@ -1186,6 +1208,19 @@ typedef struct
 	adpt_flow_shaper_get_func adpt_flow_shaper_get;
 	adpt_queue_shaper_set_func adpt_queue_shaper_set;
 	adpt_queue_shaper_time_slot_set_func adpt_queue_shaper_time_slot_set;
+
+//policer
+	a_uint32_t adpt_policer_func_bitmap;
+	adpt_acl_policer_counter_get_func adpt_acl_policer_counter_get;
+	adpt_port_policer_counter_get_func adpt_port_policer_counter_get;
+	adpt_port_compensation_byte_get_func adpt_port_compensation_byte_get;
+	adpt_port_policer_entry_get_func adpt_port_policer_entry_get;
+	adpt_port_policer_entry_set_func adpt_port_policer_entry_set;
+	adpt_acl_policer_entry_get_func adpt_acl_policer_entry_get;
+	adpt_acl_policer_entry_set_func adpt_acl_policer_entry_set;
+	adpt_policer_time_slot_get_func adpt_policer_time_slot_get;
+	adpt_port_compensation_byte_set_func adpt_port_compensation_byte_set;
+	adpt_policer_time_slot_set_func adpt_policer_time_slot_set;
 }adpt_api_t;
 
 
