@@ -24,21 +24,24 @@
 extern "C" {
 #endif                          /* __cplusplus */
 
+void adpt_hppe_fdb_func_bitmap_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_fdb_init(a_uint32_t dev_id);
+void adpt_hppe_portvlan_func_bitmap_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_portvlan_init(a_uint32_t dev_id);
+void adpt_hppe_ctrlpkt_func_bitmap_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_ctrlpkt_init(a_uint32_t dev_id);
 void adpt_hppe_servcode_func_bitmap_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_servcode_init(a_uint32_t dev_id);
 void adpt_hppe_mib_func_bitmap_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_mib_init(a_uint32_t dev_id);
-
+void adpt_hppe_stp_func_bitmap_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_stp_init(a_uint32_t dev_id);
 void adpt_hppe_vsi_func_bitmap_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_vsi_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_port_ctrl_init(a_uint32_t dev_id);
 
 sw_error_t adpt_hppe_mirror_init(a_uint32_t dev_id);
-
+void adpt_hppe_trunk_func_bitmap_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_trunk_init(a_uint32_t dev_id);
 void adpt_hppe_ip_func_bitmap_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_ip_init(a_uint32_t dev_id);
@@ -49,7 +52,7 @@ sw_error_t adpt_hppe_flow_init(a_uint32_t dev_id);
 
 void adpt_hppe_pppoe_func_bitmap_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_pppoe_init(a_uint32_t dev_id);
-
+void adpt_hppe_sec_func_bitmap_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_sec_init(a_uint32_t dev_id);
 
 void adpt_hppe_acl_func_bitmap_init(a_uint32_t dev_id);

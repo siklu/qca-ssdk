@@ -206,6 +206,15 @@ extern "C" {
 		a_uint8_t tcp_flags_mask[TCP_FLAGS_MAX];
 	} fal_l4_excep_parser_ctrl;
 
+enum {
+	FUNC_SEC_L3_EXCEP_CTRL_SET = 0,
+	FUNC_SEC_L3_EXCEP_CTRL_GET,
+	FUNC_SEC_L3_EXCEP_PARSER_CTRL_SET,
+	FUNC_SEC_L3_EXCEP_PARSER_CTRL_GET,
+	FUNC_SEC_L4_EXCEP_PARSER_CTRL_SET,
+	FUNC_SEC_L4_EXCEP_PARSER_CTRL_GET,
+};
+
     sw_error_t
     fal_sec_norm_item_set(a_uint32_t dev_id, fal_norm_item_t item, void *value);
 

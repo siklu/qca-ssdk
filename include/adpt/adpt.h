@@ -602,30 +602,14 @@ typedef sw_error_t (*adpt_port_vlan_trans_adv_getnext_func)(a_uint32_t dev_id, f
 /*portvlan module end*/
 
 /*ctrlpkt module end*/
-typedef sw_error_t (*adpt_ethernet_type_profile_set_func)(a_uint32_t dev_id,
-														a_uint32_t profile_id,
-														a_uint32_t ethernet_type,
-														a_bool_t enable);
-typedef sw_error_t (*adpt_ethernet_type_profile_get_func)(a_uint32_t dev_id,
-														a_uint32_t profile_id,
-														a_uint32_t *ethernet_type,
-														a_bool_t *enable);
-
-typedef sw_error_t (*adpt_rfdb_profile_set_func)(a_uint32_t dev_id,
-												a_uint32_t profile_id,
-												fal_mac_addr_t *addr,
-												a_bool_t enable);
-typedef sw_error_t (*adpt_rfdb_profile_get_func)(a_uint32_t dev_id,
-												a_uint32_t profile_id,
-												fal_mac_addr_t *addr,
-												a_bool_t *enable);
-
-typedef sw_error_t (*adpt_ctrlpkt_profile_set_func)(a_uint32_t dev_id,
-												a_uint32_t profile_id,
-												fal_ctrlpkt_profile_t *ctrlpkt);
-typedef sw_error_t (*adpt_ctrlpkt_profile_get_func)(a_uint32_t dev_id,
-												a_uint32_t profile_id,
-												fal_ctrlpkt_profile_t *ctrlpkt);
+typedef sw_error_t (*adpt_mgmtctrl_ethtype_profile_set_func)(a_uint32_t dev_id, a_uint32_t profile_id, a_uint32_t ethtype);
+typedef sw_error_t (*adpt_mgmtctrl_ethtype_profile_get_func)(a_uint32_t dev_id, a_uint32_t profile_id, a_uint32_t * ethtype);
+typedef sw_error_t (*adpt_mgmtctrl_rfdb_profile_set_func)(a_uint32_t dev_id, a_uint32_t profile_id, fal_mac_addr_t *addr);
+typedef sw_error_t (*adpt_mgmtctrl_rfdb_profile_get_func)(a_uint32_t dev_id, a_uint32_t profile_id, fal_mac_addr_t *addr);
+typedef sw_error_t (*adpt_mgmtctrl_ctrlpkt_profile_add_func)(a_uint32_t dev_id, fal_ctrlpkt_profile_t *ctrlpkt);
+typedef sw_error_t (*adpt_mgmtctrl_ctrlpkt_profile_del_func)(a_uint32_t dev_id, fal_ctrlpkt_profile_t *ctrlpkt);
+typedef sw_error_t (*adpt_mgmtctrl_ctrlpkt_profile_getfirst_func)(a_uint32_t dev_id, fal_ctrlpkt_profile_t *ctrlpkt);
+typedef sw_error_t (*adpt_mgmtctrl_ctrlpkt_profile_getnext_func)(a_uint32_t dev_id, fal_ctrlpkt_profile_t *ctrlpkt);
 /*ctrlpkt module end*/
 
 /*service module end*/
@@ -827,6 +811,7 @@ typedef sw_error_t (*adpt_policer_time_slot_set_func)(a_uint32_t dev_id, a_uint3
 
 typedef struct
 {
+	a_uint32_t adpt_fdb_func_bitmap[2];
 	adpt_fdb_first_func adpt_fdb_first;
 	adpt_fdb_next_func adpt_fdb_next;
 	adpt_fdb_add_func adpt_fdb_add;
@@ -874,6 +859,7 @@ typedef struct
 	adpt_mib_status_get_func adpt_mib_status_get;
 	adpt_get_rx_mib_info_func adpt_get_rx_mib_info;
 
+	a_uint32_t adpt_stp_func_bitmap;
 	adpt_stp_port_state_get_func adpt_stp_port_state_get;
 	adpt_stp_port_state_set_func adpt_stp_port_state_set;
 
@@ -967,6 +953,7 @@ typedef struct
 	adpt_mirr_in_analysis_port_set_func adpt_mirr_in_analysis_port_set;
 	adpt_mirr_in_analysis_port_get_func adpt_mirr_in_analysis_port_get;
 //trunk
+	a_uint32_t adpt_trunk_func_bitmap;
 	adpt_trunk_fail_over_en_get_func adpt_trunk_fail_over_en_get;
 	adpt_trunk_hash_mode_get_func adpt_trunk_hash_mode_get;
 	adpt_trunk_group_get_func adpt_trunk_group_get;
@@ -1059,6 +1046,7 @@ typedef struct
 	adpt_queue_counter_ctrl_set_func adpt_queue_counter_ctrl_set;
 
 	/*portvlan module begin*/
+	a_uint32_t adpt_portvlan_func_bitmap[2];
 	adpt_global_qinq_mode_set_func adpt_global_qinq_mode_set;
 	adpt_global_qinq_mode_get_func adpt_global_qinq_mode_get;
 	adpt_tpid_set_func adpt_tpid_set;
@@ -1098,12 +1086,15 @@ typedef struct
 	/*portvlan module end*/
 
 	/*ctrlpkt module begin*/
-	adpt_ethernet_type_profile_set_func adpt_ethernet_type_profile_set;
-	adpt_ethernet_type_profile_get_func adpt_ethernet_type_profile_get;
-	adpt_rfdb_profile_set_func adpt_rfdb_profile_set;
-	adpt_rfdb_profile_get_func adpt_rfdb_profile_get;
-	adpt_ctrlpkt_profile_set_func adpt_ctrlpkt_profile_set;
-	adpt_ctrlpkt_profile_get_func adpt_ctrlpkt_profile_get;
+	a_uint32_t adpt_ctrlpkt_func_bitmap;
+	adpt_mgmtctrl_ethtype_profile_set_func adpt_mgmtctrl_ethtype_profile_set;
+	adpt_mgmtctrl_ethtype_profile_get_func adpt_mgmtctrl_ethtype_profile_get;
+	adpt_mgmtctrl_rfdb_profile_set_func adpt_mgmtctrl_rfdb_profile_set;
+	adpt_mgmtctrl_rfdb_profile_get_func adpt_mgmtctrl_rfdb_profile_get;
+	adpt_mgmtctrl_ctrlpkt_profile_add_func adpt_mgmtctrl_ctrlpkt_profile_add;
+	adpt_mgmtctrl_ctrlpkt_profile_del_func adpt_mgmtctrl_ctrlpkt_profile_del;
+	adpt_mgmtctrl_ctrlpkt_profile_getfirst_func adpt_mgmtctrl_ctrlpkt_profile_getfirst;
+	adpt_mgmtctrl_ctrlpkt_profile_getnext_func adpt_mgmtctrl_ctrlpkt_profile_getnext;
 	/*ctrlpkt module end*/
 
 	/*servcode module begin*/
@@ -1116,7 +1107,7 @@ typedef struct
 	adpt_egress_service_profile_get_func adpt_egress_service_profile_get;
 	/*servcode module end*/
 
-	//pppoe
+	/* pppoe */
 	a_uint32_t adpt_pppoe_func_bitmap;
 	adpt_pppoe_session_table_add_func adpt_pppoe_session_table_add;
 	adpt_pppoe_session_table_del_func adpt_pppoe_session_table_del;
@@ -1124,6 +1115,8 @@ typedef struct
 	adpt_pppoe_en_set_func adpt_pppoe_en_set;
 	adpt_pppoe_en_get_func adpt_pppoe_en_get;
 
+	/*sec */
+	a_uint32_t adpt_sec_func_bitmap;
 	adpt_sec_l3_excep_parser_ctrl_set_func adpt_sec_l3_excep_parser_ctrl_set;
 	adpt_sec_l3_excep_ctrl_get_func adpt_sec_l3_excep_ctrl_get;
 	adpt_sec_l3_excep_parser_ctrl_get_func adpt_sec_l3_excep_parser_ctrl_get;

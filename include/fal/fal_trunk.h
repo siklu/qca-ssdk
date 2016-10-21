@@ -41,6 +41,15 @@ extern "C" {
 #define FAL_TRUNK_HASH_KEY_UDF3             0x400
 #define FAL_TRUNK_GROUP_MAX_MEMEBER    4
 
+enum {
+	FUNC_TRUNK_GROUP_SET = 0,
+	FUNC_TRUNK_GROUP_GET,
+	FUNC_TRUNK_HASH_MODE_SET,
+	FUNC_TRUNK_HASH_MODE_GET,
+	FUNC_TRUNK_FAILOVER_ENABLE,
+	FUNC_TRUNK_FAILOVER_STATUS_GET,
+};
+
 sw_error_t
 fal_trunk_group_set(a_uint32_t dev_id, a_uint32_t trunk_id,
 			a_bool_t enable, fal_pbmp_t member);
@@ -60,10 +69,10 @@ sw_error_t
 fal_trunk_manipulate_sa_get(a_uint32_t dev_id, fal_mac_addr_t * addr);
 
 sw_error_t
-fal_trunk_fail_over_en_set(a_uint32_t dev_id, a_bool_t fail_over);
+fal_trunk_failover_enable(a_uint32_t dev_id, a_bool_t failover);
 
 sw_error_t
-fal_trunk_fail_over_en_get(a_uint32_t dev_id, a_bool_t * fail_over);
+fal_trunk_failover_status_get(a_uint32_t dev_id, a_bool_t * failover);
 
 #ifdef __cplusplus
 }

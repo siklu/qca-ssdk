@@ -154,7 +154,7 @@ _fal_trunk_manipulate_sa_get(a_uint32_t dev_id, fal_mac_addr_t * addr)
     return rv;
 }
 sw_error_t
-_fal_trunk_fail_over_en_get(a_uint32_t dev_id, a_bool_t * fail_over)
+_fal_trunk_failover_status_get(a_uint32_t dev_id, a_bool_t * failover)
 {
     adpt_api_t *p_api;
 	sw_error_t rv = SW_OK;
@@ -164,11 +164,11 @@ _fal_trunk_fail_over_en_get(a_uint32_t dev_id, a_bool_t * fail_over)
     if (NULL == p_api->adpt_trunk_fail_over_en_get)
         return SW_NOT_SUPPORTED;
 
-    rv = p_api->adpt_trunk_fail_over_en_get(dev_id, fail_over);
+    rv = p_api->adpt_trunk_fail_over_en_get(dev_id, failover);
     return rv;
 }
 sw_error_t
-_fal_trunk_fail_over_en_set(a_uint32_t dev_id, a_bool_t fail_over)
+_fal_trunk_failover_enable(a_uint32_t dev_id, a_bool_t failover)
 {
     adpt_api_t *p_api;
 	sw_error_t rv = SW_OK;
@@ -178,7 +178,7 @@ _fal_trunk_fail_over_en_set(a_uint32_t dev_id, a_bool_t fail_over)
     if (NULL == p_api->adpt_trunk_fail_over_en_set)
         return SW_NOT_SUPPORTED;
 
-    rv = p_api->adpt_trunk_fail_over_en_set(dev_id, fail_over);
+    rv = p_api->adpt_trunk_fail_over_en_set(dev_id, failover);
     return rv;
 }
 
@@ -291,22 +291,22 @@ fal_trunk_manipulate_sa_get(a_uint32_t dev_id, fal_mac_addr_t * addr)
     return rv;
 }
 sw_error_t
-fal_trunk_fail_over_en_get(a_uint32_t dev_id, a_bool_t * fail_over)
+fal_trunk_failover_status_get(a_uint32_t dev_id, a_bool_t * failover)
 {
     sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
-    rv = _fal_trunk_fail_over_en_get(dev_id, fail_over);
+    rv = _fal_trunk_failover_status_get(dev_id, failover);
     FAL_API_UNLOCK;
     return rv;
 }
 sw_error_t
-fal_trunk_fail_over_en_set(a_uint32_t dev_id, a_bool_t fail_over)
+fal_trunk_failover_enable(a_uint32_t dev_id, a_bool_t failover)
 {
     sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
-    rv = _fal_trunk_fail_over_en_set(dev_id, fail_over);
+    rv = _fal_trunk_failover_enable(dev_id, failover);
     FAL_API_UNLOCK;
     return rv;
 }

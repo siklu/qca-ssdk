@@ -30,157 +30,209 @@
  * @}
  */
 sw_error_t
-_fal_ethernet_type_profile_set(a_uint32_t dev_id, a_uint32_t profile_id, a_uint32_t ethernet_type, a_bool_t enable)
+_fal_mgmtctrl_ethtype_profile_set(a_uint32_t dev_id, a_uint32_t profile_id, a_uint32_t ethtype)
 {
     sw_error_t rv;
     adpt_api_t *p_api;
 
     SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
 
-    if (NULL == p_api->adpt_ethernet_type_profile_set)
+    if (NULL == p_api->adpt_mgmtctrl_ethtype_profile_set)
         return SW_NOT_SUPPORTED;
 
-    rv = p_api->adpt_ethernet_type_profile_set(dev_id, profile_id, ethernet_type, enable);
+    rv = p_api->adpt_mgmtctrl_ethtype_profile_set(dev_id, profile_id, ethtype);
     return rv;
 }
 
 sw_error_t
-_fal_ethernet_type_profile_get(a_uint32_t dev_id, a_uint32_t profile_id, a_uint32_t *ethernet_type, a_bool_t *enable)
+_fal_mgmtctrl_ethtype_profile_get(a_uint32_t dev_id, a_uint32_t profile_id, a_uint32_t * ethtype)
 {
     sw_error_t rv;
     adpt_api_t *p_api;
 
     SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
 
-    if (NULL == p_api->adpt_ethernet_type_profile_get)
+    if (NULL == p_api->adpt_mgmtctrl_ethtype_profile_get)
         return SW_NOT_SUPPORTED;
 
-    rv = p_api->adpt_ethernet_type_profile_get(dev_id, profile_id, ethernet_type, enable);
+    rv = p_api->adpt_mgmtctrl_ethtype_profile_get(dev_id, profile_id, ethtype);
     return rv;
 }
 
 sw_error_t
-_fal_rfdb_profile_set(a_uint32_t dev_id, a_uint32_t profile_id, fal_mac_addr_t *addr, a_bool_t enable)
+_fal_mgmtctrl_rfdb_profile_set(a_uint32_t dev_id, a_uint32_t profile_id, fal_mac_addr_t *addr)
 {
     sw_error_t rv;
     adpt_api_t *p_api;
 
     SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
 
-    if (NULL == p_api->adpt_rfdb_profile_set)
+    if (NULL == p_api->adpt_mgmtctrl_rfdb_profile_set)
         return SW_NOT_SUPPORTED;
 
-    rv = p_api->adpt_rfdb_profile_set(dev_id, profile_id, addr, enable);
+    rv = p_api->adpt_mgmtctrl_rfdb_profile_set(dev_id, profile_id, addr);
     return rv;
 }
 
 sw_error_t
-_fal_rfdb_profile_get(a_uint32_t dev_id, a_uint32_t profile_id, fal_mac_addr_t *addr, a_bool_t *enable)
+_fal_mgmtctrl_rfdb_profile_get(a_uint32_t dev_id, a_uint32_t profile_id, fal_mac_addr_t *addr)
 {
     sw_error_t rv;
     adpt_api_t *p_api;
 
     SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
 
-    if (NULL == p_api->adpt_rfdb_profile_get)
+    if (NULL == p_api->adpt_mgmtctrl_rfdb_profile_get)
         return SW_NOT_SUPPORTED;
 
-    rv = p_api->adpt_rfdb_profile_get(dev_id, profile_id, addr, enable);
+    rv = p_api->adpt_mgmtctrl_rfdb_profile_get(dev_id, profile_id, addr);
     return rv;
 }
 
 sw_error_t
-_fal_ctrlpkt_profile_set(a_uint32_t dev_id, a_uint32_t profile_id, fal_ctrlpkt_profile_t *ctrlpkt)
+_fal_mgmtctrl_ctrlpkt_profile_add(a_uint32_t dev_id, fal_ctrlpkt_profile_t *ctrlpkt)
 {
     sw_error_t rv;
     adpt_api_t *p_api;
 
     SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
 
-    if (NULL == p_api->adpt_ctrlpkt_profile_set)
+    if (NULL == p_api->adpt_mgmtctrl_ctrlpkt_profile_add)
         return SW_NOT_SUPPORTED;
 
-    rv = p_api->adpt_ctrlpkt_profile_set(dev_id, profile_id, ctrlpkt);
+    rv = p_api->adpt_mgmtctrl_ctrlpkt_profile_add(dev_id, ctrlpkt);
     return rv;
 }
 
 sw_error_t
-_fal_ctrlpkt_profile_get(a_uint32_t dev_id, a_uint32_t profile_id, fal_ctrlpkt_profile_t *ctrlpkt)
+_fal_mgmtctrl_ctrlpkt_profile_del(a_uint32_t dev_id, fal_ctrlpkt_profile_t *ctrlpkt)
 {
     sw_error_t rv;
     adpt_api_t *p_api;
 
     SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
 
-    if (NULL == p_api->adpt_ctrlpkt_profile_get)
+    if (NULL == p_api->adpt_mgmtctrl_ctrlpkt_profile_del)
         return SW_NOT_SUPPORTED;
 
-    rv = p_api->adpt_ctrlpkt_profile_get(dev_id, profile_id, ctrlpkt);
+    rv = p_api->adpt_mgmtctrl_ctrlpkt_profile_del(dev_id, ctrlpkt);
     return rv;
 }
 
 sw_error_t
-fal_ethernet_type_profile_set(a_uint32_t dev_id, a_uint32_t profile_id, a_uint32_t ethernet_type, a_bool_t enable)
+_fal_mgmtctrl_ctrlpkt_profile_getfirst(a_uint32_t dev_id, fal_ctrlpkt_profile_t *ctrlpkt)
+{
+    sw_error_t rv;
+    adpt_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_mgmtctrl_ctrlpkt_profile_getfirst)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_mgmtctrl_ctrlpkt_profile_getfirst(dev_id, ctrlpkt);
+    return rv;
+}
+
+sw_error_t
+_fal_mgmtctrl_ctrlpkt_profile_getnext(a_uint32_t dev_id, fal_ctrlpkt_profile_t *ctrlpkt)
+{
+    sw_error_t rv;
+    adpt_api_t *p_api;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_mgmtctrl_ctrlpkt_profile_getnext)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_mgmtctrl_ctrlpkt_profile_getnext(dev_id, ctrlpkt);
+    return rv;
+}
+
+sw_error_t
+fal_mgmtctrl_ethtype_profile_set(a_uint32_t dev_id, a_uint32_t profile_id, a_uint32_t ethtype)
 {
     sw_error_t rv = SW_OK;
 
     FAL_CTRLPKT_API_LOCK;
-    rv = _fal_ethernet_type_profile_set(dev_id, profile_id, ethernet_type, enable);
+    rv = _fal_mgmtctrl_ethtype_profile_set(dev_id, profile_id, ethtype);
     FAL_CTRLPKT_API_UNLOCK;
     return rv;
 }
 
 sw_error_t
-fal_ethernet_type_profile_get(a_uint32_t dev_id, a_uint32_t profile_id, a_uint32_t *ethernet_type, a_bool_t *enable)
+fal_mgmtctrl_ethtype_profile_get(a_uint32_t dev_id, a_uint32_t profile_id, a_uint32_t * ethtype)
 {
     sw_error_t rv = SW_OK;
 
     FAL_CTRLPKT_API_LOCK;
-    rv = _fal_ethernet_type_profile_get(dev_id, profile_id, ethernet_type, enable);
+    rv = _fal_mgmtctrl_ethtype_profile_get(dev_id, profile_id, ethtype);
     FAL_CTRLPKT_API_UNLOCK;
     return rv;
 }
 
 sw_error_t
-fal_rfdb_profile_set(a_uint32_t dev_id, a_uint32_t profile_id, fal_mac_addr_t *addr, a_bool_t enable)
+fal_mgmtctrl_rfdb_profile_set(a_uint32_t dev_id, a_uint32_t profile_id, fal_mac_addr_t *addr)
 {
     sw_error_t rv = SW_OK;
 
     FAL_CTRLPKT_API_LOCK;
-    rv = _fal_rfdb_profile_set(dev_id, profile_id, addr, enable);
+    rv = _fal_mgmtctrl_rfdb_profile_set(dev_id, profile_id, addr);
     FAL_CTRLPKT_API_UNLOCK;
     return rv;
 }
 
 sw_error_t
-fal_rfdb_profile_get(a_uint32_t dev_id, a_uint32_t profile_id, fal_mac_addr_t *addr, a_bool_t *enable)
+fal_mgmtctrl_rfdb_profile_get(a_uint32_t dev_id, a_uint32_t profile_id, fal_mac_addr_t *addr)
 {
     sw_error_t rv = SW_OK;
 
     FAL_CTRLPKT_API_LOCK;
-    rv = _fal_rfdb_profile_get(dev_id, profile_id, addr, enable);
+    rv = _fal_mgmtctrl_rfdb_profile_get(dev_id, profile_id, addr);
     FAL_CTRLPKT_API_UNLOCK;
     return rv;
 }
 
 sw_error_t
-fal_ctrlpkt_profile_set(a_uint32_t dev_id, a_uint32_t profile_id, fal_ctrlpkt_profile_t *ctrlpkt)
+fal_mgmtctrl_ctrlpkt_profile_add(a_uint32_t dev_id, fal_ctrlpkt_profile_t *ctrlpkt)
 {
     sw_error_t rv = SW_OK;
 
     FAL_CTRLPKT_API_LOCK;
-    rv = _fal_ctrlpkt_profile_set(dev_id, profile_id, ctrlpkt);
+    rv = _fal_mgmtctrl_ctrlpkt_profile_add(dev_id, ctrlpkt);
     FAL_CTRLPKT_API_UNLOCK;
     return rv;
 }
 
 sw_error_t
-fal_ctrlpkt_profile_get(a_uint32_t dev_id, a_uint32_t profile_id, fal_ctrlpkt_profile_t *ctrlpkt)
+fal_mgmtctrl_ctrlpkt_profile_del(a_uint32_t dev_id, fal_ctrlpkt_profile_t *ctrlpkt)
 {
     sw_error_t rv = SW_OK;
 
     FAL_CTRLPKT_API_LOCK;
-    rv = _fal_ctrlpkt_profile_get(dev_id, profile_id, ctrlpkt);
+    rv = _fal_mgmtctrl_ctrlpkt_profile_del(dev_id, ctrlpkt);
+    FAL_CTRLPKT_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_mgmtctrl_ctrlpkt_profile_getfirst(a_uint32_t dev_id, fal_ctrlpkt_profile_t *ctrlpkt)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_CTRLPKT_API_LOCK;
+    rv = _fal_mgmtctrl_ctrlpkt_profile_getfirst(dev_id, ctrlpkt);
+    FAL_CTRLPKT_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_mgmtctrl_ctrlpkt_profile_getnext(a_uint32_t dev_id, fal_ctrlpkt_profile_t *ctrlpkt)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_CTRLPKT_API_LOCK;
+    rv = _fal_mgmtctrl_ctrlpkt_profile_getnext(dev_id, ctrlpkt);
     FAL_CTRLPKT_API_UNLOCK;
     return rv;
 }

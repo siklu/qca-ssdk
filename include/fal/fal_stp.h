@@ -42,7 +42,10 @@ extern "C" {
     }
     fal_stp_state_t;
 
-
+enum {
+	FUNC_STP_PORT_STATE_SET = 0,
+	FUNC_STP_PORT_STATE_GET,
+};
 
     sw_error_t
     fal_stp_port_state_set(a_uint32_t dev_id, a_uint32_t st_id,

@@ -1502,8 +1502,8 @@ extern "C" {
     SW_API_DEF(SW_API_TRUNK_HASH_GET, fal_trunk_hash_mode_get), \
     SW_API_DEF(SW_API_TRUNK_MAN_SA_SET, fal_trunk_manipulate_sa_set), \
     SW_API_DEF(SW_API_TRUNK_MAN_SA_GET, fal_trunk_manipulate_sa_get), \
-    SW_API_DEF(SW_API_TRUNK_FAILOVER_EN_SET, fal_trunk_fail_over_en_set), \
-    SW_API_DEF(SW_API_TRUNK_FAILOVER_EN_GET, fal_trunk_fail_over_en_get),
+    SW_API_DEF(SW_API_TRUNK_FAILOVER_EN_SET, fal_trunk_failover_enable), \
+    SW_API_DEF(SW_API_TRUNK_FAILOVER_EN_GET, fal_trunk_failover_status_get),
 
 #define TRUNK_API_PARAM \
     SW_API_DESC(SW_API_TRUNK_GROUP_SET) \
@@ -1759,20 +1759,24 @@ extern "C" {
     SW_API_DESC(SW_API_DBG_REG_DUMP)
 
 #define CTRLPKT_API \
-    SW_API_DEF(SW_API_ETHERNET_TYPE_PROFILE_SET, fal_ethernet_type_profile_set), \
-    SW_API_DEF(SW_API_ETHERNET_TYPE_PROFILE_GET, fal_ethernet_type_profile_get), \
-    SW_API_DEF(SW_API_RFDB_PROFILE_SET, fal_rfdb_profile_set), \
-    SW_API_DEF(SW_API_RFDB_PROFILE_GET, fal_rfdb_profile_get), \
-    SW_API_DEF(SW_API_APP_PROFILE_SET, fal_ctrlpkt_profile_set), \
-    SW_API_DEF(SW_API_APP_PROFILE_GET, fal_ctrlpkt_profile_get),
+    SW_API_DEF(SW_API_MGMTCTRL_ETHTYPE_PROFILE_SET, fal_mgmtctrl_ethtype_profile_set), \
+    SW_API_DEF(SW_API_MGMTCTRL_ETHTYPE_PROFILE_GET, fal_mgmtctrl_ethtype_profile_get), \
+    SW_API_DEF(SW_API_MGMTCTRL_RFDB_PROFILE_SET, fal_mgmtctrl_rfdb_profile_set), \
+    SW_API_DEF(SW_API_MGMTCTRL_RFDB_PROFILE_GET, fal_mgmtctrl_rfdb_profile_get), \
+    SW_API_DEF(SW_API_MGMTCTRL_CTRLPKT_PROFILE_ADD, fal_mgmtctrl_ctrlpkt_profile_add), \
+    SW_API_DEF(SW_API_MGMTCTRL_CTRLPKT_PROFILE_DEL, fal_mgmtctrl_ctrlpkt_profile_del), \
+    SW_API_DEF(SW_API_MGMTCTRL_CTRLPKT_PROFILE_GETFIRST, fal_mgmtctrl_ctrlpkt_profile_getfirst), \
+    SW_API_DEF(SW_API_MGMTCTRL_CTRLPKT_PROFILE_GETNEXT, fal_mgmtctrl_ctrlpkt_profile_getnext),
 
 #define CTRLPKT_API_PARAM \
-    SW_API_DESC(SW_API_ETHERNET_TYPE_PROFILE_SET) \
-    SW_API_DESC(SW_API_ETHERNET_TYPE_PROFILE_GET) \
-    SW_API_DESC(SW_API_RFDB_PROFILE_SET) \
-    SW_API_DESC(SW_API_RFDB_PROFILE_GET) \
-    SW_API_DESC(SW_API_APP_PROFILE_SET) \
-    SW_API_DESC(SW_API_APP_PROFILE_GET)
+    SW_API_DESC(SW_API_MGMTCTRL_ETHTYPE_PROFILE_SET) \
+    SW_API_DESC(SW_API_MGMTCTRL_ETHTYPE_PROFILE_GET) \
+    SW_API_DESC(SW_API_MGMTCTRL_RFDB_PROFILE_SET) \
+    SW_API_DESC(SW_API_MGMTCTRL_RFDB_PROFILE_GET) \
+    SW_API_DESC(SW_API_MGMTCTRL_CTRLPKT_PROFILE_ADD) \
+    SW_API_DESC(SW_API_MGMTCTRL_CTRLPKT_PROFILE_DEL) \
+    SW_API_DESC(SW_API_MGMTCTRL_CTRLPKT_PROFILE_GETFIRST) \
+    SW_API_DESC(SW_API_MGMTCTRL_CTRLPKT_PROFILE_GETNEXT)
 
 #define SERVCODE_API \
     SW_API_DEF(SW_API_PARSE_SERVICE_PROFILE_SET, fal_parse_service_profile_set), \
