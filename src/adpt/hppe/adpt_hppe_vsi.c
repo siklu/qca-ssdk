@@ -161,16 +161,25 @@ static sw_error_t _adpt_hppe_vsi_xlt_update(a_uint32_t dev_id,
 			{
 				xlt_rule.bf.ckey_vid_incl = A_TRUE;
 				xlt_rule.bf.ckey_vid = ctag_vid;
+				if(ctag_vid == 0)
+					xlt_rule.bf.ckey_fmt_1 = 0x1;
+				else
+					xlt_rule.bf.ckey_fmt_1 = 0x2;
 			}
+			else
+					xlt_rule.bf.ckey_fmt_0 = 0x1;
 			if(stag_vid != FAL_VLAN_INVALID)
 			{
 				xlt_rule.bf.skey_vid_incl = A_TRUE;
 				xlt_rule.bf.skey_vid = stag_vid;
+				if(stag_vid == 0)
+					xlt_rule.bf.skey_fmt = 0x2;
+				else
+					xlt_rule.bf.skey_fmt = 0x4;
 			}
+			else
+					xlt_rule.bf.skey_fmt = 0x1;
 			xlt_rule.bf.port_bitmap = (1<<port_id);
-			xlt_rule.bf.skey_fmt = 0x7;
-			xlt_rule.bf.ckey_fmt_0 = 0x1;
-			xlt_rule.bf.ckey_fmt_1 = 0x3;
 			rv = hppe_xlt_rule_tbl_set(dev_id, new_entry, &xlt_rule);
 			if( rv != SW_OK )
 				return rv;
