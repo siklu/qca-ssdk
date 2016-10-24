@@ -117,9 +117,9 @@ adpt_hppe_acl_policer_counter_get(a_uint32_t dev_id, a_uint32_t index,
 		return SW_BAD_PARAM;
 
 	hppe_in_acl_meter_cnt_tbl_get(dev_id, index * 3, &in_acl_meter_cnt_tbl);
-	counter->red_packet_counter = in_acl_meter_cnt_tbl.bf.pkt_cnt;
-	counter->red_byte_counter = in_acl_meter_cnt_tbl.bf.byte_cnt_1;
-	counter->red_byte_counter = (counter->red_byte_counter << 32) | in_acl_meter_cnt_tbl.bf.byte_cnt_0;
+	counter->green_packet_counter = in_acl_meter_cnt_tbl.bf.pkt_cnt;
+	counter->green_byte_counter = in_acl_meter_cnt_tbl.bf.byte_cnt_1;
+	counter->green_byte_counter = (counter->green_byte_counter << 32) | in_acl_meter_cnt_tbl.bf.byte_cnt_0;
 
 	hppe_in_acl_meter_cnt_tbl_get(dev_id, index * 3 + 1, &in_acl_meter_cnt_tbl);
 	counter->yellow_packet_counter = in_acl_meter_cnt_tbl.bf.pkt_cnt;
@@ -127,9 +127,9 @@ adpt_hppe_acl_policer_counter_get(a_uint32_t dev_id, a_uint32_t index,
 	counter->yellow_byte_counter = (counter->yellow_byte_counter << 32) | in_acl_meter_cnt_tbl.bf.byte_cnt_0;
 
 	hppe_in_acl_meter_cnt_tbl_get(dev_id, index * 3 + 2, &in_acl_meter_cnt_tbl);
-	counter->green_packet_counter = in_acl_meter_cnt_tbl.bf.pkt_cnt;
-	counter->green_byte_counter = in_acl_meter_cnt_tbl.bf.byte_cnt_1;
-	counter->green_byte_counter = (counter->green_byte_counter << 32) | in_acl_meter_cnt_tbl.bf.byte_cnt_0;
+	counter->red_packet_counter = in_acl_meter_cnt_tbl.bf.pkt_cnt;
+	counter->red_byte_counter = in_acl_meter_cnt_tbl.bf.byte_cnt_1;
+	counter->red_byte_counter = (counter->red_byte_counter << 32) | in_acl_meter_cnt_tbl.bf.byte_cnt_0;
 
 	return SW_OK;
 }
@@ -150,9 +150,9 @@ adpt_hppe_port_policer_counter_get(a_uint32_t dev_id, fal_port_t port_id,
 		return SW_BAD_PARAM;
 
 	hppe_in_port_meter_cnt_tbl_get(dev_id, port_id * 3, &in_port_meter_cnt_tbl);
-	counter->red_packet_counter = in_port_meter_cnt_tbl.bf.pkt_cnt;
-	counter->red_byte_counter = in_port_meter_cnt_tbl.bf.byte_cnt_1;
-	counter->red_byte_counter = (counter->red_byte_counter << 32) | in_port_meter_cnt_tbl.bf.byte_cnt_0;
+	counter->green_packet_counter = in_port_meter_cnt_tbl.bf.pkt_cnt;
+	counter->green_byte_counter = in_port_meter_cnt_tbl.bf.byte_cnt_1;
+	counter->green_byte_counter = (counter->green_byte_counter << 32) | in_port_meter_cnt_tbl.bf.byte_cnt_0;
 
 	hppe_in_port_meter_cnt_tbl_get(dev_id, port_id * 3 + 1, &in_port_meter_cnt_tbl);
 	counter->yellow_packet_counter = in_port_meter_cnt_tbl.bf.pkt_cnt;
@@ -160,9 +160,9 @@ adpt_hppe_port_policer_counter_get(a_uint32_t dev_id, fal_port_t port_id,
 	counter->yellow_byte_counter = (counter->yellow_byte_counter << 32) | in_port_meter_cnt_tbl.bf.byte_cnt_0;
 
 	hppe_in_port_meter_cnt_tbl_get(dev_id, port_id * 3 + 2, &in_port_meter_cnt_tbl);
-	counter->green_packet_counter = in_port_meter_cnt_tbl.bf.pkt_cnt;
-	counter->green_byte_counter = in_port_meter_cnt_tbl.bf.byte_cnt_1;
-	counter->green_byte_counter = (counter->green_byte_counter << 32) | in_port_meter_cnt_tbl.bf.byte_cnt_0;
+	counter->red_packet_counter = in_port_meter_cnt_tbl.bf.pkt_cnt;
+	counter->red_byte_counter = in_port_meter_cnt_tbl.bf.byte_cnt_1;
+	counter->red_byte_counter = (counter->red_byte_counter << 32) | in_port_meter_cnt_tbl.bf.byte_cnt_0;
 
 	return SW_OK;
 }
