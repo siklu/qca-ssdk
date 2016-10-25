@@ -111,6 +111,7 @@ static sw_data_type_t sw_data_type[] =
 	#endif
 	#ifdef IN_MIB
     SW_TYPE_DEF(SW_MIB, NULL, NULL),
+    SW_TYPE_DEF(SW_XGMIB, NULL, NULL),
 	#endif
 	#ifdef IN_VLAN
     SW_TYPE_DEF(SW_VLAN, cmd_data_check_vlan, NULL),

@@ -119,6 +119,12 @@ typedef sw_error_t (*adpt_mib_port_flush_counters_func)(a_uint32_t dev_id, fal_p
 typedef sw_error_t (*adpt_mib_status_get_func)(a_uint32_t dev_id, a_bool_t * enable);
 typedef sw_error_t (*adpt_get_rx_mib_info_func)(a_uint32_t dev_id, fal_port_t port_id,
                      fal_mib_info_t * mib_info );
+typedef sw_error_t (*adpt_get_xgmib_info_func)(a_uint32_t dev_id, fal_port_t port_id,
+                     fal_xgmib_info_t * mib_info );
+typedef sw_error_t (*adpt_get_tx_xgmib_info_func)(a_uint32_t dev_id, fal_port_t port_id,
+                     fal_xgmib_info_t * mib_info );
+typedef sw_error_t (*adpt_get_rx_xgmib_info_func)(a_uint32_t dev_id, fal_port_t port_id,
+                     fal_xgmib_info_t * mib_info );
 
 typedef sw_error_t (*adpt_stp_port_state_get_func)(a_uint32_t dev_id, a_uint32_t st_id,
                      fal_port_t port_id, fal_stp_state_t * state);
@@ -850,6 +856,9 @@ typedef struct
 	adpt_mib_port_flush_counters_func adpt_mib_port_flush_counters;
 	adpt_mib_status_get_func adpt_mib_status_get;
 	adpt_get_rx_mib_info_func adpt_get_rx_mib_info;
+	adpt_get_xgmib_info_func adpt_get_xgmib_info;
+	adpt_get_tx_xgmib_info_func adpt_get_tx_xgmib_info;
+	adpt_get_rx_xgmib_info_func adpt_get_rx_xgmib_info;
 
 	a_uint32_t adpt_stp_func_bitmap;
 	adpt_stp_port_state_get_func adpt_stp_port_state_get;

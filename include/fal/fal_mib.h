@@ -84,12 +84,80 @@ enum
 	FUNC_GET_MIB_INFO = 0,
 	FUNC_GET_RX_MIB_INFO,
 	FUNC_GET_TX_MIB_INFO,
+	FUNC_GET_XGMIB_INFO,
+	FUNC_GET_TX_XGMIB_INFO,
+	FUNC_GET_RX_XGMIB_INFO,
 	FUNC_MIB_STATUS_SET,
 	FUNC_MIB_STATUS_GET,
 	FUNC_MIB_PORT_FLUSH_COUNTERS,
 	FUNC_MIB_CPUKEEP_SET,
 	FUNC_MIB_CPUKEEP_GET
 };
+
+typedef struct
+{
+	a_uint64_t	RxFrame;
+	a_uint64_t	RxByte;
+	a_uint64_t	RxByteGood;
+	a_uint64_t	RxBroadGood;
+	a_uint64_t	RxMultiGood;
+	a_uint64_t	RxFcsErr;
+	a_uint64_t	RxRunt;
+	a_uint64_t	RxJabberError;
+	a_uint64_t	RxUndersizeGood;
+	a_uint64_t	RxOversizeGood;
+	a_uint64_t	Rx64Byte;
+	a_uint64_t	Rx128Byte;
+	a_uint64_t	Rx256Byte;
+	a_uint64_t	Rx512Byte;
+	a_uint64_t	Rx1024Byte;
+	a_uint64_t	RxMaxByte;
+	a_uint64_t	RxUnicastGood;
+	a_uint64_t	RxLengthError;
+	a_uint64_t	RxOutOfRangeError;
+	a_uint64_t	RxPause;
+	a_uint64_t	RxOverFlow;
+	a_uint64_t	RxVLANFrameGoodBad;
+	a_uint64_t	RxWatchDogError;
+	a_uint64_t	RxLPIUsec;
+	a_uint64_t	RxLPITran;
+	a_uint64_t	RxDropFrameGoodBad;
+	a_uint64_t	RxDropByteGoodBad;
+
+	a_uint64_t	TxByte;
+	a_uint64_t	TxFrame;
+	a_uint64_t	TxBroadGood;
+	a_uint64_t	TxMultiGood;
+	a_uint64_t	Tx64Byte;
+	a_uint64_t	Tx128Byte;
+	a_uint64_t	Tx256Byte;
+	a_uint64_t	Tx512Byte;
+	a_uint64_t	Tx1024Byte;
+	a_uint64_t	TxMaxByte;
+	a_uint64_t	TxUnicast;
+	a_uint64_t	TxMulti;
+	a_uint64_t	TxBroad;
+	a_uint64_t	TxUnderFlowError;
+	a_uint64_t	TxByteGood;
+	a_uint64_t	TxFrameGood;
+	a_uint64_t	TxPause;
+	a_uint64_t	TxVLANFrameGood;
+	a_uint64_t	TxLPIUsec;
+	a_uint64_t	TxLPITran;
+} fal_xgmib_info_t;
+
+sw_error_t
+fal_get_xgmib_info(a_uint32_t dev_id, fal_port_t port_id,
+                     fal_xgmib_info_t * mib_info );
+
+sw_error_t
+fal_get_rx_xgmib_info(a_uint32_t dev_id, fal_port_t port_id,
+                     fal_xgmib_info_t * mib_info );
+
+sw_error_t
+fal_get_tx_xgmib_info(a_uint32_t dev_id, fal_port_t port_id,
+                     fal_xgmib_info_t * mib_info );
+
 sw_error_t
 fal_get_mib_info(a_uint32_t dev_id, fal_port_t port_id,
                      fal_mib_info_t * mib_info );
