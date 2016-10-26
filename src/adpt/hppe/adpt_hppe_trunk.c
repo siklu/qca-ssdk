@@ -28,17 +28,13 @@
 sw_error_t
 adpt_hppe_trunk_fail_over_en_get(a_uint32_t dev_id, a_bool_t * fail_over)
 {
-	sw_error_t rv = SW_OK;
 	union l2_global_conf_u l2_global_conf;
 
 	memset(&l2_global_conf, 0, sizeof(l2_global_conf));
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(fail_over);
 
-	rv = hppe_l2_global_conf_get(dev_id, &l2_global_conf);
-
-	if( rv != SW_OK )
-		return rv;
+	SW_RTN_ON_ERROR(hppe_l2_global_conf_get(dev_id, &l2_global_conf));
 
 	*fail_over = l2_global_conf.bf.failover_en;
 
@@ -48,17 +44,13 @@ adpt_hppe_trunk_fail_over_en_get(a_uint32_t dev_id, a_bool_t * fail_over)
 sw_error_t
 adpt_hppe_trunk_hash_mode_get(a_uint32_t dev_id, a_uint32_t * hash_mode)
 {
-	sw_error_t rv = SW_OK;
 	union trunk_hash_field_reg_u trunk_hash_field;
 
 	memset(&trunk_hash_field, 0, sizeof(trunk_hash_field));
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(hash_mode);
 
-	rv = hppe_trunk_hash_field_reg_get(dev_id, &trunk_hash_field);
-
-	if( rv != SW_OK )
-		return rv;
+	SW_RTN_ON_ERROR(hppe_trunk_hash_field_reg_get(dev_id, &trunk_hash_field));
 
 	*hash_mode = 0;
 
@@ -102,7 +94,6 @@ sw_error_t
 adpt_hppe_trunk_group_get(a_uint32_t dev_id, a_uint32_t trunk_id,
                         a_bool_t * enable, fal_pbmp_t * member)
 {
-	sw_error_t rv = SW_OK;
 	union trunk_filter_u trunk_filter;
 	union port_trunk_id_u port_trunk_id;
 	a_uint32_t port_id;
@@ -117,7 +108,7 @@ adpt_hppe_trunk_group_get(a_uint32_t dev_id, a_uint32_t trunk_id,
 	*enable = A_FALSE;
 	for (port_id = 0; port_id < FAL_MAX_PORT_NUMBER; port_id ++)
 	{
-		rv = hppe_port_trunk_id_get(dev_id, port_id, &port_trunk_id);
+		SW_RTN_ON_ERROR(hppe_port_trunk_id_get(dev_id, port_id, &port_trunk_id));
 		if ((trunk_id == port_trunk_id.bf.trunk_id) && (A_TRUE == port_trunk_id.bf.trunk_en))
 		{
 			*enable = A_TRUE;
@@ -125,12 +116,9 @@ adpt_hppe_trunk_group_get(a_uint32_t dev_id, a_uint32_t trunk_id,
 		}
 	}
 
-	rv = hppe_trunk_filter_get(dev_id, trunk_id, &trunk_filter);
+	SW_RTN_ON_ERROR(hppe_trunk_filter_get(dev_id, trunk_id, &trunk_filter));
 
 	*member = trunk_filter.bf.mem_bitmap;
-
-	if( rv != SW_OK )
-		return rv;
 
 	return SW_OK;
 }
@@ -151,9 +139,7 @@ adpt_hppe_trunk_group_set(a_uint32_t dev_id, a_uint32_t trunk_id,
 	ADPT_DEV_ID_CHECK(dev_id);
 
 	if (trunk_id >= TRUNK_FILTER_MAX_ENTRY)
-	{
-		return SW_BAD_PARAM;
-	}
+		return SW_OUT_OF_RANGE;
 
 	if (A_TRUE == enable)
 	{
@@ -173,10 +159,10 @@ adpt_hppe_trunk_group_set(a_uint32_t dev_id, a_uint32_t trunk_id,
 
 	for (i = 0; i < FAL_MAX_PORT_NUMBER; i++)
 	{
-		hppe_port_trunk_id_get(dev_id, i, &port_trunk_id);
+		SW_RTN_ON_ERROR(hppe_port_trunk_id_get(dev_id, i, &port_trunk_id));
 		if (port_trunk_id.bf.trunk_id == trunk_id) {
 			port_trunk_id.bf.trunk_en = A_FALSE;
-			hppe_port_trunk_id_set(dev_id, i, &port_trunk_id);
+			SW_RTN_ON_ERROR(hppe_port_trunk_id_set(dev_id, i, &port_trunk_id));
 		}
 	}
 
@@ -186,7 +172,7 @@ adpt_hppe_trunk_group_set(a_uint32_t dev_id, a_uint32_t trunk_id,
 		{
 			port_trunk_id.bf.trunk_en = enable;
 			port_trunk_id.bf.trunk_id = trunk_id;
-			hppe_port_trunk_id_set(dev_id, j, &port_trunk_id);
+			SW_RTN_ON_ERROR(hppe_port_trunk_id_set(dev_id, j, &port_trunk_id));
 		}
 	}
 
@@ -195,7 +181,7 @@ adpt_hppe_trunk_group_set(a_uint32_t dev_id, a_uint32_t trunk_id,
 	else
 		trunk_filter.bf.mem_bitmap = 0;
 
-	hppe_trunk_filter_set(dev_id, trunk_id, &trunk_filter);
+	SW_RTN_ON_ERROR(hppe_trunk_filter_set(dev_id, trunk_id, &trunk_filter));
 
 	if (A_TRUE == enable)
 	{
@@ -243,7 +229,7 @@ adpt_hppe_trunk_group_set(a_uint32_t dev_id, a_uint32_t trunk_id,
 		}
 	}
 
-	hppe_trunk_member_set(dev_id, trunk_id, &trunk_member);
+	SW_RTN_ON_ERROR(hppe_trunk_member_set(dev_id, trunk_id, &trunk_member));
 
 	return SW_OK;
 }
@@ -255,11 +241,11 @@ adpt_hppe_trunk_fail_over_en_set(a_uint32_t dev_id, a_bool_t fail_over)
 	memset(&l2_global_conf, 0, sizeof(l2_global_conf));
 	ADPT_DEV_ID_CHECK(dev_id);
 
-	hppe_l2_global_conf_get(dev_id, &l2_global_conf);
+	SW_RTN_ON_ERROR(hppe_l2_global_conf_get(dev_id, &l2_global_conf));
 
 	l2_global_conf.bf.failover_en = fail_over;
 
-	hppe_l2_global_conf_set(dev_id, &l2_global_conf);
+	SW_RTN_ON_ERROR(hppe_l2_global_conf_set(dev_id, &l2_global_conf));
 
 	return SW_OK;
 }
@@ -304,7 +290,7 @@ adpt_hppe_trunk_hash_mode_set(a_uint32_t dev_id, a_uint32_t hash_mode)
 	if (FAL_TRUNK_HASH_KEY_UDF3 & hash_mode)
 		trunk_hash_field.bf.udf3_incl = 1;
 
-	hppe_trunk_hash_field_reg_set(dev_id, &trunk_hash_field);
+	SW_RTN_ON_ERROR(hppe_trunk_hash_field_reg_set(dev_id, &trunk_hash_field));
 
 	return SW_OK;
 }

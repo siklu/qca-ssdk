@@ -312,6 +312,13 @@ fal_trunk_failover_enable(a_uint32_t dev_id, a_bool_t failover)
 }
 /*insert flag for outter fal, don't remove it*/
 
+EXPORT_SYMBOL(fal_trunk_group_set);
+EXPORT_SYMBOL(fal_trunk_group_get);
+EXPORT_SYMBOL(fal_trunk_hash_mode_set);
+EXPORT_SYMBOL(fal_trunk_hash_mode_get);
+EXPORT_SYMBOL(fal_trunk_failover_status_get);
+EXPORT_SYMBOL(fal_trunk_failover_enable);
+
 /**
  * @}
  */

@@ -237,3 +237,12 @@ fal_mgmtctrl_ctrlpkt_profile_getnext(a_uint32_t dev_id, fal_ctrlpkt_profile_t *c
     return rv;
 }
 
+EXPORT_SYMBOL(fal_mgmtctrl_ethtype_profile_set);
+EXPORT_SYMBOL(fal_mgmtctrl_ethtype_profile_get);
+EXPORT_SYMBOL(fal_mgmtctrl_rfdb_profile_set);
+EXPORT_SYMBOL(fal_mgmtctrl_rfdb_profile_get);
+EXPORT_SYMBOL(fal_mgmtctrl_ctrlpkt_profile_add);
+EXPORT_SYMBOL(fal_mgmtctrl_ctrlpkt_profile_del);
+EXPORT_SYMBOL(fal_mgmtctrl_ctrlpkt_profile_getfirst);
+EXPORT_SYMBOL(fal_mgmtctrl_ctrlpkt_profile_getnext);
+

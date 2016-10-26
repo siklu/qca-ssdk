@@ -26,7 +26,6 @@ sw_error_t
 adpt_hppe_stp_port_state_get(a_uint32_t dev_id, a_uint32_t st_id,
                        fal_port_t port_id, fal_stp_state_t * state)
 {
-	sw_error_t rv = SW_OK;
 	union cst_state_u cst_state;
 
 	memset(&cst_state, 0, sizeof(cst_state));
@@ -35,10 +34,7 @@ adpt_hppe_stp_port_state_get(a_uint32_t dev_id, a_uint32_t st_id,
 	if (FAL_SINGLE_STP_ID != st_id)
 		return SW_BAD_PARAM;
 
-	rv = hppe_cst_state_get(dev_id, port_id, &cst_state);
-
-	if( rv != SW_OK )
-		return rv;
+	SW_RTN_ON_ERROR(hppe_cst_state_get(dev_id, port_id, &cst_state));
 
 	if (cst_state.bf.port_state == 0)
 		*state = FAL_STP_DISABLED;
@@ -58,10 +54,16 @@ sw_error_t
 adpt_hppe_stp_port_state_set(a_uint32_t dev_id, a_uint32_t st_id,
                        fal_port_t port_id, fal_stp_state_t state)
 {
-	sw_error_t rv = SW_OK;
 	union cst_state_u cst_state;
 
 	memset(&cst_state, 0, sizeof(cst_state));
+
+	/* stp port_id just support physical port, not support trunk and virtual port */
+	if (FAL_PORT_ID_TYPE(port_id) != 0)
+		return SW_BAD_PARAM;
+
+	if (port_id >= CST_STATE_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
 
 	ADPT_DEV_ID_CHECK(dev_id);
 	if (FAL_SINGLE_STP_ID != st_id)
@@ -76,10 +78,7 @@ adpt_hppe_stp_port_state_set(a_uint32_t dev_id, a_uint32_t st_id,
 	else if (state == FAL_STP_FARWARDING)
 		cst_state.bf.port_state = 3;
 
-	rv = hppe_cst_state_set(dev_id, port_id, &cst_state);
-
-	if( rv != SW_OK )
-		return rv;
+	SW_RTN_ON_ERROR(hppe_cst_state_set(dev_id, port_id, &cst_state));
 
 	return SW_OK;
 }

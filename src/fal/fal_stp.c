@@ -122,6 +122,9 @@ fal_stp_port_state_get(a_uint32_t dev_id, a_uint32_t st_id,
 
 /*insert flag for outter fal, don't remove it*/
 
+EXPORT_SYMBOL(fal_stp_port_state_set);
+EXPORT_SYMBOL(fal_stp_port_state_get);
+
 /**
  * @}
  */

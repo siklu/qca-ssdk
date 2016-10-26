@@ -121,6 +121,9 @@ adpt_hppe_mgmtctrl_rfdb_profile_set(a_uint32_t dev_id, a_uint32_t profile_id, fa
 
 	ADPT_DEV_ID_CHECK(dev_id);
 
+	if (profile_id >= RFDB_TBL_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+
 	value = ((((a_uint64_t)(addr->uc[5])) << 0) |
 			(((a_uint64_t)(addr->uc[4])) << 8) |
 			(((a_uint64_t)(addr->uc[3])) << 16) |
@@ -143,6 +146,9 @@ adpt_hppe_mgmtctrl_rfdb_profile_get(a_uint32_t dev_id, a_uint32_t profile_id, fa
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(addr);
 
+	if (profile_id >= RFDB_TBL_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+
 	SW_RTN_ON_ERROR(hppe_rfdb_tbl_mac_addr_get(dev_id, profile_id, &value));
 	addr->uc[0] = (a_uint8_t)((value >> 40)& 0xff);
 	addr->uc[1] = (a_uint8_t)((value >> 32) & 0xff);
@@ -164,7 +170,7 @@ adpt_hppe_mgmtctrl_ctrlpkt_profile_add(a_uint32_t dev_id, fal_ctrlpkt_profile_t 
 	ADPT_DEV_ID_CHECK(dev_id);
 
 	entry_sign = 0;
-	for (index = 0; index < APP_CTRL_NUM; index++)
+	for (index = 0; index < APP_CTRL_MAX_ENTRY; index++)
 	{
 		memset(&ctrlpkt_temp, 0, sizeof(fal_ctrlpkt_profile_t));
 		ctrlpkt_valid = _get_mgmtctrl_ctrlpkt_profile_by_index(dev_id, index, &ctrlpkt_temp);
@@ -244,7 +250,7 @@ adpt_hppe_mgmtctrl_ctrlpkt_profile_del(a_uint32_t dev_id, fal_ctrlpkt_profile_t 
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(ctrlpkt);
 
-	for (index = 0; index < APP_CTRL_NUM; index++)
+	for (index = 0; index < APP_CTRL_MAX_ENTRY; index++)
 	{
 		memset(&ctrlpkt_temp, 0, sizeof(fal_ctrlpkt_profile_t));
 		ctrlpkt_valid = _get_mgmtctrl_ctrlpkt_profile_by_index(dev_id, index, &ctrlpkt_temp);
@@ -266,7 +272,7 @@ adpt_hppe_mgmtctrl_ctrlpkt_profile_getfirst(a_uint32_t dev_id, fal_ctrlpkt_profi
 {
 	a_uint32_t index, ctrlpkt_valid;
 
-	for (index = 0; index < APP_CTRL_NUM; index++)
+	for (index = 0; index < APP_CTRL_MAX_ENTRY; index++)
 	{
 		ctrlpkt_valid = _get_mgmtctrl_ctrlpkt_profile_by_index(dev_id, index, ctrlpkt);
 		if (ctrlpkt_valid == 1)
@@ -284,7 +290,7 @@ adpt_hppe_mgmtctrl_ctrlpkt_profile_getnext(a_uint32_t dev_id, fal_ctrlpkt_profil
 
 	sign_tag = 0;
 
-	for (index = 0; index < APP_CTRL_NUM; index++)
+	for (index = 0; index < APP_CTRL_MAX_ENTRY; index++)
 	{
 		memset(&ctrlpkt_temp, 0, sizeof(fal_ctrlpkt_profile_t));
 		ctrlpkt_valid = _get_mgmtctrl_ctrlpkt_profile_by_index(dev_id, index, &ctrlpkt_temp);
