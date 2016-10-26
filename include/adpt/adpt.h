@@ -73,12 +73,10 @@ typedef sw_error_t (*adpt_fdb_add_func)(a_uint32_t dev_id, const fal_fdb_entry_t
 typedef sw_error_t (*adpt_fdb_age_time_set_func)(a_uint32_t dev_id, a_uint32_t * time);
 typedef sw_error_t (*adpt_fdb_extend_next_func)(a_uint32_t dev_id, fal_fdb_op_t * option,
                         fal_fdb_entry_t * entry);
-typedef sw_error_t (*adpt_fdb_age_mode_get_func)(a_uint32_t dev_id, a_uint32_t * age_mode);
 typedef sw_error_t (*adpt_fdb_learn_ctrl_get_func)(a_uint32_t dev_id, a_bool_t * enable);
 typedef sw_error_t (*adpt_fdb_age_time_get_func)(a_uint32_t dev_id, a_uint32_t * time);
 typedef sw_error_t (*adpt_port_fdb_learn_limit_set_func)(a_uint32_t dev_id, fal_port_t port_id,
                                  a_bool_t enable, a_uint32_t cnt);
-typedef sw_error_t (*adpt_fdb_learn_mode_set_func)(a_uint32_t dev_id, a_uint32_t learn_mode);
 typedef sw_error_t (*adpt_fdb_port_add_func)(a_uint32_t dev_id, a_uint32_t fid, fal_mac_addr_t * addr, fal_port_t port_id);
 typedef sw_error_t (*adpt_fdb_port_learn_set_func)(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable);
 typedef sw_error_t (*adpt_fdb_port_learn_get_func)(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable);
@@ -103,10 +101,8 @@ typedef sw_error_t (*adpt_port_fdb_learn_limit_get_func)(a_uint32_t dev_id, fal_
 typedef sw_error_t (*adpt_fdb_age_ctrl_set_func)(a_uint32_t dev_id, a_bool_t enable);
 typedef sw_error_t (*adpt_fdb_del_by_mac_func)(a_uint32_t dev_id, const fal_fdb_entry_t *entry);
 typedef sw_error_t (*adpt_fdb_iterate_func)(a_uint32_t dev_id, a_uint32_t * iterator, fal_fdb_entry_t * entry);
-typedef sw_error_t (*adpt_fdb_learn_mode_get_func)(a_uint32_t dev_id, a_uint32_t * learn_mode);
 typedef sw_error_t (*adpt_port_fdb_learn_exceed_cmd_set_func)(a_uint32_t dev_id, fal_port_t port_id,
                                       fal_fwd_cmd_t cmd);
-typedef sw_error_t (*adpt_fdb_age_mode_set_func)(a_uint32_t dev_id, a_uint32_t age_mode);
 typedef sw_error_t (*adpt_fdb_del_all_func)(a_uint32_t dev_id, a_uint32_t flag);
 typedef sw_error_t (*adpt_fdb_age_ctrl_get_func)(a_uint32_t dev_id, a_bool_t * enable);
 typedef sw_error_t (*adpt_fdb_port_maclimit_ctrl_set_func)(a_uint32_t dev_id, fal_port_t port_id, fal_maclimit_ctrl_t * maclimit_ctrl);
@@ -274,20 +270,20 @@ typedef sw_error_t (*adpt_port_source_filter_get_func)(a_uint32_t dev_id, fal_po
 typedef sw_error_t (*adpt_port_source_filter_set_func)(a_uint32_t dev_id, fal_port_t port_id,
 				a_bool_t enable);
 // mirror
-typedef sw_error_t (*adpt_mirr_eg_analysis_port_get_func)(a_uint32_t dev_id, fal_port_t *port_id);
-typedef sw_error_t (*adpt_mirr_port_in_get_func)(a_uint32_t dev_id, fal_port_t port_id,
-                         a_bool_t * enable);
-typedef sw_error_t (*adpt_mirr_port_eg_get_func)(a_uint32_t dev_id, fal_port_t port_id,
-                         a_bool_t * enable);
-typedef sw_error_t (*adpt_mirr_analysis_port_get_func)(a_uint32_t dev_id, fal_port_t * port_id);
 typedef sw_error_t (*adpt_mirr_port_in_set_func)(a_uint32_t dev_id, fal_port_t port_id,
                          a_bool_t enable);
+typedef sw_error_t (*adpt_mirr_port_in_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+                         a_bool_t * enable);
 typedef sw_error_t (*adpt_mirr_port_eg_set_func)(a_uint32_t dev_id, fal_port_t port_id,
                          a_bool_t enable);
-typedef sw_error_t (*adpt_mirr_eg_analysis_port_set_func)(a_uint32_t dev_id, fal_port_t port_id);
+typedef sw_error_t (*adpt_mirr_port_eg_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+                         a_bool_t * enable);
 typedef sw_error_t (*adpt_mirr_analysis_port_set_func)(a_uint32_t dev_id, fal_port_t port_id);
-typedef sw_error_t (*adpt_mirr_in_analysis_port_set_func)(a_uint32_t dev_id, fal_port_t port_id);
-typedef sw_error_t (*adpt_mirr_in_analysis_port_get_func)(a_uint32_t dev_id, fal_port_t *port_id);
+typedef sw_error_t (*adpt_mirr_analysis_port_get_func)(a_uint32_t dev_id, fal_port_t * port_id);
+typedef sw_error_t (*adpt_mirr_analysis_config_set_func)(a_uint32_t dev_id, fal_mirr_direction_t direction,
+				fal_mirr_analysis_config_t * config);
+typedef sw_error_t (*adpt_mirr_analysis_config_get_func)(a_uint32_t dev_id, fal_mirr_direction_t direction,
+				fal_mirr_analysis_config_t * config);
 
 //trunk
 typedef sw_error_t (*adpt_trunk_fail_over_en_get_func)(a_uint32_t dev_id, a_bool_t * fail_over);
@@ -811,17 +807,15 @@ typedef sw_error_t (*adpt_policer_time_slot_set_func)(a_uint32_t dev_id, a_uint3
 
 typedef struct
 {
-	a_uint32_t adpt_fdb_func_bitmap[2];
+	a_uint32_t adpt_fdb_func_bitmap;
 	adpt_fdb_first_func adpt_fdb_first;
 	adpt_fdb_next_func adpt_fdb_next;
 	adpt_fdb_add_func adpt_fdb_add;
 	adpt_fdb_age_time_set_func adpt_fdb_age_time_set;
 	adpt_fdb_extend_next_func adpt_fdb_extend_next;
-	adpt_fdb_age_mode_get_func adpt_fdb_age_mode_get;
 	adpt_fdb_learn_ctrl_get_func adpt_fdb_learn_ctrl_get;
 	adpt_fdb_age_time_get_func adpt_fdb_age_time_get;
 	adpt_port_fdb_learn_limit_set_func adpt_port_fdb_learn_limit_set;
-	adpt_fdb_learn_mode_set_func adpt_fdb_learn_mode_set;
 	adpt_fdb_port_add_func adpt_fdb_port_add;
 	adpt_fdb_port_learn_set_func adpt_fdb_port_learn_set;
 	adpt_fdb_port_learn_get_func adpt_fdb_port_learn_get;
@@ -841,9 +835,7 @@ typedef struct
 	adpt_fdb_age_ctrl_set_func adpt_fdb_age_ctrl_set;
 	adpt_fdb_del_by_mac_func adpt_fdb_del_by_mac;
 	adpt_fdb_iterate_func adpt_fdb_iterate;
-	adpt_fdb_learn_mode_get_func adpt_fdb_learn_mode_get;
 	adpt_port_fdb_learn_exceed_cmd_set_func adpt_port_fdb_learn_exceed_cmd_set;
-	adpt_fdb_age_mode_set_func adpt_fdb_age_mode_set;
 	adpt_fdb_del_all_func adpt_fdb_del_all;
 	adpt_fdb_age_ctrl_get_func adpt_fdb_age_ctrl_get;
 	adpt_fdb_port_maclimit_ctrl_set_func adpt_fdb_port_maclimit_ctrl_set;
@@ -942,16 +934,15 @@ typedef struct
 	adpt_port_source_filter_set_func adpt_port_source_filter_set;
 	adpt_port_source_filter_get_func adpt_port_source_filter_get;
 // mirror
-	adpt_mirr_eg_analysis_port_get_func adpt_mirr_eg_analysis_port_get;
-	adpt_mirr_port_in_get_func adpt_mirr_port_in_get;
-	adpt_mirr_port_eg_get_func adpt_mirr_port_eg_get;
-	adpt_mirr_analysis_port_get_func adpt_mirr_analysis_port_get;
+	a_uint32_t adpt_mirror_func_bitmap;
 	adpt_mirr_port_in_set_func adpt_mirr_port_in_set;
+	adpt_mirr_port_in_get_func adpt_mirr_port_in_get;
 	adpt_mirr_port_eg_set_func adpt_mirr_port_eg_set;
-	adpt_mirr_eg_analysis_port_set_func adpt_mirr_eg_analysis_port_set;
+	adpt_mirr_port_eg_get_func adpt_mirr_port_eg_get;
 	adpt_mirr_analysis_port_set_func adpt_mirr_analysis_port_set;
-	adpt_mirr_in_analysis_port_set_func adpt_mirr_in_analysis_port_set;
-	adpt_mirr_in_analysis_port_get_func adpt_mirr_in_analysis_port_get;
+	adpt_mirr_analysis_port_get_func adpt_mirr_analysis_port_get;
+	adpt_mirr_analysis_config_set_func adpt_mirr_analysis_config_set;
+	adpt_mirr_analysis_config_get_func adpt_mirr_analysis_config_get;
 //trunk
 	a_uint32_t adpt_trunk_func_bitmap;
 	adpt_trunk_fail_over_en_get_func adpt_trunk_fail_over_en_get;

@@ -274,7 +274,7 @@ _fal_rtd_pppoe_en_get(a_uint32_t dev_id, a_bool_t * enable)
 }
 
 static sw_error_t
-_fal_pppoe_en_get(a_uint32_t dev_id, a_uint32_t l3_if, a_uint32_t *enable)
+_fal_pppoe_l3intf_status_get(a_uint32_t dev_id, a_uint32_t l3_if, a_uint32_t *enable)
 {
     adpt_api_t *p_api;
 	sw_error_t rv = SW_OK;
@@ -289,7 +289,7 @@ _fal_pppoe_en_get(a_uint32_t dev_id, a_uint32_t l3_if, a_uint32_t *enable)
 }
 
 static sw_error_t
-_fal_pppoe_en_set(a_uint32_t dev_id, a_uint32_t l3_if, a_uint32_t enable)
+_fal_pppoe_l3intf_enable(a_uint32_t dev_id, a_uint32_t l3_if, a_uint32_t enable)
 {
     adpt_api_t *p_api;
 	sw_error_t rv = SW_OK;
@@ -568,12 +568,12 @@ fal_rtd_pppoe_en_get(a_uint32_t dev_id, a_bool_t * enable)
  * @return SW_OK or error code
  */
 sw_error_t
-fal_pppoe_en_get(a_uint32_t dev_id, a_uint32_t l3_if, a_uint32_t *enable)
+fal_pppoe_l3intf_status_get(a_uint32_t dev_id, a_uint32_t l3_if, a_uint32_t *enable)
 {
     sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
-    rv = _fal_pppoe_en_get(dev_id, l3_if, enable);
+    rv = _fal_pppoe_l3intf_status_get(dev_id, l3_if, enable);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -586,12 +586,12 @@ fal_pppoe_en_get(a_uint32_t dev_id, a_uint32_t l3_if, a_uint32_t *enable)
  * @return SW_OK or error code
  */
 sw_error_t
-fal_pppoe_en_set(a_uint32_t dev_id, a_uint32_t l3_if, a_uint32_t enable)
+fal_pppoe_l3intf_enable(a_uint32_t dev_id, a_uint32_t l3_if, a_uint32_t enable)
 {
     sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
-    rv = _fal_pppoe_en_set(dev_id, l3_if, enable);
+    rv = _fal_pppoe_l3intf_enable(dev_id, l3_if, enable);
     FAL_API_UNLOCK;
     return rv;
 }

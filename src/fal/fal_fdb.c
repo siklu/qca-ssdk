@@ -886,20 +886,6 @@ _fal_fdb_learning_ctrl_set(a_uint32_t dev_id, a_bool_t enable)
     return rv;
 }
 sw_error_t
-_fal_fdb_aging_mode_get(a_uint32_t dev_id, a_uint32_t * age_mode)
-{
-    adpt_api_t *p_api;
-	sw_error_t rv = SW_OK;
-
-    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
-
-    if (NULL == p_api->adpt_fdb_age_mode_get)
-        return SW_NOT_SUPPORTED;
-
-    rv = p_api->adpt_fdb_age_mode_get(dev_id, age_mode);
-    return rv;
-}
-sw_error_t
 _fal_fdb_learning_ctrl_get(a_uint32_t dev_id, a_bool_t * enable)
 {
     adpt_api_t *p_api;
@@ -911,48 +897,6 @@ _fal_fdb_learning_ctrl_get(a_uint32_t dev_id, a_bool_t * enable)
         return SW_NOT_SUPPORTED;
 
     rv = p_api->adpt_fdb_learn_ctrl_get(dev_id, enable);
-    return rv;
-}
-sw_error_t
-_fal_fdb_aging_mode_set(a_uint32_t dev_id, a_uint32_t age_mode)
-{
-    adpt_api_t *p_api;
-	sw_error_t rv = SW_OK;
-
-    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
-
-    if (NULL == p_api->adpt_fdb_age_mode_set)
-        return SW_NOT_SUPPORTED;
-
-    rv = p_api->adpt_fdb_age_mode_set(dev_id, age_mode);
-    return rv;
-}
-sw_error_t
-_fal_fdb_learning_mode_set(a_uint32_t dev_id, a_uint32_t learn_mode)
-{
-    adpt_api_t *p_api;
-	sw_error_t rv = SW_OK;
-
-    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
-
-    if (NULL == p_api->adpt_fdb_learn_mode_set)
-        return SW_NOT_SUPPORTED;
-
-    rv = p_api->adpt_fdb_learn_mode_set(dev_id, learn_mode);
-    return rv;
-}
-sw_error_t
-_fal_fdb_learning_mode_get(a_uint32_t dev_id, a_uint32_t * learn_mode)
-{
-    adpt_api_t *p_api;
-	sw_error_t rv = SW_OK;
-
-    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
-
-    if (NULL == p_api->adpt_fdb_learn_mode_get)
-        return SW_NOT_SUPPORTED;
-
-    rv = p_api->adpt_fdb_learn_mode_get(dev_id, learn_mode);
     return rv;
 }
 sw_error_t
@@ -1812,52 +1756,12 @@ fal_fdb_learning_ctrl_set(a_uint32_t dev_id, a_bool_t enable)
     return rv;
 }
 sw_error_t
-fal_fdb_aging_mode_get(a_uint32_t dev_id, a_uint32_t * age_mode)
-{
-    sw_error_t rv = SW_OK;
-
-    FAL_API_LOCK;
-    rv = _fal_fdb_aging_mode_get(dev_id, age_mode);
-    FAL_API_UNLOCK;
-    return rv;
-}
-sw_error_t
 fal_fdb_learning_ctrl_get(a_uint32_t dev_id, a_bool_t * enable)
 {
     sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
     rv = _fal_fdb_learning_ctrl_get(dev_id, enable);
-    FAL_API_UNLOCK;
-    return rv;
-}
-sw_error_t
-fal_fdb_aging_mode_set(a_uint32_t dev_id, a_uint32_t age_mode)
-{
-    sw_error_t rv = SW_OK;
-
-    FAL_API_LOCK;
-    rv = _fal_fdb_aging_mode_set(dev_id, age_mode);
-    FAL_API_UNLOCK;
-    return rv;
-}
-sw_error_t
-fal_fdb_learning_mode_set(a_uint32_t dev_id, a_uint32_t learn_mode)
-{
-    sw_error_t rv = SW_OK;
-
-    FAL_API_LOCK;
-    rv = _fal_fdb_learning_mode_set(dev_id, learn_mode);
-    FAL_API_UNLOCK;
-    return rv;
-}
-sw_error_t
-fal_fdb_learning_mode_get(a_uint32_t dev_id, a_uint32_t * learn_mode)
-{
-    sw_error_t rv = SW_OK;
-
-    FAL_API_LOCK;
-    rv = _fal_fdb_learning_mode_get(dev_id, learn_mode);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -1917,17 +1821,9 @@ fal_fdb_port_maclimit_ctrl_get(a_uint32_t dev_id, fal_port_t port_id, fal_maclim
 
     EXPORT_SYMBOL(fal_fdb_port_learn_set);
 
-    EXPORT_SYMBOL(fal_fdb_aging_mode_set);
-
-    EXPORT_SYMBOL(fal_fdb_aging_mode_get);
-
     EXPORT_SYMBOL(fal_fdb_learning_ctrl_set);
 
     EXPORT_SYMBOL(fal_fdb_learning_ctrl_get);
-
-    EXPORT_SYMBOL(fal_fdb_learning_mode_set);
-
-    EXPORT_SYMBOL(fal_fdb_learning_mode_get);
 
     EXPORT_SYMBOL(fal_fdb_entry_getnext_byindex);
 
