@@ -466,14 +466,10 @@ extern "C" {
     SW_API_DEF(SW_API_FDB_PT_NEWADDR_LEARN_GET, fal_fdb_port_learning_ctrl_get), \
     SW_API_DEF(SW_API_FDB_PT_STAMOVE_SET,       fal_fdb_port_stamove_ctrl_set), \
     SW_API_DEF(SW_API_FDB_PT_STAMOVE_GET,       fal_fdb_port_stamove_ctrl_get), \
-    SW_API_DEF(SW_API_FDB_AGE_MODE_SET,   fal_fdb_aging_mode_set), \
-    SW_API_DEF(SW_API_FDB_AGE_MODE_GET,   fal_fdb_aging_mode_get), \
     SW_API_DEF(SW_API_FDB_AGE_CTRL_SET,   fal_fdb_aging_ctrl_set), \
     SW_API_DEF(SW_API_FDB_AGE_CTRL_GET,   fal_fdb_aging_ctrl_get), \
     SW_API_DEF(SW_API_FDB_LEARN_CTRL_SET,  fal_fdb_learning_ctrl_set), \
     SW_API_DEF(SW_API_FDB_LEARN_CTRL_GET,  fal_fdb_learning_ctrl_get), \
-    SW_API_DEF(SW_API_FDB_LEARN_MODE_SET,  fal_fdb_learning_mode_set), \
-    SW_API_DEF(SW_API_FDB_LEARN_MODE_GET,  fal_fdb_learning_mode_get), \
     SW_API_DEF(SW_API_FDB_VLAN_IVL_SVL_SET, fal_fdb_vlan_ivl_svl_set),\
     SW_API_DEF(SW_API_FDB_VLAN_IVL_SVL_GET, fal_fdb_vlan_ivl_svl_get),\
     SW_API_DEF(SW_API_FDB_AGE_TIME_SET,   fal_fdb_aging_time_set), \
@@ -518,14 +514,10 @@ extern "C" {
     SW_API_DESC(SW_API_FDB_PT_NEWADDR_LEARN_GET) \
     SW_API_DESC(SW_API_FDB_PT_STAMOVE_SET) \
     SW_API_DESC(SW_API_FDB_PT_STAMOVE_GET) \
-    SW_API_DESC(SW_API_FDB_AGE_MODE_SET) \
-    SW_API_DESC(SW_API_FDB_AGE_MODE_GET) \
     SW_API_DESC(SW_API_FDB_AGE_CTRL_SET) \
     SW_API_DESC(SW_API_FDB_AGE_CTRL_GET) \
     SW_API_DESC(SW_API_FDB_LEARN_CTRL_SET) \
     SW_API_DESC(SW_API_FDB_LEARN_CTRL_GET) \
-    SW_API_DESC(SW_API_FDB_LEARN_MODE_SET) \
-    SW_API_DESC(SW_API_FDB_LEARN_MODE_GET) \
     SW_API_DESC(SW_API_FDB_VLAN_IVL_SVL_SET) \
     SW_API_DESC(SW_API_FDB_VLAN_IVL_SVL_GET) \
     SW_API_DESC(SW_API_FDB_AGE_TIME_SET) \
@@ -843,10 +835,8 @@ extern "C" {
     SW_API_DEF(SW_API_MIRROR_IN_PT_GET, fal_mirr_port_in_get), \
     SW_API_DEF(SW_API_MIRROR_EG_PT_SET, fal_mirr_port_eg_set), \
     SW_API_DEF(SW_API_MIRROR_EG_PT_GET, fal_mirr_port_eg_get), \
-    SW_API_DEF(SW_API_IN_MIRROR_ANALY_PT_SET, fal_mirr_in_analysis_port_set), \
-    SW_API_DEF(SW_API_IN_MIRROR_ANALY_PT_GET, fal_mirr_in_analysis_port_get), \
-    SW_API_DEF(SW_API_EG_MIRROR_ANALY_PT_SET, fal_mirr_eg_analysis_port_set), \
-    SW_API_DEF(SW_API_EG_MIRROR_ANALY_PT_GET, fal_mirr_eg_analysis_port_get),
+    SW_API_DEF(SW_API_MIRROR_ANALYSIS_CONFIG_SET, fal_mirr_analysis_config_set), \
+    SW_API_DEF(SW_API_MIRROR_ANALYSIS_CONFIG_GET, fal_mirr_analysis_config_get),
 
 #define MIRROR_API_PARAM \
     SW_API_DESC(SW_API_MIRROR_ANALY_PT_SET) \
@@ -855,10 +845,8 @@ extern "C" {
     SW_API_DESC(SW_API_MIRROR_IN_PT_GET) \
     SW_API_DESC(SW_API_MIRROR_EG_PT_SET) \
     SW_API_DESC(SW_API_MIRROR_EG_PT_GET) \
-    SW_API_DESC(SW_API_IN_MIRROR_ANALY_PT_SET) \
-    SW_API_DESC(SW_API_IN_MIRROR_ANALY_PT_GET) \
-    SW_API_DESC(SW_API_EG_MIRROR_ANALY_PT_SET) \
-    SW_API_DESC(SW_API_EG_MIRROR_ANALY_PT_GET)
+    SW_API_DESC(SW_API_MIRROR_ANALYSIS_CONFIG_SET) \
+    SW_API_DESC(SW_API_MIRROR_ANALYSIS_CONFIG_GET)
 
 #else
 #define MIRROR_API
@@ -1673,8 +1661,8 @@ extern "C" {
     SW_API_DEF(SW_API_PPPOE_SESSION_ID_GET, fal_pppoe_session_id_get), \
     SW_API_DEF(SW_API_RTD_PPPOE_EN_SET, fal_rtd_pppoe_en_set), \
     SW_API_DEF(SW_API_RTD_PPPOE_EN_GET, fal_rtd_pppoe_en_get), \
-    SW_API_DEF(SW_API_PPPOE_EN_SET, fal_pppoe_en_set), \
-    SW_API_DEF(SW_API_PPPOE_EN_GET, fal_pppoe_en_get),
+    SW_API_DEF(SW_API_PPPOE_EN_SET, fal_pppoe_l3intf_enable), \
+    SW_API_DEF(SW_API_PPPOE_EN_GET, fal_pppoe_l3intf_status_get),
 
 #define PPPOE_API_PARAM \
     SW_API_DESC(SW_API_PPPOE_CMD_SET) \

@@ -37,16 +37,16 @@ enum {
 
 typedef struct
 {
-	a_uint32_t entry_id;
-	a_uint32_t session_id;
-	a_bool_t   multi_session;
-	a_bool_t   uni_session;
-	a_uint32_t vrf_id;
-	a_uint32_t port_bitmap;
-	a_uint32_t l3_if_index;
-	a_bool_t   l3_if_valid;
-	a_bool_t   smac_valid;
-	fal_mac_addr_t smac_addr;
+	a_uint32_t entry_id; /* the entry id saved to pppoe table */
+	a_uint32_t session_id; /* pppoe session id */
+	a_bool_t   multi_session; /* matched multicast session */
+	a_bool_t   uni_session; /* matched unicast session */
+	a_uint32_t vrf_id; /* vrf id, HPPE not supported */
+	a_uint32_t port_bitmap; /* matched ports */
+	a_uint32_t l3_if_index; /* if matched, this l3 interface index will remove pppoe header */
+	a_bool_t   l3_if_valid; /* this l3 interface index valid or not */
+	a_bool_t   smac_valid; /* if matched source mac address */
+	fal_mac_addr_t smac_addr; /* matched source mac address */
 } fal_pppoe_session_t;
 
 sw_error_t
@@ -94,10 +94,10 @@ sw_error_t
 fal_rtd_pppoe_en_get(a_uint32_t dev_id, a_bool_t * enable);
 
 sw_error_t
-fal_pppoe_en_set(a_uint32_t dev_id, a_uint32_t l3_if, a_uint32_t enable);
+fal_pppoe_l3intf_enable(a_uint32_t dev_id, a_uint32_t l3_if, a_uint32_t enable);
 
 sw_error_t
-fal_pppoe_en_get(a_uint32_t dev_id, a_uint32_t l3_if, a_uint32_t *enable);
+fal_pppoe_l3intf_status_get(a_uint32_t dev_id, a_uint32_t l3_if, a_uint32_t *enable);
 
 
 #ifdef __cplusplus

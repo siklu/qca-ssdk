@@ -27,6 +27,30 @@ extern "C" {
 #include "common/sw.h"
 #include "fal/fal_type.h"
 
+typedef struct
+{
+	fal_port_t port_id;
+	a_uint32_t priority;
+} fal_mirr_analysis_config_t;
+
+typedef enum
+{
+	FAL_MIRR_INGRESS= 0,
+	FAL_MIRR_EGRESS,
+	FAL_MIRR_BOTH,
+} fal_mirr_direction_t;
+
+enum
+{
+	FUNC_MIRR_ANALYSIS_PORT_SET = 0,
+	FUNC_MIRR_ANALYSIS_PORT_GET,
+	FUNC_MIRR_PORT_IN_SET,
+	FUNC_MIRR_PORT_IN_GET,
+	FUNC_MIRR_PORT_EG_SET,
+	FUNC_MIRR_PORT_EG_GET,
+	FUNC_MIRR_ANALYSIS_CONFIG_SET,
+	FUNC_MIRR_ANALYSIS_CONFIG_GET,
+};
 
 sw_error_t
 fal_mirr_analysis_port_set(a_uint32_t dev_id, fal_port_t port_id);
@@ -46,17 +70,12 @@ fal_mirr_port_eg_set(a_uint32_t dev_id, fal_port_t port_id,
 sw_error_t
 fal_mirr_port_eg_get(a_uint32_t dev_id, fal_port_t port_id,
 			a_bool_t * enable);
-sw_error_t
-fal_mirr_in_analysis_port_set(a_uint32_t dev_id, fal_port_t port_id);
 
 sw_error_t
-fal_mirr_in_analysis_port_get(a_uint32_t dev_id, fal_port_t *port_id);
+fal_mirr_analysis_config_set(a_uint32_t dev_id, fal_mirr_direction_t direction, fal_mirr_analysis_config_t * config);
 
 sw_error_t
-fal_mirr_eg_analysis_port_set(a_uint32_t dev_id, fal_port_t port_id);
-
-sw_error_t
-fal_mirr_eg_analysis_port_get(a_uint32_t dev_id, fal_port_t *port_id);
+fal_mirr_analysis_config_get(a_uint32_t dev_id, fal_mirr_direction_t direction, fal_mirr_analysis_config_t * config);
 
 #ifdef __cplusplus
 }

@@ -50,9 +50,11 @@ adpt_hppe_pppoe_session_table_add(a_uint32_t dev_id, fal_pppoe_session_t * sessi
 		hppe_pppoe_session_get(dev_id, num, &pppoe_session);
 		hppe_pppoe_session_ext_get(dev_id, num, &pppoe_session_ext);
 
-		if (pppoe_session_ext.bf.mc_valid == A_FALSE && pppoe_session_ext.bf.uc_valid == A_FALSE &&
-			entry_idx == PPPOE_SESSION_MAX_ENTRY)
-			entry_idx = num;
+		if (pppoe_session_ext.bf.mc_valid == A_FALSE && pppoe_session_ext.bf.uc_valid == A_FALSE)
+		{
+			if (entry_idx == PPPOE_SESSION_MAX_ENTRY)
+				entry_idx = num;
+		}
 		else if (pppoe_session.bf.session_id == session_tbl->session_id)
 			return SW_ALREADY_EXIST;
 	}

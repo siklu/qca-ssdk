@@ -40,6 +40,8 @@ void adpt_hppe_vsi_func_bitmap_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_vsi_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_port_ctrl_init(a_uint32_t dev_id);
 
+
+void adpt_hppe_mirror_func_bitmap_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_mirror_init(a_uint32_t dev_id);
 void adpt_hppe_trunk_func_bitmap_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_trunk_init(a_uint32_t dev_id);

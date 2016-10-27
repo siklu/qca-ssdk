@@ -55,6 +55,9 @@ static sw_error_t adpt_hppe_module_func_register(a_uint32_t dev_id, a_uint32_t m
 		case FAL_MODULE_MIB:
 			rv = adpt_hppe_mib_init(dev_id);
 			break;
+		case FAL_MODULE_MIRROR:
+			rv = adpt_hppe_mirror_init( dev_id);
+			break;
 		case FAL_MODULE_FDB:
 			rv = adpt_hppe_fdb_init(dev_id);
 			break;
@@ -77,7 +80,6 @@ static sw_error_t adpt_hppe_module_func_register(a_uint32_t dev_id, a_uint32_t m
 			rv = adpt_hppe_policer_init(dev_id);
 			break;
 		default:
-			rv = adpt_hppe_mirror_init( dev_id);
 			break;
 	}
 
@@ -123,9 +125,10 @@ sw_error_t adpt_module_func_ctrl_set(a_uint32_t dev_id,
 		p_adpt_api->adpt_shaper_func_bitmap = func_ctrl->bitmap[0];
 	} else if(module == FAL_MODULE_MIB){
 		p_adpt_api->adpt_mib_func_bitmap = func_ctrl->bitmap[0];
+	} else if(module == FAL_MODULE_MIRROR){
+		p_adpt_api->adpt_mirror_func_bitmap = func_ctrl->bitmap[0];
 	} else if(module == FAL_MODULE_FDB){
-		p_adpt_api->adpt_fdb_func_bitmap[0] = func_ctrl->bitmap[0];
-		p_adpt_api->adpt_fdb_func_bitmap[1] = func_ctrl->bitmap[1];
+		p_adpt_api->adpt_fdb_func_bitmap = func_ctrl->bitmap[0];
 	} else if(module == FAL_MODULE_STP){
 		p_adpt_api->adpt_stp_func_bitmap = func_ctrl->bitmap[0];
 	} else if(module == FAL_MODULE_TRUNK){
@@ -190,9 +193,10 @@ sw_error_t adpt_module_func_ctrl_get(a_uint32_t dev_id,
 		func_ctrl->bitmap[0] = p_adpt_api->adpt_shaper_func_bitmap;
 	} else if(module == FAL_MODULE_MIB) {
 		func_ctrl->bitmap[0] = p_adpt_api->adpt_mib_func_bitmap;
+	} else if(module == FAL_MODULE_MIRROR) {
+		func_ctrl->bitmap[0] = p_adpt_api->adpt_mirror_func_bitmap;
 	} else if(module == FAL_MODULE_FDB) {
-		func_ctrl->bitmap[0] = p_adpt_api->adpt_fdb_func_bitmap[0];
-		func_ctrl->bitmap[1] = p_adpt_api->adpt_fdb_func_bitmap[1];
+		func_ctrl->bitmap[0] = p_adpt_api->adpt_fdb_func_bitmap;
 	} else if(module == FAL_MODULE_STP) {
 		func_ctrl->bitmap[0] = p_adpt_api->adpt_stp_func_bitmap;
 	} else if(module == FAL_MODULE_TRUNK) {
@@ -226,6 +230,10 @@ sw_error_t adpt_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 				printk("%s, %d:malloc fail for adpt api\n", __FUNCTION__, __LINE__);
 				return SW_FAIL;
 			}
+
+			adpt_hppe_mirror_func_bitmap_init(dev_id);
+			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_MIRROR);
+			SW_RTN_ON_ERROR(rv);
 
 			adpt_hppe_fdb_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_FDB);
