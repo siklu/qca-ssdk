@@ -877,6 +877,52 @@ adpt_hppe_policer_time_slot_set(a_uint32_t dev_id, a_uint32_t time_slot)
 
 	return SW_OK;
 }
+
+void adpt_hppe_policer_func_bitmap_init(a_uint32_t dev_id)
+{
+	adpt_api_t *p_adpt_api = NULL;
+
+	p_adpt_api = adpt_api_ptr_get(dev_id);
+
+	if(p_adpt_api == NULL)
+		return;
+
+	p_adpt_api->adpt_policer_func_bitmap = ((1 << FUNC_ADPT_ACL_POLICER_COUNTER_GET)|
+						(1 << FUNC_ADPT_PORT_POLICER_COUNTER_GET)|
+						(1 << FUNC_ADPT_PORT_COMPENSATION_BYTE_GET)|
+						(1 << FUNC_ADPT_PORT_POLICER_ENTRY_GET)|
+						(1 << FUNC_ADPT_PORT_POLICER_ENTRY_SET)|
+						(1 << FUNC_ADPT_ACL_POLICER_ENTRY_GET)|
+						(1 << FUNC_ADPT_ACL_POLICER_ENTRY_SET)|
+						(1 << FUNC_ADPT_POLICER_TIME_SLOT_GET)|
+						(1 << FUNC_ADPT_PORT_COMPENSATION_BYTE_SET)|
+						(1 << FUNC_ADPT_POLICER_TIME_SLOT_SET));
+
+	return;
+
+}
+
+static void adpt_hppe_policer_func_unregister(a_uint32_t dev_id, adpt_api_t *p_adpt_api)
+{
+	if(p_adpt_api == NULL)
+		return;
+
+	p_adpt_api->adpt_acl_policer_counter_get = NULL;
+	p_adpt_api->adpt_port_policer_counter_get = NULL;
+	p_adpt_api->adpt_port_compensation_byte_get = NULL;
+	p_adpt_api->adpt_port_policer_entry_get = NULL;
+	p_adpt_api->adpt_port_policer_entry_set = NULL;
+	p_adpt_api->adpt_acl_policer_entry_get = NULL;
+	p_adpt_api->adpt_acl_policer_entry_set = NULL;
+	p_adpt_api->adpt_policer_time_slot_get = NULL;
+	p_adpt_api->adpt_port_compensation_byte_set = NULL;
+	p_adpt_api->adpt_policer_time_slot_set = NULL;
+
+	return;
+
+}
+
+
 sw_error_t adpt_hppe_policer_init(a_uint32_t dev_id)
 {
 	adpt_api_t *p_adpt_api = NULL;
@@ -886,17 +932,48 @@ sw_error_t adpt_hppe_policer_init(a_uint32_t dev_id)
 	if(p_adpt_api == NULL)
 		return SW_FAIL;
 
-	p_adpt_api->adpt_acl_policer_counter_get = adpt_hppe_acl_policer_counter_get;
-	p_adpt_api->adpt_port_policer_counter_get = adpt_hppe_port_policer_counter_get;
-	p_adpt_api->adpt_port_compensation_byte_get = adpt_hppe_port_compensation_byte_get;
-	p_adpt_api->adpt_port_policer_entry_get = adpt_hppe_port_policer_entry_get;
-	p_adpt_api->adpt_port_policer_entry_set = adpt_hppe_port_policer_entry_set;
-	p_adpt_api->adpt_acl_policer_entry_get = adpt_hppe_acl_policer_entry_get;
-	p_adpt_api->adpt_acl_policer_entry_set = adpt_hppe_acl_policer_entry_set;
-	p_adpt_api->adpt_policer_time_slot_get = adpt_hppe_policer_time_slot_get;
-	p_adpt_api->adpt_port_compensation_byte_set = adpt_hppe_port_compensation_byte_set;
-	p_adpt_api->adpt_policer_time_slot_set = adpt_hppe_policer_time_slot_set;
+	adpt_hppe_policer_func_unregister(dev_id, p_adpt_api);
 
+	if(p_adpt_api->adpt_policer_func_bitmap & (1 << FUNC_ADPT_ACL_POLICER_COUNTER_GET))
+	{
+		p_adpt_api->adpt_acl_policer_counter_get = adpt_hppe_acl_policer_counter_get;
+	}
+	if(p_adpt_api->adpt_policer_func_bitmap & (1 << FUNC_ADPT_PORT_POLICER_COUNTER_GET))
+	{
+		p_adpt_api->adpt_port_policer_counter_get = adpt_hppe_port_policer_counter_get;
+	}
+	if(p_adpt_api->adpt_policer_func_bitmap & (1 << FUNC_ADPT_PORT_COMPENSATION_BYTE_GET))
+	{
+		p_adpt_api->adpt_port_compensation_byte_get = adpt_hppe_port_compensation_byte_get;
+	}
+	if(p_adpt_api->adpt_policer_func_bitmap & (1 << FUNC_ADPT_PORT_POLICER_ENTRY_GET))
+	{
+		p_adpt_api->adpt_port_policer_entry_get = adpt_hppe_port_policer_entry_get;
+	}
+	if(p_adpt_api->adpt_policer_func_bitmap & (1 << FUNC_ADPT_PORT_POLICER_ENTRY_SET))
+	{
+		p_adpt_api->adpt_port_policer_entry_set = adpt_hppe_port_policer_entry_set;
+	}
+	if(p_adpt_api->adpt_policer_func_bitmap & (1 << FUNC_ADPT_ACL_POLICER_ENTRY_GET))
+	{
+		p_adpt_api->adpt_acl_policer_entry_get = adpt_hppe_acl_policer_entry_get;
+	}
+	if(p_adpt_api->adpt_policer_func_bitmap & (1 << FUNC_ADPT_ACL_POLICER_ENTRY_SET))
+	{
+		p_adpt_api->adpt_acl_policer_entry_set = adpt_hppe_acl_policer_entry_set;
+	}
+	if(p_adpt_api->adpt_policer_func_bitmap & (1 << FUNC_ADPT_POLICER_TIME_SLOT_GET))
+	{
+		p_adpt_api->adpt_policer_time_slot_get = adpt_hppe_policer_time_slot_get;
+	}
+	if(p_adpt_api->adpt_policer_func_bitmap & (1 << FUNC_ADPT_PORT_COMPENSATION_BYTE_SET))
+	{
+		p_adpt_api->adpt_port_compensation_byte_set = adpt_hppe_port_compensation_byte_set;
+	}
+	if(p_adpt_api->adpt_policer_func_bitmap & (1 << FUNC_ADPT_POLICER_TIME_SLOT_SET))
+	{
+		p_adpt_api->adpt_policer_time_slot_set = adpt_hppe_policer_time_slot_set;
+	}
 
 	return SW_OK;
 }

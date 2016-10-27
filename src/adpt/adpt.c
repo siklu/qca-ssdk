@@ -73,6 +73,9 @@ static sw_error_t adpt_hppe_module_func_register(a_uint32_t dev_id, a_uint32_t m
 		case FAL_MODULE_SEC:
 			rv = adpt_hppe_sec_init(dev_id);
 			break;
+		case FAL_MODULE_POLICER:
+			rv = adpt_hppe_policer_init(dev_id);
+			break;
 		default:
 			rv = adpt_hppe_mirror_init( dev_id);
 			break;
@@ -134,6 +137,8 @@ sw_error_t adpt_module_func_ctrl_set(a_uint32_t dev_id,
 		p_adpt_api->adpt_ctrlpkt_func_bitmap = func_ctrl->bitmap[0];
 	} else if(module == FAL_MODULE_SEC){
 		p_adpt_api->adpt_sec_func_bitmap = func_ctrl->bitmap[0];
+	} else if(module == FAL_MODULE_POLICER){
+		p_adpt_api->adpt_policer_func_bitmap = func_ctrl->bitmap[0];
 	}
 
 
@@ -199,6 +204,8 @@ sw_error_t adpt_module_func_ctrl_get(a_uint32_t dev_id,
 		func_ctrl->bitmap[0] = p_adpt_api->adpt_ctrlpkt_func_bitmap;
 	} else if(module == FAL_MODULE_SEC) {
 		func_ctrl->bitmap[0] = p_adpt_api->adpt_sec_func_bitmap;
+	} else if(module == FAL_MODULE_POLICER) {
+		func_ctrl->bitmap[0] = p_adpt_api->adpt_policer_func_bitmap;
 	}
 
 	return SW_OK;
@@ -292,7 +299,8 @@ sw_error_t adpt_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_MIB);
 			SW_RTN_ON_ERROR(rv);
 
-			rv =  adpt_hppe_policer_init( dev_id);
+			adpt_hppe_policer_func_bitmap_init(dev_id);
+			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_POLICER);
 			SW_RTN_ON_ERROR(rv);
 
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_MAX);

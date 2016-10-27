@@ -72,6 +72,20 @@ typedef struct
     a_uint64_t red_byte_counter; /*red byte counter */
 } fal_policer_counter_t;
 
+enum
+{
+	FUNC_ADPT_ACL_POLICER_COUNTER_GET = 0,
+	FUNC_ADPT_PORT_POLICER_COUNTER_GET,
+	FUNC_ADPT_PORT_COMPENSATION_BYTE_GET,
+	FUNC_ADPT_PORT_POLICER_ENTRY_GET,
+	FUNC_ADPT_PORT_POLICER_ENTRY_SET,
+	FUNC_ADPT_ACL_POLICER_ENTRY_GET,
+	FUNC_ADPT_ACL_POLICER_ENTRY_SET,
+	FUNC_ADPT_POLICER_TIME_SLOT_GET,
+	FUNC_ADPT_PORT_COMPENSATION_BYTE_SET,
+	FUNC_ADPT_POLICER_TIME_SLOT_SET,
+};
+
 
 sw_error_t
 fal_port_policer_entry_set(a_uint32_t dev_id, fal_port_t port_id,
