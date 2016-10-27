@@ -329,6 +329,16 @@ fal_mirr_analysis_config_get(a_uint32_t dev_id, fal_mirr_direction_t direction, 
     return rv;
 }
 /*insert flag for outter fal, don't remove it*/
+
+EXPORT_SYMBOL(fal_mirr_analysis_port_set);
+EXPORT_SYMBOL(fal_mirr_analysis_port_get);
+EXPORT_SYMBOL(fal_mirr_port_in_set);
+EXPORT_SYMBOL(fal_mirr_port_in_get);
+EXPORT_SYMBOL(fal_mirr_port_eg_set);
+EXPORT_SYMBOL(fal_mirr_port_eg_get);
+EXPORT_SYMBOL(fal_mirr_analysis_config_set);
+EXPORT_SYMBOL(fal_mirr_analysis_config_get);
+
 /**
  * @}
  */

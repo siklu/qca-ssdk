@@ -597,6 +597,12 @@ fal_pppoe_l3intf_enable(a_uint32_t dev_id, a_uint32_t l3_if, a_uint32_t enable)
 }
 /*insert flag for outter fal, don't remove it*/
 
+EXPORT_SYMBOL(fal_pppoe_session_table_add);
+EXPORT_SYMBOL(fal_pppoe_session_table_del);
+EXPORT_SYMBOL(fal_pppoe_session_table_get);
+EXPORT_SYMBOL(fal_pppoe_l3intf_status_get);
+EXPORT_SYMBOL(fal_pppoe_l3intf_enable);
+
 /**
  * @}
  */
