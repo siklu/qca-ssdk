@@ -34,13 +34,20 @@ extern "C" {
     */
     typedef enum {
         FAL_STP_DISABLED = 0,   /**<   disable state*/
-        FAL_STP_BLOKING,        /**<   blocking state*/
+        FAL_STP_BLOCKING,        /**<   blocking state*/
         FAL_STP_LISTENING,      /**<   listening state*/
         FAL_STP_LEARNING,       /**<    learning state*/
-        FAL_STP_FARWARDING,     /**<   forwarding state*/
+        FAL_STP_FORWARDING,     /**<   forwarding state*/
         FAL_STP_STATE_BUTT
     }
     fal_stp_state_t;
+
+/*
+ * These two #define lines are used to keep them for the
+ * compatibility of previous project.
+ */
+#define FAL_STP_BLOKING FAL_STP_BLOCKING
+#define FAL_STP_FARWARDING FAL_STP_FORWARDING
 
 enum {
 	FUNC_STP_PORT_STATE_SET = 0,
