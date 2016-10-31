@@ -29,6 +29,8 @@ extern "C" {
 
 #define FAL_VSI_INVALID 0xffff
 #define FAL_VLAN_INVALID 0xffff
+#define FAL_VSI_MAX 31
+#define FAL_VLAN_MAX 4095
 
 typedef struct{
 	a_uint32_t lrn_en; /*0: disable new address learn, 1: enable new address learn*/

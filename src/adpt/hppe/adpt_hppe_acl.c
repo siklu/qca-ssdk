@@ -22,6 +22,11 @@
 #include "hppe_acl_reg.h"
 #include "hppe_acl.h"
 
+#ifdef ACL_DEBUG
+#define acl_print printk
+#else
+#define acl_print(fmt, args...)
+#endif
 
 #define ADPT_ACL_HPPE_MAC_DA_RULE 0
 #define ADPT_ACL_HPPE_MAC_SA_RULE 1
@@ -478,7 +483,7 @@ _adpt_hppe_acl_rule_bind(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_
 		hw_reg.bf.src_0 = obj_idx&0x7;
 		hw_reg.bf.src_1 = (obj_idx>>3)&0x1f;
 		hppe_ipo_rule_reg_set(dev_id, list_id*ADPT_ACL_ENTRY_NUM_PER_LIST+hw_index, &hw_reg);
-		printk("ACL bind entry %d source type %d, source value 0x%x\n",
+		acl_print("ACL bind entry %d source type %d, source value 0x%x\n",
 			list_id*ADPT_ACL_ENTRY_NUM_PER_LIST+hw_index, obj_t, obj_idx);
 		hw_entries &= (~(1<<hw_index));
 	}
@@ -1500,7 +1505,7 @@ _adpt_hppe_acl_rule_unbind(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rul
 			hw_reg.bf.src_1 = 0;
 		}
 		hppe_ipo_rule_reg_set(dev_id, list_id*ADPT_ACL_ENTRY_NUM_PER_LIST+hw_index, &hw_reg);
-		printk("ACL bind entry %d source type %d, source value 0x%x\n",
+		acl_print("ACL bind entry %d source type %d, source value 0x%x\n",
 			list_id*ADPT_ACL_ENTRY_NUM_PER_LIST+hw_index, obj_t, obj_idx);
 		hw_entries &= (~(1<<hw_index));
 	}
@@ -1620,7 +1625,7 @@ sw_error_t _adpt_hppe_acl_alloc_entries(a_uint32_t dev_id, a_uint32_t list_id,
 			if(SW_OK == _adpt_hppe_acl_rule_range_match(dev_id, list_id,
 					rule_id, rule_nr, rule, s_acl_entries[i].entries))
 			{
-				printk("\n{%d, 0x%x, 0x%x, 0x%x, 0x%x},\n",
+				acl_print("\n{%d, 0x%x, 0x%x, 0x%x, 0x%x},\n",
 					s_acl_entries[i].num, s_acl_entries[i].ext_1, s_acl_entries[i].ext_2,
 					s_acl_entries[i].ext_4, s_acl_entries[i].entries);
 				*index = i;
@@ -1636,16 +1641,16 @@ static sw_error_t
 _adpt_hppe_acl_l2_fields_check(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_id, a_uint32_t rule_nr,
 				fal_acl_rule_t * rule, a_uint32_t *rule_type_map)
 {
-	printk("%s, %d: fields[0] = 0x%x, fields[1] = 0x%x\n", __FUNCTION__, __LINE__, rule->field_flg[0], rule->field_flg[1]);
+	acl_print("%s, %d: fields[0] = 0x%x, fields[1] = 0x%x\n", __FUNCTION__, __LINE__, rule->field_flg[0], rule->field_flg[1]);
 
 	if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_MAC_DA))
 	{
-		printk("%s, %d: select MAC DA rule\n", __FUNCTION__, __LINE__);
+		acl_print("%s, %d: select MAC DA rule\n", __FUNCTION__, __LINE__);
 		*rule_type_map |= (1<<ADPT_ACL_HPPE_MAC_DA_RULE);
 	}
 	if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_MAC_SA))
 	{
-		printk("%s, %d: select MAC SA rule\n", __FUNCTION__, __LINE__);
+		acl_print("%s, %d: select MAC SA rule\n", __FUNCTION__, __LINE__);
 		*rule_type_map |= (1<<ADPT_ACL_HPPE_MAC_SA_RULE);
 	}
 	if((FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_MAC_STAG_PRI)) ||
@@ -1658,14 +1663,14 @@ _adpt_hppe_acl_l2_fields_check(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t
 		(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_VSI)) ||
 		(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_VSI_VALID)))
 	{
-		printk("%s, %d: select VLAN rule\n", __FUNCTION__, __LINE__);
+		acl_print("%s, %d: select VLAN rule\n", __FUNCTION__, __LINE__);
 		*rule_type_map |= (1<<ADPT_ACL_HPPE_VLAN_RULE);
 	}
 
 	if((FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_MAC_ETHTYPE)) ||
 		(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_PPPOE_SESSIONID)))
 	{
-		printk("%s, %d: select L2 MISC rule\n", __FUNCTION__, __LINE__);
+		acl_print("%s, %d: select L2 MISC rule\n", __FUNCTION__, __LINE__);
 		*rule_type_map |= (1<<ADPT_ACL_HPPE_L2_MISC_RULE);
 	}
 
@@ -1676,12 +1681,12 @@ _adpt_hppe_acl_l2_fields_check(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t
 		{
 			if(rule->stag_vid_op == FAL_ACL_FIELD_MASK)
 			{
-				printk("%s, %d: select VLAN rule\n", __FUNCTION__, __LINE__);
+				acl_print("%s, %d: select VLAN rule\n", __FUNCTION__, __LINE__);
 				*rule_type_map |= (1<<ADPT_ACL_HPPE_VLAN_RULE);
 			}
 			else
 			{
-				printk("%s, %d: select L2 MISC rule\n", __FUNCTION__, __LINE__);
+				acl_print("%s, %d: select L2 MISC rule\n", __FUNCTION__, __LINE__);
 				*rule_type_map |= (1<<ADPT_ACL_HPPE_L2_MISC_RULE);
 			}
 		}
@@ -1693,11 +1698,11 @@ _adpt_hppe_acl_l2_fields_check(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t
 			(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_ETHERNET)) ||
 			(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_FAKE_MAC_HEADER)))
 		{
-			printk("%s, %d: select MAC DA rule\n", __FUNCTION__, __LINE__);
+			acl_print("%s, %d: select MAC DA rule\n", __FUNCTION__, __LINE__);
 			*rule_type_map |= (1<<ADPT_ACL_HPPE_MAC_DA_RULE);
 		}
 	}
-	printk("%s, %d: rule_type_map = 0x%x\n", __FUNCTION__, __LINE__, *rule_type_map);
+	acl_print("%s, %d: rule_type_map = 0x%x\n", __FUNCTION__, __LINE__, *rule_type_map);
 
 	return SW_OK;
 }
@@ -1705,7 +1710,7 @@ static sw_error_t
 _adpt_hppe_acl_ipv4_fields_check(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_id, a_uint32_t rule_nr,
 				fal_acl_rule_t * rule, a_uint32_t *rule_type_map)
 {
-	printk("%s, %d: fields[0] = 0x%x, fields[1] = 0x%x\n", __FUNCTION__, __LINE__, rule->field_flg[0], rule->field_flg[1]);
+	acl_print("%s, %d: fields[0] = 0x%x, fields[1] = 0x%x\n", __FUNCTION__, __LINE__, rule->field_flg[0], rule->field_flg[1]);
 
 	if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_L4_SPORT) ||
 		FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_IP4_SIP) ||
@@ -1748,7 +1753,7 @@ _adpt_hppe_acl_ipv4_fields_check(a_uint32_t dev_id, a_uint32_t list_id, a_uint32
 		}
 	}
 
-	printk("%s, %d: rule_type_map = 0x%x\n", __FUNCTION__, __LINE__, *rule_type_map);
+	acl_print("%s, %d: rule_type_map = 0x%x\n", __FUNCTION__, __LINE__, *rule_type_map);
 	return SW_OK;
 }
 
@@ -1756,7 +1761,7 @@ static sw_error_t
 _adpt_hppe_acl_ipv6_fields_check(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_id, a_uint32_t rule_nr,
 				fal_acl_rule_t * rule, a_uint32_t *rule_type_map)
 {
-	printk("%s, %d: fields[0] = 0x%x, fields[1] = 0x%x\n", __FUNCTION__, __LINE__, rule->field_flg[0], rule->field_flg[1]);
+	acl_print("%s, %d: fields[0] = 0x%x, fields[1] = 0x%x\n", __FUNCTION__, __LINE__, rule->field_flg[0], rule->field_flg[1]);
 
 	if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_L4_SPORT) ||
 		FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_ICMP_TYPE) ||
@@ -1825,7 +1830,7 @@ _adpt_hppe_acl_ipv6_fields_check(a_uint32_t dev_id, a_uint32_t list_id, a_uint32
 		}
 	}
 
-	printk("%s, %d: rule_type_map = 0x%x\n", __FUNCTION__, __LINE__, *rule_type_map);
+	acl_print("%s, %d: rule_type_map = 0x%x\n", __FUNCTION__, __LINE__, *rule_type_map);
 
 	return SW_OK;
 }
@@ -1834,7 +1839,7 @@ static sw_error_t
 _adpt_hppe_acl_udf_fields_check(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_id, a_uint32_t rule_nr,
 				fal_acl_rule_t * rule, a_uint32_t *rule_type_map)
 {
-	printk("%s, %d: fields[0] = 0x%x, fields[1] = 0x%x\n", __FUNCTION__, __LINE__, rule->field_flg[0], rule->field_flg[1]);
+	acl_print("%s, %d: fields[0] = 0x%x, fields[1] = 0x%x\n", __FUNCTION__, __LINE__, rule->field_flg[0], rule->field_flg[1]);
 
 	if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_UDF0))
 	{
@@ -1859,7 +1864,7 @@ _adpt_hppe_acl_udf_fields_check(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_
 		}
 	}
 
-	printk("%s, %d: rule_type_map = 0x%x\n", __FUNCTION__, __LINE__, *rule_type_map);
+	acl_print("%s, %d: rule_type_map = 0x%x\n", __FUNCTION__, __LINE__, *rule_type_map);
 
 	return SW_OK;
 }
@@ -2922,17 +2927,17 @@ _adpt_hppe_acl_rule_hw_add(a_uint32_t dev_id, a_uint32_t list_id,
 		}
 		allocated_entries &= (~(1<<hw_entry));
 
-		printk("%s, %d: rule and mask set hw_entry = %d\n", __FUNCTION__, __LINE__,
+		acl_print("%s, %d: rule and mask set hw_entry = %d\n", __FUNCTION__, __LINE__,
 				list_id*ADPT_ACL_ENTRY_NUM_PER_LIST+hw_entry);
-		printk("post_route %d, chain %d, pri %d, src_1 %d, src_0 %d, src_type %d rule_type %d, inverse %d, range %d\n",
+		acl_print("post_route %d, chain %d, pri %d, src_1 %d, src_0 %d, src_type %d rule_type %d, inverse %d, range %d\n",
 			hw_reg.bf.post_routing_en,hw_reg.bf.res_chain, hw_reg.bf.pri, hw_reg.bf.src_1,
 			hw_reg.bf.src_0, hw_reg.bf.src_type, hw_reg.bf.rule_type, hw_reg.bf.inverse_en,hw_reg.bf.range_en);
-		_adpt_acl_reg_dump((a_uint8_t *)&hw_reg, sizeof(hw_reg));
+		/*_adpt_acl_reg_dump((a_uint8_t *)&hw_reg, sizeof(hw_reg));*/
 		rv |= hppe_ipo_rule_reg_set(dev_id, list_id*ADPT_ACL_ENTRY_NUM_PER_LIST+hw_entry, &hw_reg);
-		_adpt_acl_reg_dump((a_uint8_t *)&hw_mask, sizeof(hw_mask));
+		/*_adpt_acl_reg_dump((a_uint8_t *)&hw_mask, sizeof(hw_mask));*/
 		rv |= hppe_ipo_mask_reg_set(dev_id, list_id*ADPT_ACL_ENTRY_NUM_PER_LIST+hw_entry, &hw_mask);
 		_adpt_hppe_acl_action_sw_2_hw(rule, &hw_act);
-		_adpt_acl_reg_dump((a_uint8_t *)&hw_act, sizeof(hw_act));
+		/*_adpt_acl_reg_dump((a_uint8_t *)&hw_act, sizeof(hw_act));*/
 		rv |= hppe_ipo_action_set(dev_id, list_id*ADPT_ACL_ENTRY_NUM_PER_LIST+hw_entry, &hw_act);
 
 		if(rv != SW_OK)
@@ -2966,7 +2971,7 @@ adpt_hppe_acl_rule_add(a_uint32_t dev_id, a_uint32_t list_id,
 	if(g_acl_list[dev_id][list_id].rule_hw_entry[rule_id] != 0)
 		return SW_ALREADY_EXIST;
 
-	printk("%s, %d: fields[0] = 0x%x, fields[1] = 0x%x\n", __FUNCTION__, __LINE__, rule->field_flg[0], rule->field_flg[1]);
+	acl_print("%s, %d: fields[0] = 0x%x, fields[1] = 0x%x\n", __FUNCTION__, __LINE__, rule->field_flg[0], rule->field_flg[1]);
 	if(rule->rule_type == FAL_ACL_RULE_IP4)/*input ipv4 type*/
 		_adpt_hppe_acl_ipv4_fields_check(dev_id, list_id, rule_id, rule_nr, rule, &rule_type_map);
 	else if(rule->rule_type == FAL_ACL_RULE_IP6)/*input ipv6 type*/
@@ -2982,14 +2987,14 @@ adpt_hppe_acl_rule_add(a_uint32_t dev_id, a_uint32_t list_id,
 		rule_type_map |= (1<<ADPT_ACL_HPPE_MAC_DA_RULE);
 	}
 
-	printk("%s, %d: rule_type_map = 0x%x\n", __FUNCTION__, __LINE__, rule_type_map);
+	acl_print("%s, %d: rule_type_map = 0x%x\n", __FUNCTION__, __LINE__, rule_type_map);
 
 	rule_type_count = _acl_bits_count(rule_type_map, ADPT_ACL_HPPE_RULE_TYPE_NUM, 0);
-	printk("%s, %d: rule_type_count = %d\n", __FUNCTION__, __LINE__, rule_type_count);
+	acl_print("%s, %d: rule_type_count = %d\n", __FUNCTION__, __LINE__, rule_type_count);
 
-	if(rule_type_count > ADPT_ACL_RULE_NUM_PER_LIST)
+	if(rule_type_count == 0 || rule_type_count > ADPT_ACL_RULE_NUM_PER_LIST)
 	{
-		printk("%s, %d: rule_type_count = %d > 8\n", __FUNCTION__, __LINE__, rule_type_count);
+		printk("%s, %d: rule_type_count = %d\n", __FUNCTION__, __LINE__, rule_type_count);
 		return SW_NOT_SUPPORTED;
 	}
 
@@ -3005,21 +3010,21 @@ adpt_hppe_acl_rule_add(a_uint32_t dev_id, a_uint32_t list_id,
 	{
 		rv |= hppe_rule_ext_1_reg_get(dev_id, list_id, &ext_1);
 		ext_1.val |= s_acl_entries[index].ext_1;
-		printk("%s, %d: ext_1.val = 0x%x\n", __FUNCTION__, __LINE__, ext_1.val);
+		acl_print("%s, %d: ext_1.val = 0x%x\n", __FUNCTION__, __LINE__, ext_1.val);
 		rv |= hppe_rule_ext_1_reg_set(dev_id, list_id, &ext_1);
 	}
 	if(s_acl_entries[index].ext_2 != 0)
 	{
 		rv |= hppe_rule_ext_2_reg_get(dev_id, list_id, &ext_2);
 		ext_2.val |= s_acl_entries[index].ext_2;
-		printk("%s, %d: ext_2.val = 0x%x\n", __FUNCTION__, __LINE__, ext_2.val);
+		acl_print("%s, %d: ext_2.val = 0x%x\n", __FUNCTION__, __LINE__, ext_2.val);
 		rv |= hppe_rule_ext_2_reg_set(dev_id, list_id, &ext_2);
 	}
 	if(s_acl_entries[index].ext_4 != 0)
 	{
 		rv |= hppe_rule_ext_4_reg_get(dev_id, list_id, &ext_4);
 		ext_4.val |= s_acl_entries[index].ext_4;
-		printk("%s, %d: ext_4.val = 0x%x\n", __FUNCTION__, __LINE__, ext_4.val);
+		acl_print("%s, %d: ext_4.val = 0x%x\n", __FUNCTION__, __LINE__, ext_4.val);
 		rv |= hppe_rule_ext_4_reg_set(dev_id, list_id, &ext_4);
 	}
 
@@ -3059,6 +3064,7 @@ adpt_hppe_acl_rule_delete(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule
 
 	while(hw_entries != 0)
 	{
+	    union ipo_cnt_tbl_u counters = {0};
 		hw_index = _acl_bit_index(hw_entries, 8, 0);
 		if(hw_index >= ADPT_ACL_ENTRY_NUM_PER_LIST)
 			break;
@@ -3066,29 +3072,32 @@ adpt_hppe_acl_rule_delete(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule
 		rv |= hppe_ipo_rule_reg_set(dev_id, list_id*ADPT_ACL_ENTRY_NUM_PER_LIST+hw_index, &hw_reg);
 		rv |= hppe_ipo_mask_reg_set(dev_id, list_id*ADPT_ACL_ENTRY_NUM_PER_LIST+hw_index, &hw_mask);
 		rv |= hppe_ipo_action_set(dev_id, list_id*ADPT_ACL_ENTRY_NUM_PER_LIST+hw_index, &hw_act);
-		printk("ACL destroy entry %d\n", list_id*ADPT_ACL_ENTRY_NUM_PER_LIST+hw_index);
+		acl_print("ACL destroy entry %d\n", list_id*ADPT_ACL_ENTRY_NUM_PER_LIST+hw_index);
 		hw_entries &= (~(1<<hw_index));
+
+		/*clean counters*/
+		hppe_ipo_cnt_tbl_set(dev_id, list_id*ADPT_ACL_ENTRY_NUM_PER_LIST+hw_index, &counters);
 	}
 
 	if(g_acl_list[dev_id][list_id].ext1_val[rule_id])
 	{
 		rv |= hppe_rule_ext_1_reg_get(dev_id, list_id, &ext_1);
 		ext_1.val &= (~g_acl_list[dev_id][list_id].ext1_val[rule_id]);
-		printk("%s, %d: ext_1.val = 0x%x\n", __FUNCTION__, __LINE__, ext_1.val);
+		acl_print("%s, %d: ext_1.val = 0x%x\n", __FUNCTION__, __LINE__, ext_1.val);
 		rv |= hppe_rule_ext_1_reg_set(dev_id, list_id, &ext_1);
 	}
 	if(g_acl_list[dev_id][list_id].ext2_val[rule_id])
 	{
 		rv |= hppe_rule_ext_2_reg_get(dev_id, list_id, &ext_2);
 		ext_2.val &= (~g_acl_list[dev_id][list_id].ext2_val[rule_id]);
-		printk("%s, %d: ext_2.val = 0x%x\n", __FUNCTION__, __LINE__, ext_2.val);
+		acl_print("%s, %d: ext_2.val = 0x%x\n", __FUNCTION__, __LINE__, ext_2.val);
 		rv |= hppe_rule_ext_2_reg_set(dev_id, list_id, &ext_2);
 	}
 	if(g_acl_list[dev_id][list_id].ext4_val[rule_id])
 	{
 		rv |= hppe_rule_ext_4_reg_get(dev_id, list_id, &ext_4);
 		ext_4.val &= (~g_acl_list[dev_id][list_id].ext4_val[rule_id]);
-		printk("%s, %d: ext_4.val = 0x%x\n", __FUNCTION__, __LINE__, ext_4.val);
+		acl_print("%s, %d: ext_4.val = 0x%x\n", __FUNCTION__, __LINE__, ext_4.val);
 		rv |= hppe_rule_ext_4_reg_set(dev_id, list_id, &ext_4);
 	}
 

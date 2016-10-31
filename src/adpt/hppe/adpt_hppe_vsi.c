@@ -27,7 +27,7 @@
 #include "hppe_ip_reg.h"
 #include "hppe_ip.h"
 
-#define ADPT_VSI_MAX 31
+#define ADPT_VSI_MAX FAL_VSI_MAX
 #define ADPT_VSI_RESERVE_MAX 5
 
 enum{
@@ -237,12 +237,14 @@ adpt_hppe_port_vlan_vsi_set(a_uint32_t dev_id, fal_port_t port_id,
 
 	ADPT_DEV_ID_CHECK(dev_id);
 
+	if((stag_vid != FAL_VLAN_INVALID && stag_vid > FAL_VLAN_MAX)||
+	    (ctag_vid != FAL_VLAN_INVALID && ctag_vid > FAL_VLAN_MAX))
+	    return SW_OUT_OF_RANGE;
+
 	adpt_hppe_port_vlan_vsi_get(dev_id, port_id, stag_vid, ctag_vid, &org_vsi);
 
 	if(org_vsi == vsi_id)
-	{
 		return SW_OK;
-	}
 
 	if(FAL_VSI_INVALID == vsi_id || org_vsi != FAL_VSI_INVALID)
 	{
