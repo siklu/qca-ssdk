@@ -365,6 +365,14 @@ fal_mib_cpukeep_get(a_uint32_t dev_id, a_bool_t * enable)
     FAL_API_UNLOCK;
     return rv;
 }
+EXPORT_SYMBOL(fal_get_mib_info);
+EXPORT_SYMBOL(fal_get_rx_mib_info);
+EXPORT_SYMBOL(fal_get_tx_mib_info);
+EXPORT_SYMBOL(fal_mib_status_set);
+EXPORT_SYMBOL(fal_mib_status_get);
+EXPORT_SYMBOL(fal_mib_port_flush_counters);
+EXPORT_SYMBOL(fal_mib_cpukeep_set);
+EXPORT_SYMBOL(fal_mib_cpukeep_get);
 /*insert flag for outter fal, don't remove it*/
 /**
  * @}
