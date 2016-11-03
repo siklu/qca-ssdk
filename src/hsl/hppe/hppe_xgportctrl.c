@@ -268,11 +268,8 @@ hppe_mac_interrupt_status_set(
 		a_uint32_t index,
 		union mac_interrupt_status_u *value)
 {
-	return hppe_reg_set(
-				dev_id,
-				NSS_XGMAC_CSR_BASE_ADDR + MAC_INTERRUPT_STATUS_ADDRESS + \
-				index * MAC_INTERRUPT_STATUS_INC,
-				value->val);
+	return SW_NOT_SUPPORTED;
+
 }
 
 sw_error_t
@@ -296,7 +293,11 @@ hppe_mac_interrupt_enable_set(
 		a_uint32_t index,
 		union mac_interrupt_enable_u *value)
 {
-	return SW_NOT_SUPPORTED;
+	return hppe_reg_set(
+				dev_id,
+				NSS_XGMAC_CSR_BASE_ADDR + MAC_INTERRUPT_ENABLE_ADDRESS + \
+				index * MAC_INTERRUPT_ENABLE_INC,
+				value->val);
 }
 
 sw_error_t
@@ -320,11 +321,8 @@ hppe_mac_rx_tx_status_set(
 		a_uint32_t index,
 		union mac_rx_tx_status_u *value)
 {
-	return hppe_reg_set(
-				dev_id,
-				NSS_XGMAC_CSR_BASE_ADDR + MAC_RX_TX_STATUS_ADDRESS + \
-				index * MAC_RX_TX_STATUS_INC,
-				value->val);
+	return SW_NOT_SUPPORTED;
+
 }
 
 sw_error_t
@@ -376,7 +374,11 @@ hppe_mac_lpi_timers_control_set(
 		a_uint32_t index,
 		union mac_lpi_timers_control_u *value)
 {
-	return SW_NOT_SUPPORTED;
+	return hppe_reg_set(
+				dev_id,
+				NSS_XGMAC_CSR_BASE_ADDR + MAC_LPI_TIMERS_CONTROL_ADDRESS + \
+				index * MAC_LPI_TIMERS_CONTROL_INC,
+				value->val);
 }
 
 sw_error_t
@@ -400,7 +402,11 @@ hppe_mac_lpi_auto_entry_timer_set(
 		a_uint32_t index,
 		union mac_lpi_auto_entry_timer_u *value)
 {
-	return SW_NOT_SUPPORTED;
+	return hppe_reg_set(
+				dev_id,
+				NSS_XGMAC_CSR_BASE_ADDR + MAC_LPI_AUTO_ENTRY_TIMER_ADDRESS + \
+				index * MAC_LPI_AUTO_ENTRY_TIMER_INC,
+				value->val);
 }
 
 sw_error_t
@@ -424,7 +430,11 @@ hppe_mac_1us_tic_counter_set(
 		a_uint32_t index,
 		union mac_1us_tic_counter_u *value)
 {
-	return SW_NOT_SUPPORTED;
+	return hppe_reg_set(
+				dev_id,
+				NSS_XGMAC_CSR_BASE_ADDR + MAC_1US_TIC_COUNTER_ADDRESS + \
+				index * MAC_1US_TIC_COUNTER_INC,
+				value->val);
 }
 
 sw_error_t
@@ -448,7 +458,11 @@ hppe_mac_address0_high_set(
 		a_uint32_t index,
 		union mac_address0_high_u *value)
 {
-	return SW_NOT_SUPPORTED;
+	return hppe_reg_set(
+				dev_id,
+				NSS_XGMAC_CSR_BASE_ADDR + MAC_ADDRESS0_HIGH_ADDRESS + \
+				index * MAC_ADDRESS0_HIGH_INC,
+				value->val);
 }
 
 sw_error_t
@@ -472,7 +486,11 @@ hppe_mac_address0_low_set(
 		a_uint32_t index,
 		union mac_address0_low_u *value)
 {
-	return SW_NOT_SUPPORTED;
+	return hppe_reg_set(
+				dev_id,
+				NSS_XGMAC_CSR_BASE_ADDR + MAC_ADDRESS0_LOW_ADDRESS + \
+				index * MAC_ADDRESS0_LOW_INC,
+				value->val);
 }
 
 sw_error_t
@@ -544,7 +562,11 @@ hppe_mmc_receive_interrupt_enable_set(
 		a_uint32_t index,
 		union mmc_receive_interrupt_enable_u *value)
 {
-	return SW_NOT_SUPPORTED;
+	return hppe_reg_set(
+				dev_id,
+				NSS_XGMAC_CSR_BASE_ADDR + MMC_RECEIVE_INTERRUPT_ENABLE_ADDRESS + \
+				index * MMC_RECEIVE_INTERRUPT_ENABLE_INC,
+				value->val);
 }
 
 sw_error_t
@@ -568,7 +590,11 @@ hppe_mmc_transmit_interrupt_enable_set(
 		a_uint32_t index,
 		union mmc_transmit_interrupt_enable_u *value)
 {
-	return SW_NOT_SUPPORTED;
+	return hppe_reg_set(
+				dev_id,
+				NSS_XGMAC_CSR_BASE_ADDR + MMC_TRANSMIT_INTERRUPT_ENABLE_ADDRESS + \
+				index * MMC_TRANSMIT_INTERRUPT_ENABLE_INC,
+				value->val);
 }
 
 sw_error_t
