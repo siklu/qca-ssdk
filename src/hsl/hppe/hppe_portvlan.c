@@ -3959,3 +3959,95 @@ hppe_eg_vlan_xlt_action_xlt_cdei_set(
 	return ret;
 }
 
+sw_error_t
+hppe_vlan_dev_tx_counter_tbl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union vlan_dev_tx_counter_tbl_u *value)
+{
+	return hppe_reg_tbl_get(
+				dev_id,
+				NSS_PTX_CSR_BASE_ADDR + VLAN_DEV_TX_COUNTER_TBL_ADDRESS + \
+				index * VLAN_DEV_TX_COUNTER_TBL_INC,
+				value->val,
+				3);
+}
+
+sw_error_t
+hppe_vlan_dev_tx_counter_tbl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union vlan_dev_tx_counter_tbl_u *value)
+{
+	return hppe_reg_tbl_set(
+				dev_id,
+				NSS_PTX_CSR_BASE_ADDR + VLAN_DEV_TX_COUNTER_TBL_ADDRESS + \
+				index * VLAN_DEV_TX_COUNTER_TBL_INC,
+				value->val,
+				3);
+}
+
+sw_error_t
+hppe_vlan_dev_tx_counter_tbl_tx_byte_cnt_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint64_t *value)
+{
+	union vlan_dev_tx_counter_tbl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_vlan_dev_tx_counter_tbl_get(dev_id, index, &reg_val);
+	*value = (a_uint64_t)reg_val.bf.tx_byte_cnt_1 << 32 | \
+		reg_val.bf.tx_byte_cnt_0;
+	return ret;
+}
+
+sw_error_t
+hppe_vlan_dev_tx_counter_tbl_tx_byte_cnt_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint64_t value)
+{
+	union vlan_dev_tx_counter_tbl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_vlan_dev_tx_counter_tbl_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.tx_byte_cnt_1 = value >> 32;
+	reg_val.bf.tx_byte_cnt_0 = value & (((a_uint64_t)1<<32)-1);
+	ret = hppe_vlan_dev_tx_counter_tbl_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_vlan_dev_tx_counter_tbl_tx_pkt_cnt_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union vlan_dev_tx_counter_tbl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_vlan_dev_tx_counter_tbl_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.tx_pkt_cnt;
+	return ret;
+}
+
+sw_error_t
+hppe_vlan_dev_tx_counter_tbl_tx_pkt_cnt_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union vlan_dev_tx_counter_tbl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_vlan_dev_tx_counter_tbl_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.tx_pkt_cnt = value;
+	ret = hppe_vlan_dev_tx_counter_tbl_set(dev_id, index, &reg_val);
+	return ret;
+}
+

@@ -336,7 +336,11 @@ extern "C" {
     SW_API_DEF(SW_API_PT_VLAN_TRANS_ADV_ADD, fal_port_vlan_trans_adv_add), \
     SW_API_DEF(SW_API_PT_VLAN_TRANS_ADV_DEL, fal_port_vlan_trans_adv_del), \
     SW_API_DEF(SW_API_PT_VLAN_TRANS_ADV_GETFIRST, fal_port_vlan_trans_adv_getfirst), \
-    SW_API_DEF(SW_API_PT_VLAN_TRANS_ADV_GETNEXT, fal_port_vlan_trans_adv_getnext),
+    SW_API_DEF(SW_API_PT_VLAN_TRANS_ADV_GETNEXT, fal_port_vlan_trans_adv_getnext), \
+    SW_API_DEF(SW_API_PT_VLAN_COUNTER_ENABLE, fal_port_vlan_counter_enable), \
+    SW_API_DEF(SW_API_PT_VLAN_COUNTER_STATUS_GET, fal_port_vlan_counter_status_get), \
+    SW_API_DEF(SW_API_PT_VLAN_COUNTER_GET, fal_port_vlan_counter_get), \
+    SW_API_DEF(SW_API_PT_VLAN_COUNTER_CLEANUP, fal_port_vlan_counter_cleanup),
 
 #define PORTVLAN_API_PARAM \
     SW_API_DESC(SW_API_PT_ING_MODE_GET) \
@@ -410,7 +414,11 @@ extern "C" {
     SW_API_DESC(SW_API_PT_VLAN_TRANS_ADV_ADD) \
     SW_API_DESC(SW_API_PT_VLAN_TRANS_ADV_DEL) \
     SW_API_DESC(SW_API_PT_VLAN_TRANS_ADV_GETFIRST) \
-    SW_API_DESC(SW_API_PT_VLAN_TRANS_ADV_GETNEXT)
+    SW_API_DESC(SW_API_PT_VLAN_TRANS_ADV_GETNEXT) \
+    SW_API_DESC(SW_API_PT_VLAN_COUNTER_ENABLE) \
+    SW_API_DESC(SW_API_PT_VLAN_COUNTER_STATUS_GET) \
+    SW_API_DESC(SW_API_PT_VLAN_COUNTER_GET) \
+    SW_API_DESC(SW_API_PT_VLAN_COUNTER_CLEANUP)
 
 #else
 #define PORTVLAN_API \

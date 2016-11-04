@@ -595,6 +595,10 @@ typedef sw_error_t (*adpt_port_vlan_trans_adv_getfirst_func)(a_uint32_t dev_id, 
                                 fal_vlan_trans_adv_rule_t * rule, fal_vlan_trans_adv_action_t * action);
 typedef sw_error_t (*adpt_port_vlan_trans_adv_getnext_func)(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_direction_t direction,
                                 fal_vlan_trans_adv_rule_t * rule, fal_vlan_trans_adv_action_t * action);
+typedef sw_error_t (*adpt_port_vlan_counter_enable_func)(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_counter_en_t * cnt_en);
+typedef sw_error_t (*adpt_port_vlan_counter_status_get_func)(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_counter_en_t * cnt_en);
+typedef sw_error_t (*adpt_port_vlan_counter_get_func)(a_uint32_t dev_id, a_uint32_t cnt_index, fal_port_vlan_counter_t * counter);
+typedef sw_error_t (*adpt_port_vlan_counter_cleanup_func)(a_uint32_t dev_id, a_uint32_t cnt_index);
 /*portvlan module end*/
 
 /*ctrlpkt module end*/
@@ -1074,6 +1078,10 @@ typedef struct
 	adpt_port_vlan_trans_adv_del_func adpt_port_vlan_trans_adv_del;
 	adpt_port_vlan_trans_adv_getfirst_func adpt_port_vlan_trans_adv_getfirst;
 	adpt_port_vlan_trans_adv_getnext_func adpt_port_vlan_trans_adv_getnext;
+	adpt_port_vlan_counter_enable_func adpt_port_vlan_counter_enable;
+	adpt_port_vlan_counter_status_get_func adpt_port_vlan_counter_status_get;
+	adpt_port_vlan_counter_get_func adpt_port_vlan_counter_get;
+	adpt_port_vlan_counter_cleanup_func adpt_port_vlan_counter_cleanup;
 	/*portvlan module end*/
 
 	/*ctrlpkt module begin*/

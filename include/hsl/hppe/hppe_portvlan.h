@@ -1569,5 +1569,41 @@ hppe_eg_vlan_xlt_action_xlt_cdei_set(
 		a_uint32_t index,
 		a_uint32_t value);
 
+sw_error_t
+hppe_vlan_dev_tx_counter_tbl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union vlan_dev_tx_counter_tbl_u *value);
+
+sw_error_t
+hppe_vlan_dev_tx_counter_tbl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union vlan_dev_tx_counter_tbl_u *value);
+
+sw_error_t
+hppe_vlan_dev_tx_counter_tbl_tx_byte_cnt_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint64_t *value);
+
+sw_error_t
+hppe_vlan_dev_tx_counter_tbl_tx_byte_cnt_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint64_t value);
+
+sw_error_t
+hppe_vlan_dev_tx_counter_tbl_tx_pkt_cnt_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_vlan_dev_tx_counter_tbl_tx_pkt_cnt_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
 #endif
 

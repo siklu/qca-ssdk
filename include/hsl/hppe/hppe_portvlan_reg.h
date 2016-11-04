@@ -1012,5 +1012,34 @@ union eg_vlan_xlt_action_u {
 	struct eg_vlan_xlt_action bf;
 };
 
+/*[table] VLAN_DEV_TX_COUNTER_TBL*/
+#define VLAN_DEV_TX_COUNTER_TBL
+#define VLAN_DEV_TX_COUNTER_TBL_ADDRESS 0x2000
+#define VLAN_DEV_TX_COUNTER_TBL_NUM     64
+#define VLAN_DEV_TX_COUNTER_TBL_INC     0x10
+#define VLAN_DEV_TX_COUNTER_TBL_TYPE    REG_TYPE_RW
+#define VLAN_DEV_TX_COUNTER_TBL_DEFAULT 0x0
+	/*[field] TX_PKT_CNT*/
+	#define VLAN_DEV_TX_COUNTER_TBL_TX_PKT_CNT
+	#define VLAN_DEV_TX_COUNTER_TBL_TX_PKT_CNT_OFFSET  0
+	#define VLAN_DEV_TX_COUNTER_TBL_TX_PKT_CNT_LEN     32
+	#define VLAN_DEV_TX_COUNTER_TBL_TX_PKT_CNT_DEFAULT 0x0
+	/*[field] TX_BYTE_CNT*/
+	#define VLAN_DEV_TX_COUNTER_TBL_TX_BYTE_CNT
+	#define VLAN_DEV_TX_COUNTER_TBL_TX_BYTE_CNT_OFFSET  32
+	#define VLAN_DEV_TX_COUNTER_TBL_TX_BYTE_CNT_LEN     40
+	#define VLAN_DEV_TX_COUNTER_TBL_TX_BYTE_CNT_DEFAULT 0x0
+
+struct vlan_dev_tx_counter_tbl {
+	a_uint32_t  tx_pkt_cnt:32;
+	a_uint32_t  tx_byte_cnt_0:32;
+	a_uint32_t  tx_byte_cnt_1:8;
+	a_uint32_t  _reserved0:24;
+};
+
+union vlan_dev_tx_counter_tbl_u {
+	a_uint32_t val[3];
+	struct vlan_dev_tx_counter_tbl bf;
+};
 
 #endif

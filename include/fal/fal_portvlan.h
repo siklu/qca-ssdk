@@ -248,6 +248,10 @@ enum {
 	FUNC_PORT_VLAN_TRANS_ADV_DEL,
 	FUNC_PORT_VLAN_TRANS_ADV_GETFIRST,
 	FUNC_PORT_VLAN_TRANS_ADV_GETNEXT,
+	FUNC_PORT_VLAN_COUNTER_ENABLE,
+	FUNC_PORT_VLAN_COUNTER_STATUS_GET,
+	FUNC_PORT_VLAN_COUNTER_GET,
+	FUNC_PORT_VLAN_COUNTER_CLEANUP,
 };
 
     sw_error_t
@@ -626,6 +630,30 @@ enum {
 		a_bool_t	vsi_xlt_enable; /* check if action will enable vsi xlt */
 		a_uint8_t	vsi_xlt; /* vsi xlt value */
 	} fal_vlan_trans_adv_action_t;
+
+	typedef struct
+	{
+		a_uint32_t rx_packet_counter;
+		a_uint64_t rx_byte_counter;
+		a_uint32_t tx_packet_counter;
+		a_uint64_t tx_byte_counter;
+	} fal_port_vlan_counter_t;
+
+	typedef struct
+	{
+		a_bool_t rx_counter_en;
+		a_bool_t tx_counter_en;
+	} fal_port_vlan_counter_en_t;
+
+	sw_error_t
+	fal_port_vlan_counter_enable(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_counter_en_t * cnt_en);
+	sw_error_t
+	fal_port_vlan_counter_status_get(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_counter_en_t * cnt_en);
+
+	sw_error_t
+	fal_port_vlan_counter_get(a_uint32_t dev_id, a_uint32_t cnt_index, fal_port_vlan_counter_t * counter);
+	sw_error_t
+	fal_port_vlan_counter_cleanup(a_uint32_t dev_id, a_uint32_t cnt_index);
 
     sw_error_t
     fal_global_qinq_mode_set(a_uint32_t dev_id, fal_global_qinq_mode_t *mode);
