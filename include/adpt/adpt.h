@@ -543,6 +543,10 @@ typedef sw_error_t (*adpt_queue_counter_ctrl_get_func)(
 		a_uint32_t dev_id, a_bool_t *cnt_en);
 typedef sw_error_t (*adpt_queue_counter_ctrl_set_func)(
 		a_uint32_t dev_id, a_bool_t cnt_en);
+typedef sw_error_t (*adpt_qm_enqueue_ctrl_set_func)(
+		a_uint32_t dev_id, a_uint32_t queue_id, a_bool_t enable);
+typedef sw_error_t (*adpt_qm_enqueue_ctrl_get_func)(
+		a_uint32_t dev_id, a_uint32_t queue_id, a_bool_t *enable);
 
 
 /*portvlan module begin*/
@@ -763,6 +767,10 @@ typedef sw_error_t (*adpt_port_scheduler_cfg_set_func)(a_uint32_t dev_id, a_uint
 					fal_port_scheduler_cfg_t *cfg);
 typedef sw_error_t (*adpt_port_scheduler_cfg_get_func)(a_uint32_t dev_id, a_uint32_t tick_index,
 					fal_port_scheduler_cfg_t *cfg);
+typedef sw_error_t (*adpt_scheduler_dequeue_ctrl_get_func)(a_uint32_t dev_id, a_uint32_t queue_id,
+					a_bool_t *enable);
+typedef sw_error_t (*adpt_scheduler_dequeue_ctrl_set_func)(a_uint32_t dev_id, a_uint32_t queue_id,
+					a_bool_t enable);
 typedef sw_error_t (*adpt_port_bufgroup_map_get_func)(a_uint32_t dev_id, fal_port_t port,
 			a_uint8_t *group);
 typedef sw_error_t (*adpt_bm_port_reserved_buffer_get_func)(a_uint32_t dev_id, fal_port_t port,
@@ -1039,6 +1047,8 @@ typedef struct
 	adpt_queue_counter_get_func adpt_queue_counter_get;
 	adpt_queue_counter_ctrl_get_func adpt_queue_counter_ctrl_get;
 	adpt_queue_counter_ctrl_set_func adpt_queue_counter_ctrl_set;
+	adpt_qm_enqueue_ctrl_set_func adpt_qm_enqueue_ctrl_set;
+	adpt_qm_enqueue_ctrl_get_func adpt_qm_enqueue_ctrl_get;
 
 	/*portvlan module begin*/
 	a_uint32_t adpt_portvlan_func_bitmap[2];
@@ -1160,6 +1170,8 @@ typedef struct
 	adpt_tdm_tick_num_get_func adpt_tdm_tick_num_get;
 	adpt_port_scheduler_cfg_set_func adpt_port_scheduler_cfg_set;
 	adpt_port_scheduler_cfg_get_func adpt_port_scheduler_cfg_get;
+	adpt_scheduler_dequeue_ctrl_get_func adpt_scheduler_dequeue_ctrl_get;
+	adpt_scheduler_dequeue_ctrl_set_func adpt_scheduler_dequeue_ctrl_set;
 
 	/* bm */
 	a_uint32_t adpt_bm_func_bitmap;

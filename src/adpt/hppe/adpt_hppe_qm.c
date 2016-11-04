@@ -700,6 +700,7 @@ adpt_hppe_queue_flush(
 	memset(&flush_cfg, 0, sizeof(flush_cfg));
 	ADPT_DEV_ID_CHECK(dev_id);
 
+	#if 0
 	/* disable queue firstly */
 	if (queue_id == 0xffff) {
 		/* all queue in this port */
@@ -728,6 +729,7 @@ adpt_hppe_queue_flush(
 		hppe_oq_enq_opr_tbl_set(dev_id, queue_id, &enq);
 		hppe_deq_dis_tbl_set(dev_id, queue_id, &deq);
 	}
+	#endif
 
 	hppe_flush_cfg_get(dev_id, &flush_cfg);
 
@@ -755,6 +757,7 @@ adpt_hppe_queue_flush(
 	if (!flush_cfg.bf.flush_status)
 		return SW_FAIL;
 
+	#if 0
 	/* enable queue again */
 	if (queue_id == 0xffff) {
 		/* all queue in this port */
@@ -777,6 +780,7 @@ adpt_hppe_queue_flush(
 		hppe_oq_enq_opr_tbl_set(dev_id, queue_id, &enq);
 		hppe_deq_dis_tbl_set(dev_id, queue_id, &deq);
 	}
+	#endif
 	return SW_OK;
 }
 
@@ -1023,6 +1027,43 @@ adpt_hppe_queue_counter_ctrl_set(a_uint32_t dev_id, a_bool_t cnt_en)
 	return hppe_eg_bridge_config_set(dev_id, &eg_bridge_config);
 }
 
+sw_error_t
+adpt_hppe_qm_enqueue_ctrl_set(
+		a_uint32_t dev_id,
+		a_uint32_t queue_id,
+		a_bool_t enable)
+{
+	sw_error_t rv = SW_OK;
+	union oq_enq_opr_tbl_u enq;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+	memset(&enq, 0, sizeof(enq));
+
+	enq.bf.enq_disable = !enable;
+	return hppe_oq_enq_opr_tbl_set(dev_id, queue_id, &enq);
+}
+
+sw_error_t
+adpt_hppe_qm_enqueue_ctrl_get(
+		a_uint32_t dev_id,
+		a_uint32_t queue_id,
+		a_bool_t *enable)
+{
+	sw_error_t rv = SW_OK;
+	union oq_enq_opr_tbl_u enq;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+	memset(&enq, 0, sizeof(enq));
+
+	rv = hppe_oq_enq_opr_tbl_get(dev_id, queue_id, &enq);
+	if( rv != SW_OK )
+		return rv;
+
+	*enable = !(enq.bf.enq_disable);
+
+	return SW_OK;
+}
+
 void adpt_hppe_qm_func_bitmap_init(a_uint32_t dev_id)
 {
 	adpt_api_t *p_adpt_api = NULL;
@@ -1060,7 +1101,9 @@ void adpt_hppe_qm_func_bitmap_init(a_uint32_t dev_id)
 						(1 << FUNC_QUEUE_COUNTER_CLEANUP) |
 						(1 << FUNC_QUEUE_COUNTER_GET) |
 						(1 << FUNC_QUEUE_COUNTER_CTRL_GET) |
-						(1 << FUNC_QUEUE_COUNTER_CTRL_SET));
+						(1 << FUNC_QUEUE_COUNTER_CTRL_SET) |
+						(1 << FUNC_QM_ENQUEUE_CTRL_GET) |
+						(1 << FUNC_QM_ENQUEUE_CTRL_SET));
 	return;
 }
 
@@ -1098,6 +1141,8 @@ static void adpt_hppe_qm_func_unregister(a_uint32_t dev_id, adpt_api_t *p_adpt_a
 	p_adpt_api->adpt_queue_counter_get = NULL;
 	p_adpt_api->adpt_queue_counter_ctrl_get = NULL;
 	p_adpt_api->adpt_queue_counter_ctrl_set = NULL;
+	p_adpt_api->adpt_qm_enqueue_ctrl_set = NULL;
+	p_adpt_api->adpt_qm_enqueue_ctrl_get = NULL;
 
 	return;
 }
@@ -1171,6 +1216,10 @@ sw_error_t adpt_hppe_qm_init(a_uint32_t dev_id)
 		p_adpt_api->adpt_queue_counter_ctrl_get = adpt_hppe_queue_counter_ctrl_get;
 	if (p_adpt_api->adpt_qm_func_bitmap & (1 << FUNC_QUEUE_COUNTER_CTRL_SET))
 		p_adpt_api->adpt_queue_counter_ctrl_set = adpt_hppe_queue_counter_ctrl_set;
+	if (p_adpt_api->adpt_qm_func_bitmap & (1 << FUNC_QM_ENQUEUE_CTRL_GET))
+		p_adpt_api->adpt_qm_enqueue_ctrl_get = adpt_hppe_qm_enqueue_ctrl_get;
+	if (p_adpt_api->adpt_qm_func_bitmap & (1 << FUNC_QM_ENQUEUE_CTRL_SET))
+		p_adpt_api->adpt_qm_enqueue_ctrl_set = adpt_hppe_qm_enqueue_ctrl_set;
 
 
 	return SW_OK;

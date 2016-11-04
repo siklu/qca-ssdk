@@ -691,6 +691,35 @@ adpt_hppe_port_scheduler_cfg_get(a_uint32_t dev_id,
 	return SW_OK;
 }
 
+sw_error_t
+adpt_hppe_scheduler_dequeue_ctrl_get(a_uint32_t dev_id,
+				a_uint32_t queue_id,
+				a_bool_t *enable)
+{
+	union deq_dis_tbl_u deq;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(enable);
+
+	hppe_deq_dis_tbl_get(dev_id, queue_id, &deq);
+	*enable = !(deq.bf.deq_dis);
+
+	return SW_OK;
+}
+
+sw_error_t
+adpt_hppe_scheduler_dequeue_ctrl_set(a_uint32_t dev_id,
+				a_uint32_t queue_id,
+				a_bool_t enable)
+{
+	union deq_dis_tbl_u deq;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	deq.bf.deq_dis = !enable;
+	return hppe_deq_dis_tbl_set(dev_id, queue_id, &deq);
+}
+
 void adpt_hppe_qos_func_bitmap_init(a_uint32_t dev_id)
 {
 	adpt_api_t *p_adpt_api = NULL;
@@ -720,7 +749,9 @@ void adpt_hppe_qos_func_bitmap_init(a_uint32_t dev_id)
 						(1 << FUNC_TDM_TICK_NUM_SET) |
 						(1 << FUNC_TDM_TICK_NUM_GET) |
 						(1 << FUNC_PORT_SCHEDULER_CFG_SET) |
-						(1 << FUNC_PORT_SCHEDULER_CFG_GET));
+						(1 << FUNC_PORT_SCHEDULER_CFG_GET) |
+						(1 << FUNC_SCHEDULER_DEQUEUE_CTRL_GET) |
+						(1 << FUNC_SCHEDULER_DEQUEUE_CTRL_SET));
 	return;
 }
 
@@ -750,6 +781,8 @@ static void adpt_hppe_qos_func_unregister(a_uint32_t dev_id, adpt_api_t *p_adpt_
 	p_adpt_api->adpt_tdm_tick_num_get = NULL;
 	p_adpt_api->adpt_port_scheduler_cfg_set = NULL;
 	p_adpt_api->adpt_port_scheduler_cfg_get = NULL;
+	p_adpt_api->adpt_scheduler_dequeue_ctrl_get = NULL;
+	p_adpt_api->adpt_scheduler_dequeue_ctrl_set = NULL;
 
 	return;
 }
@@ -807,6 +840,10 @@ sw_error_t adpt_hppe_qos_init(a_uint32_t dev_id)
 		p_adpt_api->adpt_port_scheduler_cfg_set = adpt_hppe_port_scheduler_cfg_set;
 	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_PORT_SCHEDULER_CFG_GET))
 		p_adpt_api->adpt_port_scheduler_cfg_get = adpt_hppe_port_scheduler_cfg_get;
+	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_SCHEDULER_DEQUEUE_CTRL_GET))
+		p_adpt_api->adpt_scheduler_dequeue_ctrl_get = adpt_hppe_scheduler_dequeue_ctrl_get;
+	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_SCHEDULER_DEQUEUE_CTRL_SET))
+		p_adpt_api->adpt_scheduler_dequeue_ctrl_set = adpt_hppe_scheduler_dequeue_ctrl_set;
 
 	return SW_OK;
 }

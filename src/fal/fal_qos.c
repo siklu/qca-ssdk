@@ -886,6 +886,42 @@ _fal_port_queues_get(a_uint32_t dev_id,
 	rv = p_api->adpt_port_queues_get(dev_id, port_id, queue_bmp);
 	return rv;
 }
+
+sw_error_t
+_fal_scheduler_dequeue_ctrl_set(
+		a_uint32_t dev_id,
+		a_uint32_t queue_id,
+		a_bool_t enable)
+{
+	adpt_api_t *p_api;
+	sw_error_t rv = SW_OK;
+
+	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+	if (NULL == p_api->adpt_scheduler_dequeue_ctrl_set)
+		return SW_NOT_SUPPORTED;
+
+	rv = p_api->adpt_scheduler_dequeue_ctrl_set(dev_id, queue_id, enable);
+	return rv;
+}
+
+sw_error_t
+_fal_scheduler_dequeue_ctrl_get(
+		a_uint32_t dev_id,
+		a_uint32_t queue_id,
+		a_bool_t *enable)
+{
+	adpt_api_t *p_api;
+	sw_error_t rv = SW_OK;
+
+	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+	if (NULL == p_api->adpt_scheduler_dequeue_ctrl_get)
+		return SW_NOT_SUPPORTED;
+
+	rv = p_api->adpt_scheduler_dequeue_ctrl_get(dev_id, queue_id, enable);
+	return rv;
+}
 /*insert flag for inner fal, don't remove it*/
 
 /**
@@ -1809,39 +1845,72 @@ fal_port_queues_get(a_uint32_t dev_id,
 	FAL_API_UNLOCK;
 	return rv;
 }
-	    EXPORT_SYMBOL(fal_queue_scheduler_set);
 
-	    EXPORT_SYMBOL(fal_queue_scheduler_get);
+sw_error_t
+fal_scheduler_dequeue_ctrl_set(
+		a_uint32_t dev_id,
+		a_uint32_t queue_id,
+		a_bool_t enable)
+{
+	sw_error_t rv = SW_OK;
 
-	    EXPORT_SYMBOL(fal_port_queues_get);
+	FAL_API_LOCK;
+	rv = _fal_scheduler_dequeue_ctrl_set(dev_id, queue_id, enable);
+	FAL_API_UNLOCK;
+	return rv;
+}
 
-	    EXPORT_SYMBOL(fal_qos_port_pri_precedence_set);
+sw_error_t
+fal_scheduler_dequeue_ctrl_get(
+		a_uint32_t dev_id,
+		a_uint32_t queue_id,
+		a_bool_t *enable)
+{
+	sw_error_t rv = SW_OK;
 
-	    EXPORT_SYMBOL(fal_qos_port_tx_buf_status_get);
+	FAL_API_LOCK;
+	rv = _fal_scheduler_dequeue_ctrl_get(dev_id, queue_id, enable);
+	FAL_API_UNLOCK;
+	return rv;
+}
 
-	    EXPORT_SYMBOL(fal_qos_port_pri_precedence_get);
+EXPORT_SYMBOL(fal_scheduler_dequeue_ctrl_get);
 
-	    EXPORT_SYMBOL(fal_qos_port_group_set);
+EXPORT_SYMBOL(fal_scheduler_dequeue_ctrl_set);
 
-	    EXPORT_SYMBOL(fal_qos_port_group_get);
+EXPORT_SYMBOL(fal_queue_scheduler_set);
 
-	    EXPORT_SYMBOL(fal_qos_cosmap_pcp_set);
+EXPORT_SYMBOL(fal_queue_scheduler_get);
 
-	    EXPORT_SYMBOL(fal_qos_cosmap_pcp_get);
+EXPORT_SYMBOL(fal_port_queues_get);
 
-	    EXPORT_SYMBOL(fal_qos_cosmap_dscp_set);
+EXPORT_SYMBOL(fal_qos_port_pri_precedence_set);
 
-	    EXPORT_SYMBOL(fal_qos_cosmap_dscp_get);
+EXPORT_SYMBOL(fal_qos_port_tx_buf_status_get);
 
-	    EXPORT_SYMBOL(fal_qos_cosmap_flow_set);
+EXPORT_SYMBOL(fal_qos_port_pri_precedence_get);
 
-	    EXPORT_SYMBOL(fal_qos_port_remark_set);
+EXPORT_SYMBOL(fal_qos_port_group_set);
 
-	    EXPORT_SYMBOL(fal_qos_port_remark_get);
+EXPORT_SYMBOL(fal_qos_port_group_get);
 
-	    EXPORT_SYMBOL(fal_edma_ring_queue_map_set);
+EXPORT_SYMBOL(fal_qos_cosmap_pcp_set);
 
-	    EXPORT_SYMBOL(fal_edma_ring_queue_map_get);
+EXPORT_SYMBOL(fal_qos_cosmap_pcp_get);
+
+EXPORT_SYMBOL(fal_qos_cosmap_dscp_set);
+
+EXPORT_SYMBOL(fal_qos_cosmap_dscp_get);
+
+EXPORT_SYMBOL(fal_qos_cosmap_flow_set);
+
+EXPORT_SYMBOL(fal_qos_port_remark_set);
+
+EXPORT_SYMBOL(fal_qos_port_remark_get);
+
+EXPORT_SYMBOL(fal_edma_ring_queue_map_set);
+
+EXPORT_SYMBOL(fal_edma_ring_queue_map_get);
 
 /*insert flag for outter fal, don't remove it*/
 /**

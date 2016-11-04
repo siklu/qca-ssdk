@@ -121,6 +121,8 @@ enum {
 	FUNC_QUEUE_COUNTER_GET,
 	FUNC_QUEUE_COUNTER_CTRL_GET,
 	FUNC_QUEUE_COUNTER_CTRL_SET,
+	FUNC_QM_ENQUEUE_CTRL_GET,
+	FUNC_QM_ENQUEUE_CTRL_SET,
 };
 
 sw_error_t
@@ -288,6 +290,12 @@ fal_queue_counter_get(a_uint32_t dev_id, a_uint32_t queue_id, fal_queue_stats_t 
 
 sw_error_t
 fal_queue_counter_cleanup(a_uint32_t dev_id, a_uint32_t queue_id);
+
+sw_error_t
+fal_qm_enqueue_ctrl_set(a_uint32_t dev_id, a_uint32_t queue_id, a_bool_t enable);
+
+sw_error_t
+fal_qm_enqueue_ctrl_get(a_uint32_t dev_id, a_uint32_t queue_id, a_bool_t *enable);
 
 
 #ifdef __cplusplus

@@ -137,6 +137,8 @@ enum {
 	FUNC_TDM_TICK_NUM_GET,
 	FUNC_PORT_SCHEDULER_CFG_SET,
 	FUNC_PORT_SCHEDULER_CFG_GET,
+	FUNC_SCHEDULER_DEQUEUE_CTRL_GET,
+	FUNC_SCHEDULER_DEQUEUE_CTRL_SET,
 };
 
 #define FAL_DOT1P_MIN    0
@@ -385,6 +387,12 @@ fal_edma_ring_queue_map_set(a_uint32_t dev_id,
 sw_error_t
 fal_port_queues_get(a_uint32_t dev_id, 
 				fal_port_t port_id, fal_queue_bmp_t *queue_bmp);
+
+sw_error_t
+fal_scheduler_dequeue_ctrl_set(a_uint32_t dev_id, a_uint32_t queue_id, a_bool_t enable);
+
+sw_error_t
+fal_scheduler_dequeue_ctrl_get(a_uint32_t dev_id, a_uint32_t queue_id, a_bool_t *enable);
 
 #ifdef __cplusplus
 }

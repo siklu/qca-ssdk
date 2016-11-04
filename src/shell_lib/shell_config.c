@@ -822,6 +822,7 @@ struct sub_cmd_des_t g_qos_des[] =
 	{"dscpmap", "set", SW_API_QOS_DSCP_MAP_SET, NULL},
 	{"qscheduler", "set", SW_API_QOS_QUEUE_SCHEDULER_SET, NULL},
 	{"ringqueue", "set", SW_API_QOS_RING_QUEUE_MAP_SET, NULL},
+	{"dequeue", "set", SW_API_QOS_SCHEDULER_DEQUEU_CTRL_SET, NULL},
 #endif
 	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
 };
@@ -1206,6 +1207,7 @@ struct sub_cmd_des_t g_qm_des[] =
     {"acgbuff", "set", SW_API_GOURP_BUFFER_SET, NULL},
     {"cntctrl", "set", SW_API_QUEUE_CNT_CTRL_SET, NULL},
     {"cnt", "cleanup", SW_API_QUEUE_CNT_CLEANUP, NULL},
+    {"enqueue", "set", SW_API_QM_ENQUEUE_CTRL_SET, NULL},
     {NULL, NULL, (int)NULL, NULL},/*end of desc*/
 
 };
