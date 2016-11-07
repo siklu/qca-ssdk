@@ -1788,18 +1788,36 @@ sw_error_t
 adpt_hppe_port_vlan_counter_enable(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_counter_en_t * cnt_en)
 {
 	union mru_mtu_ctrl_tbl_u mru_mtu_ctrl_tbl;
+	union mc_mtu_ctrl_tbl_u mc_mtu_ctrl_tbl;
 	union port_eg_vlan_u port_eg_vlan;
 
 	ADPT_DEV_ID_CHECK(dev_id);
 
-	SW_RTN_ON_ERROR(hppe_mru_mtu_ctrl_tbl_get(dev_id, port_id, &mru_mtu_ctrl_tbl));
-	SW_RTN_ON_ERROR(hppe_port_eg_vlan_get(dev_id, port_id, &port_eg_vlan));
+	port_id = FAL_PORT_ID_VALUE(port_id);
 
-	mru_mtu_ctrl_tbl.bf.rx_cnt_en = cnt_en->rx_counter_en;
-	port_eg_vlan.bf.tx_counting_en = cnt_en->tx_counter_en;
+	if (port_id >= MRU_MTU_CTRL_TBL_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
 
-	SW_RTN_ON_ERROR(hppe_mru_mtu_ctrl_tbl_set(dev_id, port_id, &mru_mtu_ctrl_tbl));
-	SW_RTN_ON_ERROR(hppe_port_eg_vlan_set(dev_id, port_id, &port_eg_vlan));
+	if (port_id >= PORT_EG_VLAN_MAX_ENTRY)
+	{
+		SW_RTN_ON_ERROR(hppe_mru_mtu_ctrl_tbl_get(dev_id, port_id, &mru_mtu_ctrl_tbl));
+		mru_mtu_ctrl_tbl.bf.rx_cnt_en = cnt_en->rx_counter_en;
+		mru_mtu_ctrl_tbl.bf.tx_cnt_en = cnt_en->tx_counter_en;
+		SW_RTN_ON_ERROR(hppe_mru_mtu_ctrl_tbl_set(dev_id, port_id, &mru_mtu_ctrl_tbl));
+	}
+	else
+	{
+		SW_RTN_ON_ERROR(hppe_mru_mtu_ctrl_tbl_get(dev_id, port_id, &mru_mtu_ctrl_tbl));
+		SW_RTN_ON_ERROR(hppe_mc_mtu_ctrl_tbl_get(dev_id, port_id, &mc_mtu_ctrl_tbl));
+		SW_RTN_ON_ERROR(hppe_port_eg_vlan_get(dev_id, port_id, &port_eg_vlan));
+		mru_mtu_ctrl_tbl.bf.rx_cnt_en = cnt_en->rx_counter_en;
+		mru_mtu_ctrl_tbl.bf.tx_cnt_en = cnt_en->tx_counter_en;
+		mc_mtu_ctrl_tbl.bf.tx_cnt_en = cnt_en->tx_counter_en;
+		port_eg_vlan.bf.tx_counting_en = cnt_en->tx_counter_en;
+		SW_RTN_ON_ERROR(hppe_mru_mtu_ctrl_tbl_set(dev_id, port_id, &mru_mtu_ctrl_tbl));
+		SW_RTN_ON_ERROR(hppe_mc_mtu_ctrl_tbl_set(dev_id, port_id, &mc_mtu_ctrl_tbl));
+		SW_RTN_ON_ERROR(hppe_port_eg_vlan_set(dev_id, port_id, &port_eg_vlan));
+	}
 
 	return SW_OK;
 }
@@ -1808,16 +1826,35 @@ sw_error_t
 adpt_hppe_port_vlan_counter_status_get(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_counter_en_t * cnt_en)
 {
 	union mru_mtu_ctrl_tbl_u mru_mtu_ctrl_tbl;
+	union mc_mtu_ctrl_tbl_u mc_mtu_ctrl_tbl;
 	union port_eg_vlan_u port_eg_vlan;
 
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(cnt_en);
 
-	SW_RTN_ON_ERROR(hppe_mru_mtu_ctrl_tbl_get(dev_id, port_id, &mru_mtu_ctrl_tbl));
-	SW_RTN_ON_ERROR(hppe_port_eg_vlan_get(dev_id, port_id, &port_eg_vlan));
+	port_id = FAL_PORT_ID_VALUE(port_id);
 
-	cnt_en->rx_counter_en = mru_mtu_ctrl_tbl.bf.rx_cnt_en;
-	cnt_en->tx_counter_en = port_eg_vlan.bf.tx_counting_en;
+	if (port_id >= MRU_MTU_CTRL_TBL_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+
+	if (port_id >= PORT_EG_VLAN_MAX_ENTRY)
+	{
+		SW_RTN_ON_ERROR(hppe_mru_mtu_ctrl_tbl_get(dev_id, port_id, &mru_mtu_ctrl_tbl));
+		cnt_en->rx_counter_en = mru_mtu_ctrl_tbl.bf.rx_cnt_en;
+		cnt_en->tx_counter_en = mru_mtu_ctrl_tbl.bf.tx_cnt_en;
+	}
+	else
+	{
+		SW_RTN_ON_ERROR(hppe_mru_mtu_ctrl_tbl_get(dev_id, port_id, &mru_mtu_ctrl_tbl));
+		SW_RTN_ON_ERROR(hppe_mc_mtu_ctrl_tbl_get(dev_id, port_id, &mc_mtu_ctrl_tbl));
+		SW_RTN_ON_ERROR(hppe_port_eg_vlan_get(dev_id, port_id, &port_eg_vlan));
+		cnt_en->rx_counter_en = mru_mtu_ctrl_tbl.bf.rx_cnt_en;
+		if ((mru_mtu_ctrl_tbl.bf.tx_cnt_en == mc_mtu_ctrl_tbl.bf.tx_cnt_en)
+			&& (mc_mtu_ctrl_tbl.bf.tx_cnt_en == port_eg_vlan.bf.tx_counting_en))
+			cnt_en->tx_counter_en = mru_mtu_ctrl_tbl.bf.tx_cnt_en;
+		else
+			return SW_FAIL;
+	}
 
 	return SW_OK;
 }

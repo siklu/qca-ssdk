@@ -633,16 +633,16 @@ enum {
 
 	typedef struct
 	{
-		a_uint32_t rx_packet_counter;
-		a_uint64_t rx_byte_counter;
-		a_uint32_t tx_packet_counter;
-		a_uint64_t tx_byte_counter;
+		a_uint32_t rx_packet_counter; /* ingress vlan translation pkt counter */
+		a_uint64_t rx_byte_counter; /* ingress vlan translation byte counter */
+		a_uint32_t tx_packet_counter; /* egress vlan translation pkt counter */
+		a_uint64_t tx_byte_counter; /* egress vlan translation byte counter */
 	} fal_port_vlan_counter_t;
 
 	typedef struct
 	{
-		a_bool_t rx_counter_en;
-		a_bool_t tx_counter_en;
+		a_bool_t rx_counter_en; /* enable rx counter */
+		a_bool_t tx_counter_en; /* enable tx counter */
 	} fal_port_vlan_counter_en_t;
 
 	sw_error_t
