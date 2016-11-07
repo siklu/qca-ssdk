@@ -718,5 +718,24 @@ fal_acl_udf_profile_get(a_uint32_t dev_id, fal_acl_udf_pkt_type_t pkt_type,a_uin
     FAL_API_UNLOCK;
     return rv;
 }
+
 /*insert flag for outter fal, don't remove it*/
+
+EXPORT_SYMBOL(fal_acl_list_creat);
+EXPORT_SYMBOL(fal_acl_list_destroy);
+EXPORT_SYMBOL(fal_acl_rule_add);
+EXPORT_SYMBOL(fal_acl_rule_delete);
+EXPORT_SYMBOL(fal_acl_rule_query);
+EXPORT_SYMBOL(fal_acl_list_bind);
+EXPORT_SYMBOL(fal_acl_list_unbind);
+EXPORT_SYMBOL(fal_acl_status_set);
+EXPORT_SYMBOL(fal_acl_status_get);
+EXPORT_SYMBOL(fal_acl_port_udf_profile_set);
+EXPORT_SYMBOL(fal_acl_port_udf_profile_get);
+EXPORT_SYMBOL(fal_acl_rule_active);
+EXPORT_SYMBOL(fal_acl_rule_deactive);
+EXPORT_SYMBOL(fal_acl_rule_src_filter_sts_set);
+EXPORT_SYMBOL(fal_acl_rule_src_filter_sts_get);
+EXPORT_SYMBOL(fal_acl_udf_profile_set);
+EXPORT_SYMBOL(fal_acl_udf_profile_get);
 

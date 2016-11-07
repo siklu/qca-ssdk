@@ -263,3 +263,15 @@ fal_vsi_member_get(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_member_t *vsi_m
 }
 
 /*insert flag for outter fal, don't remove it*/
+
+EXPORT_SYMBOL(fal_port_vlan_vsi_set);
+EXPORT_SYMBOL(fal_port_vlan_vsi_get);
+EXPORT_SYMBOL(fal_port_vsi_set);
+EXPORT_SYMBOL(fal_port_vsi_get);
+EXPORT_SYMBOL(fal_vsi_stamove_set);
+EXPORT_SYMBOL(fal_vsi_stamove_get);
+EXPORT_SYMBOL(fal_vsi_newaddr_lrn_set);
+EXPORT_SYMBOL(fal_vsi_newaddr_lrn_get);
+EXPORT_SYMBOL(fal_vsi_member_set);
+EXPORT_SYMBOL(fal_vsi_member_get);
+
