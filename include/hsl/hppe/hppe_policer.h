@@ -29,8 +29,6 @@
 #define IN_ACL_METER_CNT_TBL_MAX_ENTRY	1536
 #define PC_GLOBAL_CNT_TBL_MAX_ENTRY	3
 #define DROP_CPU_CNT_TBL_MAX_ENTRY	1280
-#define VLAN_CNT_TBL_MAX_ENTRY	32
-#define PRE_L2_CNT_TBL_MAX_ENTRY	32
 #define PORT_TX_DROP_CNT_TBL_MAX_ENTRY	8
 #define VP_TX_DROP_CNT_TBL_MAX_ENTRY	256
 #define VLAN_DEV_CNT_TBL_MAX_ENTRY	64
@@ -194,30 +192,6 @@ hppe_drop_cpu_cnt_tbl_set(
 		a_uint32_t dev_id,
 		a_uint32_t index,
 		union drop_cpu_cnt_tbl_u *value);
-
-sw_error_t
-hppe_vlan_cnt_tbl_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union vlan_cnt_tbl_u *value);
-
-sw_error_t
-hppe_vlan_cnt_tbl_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union vlan_cnt_tbl_u *value);
-
-sw_error_t
-hppe_pre_l2_cnt_tbl_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union pre_l2_cnt_tbl_u *value);
-
-sw_error_t
-hppe_pre_l2_cnt_tbl_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		union pre_l2_cnt_tbl_u *value);
 
 sw_error_t
 hppe_port_tx_drop_cnt_tbl_get(
@@ -1118,78 +1092,6 @@ hppe_drop_cpu_cnt_tbl_pkt_cnt_get(
 
 sw_error_t
 hppe_drop_cpu_cnt_tbl_pkt_cnt_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t value);
-
-sw_error_t
-hppe_vlan_cnt_tbl_rx_byte_cnt_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint64_t *value);
-
-sw_error_t
-hppe_vlan_cnt_tbl_rx_byte_cnt_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint64_t value);
-
-sw_error_t
-hppe_vlan_cnt_tbl_rx_pkt_cnt_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t *value);
-
-sw_error_t
-hppe_vlan_cnt_tbl_rx_pkt_cnt_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t value);
-
-sw_error_t
-hppe_pre_l2_cnt_tbl_rx_drop_byte_cnt_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint64_t *value);
-
-sw_error_t
-hppe_pre_l2_cnt_tbl_rx_drop_byte_cnt_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint64_t value);
-
-sw_error_t
-hppe_pre_l2_cnt_tbl_rx_byte_cnt_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint64_t *value);
-
-sw_error_t
-hppe_pre_l2_cnt_tbl_rx_byte_cnt_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint64_t value);
-
-sw_error_t
-hppe_pre_l2_cnt_tbl_rx_pkt_cnt_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t *value);
-
-sw_error_t
-hppe_pre_l2_cnt_tbl_rx_pkt_cnt_set(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t value);
-
-sw_error_t
-hppe_pre_l2_cnt_tbl_rx_drop_pkt_cnt_get(
-		a_uint32_t dev_id,
-		a_uint32_t index,
-		a_uint32_t *value);
-
-sw_error_t
-hppe_pre_l2_cnt_tbl_rx_drop_pkt_cnt_set(
 		a_uint32_t dev_id,
 		a_uint32_t index,
 		a_uint32_t value);

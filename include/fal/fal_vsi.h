@@ -49,6 +49,20 @@ typedef struct{
 	a_uint32_t bc_ports;/*VSI member ports for broadcast*/
 }fal_vsi_member_t;
 
+
+typedef struct
+{
+	a_uint32_t rx_packet_counter;
+	a_uint64_t rx_byte_counter;
+	a_uint32_t tx_packet_counter;
+	a_uint64_t tx_byte_counter;
+	a_uint32_t fwd_packet_counter;
+	a_uint64_t fwd_byte_counter;
+	a_uint32_t drop_packet_counter;
+	a_uint64_t drop_byte_counter;
+}fal_vsi_counter_t;
+
+
 enum{
 	FUNC_PORT_VLAN_VSI_SET,
 	FUNC_PORT_VLAN_VSI_GET,
@@ -60,6 +74,8 @@ enum{
 	FUNC_VSI_NEWADDR_LRN_GET,
 	FUNC_VSI_MEMBER_SET,
 	FUNC_VSI_MEMBER_GET,
+	FUNC_VSI_COUNTER_GET,
+	FUNC_VSI_COUNTER_CLEANUP,
 };
 
 sw_error_t
@@ -100,6 +116,12 @@ fal_vsi_member_set(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_member_t *vsi_m
 
 sw_error_t
 fal_vsi_member_get(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_member_t *vsi_member);
+
+sw_error_t
+fal_vsi_counter_get(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_counter_t *counter);
+
+sw_error_t
+fal_vsi_counter_cleanup(a_uint32_t dev_id, a_uint32_t vsi_id);
 
 
 #ifdef __cplusplus

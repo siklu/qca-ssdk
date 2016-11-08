@@ -256,6 +256,7 @@ static sw_data_type_t sw_data_type[] =
     SW_TYPE_DEF(SW_VSI_NEWADDR_LRN, cmd_data_check_newadr_lrn, NULL),
     SW_TYPE_DEF(SW_VSI_STAMOVE, cmd_data_check_stamove, NULL),
     SW_TYPE_DEF(SW_VSI_MEMBER, cmd_data_check_vsi_member, NULL),
+    SW_TYPE_DEF(SW_VSI_COUNTER, NULL, NULL),
     #endif
     #ifdef IN_QM
     SW_TYPE_DEF(SW_STATIC_THRESH, cmd_data_check_ac_static_thresh, NULL),

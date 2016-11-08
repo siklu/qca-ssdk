@@ -1561,7 +1561,9 @@ extern "C" {
     SW_API_DEF(SW_API_VSI_STAMOVE_SET, fal_vsi_stamove_set), \
     SW_API_DEF(SW_API_VSI_STAMOVE_GET,fal_vsi_stamove_get),  \
     SW_API_DEF(SW_API_VSI_MEMBER_SET, fal_vsi_member_set), \
-    SW_API_DEF(SW_API_VSI_MEMBER_GET,fal_vsi_member_get),
+    SW_API_DEF(SW_API_VSI_MEMBER_GET, fal_vsi_member_get),  \
+    SW_API_DEF(SW_API_VSI_COUNTER_GET,fal_vsi_counter_get),  \
+    SW_API_DEF(SW_API_VSI_COUNTER_CLEANUP,fal_vsi_counter_cleanup),
 
 
 #define VSI_API_PARAM \
@@ -1577,7 +1579,9 @@ extern "C" {
     SW_API_DESC(SW_API_VSI_STAMOVE_SET) \
     SW_API_DESC(SW_API_VSI_STAMOVE_GET) \
     SW_API_DESC(SW_API_VSI_MEMBER_SET) \
-    SW_API_DESC(SW_API_VSI_MEMBER_GET)
+    SW_API_DESC(SW_API_VSI_MEMBER_GET) \
+    SW_API_DESC(SW_API_VSI_COUNTER_GET) \
+    SW_API_DESC(SW_API_VSI_COUNTER_CLEANUP)
 
 #else
 #define VSI_API

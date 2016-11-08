@@ -135,6 +135,8 @@ typedef sw_error_t (*adpt_vsi_newaddr_lrn_set_func)(a_uint32_t dev_id, a_uint32_
 typedef sw_error_t (*adpt_vsi_newaddr_lrn_get_func)(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_newaddr_lrn_t *newaddr_lrn);
 typedef sw_error_t (*adpt_vsi_member_set_func)(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_member_t *vsi_member);
 typedef sw_error_t (*adpt_vsi_member_get_func)(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_member_t *vsi_member);
+typedef sw_error_t (*adpt_vsi_counter_get_func)(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_counter_t *counter);
+typedef sw_error_t (*adpt_vsi_counter_cleanup_func)(a_uint32_t dev_id, a_uint32_t vsi_id);
 
 // portctrl function.
 
@@ -859,6 +861,7 @@ typedef struct
 	adpt_stp_port_state_get_func adpt_stp_port_state_get;
 	adpt_stp_port_state_set_func adpt_stp_port_state_set;
 
+    /*vsi*/
 	a_uint32_t adpt_vsi_func_bitmap;
 	adpt_port_vlan_vsi_set_func adpt_port_vlan_vsi_set;
 	adpt_port_vlan_vsi_get_func adpt_port_vlan_vsi_get;
@@ -870,6 +873,8 @@ typedef struct
 	adpt_vsi_newaddr_lrn_get_func adpt_vsi_newaddr_lrn_get;
 	adpt_vsi_member_set_func adpt_vsi_member_set;
 	adpt_vsi_member_get_func adpt_vsi_member_get;
+	adpt_vsi_counter_get_func adpt_vsi_counter_get;
+	adpt_vsi_counter_cleanup_func adpt_vsi_counter_cleanup;
 
 	// port_ctrl
 	a_uint32_t adpt_port_ctrl_func_bitmap[3];
