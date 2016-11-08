@@ -703,6 +703,8 @@ extern "C" {
 #define SW_API_VSI_STAMOVE_GET	       (10 + SW_API_VSI_OFFSET)
 #define SW_API_VSI_MEMBER_SET	       (11 + SW_API_VSI_OFFSET)
 #define SW_API_VSI_MEMBER_GET	       (12 + SW_API_VSI_OFFSET)
+#define SW_API_VSI_COUNTER_GET	       (13 + SW_API_VSI_OFFSET)
+#define SW_API_VSI_COUNTER_CLEANUP	   (14 + SW_API_VSI_OFFSET)
 
  /* qm */
 #define SW_API_QM_OFFSET            2100
