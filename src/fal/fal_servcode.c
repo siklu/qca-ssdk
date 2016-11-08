@@ -30,182 +30,114 @@
  * @}
  */
 sw_error_t
-_fal_parse_service_profile_set(a_uint32_t dev_id,
-						a_uint32_t profile_id,
-						fal_parse_service_entry_t *entry)
+_fal_servcode_config_set(a_uint32_t dev_id, a_uint32_t servcode_index,
+			fal_servcode_config_t *entry)
 {
     sw_error_t rv;
     adpt_api_t *p_api;
 
     SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
 
-    if (NULL == p_api->adpt_parse_service_profile_set)
+    if (NULL == p_api->adpt_servcode_config_set)
         return SW_NOT_SUPPORTED;
 
-    rv = p_api->adpt_parse_service_profile_set(dev_id, profile_id, entry);
+    rv = p_api->adpt_servcode_config_set(dev_id, servcode_index, entry);
     return rv;
 }
 
 sw_error_t
-_fal_parse_service_profile_get(a_uint32_t dev_id,
-						a_uint32_t profile_id,
-						fal_parse_service_entry_t *entry)
+_fal_servcode_config_get(a_uint32_t dev_id, a_uint32_t servcode_index,
+			fal_servcode_config_t *entry)
 {
     sw_error_t rv;
     adpt_api_t *p_api;
 
     SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
 
-    if (NULL == p_api->adpt_parse_service_profile_get)
+    if (NULL == p_api->adpt_servcode_config_get)
         return SW_NOT_SUPPORTED;
 
-    rv = p_api->adpt_parse_service_profile_get(dev_id, profile_id, entry);
+    rv = p_api->adpt_servcode_config_get(dev_id, servcode_index, entry);
     return rv;
 }
 
 sw_error_t
-_fal_ingress_service_profile_set(a_uint32_t dev_id,
-						a_uint32_t profile_id,
-						fal_ingress_service_entry_t *entry)
+_fal_servcode_loopcheck_en(a_uint32_t dev_id, a_bool_t enable)
 {
     sw_error_t rv;
     adpt_api_t *p_api;
 
     SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
 
-    if (NULL == p_api->adpt_ingress_service_profile_set)
+    if (NULL == p_api->adpt_servcode_loopcheck_en)
         return SW_NOT_SUPPORTED;
 
-    rv = p_api->adpt_ingress_service_profile_set(dev_id, profile_id, entry);
+    rv = p_api->adpt_servcode_loopcheck_en(dev_id, enable);
     return rv;
 }
 
 sw_error_t
-_fal_ingress_service_profile_get(a_uint32_t dev_id,
-						a_uint32_t profile_id,
-						fal_ingress_service_entry_t *entry)
+_fal_servcode_loopcheck_status_get(a_uint32_t dev_id, a_bool_t *enable)
 {
     sw_error_t rv;
     adpt_api_t *p_api;
 
     SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
 
-    if (NULL == p_api->adpt_ingress_service_profile_get)
+    if (NULL == p_api->adpt_servcode_loopcheck_status_get)
         return SW_NOT_SUPPORTED;
 
-    rv = p_api->adpt_ingress_service_profile_get(dev_id, profile_id, entry);
+    rv = p_api->adpt_servcode_loopcheck_status_get(dev_id, enable);
     return rv;
 }
 
 sw_error_t
-_fal_egress_service_profile_set(a_uint32_t dev_id,
-						a_uint32_t profile_id,
-						fal_egress_service_entry_t *entry)
-{
-    sw_error_t rv;
-    adpt_api_t *p_api;
-
-    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
-
-    if (NULL == p_api->adpt_egress_service_profile_set)
-        return SW_NOT_SUPPORTED;
-
-    rv = p_api->adpt_egress_service_profile_set(dev_id, profile_id, entry);
-    return rv;
-}
-
-sw_error_t
-_fal_egress_service_profile_get(a_uint32_t dev_id,
-						a_uint32_t profile_id,
-						fal_egress_service_entry_t *entry)
-{
-    sw_error_t rv;
-    adpt_api_t *p_api;
-
-    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
-
-    if (NULL == p_api->adpt_egress_service_profile_get)
-        return SW_NOT_SUPPORTED;
-
-    rv = p_api->adpt_egress_service_profile_get(dev_id, profile_id, entry);
-    return rv;
-}
-
-sw_error_t
-fal_parse_service_profile_set(a_uint32_t dev_id,
-						a_uint32_t profile_id,
-						fal_parse_service_entry_t *entry)
+fal_servcode_config_set(a_uint32_t dev_id, a_uint32_t servcode_index,
+			fal_servcode_config_t *entry)
 {
     sw_error_t rv = SW_OK;
 
     FAL_SERVCODE_API_LOCK;
-    rv = _fal_parse_service_profile_set(dev_id, profile_id, entry);
+    rv = _fal_servcode_config_set(dev_id, servcode_index, entry);
     FAL_SERVCODE_API_UNLOCK;
     return rv;
 }
 
 sw_error_t
-fal_parse_service_profile_get(a_uint32_t dev_id,
-						a_uint32_t profile_id,
-						fal_parse_service_entry_t *entry)
+fal_servcode_config_get(a_uint32_t dev_id, a_uint32_t servcode_index,
+			fal_servcode_config_t *entry)
 {
     sw_error_t rv = SW_OK;
 
     FAL_SERVCODE_API_LOCK;
-    rv = _fal_parse_service_profile_get(dev_id, profile_id, entry);
+    rv = _fal_servcode_config_get(dev_id, servcode_index, entry);
     FAL_SERVCODE_API_UNLOCK;
     return rv;
 }
 
 sw_error_t
-fal_ingress_service_profile_set(a_uint32_t dev_id,
-						a_uint32_t profile_id,
-						fal_ingress_service_entry_t *entry)
+fal_servcode_loopcheck_en(a_uint32_t dev_id, a_bool_t enable)
 {
     sw_error_t rv = SW_OK;
 
     FAL_SERVCODE_API_LOCK;
-    rv = _fal_ingress_service_profile_set(dev_id, profile_id, entry);
+    rv = _fal_servcode_loopcheck_en(dev_id, enable);
     FAL_SERVCODE_API_UNLOCK;
     return rv;
 }
 
 sw_error_t
-fal_ingress_service_profile_get(a_uint32_t dev_id,
-						a_uint32_t profile_id,
-						fal_ingress_service_entry_t *entry)
+fal_servcode_loopcheck_status_get(a_uint32_t dev_id, a_bool_t *enable)
 {
     sw_error_t rv = SW_OK;
 
     FAL_SERVCODE_API_LOCK;
-    rv = _fal_ingress_service_profile_get(dev_id, profile_id, entry);
+    rv = _fal_servcode_loopcheck_status_get(dev_id, enable);
     FAL_SERVCODE_API_UNLOCK;
     return rv;
 }
 
-sw_error_t
-fal_egress_service_profile_set(a_uint32_t dev_id,
-						a_uint32_t profile_id,
-						fal_egress_service_entry_t *entry)
-{
-    sw_error_t rv = SW_OK;
-
-    FAL_SERVCODE_API_LOCK;
-    rv = _fal_egress_service_profile_set(dev_id, profile_id, entry);
-    FAL_SERVCODE_API_UNLOCK;
-    return rv;
-}
-
-sw_error_t
-fal_egress_service_profile_get(a_uint32_t dev_id,
-						a_uint32_t profile_id,
-						fal_egress_service_entry_t *entry)
-{
-    sw_error_t rv = SW_OK;
-
-    FAL_SERVCODE_API_LOCK;
-    rv = _fal_egress_service_profile_get(dev_id, profile_id, entry);
-    FAL_SERVCODE_API_UNLOCK;
-    return rv;
-}
-
+EXPORT_SYMBOL(fal_servcode_config_set);
+EXPORT_SYMBOL(fal_servcode_config_get);
+EXPORT_SYMBOL(fal_servcode_loopcheck_en);
+EXPORT_SYMBOL(fal_servcode_loopcheck_status_get);

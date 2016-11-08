@@ -619,26 +619,12 @@ typedef sw_error_t (*adpt_mgmtctrl_ctrlpkt_profile_getnext_func)(a_uint32_t dev_
 /*ctrlpkt module end*/
 
 /*service module end*/
-typedef sw_error_t (*adpt_parse_service_profile_set_func)(a_uint32_t dev_id,
-										a_uint32_t profile_id,
-										fal_parse_service_entry_t *entry);
-typedef sw_error_t (*adpt_parse_service_profile_get_func)(a_uint32_t dev_id,
-										a_uint32_t profile_id,
-										fal_parse_service_entry_t *entry);
-
-typedef sw_error_t (*adpt_ingress_service_profile_set_func)(a_uint32_t dev_id,
-										a_uint32_t profile_id,
-										fal_ingress_service_entry_t *entry);
-typedef sw_error_t (*adpt_ingress_service_profile_get_func)(a_uint32_t dev_id,
-										a_uint32_t profile_id,
-										fal_ingress_service_entry_t *entry);
-
-typedef sw_error_t (*adpt_egress_service_profile_set_func)(a_uint32_t dev_id,
-										a_uint32_t profile_id,
-										fal_egress_service_entry_t *entry);
-typedef sw_error_t (*adpt_egress_service_profile_get_func)(a_uint32_t dev_id,
-										a_uint32_t profile_id,
-										fal_egress_service_entry_t *entry);
+typedef sw_error_t (*adpt_servcode_config_set_func)(a_uint32_t dev_id,
+		a_uint32_t servcode_index, fal_servcode_config_t *entry);
+typedef sw_error_t (*adpt_servcode_config_get_func)(a_uint32_t dev_id,
+		a_uint32_t servcode_index, fal_servcode_config_t *entry);
+typedef sw_error_t (*adpt_servcode_loopcheck_en_func)(a_uint32_t dev_id, a_bool_t enable);
+typedef sw_error_t (*adpt_servcode_loopcheck_status_get_func)(a_uint32_t dev_id, a_bool_t *enable);
 /*service module end*/
 
 //pppoe
@@ -1113,12 +1099,10 @@ typedef struct
 
 	/*servcode module begin*/
 	a_uint32_t adpt_servcode_func_bitmap;
-	adpt_parse_service_profile_set_func adpt_parse_service_profile_set;
-	adpt_parse_service_profile_get_func adpt_parse_service_profile_get;
-	adpt_ingress_service_profile_set_func adpt_ingress_service_profile_set;
-	adpt_ingress_service_profile_get_func adpt_ingress_service_profile_get;
-	adpt_egress_service_profile_set_func adpt_egress_service_profile_set;
-	adpt_egress_service_profile_get_func adpt_egress_service_profile_get;
+	adpt_servcode_config_set_func adpt_servcode_config_set;
+	adpt_servcode_config_get_func adpt_servcode_config_get;
+	adpt_servcode_loopcheck_en_func adpt_servcode_loopcheck_en;
+	adpt_servcode_loopcheck_status_get_func adpt_servcode_loopcheck_status_get;
 	/*servcode module end*/
 
 	/* pppoe */

@@ -22,150 +22,95 @@
 #include "hppe_servcode.h"
 #include "adpt.h"
 
-sw_error_t
-adpt_parse_service_profile_set(a_uint32_t dev_id,
-								a_uint32_t profile_id,
-								fal_parse_service_entry_t *entry)
+#define MAX_PHYSICAL_PORT 8
+
+sw_error_t adpt_hppe_servcode_config_set(a_uint32_t dev_id, a_uint32_t servcode_index,
+					fal_servcode_config_t *entry)
 {
-	sw_error_t rtn = SW_OK;
+	union in_l2_service_tbl_u in_l2_service_tbl;
+	union service_tbl_u service_tbl;
+	union eg_service_tbl_u eg_service_tbl;
 
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(entry);
 
-	SW_RTN_ON_ERROR(hppe_service_tbl_rx_counting_en_set(dev_id,
-								profile_id, entry->rx_counting_en));
-	SW_RTN_ON_ERROR(hppe_service_tbl_bypass_bitmap_set(dev_id,
-								profile_id, entry->bypass_bitmap));
+	if (servcode_index >= IN_L2_SERVICE_TBL_MAX_ENTRY || entry->dest_port_id >= MAX_PHYSICAL_PORT)
+		return SW_OUT_OF_RANGE;
 
-	return rtn;
+	in_l2_service_tbl.bf.dst_port_id_valid = entry->dest_port_valid;
+	in_l2_service_tbl.bf.dst_port_id = entry->dest_port_id;
+	in_l2_service_tbl.bf.direction = entry->direction;
+	in_l2_service_tbl.bf.bypass_bitmap = entry->bypass_bitmap[1];
+	in_l2_service_tbl.bf.rx_cnt_en = (entry->bypass_bitmap[2] >> 1) & 0x1;
+	in_l2_service_tbl.bf.tx_cnt_en = (entry->bypass_bitmap[2] >> 3) & 0x1;
+	SW_RTN_ON_ERROR(hppe_in_l2_service_tbl_set(dev_id, servcode_index, &in_l2_service_tbl));
+
+	service_tbl.bf.bypass_bitmap = entry->bypass_bitmap[0];
+	service_tbl.bf.rx_counting_en = entry->bypass_bitmap[2] & 0x1;
+	SW_RTN_ON_ERROR(hppe_service_tbl_set(dev_id, servcode_index, &service_tbl));
+
+	eg_service_tbl.bf.field_update_action = entry->field_update_bitmap;
+	eg_service_tbl.bf.next_service_code = entry->next_service_code;
+	eg_service_tbl.bf.hw_services = entry->hw_services;
+	eg_service_tbl.bf.offset_sel = entry->offset_sel;
+	eg_service_tbl.bf.tx_counting_en = (entry->bypass_bitmap[2] >> 2) & 0x1;
+	SW_RTN_ON_ERROR(hppe_eg_service_tbl_set(dev_id, servcode_index, &eg_service_tbl));
+
+	return SW_OK;
 }
 
-sw_error_t
-adpt_parse_service_profile_get(a_uint32_t dev_id,
-								a_uint32_t profile_id,
-								fal_parse_service_entry_t *entry)
+sw_error_t adpt_hppe_servcode_config_get(a_uint32_t dev_id, a_uint32_t servcode_index,
+					fal_servcode_config_t *entry)
 {
-	sw_error_t rtn = SW_OK;
+	union in_l2_service_tbl_u in_l2_service_tbl;
+	union service_tbl_u service_tbl;
+	union eg_service_tbl_u eg_service_tbl;
 
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(entry);
 
-	SW_RTN_ON_ERROR(hppe_service_tbl_rx_counting_en_get(dev_id,
-								profile_id, &(entry->rx_counting_en)));
-	SW_RTN_ON_ERROR(hppe_service_tbl_bypass_bitmap_get(dev_id,
-								profile_id, &(entry->bypass_bitmap)));
+	if (servcode_index >= IN_L2_SERVICE_TBL_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
 
-	return rtn;
+	SW_RTN_ON_ERROR(hppe_in_l2_service_tbl_get(dev_id, servcode_index, &in_l2_service_tbl));
+	entry->dest_port_valid = in_l2_service_tbl.bf.dst_port_id_valid;
+	entry->dest_port_id = in_l2_service_tbl.bf.dst_port_id;
+	entry->direction = in_l2_service_tbl.bf.direction;
+	entry->bypass_bitmap[1] = in_l2_service_tbl.bf.bypass_bitmap;
+	entry->bypass_bitmap[2] |= in_l2_service_tbl.bf.rx_cnt_en << 1;
+	entry->bypass_bitmap[2] |= in_l2_service_tbl.bf.tx_cnt_en << 3;
+
+	SW_RTN_ON_ERROR(hppe_service_tbl_get(dev_id, servcode_index, &service_tbl));
+	entry->bypass_bitmap[0] = service_tbl.bf.bypass_bitmap;
+	entry->bypass_bitmap[2] |= service_tbl.bf.rx_counting_en;
+
+	SW_RTN_ON_ERROR(hppe_eg_service_tbl_get(dev_id, servcode_index, &eg_service_tbl));
+	entry->field_update_bitmap = eg_service_tbl.bf.field_update_action;
+	entry->next_service_code = eg_service_tbl.bf.next_service_code;
+	entry->hw_services = eg_service_tbl.bf.hw_services;
+	entry->offset_sel = eg_service_tbl.bf.offset_sel;
+	entry->bypass_bitmap[2] |= eg_service_tbl.bf.tx_counting_en << 2;
+
+	return SW_OK;
 }
 
-sw_error_t
-adpt_ingress_service_profile_set(a_uint32_t dev_id,
-								a_uint32_t profile_id,
-								fal_ingress_service_entry_t *entry)
+sw_error_t adpt_hppe_servcode_loopcheck_en(a_uint32_t dev_id, a_bool_t enable)
 {
-	sw_error_t rtn = SW_OK;
-
 	ADPT_DEV_ID_CHECK(dev_id);
-	ADPT_NULL_POINT_CHECK(entry);
 
-	SW_RTN_ON_ERROR(hppe_in_l2_service_tbl_direction_set(dev_id,
-								profile_id, entry->direction));
-	SW_RTN_ON_ERROR(hppe_in_l2_service_tbl_rx_cnt_en_set(dev_id,
-								profile_id, (a_uint32_t)entry->rx_cnt_en));
-	SW_RTN_ON_ERROR(hppe_in_l2_service_tbl_tx_cnt_en_set(dev_id,
-								profile_id, (a_uint32_t)entry->tx_cnt_en));
-	SW_RTN_ON_ERROR(hppe_in_l2_service_tbl_bypass_bitmap_set(dev_id,
-								profile_id, entry->bypass_bitmap));
-	SW_RTN_ON_ERROR(hppe_in_l2_service_tbl_dst_port_id_valid_set(dev_id,
-								profile_id, (a_uint32_t)entry->dst_port_id_valid));
-	SW_RTN_ON_ERROR(hppe_in_l2_service_tbl_dst_port_id_set(dev_id,
-								profile_id, entry->dst_port_id));
+	SW_RTN_ON_ERROR(hppe_l2_global_conf_service_code_loop_set(dev_id, enable));
 
-	return rtn;
+	return SW_OK;
 }
 
-sw_error_t
-adpt_ingress_service_profile_get(a_uint32_t dev_id,
-								a_uint32_t profile_id,
-								fal_ingress_service_entry_t *entry)
+sw_error_t adpt_hppe_servcode_loopcheck_status_get(a_uint32_t dev_id, a_bool_t *enable)
 {
-	sw_error_t rtn = SW_OK;
-
 	ADPT_DEV_ID_CHECK(dev_id);
-	ADPT_NULL_POINT_CHECK(entry);
+	ADPT_NULL_POINT_CHECK(enable);
 
-	SW_RTN_ON_ERROR(hppe_in_l2_service_tbl_direction_get(dev_id,
-								profile_id, &(entry->direction)));
-	SW_RTN_ON_ERROR(hppe_in_l2_service_tbl_rx_cnt_en_set(dev_id,
-								profile_id, (a_uint32_t *)&(entry->rx_cnt_en)));
-	SW_RTN_ON_ERROR(hppe_in_l2_service_tbl_tx_cnt_en_set(dev_id,
-								profile_id, (a_uint32_t *)&(entry->tx_cnt_en)));
-	SW_RTN_ON_ERROR(hppe_in_l2_service_tbl_bypass_bitmap_set(dev_id,
-								profile_id, &(entry->bypass_bitmap)));
-	SW_RTN_ON_ERROR(hppe_in_l2_service_tbl_dst_port_id_valid_set(dev_id,
-								profile_id, (a_uint32_t *)&(entry->dst_port_id_valid)));
-	SW_RTN_ON_ERROR(hppe_in_l2_service_tbl_dst_port_id_set(dev_id,
-								profile_id, &(entry->dst_port_id)));
+	SW_RTN_ON_ERROR(hppe_l2_global_conf_service_code_loop_get(dev_id, enable));
 
-	return rtn;
-}
-
-sw_error_t
-adpt_egress_service_profile_set(a_uint32_t dev_id,
-								a_uint32_t profile_id,
-								fal_egress_service_entry_t *entry)
-{
-	sw_error_t rtn = SW_OK;
-
-	ADPT_DEV_ID_CHECK(dev_id);
-	ADPT_NULL_POINT_CHECK(entry);
-
-	SW_RTN_ON_ERROR(hppe_eg_service_tbl_next_service_code_set(dev_id,
-								profile_id,
-								entry->next_service_code));
-	SW_RTN_ON_ERROR(hppe_eg_service_tbl_tx_counting_en_set(dev_id,
-								profile_id,
-								(a_uint32_t)entry->tx_counting_en));
-	SW_RTN_ON_ERROR(hppe_eg_service_tbl_field_update_action_set(dev_id,
-								profile_id,
-								entry->field_update_action));
-	SW_RTN_ON_ERROR(hppe_eg_service_tbl_offset_sel_set(dev_id,
-								profile_id,
-								entry->offset_sel));
-	SW_RTN_ON_ERROR(hppe_eg_service_tbl_hw_services_set(dev_id,
-								profile_id,
-								entry->hw_services));
-
-	return rtn;
-}
-
-sw_error_t
-adpt_egress_service_profile_get(a_uint32_t dev_id,
-								a_uint32_t profile_id,
-								fal_egress_service_entry_t *entry)
-{
-	sw_error_t rtn = SW_OK;
-
-	ADPT_DEV_ID_CHECK(dev_id);
-	ADPT_NULL_POINT_CHECK(entry);
-
-	SW_RTN_ON_ERROR(hppe_eg_service_tbl_next_service_code_get(dev_id,
-								profile_id,
-								(a_uint32_t *)&(entry->next_service_code)));
-	SW_RTN_ON_ERROR(hppe_eg_service_tbl_tx_counting_en_get(dev_id,
-								profile_id,
-								(a_uint32_t *)&(entry->tx_counting_en)));
-	SW_RTN_ON_ERROR(hppe_eg_service_tbl_field_update_action_get(dev_id,
-								profile_id,
-								(a_uint32_t *)&(entry->field_update_action)));
-	SW_RTN_ON_ERROR(hppe_eg_service_tbl_offset_sel_get(dev_id,
-								profile_id,
-								(a_uint32_t *)&(entry->offset_sel)));
-	SW_RTN_ON_ERROR(hppe_eg_service_tbl_hw_services_get(dev_id,
-								profile_id,
-								(a_uint32_t *)&(entry->hw_services)));
-
-	return rtn;
+	return SW_OK;
 }
 
 void adpt_hppe_servcode_func_bitmap_init(a_uint32_t dev_id)
@@ -187,12 +132,10 @@ static void adpt_hppe_servcode_func_unregister(a_uint32_t dev_id, adpt_api_t *p_
 	if(p_adpt_api == NULL)
 		return;
 
-	p_adpt_api->adpt_parse_service_profile_set = NULL;
-	p_adpt_api->adpt_parse_service_profile_get = NULL;
-	p_adpt_api->adpt_ingress_service_profile_set = NULL;
-	p_adpt_api->adpt_ingress_service_profile_get = NULL;
-	p_adpt_api->adpt_egress_service_profile_set = NULL;
-	p_adpt_api->adpt_egress_service_profile_get = NULL;
+	p_adpt_api->adpt_servcode_config_set = NULL;
+	p_adpt_api->adpt_servcode_config_get = NULL;
+	p_adpt_api->adpt_servcode_loopcheck_en = NULL;
+	p_adpt_api->adpt_servcode_loopcheck_status_get = NULL;
 
 	return;
 }
@@ -208,30 +151,14 @@ sw_error_t adpt_hppe_servcode_init(a_uint32_t dev_id)
 
 	adpt_hppe_servcode_func_unregister(dev_id, p_adpt_api);
 
-	if(p_adpt_api->adpt_servcode_func_bitmap & (1<<FUNC_PARSE_SERVICE_PROFILE_SET))
-	{
-		p_adpt_api->adpt_parse_service_profile_set = adpt_parse_service_profile_set;
-	}
-	if(p_adpt_api->adpt_servcode_func_bitmap & (1<<FUNC_PARSE_SERVICE_PROFILE_GET))
-	{
-		p_adpt_api->adpt_parse_service_profile_get = adpt_parse_service_profile_get;
-	}
-	if(p_adpt_api->adpt_servcode_func_bitmap & (1<<FUNC_INGRESS_SERVICE_PROFILE_SET))
-	{
-		p_adpt_api->adpt_ingress_service_profile_set = adpt_ingress_service_profile_set;
-	}
-	if(p_adpt_api->adpt_servcode_func_bitmap & (1<<FUNC_INGRESS_SERVICE_PROFILE_GET))
-	{
-		p_adpt_api->adpt_ingress_service_profile_get = adpt_ingress_service_profile_get;
-	}
-	if(p_adpt_api->adpt_servcode_func_bitmap & (1<<FUNC_EGRESS_SERVICE_PROFILE_SET))
-	{
-		p_adpt_api->adpt_egress_service_profile_set = adpt_egress_service_profile_set;
-	}
-	if(p_adpt_api->adpt_servcode_func_bitmap & (1<<FUNC_EGRESS_SERVICE_PROFILE_GET))
-	{
-		p_adpt_api->adpt_egress_service_profile_get = adpt_egress_service_profile_get;
-	}
+	if(p_adpt_api->adpt_servcode_func_bitmap & (1<<FUNC_SERVCODE_CONFIG_SET))
+		p_adpt_api->adpt_servcode_config_set = adpt_hppe_servcode_config_set;
+	if(p_adpt_api->adpt_servcode_func_bitmap & (1<<FUNC_SERVCODE_CONFIG_GET))
+		p_adpt_api->adpt_servcode_config_get = adpt_hppe_servcode_config_get;
+	if(p_adpt_api->adpt_servcode_func_bitmap & (1<<FUNC_SERVCODE_LOOPCHECK_EN))
+		p_adpt_api->adpt_servcode_loopcheck_en = adpt_hppe_servcode_loopcheck_en;
+	if(p_adpt_api->adpt_servcode_func_bitmap & (1<<FUNC_SERVCODE_LOOPCHECK_STATUS_GET))
+		p_adpt_api->adpt_servcode_loopcheck_status_get = adpt_hppe_servcode_loopcheck_status_get;
 
 	return SW_OK;
 }
