@@ -1470,6 +1470,11 @@ adpt_hppe_acl_rule_query(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_
 			_adpt_hppe_acl_udf_rule_hw_2_sw(&hw_reg, 0, &hw_mask, rule);
 		if(hw_reg.bf.rule_type == ADPT_ACL_HPPE_UDF1_RULE)
 			_adpt_hppe_acl_udf_rule_hw_2_sw(&hw_reg, 1, &hw_mask, rule);
+
+        if(hw_reg.bf.inverse_en == 1){
+            FAL_FIELD_FLG_SET(rule->field_flg, FAL_ACL_FIELD_INVERSE_ALL);
+        }
+
 		_adpt_hppe_acl_action_hw_2_sw(&hw_act, rule);
 		hw_entries &= (~(1<<hw_index));
 	}
@@ -2926,6 +2931,10 @@ _adpt_hppe_acl_rule_hw_add(a_uint32_t dev_id, a_uint32_t list_id,
 			return SW_NO_RESOURCE;
 		}
 		allocated_entries &= (~(1<<hw_entry));
+
+		if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_INVERSE_ALL)){
+		    hw_reg.bf.inverse_en = 1;
+		}
 
 		acl_print("%s, %d: rule and mask set hw_entry = %d\n", __FUNCTION__, __LINE__,
 				list_id*ADPT_ACL_ENTRY_NUM_PER_LIST+hw_entry);
