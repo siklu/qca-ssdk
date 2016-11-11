@@ -17,11 +17,7 @@
 #define _AOS_TIMER_H
 
 #include "sal/os/aos_types.h"
-#ifdef KERNEL_MODULE
 #include "sal/os/linux/aos_timer_pvt.h"
-#else
-#include "sal/os/linux_user/aos_timer_pvt.h"
-#endif
 
 
 typedef __aos_timer_t           aos_timer_t;
