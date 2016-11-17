@@ -3656,7 +3656,7 @@ cmd_data_check_default_route_entry(char *cmd_str, void * val, a_uint32_t size)
     sw_error_t rv;
     fal_default_route_t entry;
 
-    aos_mem_zero(&entry, sizeof (fal_intf_mac_entry_t));
+    aos_mem_zero(&entry, sizeof(entry));
 
     do
     {
