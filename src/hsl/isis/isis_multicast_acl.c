@@ -722,7 +722,7 @@ sw_error_t isis_igmp_sg_entry_set(a_uint32_t dev_id, fal_igmp_sg_entry_t * entry
 
         if(new_index>0&&count>1) //(G,S*) and (G,*) exist, new entry is (G,*)
         {
-            for(i=count-2; i>=0; i--)
+            for(i=count-2; i>=0&&i<FAL_IGMP_SG_ENTRY_MAX; i--)
             {
                 if(multi_acl_group[i].entry.port_map==0) //This ACL rule should be done nothing, DENY rule
                     continue;
@@ -745,7 +745,7 @@ sw_error_t isis_igmp_sg_entry_set(a_uint32_t dev_id, fal_igmp_sg_entry_t * entry
         }
         else if(new_index==0&&count>0) //only exist (G,S*) orignally
         {
-            for(i=count-1; i>=0; i--)
+            for(i=count-1; i>=0&&i<FAL_IGMP_SG_ENTRY_MAX; i--)
             {
                 if(multi_acl_group[i].entry.port_map==0) //This ACL rule should be done nothing, DENY rule
                     continue;
@@ -792,7 +792,7 @@ sw_error_t isis_igmp_sg_entry_clear(a_uint32_t dev_id, fal_igmp_sg_entry_t * ent
     new_index = mult_acl_has_entry(&entry->group, &entry->source);
 
     MULTI_DEBUG("Start entry clear: number=%d, count=%d, new_index=%d\n", number, count, new_index);
-    if(0 == new_index) //new entry, the user command is wrong
+    if(0 == new_index || new_index > FAL_IGMP_SG_ENTRY_MAX ||count > FAL_IGMP_SG_ENTRY_MAX) //new entry, the user command is wrong
     {
         return SW_NO_SUCH;
     }
@@ -870,7 +870,7 @@ sw_error_t isis_igmp_sg_entry_clear(a_uint32_t dev_id, fal_igmp_sg_entry_t * ent
         if(count>1) // (G, S*) entry exist, if count=1 here, only exist(G,*)entry
         {
             //count must >=2
-            for(i=count-2; i>=0; i--)
+            for(i=count-2; i>=0&&i<FAL_IGMP_SG_ENTRY_MAX; i--)
             {
                 //PortMap of entry (S,G) == (*,G) portmap after clear?
                 if((multi_acl_group[new_index-1].entry.port_map&(~(entry->port_map))) ==

@@ -49,6 +49,7 @@
 #include "ref_vlan.h"
 #include <linux/time.h>
 #include "f1_phy.h"
+#include "ref_port_ctrl.h"
 
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 extern struct reset_control *ess_mac_clock_disable[5];
@@ -502,6 +503,35 @@ qca_phy_status_get(a_uint32_t port_id, a_uint32_t *speed_status, a_uint32_t *lin
 	*duplex_status = (a_uint32_t)((port_phy_status & BIT(13)) >> 13);
 }
 
+/* Initialize notifier list for QCA SSDK */
+static BLOCKING_NOTIFIER_HEAD(ssdk_port_link_notifier_list);
+
+static int ssdk_port_link_notify(unsigned char port_id,
+            unsigned char link, unsigned char speed, unsigned char duplex)
+{
+    ssdk_port_status port_status;
+
+    port_status.port_id = port_id;
+    port_status.port_link = link;
+    port_status.speed = speed;
+    port_status.duplex = duplex;
+
+    return blocking_notifier_call_chain(&ssdk_port_link_notifier_list,	0, &port_status);
+}
+
+int ssdk_port_link_notify_register(struct notifier_block *nb)
+{
+	return blocking_notifier_chain_register(&ssdk_port_link_notifier_list, nb);
+}
+EXPORT_SYMBOL(ssdk_port_link_notify_register);
+
+int ssdk_port_link_notify_unregister(struct notifier_block *nb)
+{
+	return blocking_notifier_chain_unregister(&ssdk_port_link_notifier_list, nb);
+}
+EXPORT_SYMBOL_GPL(ssdk_port_link_notify_unregister);
+
+
 void
 qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 {
@@ -566,6 +596,8 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 					// printk("%s, %d, port_id %d link down pstatus 0x%x\n",__FUNCTION__,__LINE__,i, pstatus);
 				}
 				port_link_down[i]=0;
+				ssdk_port_link_notify(i, 0, 0, 0);
+				fal_fdb_del_by_port(0, i, 0);/*flush all dynamic fdb of this port*/
 				if(priv->version != 0x14){
 					/* Check queue buffer */
 					a_uint16_t value = 0;
@@ -616,7 +648,7 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 					udelay(100);
 					//qca_switch_reg_read(0, AR8327_REG_PORT_STATUS(i), (a_uint8_t *)&pstatus, 4);
 					//printk("%s, %d, port %d link up speed %d, duplex %d pstatus 0x%x\n",__FUNCTION__,__LINE__,i, speed, duplex, pstatus);
-
+                    ssdk_port_link_notify(i, 1, speed, duplex);
 					if((speed == 0x01) && (priv->version != 0x14))/*PHY is link up 100M*/
 					{
 						a_uint16_t value = 0;
