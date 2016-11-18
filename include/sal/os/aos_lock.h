@@ -16,11 +16,7 @@
 #define _AOS_LOCK_H
 
 
-#ifdef KERNEL_MODULE
 #include "sal/os/linux/aos_lock_pvt.h"
-#else
-#include "sal/os/linux_user/aos_lock_pvt.h"
-#endif
 
 
 typedef aos_lock_pvt_t aos_lock_t;
