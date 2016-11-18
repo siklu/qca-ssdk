@@ -19,6 +19,15 @@
 extern "C" {
 #endif                          /* __cplusplus */
 
+#include <linux/version.h>
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+#include <linux/switch.h>
+#else
+#include <net/switch.h>
+#endif
+#include <linux/notifier.h>
+#include "common/sw.h"
+#include "fal/fal_type.h"
 
 int
 	qca_ar8327_sw_atu_flush(struct switch_dev *dev,
@@ -30,6 +39,8 @@ qca_ar8327_sw_atu_dump(struct switch_dev *dev,
 		       		const struct switch_attr *attr,
 		       		struct switch_val *val);
 
+fal_port_t
+ref_fdb_get_port_by_mac(unsigned int vid, const char * addr);
 
 #ifdef __cplusplus
 }
