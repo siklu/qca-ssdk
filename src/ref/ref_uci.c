@@ -6703,8 +6703,8 @@ static int name_transfer(char *name, char *module, char *cmd)
         }
 
         if(i<len) {
-		strncpy(module, name, i);
-		strncpy(cmd, p, len-i);
+		strlcpy(module, name, i);
+		strlcpy(cmd, p, len-i);
 		return 0;
         }
 	
@@ -6813,16 +6813,16 @@ qca_ar8327_sw_switch_ext(struct switch_dev *dev,
 	}
 
 	if(!rv) {
-		strcat(whole_command_line, module_name);
-		strcat(whole_command_line, " ");
-		strcat(whole_command_line, command_name);
-		strcat(whole_command_line, " ");
-		strcat(whole_command_line, "set");
-		strcat(whole_command_line, " ");
+		strlcat(whole_command_line, module_name, sizeof(whole_command_line));
+		strlcat(whole_command_line, " ", sizeof(whole_command_line));
+		strlcat(whole_command_line, command_name, sizeof(whole_command_line));
+		strlcat(whole_command_line, " ", sizeof(whole_command_line));
+		strlcat(whole_command_line, "set", sizeof(whole_command_line));
+		strlcat(whole_command_line, " ", sizeof(whole_command_line));
 		for(i=0; i<parameter_length; i++) {
 			if(val_ptr[i]) {
-				strcat(whole_command_line, val_ptr[i]);
-				strcat(whole_command_line, " ");
+				strlcat(whole_command_line, val_ptr[i], sizeof(whole_command_line));
+				strlcat(whole_command_line, " ", sizeof(whole_command_line));
 			}
 
 			val_ptr[i] = NULL;
