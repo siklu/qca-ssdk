@@ -3199,7 +3199,7 @@ qca_hppe_portctrl_hw_init()
 	a_uint32_t addr_delta = 0x200;
 
 	for(i = 0; i < 6; i++) {
-		val = 0x13;
+		val = 0x73;
 		qca_switch_reg_write(0, 0x001000 + (addr_delta*i), (a_uint8_t *)&val, 4);
 		val = 0x2;
 		qca_switch_reg_write(0, 0x001004 + (addr_delta*i), (a_uint8_t *)&val, 4);
@@ -3501,13 +3501,11 @@ qca_hppe_xgmac_hw_init()
 		val = 0x00000001;
 		qca_switch_reg_write(0, 0x00003008 + (xgmac_addr_delta*i), (a_uint8_t *)&val, 4);
 		val = 0x00000001;
-#if 0
 		qca_switch_reg_write(0, 0x00003090 + (xgmac_addr_delta*i), (a_uint8_t *)&val, 4);
 		val = 0x00000002;
 		qca_switch_reg_write(0, 0x00003070 + (xgmac_addr_delta*i), (a_uint8_t *)&val, 4);
 		val = 0x40000;
 		qca_switch_reg_write(0, 0x00003050 + (xgmac_addr_delta*i), (a_uint8_t *)&val, 4);
-#endif
 	}
 
 	val = 0x0;
