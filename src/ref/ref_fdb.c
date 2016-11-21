@@ -118,10 +118,11 @@ qca_ar8327_sw_atu_dump(struct switch_dev *dev,
 fal_port_t
 ref_fdb_get_port_by_mac(unsigned int vid, const char * addr)
 {
-	fal_fdb_entry_t entry = {0};
+	fal_fdb_entry_t entry;
 	unsigned char i;
 	sw_error_t rv;
 
+	memset(&entry, 0, sizeof(entry));
 	entry.fid = vid;
 	for (i = 0; i < 6; i++)
 		entry.addr.uc[i] = addr[i];
