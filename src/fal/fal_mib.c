@@ -223,6 +223,55 @@ _fal_mib_cpukeep_get(a_uint32_t dev_id, a_bool_t * enable)
     rv = p_api->mib_cpukeep_get(dev_id, enable);
     return rv;
 }
+static sw_error_t
+_fal_get_xgmib_info(a_uint32_t dev_id, fal_port_t port_id,
+                  fal_xgmib_info_t * mib_Info)
+{
+	sw_error_t rv = SW_OK;
+	adpt_api_t *p_api;
+
+	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+	if (NULL == p_api->adpt_get_xgmib_info)
+		return SW_NOT_SUPPORTED;
+
+	rv = p_api->adpt_get_xgmib_info(dev_id, port_id, mib_Info);
+	return rv;
+}
+
+static sw_error_t
+_fal_get_rx_xgmib_info(a_uint32_t dev_id, fal_port_t port_id,
+                  fal_xgmib_info_t * mib_Info)
+{
+	sw_error_t rv = SW_OK;
+	adpt_api_t *p_api;
+
+	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+        if (NULL == p_api->adpt_get_rx_xgmib_info)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_api->adpt_get_rx_xgmib_info(dev_id, port_id, mib_Info);
+        return rv;
+}
+
+static sw_error_t
+_fal_get_tx_xgmib_info(a_uint32_t dev_id, fal_port_t port_id,
+                  fal_xgmib_info_t * mib_Info)
+{
+	sw_error_t rv = SW_OK;
+	adpt_api_t *p_api;
+
+	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+        if (NULL == p_api->adpt_get_tx_xgmib_info)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_api->adpt_get_tx_xgmib_info(dev_id, port_id, mib_Info);
+        return rv;
+}
+
+
 /*insert flag for inner fal, don't remove it*/
 /**
  * @brief Get mib infomation on particular port.
@@ -365,9 +414,70 @@ fal_mib_cpukeep_get(a_uint32_t dev_id, a_bool_t * enable)
     FAL_API_UNLOCK;
     return rv;
 }
+
+/**
+ * @brief Get xgmacmib infomation on particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] mib_info mib infomation
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_get_xgmib_info(a_uint32_t dev_id, fal_port_t port_id,
+                 fal_xgmib_info_t * mib_Info)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_get_xgmib_info(dev_id, port_id, mib_Info);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Get RX xgmacmib infomation on particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] mib_info mib infomation
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_get_rx_xgmib_info(a_uint32_t dev_id, fal_port_t port_id,
+                 fal_xgmib_info_t * mib_Info)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_get_rx_xgmib_info(dev_id, port_id, mib_Info);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Get TX xgmacmib infomation on particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] mib_info mib infomation
+ * @return SW_OK or error code
+ */
+sw_error_t
+fal_get_tx_xgmib_info(a_uint32_t dev_id, fal_port_t port_id,
+                 fal_xgmib_info_t * mib_Info)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_get_tx_xgmib_info(dev_id, port_id, mib_Info);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
 EXPORT_SYMBOL(fal_get_mib_info);
 EXPORT_SYMBOL(fal_get_rx_mib_info);
 EXPORT_SYMBOL(fal_get_tx_mib_info);
+EXPORT_SYMBOL(fal_get_xgmib_info);
+EXPORT_SYMBOL(fal_get_rx_xgmib_info);
+EXPORT_SYMBOL(fal_get_tx_xgmib_info);
 EXPORT_SYMBOL(fal_mib_status_set);
 EXPORT_SYMBOL(fal_mib_status_get);
 EXPORT_SYMBOL(fal_mib_port_flush_counters);

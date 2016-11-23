@@ -428,9 +428,10 @@ extern "C" {
 #define SW_API_PT_MIB_GET             (0  + SW_API_MIB_OFFSET)
 #define SW_API_MIB_STATUS_SET         (1  + SW_API_MIB_OFFSET)
 #define SW_API_MIB_STATUS_GET         (2  + SW_API_MIB_OFFSET)
-#define SW_API_PT_MIB_FLUSH_COUNTERS         (3+ SW_API_MIB_OFFSET)
-#define SW_API_MIB_CPU_KEEP_SET         (4+ SW_API_MIB_OFFSET)
-#define SW_API_MIB_CPU_KEEP_GET         (5+ SW_API_MIB_OFFSET)
+#define SW_API_PT_MIB_FLUSH_COUNTERS  (3+ SW_API_MIB_OFFSET)
+#define SW_API_MIB_CPU_KEEP_SET       (4+ SW_API_MIB_OFFSET)
+#define SW_API_MIB_CPU_KEEP_GET       (5+ SW_API_MIB_OFFSET)
+#define SW_API_PT_XGMIB_GET           (6+ SW_API_MIB_OFFSET)
 
     /*misc*/
 #define SW_API_MISC_OFFSET            1200

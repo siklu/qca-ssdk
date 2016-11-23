@@ -387,6 +387,7 @@ qca_switch_init(a_uint32_t dev_id)
 	#ifdef IN_MIB
 	/* Enable MIB counters */
 	fal_mib_status_set(dev_id, A_TRUE);
+	fal_mib_cpukeep_set(dev_id, A_FALSE);
 	#endif
 	#ifdef IN_IGMP
 	fal_igmp_mld_rp_set(dev_id, 0);
