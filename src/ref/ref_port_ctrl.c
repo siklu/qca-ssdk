@@ -529,7 +529,7 @@ int ssdk_port_link_notify_unregister(struct notifier_block *nb)
 {
 	return blocking_notifier_chain_unregister(&ssdk_port_link_notifier_list, nb);
 }
-EXPORT_SYMBOL_GPL(ssdk_port_link_notify_unregister);
+EXPORT_SYMBOL(ssdk_port_link_notify_unregister);
 
 
 void
