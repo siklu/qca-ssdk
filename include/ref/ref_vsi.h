@@ -46,13 +46,13 @@ typedef struct REF_VLAN_INFO_T {
 	a_uint32_t ctag_vid;
 	a_uint32_t vport_bitmap; /*vlan based vsi*/
 	struct REF_VLAN_INFO_T *pNext;
-} ref_vlan_info_t;
+}ref_vlan_info_t;
 
 typedef struct{
 	a_uint32_t valid;
 	a_uint32_t pport_bitmap; /*port based vsi*/
 	ref_vlan_info_t *pHead;
-} ref_vsi_t;
+}ref_vsi_t;
 
 #define PPE_VSI_PPORT_NR 6
 #define PPE_VSI_INVALID FAL_VSI_INVALID
