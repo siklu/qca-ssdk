@@ -13,7 +13,6 @@
  */
 #include "ref_vsi.h"
 
-
 #define PPE_VSI_MAX 31
 #define PPE_VSI_RESERVE_MAX 5
 
@@ -330,8 +329,18 @@ ppe_port_vsi_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vsi_id)
 sw_error_t
 ppe_port_vsi_get(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t *vsi_id)
 {
-	a_uint32_t i = 0;
+#if 1
+	sw_error_t rv;
 
+	rv = fal_port_vsi_get(dev_id, port_id, vsi_id);
+
+	if((SW_OK == rv)&&(*vsi_id == FAL_VSI_INVALID)){
+		return SW_NOT_FOUND;
+	}
+
+	return rv;
+#else
+	a_uint32_t i = 0;
 	for( i = 0; i <= PPE_VSI_MAX; i++ )
 	{
 		if((ref_vsi_mapping[dev_id][i].valid != 0)&&
@@ -343,6 +352,7 @@ ppe_port_vsi_get(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t *vsi_id)
 	}
 
 	return SW_NOT_FOUND;
+#endif
 }
 
 sw_error_t ppe_vsi_alloc(a_uint32_t dev_id, a_uint32_t *vsi)

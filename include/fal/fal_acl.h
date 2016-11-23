@@ -48,8 +48,8 @@ extern "C" {
     {
         FAL_ACL_FIELD_MASK = 0, /**< match operation is mask*/
         FAL_ACL_FIELD_RANGE,    /**< match operation is range*/
-        FAL_ACL_FIELD_LE,       /**< match operation is less and equal*/
-        FAL_ACL_FIELD_GE,       /**< match operation is great and equal*/
+        FAL_ACL_FIELD_LE,       /**< match operation is less than equal*/
+        FAL_ACL_FIELD_GE,       /**< match operation is greater than equal*/
         FAL_ACL_FIELD_NE,       /**<- match operation is not equal*/
         FAL_ACL_FIELD_OP_BUTT,
     } fal_acl_field_op_t;

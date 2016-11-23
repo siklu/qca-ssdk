@@ -43,7 +43,7 @@ typedef struct{
 }fal_vsi_stamove_t;
 
 typedef struct{
-	a_uint32_t member_ports;/*VSI member ports for known unicast and multicast*/
+	a_uint32_t member_ports;/*VSI member ports for all packets*/
 	a_uint32_t uuc_ports;/*VSI member ports for unknown unicast*/
 	a_uint32_t umc_ports;/*VSI member ports for unknown multicast*/
 	a_uint32_t bc_ports;/*VSI member ports for broadcast*/
