@@ -3571,6 +3571,9 @@ qca_hppe_qm_hw_init()
 	queue_dst.service_code = 2;
 	fal_ucast_queue_base_profile_set(0, &queue_dst, 1, 0);
 
+	queue_dst.service_code = 3;
+	fal_ucast_queue_base_profile_set(0, &queue_dst, 128, 0);
+
 	queue_dst.service_code_en = A_FALSE;
 	queue_dst.service_code = 0;
 	for(i = 1; i < 8; i++) {
@@ -3691,6 +3694,9 @@ qca_hppe_qos_scheduler_hw_init()
 	fal_edma_ring_queue_map_set(0, 0, &queue_bmp);
 	queue_bmp.bmp[0] = 2;
 	fal_edma_ring_queue_map_set(0, 1, &queue_bmp);
+	queue_bmp.bmp[0] = 0;
+	queue_bmp.bmp[4] = 0xFFFF;
+	fal_edma_ring_queue_map_set(0, 2, &queue_bmp);
 
 	/* chose qos group 0 */
 	group_sel.dscp_group = 0;
@@ -3700,10 +3706,10 @@ qca_hppe_qos_scheduler_hw_init()
 		fal_qos_port_group_get(0, i, &group_sel);
 	/* qos precedence */
 	pri_pre.flow_pri = 4;
-	pri_pre.acl_pri = 3;
-	pri_pre.dscp_pri = 2;
-	pri_pre.pcp_pri = 1;
-	pri_pre.preheader_pri = 0;
+	pri_pre.acl_pri = 2;
+	pri_pre.dscp_pri = 1;
+	pri_pre.pcp_pri = 0;
+	pri_pre.preheader_pri = 3;
 	for (i = 0; i < 8; i++)
 		fal_qos_port_pri_precedence_set(0, i, &pri_pre);
 
