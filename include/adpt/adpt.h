@@ -306,13 +306,23 @@ typedef sw_error_t (*adpt_trunk_hash_mode_set_func)(a_uint32_t dev_id, a_uint32_
 typedef sw_error_t (*adpt_ip_network_route_get_func)(a_uint32_t dev_id,
 			a_uint32_t index, a_uint8_t type,
 			fal_network_route_entry_t *entry);
+typedef sw_error_t (*adpt_ip_network_route_add_func)(a_uint32_t dev_id,
+			a_uint32_t index,
+			fal_network_route_entry_t *entry);
+typedef sw_error_t (*adpt_ip_network_route_del_func)(a_uint32_t dev_id,
+			a_uint32_t index,
+			a_uint8_t type);
 typedef sw_error_t (*adpt_ip_host_add_func)(
 			a_uint32_t dev_id, fal_host_entry_t * host_entry);
 typedef sw_error_t (*adpt_ip_vsi_sg_cfg_get_func)(
 			a_uint32_t dev_id, a_uint32_t vsi,
     			fal_sg_cfg_t *sg_cfg);
-typedef sw_error_t (*adpt_ip_pub_addr_del_func)(
-			a_uint32_t dev_id, a_uint32_t entry_id);
+typedef sw_error_t (*adpt_ip_pub_addr_set_func)(
+			a_uint32_t dev_id, a_uint32_t index,
+			fal_ip_pub_addr_t *entry);
+typedef sw_error_t (*adpt_ip_pub_addr_get_func)(
+			a_uint32_t dev_id, a_uint32_t index,
+			fal_ip_pub_addr_t *entry);
 typedef sw_error_t (*adpt_ip_port_sg_cfg_set_func)(
 			a_uint32_t dev_id, fal_port_t port_id,
     			fal_sg_cfg_t *sg_cfg);
@@ -321,8 +331,6 @@ typedef sw_error_t (*adpt_ip_port_intf_get_func)(
 typedef sw_error_t (*adpt_ip_vsi_arp_sg_cfg_set_func)(
 			a_uint32_t dev_id, a_uint32_t vsi,
     			fal_arp_sg_cfg_t *arp_sg_cfg);
-typedef sw_error_t (*adpt_ip_pub_addr_get_func)(
-			a_uint32_t dev_id, fal_ip_pub_addr_t *entry);
 typedef sw_error_t (*adpt_ip_port_intf_set_func)(
 			a_uint32_t dev_id, fal_port_t port_id, fal_intf_id_t *id);
 typedef sw_error_t (*adpt_ip_vsi_sg_cfg_set_func)(
@@ -335,9 +343,6 @@ typedef sw_error_t (*adpt_ip_port_macaddr_set_func)(a_uint32_t dev_id, fal_port_
     			fal_macaddr_entry_t *macaddr);
 typedef sw_error_t (*adpt_ip_vsi_intf_get_func)(
 			a_uint32_t dev_id, a_uint32_t vsi, fal_intf_id_t *id);
-typedef sw_error_t (*adpt_ip_network_route_set_func)(a_uint32_t dev_id,
-			a_uint32_t index,
-			fal_network_route_entry_t *entry);
 typedef sw_error_t (*adpt_ip_port_sg_cfg_get_func)(
 			a_uint32_t dev_id, fal_port_t port_id,
     			fal_sg_cfg_t *sg_cfg);
@@ -345,8 +350,6 @@ typedef sw_error_t (*adpt_ip_intf_get_func)(
     			a_uint32_t dev_id,
     			a_uint32_t index,
     			fal_intf_entry_t *entry);
-typedef sw_error_t (*adpt_ip_pub_addr_add_func)(
-			a_uint32_t dev_id, fal_ip_pub_addr_t *entry);
 typedef sw_error_t (*adpt_ip_host_del_func)(
 			a_uint32_t dev_id, a_uint32_t del_mode,
 			fal_host_entry_t * host_entry);
@@ -390,6 +393,7 @@ typedef sw_error_t (*adpt_ip_global_ctrl_get_func)(a_uint32_t dev_id,
 			fal_ip_global_cfg_t *cfg);
 typedef sw_error_t (*adpt_ip_global_ctrl_set_func)(a_uint32_t dev_id,
 			fal_ip_global_cfg_t *cfg);
+
 typedef sw_error_t (*adpt_flow_global_cfg_get_func)(
 		a_uint32_t dev_id,
 		fal_flow_global_cfg_t *cfg);
@@ -967,22 +971,22 @@ typedef struct
 	/* ip */
 	a_uint32_t adpt_ip_func_bitmap[2];
 	adpt_ip_network_route_get_func adpt_ip_network_route_get;
+	adpt_ip_network_route_add_func adpt_ip_network_route_add;
+	adpt_ip_network_route_del_func adpt_ip_network_route_del;
 	adpt_ip_host_add_func adpt_ip_host_add;
 	adpt_ip_vsi_sg_cfg_get_func adpt_ip_vsi_sg_cfg_get;
-	adpt_ip_pub_addr_del_func adpt_ip_pub_addr_del;
+	adpt_ip_pub_addr_set_func adpt_ip_pub_addr_set;
+	adpt_ip_pub_addr_get_func adpt_ip_pub_addr_get;
 	adpt_ip_port_sg_cfg_set_func adpt_ip_port_sg_cfg_set;
 	adpt_ip_port_intf_get_func adpt_ip_port_intf_get;
 	adpt_ip_vsi_arp_sg_cfg_set_func adpt_ip_vsi_arp_sg_cfg_set;
-	adpt_ip_pub_addr_get_func adpt_ip_pub_addr_get;
 	adpt_ip_port_intf_set_func adpt_ip_port_intf_set;
 	adpt_ip_vsi_sg_cfg_set_func adpt_ip_vsi_sg_cfg_set;
 	adpt_ip_host_next_func adpt_ip_host_next;
 	adpt_ip_port_macaddr_set_func adpt_ip_port_macaddr_set;
 	adpt_ip_vsi_intf_get_func adpt_ip_vsi_intf_get;
-	adpt_ip_network_route_set_func adpt_ip_network_route_set;
 	adpt_ip_port_sg_cfg_get_func adpt_ip_port_sg_cfg_get;
 	adpt_ip_intf_get_func adpt_ip_intf_get;
-	adpt_ip_pub_addr_add_func adpt_ip_pub_addr_add;
 	adpt_ip_host_del_func adpt_ip_host_del;
 	adpt_ip_route_mismatch_get_func adpt_ip_route_mismatch_get;
 	adpt_ip_vsi_arp_sg_cfg_get_func adpt_ip_vsi_arp_sg_cfg_get;

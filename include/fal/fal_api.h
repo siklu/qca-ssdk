@@ -1268,7 +1268,7 @@ extern "C" {
     SW_API_DEF(SW_API_IP_VIS_ARP_SG_CFG_GET, fal_ip_vsi_arp_sg_cfg_get), \
     SW_API_DEF(SW_API_IP_VIS_ARP_SG_CFG_SET, fal_ip_vsi_arp_sg_cfg_set), \
     SW_API_DEF(SW_API_IP_NETWORK_ROUTE_GET, fal_ip_network_route_get), \
-    SW_API_DEF(SW_API_IP_NETWORK_ROUTE_SET, fal_ip_network_route_set), \
+    SW_API_DEF(SW_API_IP_NETWORK_ROUTE_ADD, fal_ip_network_route_add), \
     SW_API_DEF(SW_API_IP_INTF_GET, fal_ip_intf_get), \
     SW_API_DEF(SW_API_IP_INTF_SET, fal_ip_intf_set), \
     SW_API_DEF(SW_API_IP_VSI_INTF_GET, fal_ip_vsi_intf_get), \
@@ -1279,15 +1279,15 @@ extern "C" {
     SW_API_DEF(SW_API_IP_VSI_SG_GET, fal_ip_vsi_sg_cfg_get), \
     SW_API_DEF(SW_API_IP_PORT_SG_SET, fal_ip_port_sg_cfg_set), \
     SW_API_DEF(SW_API_IP_PORT_SG_GET, fal_ip_port_sg_cfg_get), \
-    SW_API_DEF(SW_API_IP_PUB_IP_ADD, fal_ip_pub_addr_add), \
+    SW_API_DEF(SW_API_IP_PUB_IP_SET, fal_ip_pub_addr_set), \
     SW_API_DEF(SW_API_IP_PUB_IP_GET, fal_ip_pub_addr_get), \
-    SW_API_DEF(SW_API_IP_PUB_IP_DEL, fal_ip_pub_addr_del), \
+    SW_API_DEF(SW_API_IP_NETWORK_ROUTE_DEL, fal_ip_network_route_del), \
     SW_API_DEF(SW_API_IP_PORT_INTF_GET, fal_ip_port_intf_get), \
     SW_API_DEF(SW_API_IP_PORT_INTF_SET, fal_ip_port_intf_set), \
     SW_API_DEF(SW_API_IP_PORT_MAC_GET, fal_ip_port_macaddr_get), \
     SW_API_DEF(SW_API_IP_PORT_MAC_SET, fal_ip_port_macaddr_set), \
-    SW_API_DEF(SW_API_IP_ROUTE_MISS_GET, fal_ip_route_mismatch_get), \
-    SW_API_DEF(SW_API_IP_ROUTE_MISS_SET, fal_ip_route_mismatch_set), \
+    SW_API_DEF(SW_API_IP_ROUTE_MISS_GET, fal_ip_route_mismatch_action_get), \
+    SW_API_DEF(SW_API_IP_ROUTE_MISS_SET, fal_ip_route_mismatch_action_set), \
     SW_API_DEF(SW_API_IP_PORT_ARP_SG_SET, fal_ip_port_arp_sg_cfg_set), \
     SW_API_DEF(SW_API_IP_PORT_ARP_SG_GET, fal_ip_port_arp_sg_cfg_get), \
     SW_API_DEF(SW_API_IP_VSI_MC_MODE_SET, fal_ip_vsi_mc_mode_set), \
@@ -1344,7 +1344,7 @@ extern "C" {
     SW_API_DESC(SW_API_IP_VIS_ARP_SG_CFG_GET) \
     SW_API_DESC(SW_API_IP_VIS_ARP_SG_CFG_SET) \
     SW_API_DESC(SW_API_IP_NETWORK_ROUTE_GET) \
-    SW_API_DESC(SW_API_IP_NETWORK_ROUTE_SET) \
+    SW_API_DESC(SW_API_IP_NETWORK_ROUTE_ADD) \
     SW_API_DESC(SW_API_IP_INTF_GET) \
     SW_API_DESC(SW_API_IP_INTF_SET) \
     SW_API_DESC(SW_API_IP_VSI_INTF_GET) \
@@ -1355,9 +1355,9 @@ extern "C" {
     SW_API_DESC(SW_API_IP_VSI_SG_GET) \
     SW_API_DESC(SW_API_IP_PORT_SG_SET) \
     SW_API_DESC(SW_API_IP_PORT_SG_GET) \
-    SW_API_DESC(SW_API_IP_PUB_IP_ADD) \
+    SW_API_DESC(SW_API_IP_PUB_IP_SET) \
     SW_API_DESC(SW_API_IP_PUB_IP_GET) \
-    SW_API_DESC(SW_API_IP_PUB_IP_DEL) \
+    SW_API_DESC(SW_API_IP_NETWORK_ROUTE_DEL) \
     SW_API_DESC(SW_API_IP_PORT_INTF_GET) \
     SW_API_DESC(SW_API_IP_PORT_INTF_SET) \
     SW_API_DESC(SW_API_IP_PORT_MAC_GET) \

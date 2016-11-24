@@ -87,8 +87,9 @@ adpt_hppe_ip_network_route_get(a_uint32_t dev_id,
 			return rv;
 	}
 
-	entry->valid = network_route_ip_ext.bf.valid;
-	entry->fwd_cmd = (fal_fwd_cmd_t)network_route_action.bf.fwd_cmd;
+	if (!network_route_ip_ext.bf.valid)
+		return SW_FAIL;
+	entry->action = (fal_fwd_cmd_t)network_route_action.bf.fwd_cmd;
 	entry->lan_wan = network_route_action.bf.lan_wan;
 	entry->dst_info = network_route_action.bf.dst_info;
 	entry->type = network_route_ip_ext.bf.entry_type;
@@ -201,31 +202,19 @@ adpt_hppe_ip_vsi_sg_cfg_get(a_uint32_t dev_id, a_uint32_t vsi,
 		return rv;
 
 	sg_cfg->ipv4_sg_en = l3_vsi_ext.bf.ipv4_sg_en;
-	sg_cfg->ipv4_sg_vio_cmd = l3_vsi_ext.bf.ipv4_sg_vio_cmd;
+	sg_cfg->ipv4_sg_vio_action = l3_vsi_ext.bf.ipv4_sg_vio_cmd;
 	sg_cfg->ipv4_sg_port_en = l3_vsi_ext.bf.ipv4_sg_port_en;
 	sg_cfg->ipv4_sg_svlan_en = l3_vsi_ext.bf.ipv4_sg_svlan_en;
 	sg_cfg->ipv4_sg_cvlan_en = l3_vsi_ext.bf.ipv4_sg_cvlan_en;
-	sg_cfg->ipv4_src_unk_cmd = l3_vsi_ext.bf.ipv4_src_unk_cmd;
+	sg_cfg->ipv4_src_unk_action = l3_vsi_ext.bf.ipv4_src_unk_cmd;
 	sg_cfg->ipv6_sg_en = l3_vsi_ext.bf.ipv6_sg_en;
-	sg_cfg->ipv6_sg_vio_cmd = l3_vsi_ext.bf.ipv6_sg_vio_cmd;
+	sg_cfg->ipv6_sg_vio_action = l3_vsi_ext.bf.ipv6_sg_vio_cmd;
 	sg_cfg->ipv6_sg_port_en = l3_vsi_ext.bf.ipv6_sg_port_en;
 	sg_cfg->ipv6_sg_svlan_en = l3_vsi_ext.bf.ipv6_sg_svlan_en;
 	sg_cfg->ipv6_sg_cvlan_en = l3_vsi_ext.bf.ipv6_sg_cvlan_en;
-	sg_cfg->ipv6_src_unk_cmd = l3_vsi_ext.bf.ipv6_src_unk_cmd;
-
+	sg_cfg->ipv6_src_unk_action = l3_vsi_ext.bf.ipv6_src_unk_cmd;
 
 	return SW_OK;
-}
-
-sw_error_t
-adpt_hppe_ip_pub_addr_del(a_uint32_t dev_id, a_uint32_t entry_id)
-{
-	union in_pub_ip_addr_tbl_u in_pub_ip_addr_tbl;
-
-	memset(&in_pub_ip_addr_tbl, 0, sizeof(in_pub_ip_addr_tbl));
-	ADPT_DEV_ID_CHECK(dev_id);
-
-	return hppe_in_pub_ip_addr_tbl_set(dev_id, entry_id, &in_pub_ip_addr_tbl);
 }
 
 sw_error_t
@@ -240,17 +229,17 @@ adpt_hppe_ip_port_sg_cfg_set(a_uint32_t dev_id, fal_port_t port_id,
 	hppe_l3_vp_port_tbl_get(dev_id, port_id, &l3_vp_port_tbl);
 
 	l3_vp_port_tbl.bf.ipv4_sg_en = sg_cfg->ipv4_sg_en;
-	l3_vp_port_tbl.bf.ipv4_sg_vio_cmd = sg_cfg->ipv4_sg_vio_cmd;
+	l3_vp_port_tbl.bf.ipv4_sg_vio_cmd = sg_cfg->ipv4_sg_vio_action;
 	l3_vp_port_tbl.bf.ipv4_sg_port_en = sg_cfg->ipv4_sg_port_en;
 	l3_vp_port_tbl.bf.ipv4_sg_svlan_en = sg_cfg->ipv4_sg_svlan_en;
 	l3_vp_port_tbl.bf.ipv4_sg_cvlan_en = sg_cfg->ipv4_sg_cvlan_en;
-	l3_vp_port_tbl.bf.ipv4_src_unk_cmd = sg_cfg->ipv4_src_unk_cmd;
+	l3_vp_port_tbl.bf.ipv4_src_unk_cmd = sg_cfg->ipv4_src_unk_action;
 	l3_vp_port_tbl.bf.ipv6_sg_en = sg_cfg->ipv6_sg_en;
-	l3_vp_port_tbl.bf.ipv6_sg_vio_cmd = sg_cfg->ipv6_sg_vio_cmd;
+	l3_vp_port_tbl.bf.ipv6_sg_vio_cmd = sg_cfg->ipv6_sg_vio_action;
 	l3_vp_port_tbl.bf.ipv6_sg_port_en = sg_cfg->ipv6_sg_port_en;
 	l3_vp_port_tbl.bf.ipv6_sg_svlan_en = sg_cfg->ipv6_sg_svlan_en;
 	l3_vp_port_tbl.bf.ipv6_sg_cvlan_en = sg_cfg->ipv6_sg_cvlan_en;
-	l3_vp_port_tbl.bf.ipv6_src_unk_cmd = sg_cfg->ipv6_src_unk_cmd;
+	l3_vp_port_tbl.bf.ipv6_src_unk_cmd = sg_cfg->ipv6_src_unk_action;
 	
 	return hppe_l3_vp_port_tbl_set(dev_id, port_id, &l3_vp_port_tbl);
 }
@@ -286,22 +275,23 @@ adpt_hppe_ip_vsi_arp_sg_cfg_set(a_uint32_t dev_id, a_uint32_t vsi,
 	hppe_l3_vsi_ext_get(dev_id, vsi, &l3_vsi_ext);
 
 	l3_vsi_ext.bf.ip_arp_sg_en = arp_sg_cfg->ipv4_arp_sg_en;
-	l3_vsi_ext.bf.ip_arp_sg_vio_cmd = arp_sg_cfg->ipv4_arp_sg_vio_cmd;
+	l3_vsi_ext.bf.ip_arp_sg_vio_cmd = arp_sg_cfg->ipv4_arp_sg_vio_action;
 	l3_vsi_ext.bf.ip_arp_sg_port_en = arp_sg_cfg->ipv4_arp_sg_port_en;
 	l3_vsi_ext.bf.ip_arp_sg_svlan_en = arp_sg_cfg->ipv4_arp_sg_svlan_en;
 	l3_vsi_ext.bf.ip_arp_sg_cvlan_en = arp_sg_cfg->ipv4_arp_sg_cvlan_en;
-	l3_vsi_ext.bf.ip_arp_src_unk_cmd = arp_sg_cfg->ipv4_arp_src_unk_cmd;
+	l3_vsi_ext.bf.ip_arp_src_unk_cmd = arp_sg_cfg->ipv4_arp_src_unk_action;
 	l3_vsi_ext.bf.ip_nd_sg_en = arp_sg_cfg->ip_nd_sg_en;
-	l3_vsi_ext.bf.ip_nd_sg_vio_cmd = arp_sg_cfg->ip_nd_sg_vio_cmd;
+	l3_vsi_ext.bf.ip_nd_sg_vio_cmd = arp_sg_cfg->ip_nd_sg_vio_action;
 	l3_vsi_ext.bf.ip_nd_sg_port_en = arp_sg_cfg->ip_nd_sg_port_en;
 	l3_vsi_ext.bf.ip_nd_sg_svlan_en = arp_sg_cfg->ip_nd_sg_svlan_en;
 	l3_vsi_ext.bf.ip_nd_sg_cvlan_en = arp_sg_cfg->ip_nd_sg_cvlan_en;
-	l3_vsi_ext.bf.ip_nd_src_unk_cmd = arp_sg_cfg->ip_nd_src_unk_cmd;
+	l3_vsi_ext.bf.ip_nd_src_unk_cmd = arp_sg_cfg->ip_nd_src_unk_action;
 	
 	return hppe_l3_vsi_ext_set(dev_id, vsi, &l3_vsi_ext);
 }
 sw_error_t
-adpt_hppe_ip_pub_addr_get(a_uint32_t dev_id, fal_ip_pub_addr_t *entry)
+adpt_hppe_ip_pub_addr_get(a_uint32_t dev_id,
+		a_uint32_t index, fal_ip_pub_addr_t *entry)
 {
 	sw_error_t rv = SW_OK;
 	union in_pub_ip_addr_tbl_u in_pub_ip_addr_tbl;
@@ -310,11 +300,11 @@ adpt_hppe_ip_pub_addr_get(a_uint32_t dev_id, fal_ip_pub_addr_t *entry)
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(entry);
 
-	rv = hppe_in_pub_ip_addr_tbl_get(dev_id, entry->entry_id, &in_pub_ip_addr_tbl);
+	rv = hppe_in_pub_ip_addr_tbl_get(dev_id, index, &in_pub_ip_addr_tbl);
 	if( rv != SW_OK )
 		return rv;
 
-	entry->pub_addr = in_pub_ip_addr_tbl.bf.ip_addr;
+	entry->pub_ip_addr = in_pub_ip_addr_tbl.bf.ip_addr;
 	return SW_OK;
 }
 
@@ -346,17 +336,17 @@ adpt_hppe_ip_vsi_sg_cfg_set(a_uint32_t dev_id, a_uint32_t vsi,
 	hppe_l3_vsi_ext_get(dev_id, vsi, &l3_vsi_ext);
 
 	l3_vsi_ext.bf.ipv4_sg_en = sg_cfg->ipv4_sg_en;
-	l3_vsi_ext.bf.ipv4_sg_vio_cmd = sg_cfg->ipv4_sg_vio_cmd;
+	l3_vsi_ext.bf.ipv4_sg_vio_cmd = sg_cfg->ipv4_sg_vio_action;
 	l3_vsi_ext.bf.ipv4_sg_port_en = sg_cfg->ipv4_sg_port_en;
 	l3_vsi_ext.bf.ipv4_sg_svlan_en = sg_cfg->ipv4_sg_svlan_en;
 	l3_vsi_ext.bf.ipv4_sg_cvlan_en = sg_cfg->ipv4_sg_cvlan_en;
-	l3_vsi_ext.bf.ipv4_src_unk_cmd = sg_cfg->ipv4_src_unk_cmd;
+	l3_vsi_ext.bf.ipv4_src_unk_cmd = sg_cfg->ipv4_src_unk_action;
 	l3_vsi_ext.bf.ipv6_sg_en = sg_cfg->ipv6_sg_en;
-	l3_vsi_ext.bf.ipv6_sg_vio_cmd = sg_cfg->ipv6_sg_vio_cmd;
+	l3_vsi_ext.bf.ipv6_sg_vio_cmd = sg_cfg->ipv6_sg_vio_action;
 	l3_vsi_ext.bf.ipv6_sg_port_en = sg_cfg->ipv6_sg_port_en;
 	l3_vsi_ext.bf.ipv6_sg_svlan_en = sg_cfg->ipv6_sg_svlan_en;
 	l3_vsi_ext.bf.ipv6_sg_cvlan_en = sg_cfg->ipv6_sg_cvlan_en;
-	l3_vsi_ext.bf.ipv6_src_unk_cmd = sg_cfg->ipv6_src_unk_cmd;
+	l3_vsi_ext.bf.ipv6_src_unk_cmd = sg_cfg->ipv6_src_unk_action;
 	
 	return hppe_l3_vsi_ext_set(dev_id, vsi, &l3_vsi_ext);
 }
@@ -447,7 +437,7 @@ adpt_hppe_ip_vsi_intf_get(a_uint32_t dev_id, a_uint32_t vsi, fal_intf_id_t *id)
 }
 
 sw_error_t
-adpt_hppe_ip_network_route_set(a_uint32_t dev_id,
+adpt_hppe_ip_network_route_add(a_uint32_t dev_id,
 			a_uint32_t index,
 			fal_network_route_entry_t *entry)
 {
@@ -467,19 +457,19 @@ adpt_hppe_ip_network_route_set(a_uint32_t dev_id,
 	if (entry->type == 0) {
 		network_route_ip.bf.ip_addr = entry->route_addr.ip4_addr;
 		network_route_ip.bf.ip_addr_mask = entry->route_addr_mask.ip4_addr_mask;
-		network_route_ip_ext.bf.valid = entry->valid;
+		network_route_ip_ext.bf.valid = 1;
 		network_route_ip_ext.bf.entry_type = entry->type;
 		network_route_action.bf.dst_info = entry->dst_info;
-		network_route_action.bf.fwd_cmd = entry->fwd_cmd;
+		network_route_action.bf.fwd_cmd = entry->action;
 		network_route_action.bf.lan_wan = entry->lan_wan;
 		hppe_network_route_ip_set(dev_id, index, &network_route_ip);
 		hppe_network_route_ip_ext_set(dev_id, index, &network_route_ip_ext);
 		hppe_network_route_action_set(dev_id, index, &network_route_action);
 	} else {
-		network_route_ip_ext.bf.valid = entry->valid;
+		network_route_ip_ext.bf.valid = 1;
 		network_route_ip_ext.bf.entry_type = entry->type;
 		network_route_action.bf.dst_info = entry->dst_info;
-		network_route_action.bf.fwd_cmd = entry->fwd_cmd;
+		network_route_action.bf.fwd_cmd = entry->action;
 		network_route_action.bf.lan_wan = entry->lan_wan;
 		hppe_network_route_ip_ext_set(dev_id, index * 4, &network_route_ip_ext);
 		hppe_network_route_action_set(dev_id, index * 4, &network_route_action);
@@ -500,6 +490,31 @@ adpt_hppe_ip_network_route_set(a_uint32_t dev_id,
 }
 
 sw_error_t
+adpt_hppe_ip_network_route_del(a_uint32_t dev_id,
+			a_uint32_t index, a_uint8_t type)
+{
+	union network_route_ip_u network_route_ip;
+	union network_route_ip_ext_u network_route_ip_ext;
+	union network_route_action_u network_route_action;
+
+	memset(&network_route_ip, 0, sizeof(network_route_ip));
+	memset(&network_route_ip_ext, 0, sizeof(network_route_ip_ext));
+	memset(&network_route_action, 0, sizeof(network_route_action));
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	if (type > 1 || (type == 0 && index > 31) || (type == 1 && index > 7))
+		return SW_BAD_VALUE;
+
+	network_route_ip_ext.bf.valid = 0;
+	if (type == 0) {
+		hppe_network_route_ip_ext_set(dev_id, index, &network_route_ip_ext);
+	} else {
+		hppe_network_route_ip_ext_set(dev_id, index * 4, &network_route_ip_ext);
+	}
+	return SW_OK;
+}
+
+sw_error_t
 adpt_hppe_ip_port_sg_cfg_get(a_uint32_t dev_id, fal_port_t port_id,
     			fal_sg_cfg_t *sg_cfg)
 {
@@ -510,23 +525,22 @@ adpt_hppe_ip_port_sg_cfg_get(a_uint32_t dev_id, fal_port_t port_id,
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(sg_cfg);
 
-
 	rv = hppe_l3_vp_port_tbl_get(dev_id, port_id, &l3_vp_port_tbl);
 	if( rv != SW_OK )
 		return rv;
 
 	sg_cfg->ipv4_sg_en = l3_vp_port_tbl.bf.ipv4_sg_en;
-	sg_cfg->ipv4_sg_vio_cmd = l3_vp_port_tbl.bf.ipv4_sg_vio_cmd;
+	sg_cfg->ipv4_sg_vio_action= l3_vp_port_tbl.bf.ipv4_sg_vio_cmd;
 	sg_cfg->ipv4_sg_port_en = l3_vp_port_tbl.bf.ipv4_sg_port_en;
 	sg_cfg->ipv4_sg_svlan_en = l3_vp_port_tbl.bf.ipv4_sg_svlan_en;
 	sg_cfg->ipv4_sg_cvlan_en = l3_vp_port_tbl.bf.ipv4_sg_cvlan_en;
-	sg_cfg->ipv4_src_unk_cmd = l3_vp_port_tbl.bf.ipv4_src_unk_cmd;
+	sg_cfg->ipv4_src_unk_action = l3_vp_port_tbl.bf.ipv4_src_unk_cmd;
 	sg_cfg->ipv6_sg_en = l3_vp_port_tbl.bf.ipv6_sg_en;
-	sg_cfg->ipv6_sg_vio_cmd = l3_vp_port_tbl.bf.ipv6_sg_vio_cmd;
+	sg_cfg->ipv6_sg_vio_action = l3_vp_port_tbl.bf.ipv6_sg_vio_cmd;
 	sg_cfg->ipv6_sg_port_en = l3_vp_port_tbl.bf.ipv6_sg_port_en;
 	sg_cfg->ipv6_sg_svlan_en = l3_vp_port_tbl.bf.ipv6_sg_svlan_en;
 	sg_cfg->ipv6_sg_cvlan_en = l3_vp_port_tbl.bf.ipv6_sg_cvlan_en;
-	sg_cfg->ipv6_src_unk_cmd = l3_vp_port_tbl.bf.ipv6_src_unk_cmd;
+	sg_cfg->ipv6_src_unk_action = l3_vp_port_tbl.bf.ipv6_src_unk_cmd;
 
 	return SW_OK;
 }
@@ -555,36 +569,34 @@ adpt_hppe_ip_intf_get(
 
 	entry->mru = in_l3_if_tbl.bf.mru;
 	entry->mtu = in_l3_if_tbl.bf.mtu;
-	entry->ttl_dec_bypass = in_l3_if_tbl.bf.ttl_dec_bypass;
+	entry->ttl_dec_bypass_en = in_l3_if_tbl.bf.ttl_dec_bypass;
 	entry->ipv4_uc_route_en = in_l3_if_tbl.bf.ipv4_uc_route_en;
 	entry->ipv6_uc_route_en = in_l3_if_tbl.bf.ipv6_uc_route_en;
 	entry->icmp_trigger_en = in_l3_if_tbl.bf.icmp_trigger_en;
-	entry->ttl_exceed_cmd = in_l3_if_tbl.bf.ttl_exceed_cmd;
-	entry->ttl_exceed_de_acce = in_l3_if_tbl.bf.ttl_exceed_de_acce;
-	entry->mac_bitmap = in_l3_if_tbl.bf.mac_bitmap;
+	entry->ttl_exceed_action = in_l3_if_tbl.bf.ttl_exceed_cmd;
+	entry->ttl_exceed_deacclr_en = in_l3_if_tbl.bf.ttl_exceed_de_acce;
+	entry->mac_addr_bitmap = in_l3_if_tbl.bf.mac_bitmap;
 	entry->mac_addr.uc[5] = eg_l3_if_tbl.bf.mac_addr_0;
 	entry->mac_addr.uc[4] = eg_l3_if_tbl.bf.mac_addr_0 >> 8;
 	entry->mac_addr.uc[3] = eg_l3_if_tbl.bf.mac_addr_0 >> 16;
 	entry->mac_addr.uc[2] = eg_l3_if_tbl.bf.mac_addr_0 >> 24;
 	entry->mac_addr.uc[1] = eg_l3_if_tbl.bf.mac_addr_1;
 	entry->mac_addr.uc[0] = eg_l3_if_tbl.bf.mac_addr_1 >> 8;
-	entry->pppoe_en = eg_l3_if_tbl.bf.pppoe_en;
-	entry->session_id = eg_l3_if_tbl.bf.session_id;
 
 	if (rv == SW_OK) {
 		union rt_interface_cnt_tbl_u cnt_ingress, cnt_egress;
 		hppe_rt_interface_cnt_tbl_get(dev_id, index, &cnt_ingress);
 		hppe_rt_interface_cnt_tbl_get(dev_id, index + 256, &cnt_egress);
-		entry->counter.rx_pkt = cnt_ingress.bf.pkt_cnt;
-		entry->counter.rx_byte = cnt_ingress.bf.byte_cnt_0 | ((a_uint64_t)cnt_ingress.bf.byte_cnt_1 << 32);
-		entry->counter.rx_drop_pkt = cnt_ingress.bf.drop_pkt_cnt_0 | (cnt_ingress.bf.drop_pkt_cnt_1 << 24);
-		entry->counter.rx_drop_byte = cnt_ingress.bf.drop_byte_cnt_0 | \
+		entry->counter.rx_pkt_counter = cnt_ingress.bf.pkt_cnt;
+		entry->counter.rx_byte_counter = cnt_ingress.bf.byte_cnt_0 | ((a_uint64_t)cnt_ingress.bf.byte_cnt_1 << 32);
+		entry->counter.rx_drop_pkt_counter = cnt_ingress.bf.drop_pkt_cnt_0 | (cnt_ingress.bf.drop_pkt_cnt_1 << 24);
+		entry->counter.rx_drop_byte_counter = cnt_ingress.bf.drop_byte_cnt_0 | \
 								((a_uint64_t)cnt_ingress.bf.drop_byte_cnt_1 << 24);
 
-		entry->counter.tx_pkt = cnt_egress.bf.pkt_cnt;
-		entry->counter.tx_byte = cnt_egress.bf.byte_cnt_0 | ((a_uint64_t)cnt_egress.bf.byte_cnt_1 << 32);
-		entry->counter.tx_drop_pkt = cnt_egress.bf.drop_pkt_cnt_0 | (cnt_egress.bf.drop_pkt_cnt_1 << 24);
-		entry->counter.tx_drop_byte = cnt_egress.bf.drop_byte_cnt_0 | \
+		entry->counter.tx_pkt_counter = cnt_egress.bf.pkt_cnt;
+		entry->counter.tx_byte_counter = cnt_egress.bf.byte_cnt_0 | ((a_uint64_t)cnt_egress.bf.byte_cnt_1 << 32);
+		entry->counter.tx_drop_pkt_counter = cnt_egress.bf.drop_pkt_cnt_0 | (cnt_egress.bf.drop_pkt_cnt_1 << 24);
+		entry->counter.tx_drop_byte_counter = cnt_egress.bf.drop_byte_cnt_0 | \
 								((a_uint64_t)cnt_egress.bf.drop_byte_cnt_1 << 24);
 	}
 
@@ -592,33 +604,17 @@ adpt_hppe_ip_intf_get(
 }
 
 sw_error_t
-adpt_hppe_ip_pub_addr_add(a_uint32_t dev_id, fal_ip_pub_addr_t *entry)
+adpt_hppe_ip_pub_addr_set(a_uint32_t dev_id,
+		a_uint32_t index, fal_ip_pub_addr_t *entry)
 {
 	union in_pub_ip_addr_tbl_u in_pub_ip_addr_tbl;
-	a_uint32_t i = 0, null = 0;
 
 	memset(&in_pub_ip_addr_tbl, 0, sizeof(in_pub_ip_addr_tbl));
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(entry);
 
-	for (i = 0; i < 16; i++) {
-		hppe_in_pub_ip_addr_tbl_get(dev_id, i, &in_pub_ip_addr_tbl);
-		if (!aos_mem_cmp
-                    ((void *) &(entry->pub_addr), (void *) &in_pub_ip_addr_tbl.val,
-                     sizeof (fal_ip4_addr_t))) {
-                     entry->entry_id = i;
-                     return SW_OK;
-		}
-		else if (!aos_mem_cmp
-                    ((void *) &null, (void *) &in_pub_ip_addr_tbl.val,
-                     sizeof (fal_ip4_addr_t))) {
-			in_pub_ip_addr_tbl.bf.ip_addr = entry->pub_addr;
-			hppe_in_pub_ip_addr_tbl_set(dev_id, i, &in_pub_ip_addr_tbl);	 
-			entry->entry_id = i;
-			return i;
-		}
-	}
-	return SW_FAIL;
+	in_pub_ip_addr_tbl.bf.ip_addr = entry->pub_ip_addr;
+	return hppe_in_pub_ip_addr_tbl_set(dev_id, index, &in_pub_ip_addr_tbl);
 }
 
 sw_error_t
@@ -745,17 +741,17 @@ adpt_hppe_ip_vsi_arp_sg_cfg_get(a_uint32_t dev_id, a_uint32_t vsi,
 		return rv;
 
 	arp_sg_cfg->ipv4_arp_sg_en = l3_vsi_ext.bf.ip_arp_sg_en;
-	arp_sg_cfg->ipv4_arp_sg_vio_cmd = l3_vsi_ext.bf.ip_arp_sg_vio_cmd;
+	arp_sg_cfg->ipv4_arp_sg_vio_action = l3_vsi_ext.bf.ip_arp_sg_vio_cmd;
 	arp_sg_cfg->ipv4_arp_sg_port_en = l3_vsi_ext.bf.ip_arp_sg_port_en;
 	arp_sg_cfg->ipv4_arp_sg_svlan_en = l3_vsi_ext.bf.ip_arp_sg_svlan_en;
 	arp_sg_cfg->ipv4_arp_sg_cvlan_en = l3_vsi_ext.bf.ip_arp_sg_cvlan_en;
-	arp_sg_cfg->ipv4_arp_src_unk_cmd = l3_vsi_ext.bf.ip_arp_src_unk_cmd;
+	arp_sg_cfg->ipv4_arp_src_unk_action = l3_vsi_ext.bf.ip_arp_src_unk_cmd;
 	arp_sg_cfg->ip_nd_sg_en = l3_vsi_ext.bf.ip_nd_sg_en;
-	arp_sg_cfg->ip_nd_sg_vio_cmd = l3_vsi_ext.bf.ip_nd_sg_vio_cmd;
+	arp_sg_cfg->ip_nd_sg_vio_action = l3_vsi_ext.bf.ip_nd_sg_vio_cmd;
 	arp_sg_cfg->ip_nd_sg_port_en = l3_vsi_ext.bf.ip_nd_sg_port_en;
 	arp_sg_cfg->ip_nd_sg_svlan_en = l3_vsi_ext.bf.ip_nd_sg_svlan_en;
 	arp_sg_cfg->ip_nd_sg_cvlan_en = l3_vsi_ext.bf.ip_nd_sg_cvlan_en;
-	arp_sg_cfg->ip_nd_src_unk_cmd = l3_vsi_ext.bf.ip_nd_src_unk_cmd;
+	arp_sg_cfg->ip_nd_src_unk_action = l3_vsi_ext.bf.ip_nd_src_unk_cmd;
 
 	return rv;
 }
@@ -772,17 +768,17 @@ adpt_hppe_ip_port_arp_sg_cfg_set(a_uint32_t dev_id, fal_port_t port_id,
 	hppe_l3_vp_port_tbl_get(dev_id, port_id, &l3_vp_port_tbl);
 
 	l3_vp_port_tbl.bf.ip_arp_sg_en = arp_sg_cfg->ipv4_arp_sg_en;
-	l3_vp_port_tbl.bf.ip_arp_sg_vio_cmd = arp_sg_cfg->ipv4_arp_sg_vio_cmd;
+	l3_vp_port_tbl.bf.ip_arp_sg_vio_cmd = arp_sg_cfg->ipv4_arp_sg_vio_action;
 	l3_vp_port_tbl.bf.ip_arp_sg_port_en = arp_sg_cfg->ipv4_arp_sg_port_en;
 	l3_vp_port_tbl.bf.ip_arp_sg_svlan_en = arp_sg_cfg->ipv4_arp_sg_svlan_en;
 	l3_vp_port_tbl.bf.ip_arp_sg_cvlan_en = arp_sg_cfg->ipv4_arp_sg_cvlan_en;
-	l3_vp_port_tbl.bf.ip_arp_src_unk_cmd = arp_sg_cfg->ipv4_arp_src_unk_cmd;
+	l3_vp_port_tbl.bf.ip_arp_src_unk_cmd = arp_sg_cfg->ipv4_arp_src_unk_action;
 	l3_vp_port_tbl.bf.ip_nd_sg_en = arp_sg_cfg->ip_nd_sg_en;
-	l3_vp_port_tbl.bf.ip_nd_sg_vio_cmd = arp_sg_cfg->ip_nd_sg_vio_cmd;
+	l3_vp_port_tbl.bf.ip_nd_sg_vio_cmd = arp_sg_cfg->ip_nd_sg_vio_action;
 	l3_vp_port_tbl.bf.ip_nd_sg_port_en = arp_sg_cfg->ip_nd_sg_port_en;
 	l3_vp_port_tbl.bf.ip_nd_sg_svlan_en = arp_sg_cfg->ip_nd_sg_svlan_en;
 	l3_vp_port_tbl.bf.ip_nd_sg_cvlan_en = arp_sg_cfg->ip_nd_sg_cvlan_en;
-	l3_vp_port_tbl.bf.ip_nd_src_unk_cmd = arp_sg_cfg->ip_nd_src_unk_cmd;
+	l3_vp_port_tbl.bf.ip_nd_src_unk_cmd = arp_sg_cfg->ip_nd_src_unk_action;
 	
 	return hppe_l3_vp_port_tbl_set(dev_id, port_id, &l3_vp_port_tbl);
 }
@@ -840,19 +836,18 @@ adpt_hppe_ip_nexthop_get(a_uint32_t dev_id,
 	entry->vsi = in_nexthop_tbl.bf1.vsi;
 	entry->port = in_nexthop_tbl.bf0.port;
 	entry->if_index = in_nexthop_tbl.bf0.post_l3_if;
-	entry->ip_to_me = in_nexthop_tbl.bf0.ip_to_me;
-	entry->pub_index = in_nexthop_tbl.bf1.ip_pub_addr_index;
-	entry->ip_to_me = in_nexthop_tbl.bf0.ip_to_me;
+	entry->ip_to_me_en = in_nexthop_tbl.bf0.ip_to_me;
+	entry->pub_ip_index = in_nexthop_tbl.bf1.ip_pub_addr_index;
 	entry->stag_fmt = in_nexthop_tbl.bf0.stag_fmt;
 	entry->svid = in_nexthop_tbl.bf0.svid;
 	entry->ctag_fmt = in_nexthop_tbl.bf0.ctag_fmt;
 	entry->cvid = in_nexthop_tbl.bf0.cvid;
-	entry->macaddr.uc[5] = in_nexthop_tbl.bf1.mac_addr_0;
-	entry->macaddr.uc[4] = in_nexthop_tbl.bf1.mac_addr_0 >> 8;
-	entry->macaddr.uc[3] = in_nexthop_tbl.bf1.mac_addr_1;
-	entry->macaddr.uc[2] = in_nexthop_tbl.bf1.mac_addr_1 >> 8;
-	entry->macaddr.uc[1] = in_nexthop_tbl.bf1.mac_addr_1 >> 16;
-	entry->macaddr.uc[0] = in_nexthop_tbl.bf1.mac_addr_1 >> 24;
+	entry->mac_addr.uc[5] = in_nexthop_tbl.bf1.mac_addr_0;
+	entry->mac_addr.uc[4] = in_nexthop_tbl.bf1.mac_addr_0 >> 8;
+	entry->mac_addr.uc[3] = in_nexthop_tbl.bf1.mac_addr_1;
+	entry->mac_addr.uc[2] = in_nexthop_tbl.bf1.mac_addr_1 >> 8;
+	entry->mac_addr.uc[1] = in_nexthop_tbl.bf1.mac_addr_1 >> 16;
+	entry->mac_addr.uc[0] = in_nexthop_tbl.bf1.mac_addr_1 >> 24;
 	entry->dnat_ip = in_nexthop_tbl.bf0.ip_addr_dnat;
 
 	return SW_OK;
@@ -1002,25 +997,22 @@ adpt_hppe_ip_intf_set(
 
 	in_l3_if_tbl.bf.mru = entry->mru;
 	in_l3_if_tbl.bf.mtu = entry->mtu;
-	in_l3_if_tbl.bf.ttl_dec_bypass = entry->ttl_dec_bypass;
+	in_l3_if_tbl.bf.ttl_dec_bypass = entry->ttl_dec_bypass_en;
 	in_l3_if_tbl.bf.ipv4_uc_route_en = entry->ipv4_uc_route_en;
 	in_l3_if_tbl.bf.ipv6_uc_route_en = entry->ipv6_uc_route_en;
 	in_l3_if_tbl.bf.icmp_trigger_en = entry->icmp_trigger_en;
-	in_l3_if_tbl.bf.ttl_exceed_cmd = entry->ttl_exceed_cmd;
-	in_l3_if_tbl.bf.ttl_exceed_de_acce = entry->ttl_exceed_de_acce;
-	in_l3_if_tbl.bf.mac_bitmap = entry->mac_bitmap;
-	in_l3_if_tbl.bf.pppoe_en = entry->pppoe_en;
+	in_l3_if_tbl.bf.ttl_exceed_cmd = entry->ttl_exceed_action;
+	in_l3_if_tbl.bf.ttl_exceed_de_acce = entry->ttl_exceed_deacclr_en;
+	in_l3_if_tbl.bf.mac_bitmap = entry->mac_addr_bitmap;
 	eg_l3_if_tbl.bf.mac_addr_0 = entry->mac_addr.uc[5] | \
 							entry->mac_addr.uc[4] << 8 | \
 							entry->mac_addr.uc[3] << 16 | \
 							entry->mac_addr.uc[2] << 24;
 	eg_l3_if_tbl.bf.mac_addr_1 = entry->mac_addr.uc[1] | \
 							entry->mac_addr.uc[0] << 8;
-	eg_l3_if_tbl.bf.pppoe_en = entry->pppoe_en;
-	eg_l3_if_tbl.bf.session_id = entry->session_id;
 
 	for (i = 0; i < 8; i++) {
-		if ((entry->mac_bitmap >> i) & 0x1) {
+		if ((entry->mac_addr_bitmap >> i) & 0x1) {
 			union my_mac_tbl_u mymac;
 			mymac.bf.valid = 1;
 			mymac.bf.mac_da_0 = eg_l3_if_tbl.bf.mac_addr_0;
@@ -1100,18 +1092,17 @@ adpt_hppe_ip_port_arp_sg_cfg_get(a_uint32_t dev_id, fal_port_t port_id,
 		return rv;
 
 	arp_sg_cfg->ipv4_arp_sg_en = l3_vp_port_tbl.bf.ip_arp_sg_en;
-	arp_sg_cfg->ipv4_arp_sg_vio_cmd = l3_vp_port_tbl.bf.ip_arp_sg_vio_cmd;
+	arp_sg_cfg->ipv4_arp_sg_vio_action = l3_vp_port_tbl.bf.ip_arp_sg_vio_cmd;
 	arp_sg_cfg->ipv4_arp_sg_port_en = l3_vp_port_tbl.bf.ip_arp_sg_port_en;
 	arp_sg_cfg->ipv4_arp_sg_svlan_en = l3_vp_port_tbl.bf.ip_arp_sg_svlan_en;
 	arp_sg_cfg->ipv4_arp_sg_cvlan_en = l3_vp_port_tbl.bf.ip_arp_sg_cvlan_en;
-	arp_sg_cfg->ipv4_arp_src_unk_cmd = l3_vp_port_tbl.bf.ip_arp_src_unk_cmd;
+	arp_sg_cfg->ipv4_arp_src_unk_action = l3_vp_port_tbl.bf.ip_arp_src_unk_cmd;
 	arp_sg_cfg->ip_nd_sg_en = l3_vp_port_tbl.bf.ip_nd_sg_en;
-	arp_sg_cfg->ip_nd_sg_vio_cmd = l3_vp_port_tbl.bf.ip_nd_sg_vio_cmd;
+	arp_sg_cfg->ip_nd_sg_vio_action = l3_vp_port_tbl.bf.ip_nd_sg_vio_cmd;
 	arp_sg_cfg->ip_nd_sg_port_en = l3_vp_port_tbl.bf.ip_nd_sg_port_en;
 	arp_sg_cfg->ip_nd_sg_svlan_en = l3_vp_port_tbl.bf.ip_nd_sg_svlan_en;
 	arp_sg_cfg->ip_nd_sg_cvlan_en = l3_vp_port_tbl.bf.ip_nd_sg_cvlan_en;
-	arp_sg_cfg->ip_nd_src_unk_cmd = l3_vp_port_tbl.bf.ip_nd_src_unk_cmd;
-
+	arp_sg_cfg->ip_nd_src_unk_action = l3_vp_port_tbl.bf.ip_nd_src_unk_cmd;
 
 	return SW_OK;
 }
@@ -1136,16 +1127,16 @@ adpt_hppe_ip_global_ctrl_get(a_uint32_t dev_id, fal_ip_global_cfg_t *cfg)
 	if( rv != SW_OK )
 		return rv;
 
-	cfg->mru_fail = l3_route_ctrl.bf.ip_mru_check_fail;
-	cfg->mru_de_acce = l3_route_ctrl.bf.ip_mru_check_fail_de_acce;
-	cfg->mtu_fail = l3_route_ctrl.bf.ip_mtu_fail;
-	cfg->mtu_de_acce = l3_route_ctrl.bf.ip_mtu_fail_de_acce;
-	cfg->mtu_df_fail = l3_route_ctrl.bf.ip_mtu_df_fail;
-	cfg->mtu_df_de_acce = l3_route_ctrl.bf.ip_mtu_df_fail_de_acce;
-	cfg->prefix_bc = l3_route_ctrl.bf.ip_prefix_bc_cmd;
-	cfg->prefix_de_acce = l3_route_ctrl.bf.ip_prefix_bc_de_acce;
-	cfg->icmp_rdt = l3_route_ctrl.bf.icmp_rdt_cmd;
-	cfg->icmp_rdt_de_acce = l3_route_ctrl.bf.icmp_rdt_de_acce;
+	cfg->mru_fail_action = l3_route_ctrl.bf.ip_mru_check_fail;
+	cfg->mru_deacclr_en = l3_route_ctrl.bf.ip_mru_check_fail_de_acce;
+	cfg->mtu_fail_action = l3_route_ctrl.bf.ip_mtu_fail;
+	cfg->mtu_deacclr_en = l3_route_ctrl.bf.ip_mtu_fail_de_acce;
+	cfg->mtu_df_fail_action = l3_route_ctrl.bf.ip_mtu_df_fail;
+	cfg->mtu_df_deacclr_en = l3_route_ctrl.bf.ip_mtu_df_fail_de_acce;
+	cfg->prefix_bc_action = l3_route_ctrl.bf.ip_prefix_bc_cmd;
+	cfg->prefix_deacclr_en = l3_route_ctrl.bf.ip_prefix_bc_de_acce;
+	cfg->icmp_rdt_action = l3_route_ctrl.bf.icmp_rdt_cmd;
+	cfg->icmp_rdt_deacclr_en = l3_route_ctrl.bf.icmp_rdt_de_acce;
 	cfg->hash_mode_0 = l3_route_ctrl_ext.bf.host_hash_mode_0;
 	cfg->hash_mode_1 = l3_route_ctrl_ext.bf.host_hash_mode_1;
 
@@ -1172,16 +1163,16 @@ adpt_hppe_ip_global_ctrl_set(a_uint32_t dev_id, fal_ip_global_cfg_t *cfg)
 	if( rv != SW_OK )
 		return rv;
 
-	l3_route_ctrl.bf.ip_mru_check_fail = cfg->mru_fail;
-	l3_route_ctrl.bf.ip_mru_check_fail_de_acce = cfg->mru_de_acce;
-	l3_route_ctrl.bf.ip_mtu_fail = cfg->mtu_fail;
-	l3_route_ctrl.bf.ip_mtu_fail_de_acce = cfg->mtu_de_acce;
-	l3_route_ctrl.bf.ip_mtu_df_fail = cfg->mtu_df_fail;
-	l3_route_ctrl.bf.ip_mtu_df_fail_de_acce = cfg->mtu_df_de_acce;
-	l3_route_ctrl.bf.ip_prefix_bc_cmd =cfg->prefix_bc;
-	l3_route_ctrl.bf.ip_prefix_bc_de_acce = cfg->prefix_de_acce;
-	l3_route_ctrl.bf.icmp_rdt_cmd = cfg->icmp_rdt;
-	l3_route_ctrl.bf.icmp_rdt_de_acce = cfg->icmp_rdt_de_acce;
+	l3_route_ctrl.bf.ip_mru_check_fail = cfg->mru_fail_action;
+	l3_route_ctrl.bf.ip_mru_check_fail_de_acce = cfg->mru_deacclr_en;
+	l3_route_ctrl.bf.ip_mtu_fail = cfg->mtu_fail_action;
+	l3_route_ctrl.bf.ip_mtu_fail_de_acce = cfg->mtu_deacclr_en;
+	l3_route_ctrl.bf.ip_mtu_df_fail = cfg->mtu_df_fail_action;
+	l3_route_ctrl.bf.ip_mtu_df_fail_de_acce = cfg->mtu_df_deacclr_en;
+	l3_route_ctrl.bf.ip_prefix_bc_cmd =cfg->prefix_bc_action;
+	l3_route_ctrl.bf.ip_prefix_bc_de_acce = cfg->prefix_deacclr_en;
+	l3_route_ctrl.bf.icmp_rdt_cmd = cfg->icmp_rdt_action;
+	l3_route_ctrl.bf.icmp_rdt_de_acce = cfg->icmp_rdt_deacclr_en;
 	l3_route_ctrl_ext.bf.host_hash_mode_0 = cfg->hash_mode_0;
 	l3_route_ctrl_ext.bf.host_hash_mode_1 = cfg->hash_mode_1;
 
@@ -1206,19 +1197,18 @@ adpt_hppe_ip_nexthop_set(a_uint32_t dev_id,
 	else
 		in_nexthop_tbl.bf0.port = entry->port;
 	in_nexthop_tbl.bf0.post_l3_if = entry->if_index;
-	in_nexthop_tbl.bf0.ip_to_me = entry->ip_to_me;
-	in_nexthop_tbl.bf0.ip_pub_addr_index = entry->pub_index;
-	in_nexthop_tbl.bf0.ip_to_me = entry->ip_to_me;
+	in_nexthop_tbl.bf0.ip_to_me = entry->ip_to_me_en;
+	in_nexthop_tbl.bf0.ip_pub_addr_index = entry->pub_ip_index;
 	in_nexthop_tbl.bf0.stag_fmt = entry->stag_fmt;
 	in_nexthop_tbl.bf0.svid = entry->svid;
 	in_nexthop_tbl.bf0.ctag_fmt = entry->ctag_fmt;
 	in_nexthop_tbl.bf0.cvid = entry->cvid;
-	in_nexthop_tbl.bf0.mac_addr_0 = entry->macaddr.uc[5] |
-					entry->macaddr.uc[4] << 8;
-	in_nexthop_tbl.bf0.mac_addr_1 = entry->macaddr.uc[3] |
-					entry->macaddr.uc[2] << 8 |
-					entry->macaddr.uc[1] << 16 |
-					entry->macaddr.uc[0] << 24;
+	in_nexthop_tbl.bf0.mac_addr_0 = entry->mac_addr.uc[5] |
+					entry->mac_addr.uc[4] << 8;
+	in_nexthop_tbl.bf0.mac_addr_1 = entry->mac_addr.uc[3] |
+					entry->mac_addr.uc[2] << 8 |
+					entry->mac_addr.uc[1] << 16 |
+					entry->mac_addr.uc[0] << 24;
 	in_nexthop_tbl.bf0.ip_addr_dnat = entry->dnat_ip;
 
 	return hppe_in_nexthop_tbl_set(dev_id, index, &in_nexthop_tbl);
@@ -1246,7 +1236,7 @@ static void adpt_hppe_ip_func_unregister(a_uint32_t dev_id, adpt_api_t *p_adpt_a
 	p_adpt_api->adpt_ip_network_route_get = NULL;
 	p_adpt_api->adpt_ip_host_add = NULL;
 	p_adpt_api->adpt_ip_vsi_sg_cfg_get = NULL;
-	p_adpt_api->adpt_ip_pub_addr_del = NULL;
+	p_adpt_api->adpt_ip_pub_addr_set = NULL;
 	p_adpt_api->adpt_ip_port_sg_cfg_set = NULL;
 	p_adpt_api->adpt_ip_port_intf_get = NULL;
 	p_adpt_api->adpt_ip_vsi_arp_sg_cfg_set = NULL;
@@ -1256,10 +1246,10 @@ static void adpt_hppe_ip_func_unregister(a_uint32_t dev_id, adpt_api_t *p_adpt_a
 	p_adpt_api->adpt_ip_host_next = NULL;
 	p_adpt_api->adpt_ip_port_macaddr_set = NULL;
 	p_adpt_api->adpt_ip_vsi_intf_get = NULL;
-	p_adpt_api->adpt_ip_network_route_set = NULL;
+	p_adpt_api->adpt_ip_network_route_add = NULL;
 	p_adpt_api->adpt_ip_port_sg_cfg_get = NULL;
 	p_adpt_api->adpt_ip_intf_get = NULL;
-	p_adpt_api->adpt_ip_pub_addr_add = NULL;
+	p_adpt_api->adpt_ip_network_route_del = NULL;
 	p_adpt_api->adpt_ip_host_del = NULL;
 	p_adpt_api->adpt_ip_route_mismatch_get = NULL;
 	p_adpt_api->adpt_ip_vsi_arp_sg_cfg_get = NULL;
@@ -1296,8 +1286,8 @@ sw_error_t adpt_hppe_ip_init(a_uint32_t dev_id)
 		p_adpt_api->adpt_ip_host_add = adpt_hppe_ip_host_add;
 	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_VSI_SG_CFG_GET))
 		p_adpt_api->adpt_ip_vsi_sg_cfg_get = adpt_hppe_ip_vsi_sg_cfg_get;
-	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_PUB_ADDR_DEL))
-		p_adpt_api->adpt_ip_pub_addr_del = adpt_hppe_ip_pub_addr_del;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_PUB_ADDR_SET))
+		p_adpt_api->adpt_ip_pub_addr_set = adpt_hppe_ip_pub_addr_set;
 	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_PORT_SG_CFG_SET))
 		p_adpt_api->adpt_ip_port_sg_cfg_set = adpt_hppe_ip_port_sg_cfg_set;
 	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_PORT_INTF_GET))
@@ -1316,14 +1306,14 @@ sw_error_t adpt_hppe_ip_init(a_uint32_t dev_id)
 		p_adpt_api->adpt_ip_port_macaddr_set = adpt_hppe_ip_port_macaddr_set;
 	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_VSI_INTF_GET))
 		p_adpt_api->adpt_ip_vsi_intf_get = adpt_hppe_ip_vsi_intf_get;
-	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_NETWORK_ROUTE_SET))
-		p_adpt_api->adpt_ip_network_route_set = adpt_hppe_ip_network_route_set;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_NETWORK_ROUTE_ADD))
+		p_adpt_api->adpt_ip_network_route_add = adpt_hppe_ip_network_route_add;
 	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_PORT_SG_CFG_GET))
 		p_adpt_api->adpt_ip_port_sg_cfg_get = adpt_hppe_ip_port_sg_cfg_get;
 	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_INTF_GET))
 		p_adpt_api->adpt_ip_intf_get = adpt_hppe_ip_intf_get;
-	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_PUB_ADDR_ADD))
-		p_adpt_api->adpt_ip_pub_addr_add = adpt_hppe_ip_pub_addr_add;
+	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_NETWORK_ROUTE_DEL))
+		p_adpt_api->adpt_ip_network_route_del = adpt_hppe_ip_network_route_del;
 	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_HOST_DEL))
 		p_adpt_api->adpt_ip_host_del = adpt_hppe_ip_host_del;
 	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_ROUTE_MISMATCH_GET))

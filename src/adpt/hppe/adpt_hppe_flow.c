@@ -228,7 +228,7 @@ adpt_hppe_flow_entry_host_op_add(
 	type = flow_entry->entry_type;
 	if ((type & FAL_FLOW_IP4_5TUPLE_ADDR) == FAL_FLOW_IP4_5TUPLE_ADDR) {
 		union in_flow_tbl_u entry;
-		entry.bf0.valid= flow_entry->valid;
+		entry.bf0.valid= 1;
 		entry.bf0.entry_type = 0;
 		entry.bf0.host_addr_index_type = flow_entry->host_addr_type;
 		entry.bf0.host_addr_index = flow_entry->host_addr_index;
@@ -250,8 +250,8 @@ adpt_hppe_flow_entry_host_op_add(
 		} else if (flow_entry->fwd_type == FAL_FLOW_BRIDGE) {
 			entry.bf1.port_vp2 = flow_entry->bridge_port;
 		}
-		entry.bf0.de_acce = flow_entry->de_acce;
-		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu;
+		entry.bf0.de_acce = flow_entry->deacclr_en;
+		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu_en;
 		entry.bf0.syn_toggle = flow_entry->syn_toggle;
 		entry.bf0.pri_profile_0 = flow_entry->pri_profile;
 		entry.bf0.pri_profile_1 = flow_entry->pri_profile >> 1;
@@ -264,7 +264,7 @@ adpt_hppe_flow_entry_host_op_add(
 		rv = hppe_flow_entry_host_op_ipv4_5tuple_add(dev_id, (a_uint32_t)add_mode, &flow_entry->entry_id, &entry);
 	} else if ((type & FAL_FLOW_IP6_5TUPLE_ADDR) == FAL_FLOW_IP6_5TUPLE_ADDR) {
 		union in_flow_ipv6_5tuple_tbl_u entry;
-		entry.bf0.valid= flow_entry->valid;
+		entry.bf0.valid= 1;
 		entry.bf0.entry_type = 1;
 		entry.bf0.host_addr_index_type = flow_entry->host_addr_type;
 		entry.bf0.host_addr_index = flow_entry->host_addr_index;
@@ -284,8 +284,8 @@ adpt_hppe_flow_entry_host_op_add(
 		} else if (flow_entry->fwd_type == FAL_FLOW_BRIDGE) {
 			entry.bf1.port_vp2 = flow_entry->bridge_port;
 		}
-		entry.bf0.de_acce = flow_entry->de_acce;
-		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu;
+		entry.bf0.de_acce = flow_entry->deacclr_en;
+		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu_en;
 		entry.bf0.syn_toggle = flow_entry->syn_toggle;
 		entry.bf0.pri_profile_0 = flow_entry->pri_profile;
 		entry.bf0.pri_profile_1 = flow_entry->pri_profile >> 1;
@@ -304,7 +304,7 @@ adpt_hppe_flow_entry_host_op_add(
 		rv = hppe_flow_entry_host_op_ipv6_5tuple_add(dev_id, (a_uint32_t)add_mode, &flow_entry->entry_id, &entry);
 	} else if ((type & FAL_FLOW_IP4_3TUPLE_ADDR) == FAL_FLOW_IP4_3TUPLE_ADDR) {
 		union in_flow_3tuple_tbl_u entry;
-		entry.bf0.valid= flow_entry->valid;
+		entry.bf0.valid= 1;
 		entry.bf0.entry_type = 0;
 		entry.bf0.host_addr_index_type = flow_entry->host_addr_type;
 		entry.bf0.host_addr_index = flow_entry->host_addr_index;
@@ -324,8 +324,8 @@ adpt_hppe_flow_entry_host_op_add(
 		} else if (flow_entry->fwd_type == FAL_FLOW_BRIDGE) {
 			entry.bf1.port_vp2 = flow_entry->bridge_port;
 		}
-		entry.bf0.de_acce = flow_entry->de_acce;
-		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu;
+		entry.bf0.de_acce = flow_entry->deacclr_en;
+		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu_en;
 		entry.bf0.syn_toggle = flow_entry->syn_toggle;
 		entry.bf0.pri_profile_0 = flow_entry->pri_profile;
 		entry.bf0.pri_profile_1 = flow_entry->pri_profile >> 1;
@@ -336,7 +336,7 @@ adpt_hppe_flow_entry_host_op_add(
 		rv = hppe_flow_entry_host_op_ipv4_3tuple_add(dev_id, (a_uint32_t)add_mode, &flow_entry->entry_id, &entry);
 	} else if ((type & FAL_FLOW_IP6_3TUPLE_ADDR) == FAL_FLOW_IP6_3TUPLE_ADDR) {
 		union in_flow_ipv6_3tuple_tbl_u entry;
-		entry.bf0.valid= flow_entry->valid;
+		entry.bf0.valid= 1;
 		entry.bf0.entry_type = 1;
 		entry.bf0.host_addr_index_type = flow_entry->host_addr_type;
 		entry.bf0.host_addr_index = flow_entry->host_addr_index;
@@ -356,8 +356,8 @@ adpt_hppe_flow_entry_host_op_add(
 		} else if (flow_entry->fwd_type == FAL_FLOW_BRIDGE) {
 			entry.bf0.port_vp2 = flow_entry->bridge_port;
 		}
-		entry.bf0.de_acce = flow_entry->de_acce;
-		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu;
+		entry.bf0.de_acce = flow_entry->deacclr_en;
+		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu_en;
 		entry.bf0.syn_toggle = flow_entry->syn_toggle;
 		entry.bf0.pri_profile_0 = flow_entry->pri_profile;
 		entry.bf0.pri_profile_1 = flow_entry->pri_profile >> 1;
@@ -397,7 +397,7 @@ adpt_hppe_flow_entry_host_op_get(
 	type = flow_entry->entry_type;
 	if ((type & FAL_FLOW_IP4_5TUPLE_ADDR) == FAL_FLOW_IP4_5TUPLE_ADDR) {
 		union in_flow_tbl_u entry;
-		entry.bf0.valid= flow_entry->valid;
+		entry.bf0.valid= 1;
 		entry.bf0.entry_type = 0;
 		entry.bf0.host_addr_index_type = flow_entry->host_addr_type;
 		entry.bf0.host_addr_index = flow_entry->host_addr_index;
@@ -409,8 +409,6 @@ adpt_hppe_flow_entry_host_op_get(
 		entry.bf0.l4_dport_1 = flow_entry->dst_port >> 4;
 		rv = hppe_flow_entry_host_op_ipv4_5tuple_get(dev_id, get_mode, &entry_id, &entry);
 		flow_entry->entry_id = entry_id;
-
-		flow_entry->valid = entry.bf0.valid;
 		flow_entry->host_addr_type = entry.bf0.host_addr_index_type;
 		flow_entry->host_addr_index = entry.bf0.host_addr_index;
 		flow_entry->protocol = entry.bf0.protocol_type;
@@ -431,8 +429,8 @@ adpt_hppe_flow_entry_host_op_get(
 		} else if (flow_entry->fwd_type == FAL_FLOW_BRIDGE) {
 			flow_entry->bridge_port = entry.bf1.port_vp2;
 		}
-		flow_entry->de_acce = entry.bf0.de_acce;
-		flow_entry->copy_tocpu = entry.bf0.copy_to_cpu_en;
+		flow_entry->deacclr_en = entry.bf0.de_acce;
+		flow_entry->copy_tocpu_en = entry.bf0.copy_to_cpu_en;
 		flow_entry->syn_toggle = entry.bf0.syn_toggle;
 		flow_entry->pri_profile = entry.bf0.pri_profile_0 |\
 								entry.bf0.pri_profile_1 << 1;
@@ -444,7 +442,7 @@ adpt_hppe_flow_entry_host_op_get(
 					entry.bf0.l4_dport_1 << 4;
 	} else if ((type & FAL_FLOW_IP6_5TUPLE_ADDR) == FAL_FLOW_IP6_5TUPLE_ADDR) {
 		union in_flow_ipv6_5tuple_tbl_u entry;
-		entry.bf0.valid= flow_entry->valid;
+		entry.bf0.valid= 1;
 		entry.bf0.entry_type = 1;
 		entry.bf0.host_addr_index_type = flow_entry->host_addr_type;
 		entry.bf0.host_addr_index = flow_entry->host_addr_index;
@@ -462,7 +460,6 @@ adpt_hppe_flow_entry_host_op_get(
 		entry.bf0.l4_dport_1 = flow_entry->dst_port >> 4;
 		rv = hppe_flow_entry_host_op_ipv6_5tuple_get(dev_id, get_mode, &entry_id, &entry);
 		flow_entry->entry_id = entry_id;
-		flow_entry->valid = entry.bf0.valid;
 		flow_entry->host_addr_type = entry.bf0.host_addr_index_type;
 		flow_entry->host_addr_index = entry.bf0.host_addr_index;
 		flow_entry->protocol = entry.bf0.protocol_type;
@@ -481,8 +478,8 @@ adpt_hppe_flow_entry_host_op_get(
 		} else if (flow_entry->fwd_type == FAL_FLOW_BRIDGE) {
 			flow_entry->bridge_port = entry.bf1.port_vp2;
 		}
-		flow_entry->de_acce = entry.bf0.de_acce;
-		flow_entry->copy_tocpu = entry.bf0.copy_to_cpu_en;
+		flow_entry->deacclr_en = entry.bf0.de_acce;
+		flow_entry->copy_tocpu_en = entry.bf0.copy_to_cpu_en;
 		flow_entry->syn_toggle = entry.bf0.syn_toggle;
 		flow_entry->pri_profile = entry.bf0.pri_profile_0 |\
 								entry.bf0.pri_profile_1 << 1;
@@ -500,7 +497,7 @@ adpt_hppe_flow_entry_host_op_get(
 					entry.bf0.l4_dport_1 << 4;
 	} else if ((type & FAL_FLOW_IP4_3TUPLE_ADDR) == FAL_FLOW_IP4_3TUPLE_ADDR) {
 		union in_flow_3tuple_tbl_u entry;
-		entry.bf0.valid= flow_entry->valid;
+		entry.bf0.valid= 1;
 		entry.bf0.entry_type = 0;
 		entry.bf0.host_addr_index_type = flow_entry->host_addr_type;
 		entry.bf0.host_addr_index = flow_entry->host_addr_index;
@@ -510,7 +507,6 @@ adpt_hppe_flow_entry_host_op_get(
 		entry.bf0.ip_protocol = flow_entry->ip_type;
 		rv = hppe_flow_entry_host_op_ipv4_3tuple_get(dev_id, get_mode, &entry_id, &entry);
 		flow_entry->entry_id = entry_id;
-		flow_entry->valid = entry.bf0.valid;
 		flow_entry->host_addr_type = entry.bf0.host_addr_index_type;
 		flow_entry->host_addr_index = entry.bf0.host_addr_index;
 		flow_entry->protocol = entry.bf0.protocol_type;
@@ -529,8 +525,8 @@ adpt_hppe_flow_entry_host_op_get(
 		} else if (flow_entry->fwd_type == FAL_FLOW_BRIDGE) {
 			flow_entry->bridge_port = entry.bf1.port_vp2;
 		}
-		flow_entry->de_acce = entry.bf0.de_acce;
-		flow_entry->copy_tocpu = entry.bf0.copy_to_cpu_en;
+		flow_entry->deacclr_en = entry.bf0.de_acce;
+		flow_entry->copy_tocpu_en = entry.bf0.copy_to_cpu_en;
 		flow_entry->syn_toggle = entry.bf0.syn_toggle;
 		flow_entry->pri_profile = entry.bf0.pri_profile_0 |\
 								entry.bf0.pri_profile_1 << 1;
@@ -540,7 +536,7 @@ adpt_hppe_flow_entry_host_op_get(
 		flow_entry->ip_type = entry.bf0.ip_protocol;
 	} else if ((type & FAL_FLOW_IP6_3TUPLE_ADDR) == FAL_FLOW_IP6_3TUPLE_ADDR) {
 		union in_flow_ipv6_3tuple_tbl_u entry;
-		entry.bf0.valid= flow_entry->valid;
+		entry.bf0.valid= 1;
 		entry.bf0.entry_type = 1;
 		entry.bf0.host_addr_index_type = flow_entry->host_addr_type;
 		entry.bf0.host_addr_index = flow_entry->host_addr_index;
@@ -556,7 +552,6 @@ adpt_hppe_flow_entry_host_op_get(
 		entry.bf0.ip_protocol = flow_entry->ip_type;
 		rv = hppe_flow_entry_host_op_ipv6_3tuple_get(dev_id, get_mode, &entry_id, &entry);
 		flow_entry->entry_id = entry_id;
-		flow_entry->valid = entry.bf0.valid;
 		flow_entry->host_addr_type = entry.bf0.host_addr_index_type;
 		flow_entry->host_addr_index = entry.bf0.host_addr_index;
 		flow_entry->protocol = entry.bf0.protocol_type;
@@ -575,8 +570,8 @@ adpt_hppe_flow_entry_host_op_get(
 		} else if (flow_entry->fwd_type == FAL_FLOW_BRIDGE) {
 			flow_entry->bridge_port = entry.bf0.port_vp2;
 		}
-		flow_entry->de_acce = entry.bf0.de_acce;
-		flow_entry->copy_tocpu = entry.bf0.copy_to_cpu_en;
+		flow_entry->deacclr_en = entry.bf0.de_acce;
+		flow_entry->copy_tocpu_en = entry.bf0.copy_to_cpu_en;
 		flow_entry->syn_toggle = entry.bf0.syn_toggle;
 		flow_entry->pri_profile = entry.bf0.pri_profile_0 |\
 								entry.bf0.pri_profile_1 << 1;
@@ -599,8 +594,8 @@ adpt_hppe_flow_entry_host_op_get(
 		rv = hppe_eg_flow_tree_map_tbl_get(dev_id, flow_entry->entry_id, &eg_treemap);
 		flow_entry->tree_id = eg_treemap.bf.tree_id;
 		rv = hppe_in_flow_cnt_tbl_get(dev_id, flow_entry->entry_id, &cnt);
-		flow_entry->pkt_count = cnt.bf.hit_pkt_counter;
-		flow_entry->byte_count = cnt.bf.hit_byte_counter_0 | \
+		flow_entry->pkt_counter = cnt.bf.hit_pkt_counter;
+		flow_entry->byte_counter = cnt.bf.hit_byte_counter_0 | \
 					((a_uint64_t)cnt.bf.hit_byte_counter_1 << 32);
 	}
 	return rv;
@@ -624,7 +619,6 @@ adpt_hppe_flow_entry_host_op_del(
 	type = flow_entry->entry_type;
 	if ((type & FAL_FLOW_IP4_5TUPLE_ADDR) == FAL_FLOW_IP4_5TUPLE_ADDR) {
 		union in_flow_tbl_u entry;
-		entry.bf0.valid= flow_entry->valid;
 		entry.bf0.entry_type = 0;
 		entry.bf0.host_addr_index_type = flow_entry->host_addr_type;
 		entry.bf0.host_addr_index = flow_entry->host_addr_index;
@@ -646,8 +640,8 @@ adpt_hppe_flow_entry_host_op_del(
 		} else if (flow_entry->fwd_type == FAL_FLOW_BRIDGE) {
 			entry.bf1.port_vp2 = flow_entry->bridge_port;
 		}
-		entry.bf0.de_acce = flow_entry->de_acce;
-		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu;
+		entry.bf0.de_acce = flow_entry->deacclr_en;
+		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu_en;
 		entry.bf0.syn_toggle = flow_entry->syn_toggle;
 		entry.bf0.pri_profile_0 = flow_entry->pri_profile;
 		entry.bf0.pri_profile_1 = flow_entry->pri_profile >> 1;
@@ -660,7 +654,6 @@ adpt_hppe_flow_entry_host_op_del(
 		rv = hppe_flow_entry_host_op_ipv4_5tuple_del(dev_id, del_mode, &flow_entry->entry_id, &entry);
 	} else if ((type & FAL_FLOW_IP6_5TUPLE_ADDR) == FAL_FLOW_IP6_5TUPLE_ADDR) {
 		union in_flow_ipv6_5tuple_tbl_u entry;
-		entry.bf0.valid= flow_entry->valid;
 		entry.bf0.entry_type = 1;
 		entry.bf0.host_addr_index_type = flow_entry->host_addr_type;
 		entry.bf0.host_addr_index = flow_entry->host_addr_index;
@@ -680,8 +673,8 @@ adpt_hppe_flow_entry_host_op_del(
 		} else if (flow_entry->fwd_type == FAL_FLOW_BRIDGE) {
 			entry.bf1.port_vp2 = flow_entry->bridge_port;
 		}
-		entry.bf0.de_acce = flow_entry->de_acce;
-		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu;
+		entry.bf0.de_acce = flow_entry->deacclr_en;
+		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu_en;
 		entry.bf0.syn_toggle = flow_entry->syn_toggle;
 		entry.bf0.pri_profile_0 = flow_entry->pri_profile;
 		entry.bf0.pri_profile_1 = flow_entry->pri_profile >> 1;
@@ -700,7 +693,6 @@ adpt_hppe_flow_entry_host_op_del(
 		rv = hppe_flow_entry_host_op_ipv6_5tuple_del(dev_id, del_mode, &flow_entry->entry_id, &entry);
 	} else if ((type & FAL_FLOW_IP4_3TUPLE_ADDR) == FAL_FLOW_IP4_3TUPLE_ADDR) {
 		union in_flow_3tuple_tbl_u entry;
-		entry.bf0.valid= flow_entry->valid;
 		entry.bf0.entry_type = 0;
 		entry.bf0.host_addr_index_type = flow_entry->host_addr_type;
 		entry.bf0.host_addr_index = flow_entry->host_addr_index;
@@ -720,8 +712,8 @@ adpt_hppe_flow_entry_host_op_del(
 		} else if (flow_entry->fwd_type == FAL_FLOW_BRIDGE) {
 			entry.bf1.port_vp2 = flow_entry->bridge_port;
 		}
-		entry.bf0.de_acce = flow_entry->de_acce;
-		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu;
+		entry.bf0.de_acce = flow_entry->deacclr_en;
+		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu_en;
 		entry.bf0.syn_toggle = flow_entry->syn_toggle;
 		entry.bf0.pri_profile_0 = flow_entry->pri_profile;
 		entry.bf0.pri_profile_1 = flow_entry->pri_profile >> 1;
@@ -732,7 +724,6 @@ adpt_hppe_flow_entry_host_op_del(
 		rv = hppe_flow_entry_host_op_ipv4_3tuple_del(dev_id, del_mode, &flow_entry->entry_id, &entry);
 	} else if ((type & FAL_FLOW_IP6_3TUPLE_ADDR) == FAL_FLOW_IP6_3TUPLE_ADDR) {
 		union in_flow_ipv6_3tuple_tbl_u entry;
-		entry.bf0.valid= flow_entry->valid;
 		entry.bf0.entry_type = 1;
 		entry.bf0.host_addr_index_type = flow_entry->host_addr_type;
 		entry.bf0.host_addr_index = flow_entry->host_addr_index;
@@ -752,8 +743,8 @@ adpt_hppe_flow_entry_host_op_del(
 		} else if (flow_entry->fwd_type == FAL_FLOW_BRIDGE) {
 			entry.bf0.port_vp2 = flow_entry->bridge_port;
 		}
-		entry.bf0.de_acce = flow_entry->de_acce;
-		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu;
+		entry.bf0.de_acce = flow_entry->deacclr_en;
+		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu_en;
 		entry.bf0.syn_toggle = flow_entry->syn_toggle;
 		entry.bf0.pri_profile_0 = flow_entry->pri_profile;
 		entry.bf0.pri_profile_1 = flow_entry->pri_profile >> 1;
@@ -849,7 +840,6 @@ adpt_hppe_flow_entry_get(
 	type = flow_entry->entry_type;
 	if ((type & FAL_FLOW_IP4_5TUPLE_ADDR) == FAL_FLOW_IP4_5TUPLE_ADDR) {
 		union in_flow_tbl_u entry;
-		entry.bf0.valid= flow_entry->valid;
 		entry.bf0.entry_type = 0;
 		entry.bf0.host_addr_index_type = flow_entry->host_addr_type;
 		entry.bf0.host_addr_index = flow_entry->host_addr_index;
@@ -860,7 +850,6 @@ adpt_hppe_flow_entry_get(
 		entry.bf0.l4_dport_0 = flow_entry->dst_port;
 		entry.bf0.l4_dport_1 = flow_entry->dst_port >> 4;
 		rv = hppe_flow_ipv4_5tuple_get(dev_id, get_mode, &flow_entry->entry_id, &entry);
-		flow_entry->valid = entry.bf0.valid;
 		flow_entry->host_addr_type = entry.bf0.host_addr_index_type;
 		flow_entry->host_addr_index = entry.bf0.host_addr_index;
 		flow_entry->protocol = entry.bf0.protocol_type;
@@ -885,8 +874,8 @@ adpt_hppe_flow_entry_get(
 			if (entry.bf1.port_vp2 >= 64)
 				flow_entry->bridge_port |= 0x1000000;
 		}
-		flow_entry->de_acce = entry.bf0.de_acce;
-		flow_entry->copy_tocpu = entry.bf0.copy_to_cpu_en;
+		flow_entry->deacclr_en = entry.bf0.de_acce;
+		flow_entry->copy_tocpu_en = entry.bf0.copy_to_cpu_en;
 		flow_entry->syn_toggle = entry.bf0.syn_toggle;
 		flow_entry->pri_profile = entry.bf0.pri_profile_0 |\
 								entry.bf0.pri_profile_1 << 1;
@@ -899,7 +888,6 @@ adpt_hppe_flow_entry_get(
 		
 	} else if ((type & FAL_FLOW_IP6_5TUPLE_ADDR) == FAL_FLOW_IP6_5TUPLE_ADDR) {
 		union in_flow_ipv6_5tuple_tbl_u entry;
-		entry.bf0.valid= flow_entry->valid;
 		entry.bf0.entry_type = 1;
 		entry.bf0.host_addr_index_type = flow_entry->host_addr_type;
 		entry.bf0.host_addr_index = flow_entry->host_addr_index;
@@ -916,7 +904,6 @@ adpt_hppe_flow_entry_get(
 		entry.bf0.l4_dport_0 = flow_entry->dst_port;
 		entry.bf0.l4_dport_1 = flow_entry->dst_port >> 4;
 		rv = hppe_flow_ipv6_5tuple_get(dev_id, get_mode, &flow_entry->entry_id, &entry);
-		flow_entry->valid = entry.bf0.valid;
 		flow_entry->host_addr_type = entry.bf0.host_addr_index_type;
 		flow_entry->host_addr_index = entry.bf0.host_addr_index;
 		flow_entry->protocol = entry.bf0.protocol_type;
@@ -939,8 +926,8 @@ adpt_hppe_flow_entry_get(
 			if (entry.bf1.port_vp2 >= 64)
 				flow_entry->bridge_port |= 0x1000000;
 		}
-		flow_entry->de_acce = entry.bf0.de_acce;
-		flow_entry->copy_tocpu = entry.bf0.copy_to_cpu_en;
+		flow_entry->deacclr_en = entry.bf0.de_acce;
+		flow_entry->copy_tocpu_en = entry.bf0.copy_to_cpu_en;
 		flow_entry->syn_toggle = entry.bf0.syn_toggle;
 		flow_entry->pri_profile = entry.bf0.pri_profile_0 |\
 								entry.bf0.pri_profile_1 << 1;
@@ -959,7 +946,6 @@ adpt_hppe_flow_entry_get(
 		
 	} else if ((type & FAL_FLOW_IP4_3TUPLE_ADDR) == FAL_FLOW_IP4_3TUPLE_ADDR) {
 		union in_flow_3tuple_tbl_u entry;
-		entry.bf0.valid= flow_entry->valid;
 		entry.bf0.entry_type = 0;
 		entry.bf0.host_addr_index_type = flow_entry->host_addr_type;
 		entry.bf0.host_addr_index = flow_entry->host_addr_index;
@@ -968,7 +954,6 @@ adpt_hppe_flow_entry_get(
 		entry.bf0.ip_addr_1 = flow_entry->flow_ip.ipv4 >> 20;
 		entry.bf0.ip_protocol = flow_entry->ip_type;
 		rv = hppe_flow_ipv4_3tuple_get(dev_id, get_mode, &flow_entry->entry_id, &entry);
-		flow_entry->valid = entry.bf0.valid;
 		flow_entry->host_addr_type = entry.bf0.host_addr_index_type;
 		flow_entry->host_addr_index = entry.bf0.host_addr_index;
 		flow_entry->protocol = entry.bf0.protocol_type;
@@ -991,8 +976,8 @@ adpt_hppe_flow_entry_get(
 			if (entry.bf1.port_vp2 >= 64)
 				flow_entry->bridge_port |= 0x1000000;
 		}
-		flow_entry->de_acce = entry.bf0.de_acce;
-		flow_entry->copy_tocpu = entry.bf0.copy_to_cpu_en;
+		flow_entry->deacclr_en = entry.bf0.de_acce;
+		flow_entry->copy_tocpu_en = entry.bf0.copy_to_cpu_en;
 		flow_entry->syn_toggle = entry.bf0.syn_toggle;
 		flow_entry->pri_profile = entry.bf0.pri_profile_0 |\
 								entry.bf0.pri_profile_1 << 1;
@@ -1002,7 +987,6 @@ adpt_hppe_flow_entry_get(
 		flow_entry->ip_type = entry.bf0.ip_protocol;
 	} else if ((type & FAL_FLOW_IP6_3TUPLE_ADDR) == FAL_FLOW_IP6_3TUPLE_ADDR) {
 		union in_flow_ipv6_3tuple_tbl_u entry;
-		entry.bf0.valid= flow_entry->valid;
 		entry.bf0.entry_type = 1;
 		entry.bf0.host_addr_index_type = flow_entry->host_addr_type;
 		entry.bf0.host_addr_index = flow_entry->host_addr_index;
@@ -1017,7 +1001,6 @@ adpt_hppe_flow_entry_get(
 		entry.bf0.ip_addr_4 = flow_entry->flow_ip.ipv6.ul[0] >> 20;
 		entry.bf0.ip_protocol = flow_entry->ip_type;
 		rv = hppe_flow_ipv6_3tuple_get(dev_id, get_mode, &flow_entry->entry_id, &entry);
-		flow_entry->valid = entry.bf0.valid;
 		flow_entry->host_addr_type = entry.bf0.host_addr_index_type;
 		flow_entry->host_addr_index = entry.bf0.host_addr_index;
 		flow_entry->protocol = entry.bf0.protocol_type;
@@ -1040,8 +1023,8 @@ adpt_hppe_flow_entry_get(
 			if (entry.bf0.port_vp2 >= 64)
 				flow_entry->bridge_port |= 0x1000000;
 		}
-		flow_entry->de_acce = entry.bf0.de_acce;
-		flow_entry->copy_tocpu = entry.bf0.copy_to_cpu_en;
+		flow_entry->deacclr_en = entry.bf0.de_acce;
+		flow_entry->copy_tocpu_en = entry.bf0.copy_to_cpu_en;
 		flow_entry->syn_toggle = entry.bf0.syn_toggle;
 		flow_entry->pri_profile = entry.bf0.pri_profile_0 |\
 								entry.bf0.pri_profile_1 << 1;
@@ -1064,8 +1047,8 @@ adpt_hppe_flow_entry_get(
 		rv = hppe_eg_flow_tree_map_tbl_get(dev_id, flow_entry->entry_id, &eg_treemap);
 		flow_entry->tree_id = eg_treemap.bf.tree_id;
 		rv = hppe_in_flow_cnt_tbl_get(dev_id, flow_entry->entry_id, &cnt);
-		flow_entry->pkt_count = cnt.bf.hit_pkt_counter;
-		flow_entry->byte_count = cnt.bf.hit_byte_counter_0 | \
+		flow_entry->pkt_counter = cnt.bf.hit_pkt_counter;
+		flow_entry->byte_counter = cnt.bf.hit_byte_counter_0 | \
 					((a_uint64_t)cnt.bf.hit_byte_counter_1 << 32);
 	}
 	return rv;
@@ -1088,7 +1071,6 @@ adpt_hppe_flow_entry_del(
 	type = flow_entry->entry_type;
 	if ((type & FAL_FLOW_IP4_5TUPLE_ADDR) == FAL_FLOW_IP4_5TUPLE_ADDR) {
 		union in_flow_tbl_u entry;
-		entry.bf0.valid= flow_entry->valid;
 		entry.bf0.entry_type = 0;
 		entry.bf0.host_addr_index_type = flow_entry->host_addr_type;
 		entry.bf0.host_addr_index = flow_entry->host_addr_index;
@@ -1110,8 +1092,8 @@ adpt_hppe_flow_entry_del(
 		} else if (flow_entry->fwd_type == FAL_FLOW_BRIDGE) {
 			entry.bf1.port_vp2 = flow_entry->bridge_port & 0xffffff;
 		}
-		entry.bf0.de_acce = flow_entry->de_acce;
-		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu;
+		entry.bf0.de_acce = flow_entry->deacclr_en;
+		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu_en;
 		entry.bf0.syn_toggle = flow_entry->syn_toggle;
 		entry.bf0.pri_profile_0 = flow_entry->pri_profile;
 		entry.bf0.pri_profile_1 = flow_entry->pri_profile >> 1;
@@ -1124,7 +1106,6 @@ adpt_hppe_flow_entry_del(
 		rv = hppe_flow_ipv4_5tuple_del(dev_id, del_mode, &flow_entry->entry_id, &entry);
 	} else if ((type & FAL_FLOW_IP6_5TUPLE_ADDR) == FAL_FLOW_IP6_5TUPLE_ADDR) {
 		union in_flow_ipv6_5tuple_tbl_u entry;
-		entry.bf0.valid= flow_entry->valid;
 		entry.bf0.entry_type = 1;
 		entry.bf0.host_addr_index_type = flow_entry->host_addr_type;
 		entry.bf0.host_addr_index = flow_entry->host_addr_index;
@@ -1144,8 +1125,8 @@ adpt_hppe_flow_entry_del(
 		} else if (flow_entry->fwd_type == FAL_FLOW_BRIDGE) {
 			entry.bf1.port_vp2 = flow_entry->bridge_port & 0xffffff;
 		}
-		entry.bf0.de_acce = flow_entry->de_acce;
-		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu;
+		entry.bf0.de_acce = flow_entry->deacclr_en;
+		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu_en;
 		entry.bf0.syn_toggle = flow_entry->syn_toggle;
 		entry.bf0.pri_profile_0 = flow_entry->pri_profile;
 		entry.bf0.pri_profile_1 = flow_entry->pri_profile >> 1;
@@ -1164,7 +1145,6 @@ adpt_hppe_flow_entry_del(
 		rv = hppe_flow_ipv6_5tuple_del(dev_id, del_mode, &flow_entry->entry_id, &entry);
 	} else if ((type & FAL_FLOW_IP4_3TUPLE_ADDR) == FAL_FLOW_IP4_3TUPLE_ADDR) {
 		union in_flow_3tuple_tbl_u entry;
-		entry.bf0.valid= flow_entry->valid;
 		entry.bf0.entry_type = 0;
 		entry.bf0.host_addr_index_type = flow_entry->host_addr_type;
 		entry.bf0.host_addr_index = flow_entry->host_addr_index;
@@ -1184,8 +1164,8 @@ adpt_hppe_flow_entry_del(
 		} else if (flow_entry->fwd_type == FAL_FLOW_BRIDGE) {
 			entry.bf1.port_vp2 = flow_entry->bridge_port & 0xffffff;
 		}
-		entry.bf0.de_acce = flow_entry->de_acce;
-		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu;
+		entry.bf0.de_acce = flow_entry->deacclr_en;
+		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu_en;
 		entry.bf0.syn_toggle = flow_entry->syn_toggle;
 		entry.bf0.pri_profile_0 = flow_entry->pri_profile;
 		entry.bf0.pri_profile_1 = flow_entry->pri_profile >> 1;
@@ -1196,7 +1176,6 @@ adpt_hppe_flow_entry_del(
 		rv = hppe_flow_ipv4_3tuple_del(dev_id, del_mode, &flow_entry->entry_id, &entry);
 	} else if ((type & FAL_FLOW_IP6_3TUPLE_ADDR) == FAL_FLOW_IP6_3TUPLE_ADDR) {
 		union in_flow_ipv6_3tuple_tbl_u entry;
-		entry.bf0.valid= flow_entry->valid;
 		entry.bf0.entry_type = 1;
 		entry.bf0.host_addr_index_type = flow_entry->host_addr_type;
 		entry.bf0.host_addr_index = flow_entry->host_addr_index;
@@ -1216,8 +1195,8 @@ adpt_hppe_flow_entry_del(
 		} else if (flow_entry->fwd_type == FAL_FLOW_BRIDGE) {
 			entry.bf0.port_vp2 = flow_entry->bridge_port & 0xffffff;
 		}
-		entry.bf0.de_acce = flow_entry->de_acce;
-		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu;
+		entry.bf0.de_acce = flow_entry->deacclr_en;
+		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu_en;
 		entry.bf0.syn_toggle = flow_entry->syn_toggle;
 		entry.bf0.pri_profile_0 = flow_entry->pri_profile;
 		entry.bf0.pri_profile_1 = flow_entry->pri_profile >> 1;
@@ -1275,33 +1254,33 @@ adpt_hppe_flow_ctrl_set(
 
 	if (dir == FAL_FLOW_LAN_TO_LAN_DIR) {
 		flow_ctrl1.bf.flow_ctl0_miss_action = ctrl->miss_action;
-		flow_ctrl1.bf.flow_ctl0_frag_bypass = ctrl->frag_bypass;
-		flow_ctrl1.bf.flow_ctl0_tcp_special = ctrl->tcp_spec_bypass;
-		flow_ctrl1.bf.flow_ctl0_bypass = ctrl->all_bypass;
+		flow_ctrl1.bf.flow_ctl0_frag_bypass = ctrl->frag_bypass_en;
+		flow_ctrl1.bf.flow_ctl0_tcp_special = ctrl->tcp_spec_bypass_en;
+		flow_ctrl1.bf.flow_ctl0_bypass = ctrl->all_bypass_en;
 		flow_ctrl1.bf.flow_ctl0_key_sel = ctrl->key_sel;
 	} else if (dir == FAL_FLOW_LAN_TO_WAN_DIR) {
 		flow_ctrl1.bf.flow_ctl1_miss_action = ctrl->miss_action;
-		flow_ctrl1.bf.flow_ctl1_frag_bypass = ctrl->frag_bypass;
-		flow_ctrl1.bf.flow_ctl1_tcp_special = ctrl->tcp_spec_bypass;
-		flow_ctrl1.bf.flow_ctl1_bypass = ctrl->all_bypass;
+		flow_ctrl1.bf.flow_ctl1_frag_bypass = ctrl->frag_bypass_en;
+		flow_ctrl1.bf.flow_ctl1_tcp_special = ctrl->tcp_spec_bypass_en;
+		flow_ctrl1.bf.flow_ctl1_bypass = ctrl->all_bypass_en;
 		flow_ctrl1.bf.flow_ctl1_key_sel = ctrl->key_sel;
 	} else if (dir == FAL_FLOW_WAN_TO_LAN_DIR) {
 		flow_ctrl1.bf.flow_ctl2_miss_action = ctrl->miss_action;
-		flow_ctrl1.bf.flow_ctl2_frag_bypass = ctrl->frag_bypass;
-		flow_ctrl1.bf.flow_ctl2_tcp_special = ctrl->tcp_spec_bypass;
-		flow_ctrl1.bf.flow_ctl2_bypass = ctrl->all_bypass;
+		flow_ctrl1.bf.flow_ctl2_frag_bypass = ctrl->frag_bypass_en;
+		flow_ctrl1.bf.flow_ctl2_tcp_special = ctrl->tcp_spec_bypass_en;
+		flow_ctrl1.bf.flow_ctl2_bypass = ctrl->all_bypass_en;
 		flow_ctrl1.bf.flow_ctl2_key_sel = ctrl->key_sel;
 	} else if (dir == FAL_FLOW_WAN_TO_WAN_DIR) {
 		flow_ctrl1.bf.flow_ctl3_miss_action = ctrl->miss_action;
-		flow_ctrl1.bf.flow_ctl3_frag_bypass = ctrl->frag_bypass;
-		flow_ctrl1.bf.flow_ctl3_tcp_special = ctrl->tcp_spec_bypass;
-		flow_ctrl1.bf.flow_ctl3_bypass = ctrl->all_bypass;
+		flow_ctrl1.bf.flow_ctl3_frag_bypass = ctrl->frag_bypass_en;
+		flow_ctrl1.bf.flow_ctl3_tcp_special = ctrl->tcp_spec_bypass_en;
+		flow_ctrl1.bf.flow_ctl3_bypass = ctrl->all_bypass_en;
 		flow_ctrl1.bf.flow_ctl3_key_sel = ctrl->key_sel;
 	} else if (dir == FAL_FLOW_UNKOWN_DIR_DIR) {
 		flow_ctrl1.bf.flow_ctl4_miss_action = ctrl->miss_action;
-		flow_ctrl1.bf.flow_ctl4_frag_bypass = ctrl->frag_bypass;
-		flow_ctrl1.bf.flow_ctl4_tcp_special = ctrl->tcp_spec_bypass;
-		flow_ctrl1.bf.flow_ctl4_bypass = ctrl->all_bypass;
+		flow_ctrl1.bf.flow_ctl4_frag_bypass = ctrl->frag_bypass_en;
+		flow_ctrl1.bf.flow_ctl4_tcp_special = ctrl->tcp_spec_bypass_en;
+		flow_ctrl1.bf.flow_ctl4_bypass = ctrl->all_bypass_en;
 		flow_ctrl1.bf.flow_ctl4_key_sel = ctrl->key_sel;
 	} else
 		return SW_FAIL;
@@ -1366,33 +1345,33 @@ adpt_hppe_flow_ctrl_get(
 
 	if (dir == FAL_FLOW_LAN_TO_LAN_DIR) {
 		ctrl->miss_action = flow_ctrl1.bf.flow_ctl0_miss_action;
-		ctrl->frag_bypass = flow_ctrl1.bf.flow_ctl0_frag_bypass;
-		ctrl->tcp_spec_bypass = flow_ctrl1.bf.flow_ctl0_tcp_special;
-		ctrl->all_bypass = flow_ctrl1.bf.flow_ctl0_bypass;
+		ctrl->frag_bypass_en = flow_ctrl1.bf.flow_ctl0_frag_bypass;
+		ctrl->tcp_spec_bypass_en = flow_ctrl1.bf.flow_ctl0_tcp_special;
+		ctrl->all_bypass_en = flow_ctrl1.bf.flow_ctl0_bypass;
 		ctrl->key_sel = flow_ctrl1.bf.flow_ctl0_key_sel;
 	} else if (dir == FAL_FLOW_LAN_TO_WAN_DIR) {
 		ctrl->miss_action = flow_ctrl1.bf.flow_ctl1_miss_action;
-		ctrl->frag_bypass = flow_ctrl1.bf.flow_ctl1_frag_bypass;
-		ctrl->tcp_spec_bypass = flow_ctrl1.bf.flow_ctl1_tcp_special;
-		ctrl->all_bypass = flow_ctrl1.bf.flow_ctl1_bypass;
+		ctrl->frag_bypass_en = flow_ctrl1.bf.flow_ctl1_frag_bypass;
+		ctrl->tcp_spec_bypass_en = flow_ctrl1.bf.flow_ctl1_tcp_special;
+		ctrl->all_bypass_en = flow_ctrl1.bf.flow_ctl1_bypass;
 		ctrl->key_sel = flow_ctrl1.bf.flow_ctl1_key_sel;
 	} else if (dir == FAL_FLOW_WAN_TO_LAN_DIR) {
 		ctrl->miss_action = flow_ctrl1.bf.flow_ctl2_miss_action;
-		ctrl->frag_bypass = flow_ctrl1.bf.flow_ctl2_frag_bypass;
-		ctrl->tcp_spec_bypass = flow_ctrl1.bf.flow_ctl2_tcp_special;
-		ctrl->all_bypass = flow_ctrl1.bf.flow_ctl2_bypass;
+		ctrl->frag_bypass_en = flow_ctrl1.bf.flow_ctl2_frag_bypass;
+		ctrl->tcp_spec_bypass_en = flow_ctrl1.bf.flow_ctl2_tcp_special;
+		ctrl->all_bypass_en = flow_ctrl1.bf.flow_ctl2_bypass;
 		ctrl->key_sel = flow_ctrl1.bf.flow_ctl2_key_sel;
 	} else if (dir == FAL_FLOW_WAN_TO_WAN_DIR) {
 		ctrl->miss_action = flow_ctrl1.bf.flow_ctl3_miss_action;
-		ctrl->frag_bypass = flow_ctrl1.bf.flow_ctl3_frag_bypass;
-		ctrl->tcp_spec_bypass = flow_ctrl1.bf.flow_ctl3_tcp_special;
-		ctrl->all_bypass = flow_ctrl1.bf.flow_ctl3_bypass;
+		ctrl->frag_bypass_en = flow_ctrl1.bf.flow_ctl3_frag_bypass;
+		ctrl->tcp_spec_bypass_en = flow_ctrl1.bf.flow_ctl3_tcp_special;
+		ctrl->all_bypass_en = flow_ctrl1.bf.flow_ctl3_bypass;
 		ctrl->key_sel = flow_ctrl1.bf.flow_ctl3_key_sel;
 	} else if (dir == FAL_FLOW_UNKOWN_DIR_DIR) {
 		ctrl->miss_action = flow_ctrl1.bf.flow_ctl4_miss_action;
-		ctrl->frag_bypass = flow_ctrl1.bf.flow_ctl4_frag_bypass;
-		ctrl->tcp_spec_bypass = flow_ctrl1.bf.flow_ctl4_tcp_special;
-		ctrl->all_bypass = flow_ctrl1.bf.flow_ctl4_bypass;
+		ctrl->frag_bypass_en = flow_ctrl1.bf.flow_ctl4_frag_bypass;
+		ctrl->tcp_spec_bypass_en = flow_ctrl1.bf.flow_ctl4_tcp_special;
+		ctrl->all_bypass_en = flow_ctrl1.bf.flow_ctl4_bypass;
 		ctrl->key_sel = flow_ctrl1.bf.flow_ctl4_key_sel;
 	} else
 		return SW_FAIL;
@@ -1434,7 +1413,7 @@ adpt_hppe_flow_entry_add(
 	type = flow_entry->entry_type;
 	if ((type & FAL_FLOW_IP4_5TUPLE_ADDR) == FAL_FLOW_IP4_5TUPLE_ADDR) {
 		union in_flow_tbl_u entry;
-		entry.bf0.valid= flow_entry->valid;
+		entry.bf0.valid= 1;
 		entry.bf0.entry_type = 0;
 		entry.bf0.host_addr_index_type = flow_entry->host_addr_type;
 		entry.bf0.host_addr_index = flow_entry->host_addr_index;
@@ -1456,8 +1435,8 @@ adpt_hppe_flow_entry_add(
 		} else if (flow_entry->fwd_type == FAL_FLOW_BRIDGE) {
 			entry.bf1.port_vp2 = flow_entry->bridge_port & 0xffffff;
 		}
-		entry.bf0.de_acce = flow_entry->de_acce;
-		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu;
+		entry.bf0.de_acce = flow_entry->deacclr_en;
+		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu_en;
 		entry.bf0.syn_toggle = flow_entry->syn_toggle;
 		entry.bf0.pri_profile_0 = flow_entry->pri_profile;
 		entry.bf0.pri_profile_1 = flow_entry->pri_profile >> 1;
@@ -1470,7 +1449,7 @@ adpt_hppe_flow_entry_add(
 		rv = hppe_flow_ipv4_5tuple_add(dev_id, (a_uint32_t)add_mode, &flow_entry->entry_id, &entry);
 	} else if ((type & FAL_FLOW_IP6_5TUPLE_ADDR) == FAL_FLOW_IP6_5TUPLE_ADDR) {
 		union in_flow_ipv6_5tuple_tbl_u entry;
-		entry.bf0.valid= flow_entry->valid;
+		entry.bf0.valid= 1;
 		entry.bf0.entry_type = 1;
 		entry.bf0.host_addr_index_type = flow_entry->host_addr_type;
 		entry.bf0.host_addr_index = flow_entry->host_addr_index;
@@ -1490,8 +1469,8 @@ adpt_hppe_flow_entry_add(
 		} else if (flow_entry->fwd_type == FAL_FLOW_BRIDGE) {
 			entry.bf1.port_vp2 = flow_entry->bridge_port & 0xffffff;
 		}
-		entry.bf0.de_acce = flow_entry->de_acce;
-		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu;
+		entry.bf0.de_acce = flow_entry->deacclr_en;
+		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu_en;
 		entry.bf0.syn_toggle = flow_entry->syn_toggle;
 		entry.bf0.pri_profile_0 = flow_entry->pri_profile;
 		entry.bf0.pri_profile_1 = flow_entry->pri_profile >> 1;
@@ -1510,7 +1489,7 @@ adpt_hppe_flow_entry_add(
 		rv = hppe_flow_ipv6_5tuple_add(dev_id, (a_uint32_t)add_mode, &flow_entry->entry_id, &entry);
 	} else if ((type & FAL_FLOW_IP4_3TUPLE_ADDR) == FAL_FLOW_IP4_3TUPLE_ADDR) {
 		union in_flow_3tuple_tbl_u entry;
-		entry.bf0.valid= flow_entry->valid;
+		entry.bf0.valid= 1;
 		entry.bf0.entry_type = 0;
 		entry.bf0.host_addr_index_type = flow_entry->host_addr_type;
 		entry.bf0.host_addr_index = flow_entry->host_addr_index;
@@ -1530,8 +1509,8 @@ adpt_hppe_flow_entry_add(
 		} else if (flow_entry->fwd_type == FAL_FLOW_BRIDGE) {
 			entry.bf1.port_vp2 = flow_entry->bridge_port & 0xffffff;
 		}
-		entry.bf0.de_acce = flow_entry->de_acce;
-		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu;
+		entry.bf0.de_acce = flow_entry->deacclr_en;
+		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu_en;
 		entry.bf0.syn_toggle = flow_entry->syn_toggle;
 		entry.bf0.pri_profile_0 = flow_entry->pri_profile;
 		entry.bf0.pri_profile_1 = flow_entry->pri_profile >> 1;
@@ -1542,7 +1521,7 @@ adpt_hppe_flow_entry_add(
 		rv = hppe_flow_ipv4_3tuple_add(dev_id, (a_uint32_t)add_mode, &flow_entry->entry_id, &entry);
 	} else if ((type & FAL_FLOW_IP6_3TUPLE_ADDR) == FAL_FLOW_IP6_3TUPLE_ADDR) {
 		union in_flow_ipv6_3tuple_tbl_u entry;
-		entry.bf0.valid= flow_entry->valid;
+		entry.bf0.valid= 1;
 		entry.bf0.entry_type = 1;
 		entry.bf0.host_addr_index_type = flow_entry->host_addr_type;
 		entry.bf0.host_addr_index = flow_entry->host_addr_index;
@@ -1562,8 +1541,8 @@ adpt_hppe_flow_entry_add(
 		} else if (flow_entry->fwd_type == FAL_FLOW_BRIDGE) {
 			entry.bf0.port_vp2 = flow_entry->bridge_port & 0xffffff;
 		}
-		entry.bf0.de_acce = flow_entry->de_acce;
-		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu;
+		entry.bf0.de_acce = flow_entry->deacclr_en;
+		entry.bf0.copy_to_cpu_en = flow_entry->copy_tocpu_en;
 		entry.bf0.syn_toggle = flow_entry->syn_toggle;
 		entry.bf0.pri_profile_0 = flow_entry->pri_profile;
 		entry.bf0.pri_profile_1 = flow_entry->pri_profile >> 1;
@@ -1615,14 +1594,14 @@ adpt_hppe_flow_global_cfg_get(
 	if( rv != SW_OK )
 		return rv;
 
-	cfg->src_if_check = route_ctrl.bf.flow_src_if_check_cmd;
-	cfg->src_if_check_de_acce = route_ctrl.bf.flow_src_if_check_de_acce;
+	cfg->src_if_check_action= route_ctrl.bf.flow_src_if_check_cmd;
+	cfg->src_if_check_deacclr_en= route_ctrl.bf.flow_src_if_check_de_acce;
 	cfg->service_loop_en = route_ctrl_ext.bf.flow_service_code_loop_en;
-	cfg->service_loop = route_ctrl.bf.flow_service_code_loop;
-	cfg->service_loop_de_acce = route_ctrl.bf.flow_service_code_loop_de_acce;
-	cfg->flow_de_acce = route_ctrl.bf.flow_de_acce_cmd;
-	cfg->sync_mismatch = route_ctrl.bf.flow_sync_mismatch_cmd;
-	cfg->sync_mismatch_de_acce = route_ctrl.bf.flow_sync_mismatch_de_acce;
+	cfg->service_loop_action = route_ctrl.bf.flow_service_code_loop;
+	cfg->service_loop_deacclr_en = route_ctrl.bf.flow_service_code_loop_de_acce;
+	cfg->flow_deacclr_action = route_ctrl.bf.flow_de_acce_cmd;
+	cfg->sync_mismatch_action = route_ctrl.bf.flow_sync_mismatch_cmd;
+	cfg->sync_mismatch_deacclr_en = route_ctrl.bf.flow_sync_mismatch_de_acce;
 	cfg->hash_mode_0 = flow_ctrl0.bf.flow_hash_mode_0;
 	cfg->hash_mode_1 = flow_ctrl0.bf.flow_hash_mode_1;
 
@@ -1656,14 +1635,14 @@ adpt_hppe_flow_global_cfg_set(
 	if( rv != SW_OK )
 		return rv;
 
-	route_ctrl.bf.flow_src_if_check_cmd = cfg->src_if_check;
-	route_ctrl.bf.flow_src_if_check_de_acce = cfg->src_if_check_de_acce;
+	route_ctrl.bf.flow_src_if_check_cmd = cfg->src_if_check_action;
+	route_ctrl.bf.flow_src_if_check_de_acce = cfg->src_if_check_deacclr_en;
 	route_ctrl_ext.bf.flow_service_code_loop_en = cfg->service_loop_en;
-	route_ctrl.bf.flow_service_code_loop = cfg->service_loop;
-	route_ctrl.bf.flow_service_code_loop_de_acce = cfg->service_loop_de_acce;
-	route_ctrl.bf.flow_de_acce_cmd = cfg->flow_de_acce;
-	route_ctrl.bf.flow_sync_mismatch_cmd = cfg->sync_mismatch;
-	route_ctrl.bf.flow_sync_mismatch_de_acce = cfg->sync_mismatch_de_acce;
+	route_ctrl.bf.flow_service_code_loop = cfg->service_loop_action;
+	route_ctrl.bf.flow_service_code_loop_de_acce = cfg->service_loop_deacclr_en;
+	route_ctrl.bf.flow_de_acce_cmd = cfg->flow_deacclr_action;
+	route_ctrl.bf.flow_sync_mismatch_cmd = cfg->sync_mismatch_action;
+	route_ctrl.bf.flow_sync_mismatch_de_acce = cfg->sync_mismatch_deacclr_en;
 	flow_ctrl0.bf.flow_hash_mode_0 = cfg->hash_mode_0;
 	flow_ctrl0.bf.flow_hash_mode_1 = cfg->hash_mode_1;
 
