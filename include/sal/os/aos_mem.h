@@ -16,11 +16,7 @@
 #define _AOS_MEM_H
 
 #include "sal/os/aos_types.h"
-#ifdef KERNEL_MODULE
 #include "sal/os/linux/aos_mem_pvt.h"
-#else
-#include "sal/os/linux_user/aos_mem_pvt.h"
-#endif
 
 /**
  * @g aos_mem mem

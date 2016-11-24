@@ -105,3 +105,40 @@ qca_ar8327_sw_atu_dump(struct switch_dev *dev,
 	return 0;
 }
 
+#define MAX_PORT 6
+/*
+ * example:
+ * vid=4;
+ * char addr[6] = {0x00, 0x01, 0x02, 0x88, 0x00, 0xaa}
+ *
+ * return value:
+ *  success: 0 - 5
+ *  fail: 0xffffffff
+ */
+fal_port_t
+ref_fdb_get_port_by_mac(unsigned int vid, const char * addr)
+{
+	fal_fdb_entry_t entry = {0};
+	unsigned char i;
+	sw_error_t rv;
+
+	entry.fid = vid;
+	for (i = 0; i < 6; i++)
+		entry.addr.uc[i] = addr[i];
+
+	rv = fal_fdb_find(0, &entry);
+	if (rv != SW_OK)
+		return 0xffffffff;
+
+	for (i = 0; i < MAX_PORT; i++)
+	{
+		if (entry.port.id & (0x1 << i))
+		{
+			return i;
+		}
+	}
+	return 0xffffffff;
+}
+
+EXPORT_SYMBOL(ref_fdb_get_port_by_mac);
+

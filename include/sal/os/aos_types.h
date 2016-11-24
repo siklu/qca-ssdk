@@ -15,11 +15,7 @@
 #ifndef _AOS_TYPES_H
 #define _AOS_TYPES_H
 
-#ifdef KERNEL_MODULE
 #include "sal/os/linux/aos_types_pvt.h"
-#else
-#include "sal/os/linux_user/aos_types_pvt.h"
-#endif
 
 #ifndef NULL
 #define NULL 0
