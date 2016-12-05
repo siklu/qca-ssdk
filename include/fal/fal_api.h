@@ -1557,8 +1557,8 @@ extern "C" {
 #define VSI_API \
     SW_API_DEF(SW_API_VSI_ALLOC, ppe_vsi_alloc), \
     SW_API_DEF(SW_API_VSI_FREE, ppe_vsi_free), \
-    SW_API_DEF(SW_API_PORT_VSI_SET, ppe_port_vsi_set), \
-    SW_API_DEF(SW_API_PORT_VSI_GET, ppe_port_vsi_get), \
+    SW_API_DEF(SW_API_PORT_VSI_SET, fal_port_vsi_set), \
+    SW_API_DEF(SW_API_PORT_VSI_GET, fal_port_vsi_get), \
     SW_API_DEF(SW_API_PORT_VLAN_VSI_SET, ppe_port_vlan_vsi_set), \
     SW_API_DEF(SW_API_PORT_VLAN_VSI_GET, ppe_port_vlan_vsi_get), \
     SW_API_DEF(SW_API_VSI_TBL_DUMP, ppe_vsi_tbl_dump), \

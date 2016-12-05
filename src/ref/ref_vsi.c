@@ -13,7 +13,7 @@
  */
 #include "ref_vsi.h"
 
-#define PPE_VSI_MAX 31
+#define PPE_VSI_MAX FAL_VSI_MAX
 #define PPE_VSI_RESERVE_MAX 5
 
 static ref_vsi_t ref_vsi_mapping[SW_MAX_NR_DEV][PPE_VSI_MAX+1] ={{{0, 0, NULL},
@@ -103,6 +103,8 @@ static sw_error_t _ppe_vlan_vsi_mapping_add(a_uint32_t dev_id, fal_port_t port_i
 
 	if(p_vsi_info == NULL)/*create a new entry if no match*/
 	{
+		/*printk("%s,%d: port %d svlan %d cvlan %d vsi %d aos_mem_alloc\n",
+				__FUNCTION__, __LINE__, port_id, stag_vid, ctag_vid, vsi_id);*/
 		p_vsi_info = aos_mem_alloc(sizeof(ref_vlan_info_t));
 		if(p_vsi_info == NULL)
 		{
@@ -308,15 +310,17 @@ ppe_port_vsi_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vsi_id)
 	sw_error_t rv;
 
 	REF_DEV_ID_CHECK(dev_id);
-	//printk("%s, %d: port %d, vsi %d\n", __FUNCTION__, __LINE__, port_id, vsi_id);
+	/*printk("%s, %d: port %d, vsi %d\n", __FUNCTION__, __LINE__, port_id, vsi_id);*/
 	if(!(FAL_IS_PPORT(port_id)) && !(FAL_IS_VPORT(port_id)))
 		return SW_BAD_VALUE;
 
-	rv = fal_port_vsi_set(dev_id, port_id, vsi_id);
-	if (SW_OK != rv)
-		return rv;
+	if(vsi_id > PPE_VSI_MAX){
+		printk("%s, %d: invalid VSI port %d, vsi %d\n",
+				__FUNCTION__, __LINE__, port_id, vsi_id);
+		return SW_BAD_VALUE;
+	}
 
-	//printk("%s, %d: port %d, vsi %d\n", __FUNCTION__, __LINE__, port_id, vsi_id);
+	/*printk("%s, %d: port %d, vsi %d\n", __FUNCTION__, __LINE__, port_id, vsi_id);*/
 
 	if(FAL_IS_PPORT(port_id))
 	{
@@ -326,33 +330,25 @@ ppe_port_vsi_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vsi_id)
 	}
 	return rv;
 }
+
 sw_error_t
 ppe_port_vsi_get(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t *vsi_id)
 {
-#if 1
-	sw_error_t rv;
-
-	rv = fal_port_vsi_get(dev_id, port_id, vsi_id);
-
-	if((SW_OK == rv)&&(*vsi_id == FAL_VSI_INVALID)){
-		return SW_NOT_FOUND;
-	}
-
-	return rv;
-#else
-	a_uint32_t i = 0;
-	for( i = 0; i <= PPE_VSI_MAX; i++ )
+	if(FAL_IS_PPORT(port_id))
 	{
-		if((ref_vsi_mapping[dev_id][i].valid != 0)&&
-			(ref_vsi_mapping[dev_id][i].pport_bitmap & (1 << port_id)))
+		a_uint32_t i = 0;
+		for( i = 0; i <= PPE_VSI_MAX; i++ )
 		{
-			*vsi_id = i;
-			return SW_OK;
+			if((ref_vsi_mapping[dev_id][i].valid != 0)&&
+				(ref_vsi_mapping[dev_id][i].pport_bitmap & (1 << port_id)))
+			{
+				*vsi_id = i;
+				return SW_OK;
+			}
 		}
 	}
 
 	return SW_NOT_FOUND;
-#endif
 }
 
 sw_error_t ppe_vsi_alloc(a_uint32_t dev_id, a_uint32_t *vsi)
@@ -361,6 +357,7 @@ sw_error_t ppe_vsi_alloc(a_uint32_t dev_id, a_uint32_t *vsi)
 
 	REF_DEV_ID_CHECK(dev_id);
 	REF_NULL_POINT_CHECK(vsi);
+	/*printk("%s, %d: requesting vsi\n", __FUNCTION__, __LINE__);*/
 
 	for( vsi_id = PPE_VSI_RESERVE_MAX+1; vsi_id < PPE_VSI_MAX; vsi_id++ )
 	{
@@ -379,6 +376,7 @@ sw_error_t ppe_vsi_alloc(a_uint32_t dev_id, a_uint32_t *vsi)
 			stamove.stamove_en = 1;
 			stamove.action = 0;
 			fal_vsi_stamove_set(dev_id, vsi_id, &stamove);
+			/*printk("%s, %d: vsi %d allocated\n", __FUNCTION__, __LINE__, *vsi);*/
 			return SW_OK;
 		}
 	}
@@ -388,16 +386,43 @@ sw_error_t ppe_vsi_alloc(a_uint32_t dev_id, a_uint32_t *vsi)
 
 sw_error_t ppe_vsi_free(a_uint32_t dev_id, a_uint32_t vsi_id)
 {
+	ref_vlan_info_t *p_vsi_info = NULL;
 	REF_DEV_ID_CHECK(dev_id);
 
 	if( vsi_id <= PPE_VSI_RESERVE_MAX || vsi_id > PPE_VSI_MAX )
 		return SW_OUT_OF_RANGE;
 
-	ref_vsi_mapping[dev_id][vsi_id].valid = 0;
-
 	/*TODO: free vlan and port bitmap*/
+	p_vsi_info = ref_vsi_mapping[dev_id][vsi_id].pHead;
+	while(p_vsi_info != NULL)
+	{
+		ref_vlan_info_t *ptemp = p_vsi_info;
+		p_vsi_info = p_vsi_info->pNext;
+		/*printk("%s,%d: port 0x%x svlan %d cvlan %d, vsi %d free vsi info\n",
+				__FUNCTION__, __LINE__, ptemp->vport_bitmap,
+				ptemp->stag_vid, ptemp->ctag_vid, vsi_id);*/
+		aos_mem_free(ptemp);
+	}
+	ref_vsi_mapping[dev_id][vsi_id].valid = 0;
+	ref_vsi_mapping[dev_id][vsi_id].pHead = NULL;
+	ref_vsi_mapping[dev_id][vsi_id].pport_bitmap = 0;
+
+	/*printk("%s, %d: vsi %d released\n", __FUNCTION__, __LINE__, vsi_id);*/
 
 	return SW_OK;
+}
+
+static void ppe_init_one_vsi(a_uint32_t dev_id, a_uint32_t vsi_id)
+{
+	if(ref_vsi_mapping[dev_id][vsi_id].valid == 0)
+	{
+		ref_vsi_mapping[dev_id][vsi_id].valid = 1;
+		ref_vsi_mapping[dev_id][vsi_id].pport_bitmap = 0;
+		ref_vsi_mapping[dev_id][vsi_id].pHead = NULL;
+		_ppe_vsi_member_init(dev_id, vsi_id);
+	}
+
+	return;
 }
 
 sw_error_t ppe_vsi_init(a_uint32_t dev_id)
@@ -406,17 +431,6 @@ sw_error_t ppe_vsi_init(a_uint32_t dev_id)
 	fal_port_t port_id;
 	fal_vsi_newaddr_lrn_t newaddr_lrn = {0};
 	fal_vsi_stamove_t stamove = {0};
-	/*init reserved vsi*/
-	for( vsi_id = 0; vsi_id <= PPE_VSI_RESERVE_MAX; vsi_id++ )
-	{
-		if(ref_vsi_mapping[dev_id][vsi_id].valid == 0)
-		{
-			ref_vsi_mapping[dev_id][vsi_id].valid = 1;
-			ref_vsi_mapping[dev_id][vsi_id].pport_bitmap = 0;
-			ref_vsi_mapping[dev_id][vsi_id].pHead = NULL;
-			_ppe_vsi_member_init(dev_id, vsi_id);
-		}
-	}
 
 	newaddr_lrn.action = 0;
 	newaddr_lrn.lrn_en = 1;
@@ -424,9 +438,11 @@ sw_error_t ppe_vsi_init(a_uint32_t dev_id)
 	stamove.stamove_en = 1;
 	for(port_id = 1; port_id <= 6; port_id++)
 	{
-		fal_vsi_newaddr_lrn_set(0, default_port_vsi[port_id-1], &newaddr_lrn);
-		fal_vsi_stamove_set(0, default_port_vsi[port_id-1], &stamove);
-		ppe_port_vsi_set(0, port_id, default_port_vsi[port_id-1]);
+		ppe_init_one_vsi(dev_id, default_port_vsi[port_id-1]);
+		fal_vsi_newaddr_lrn_set(dev_id, default_port_vsi[port_id-1], &newaddr_lrn);
+		fal_vsi_stamove_set(dev_id, default_port_vsi[port_id-1], &stamove);
+		/*fal_port_vsi_set(0, port_id, default_port_vsi[port_id-1]);*/
+		ppe_port_vsi_set(dev_id, port_id, default_port_vsi[port_id-1]);
 	}
 
 	return SW_OK;
