@@ -745,8 +745,8 @@ static sw_error_t setup_interface_entry(char *list_if, int is_wan)
             /* Get bridge interface name */
             br_name = (char *)(br_port_get_rcu(nat_dev)->br->dev->name);
             //memcpy (nat_bridge_dev, br_name, sizeof(br_name));
-            strcat (nat_lan_dev_list, " ");
-            strcat (nat_lan_dev_list, br_name);
+            strlcat (nat_lan_dev_list, " ", sizeof(nat_lan_dev_list));
+            strlcat (nat_lan_dev_list, br_name, sizeof(nat_lan_dev_list));
             /* Get dmac */
             devmac = (uint8_t *)(br_port_get_rcu(nat_dev)->br->dev->dev_addr);
         }
@@ -1226,7 +1226,7 @@ dev_check(char *in_dev, char *dev_list)
         return 0;
     }
 
-    strcpy(temp, dev_list);
+    strlcpy(temp, dev_list, sizeof(temp));
     list = temp;
 
     while ((list_dev = strsep(&list, " ")) != NULL)

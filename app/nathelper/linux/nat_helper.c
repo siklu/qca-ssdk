@@ -35,7 +35,7 @@ void hnat_log_msg(int level, char *string, ...)
 		return;
 	memset(hnat_log_buffer, 0, sizeof(hnat_log_buffer));
 	va_start(ptr,string);
-	vsprintf(hnat_log_buffer , string, ptr);
+	vsnprintf(hnat_log_buffer,sizeof(hnat_log_buffer), string, ptr);
 	va_end(ptr);
 	aos_printk("%s\n", hnat_log_buffer);
 }
