@@ -493,10 +493,12 @@ sw_error_t
 adpt_hppe_port_flowctrl_set(a_uint32_t dev_id, fal_port_t port_id,
 				  a_bool_t enable)
 {
-	union mac_enable_u mac_enable;
+	sw_error_t rv = SW_OK;
 
-	memset(&mac_enable, 0, sizeof(mac_enable));
-	ADPT_DEV_ID_CHECK(dev_id);
+	rv = adpt_hppe_port_txfc_status_set(dev_id, port_id, enable);
+	rv |= adpt_hppe_port_rxfc_status_set(dev_id, port_id, enable);
+	if(rv != SW_OK)
+		return rv;
 
 	return SW_OK;
 }
@@ -718,7 +720,7 @@ adpt_hppe_port_mru_get(a_uint32_t dev_id, fal_port_t port_id,
 		return rv;
 
 	ctrl->mru_size = mru_mtu_ctrl_tbl.bf.mru;
-	ctrl->action = (fal_mtu_action_t)mru_mtu_ctrl_tbl.bf.mru_cmd;
+	ctrl->action = (fal_fwd_cmd_t)mru_mtu_ctrl_tbl.bf.mru_cmd;
 
 	return SW_OK;
 }
@@ -1359,16 +1361,13 @@ adpt_hppe_port_flowctrl_get(a_uint32_t dev_id, fal_port_t port_id,
 				  a_bool_t * enable)
 {
 	sw_error_t rv = SW_OK;
-	union mac_enable_u mac_enable;
+	a_bool_t txfc_enable, rxfc_enable;
 
-	memset(&mac_enable, 0, sizeof(mac_enable));
-	ADPT_DEV_ID_CHECK(dev_id);
-	ADPT_NULL_POINT_CHECK(enable);
-
-	rv = hppe_mac_enable_get(dev_id, port_id, &mac_enable);
-
-	if( rv != SW_OK )
+	rv = adpt_hppe_port_txfc_status_get(dev_id, port_id,  &txfc_enable);
+	rv |= adpt_hppe_port_rxfc_status_get(dev_id, port_id,  &rxfc_enable);
+	if(rv != SW_OK)
 		return rv;
+	*enable = txfc_enable & rxfc_enable;
 
 	return SW_OK;
 }
@@ -1634,7 +1633,7 @@ adpt_hppe_port_mtu_get(a_uint32_t dev_id, fal_port_t port_id,
 		return rv;
 
 	ctrl->mtu_size = mru_mtu_ctrl_tbl.bf.mtu;
-	ctrl->action = (fal_mtu_action_t)mru_mtu_ctrl_tbl.bf.mtu_cmd;
+	ctrl->action = (fal_fwd_cmd_t)mru_mtu_ctrl_tbl.bf.mtu_cmd;
 
 	return SW_OK;
 }
