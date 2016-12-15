@@ -796,17 +796,18 @@ _fal_ip_vsi_sg_cfg_get(a_uint32_t dev_id, a_uint32_t vsi,
 }
 
 sw_error_t
-_fal_ip_pub_addr_del(a_uint32_t dev_id, a_uint32_t entry_id)
+_fal_ip_network_route_del(a_uint32_t dev_id,
+			a_uint32_t index, a_uint8_t type)
 {
     adpt_api_t *p_api;
     sw_error_t rv = SW_OK;
 
     SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
 
-    if (NULL == p_api->adpt_ip_pub_addr_del)
+    if (NULL == p_api->adpt_ip_network_route_del)
         return SW_NOT_SUPPORTED;
 
-    rv = p_api->adpt_ip_pub_addr_del(dev_id, entry_id);
+    rv = p_api->adpt_ip_network_route_del(dev_id, index, type);
     return rv;
 }
 sw_error_t
@@ -854,7 +855,8 @@ _fal_ip_vsi_arp_sg_cfg_set(a_uint32_t dev_id, a_uint32_t vsi,
     return rv;
 }
 sw_error_t
-_fal_ip_pub_addr_get(a_uint32_t dev_id, fal_ip_pub_addr_t *entry)
+_fal_ip_pub_addr_get(a_uint32_t dev_id,
+		a_uint32_t index, fal_ip_pub_addr_t *entry)
 {
     adpt_api_t *p_api;
     sw_error_t rv = SW_OK;
@@ -864,7 +866,7 @@ _fal_ip_pub_addr_get(a_uint32_t dev_id, fal_ip_pub_addr_t *entry)
     if (NULL == p_api->adpt_ip_pub_addr_get)
         return SW_NOT_SUPPORTED;
 
-    rv = p_api->adpt_ip_pub_addr_get(dev_id, entry);
+    rv = p_api->adpt_ip_pub_addr_get(dev_id, index, entry);
     return rv;
 }
 sw_error_t
@@ -927,7 +929,7 @@ _fal_ip_vsi_intf_get(a_uint32_t dev_id, a_uint32_t vsi, fal_intf_id_t *id)
 }
 
 sw_error_t
-_fal_ip_network_route_set(a_uint32_t dev_id,
+_fal_ip_network_route_add(a_uint32_t dev_id,
 			a_uint32_t index,
 			fal_network_route_entry_t *entry)
 {
@@ -936,10 +938,10 @@ _fal_ip_network_route_set(a_uint32_t dev_id,
 
     SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
 
-    if (NULL == p_api->adpt_ip_network_route_set)
+    if (NULL == p_api->adpt_ip_network_route_add)
         return SW_NOT_SUPPORTED;
 
-    rv = p_api->adpt_ip_network_route_set(dev_id, index, entry);
+    rv = p_api->adpt_ip_network_route_add(dev_id, index, entry);
     return rv;
 }
 sw_error_t
@@ -975,17 +977,18 @@ _fal_ip_intf_get(
     return rv;
 }
 sw_error_t
-_fal_ip_pub_addr_add(a_uint32_t dev_id, fal_ip_pub_addr_t *entry)
+_fal_ip_pub_addr_set(a_uint32_t dev_id,
+		a_uint32_t index, fal_ip_pub_addr_t *entry)
 {
     adpt_api_t *p_api;
     sw_error_t rv = SW_OK;
 
     SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
 
-    if (NULL == p_api->adpt_ip_pub_addr_add)
+    if (NULL == p_api->adpt_ip_pub_addr_set)
         return SW_NOT_SUPPORTED;
 
-    rv = p_api->adpt_ip_pub_addr_add(dev_id, entry);
+    rv = p_api->adpt_ip_pub_addr_set(dev_id, index, entry);
     return rv;
 }
 sw_error_t
@@ -2063,12 +2066,13 @@ fal_ip_vsi_sg_cfg_get(a_uint32_t dev_id, a_uint32_t vsi,
 }
 
 sw_error_t
-fal_ip_pub_addr_del(a_uint32_t dev_id, a_uint32_t entry_id)
+fal_ip_network_route_del(a_uint32_t dev_id,
+			a_uint32_t index, a_uint8_t type)
 {
     sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
-    rv = _fal_ip_pub_addr_del(dev_id, entry_id);
+    rv = _fal_ip_network_route_del(dev_id, index, type);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -2105,12 +2109,13 @@ fal_ip_vsi_arp_sg_cfg_set(a_uint32_t dev_id, a_uint32_t vsi,
     return rv;
 }
 sw_error_t
-fal_ip_pub_addr_get(a_uint32_t dev_id, fal_ip_pub_addr_t *entry)
+fal_ip_pub_addr_get(a_uint32_t dev_id,
+			a_uint32_t index, fal_ip_pub_addr_t *entry)
 {
     sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
-    rv = _fal_ip_pub_addr_get(dev_id, entry);
+    rv = _fal_ip_pub_addr_get(dev_id, index, entry);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -2158,14 +2163,14 @@ fal_ip_vsi_intf_get(a_uint32_t dev_id, a_uint32_t vsi, fal_intf_id_t *id)
 }
 
 sw_error_t
-fal_ip_network_route_set(a_uint32_t dev_id,
+fal_ip_network_route_add(a_uint32_t dev_id,
 			a_uint32_t index,
 			fal_network_route_entry_t *entry)
 {
     sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
-    rv = _fal_ip_network_route_set(dev_id, index, entry);
+    rv = _fal_ip_network_route_add(dev_id, index, entry);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -2194,22 +2199,23 @@ fal_ip_intf_get(
     return rv;
 }
 sw_error_t
-fal_ip_pub_addr_add(a_uint32_t dev_id, fal_ip_pub_addr_t *entry)
+fal_ip_pub_addr_set(a_uint32_t dev_id,
+			a_uint32_t index, fal_ip_pub_addr_t *entry)
 {
     sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
-    rv = _fal_ip_pub_addr_add(dev_id, entry);
+    rv = _fal_ip_pub_addr_set(dev_id, index, entry);
     FAL_API_UNLOCK;
     return rv;
 }
 sw_error_t
-fal_ip_route_mismatch_get(a_uint32_t dev_id, fal_fwd_cmd_t *cmd)
+fal_ip_route_mismatch_action_get(a_uint32_t dev_id, fal_fwd_cmd_t *action)
 {
     sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
-    rv = _fal_ip_route_mismatch_get(dev_id, cmd);
+    rv = _fal_ip_route_mismatch_get(dev_id, action);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -2268,12 +2274,12 @@ fal_ip_nexthop_get(a_uint32_t dev_id,
     return rv;
 }
 sw_error_t
-fal_ip_route_mismatch_set(a_uint32_t dev_id, fal_fwd_cmd_t cmd)
+fal_ip_route_mismatch_action_set(a_uint32_t dev_id, fal_fwd_cmd_t action)
 {
     sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
-    rv = _fal_ip_route_mismatch_set(dev_id, cmd);
+    rv = _fal_ip_route_mismatch_set(dev_id, action);
     FAL_API_UNLOCK;
     return rv;
 }

@@ -5857,7 +5857,7 @@ cmd_data_check_ip_global(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_maccmd(cmd, &(entry.mru_fail),
+            rv = cmd_data_check_maccmd(cmd, &(entry.mru_fail_action),
                                        sizeof (fal_fwd_cmd_t));
             if (SW_OK != rv)
                 dprintf("usage: <forward/drop/cpycpu/rdtcpu>\n");
@@ -5882,7 +5882,7 @@ cmd_data_check_ip_global(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, &(entry.mru_de_acce),
+            rv = cmd_data_check_uint8(cmd, &(entry.mru_deacclr_en),
                                        sizeof (a_uint8_t));
             if (SW_OK != rv)
                 dprintf("usage: 0 for disable and 1 for enable\n");
@@ -5907,7 +5907,7 @@ cmd_data_check_ip_global(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_maccmd(cmd, &(entry.mtu_fail),
+            rv = cmd_data_check_maccmd(cmd, &(entry.mtu_fail_action),
                                        sizeof (fal_fwd_cmd_t));
             if (SW_OK != rv)
                 dprintf("usage: <forward/drop/cpycpu/rdtcpu>\n");
@@ -5932,7 +5932,7 @@ cmd_data_check_ip_global(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, &(entry.mtu_de_acce),
+            rv = cmd_data_check_uint8(cmd, &(entry.mtu_deacclr_en),
                                        sizeof (a_uint8_t));
             if (SW_OK != rv)
                 dprintf("usage: 0 for disable and 1 for enable\n");
@@ -5957,7 +5957,7 @@ cmd_data_check_ip_global(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_maccmd(cmd, &(entry.mtu_df_fail),
+            rv = cmd_data_check_maccmd(cmd, &(entry.mtu_df_fail_action),
                                        sizeof (fal_fwd_cmd_t));
             if (SW_OK != rv)
                 dprintf("usage: <forward/drop/cpycpu/rdtcpu>\n");
@@ -5982,7 +5982,7 @@ cmd_data_check_ip_global(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, &(entry.mtu_df_de_acce),
+            rv = cmd_data_check_uint8(cmd, &(entry.mtu_df_deacclr_en),
                                        sizeof (a_uint8_t));
             if (SW_OK != rv)
                 dprintf("usage: 0 for disable and 1 for enable\n");
@@ -6007,7 +6007,7 @@ cmd_data_check_ip_global(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_maccmd(cmd, &(entry.prefix_bc),
+            rv = cmd_data_check_maccmd(cmd, &(entry.prefix_bc_action),
                                        sizeof (fal_fwd_cmd_t));
             if (SW_OK != rv)
                 dprintf("usage: <forward/drop/cpycpu/rdtcpu>\n");
@@ -6032,7 +6032,7 @@ cmd_data_check_ip_global(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, &(entry.prefix_de_acce),
+            rv = cmd_data_check_uint8(cmd, &(entry.prefix_deacclr_en),
                                        sizeof (a_uint8_t));
             if (SW_OK != rv)
                 dprintf("usage: 0 for disable and 1 for enable\n");
@@ -6057,7 +6057,7 @@ cmd_data_check_ip_global(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_maccmd(cmd, &(entry.icmp_rdt),
+            rv = cmd_data_check_maccmd(cmd, &(entry.icmp_rdt_action),
                                        sizeof (fal_fwd_cmd_t));
             if (SW_OK != rv)
                 dprintf("usage: <forward/drop/cpycpu/rdtcpu>\n");
@@ -6082,7 +6082,7 @@ cmd_data_check_ip_global(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, &(entry.icmp_rdt_de_acce),
+            rv = cmd_data_check_uint8(cmd, &(entry.icmp_rdt_deacclr_en),
                                        sizeof (a_uint8_t));
             if (SW_OK != rv)
                 dprintf("usage: 0 for disable and 1 for enable\n");
@@ -6306,32 +6306,9 @@ cmd_data_check_ip_pub(char *cmd_str, void * val, a_uint32_t size)
 
     aos_mem_zero(&entry, sizeof (fal_ip_pub_addr_t));
 
-    do
-    {
-        cmd = get_sub_cmd("entry index", "0");
-        SW_RTN_ON_NULL_PARAM(cmd);
-
-        if (!strncasecmp(cmd, "quit", 4))
-        {
-            return SW_BAD_VALUE;
-        }
-        else if (!strncasecmp(cmd, "help", 4))
-        {
-            dprintf("usage: entry index \n");
-            rv = SW_BAD_VALUE;
-        }
-        else
-        {
-            rv = cmd_data_check_uint32(cmd, &(entry.entry_id), sizeof (a_uint32_t));
-            if (SW_OK != rv)
-                dprintf("usage: entry index \n");
-        }
-    }
-    while (talk_mode && (SW_OK != rv));
-
     rv = __cmd_data_check_complex(" dnat_ip", NULL,
                             "usage: the format is xx.xx.xx.xx \n",
-                            cmd_data_check_ip4addr, &(entry.pub_addr),
+                            cmd_data_check_ip4addr, &(entry.pub_ip_addr),
                             4);
     if (rv)
         return rv; 
@@ -6389,7 +6366,7 @@ cmd_data_check_ip_sg(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_maccmd(cmd, &(entry.ipv4_sg_vio_cmd),
+            rv = cmd_data_check_maccmd(cmd, &(entry.ipv4_sg_vio_action),
                                        sizeof (fal_fwd_cmd_t));
             if (SW_OK != rv)
                 dprintf("usage: <forward/drop/cpycpu/rdtcpu>\n");
@@ -6483,7 +6460,7 @@ cmd_data_check_ip_sg(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_maccmd(cmd, &(entry.ipv4_src_unk_cmd),
+            rv = cmd_data_check_maccmd(cmd, &(entry.ipv4_src_unk_action),
                                        sizeof (fal_fwd_cmd_t));
             if (SW_OK != rv)
                 dprintf("usage: <forward/drop/cpycpu/rdtcpu>\n");
@@ -6531,7 +6508,7 @@ cmd_data_check_ip_sg(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_maccmd(cmd, &(entry.ipv6_sg_vio_cmd),
+            rv = cmd_data_check_maccmd(cmd, &(entry.ipv6_sg_vio_action),
                                        sizeof (fal_fwd_cmd_t));
             if (SW_OK != rv)
                 dprintf("usage: <forward/drop/cpycpu/rdtcpu>\n");
@@ -6625,7 +6602,7 @@ cmd_data_check_ip_sg(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_maccmd(cmd, &(entry.ipv6_src_unk_cmd),
+            rv = cmd_data_check_maccmd(cmd, &(entry.ipv6_src_unk_action),
                                        sizeof (fal_fwd_cmd_t));
             if (SW_OK != rv)
                 dprintf("usage: <forward/drop/cpycpu/rdtcpu>\n");
@@ -6758,7 +6735,7 @@ cmd_data_check_nexthop(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, &(entry.ip_to_me), sizeof (a_uint8_t));
+            rv = cmd_data_check_uint8(cmd, &(entry.ip_to_me_en), sizeof (a_uint8_t));
             if (SW_OK != rv)
                 dprintf("usage: 0 for disable and 1 for enable\n");
         }
@@ -6781,7 +6758,7 @@ cmd_data_check_nexthop(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, &(entry.pub_index), sizeof (a_uint8_t));
+            rv = cmd_data_check_uint8(cmd, &(entry.pub_ip_index), sizeof (a_uint8_t));
             if (SW_OK != rv)
                 dprintf("usage: pub index\n");
         }
@@ -6883,7 +6860,7 @@ cmd_data_check_nexthop(char *cmd_str, void * val, a_uint32_t size)
 
     rv = __cmd_data_check_complex("mac addr", NULL,
                         "usage: the format is xx-xx-xx-xx-xx-xx \n",
-                        cmd_data_check_macaddr, &(entry.macaddr),
+                        cmd_data_check_macaddr, &(entry.mac_addr),
                         sizeof (fal_mac_addr_t));
     if (rv)
 		return rv;
@@ -7032,7 +7009,7 @@ cmd_data_check_intf(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, &(entry.ttl_dec_bypass), sizeof (a_uint8_t));
+            rv = cmd_data_check_uint8(cmd, &(entry.ttl_dec_bypass_en), sizeof (a_uint8_t));
             if (SW_OK != rv)
                 dprintf("usage: 0 for disable and 1 for enable \n");
         }
@@ -7124,7 +7101,7 @@ cmd_data_check_intf(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_maccmd(cmd, &(entry.ttl_exceed_cmd),
+            rv = cmd_data_check_maccmd(cmd, &(entry.ttl_exceed_action),
                                        sizeof (fal_fwd_cmd_t));
             if (SW_OK != rv)
                 dprintf("usage: <forward/drop/cpycpu/rdtcpu>\n");
@@ -7149,7 +7126,7 @@ cmd_data_check_intf(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, &(entry.ttl_exceed_de_acce), sizeof (a_uint8_t));
+            rv = cmd_data_check_uint8(cmd, &(entry.ttl_exceed_deacclr_en), sizeof (a_uint8_t));
             if (SW_OK != rv)
                 dprintf("usage: 0 for disable and 1 for enable \n");
         }
@@ -7172,7 +7149,7 @@ cmd_data_check_intf(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, &(entry.mac_bitmap), sizeof (a_uint8_t));
+            rv = cmd_data_check_uint8(cmd, &(entry.mac_addr_bitmap), sizeof (a_uint8_t));
             if (SW_OK != rv)
                 dprintf("usage: mac bitmap \n");
         }
@@ -7187,52 +7164,6 @@ cmd_data_check_intf(char *cmd_str, void * val, a_uint32_t size)
     if (rv)
 		return rv;
 
-    do
-    {
-        cmd = get_sub_cmd("ppoe en", "0");
-        SW_RTN_ON_NULL_PARAM(cmd);
-
-        if (!strncasecmp(cmd, "quit", 4))
-        {
-            return SW_BAD_VALUE;
-        }
-        else if (!strncasecmp(cmd, "help", 4))
-        {
-            dprintf("usage: 0 for disable and 1 for enable \n");
-            rv = SW_BAD_VALUE;
-        }
-        else
-        {
-            rv = cmd_data_check_uint8(cmd, &(entry.pppoe_en), sizeof (a_uint8_t));
-            if (SW_OK != rv)
-                dprintf("usage: 0 for disable and 1 for enable \n");
-        }
-    }
-    while (talk_mode && (SW_OK != rv));
-
-    do
-    {
-        cmd = get_sub_cmd("session id", "0");
-        SW_RTN_ON_NULL_PARAM(cmd);
-
-        if (!strncasecmp(cmd, "quit", 4))
-        {
-            return SW_BAD_VALUE;
-        }
-        else if (!strncasecmp(cmd, "help", 4))
-        {
-            dprintf("usage: session id \n");
-            rv = SW_BAD_VALUE;
-        }
-        else
-        {
-            rv = cmd_data_check_uint32(cmd, &(entry.session_id), sizeof (a_uint32_t));
-            if (SW_OK != rv)
-                dprintf("usage: session id \n");
-        }
-    }
-    while (talk_mode && (SW_OK != rv));
-
     *(fal_intf_entry_t *)val = entry;
     return SW_OK;
 }
@@ -7246,29 +7177,6 @@ cmd_data_check_network_route(char *cmd_str, void * val, a_uint32_t size)
     fal_network_route_entry_t entry;
 
     aos_mem_zero(&entry, sizeof (fal_network_route_entry_t));
-
-    do
-    {
-        cmd = get_sub_cmd("valid", "0");
-        SW_RTN_ON_NULL_PARAM(cmd);
-
-        if (!strncasecmp(cmd, "quit", 4))
-        {
-            return SW_BAD_VALUE;
-        }
-        else if (!strncasecmp(cmd, "help", 4))
-        {
-            dprintf("usage: 0 for disable and 1 for enable \n");
-            rv = SW_BAD_VALUE;
-        }
-        else
-        {
-            rv = cmd_data_check_enable(cmd, &(entry.valid), sizeof (a_bool_t));
-            if (SW_OK != rv)
-                dprintf("usage: 0 for disable and 1 for enable \n");
-        }
-    }
-    while (talk_mode && (SW_OK != rv));
 
     do
     {
@@ -7356,7 +7264,7 @@ cmd_data_check_network_route(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_maccmd(cmd, &(entry.fwd_cmd),
+            rv = cmd_data_check_maccmd(cmd, &(entry.action),
                                        sizeof (fal_fwd_cmd_t));
             if (SW_OK != rv)
                 dprintf("usage: <forward/drop/cpycpu/rdtcpu>\n");
@@ -7466,7 +7374,7 @@ cmd_data_check_arp_sg(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_maccmd(cmd, &(entry.ipv4_arp_sg_vio_cmd),
+            rv = cmd_data_check_maccmd(cmd, &(entry.ipv4_arp_sg_vio_action),
                                        sizeof (fal_fwd_cmd_t));
             if (SW_OK != rv)
                 dprintf("usage: <forward/drop/cpycpu/rdtcpu>\n");
@@ -7560,7 +7468,7 @@ cmd_data_check_arp_sg(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_maccmd(cmd, &(entry.ipv4_arp_src_unk_cmd),
+            rv = cmd_data_check_maccmd(cmd, &(entry.ipv4_arp_src_unk_action),
                                        sizeof (fal_fwd_cmd_t));
             if (SW_OK != rv)
                 dprintf("usage: <forward/drop/cpycpu/rdtcpu>\n");
@@ -7608,7 +7516,7 @@ cmd_data_check_arp_sg(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_maccmd(cmd, &(entry.ip_nd_sg_vio_cmd),
+            rv = cmd_data_check_maccmd(cmd, &(entry.ip_nd_sg_vio_action),
                                        sizeof (fal_fwd_cmd_t));
             if (SW_OK != rv)
                 dprintf("usage: <forward/drop/cpycpu/rdtcpu>\n");
@@ -7702,7 +7610,7 @@ cmd_data_check_arp_sg(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_maccmd(cmd, &(entry.ip_nd_src_unk_cmd),
+            rv = cmd_data_check_maccmd(cmd, &(entry.ip_nd_src_unk_action),
                                        sizeof (fal_fwd_cmd_t));
             if (SW_OK != rv)
                 dprintf("usage: <forward/drop/cpycpu/rdtcpu>\n");
@@ -7884,7 +7792,7 @@ cmd_data_check_flow_global(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_maccmd(cmd, &(entry.src_if_check),
+            rv = cmd_data_check_maccmd(cmd, &(entry.src_if_check_action),
                                        sizeof (fal_fwd_cmd_t));
             if (SW_OK != rv)
                 dprintf("usage: <forward/drop/cpycpu/rdtcpu>\n");
@@ -7909,7 +7817,7 @@ cmd_data_check_flow_global(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, &(entry.src_if_check_de_acce),
+            rv = cmd_data_check_uint8(cmd, &(entry.src_if_check_deacclr_en),
                                        sizeof (a_uint8_t));
             if (SW_OK != rv)
                 dprintf("usage: 0 for disable and 1 for enable\n");
@@ -7959,7 +7867,7 @@ cmd_data_check_flow_global(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_maccmd(cmd, &(entry.service_loop),
+            rv = cmd_data_check_maccmd(cmd, &(entry.service_loop_action),
                                        sizeof (fal_fwd_cmd_t));
             if (SW_OK != rv)
                 dprintf("usage: <forward/drop/cpycpu/rdtcpu>\n");
@@ -7984,7 +7892,7 @@ cmd_data_check_flow_global(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, &(entry.service_loop_de_acce),
+            rv = cmd_data_check_uint8(cmd, &(entry.service_loop_deacclr_en),
                                        sizeof (a_uint8_t));
             if (SW_OK != rv)
                 dprintf("usage: 0 for disable and 1 for enable\n");
@@ -8009,7 +7917,7 @@ cmd_data_check_flow_global(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, &(entry.flow_de_acce),
+            rv = cmd_data_check_uint8(cmd, &(entry.flow_deacclr_action),
                                        sizeof (a_uint8_t));
             if (SW_OK != rv)
                 dprintf("usage: 0 for disable and 1 for enable\n");
@@ -8034,7 +7942,7 @@ cmd_data_check_flow_global(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_maccmd(cmd, &(entry.sync_mismatch),
+            rv = cmd_data_check_maccmd(cmd, &(entry.sync_mismatch_action),
                                        sizeof (fal_fwd_cmd_t));
             if (SW_OK != rv)
                 dprintf("usage: <forward/drop/cpycpu/rdtcpu>\n");
@@ -8059,7 +7967,7 @@ cmd_data_check_flow_global(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, &(entry.sync_mismatch_de_acce),
+            rv = cmd_data_check_uint8(cmd, &(entry.sync_mismatch_deacclr_en),
                                        sizeof (a_uint8_t));
             if (SW_OK != rv)
                 dprintf("usage: 0 for disable and 1 for enable\n");
@@ -8132,29 +8040,6 @@ cmd_data_check_flow(char *cmd_str, void * val, a_uint32_t size)
     fal_flow_entry_t entry;
 
     aos_mem_zero(&entry, sizeof (fal_flow_entry_t));
-
-    do
-    {
-        cmd = get_sub_cmd("valid", "0");
-        SW_RTN_ON_NULL_PARAM(cmd);
-
-        if (!strncasecmp(cmd, "quit", 4))
-        {
-            return SW_BAD_VALUE;
-        }
-        else if (!strncasecmp(cmd, "help", 4))
-        {
-            dprintf("usage: 0 invalid and 1 valid \n");
-            rv = SW_BAD_VALUE;
-        }
-        else
-        {
-            rv = cmd_data_check_uint8(cmd, &(entry.valid), sizeof (a_uint8_t));
-            if (SW_OK != rv)
-                dprintf("usage: 0 invalid and 1 valid \n");
-        }
-    }
-    while (talk_mode && (SW_OK != rv));
 
     do
     {
@@ -8564,7 +8449,7 @@ cmd_data_check_flow(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, &(entry.de_acce), sizeof (a_uint8_t));
+            rv = cmd_data_check_uint8(cmd, &(entry.deacclr_en), sizeof (a_uint8_t));
             if (SW_OK != rv)
                 dprintf("usage: de_acce \n");
         }
@@ -8587,7 +8472,7 @@ cmd_data_check_flow(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, &(entry.copy_tocpu), sizeof (a_uint8_t));
+            rv = cmd_data_check_uint8(cmd, &(entry.copy_tocpu_en), sizeof (a_uint8_t));
             if (SW_OK != rv)
                 dprintf("usage: copy to cpu en \n");
         }
@@ -8827,7 +8712,7 @@ cmd_data_check_flow_ctrl(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, &(entry.frag_bypass), sizeof (a_uint8_t));
+            rv = cmd_data_check_uint8(cmd, &(entry.frag_bypass_en), sizeof (a_uint8_t));
             if (SW_OK != rv)
                 dprintf("usage: 0 for disable and 1 for enable \n");
         }
@@ -8850,7 +8735,7 @@ cmd_data_check_flow_ctrl(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, &(entry.tcp_spec_bypass), sizeof (a_uint8_t));
+            rv = cmd_data_check_uint8(cmd, &(entry.tcp_spec_bypass_en), sizeof (a_uint8_t));
             if (SW_OK != rv)
                 dprintf("usage: 0 for disable and 1 for enable \n");
         }
@@ -8873,7 +8758,7 @@ cmd_data_check_flow_ctrl(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, &(entry.all_bypass), sizeof (a_uint8_t));
+            rv = cmd_data_check_uint8(cmd, &(entry.all_bypass_en), sizeof (a_uint8_t));
             if (SW_OK != rv)
                 dprintf("usage: 0 for disable and 1 for enable \n");
         }

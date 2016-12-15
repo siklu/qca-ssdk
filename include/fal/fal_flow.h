@@ -67,59 +67,58 @@ typedef enum {
 
 
 typedef struct {
-	fal_flow_type_t miss_action;
-	a_bool_t frag_bypass;
-	a_bool_t tcp_spec_bypass;
-	a_bool_t all_bypass;
-	a_uint8_t key_sel;
+	fal_flow_type_t miss_action; /* flow mismatch action*/
+	a_bool_t frag_bypass_en; /*0 for disable and 1 for enable*/
+	a_bool_t tcp_spec_bypass_en; /*0 for disable and 1 for enable*/
+	a_bool_t all_bypass_en; /*0 for disable and 1 for enable*/
+	a_uint8_t key_sel; /*0 for source ip address and 1 for destination ip address*/
 } fal_flow_ctrl_t;
 
 typedef struct {
-	a_bool_t valid;
-	a_uint32_t entry_id;
-	a_uint8_t entry_type;
-	a_uint8_t host_addr_type;
-	a_uint16_t host_addr_index;
-	a_uint8_t protocol;
-	a_uint8_t age;
-	a_bool_t src_intf_valid;
-	a_uint8_t src_intf_index;
-	a_uint8_t fwd_type;
-	a_uint16_t snat_nexthop;
-	a_uint16_t snat_srcport;
-	a_uint16_t dnat_nexthop;
-	a_uint16_t dnat_dstport;
-	a_uint16_t route_nexthop;
-	a_bool_t port_valid;
-	fal_port_t route_port;
-	fal_port_t bridge_port;
-	a_bool_t de_acce;
-	a_bool_t copy_tocpu;
-	a_uint8_t syn_toggle;
-	a_uint8_t pri_profile;
-	a_uint8_t sevice_code;
-	a_uint8_t ip_type;
+	a_uint32_t entry_id; /*entry index*/ 
+	a_uint8_t entry_type; /*1:ipv4 5 tuple, 2:ipv6 5 tuple, 4:ipv4 3 tuple, 8:ipv6 3 tuple*/
+	a_uint8_t host_addr_type; /*0:souce ip index, 1:destination ip index*/
+	a_uint16_t host_addr_index; /*host table entry index*/
+	a_uint8_t protocol; /*1:tcp, 2:udp, 3:udp-lite, 0:other*/
+	a_uint8_t age; /*aging value*/
+	a_bool_t src_intf_valid; /*source interface check valid*/
+	a_uint8_t src_intf_index; /*souce l3 interface*/
+	a_uint8_t fwd_type; /*forward type*/
+	a_uint16_t snat_nexthop; /*nexthop index for snat*/
+	a_uint16_t snat_srcport; /*new source l4 port*/
+	a_uint16_t dnat_nexthop; /*nexthop index for dnat*/
+	a_uint16_t dnat_dstport; /*new destination l4 port*/
+	a_uint16_t route_nexthop; /*nexthop index for route*/
+	a_bool_t port_valid; /*route port valid*/
+	fal_port_t route_port; /*port for route*/
+	fal_port_t bridge_port; /*port for l2 bridge*/
+	a_bool_t deacclr_en; /*0 for disable and 1 for enable*/
+	a_bool_t copy_tocpu_en; /*0 for disable and 1 for enable*/
+	a_uint8_t syn_toggle; /*update by host*/
+	a_uint8_t pri_profile; /*flow qos index*/
+	a_uint8_t sevice_code; /*service code for bypass*/
+	a_uint8_t ip_type; /*0 for ipv4 and 1 for ipv6*/
 	union {
 		fal_ip4_addr_t ipv4;
 		fal_ip6_addr_t ipv6;
 	} flow_ip;
-	a_uint16_t src_port;
-	a_uint16_t dst_port;
-	a_uint32_t tree_id;
-	a_uint32_t pkt_count;
-	a_uint64_t byte_count;
+	a_uint16_t src_port; /*l4 source port*/
+	a_uint16_t dst_port; /*l4 destination port*/
+	a_uint32_t tree_id; /*for qos*/
+	a_uint32_t pkt_counter; /*flow packet counter*/
+	a_uint64_t byte_counter; /*flow byte counter*/
 } fal_flow_entry_t;
 
 typedef struct {
-	fal_fwd_cmd_t src_if_check;
-	a_bool_t src_if_check_de_acce;
-	a_bool_t service_loop_en;
-	fal_fwd_cmd_t service_loop;
-	a_bool_t service_loop_de_acce;
-	fal_fwd_cmd_t flow_de_acce;
-	fal_fwd_cmd_t sync_mismatch;
-	a_bool_t sync_mismatch_de_acce;
-	a_uint8_t hash_mode_0;
+	fal_fwd_cmd_t src_if_check_action; /*source inferface check fail action*/
+	a_bool_t src_if_check_deacclr_en; /*0 for disable and 1 for enable*/
+	a_bool_t service_loop_en; /*0 for disable and 1 for enable*/
+	fal_fwd_cmd_t service_loop_action; /*0 for disable and 1 for enable*/
+	a_bool_t service_loop_deacclr_en; /*0 for disable and 1 for enable*/ 
+	fal_fwd_cmd_t flow_deacclr_action; /*flow de acceleration action*/
+	fal_fwd_cmd_t sync_mismatch_action; /*sync toggle mismatch action*/
+	a_bool_t sync_mismatch_deacclr_en; /*0 for disable and 1 for enable*/
+	a_uint8_t hash_mode_0; /*0 crc10, 1 xor, 2 crc16*/
 	a_uint8_t hash_mode_1;
 } fal_flow_global_cfg_t;
 
@@ -129,8 +128,8 @@ typedef struct {
 } fal_flow_host_entry_t;
 
 typedef struct {
-	a_uint16_t age_time;
-	a_uint16_t unit;
+	a_uint16_t age_time; /* age value*/
+	a_uint16_t unit; /*0:second 1:cycle 2:million cycle*/
 } fal_flow_age_timer_t;
 
 enum  {
