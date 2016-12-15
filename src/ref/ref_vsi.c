@@ -51,16 +51,16 @@ _ppe_vsi_member_update(a_uint32_t dev_id, a_uint32_t vsi_id,
 	if( PPE_VSI_DEL == op )
 	{
 		vsi_member.member_ports &= (~(1<<port_id));
-		vsi_member.bc_ports &= (~(1<<port_id));
+		/*vsi_member.bc_ports &= (~(1<<port_id));
 		vsi_member.umc_ports &= (~(1<<port_id));
-		vsi_member.uuc_ports &= (~(1<<port_id));
+		vsi_member.uuc_ports &= (~(1<<port_id));*/
 	}
 	else if( PPE_VSI_ADD == op )
 	{
 		vsi_member.member_ports |= (1<<port_id);
-		vsi_member.bc_ports |= (1<<port_id);
+		/*vsi_member.bc_ports |= (1<<port_id);
 		vsi_member.umc_ports |= (1<<port_id);
-		vsi_member.uuc_ports |= (1<<port_id);
+		vsi_member.uuc_ports |= (1<<port_id);*/
 	}
 	rv = fal_vsi_member_set(dev_id, vsi_id, &vsi_member);
 	if( rv != SW_OK )
