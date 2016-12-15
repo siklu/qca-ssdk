@@ -1270,8 +1270,10 @@ qca_phy_config_init(struct phy_device *pdev)
 	if (pdev->addr != 0) {
         pdev->supported |= SUPPORTED_1000baseT_Full;
         pdev->advertising |= ADVERTISED_1000baseT_Full;
+		#ifndef BOARD_AR71XX
 		#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 		ssdk_phy_rgmii_set(priv);
+		#endif
 		#endif
 		return 0;
 	}
@@ -1820,6 +1822,7 @@ static uint32_t switch_chip_id_adjuest(void)
 static int miibus_get(void)
 {
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+	#ifndef BOARD_AR71XX
 	struct device_node *mdio_node = NULL;
 	struct platform_device *mdio_plat = NULL;
 	struct ipq40xx_mdio_data *mdio_data = NULL;
@@ -1856,7 +1859,44 @@ static int miibus_get(void)
 		printk("cannot get mii bus reference from device data\n");
 		return 1;
 	}
+	#else
+	struct ag71xx_mdio *am;
 
+	struct device *miidev;
+	char busid[MII_BUS_ID_SIZE];
+	snprintf(busid, MII_BUS_ID_SIZE, "%s.%d",
+		IPQ806X_MDIO_BUS_NAME, IPQ806X_MDIO_BUS_NUM);
+
+	miidev = bus_find_device_by_name(&platform_bus_type, NULL, busid);
+	if (!miidev) {
+		printk("cannot get mii bus\n");
+		return 1;
+	}
+
+	am = dev_get_drvdata(miidev);
+	miibus = am->mii_bus;
+
+	if(switch_chip_id_adjuest()) {
+
+		snprintf(busid, MII_BUS_ID_SIZE, "%s.%d",
+		IPQ806X_MDIO_BUS_NAME, MDIO_BUS_1);
+
+		miidev = bus_find_device_by_name(&platform_bus_type, NULL, busid);
+		if (!miidev) {
+			printk("cannot get mii bus\n");
+			return 1;
+		}
+
+		am = dev_get_drvdata(miidev);
+		miibus = am->mii_bus;
+		printk("chip_version:0x%x\n", (qca_ar8216_mii_read(0)&0xff00)>>8);
+	}
+
+	if(!miidev){
+		printk("mdio bus '%s' get FAIL\n", busid);
+		return 1;
+	}
+	#endif
 #else
 #ifdef BOARD_AR71XX
 	struct ag71xx_mdio *am;
@@ -1935,6 +1975,7 @@ int ssdk_phy_init(ssdk_init_cfg *cfg)
 	return SW_FAIL;
 }
 
+#ifndef BOARD_AR71XX
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 struct reset_control *ess_rst = NULL;
 struct reset_control *ess_mac_clock_disable[5] = {NULL,NULL,NULL,NULL,NULL};
@@ -2007,10 +2048,12 @@ static struct platform_driver ssdk_driver = {
         .probe    = ssdk_probe,
 };
 #endif
+#endif
 #ifdef DESS
 static u32 phy_t_status = 0;
 void ssdk_malibu_psgmii_and_dakota_dess_reset(void)
 {
+#ifndef BOARD_AR71XX
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0))
 	int m = 0, n = 0;
 
@@ -2057,6 +2100,7 @@ void ssdk_malibu_psgmii_and_dakota_dess_reset(void)
 	qca_ar8327_phy_write(0, 5, 0x1a, 0x3230);/*relesae phy psgmii RX CDR*/
 	qca_ar8327_phy_write(0, 5, 0x0, 0x005f);/*release phy psgmii RX 20bit*/
 	mdelay(200);
+#endif
 #endif
 	/*reset Malibu PSGMII and Dakota ESS end*/
 	return;
@@ -2327,8 +2371,10 @@ ssdk_plat_init(ssdk_init_cfg *cfg)
 			return -1;
 		}
 		cfg->reg_mode = HSL_HEADER;
+#ifndef BOARD_AR71XX
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 		platform_driver_register(&ssdk_driver);
+#endif
 #endif
 	}
 
@@ -2395,8 +2441,10 @@ ssdk_plat_exit(void)
 					ssdk_dt_global.switchreg_size);
 		release_mem_region(ssdk_dt_global.psgmiireg_base_addr,
 					ssdk_dt_global.psgmiireg_size);
+#ifndef BOARD_AR71XX
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 		platform_driver_unregister(&ssdk_driver);
+#endif
 #endif
 	}
 
@@ -2452,6 +2500,7 @@ void switch_cpuport_setup(void)
 	#endif
 }
 
+#ifndef BOARD_AR71XX
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 {
@@ -2601,6 +2650,7 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 	return SW_OK;
 }
 #endif
+#endif
 
 static int chip_ver_get(ssdk_init_cfg* cfg)
 {
@@ -2691,6 +2741,7 @@ static int ssdk_dess_led_init(ssdk_init_cfg *cfg)
 			#endif
 			led_num = ((led_source_id-1)/3) + 3;
 			source_id = led_source_id%3;
+		#ifndef BOARD_AR71XX
 		#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) && (LINUX_VERSION_CODE <= KERNEL_VERSION(4,0,0))
 			if (source_id == 1) {
 				if (led_source_id == 1) {
@@ -2743,6 +2794,7 @@ static int ssdk_dess_led_init(ssdk_init_cfg *cfg)
 					ipq40xx_led_source_select(led_num, WAN_10_LNK_ACTIVITY);
 				}
 			}
+		#endif
 		#endif
 		}
 	}
@@ -3188,8 +3240,10 @@ static int __init regi_init(void)
 
 	ssdk_cfg_default_init(&cfg);
 
+	#ifndef BOARD_AR71XX
 	#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 	ssdk_dt_parse(&cfg);
+	#endif
 	#endif
 
 	rv = ssdk_plat_init(&cfg);
