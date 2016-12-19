@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2016,The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -60,11 +60,11 @@ qca_ar8327_sw_get_port_link(struct switch_dev *dev, int port,
 {
 	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 
-	fal_port_speed_t speed;
-	fal_port_duplex_t duplex;
-	a_bool_t status;
-	a_bool_t tx_fc;
-	a_bool_t rx_fc;
+	fal_port_speed_t speed = FAL_SPEED_10;
+	fal_port_duplex_t duplex = FAL_FULL_DUPLEX;
+	a_bool_t status = 0;
+	a_bool_t tx_fc = 0;
+	a_bool_t rx_fc = 0;
 	a_uint32_t ret;
 
 	mutex_lock(&priv->reg_mutex);
@@ -194,7 +194,7 @@ static int qca_switch_force_mac_1000M_full(struct switch_dev *dev, a_uint32_t po
 
 static int qca_switch_force_mac_status(struct switch_dev *dev, a_uint32_t port_id,a_uint32_t speed,a_uint32_t duplex)
 {
-	a_uint32_t reg, value;
+	a_uint32_t reg, value = 0;
 	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 
 	if (port_id < 0 || port_id > 6)

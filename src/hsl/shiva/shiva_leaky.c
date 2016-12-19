@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2016,The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -55,7 +55,7 @@ static sw_error_t
 _shiva_uc_leaky_mode_get(a_uint32_t dev_id,
                          fal_leaky_ctrl_mode_t *ctrl_mode)
 {
-    a_uint32_t data;
+    a_uint32_t data = 0;
     sw_error_t rv;
 
     HSL_DEV_ID_CHECK(dev_id);
@@ -107,7 +107,7 @@ static sw_error_t
 _shiva_mc_leaky_mode_get(a_uint32_t dev_id,
                          fal_leaky_ctrl_mode_t *ctrl_mode)
 {
-    a_uint32_t data;
+    a_uint32_t data = 0;
     sw_error_t rv;
 
     HSL_DEV_ID_CHECK(dev_id);
@@ -164,7 +164,7 @@ static sw_error_t
 _shiva_port_arp_leaky_get(a_uint32_t dev_id, fal_port_t port_id,
                           a_bool_t *enable)
 {
-    a_uint32_t data;
+    a_uint32_t data = 0;
     sw_error_t rv;
 
     HSL_DEV_ID_CHECK(dev_id);
@@ -226,7 +226,7 @@ static sw_error_t
 _shiva_port_uc_leaky_get(a_uint32_t dev_id, fal_port_t port_id,
                          a_bool_t *enable)
 {
-    a_uint32_t data;
+    a_uint32_t data = 0;
     sw_error_t rv;
 
     HSL_DEV_ID_CHECK(dev_id);
@@ -288,7 +288,7 @@ static sw_error_t
 _shiva_port_mc_leaky_get(a_uint32_t dev_id, fal_port_t port_id,
                          a_bool_t *enable)
 {
-    a_uint32_t data;
+    a_uint32_t data = 0;
     sw_error_t rv;
 
     HSL_DEV_ID_CHECK(dev_id);

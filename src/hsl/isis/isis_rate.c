@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2016, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -408,7 +408,7 @@ _isis_rate_port_policer_get(a_uint32_t dev_id, fal_port_t port_id,
                             fal_port_policer_t * policer)
 {
     sw_error_t rv;
-    a_uint32_t unit, ts, cir, eir, cbs, ebs, data[3];
+    a_uint32_t unit, ts, cir, eir, cbs, ebs, data[3] = {0};
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -582,7 +582,7 @@ _isis_rate_port_shaper_get(a_uint32_t dev_id, fal_port_t port_id,
                            a_bool_t * enable, fal_egress_shaper_t * shaper)
 {
     sw_error_t rv;
-    a_uint32_t data, cir, eir, cbs = 0, ebs = 0;
+    a_uint32_t data = 0, cir = 0, eir = 0, cbs = 0, ebs = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -858,7 +858,7 @@ _isis_rate_queue_shaper_get(a_uint32_t dev_id, fal_port_t port_id,
                             fal_egress_shaper_t * shaper)
 {
     sw_error_t rv;
-    a_uint32_t data, cir, eir, cbs = 0, ebs = 0;
+    a_uint32_t data = 0, cir = 0, eir = 0, cbs = 0, ebs = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1170,7 +1170,7 @@ _isis_rate_acl_policer_get(a_uint32_t dev_id, a_uint32_t policer_id,
                            fal_acl_policer_t * policer)
 {
     sw_error_t rv;
-    a_uint32_t unit, ts, cir, eir, cbs, ebs, addr, data[2];
+    a_uint32_t unit, ts, cir, eir, cbs, ebs, addr, data[2] = {0};
 
     HSL_DEV_ID_CHECK(dev_id);
 

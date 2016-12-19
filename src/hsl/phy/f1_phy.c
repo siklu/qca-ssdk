@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2015, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015-2016,The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -30,7 +30,7 @@ static a_uint16_t
 _phy_reg_read(a_uint32_t dev_id, a_uint32_t phy_addr, a_uint32_t reg)
 {
     sw_error_t rv;
-    a_uint16_t val;
+    a_uint16_t val = 0;
 
     HSL_PHY_GET(rv, dev_id, phy_addr, reg, &val);
     if (SW_OK != rv)
@@ -1037,7 +1037,7 @@ f1_phy_set_duplex(a_uint32_t dev_id, a_uint32_t phy_id,
     a_uint16_t phy_data = 0;
     a_uint16_t phy_status = 0;
 
-    fal_port_speed_t old_speed;
+    fal_port_speed_t old_speed = 0;
     a_uint32_t oldneg, autoneg;
 
     if (A_TRUE == f1_phy_autoneg_status(dev_id, phy_id))
