@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2016, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -297,7 +297,7 @@ static sw_error_t
 _shiva_port_force_default_vid_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -359,7 +359,7 @@ static sw_error_t
 _shiva_port_force_portvlan_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -404,7 +404,7 @@ static sw_error_t
 _shiva_nestvlan_tpid_get(a_uint32_t dev_id, a_uint32_t *tpid)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -515,7 +515,7 @@ _shiva_port_tls_get(a_uint32_t dev_id, fal_port_t port_id,
                     a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -579,7 +579,7 @@ _shiva_port_pri_propagation_get(a_uint32_t dev_id, fal_port_t port_id,
                                 a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -637,7 +637,7 @@ _shiva_port_default_svid_get(a_uint32_t dev_id, fal_port_t port_id,
                              a_uint32_t * vid)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -686,7 +686,7 @@ _shiva_port_default_cvid_get(a_uint32_t dev_id, fal_port_t port_id,
                              a_uint32_t * vid)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -708,7 +708,7 @@ _shiva_port_vlan_propagation_set(a_uint32_t dev_id, fal_port_t port_id,
                                  fal_vlan_propagation_mode_t mode)
 {
     sw_error_t rv;
-    a_uint32_t reg, p, c;
+    a_uint32_t reg = 0, p, c;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -754,7 +754,7 @@ _shiva_port_vlan_propagation_get(a_uint32_t dev_id, fal_port_t port_id,
                                  fal_vlan_propagation_mode_t * mode)
 {
     sw_error_t rv;
-    a_uint32_t reg, p, c;
+    a_uint32_t reg = 0, p, c;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -793,7 +793,7 @@ static sw_error_t
 _shiva_vlan_trans_read(a_uint32_t dev_id, a_uint32_t entry_idx, fal_pbmp_t * pbmp, fal_vlan_trans_entry_t *entry)
 {
     sw_error_t rv;
-    a_uint32_t i, addr, table[2];
+    a_uint32_t i, addr, table[2] = {0};
 
     addr = SHIVA_VLAN_TRANS_ADDR + (entry_idx << 3);
 
@@ -999,7 +999,7 @@ _shiva_port_vlan_trans_iterate(a_uint32_t dev_id, fal_port_t port_id,
     a_uint32_t index;
     sw_error_t rv;
     fal_vlan_trans_entry_t entry_t;
-    fal_pbmp_t             pbmp_t;
+    fal_pbmp_t pbmp_t = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
