@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2016, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -723,7 +723,7 @@ hsl_acl_pool_destroy(a_uint32_t dev_id)
     }
 
     aos_mem_free(acl_pool[dev_id].blk_ent);
-    aos_mem_zero(&acl_pool[dev_id], sizeof (hsl_acl_pool_t));
+    aos_mem_zero(&acl_pool[dev_id], sizeof(acl_pool[dev_id]));
     return SW_OK;
 }
 

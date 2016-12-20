@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2016, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -148,7 +148,7 @@ HSL_LOCAL int iterate_multicast_acl_rule(int list_id, int start_n)
     sw_error_t ret;
     fal_acl_rule_t  rule= {0};
 
-    if(start_n>=FAL_IGMP_SG_ENTRY_MAX)
+    if(start_n>=FAL_IGMP_SG_ENTRY_MAX || start_n < 0)
     {
         return -1;
     }
@@ -410,11 +410,14 @@ HSL_LOCAL sw_error_t isisc_multicast_acl_update( int list_id, int acl_index, fal
     //a_uint32_t list_pos;
     a_uint32_t rule_pos;
     a_uint32_t list_pri;
-    sw_error_t rv;
+    sw_error_t rv = SW_OK;
 
     //if(entry->port_map < 1 || acl_index<0)
     if(acl_index<0)
+    {
         aos_printk("Something is wrong...\n");
+        return SW_FAIL;
+    }
 
     if(list_id == FAL_ACL_LIST_MULTICAST) //Update all matched group based acl_rule->source
         list_pri=FAL_MULTICAST_PRI;
@@ -655,8 +658,10 @@ HSL_LOCAL int portmap_null(int index, fal_pbmp_t portmap)
 {
     int val;
     if (index<0)
+    {
         aos_printk("portmap_null, index error\n");
-
+        return SW_FAIL;
+    }
     val = multi_acl_group[index].entry.port_map&(~portmap);
 
     if( 0 == (val&0xff) )
@@ -721,6 +726,8 @@ sw_error_t isisc_igmp_sg_entry_set(a_uint32_t dev_id, fal_igmp_sg_entry_t * entr
     MULTI_DEBUG("Before query: group=%x, source=%x, portmap=%x\n", entry->group.u.ip4_addr, entry->source.u.ip4_addr, entry->port_map);
     //number is the total multicast ACL rules amount, stores in multi_acl_info[];
     number = isisc_multicast_acl_query();
+    if(number > FAL_IGMP_SG_ENTRY_MAX)
+	return SW_FAIL;
     //count the total specific multicast group ACL rules, stores in multi_acl_group[]; count <=number
     count = iterate_multicast_acl_group(number, entry);
     //new_index-1 is the found entry index in multi_acl_group[], the real index is [new_index-1], 0 means no entry
@@ -848,8 +855,13 @@ sw_error_t isisc_igmp_sg_entry_clear(a_uint32_t dev_id, fal_igmp_sg_entry_t * en
     aos_mem_zero(multi_acl_group, FAL_IGMP_SG_ENTRY_MAX * sizeof (multi_acl_info_t));
     //number is the total multicast ACL rules amount, stores in multi_acl_info[];
     number = isisc_multicast_acl_query();
+    if(number > FAL_IGMP_SG_ENTRY_MAX)
+	return SW_FAIL;
     //count the total specific multicast group ACL rules, stores in multi_acl_group[]; count <=number
     count = iterate_multicast_acl_group(number, entry);
+    if(count == 0)
+        return SW_OK;
+
     //new_index-1 is the found entry index in multi_acl_group[]
     new_index = mult_acl_has_entry(&entry->group, &entry->source);
 

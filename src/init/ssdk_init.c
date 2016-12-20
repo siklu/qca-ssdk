@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2014-2015, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2014-2016, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -1329,13 +1329,13 @@ static int ssdk_switch_register(void)
 			return ret;
 	}
 
-	ret = qca_phy_mib_work_start(priv);
+	ret = qca_phy_mib_work_start(qca_phy_priv_global);
 	if (ret != 0) {
 			printk("qca_phy_mib_work_start failed for %s\n", sw_dev->name);
 			return ret;
 	}
 
-	ret = qm_err_check_work_start(priv);
+	ret = qm_err_check_work_start(qca_phy_priv_global);
 	if (ret != 0) {
 			printk("qm_err_check_work_start failed for %s\n", sw_dev->name);
 			return ret;
@@ -2037,7 +2037,7 @@ void ssdk_psgmii_single_phy_testing(int phy)
 	qca_ar8327_phy_write(0, phy, 0x0, 0x4140);
 	j = 0;
 	while (j < 100) {
-		u16 status;
+		u16 status = 0;
 		qca_ar8327_phy_read(0, phy, 0x11, &status);
 		if (status & (1 << 10))
 			break;
@@ -2086,7 +2086,7 @@ void ssdk_psgmii_all_phy_testing()
 	j = 0;
 	while (j < 100) {
 		for (phy = 0; phy < 5; phy++) {
-			u16 status;
+			u16 status = 0;
 			qca_ar8327_phy_read(0, phy, 0x11, &status);
 			if (!(status & (1 << 10)))
 				break;
@@ -2534,7 +2534,7 @@ static int chip_ver_get(ssdk_init_cfg* cfg)
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_MDIO)
 		chip_ver = (qca_ar8216_mii_read(0)&0xff00)>>8;
 	else {
-		a_uint32_t reg_val;
+		a_uint32_t reg_val = 0;
 		qca_switch_reg_read(0,0,(a_uint8_t *)&reg_val, 4);
 		chip_ver = (reg_val&0xff00)>>8;
 	}
@@ -2838,7 +2838,7 @@ static int ssdk_dess_mac_mode_init(a_uint32_t mac_mode)
 static int
 qca_dess_hw_init(ssdk_init_cfg *cfg)
 {
-	a_uint32_t reg_value;
+	a_uint32_t reg_value = 0;
 	hsl_api_t *p_api;
 
 	qca_switch_init(0);

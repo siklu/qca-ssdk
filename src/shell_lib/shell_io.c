@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, 2015, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2013, 2015-2016, The Linux Foundation. All rights reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -678,7 +678,7 @@ cmd_data_check_vlan(char *cmdstr, fal_vlan_t * val, a_uint32_t size)
 {
     sw_error_t rv;
     fal_vlan_t entry;
-    a_uint32_t tmp;
+    a_uint32_t tmp = 0;
 
     memset(&entry, 0, sizeof (fal_vlan_t));
 
@@ -1184,7 +1184,7 @@ cmd_data_check_fdbentry(char *info, void *val, a_uint32_t size)
 {
     sw_error_t rv;
     fal_fdb_entry_t entry;
-    a_uint32_t tmp;
+    a_uint32_t tmp = 0;
 
     memset(&entry, 0, sizeof (fal_fdb_entry_t));
 
@@ -2431,7 +2431,7 @@ sw_error_t
 cmd_data_check_nat_entry(char *cmd_str, void * val, a_uint32_t size)
 {
     sw_error_t rv;
-    a_uint32_t tmp;
+    a_uint32_t tmp = 0;
     fal_nat_entry_t entry;
 
     aos_mem_zero(&entry, sizeof (fal_nat_entry_t));
@@ -2542,7 +2542,7 @@ sw_error_t
 cmd_data_check_napt_entry(char *cmd_str, void * val, a_uint32_t size)
 {
     sw_error_t rv;
-    a_uint32_t tmp;
+    a_uint32_t tmp = 0;
     fal_napt_entry_t entry;
 
     aos_mem_zero(&entry, sizeof (fal_napt_entry_t));
@@ -2704,7 +2704,7 @@ sw_error_t
 cmd_data_check_flow_entry(char *cmd_str, void * val, a_uint32_t size)
 {
     sw_error_t rv;
-    a_uint32_t tmp;
+    a_uint32_t tmp = 0;
     fal_napt_entry_t entry;
 
     aos_mem_zero(&entry, sizeof (fal_napt_entry_t));
@@ -2875,7 +2875,7 @@ cmd_data_check_napt_mode(char *cmd_str, fal_napt_mode_t * arg_val,
 sw_error_t
 cmd_data_check_intf_mac_entry(char *cmd_str, void * val, a_uint32_t size)
 {
-    a_uint32_t tmp;
+    a_uint32_t tmp = 0;
     sw_error_t rv;
     fal_intf_mac_entry_t entry;
 
@@ -2967,7 +2967,7 @@ sw_error_t
 cmd_data_check_egress_shaper(char *cmd_str, void * val, a_uint32_t size)
 {
     sw_error_t rv;
-    a_bool_t bool;
+    a_bool_t bool = 0;
     fal_egress_shaper_t entry;
 
     aos_mem_zero(&entry, sizeof (fal_egress_shaper_t));
@@ -3025,7 +3025,7 @@ sw_error_t
 cmd_data_check_acl_policer(char *cmd_str, void * val, a_uint32_t size)
 {
     sw_error_t rv;
-    a_bool_t bool;
+    a_bool_t bool = A_FALSE;
     fal_acl_policer_t entry;
 
     aos_mem_zero(&entry, sizeof (fal_acl_policer_t));
@@ -3148,7 +3148,7 @@ sw_error_t
 cmd_data_check_port_policer(char *cmd_str, void * val, a_uint32_t size)
 {
     sw_error_t rv;
-    a_bool_t bool;
+    a_bool_t bool = 0;
     fal_port_policer_t entry;
 
     aos_mem_zero(&entry, sizeof (fal_port_policer_t));
@@ -3602,7 +3602,7 @@ cmd_data_check_remark_entry(char *info, void *val, a_uint32_t size)
 {
     sw_error_t rv;
     fal_egress_remark_table_t *pEntry = (fal_egress_remark_table_t *)val;
-    a_uint32_t tmp;
+    a_uint32_t tmp = 0;
 
     memset(pEntry, 0, sizeof(fal_egress_remark_table_t));
 
@@ -3695,11 +3695,11 @@ sw_error_t
 cmd_data_check_default_route_entry(char *cmd_str, void * val, a_uint32_t size)
 {
     char *cmd;
-    a_uint32_t tmp;
+    a_uint32_t tmp = 0;
     sw_error_t rv;
     fal_default_route_t entry;
 
-    aos_mem_zero(&entry, sizeof (fal_intf_mac_entry_t));
+    aos_mem_zero(&entry, sizeof(entry));
 
     do
     {
@@ -3955,7 +3955,7 @@ sw_error_t
 cmd_data_check_ip4_rfs_entry(char *cmd_str, void * val, a_uint32_t size)
 {
 	char *cmd;
-	a_uint32_t tmp;
+	a_uint32_t tmp = 0;
 	sw_error_t rv;
 	fal_ip4_rfs_t entry;
 
@@ -4094,7 +4094,7 @@ sw_error_t
 cmd_data_check_flow_rfs(char *cmd_str, void * val, a_uint32_t size)
 {
 	char *cmd;
-	a_uint32_t tmp;
+	a_uint32_t tmp = 0;
 	sw_error_t rv;
 	fal_flow_rfs_t entry;
 
@@ -4154,7 +4154,7 @@ sw_error_t
 cmd_data_check_ip6_rfs_entry(char *cmd_str, void * val, a_uint32_t size)
 {
 	char *cmd;
-	a_uint32_t tmp;
+	a_uint32_t tmp = 0;
 	sw_error_t rv;
 	fal_ip6_rfs_t entry;
 
