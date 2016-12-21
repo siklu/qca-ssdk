@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2016 The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -30,7 +30,7 @@ static sw_error_t
 _shiva_led_ctrl_pattern_set(a_uint32_t dev_id, led_pattern_group_t group,
                             led_pattern_id_t id, led_ctrl_pattern_t * pattern)
 {
-    a_uint32_t data = 0, reg, mode;
+    a_uint32_t data = 0, reg = 0, mode;
     a_uint32_t addr;
     sw_error_t rv;
 
@@ -219,7 +219,7 @@ static sw_error_t
 _shiva_led_ctrl_pattern_get(a_uint32_t dev_id, led_pattern_group_t group,
                             led_pattern_id_t id, led_ctrl_pattern_t * pattern)
 {
-    a_uint32_t data = 0, reg, tmp;
+    a_uint32_t data = 0, reg = 0, tmp;
     a_uint32_t addr;
     sw_error_t rv;
 
