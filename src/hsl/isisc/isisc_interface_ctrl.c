@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2015, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015-2016, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -95,7 +95,7 @@ static sw_error_t
 _isisc_port_3az_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
     sw_error_t rv;
-    a_uint32_t reg, field, offset, device_id, rev_id, reverse = 0;
+    a_uint32_t reg = 0, field, offset, device_id, rev_id, reverse = 0;
 
     HSL_REG_ENTRY_GET(rv, dev_id, MASK_CTL, 0,
                       (a_uint8_t *) (&reg), sizeof (a_uint32_t));
@@ -166,7 +166,7 @@ static sw_error_t
 _isisc_port_3az_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t reg, field, offset, device_id, rev_id, reverse = 0;
+    a_uint32_t reg = 0, field, offset, device_id, rev_id, reverse = 0;
 
     HSL_REG_ENTRY_GET(rv, dev_id, MASK_CTL, 0,
                       (a_uint8_t *) (&reg), sizeof (a_uint32_t));
@@ -230,7 +230,7 @@ static sw_error_t
 _isisc_port_rgmii_mode_set(a_uint32_t dev_id, fal_port_t port_id, fal_mac_rgmii_config_t * config)
 {
     sw_error_t rv;
-    a_uint32_t reg;
+    a_uint32_t reg = 0;
 
     if (ISISC_MAC_0 == port_id)
     {
@@ -333,7 +333,7 @@ static sw_error_t
 _isisc_port_rgmii_mode_get(a_uint32_t dev_id, fal_port_t port_id, fal_mac_rgmii_config_t * config)
 {
     sw_error_t rv;
-    a_uint32_t reg, field;
+    a_uint32_t reg = 0, field;
 
     if (ISISC_MAC_0 == port_id)
     {
@@ -389,7 +389,7 @@ static sw_error_t
 _isisc_interface_mac06_exch_set(a_uint32_t dev_id, a_bool_t enable)
 {
     sw_error_t rv;
-    a_uint32_t reg;
+    a_uint32_t reg = 0;
 
 
     HSL_REG_ENTRY_GET(rv, dev_id, PORT0_PAD_CTRL, 0,
@@ -416,7 +416,7 @@ static sw_error_t
 _isisc_interface_mac06_exch_get(a_uint32_t dev_id, a_bool_t* enable)
 {
     sw_error_t rv;
-    a_uint32_t reg,field;
+    a_uint32_t reg = 0,field;
 
 
     HSL_REG_ENTRY_GET(rv, dev_id, PORT0_PAD_CTRL, 0,
@@ -455,7 +455,7 @@ static sw_error_t
 _isisc_interface_mac_sgmii_get(a_uint32_t dev_id, a_uint32_t *value)
 {
     sw_error_t rv;
-    a_uint32_t reg;
+    a_uint32_t reg = 0;
 
     HSL_REG_ENTRY_GET(rv, dev_id, SGMII_CTRL, 0,
                       (a_uint8_t *) (&reg), sizeof (a_uint32_t));
@@ -500,7 +500,7 @@ static sw_error_t
 _isisc_interface_mac_pad_get(a_uint32_t dev_id,a_uint32_t port_num, a_uint32_t *value)
 {
     sw_error_t rv;
-    a_uint32_t reg;
+    a_uint32_t reg = 0;
 
     switch (port_num)
     {
@@ -532,7 +532,7 @@ static sw_error_t
 _isisc_port_rmii_mode_set(a_uint32_t dev_id, fal_port_t port_id, fal_mac_rmii_config_t * config)
 {
     sw_error_t rv;
-    a_uint32_t reg;
+    a_uint32_t reg = 0;
 
     if (ISISC_MAC_0 == port_id)
     {
@@ -626,7 +626,7 @@ static sw_error_t
 _isisc_port_rmii_mode_get(a_uint32_t dev_id, fal_port_t port_id, fal_mac_rmii_config_t * config)
 {
     sw_error_t rv;
-    a_uint32_t reg, field;
+    a_uint32_t reg = 0, field;
 
     if (ISISC_MAC_0 == port_id)
     {
@@ -687,7 +687,7 @@ static sw_error_t
 _isisc_port_gmii_mode_set(a_uint32_t dev_id, fal_port_t port_id, fal_mac_gmii_config_t * config)
 {
     sw_error_t rv;
-    a_uint32_t reg;
+    a_uint32_t reg = 0;
 
     if (ISISC_MAC_0 == port_id)
     {
@@ -776,7 +776,7 @@ static sw_error_t
 _isisc_port_gmii_mode_get(a_uint32_t dev_id, fal_port_t port_id, fal_mac_gmii_config_t * config)
 {
     sw_error_t rv;
-    a_uint32_t reg, field;
+    a_uint32_t reg = 0, field;
 
     if (ISISC_MAC_0 == port_id)
     {
@@ -820,7 +820,7 @@ static sw_error_t
 _isisc_port_mii_mode_set(a_uint32_t dev_id, fal_port_t port_id, fal_mac_mii_config_t * config)
 {
     sw_error_t rv;
-    a_uint32_t reg;
+    a_uint32_t reg = 0;
 
     if (ISISC_MAC_0 == port_id)
     {
@@ -922,7 +922,7 @@ static sw_error_t
 _isisc_port_mii_mode_get(a_uint32_t dev_id, fal_port_t port_id, fal_mac_mii_config_t * config)
 {
     sw_error_t rv;
-    a_uint32_t reg, field;
+    a_uint32_t reg = 0, field;
 
     if (ISISC_MAC_0 == port_id)
     {
@@ -970,7 +970,7 @@ static sw_error_t
 _isisc_port_sgmii_mode_set(a_uint32_t dev_id, fal_port_t port_id, fal_mac_sgmii_config_t * config)
 {
     sw_error_t rv;
-    a_uint32_t reg, field;
+    a_uint32_t reg = 0, field;
 
     if (ISISC_MAC_0 == port_id)
     {
@@ -1129,7 +1129,7 @@ static sw_error_t
 _isisc_port_sgmii_mode_get(a_uint32_t dev_id, fal_port_t port_id, fal_mac_sgmii_config_t * config)
 {
     sw_error_t rv;
-    a_uint32_t reg, field;
+    a_uint32_t reg = 0, field;
 
     if (ISISC_MAC_0 == port_id)
     {
@@ -1200,7 +1200,7 @@ static sw_error_t
 _isisc_port_fiber_mode_set(a_uint32_t dev_id, fal_port_t port_id, fal_mac_fiber_config_t * config)
 {
     sw_error_t rv;
-    a_uint32_t reg, field;
+    a_uint32_t reg = 0, field;
 
     if (ISISC_MAC_0 == port_id)
     {
@@ -1350,7 +1350,7 @@ static sw_error_t
 _isisc_port_fiber_mode_get(a_uint32_t dev_id, fal_port_t port_id, fal_mac_fiber_config_t * config)
 {
     sw_error_t rv;
-    a_uint32_t reg, field;
+    a_uint32_t reg = 0, field;
 
     if (ISISC_MAC_0 == port_id)
     {
@@ -1400,7 +1400,7 @@ static sw_error_t
 _isisc_port_default_mode_set(a_uint32_t dev_id, fal_port_t port_id)
 {
     sw_error_t rv;
-    a_uint32_t reg;
+    a_uint32_t reg = 0;
 
     if (ISISC_MAC_0 == port_id)
     {
@@ -1512,7 +1512,7 @@ static sw_error_t
 _isisc_interface_mac_mode_get(a_uint32_t dev_id, fal_port_t port_id, fal_mac_config_t * config)
 {
     sw_error_t rv;
-    a_uint32_t reg, field, field2;
+    a_uint32_t reg = 0, field, field2;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1729,7 +1729,7 @@ _isisc_interface_phy_mode_get(a_uint32_t dev_id, a_uint32_t phy_id, fal_phy_conf
 {
     sw_error_t rv;
     a_uint16_t data;
-    a_uint32_t reg, rgmii;
+    a_uint32_t reg = 0, rgmii;
     hsl_phy_ops_t *phy_drv;
 
     HSL_DEV_ID_CHECK(dev_id);
@@ -1789,7 +1789,7 @@ static sw_error_t
 _isisc_interface_fx100_ctrl_set(a_uint32_t dev_id, fal_fx100_ctrl_config_t* config)
 {
     sw_error_t rv;
-    a_uint32_t reg;
+    a_uint32_t reg = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1900,7 +1900,7 @@ static sw_error_t
 _isisc_interface_fx100_ctrl_get(a_uint32_t dev_id, fal_fx100_ctrl_config_t* config)
 {
     sw_error_t rv;
-    a_uint32_t reg, field;
+    a_uint32_t reg = 0, field;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -2001,7 +2001,7 @@ static sw_error_t
 _isisc_interface_fx100_status_get(a_uint32_t dev_id, a_uint32_t* status)
 {
     sw_error_t rv;
-    a_uint32_t reg, field;
+    a_uint32_t reg = 0, field;
 
     HSL_DEV_ID_CHECK(dev_id);
 
