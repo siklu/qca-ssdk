@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2016, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -358,7 +358,7 @@ _shiva_cosmap_up_queue_get(a_uint32_t dev_id, a_uint32_t up,
                            fal_queue_t * queue)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -413,7 +413,7 @@ _shiva_cosmap_dscp_queue_get(a_uint32_t dev_id, a_uint32_t dscp,
                              fal_queue_t * queue)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
     a_uint32_t offsetaddr;
     a_uint16_t fieldoffset;
 
@@ -495,7 +495,7 @@ _shiva_qos_port_mode_get(a_uint32_t dev_id, fal_port_t port_id,
                          fal_qos_mode_t mode, a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -547,7 +547,7 @@ _shiva_qos_port_mode_pri_set(a_uint32_t dev_id, fal_port_t port_id,
                              fal_qos_mode_t mode, a_uint32_t pri)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -596,7 +596,7 @@ _shiva_qos_port_mode_pri_get(a_uint32_t dev_id, fal_port_t port_id,
                              fal_qos_mode_t mode, a_uint32_t * pri)
 {
     sw_error_t rv;
-    a_uint32_t entry, f_val;
+    a_uint32_t entry = 0, f_val;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -664,7 +664,7 @@ _shiva_qos_port_default_up_get(a_uint32_t dev_id, fal_port_t port_id,
                                a_uint32_t * up)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -686,7 +686,7 @@ _shiva_qos_port_sch_mode_set(a_uint32_t dev_id, a_uint32_t port_id,
                              fal_sch_mode_t mode, const a_uint32_t weight[])
 {
     sw_error_t rv;
-    a_uint32_t reg, val, w[4] = {0};
+    a_uint32_t reg = 0, val, w[4] = {0};
     a_int32_t  i, _index;
 
     HSL_DEV_ID_CHECK(dev_id);
@@ -745,7 +745,7 @@ _shiva_qos_port_sch_mode_get(a_uint32_t dev_id, a_uint32_t port_id,
                              fal_sch_mode_t * mode, a_uint32_t weight[])
 {
     sw_error_t rv;
-    a_uint32_t val, sch, w[4], i;
+    a_uint32_t val = 0, sch, w[4], i;
 
     HSL_DEV_ID_CHECK(dev_id);
 

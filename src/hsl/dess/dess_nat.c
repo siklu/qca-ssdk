@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2015, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2014-2016, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -77,7 +77,7 @@ static sw_error_t
 _dess_nat_feature_check(a_uint32_t dev_id)
 {
     sw_error_t rv;
-    a_uint32_t entry;
+    a_uint32_t entry = 0;
 
     HSL_REG_FIELD_GET(rv, dev_id, MASK_CTL, 0, DEVICE_ID,
                       (a_uint8_t *) (&entry), sizeof (a_uint32_t));
@@ -167,7 +167,7 @@ _dess_nat_counter_get(a_uint32_t dev_id, a_uint32_t cnt_id,
 static sw_error_t
 _dess_nat_entry_commit(a_uint32_t dev_id, a_uint32_t entry_type, a_uint32_t op)
 {
-    a_uint32_t busy = 1, i = 0x9000000, entry;
+    a_uint32_t busy = 1, i = 0x9000000, entry = 0;
     sw_error_t rv;
 
 
@@ -344,7 +344,7 @@ static sw_error_t
 _dess_nat_hw_to_sw(a_uint32_t dev_id, a_uint32_t reg[], fal_nat_entry_t * entry)
 {
     sw_error_t rv;
-    a_uint32_t data, cnt[4];
+    a_uint32_t data, cnt[4] = {0};
 
     entry->trans_addr = reg[0];
 
@@ -514,7 +514,7 @@ _dess_napt_hw_to_sw(a_uint32_t dev_id, a_uint32_t reg[],
                     fal_napt_entry_t * entry)
 {
     sw_error_t rv;
-    a_uint32_t data, cnt[4];
+    a_uint32_t data, cnt[4] = {0};
 
     entry->dst_addr = reg[0];
 
@@ -1595,7 +1595,7 @@ static sw_error_t
 _dess_nat_status_get(a_uint32_t dev_id, a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1651,7 +1651,7 @@ static sw_error_t
 _dess_napt_status_get(a_uint32_t dev_id, a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1712,7 +1712,7 @@ static sw_error_t
 _dess_napt_mode_get(a_uint32_t dev_id, fal_napt_mode_t * mode)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1777,7 +1777,7 @@ static sw_error_t
 _dess_nat_hash_mode_get(a_uint32_t dev_id, a_uint32_t * mode)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1827,7 +1827,7 @@ static sw_error_t
 _dess_nat_prv_base_addr_get(a_uint32_t dev_id, fal_ip4_addr_t * addr)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1927,7 +1927,7 @@ static sw_error_t
 _dess_nat_prv_base_mask_get(a_uint32_t dev_id, fal_ip4_addr_t * mask)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -2000,7 +2000,7 @@ static sw_error_t
 _dess_nat_pub_addr_add(a_uint32_t dev_id, fal_nat_pub_addr_t * entry)
 {
     sw_error_t rv;
-    a_uint32_t i, empty, addr, data, tbl[2] = { 0 };
+    a_uint32_t i, empty, addr, data = 0, tbl[2] = { 0 };
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -2061,7 +2061,7 @@ _dess_nat_pub_addr_del(a_uint32_t dev_id, a_uint32_t del_mode,
                        fal_nat_pub_addr_t * entry)
 {
     sw_error_t rv;
-    a_uint32_t empty, addr, data;
+    a_uint32_t empty, addr, data = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -2088,7 +2088,7 @@ _dess_nat_pub_addr_next(a_uint32_t dev_id, a_uint32_t next_mode,
                         fal_nat_pub_addr_t * entry)
 {
     sw_error_t rv;
-    a_uint32_t data, addr, idx, index, tbl[2];
+    a_uint32_t data, addr, idx, index, tbl[2] = {0};
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -2174,7 +2174,7 @@ static sw_error_t
 _dess_nat_unk_session_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 

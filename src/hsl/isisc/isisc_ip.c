@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2016, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -65,7 +65,7 @@ static void
 _isisc_ip_pt_learn_save(a_uint32_t dev_id, a_uint32_t * status)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_REG_ENTRY_GET(rv, dev_id, ROUTER_PTCTRL2, 0,
                       (a_uint8_t *) (&data), sizeof (a_uint32_t));
@@ -86,7 +86,7 @@ static void
 _isisc_ip_pt_learn_restore(a_uint32_t dev_id, a_uint32_t status)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_REG_ENTRY_GET(rv, dev_id, ROUTER_PTCTRL2, 0,
                       (a_uint8_t *) (&data), sizeof (a_uint32_t));
@@ -107,7 +107,7 @@ static sw_error_t
 _isisc_ip_feature_check(a_uint32_t dev_id)
 {
     sw_error_t rv;
-    a_uint32_t entry;
+    a_uint32_t entry = 0;
 
     HSL_REG_FIELD_GET(rv, dev_id, MASK_CTL, 0, DEVICE_ID,
                       (a_uint8_t *) (&entry), sizeof (a_uint32_t));
@@ -147,7 +147,7 @@ _isisc_ip_counter_get(a_uint32_t dev_id, a_uint32_t cnt_id,
 static sw_error_t
 _isisc_host_entry_commit(a_uint32_t dev_id, a_uint32_t entry_type, a_uint32_t op)
 {
-    a_uint32_t busy = 1, i = 0x100, entry, j, try_num;
+    a_uint32_t busy = 1, i = 0x100, entry = 0, j, try_num;
     a_uint32_t learn_status = 0;
     sw_error_t rv;
 
@@ -248,7 +248,7 @@ _isisc_ip_intf_sw_to_hw(a_uint32_t dev_id, fal_host_entry_t * entry,
                        a_uint32_t * hw_intf)
 {
     sw_error_t rv;
-    a_uint32_t addr, lvid, hvid, tbl[3], i;
+    a_uint32_t addr, lvid, hvid, tbl[3] = {0}, i;
     a_uint32_t sw_intf = entry->intf_id;
     a_uint32_t vid_offset;
 
@@ -291,7 +291,7 @@ _isisc_ip_intf_hw_to_sw(a_uint32_t dev_id, a_uint32_t hw_intf,
                        a_uint32_t * sw_intf)
 {
     sw_error_t rv;
-    a_uint32_t addr, lvid, tbl, i;
+    a_uint32_t addr, lvid, tbl = 0, i;
 
     i = hw_intf & 0x7;
 
@@ -329,7 +329,7 @@ static sw_error_t
 _isisc_ip_age_time_get(a_uint32_t dev_id, a_uint32_t * time)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_REG_FIELD_GET(rv, dev_id, ROUTER_CTRL, 0, ARP_AGE_TIME,
                       (a_uint8_t *) (&data), sizeof (a_uint32_t));
@@ -433,7 +433,7 @@ _isisc_host_hw_to_sw(a_uint32_t dev_id, a_uint32_t reg[],
                     fal_host_entry_t * entry)
 {
     sw_error_t rv;
-    a_uint32_t data, cnt[2];
+    a_uint32_t data, cnt[2] = {0};
 
     SW_GET_FIELD_BY_REG(HOST_ENTRY6, IP_VER, data, reg[6]);
     if (data)
@@ -940,7 +940,7 @@ _isisc_ip_pt_arp_learn_set(a_uint32_t dev_id, fal_port_t port_id,
                           a_uint32_t flags)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -979,7 +979,7 @@ _isisc_ip_pt_arp_learn_get(a_uint32_t dev_id, fal_port_t port_id,
                           a_uint32_t * flags)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1038,7 +1038,7 @@ static sw_error_t
 _isisc_ip_arp_learn_get(a_uint32_t dev_id, fal_arp_learn_mode_t * mode)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1066,7 +1066,7 @@ _isisc_ip_source_guard_set(a_uint32_t dev_id, fal_port_t port_id,
                           fal_source_guard_mode_t mode)
 {
     sw_error_t rv;
-    a_uint32_t reg, data;
+    a_uint32_t reg = 0, data;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1122,7 +1122,7 @@ _isisc_ip_source_guard_get(a_uint32_t dev_id, fal_port_t port_id,
                           fal_source_guard_mode_t * mode)
 {
     sw_error_t rv;
-    a_uint32_t reg, data;
+    a_uint32_t reg = 0, data;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1193,7 +1193,7 @@ static sw_error_t
 _isisc_ip_unk_source_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1225,7 +1225,7 @@ _isisc_ip_arp_guard_set(a_uint32_t dev_id, fal_port_t port_id,
                        fal_source_guard_mode_t mode)
 {
     sw_error_t rv;
-    a_uint32_t reg, data;
+    a_uint32_t reg = 0, data;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1273,7 +1273,7 @@ _isisc_ip_arp_guard_get(a_uint32_t dev_id, fal_port_t port_id,
                        fal_source_guard_mode_t * mode)
 {
     sw_error_t rv;
-    a_uint32_t reg, data;
+    a_uint32_t reg = 0, data;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1346,7 +1346,7 @@ static sw_error_t
 _isisc_arp_unk_source_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1775,7 +1775,7 @@ static sw_error_t
 _isisc_ip_wcmp_entry_get(a_uint32_t dev_id, a_uint32_t wcmp_id, fal_ip_wcmp_t * wcmp)
 {
     sw_error_t rv;
-    a_uint32_t i, addr, data;
+    a_uint32_t i, addr, data = 0;
     a_uint8_t  ptr[4] = { 0 }, pos[16] = { 0 };
 
     HSL_DEV_ID_CHECK(dev_id);
@@ -1822,7 +1822,7 @@ static sw_error_t
 _isisc_ip_wcmp_hash_mode_set(a_uint32_t dev_id, a_uint32_t hash_mode)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_REG_ENTRY_GET(rv, dev_id, ROUTER_CTRL, 0,
                       (a_uint8_t *) (&data), sizeof (a_uint32_t));
@@ -1874,7 +1874,7 @@ static sw_error_t
 _isisc_ip_wcmp_hash_mode_get(a_uint32_t dev_id, a_uint32_t * hash_mode)
 {
     sw_error_t rv;
-    a_uint32_t data, field;
+    a_uint32_t data = 0, field;
 
     *hash_mode = 0;
 
