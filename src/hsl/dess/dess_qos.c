@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2014, 2016, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -239,7 +239,7 @@ static sw_error_t
 _dess_qos_queue_tx_buf_nr_set(a_uint32_t dev_id, fal_port_t port_id,
                               fal_queue_t queue_id, a_uint32_t * number)
 {
-    a_uint32_t data, val = 0;
+    a_uint32_t data = 0, val = 0;
     sw_error_t rv;
 
     if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
@@ -276,7 +276,7 @@ static sw_error_t
 _dess_qos_queue_tx_buf_nr_get(a_uint32_t dev_id, fal_port_t port_id,
                               fal_queue_t queue_id, a_uint32_t * number)
 {
-    a_uint32_t data, val = 0;
+    a_uint32_t data = 0, val = 0;
     sw_error_t rv;
 
     if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
@@ -444,7 +444,7 @@ _dess_qos_port_mode_get(a_uint32_t dev_id, fal_port_t port_id,
                         fal_qos_mode_t mode, a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -496,7 +496,7 @@ _dess_qos_port_mode_pri_set(a_uint32_t dev_id, fal_port_t port_id,
                             fal_qos_mode_t mode, a_uint32_t pri)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -545,7 +545,7 @@ _dess_qos_port_mode_pri_get(a_uint32_t dev_id, fal_port_t port_id,
                             fal_qos_mode_t mode, a_uint32_t * pri)
 {
     sw_error_t rv;
-    a_uint32_t entry, f_val;
+    a_uint32_t entry = 0, f_val;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -588,7 +588,7 @@ _dess_qos_port_sch_mode_set(a_uint32_t dev_id, a_uint32_t port_id,
                             fal_sch_mode_t mode, const a_uint32_t weight[])
 {
     sw_error_t rv;
-    a_uint32_t reg, val, w[6] = { 0 };
+    a_uint32_t reg = 0, val, w[6] = { 0 };
     a_int32_t i, _index;
 
     HSL_DEV_ID_CHECK(dev_id);
@@ -649,7 +649,7 @@ _dess_qos_port_sch_mode_get(a_uint32_t dev_id, a_uint32_t port_id,
                             fal_sch_mode_t * mode, a_uint32_t weight[])
 {
     sw_error_t rv;
-    a_uint32_t val, sch, w[6], i;
+    a_uint32_t val = 0, sch, w[6], i;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -721,7 +721,7 @@ _dess_qos_port_default_spri_get(a_uint32_t dev_id, fal_port_t port_id,
                                 a_uint32_t * spri)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -768,7 +768,7 @@ _dess_qos_port_default_cpri_get(a_uint32_t dev_id, fal_port_t port_id,
                                 a_uint32_t * cpri)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -821,7 +821,7 @@ _dess_qos_port_force_spri_status_get(a_uint32_t dev_id, fal_port_t port_id,
                                      a_bool_t* enable)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
     if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
@@ -871,7 +871,7 @@ _dess_qos_port_force_cpri_status_get(a_uint32_t dev_id, fal_port_t port_id,
                                      a_bool_t* enable)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -900,7 +900,7 @@ _dess_qos_queue_remark_table_set(a_uint32_t dev_id, fal_port_t port_id,
                                  fal_queue_t queue_id, a_uint32_t tbl_id, a_bool_t enable)
 {
     sw_error_t rv;
-    a_uint32_t addr, data;
+    a_uint32_t addr, data = 0;
     a_uint32_t base[7] = {0x0c40, 0x0c48, 0x0c4c, 0x0c50, 0x0c54, 0x0c58, 0x0c60};
 
     rv = _dess_qos_port_queue_check(port_id, queue_id);
@@ -924,7 +924,7 @@ _dess_qos_queue_remark_table_get(a_uint32_t dev_id, fal_port_t port_id,
                                  fal_queue_t queue_id, a_uint32_t * tbl_id, a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t addr, data;
+    a_uint32_t addr, data = 0;
     a_uint32_t base[7] = {0x0c40, 0x0c48, 0x0c4c, 0x0c50, 0x0c54, 0x0c58, 0x0c60};
 
     rv = _dess_qos_port_queue_check(port_id, queue_id);
