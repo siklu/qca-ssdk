@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2016, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -351,7 +351,7 @@ isis_reg_field_set(a_uint32_t dev_id, a_uint32_t reg_addr,
                    a_uint32_t bit_offset, a_uint32_t field_len,
                    const a_uint8_t value[], a_uint32_t value_len)
 {
-    a_uint32_t reg_val;
+    a_uint32_t reg_val = 0;
     a_uint32_t field_val = *((a_uint32_t *) value);
 
     if ((bit_offset >= 32 || (field_len > 32)) || (field_len == 0))
@@ -391,7 +391,7 @@ _isis_regsiter_dump(a_uint32_t dev_id,a_uint32_t register_idx, fal_reg_dump_t * 
 		{0x820, 0x820, "7.QM debug registers"}
 	};
 
-	a_uint32_t dump_addr, reg_count, reg_val;
+	a_uint32_t dump_addr, reg_count, reg_val = 0;
 	switch (register_idx)
 	{
 		case 0:
@@ -425,7 +425,7 @@ _isis_debug_regsiter_dump(a_uint32_t dev_id,fal_debug_reg_dump_t * dbg_reg_dump)
 {
     sw_error_t rv = SW_OK;
     a_uint32_t reg;
-	a_uint32_t  reg_count, reg_val;
+	a_uint32_t  reg_count, reg_val = 0;
 
 	reg_count = 0;
 

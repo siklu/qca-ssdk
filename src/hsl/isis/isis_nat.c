@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2016, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -67,7 +67,7 @@ static sw_error_t
 _isis_nat_feature_check(a_uint32_t dev_id)
 {
     sw_error_t rv;
-    a_uint32_t entry;
+    a_uint32_t entry = 0;
 
     HSL_REG_FIELD_GET(rv, dev_id, MASK_CTL, 0, DEVICE_ID,
                       (a_uint8_t *) (&entry), sizeof (a_uint32_t));
@@ -88,7 +88,7 @@ _isis_ip_prvaddr_sw_to_hw(a_uint32_t dev_id, fal_ip4_addr_t sw_addr,
                           a_uint32_t * hw_addr)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_REG_FIELD_GET(rv, dev_id, PRVIP_CTL, 0, BASEADDR_SEL,
                       (a_uint8_t *) (&data), sizeof (a_uint32_t));
@@ -111,7 +111,7 @@ _isis_ip_prvaddr_hw_to_sw(a_uint32_t dev_id, a_uint32_t hw_addr,
                           fal_ip4_addr_t * sw_addr)
 {
     sw_error_t rv;
-    a_uint32_t data, addr;
+    a_uint32_t data = 0, addr = 0;
 
     HSL_REG_FIELD_GET(rv, dev_id, PRVIP_CTL, 0, BASEADDR_SEL,
                       (a_uint8_t *) (&data), sizeof (a_uint32_t));
@@ -158,7 +158,7 @@ _isis_nat_counter_get(a_uint32_t dev_id, a_uint32_t cnt_id,
 static sw_error_t
 _isis_nat_entry_commit(a_uint32_t dev_id, a_uint32_t entry_type, a_uint32_t op)
 {
-    a_uint32_t busy = 1, i = 0x100, entry;
+    a_uint32_t busy = 1, i = 0x100, entry = 0;
     sw_error_t rv;
 
     while (busy && --i)
@@ -334,7 +334,7 @@ static sw_error_t
 _isis_nat_hw_to_sw(a_uint32_t dev_id, a_uint32_t reg[], fal_nat_entry_t * entry)
 {
     sw_error_t rv;
-    a_uint32_t data, cnt[4];
+    a_uint32_t data, cnt[4] = {0};
 
     entry->trans_addr = reg[0];
 
@@ -492,7 +492,7 @@ _isis_napt_hw_to_sw(a_uint32_t dev_id, a_uint32_t reg[],
                     fal_napt_entry_t * entry)
 {
     sw_error_t rv;
-    a_uint32_t data, cnt[4];
+    a_uint32_t data, cnt[4] = {0};
 
     entry->dst_addr = reg[0];
 
@@ -1141,7 +1141,7 @@ static sw_error_t
 _isis_nat_status_get(a_uint32_t dev_id, a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1197,7 +1197,7 @@ static sw_error_t
 _isis_napt_status_get(a_uint32_t dev_id, a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1258,7 +1258,7 @@ static sw_error_t
 _isis_napt_mode_get(a_uint32_t dev_id, fal_napt_mode_t * mode)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1323,7 +1323,7 @@ static sw_error_t
 _isis_nat_hash_mode_get(a_uint32_t dev_id, a_uint32_t * mode)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1356,7 +1356,7 @@ static sw_error_t
 _isis_nat_prv_base_addr_set(a_uint32_t dev_id, fal_ip4_addr_t addr)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1389,7 +1389,7 @@ static sw_error_t
 _isis_nat_prv_base_addr_get(a_uint32_t dev_id, fal_ip4_addr_t * addr)
 {
     sw_error_t rv;
-    a_uint32_t data, tmp;
+    a_uint32_t data = 0, tmp = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1421,7 +1421,7 @@ static sw_error_t
 _isis_nat_psr_prv_base_addr_set(a_uint32_t dev_id, fal_ip4_addr_t addr)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1450,7 +1450,7 @@ static sw_error_t
 _isis_nat_psr_prv_base_addr_get(a_uint32_t dev_id, fal_ip4_addr_t * addr)
 {
     sw_error_t rv;
-    a_uint32_t data, tmp;
+    a_uint32_t data, tmp = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1511,7 +1511,7 @@ static sw_error_t
 _isis_nat_prv_addr_mode_get(a_uint32_t dev_id, a_bool_t * map_en)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1592,7 +1592,7 @@ static sw_error_t
 _isis_nat_pub_addr_add(a_uint32_t dev_id, fal_nat_pub_addr_t * entry)
 {
     sw_error_t rv;
-    a_uint32_t i, empty, addr, data, tbl[2] = { 0 };
+    a_uint32_t i, empty, addr, data = 0, tbl[2] = { 0 };
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1653,7 +1653,7 @@ _isis_nat_pub_addr_del(a_uint32_t dev_id, a_uint32_t del_mode,
                        fal_nat_pub_addr_t * entry)
 {
     sw_error_t rv;
-    a_uint32_t empty, addr, data;
+    a_uint32_t empty, addr, data = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1680,7 +1680,7 @@ _isis_nat_pub_addr_next(a_uint32_t dev_id, a_uint32_t next_mode,
                         fal_nat_pub_addr_t * entry)
 {
     sw_error_t rv;
-    a_uint32_t data, addr, idx, index, tbl[2];
+    a_uint32_t data, addr, idx, index, tbl[2] = {0};
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1766,7 +1766,7 @@ static sw_error_t
 _isis_nat_unk_session_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
