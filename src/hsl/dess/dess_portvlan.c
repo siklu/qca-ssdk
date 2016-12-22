@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2014, 2016, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -33,7 +33,7 @@ static sw_error_t
 _dess_port_route_defv_set(a_uint32_t dev_id, fal_port_t port_id)
 {
     sw_error_t rv;
-    a_uint32_t data, reg;
+    a_uint32_t data = 0, reg = 0;
 
     HSL_REG_FIELD_GET(rv, dev_id, PORT_VLAN1, port_id,
                       COREP_EN, (a_uint8_t *) (&data), sizeof (a_uint32_t));
@@ -143,7 +143,7 @@ _dess_port_egvlanmode_set(a_uint32_t dev_id, fal_port_t port_id,
                           fal_pt_1q_egmode_t port_egvlanmode)
 {
     sw_error_t rv;
-    a_uint32_t data, regval[FAL_EG_MODE_BUTT] = { 0, 1, 2, 3, 3 };
+    a_uint32_t data = 0, regval[FAL_EG_MODE_BUTT] = { 0, 1, 2, 3, 3 };
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -358,7 +358,7 @@ _dess_port_force_default_vid_get(a_uint32_t dev_id, fal_port_t port_id,
                                  a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -420,7 +420,7 @@ _dess_port_force_portvlan_get(a_uint32_t dev_id, fal_port_t port_id,
                               a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -463,7 +463,7 @@ static sw_error_t
 _dess_nestvlan_tpid_get(a_uint32_t dev_id, a_uint32_t * tpid)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -567,7 +567,7 @@ static sw_error_t
 _dess_port_tls_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -630,7 +630,7 @@ _dess_port_pri_propagation_get(a_uint32_t dev_id, fal_port_t port_id,
                                a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -690,7 +690,7 @@ _dess_port_default_svid_get(a_uint32_t dev_id, fal_port_t port_id,
                             a_uint32_t * vid)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -740,7 +740,7 @@ _dess_port_default_cvid_get(a_uint32_t dev_id, fal_port_t port_id,
                             a_uint32_t * vid)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -761,7 +761,7 @@ _dess_port_vlan_propagation_set(a_uint32_t dev_id, fal_port_t port_id,
                                 fal_vlan_propagation_mode_t mode)
 {
     sw_error_t rv;
-    a_uint32_t reg, p, c;
+    a_uint32_t reg = 0, p, c;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -807,7 +807,7 @@ _dess_port_vlan_propagation_get(a_uint32_t dev_id, fal_port_t port_id,
                                 fal_vlan_propagation_mode_t * mode)
 {
     sw_error_t rv;
-    a_uint32_t reg, p, c;
+    a_uint32_t reg = 0, p, c;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -847,7 +847,7 @@ _dess_vlan_trans_read(a_uint32_t dev_id, a_uint32_t entry_idx,
                       fal_pbmp_t * pbmp, fal_vlan_trans_entry_t * entry)
 {
     sw_error_t rv;
-    a_uint32_t i, addr, dir, table[2];
+    a_uint32_t i, addr, dir, table[2] = {0};
 
     *pbmp = 0;
     aos_mem_zero(entry, sizeof (fal_vlan_trans_entry_t));
@@ -1332,7 +1332,7 @@ _dess_port_mac_vlan_xlt_get(a_uint32_t dev_id, fal_port_t port_id,
                             a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1375,7 +1375,7 @@ static sw_error_t
 _dess_netisolate_get(a_uint32_t dev_id, a_uint32_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1405,7 +1405,7 @@ static sw_error_t
 _dess_eg_trans_filter_bypass_en_get(a_uint32_t dev_id, a_uint32_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 

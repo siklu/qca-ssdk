@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2016, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -55,7 +55,7 @@ _shiva_arp_status_set(a_uint32_t dev_id, a_bool_t enable)
 static sw_error_t
 _shiva_arp_status_get(a_uint32_t dev_id, a_bool_t *enable)
 {
-    a_uint32_t data;
+    a_uint32_t data = 0;
     sw_error_t rv;
 
     HSL_DEV_ID_CHECK(dev_id);
@@ -98,7 +98,7 @@ _shiva_frame_max_size_set(a_uint32_t dev_id, a_uint32_t size)
 static sw_error_t
 _shiva_frame_max_size_get(a_uint32_t dev_id, a_uint32_t *size)
 {
-    a_uint32_t data;
+    a_uint32_t data = 0;
     sw_error_t rv;
 
     HSL_DEV_ID_CHECK(dev_id);
@@ -116,7 +116,7 @@ _shiva_port_unk_sa_cmd_set(a_uint32_t dev_id, fal_port_t port_id,
                            fal_fwd_cmd_t cmd)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -158,7 +158,7 @@ _shiva_port_unk_sa_cmd_get(a_uint32_t dev_id, fal_port_t port_id,
                            fal_fwd_cmd_t * action)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
     a_uint32_t port_lock_en, port_drop_en;
 
     HSL_DEV_ID_CHECK(dev_id);
@@ -199,7 +199,7 @@ _shiva_port_unk_uc_filter_set(a_uint32_t dev_id, fal_port_t port_id,
                               a_bool_t enable)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -235,7 +235,7 @@ _shiva_port_unk_uc_filter_get(a_uint32_t dev_id, fal_port_t port_id,
                               a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t reg, field;
+    a_uint32_t reg = 0, field;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -266,7 +266,7 @@ _shiva_port_unk_mc_filter_set(a_uint32_t dev_id, fal_port_t port_id,
                               a_bool_t enable)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -302,7 +302,7 @@ _shiva_port_unk_mc_filter_get(a_uint32_t dev_id, fal_port_t port_id,
                               a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t reg, field;
+    a_uint32_t reg = 0, field;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -333,7 +333,7 @@ _shiva_port_bc_filter_set(a_uint32_t dev_id, fal_port_t port_id,
                           a_bool_t enable)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -369,7 +369,7 @@ _shiva_port_bc_filter_get(a_uint32_t dev_id, fal_port_t port_id,
                           a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t reg, field;
+    a_uint32_t reg = 0, field;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -425,7 +425,7 @@ static sw_error_t
 _shiva_cpu_port_status_get(a_uint32_t dev_id, a_bool_t *enable)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -475,7 +475,7 @@ static sw_error_t
 _shiva_pppoe_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -525,7 +525,7 @@ static sw_error_t
 _shiva_pppoe_status_get(a_uint32_t dev_id, a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -580,7 +580,7 @@ static sw_error_t
 _shiva_port_dhcp_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -635,7 +635,7 @@ static sw_error_t
 _shiva_arp_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -685,7 +685,7 @@ static sw_error_t
 _shiva_eapol_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -712,7 +712,7 @@ static sw_error_t
 _shiva_pppoe_session_add(a_uint32_t dev_id, a_uint32_t session_id, a_bool_t strip_hdr)
 {
     sw_error_t rv;
-    a_uint32_t reg, i, valid, cmd, id, entry_idx = 0xffff;
+    a_uint32_t reg = 0, i, valid, cmd, id, entry_idx = 0xffff;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -770,7 +770,7 @@ static sw_error_t
 _shiva_pppoe_session_del(a_uint32_t dev_id, a_uint32_t session_id)
 {
     sw_error_t rv;
-    a_uint32_t reg, i, valid, id;
+    a_uint32_t reg = 0, i, valid, id;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -806,7 +806,7 @@ static sw_error_t
 _shiva_pppoe_session_get(a_uint32_t dev_id, a_uint32_t session_id, a_bool_t * strip_hdr)
 {
     sw_error_t rv;
-    a_uint32_t reg, i, valid, cmd, id;
+    a_uint32_t reg = 0, i, valid, cmd, id;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -876,7 +876,7 @@ _shiva_eapol_status_set(a_uint32_t dev_id, a_uint32_t port_id, a_bool_t enable)
 static sw_error_t
 _shiva_eapol_status_get(a_uint32_t dev_id, a_uint32_t port_id, a_bool_t *enable)
 {
-    a_uint32_t data;
+    a_uint32_t data = 0;
     sw_error_t rv;
 
     HSL_DEV_ID_CHECK(dev_id);
@@ -936,7 +936,7 @@ _shiva_ripv1_status_set(a_uint32_t dev_id, a_bool_t enable)
 static sw_error_t
 _shiva_ripv1_status_get(a_uint32_t dev_id, a_bool_t *enable)
 {
-    a_uint32_t data;
+    a_uint32_t data = 0;
     sw_error_t rv;
 
     HSL_DEV_ID_CHECK(dev_id);
@@ -1014,7 +1014,7 @@ static sw_error_t
 _shiva_loop_check_status_get(a_uint32_t dev_id, fal_loop_check_time_t * time, a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1048,7 +1048,7 @@ static sw_error_t
 _shiva_loop_check_info_get(a_uint32_t dev_id, a_uint32_t * old_port_id, a_uint32_t * new_port_id)
 {
     sw_error_t rv;
-    a_uint32_t reg, data;
+    a_uint32_t reg = 0, data;
 
     HSL_DEV_ID_CHECK(dev_id);
 
