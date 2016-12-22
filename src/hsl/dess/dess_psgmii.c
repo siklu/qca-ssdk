@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2015-2016, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -77,7 +77,7 @@ dess_psgmii_reg_field_set(a_uint32_t dev_id, a_uint32_t reg_addr,
                    a_uint32_t bit_offset, a_uint32_t field_len,
                    const a_uint8_t value[], a_uint32_t value_len)
 {
-    a_uint32_t reg_val;
+    a_uint32_t reg_val = 0;
     a_uint32_t field_val = *((a_uint32_t *) value);
 
     if ((bit_offset >= 32 || (field_len > 32)) || (field_len == 0))
@@ -113,7 +113,7 @@ sw_error_t
 dess_psgmii_set_lpi(a_uint32_t dev_id, a_uint32_t phy_id, a_bool_t enable)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     if (phy_id == 0)
     {
@@ -165,7 +165,7 @@ sw_error_t
 dess_psgmii_get_lpi(a_uint32_t dev_id, a_uint32_t phy_id, a_bool_t *enable)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     if (phy_id == 0)
     {
@@ -203,7 +203,7 @@ dess_psgmii_set_interface_type(a_uint32_t dev_id, a_uint32_t phy_id,
 								psgmii_interface_mac_mode_t mode)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     rv = dess_psgmii_reg_get(dev_id, PSGMIIPHY_MODE_CONTROL,
 						(a_uint8_t *) (&data), sizeof (a_uint32_t));
@@ -311,7 +311,7 @@ a_bool_t
 dess_psgmii_autoneg_done(a_uint32_t dev_id, a_uint32_t phy_id)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     rv = dess_psgmii_reg_get(dev_id, PSGMIIPHY_CHANNEL_0_INPUT_OUTPUT_1 + phy_id * 0x18,
 						(a_uint8_t *) (&data), sizeof (a_uint32_t));
@@ -335,7 +335,7 @@ sw_error_t
 dess_psgmii_reset(a_uint32_t dev_id, a_uint32_t phy_id)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     rv = dess_psgmii_reg_get(dev_id, PSGMIIPHY_CHANNEL_0_INPUT_OUTPUT_4 + phy_id * 0x18,
 						(a_uint8_t *) (&data), sizeof (a_uint32_t));
@@ -360,7 +360,7 @@ sw_error_t
 dess_psgmii_poweroff(a_uint32_t dev_id, a_uint32_t phy_id)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     rv = dess_psgmii_reg_get(dev_id, PSGMIIPHY_CHANNEL_0_INPUT_OUTPUT_4 + phy_id * 0x18,
 						(a_uint8_t *) (&data), sizeof (a_uint32_t));
@@ -385,7 +385,7 @@ sw_error_t
 dess_psgmii_poweron(a_uint32_t dev_id, a_uint32_t phy_id)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     rv = dess_psgmii_reg_get(dev_id, PSGMIIPHY_CHANNEL_0_INPUT_OUTPUT_4 + phy_id * 0x18,
 						(a_uint8_t *) (&data), sizeof (a_uint32_t));
@@ -412,7 +412,7 @@ a_bool_t
 dess_psgmii_get_link_status(a_uint32_t dev_id, a_uint32_t phy_id)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     rv = dess_psgmii_reg_get(dev_id, PSGMIIPHY_CHANNEL_0_INPUT_OUTPUT_5 + phy_id * 0x18,
 						(a_uint8_t *) (&data), sizeof (a_uint32_t));
@@ -436,7 +436,7 @@ dess_psgmii_set_loopback(a_uint32_t dev_id, a_uint32_t phy_id,
                        a_bool_t enable)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     rv = dess_psgmii_reg_get(dev_id, PSGMIIPHY_CHANNEL_0_INPUT_OUTPUT_4 + phy_id * 0x18,
 						(a_uint8_t *) (&data), sizeof (a_uint32_t));
@@ -464,7 +464,7 @@ dess_psgmii_get_loopback(a_uint32_t dev_id, a_uint32_t phy_id,
                        a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     rv = dess_psgmii_reg_get(dev_id, PSGMIIPHY_CHANNEL_0_INPUT_OUTPUT_4 + phy_id * 0x18,
 						(a_uint8_t *) (&data), sizeof (a_uint32_t));
@@ -500,7 +500,7 @@ sw_error_t
 dess_psgmii_restart_autoneg(a_uint32_t dev_id, a_uint32_t phy_id)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     rv = dess_psgmii_reg_get(dev_id, PSGMIIPHY_CHANNEL_0_INPUT_OUTPUT_4 + phy_id * 0x18,
 						(a_uint8_t *) (&data), sizeof (a_uint32_t));
@@ -525,7 +525,7 @@ sw_error_t
 dess_psgmii_enable_autoneg(a_uint32_t dev_id, a_uint32_t phy_id)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     rv = dess_psgmii_reg_get(dev_id, PSGMIIPHY_CHANNEL_0_INPUT_OUTPUT_4 + phy_id * 0x18,
 						(a_uint8_t *) (&data), sizeof (a_uint32_t));
@@ -552,7 +552,7 @@ dess_psgmii_get_speed(a_uint32_t dev_id, a_uint32_t phy_id,
                  fal_port_speed_t * speed)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     rv = dess_psgmii_reg_get(dev_id, PSGMIIPHY_CHANNEL_0_INPUT_OUTPUT_4 + phy_id * 0x18,
 						(a_uint8_t *) (&data), sizeof (a_uint32_t));
@@ -610,7 +610,7 @@ dess_psgmii_set_speed(a_uint32_t dev_id, a_uint32_t phy_id,
                  fal_port_speed_t speed)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     rv = dess_psgmii_reg_get(dev_id, PSGMIIPHY_CHANNEL_0_INPUT_OUTPUT_4 + phy_id * 0x18,
 						(a_uint8_t *) (&data), sizeof (a_uint32_t));
@@ -654,7 +654,7 @@ dess_psgmii_get_duplex(a_uint32_t dev_id, a_uint32_t phy_id,
                   fal_port_duplex_t * duplex)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     rv = dess_psgmii_reg_get(dev_id, PSGMIIPHY_CHANNEL_0_INPUT_OUTPUT_5 + phy_id * 0x18,
 						(a_uint8_t *) (&data), sizeof (a_uint32_t));
@@ -684,7 +684,7 @@ dess_psgmii_set_duplex(a_uint32_t dev_id, a_uint32_t phy_id,
                   fal_port_duplex_t duplex)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     rv = dess_psgmii_reg_get(dev_id, PSGMIIPHY_CHANNEL_0_INPUT_OUTPUT_5 + phy_id * 0x18,
 						(a_uint8_t *) (&data), sizeof (a_uint32_t));

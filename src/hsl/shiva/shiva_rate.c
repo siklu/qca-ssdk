@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2016, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -78,7 +78,7 @@ _shiva_rate_queue_egrl_set(a_uint32_t dev_id, fal_port_t port_id,
 {
     sw_error_t rv;
     a_uint32_t val;
-    a_uint32_t portrl;
+    a_uint32_t portrl = 0;
 
     if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
     {
@@ -154,7 +154,7 @@ _shiva_rate_queue_egrl_get(a_uint32_t dev_id, fal_port_t port_id,
                            a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
     {
@@ -219,8 +219,8 @@ _shiva_rate_port_egrl_set(a_uint32_t dev_id, fal_port_t port_id,
                           a_uint32_t * speed, a_bool_t enable)
 {
     sw_error_t rv;
-    a_uint32_t val;
-    a_uint32_t portrl;
+    a_uint32_t val = 0;
+    a_uint32_t portrl = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -327,7 +327,7 @@ _shiva_rate_port_egrl_get(a_uint32_t dev_id, fal_port_t port_id,
                           a_uint32_t * speed, a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -399,7 +399,7 @@ _shiva_rate_port_inrl_get(a_uint32_t dev_id, fal_port_t port_id,
                           a_uint32_t * speed, a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -498,7 +498,7 @@ static sw_error_t
 _shiva_storm_ctrl_frame_get(a_uint32_t dev_id, fal_port_t port_id,
                             fal_storm_type_t storm_type, a_bool_t * enable)
 {
-    a_uint32_t data;
+    a_uint32_t data = 0;
     sw_error_t rv;
 
     HSL_DEV_ID_CHECK(dev_id);
@@ -574,7 +574,7 @@ static sw_error_t
 _shiva_storm_ctrl_rate_get(a_uint32_t dev_id, fal_port_t port_id,
                            a_uint32_t * rate_in_pps)
 {
-    a_uint32_t data;
+    a_uint32_t data = 0;
     sw_error_t rv;
 
     HSL_DEV_ID_CHECK(dev_id);
