@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2015, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015-2016, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -41,7 +41,7 @@ _isisc_port_misc_property_set(a_uint32_t dev_id, fal_port_t port_id,
                              a_bool_t enable, a_uint32_t item)
 {
     sw_error_t rv;
-    a_uint32_t reg, val;
+    a_uint32_t reg = 0, val;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -96,7 +96,7 @@ _isisc_port_misc_property_get(a_uint32_t dev_id, fal_port_t port_id,
                              a_bool_t * enable, a_uint32_t item)
 {
     sw_error_t rv;
-    a_uint32_t reg, val;
+    a_uint32_t reg = 0, val;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -157,7 +157,7 @@ _isisc_frame_max_size_set(a_uint32_t dev_id, a_uint32_t size)
 static sw_error_t
 _isisc_frame_max_size_get(a_uint32_t dev_id, a_uint32_t * size)
 {
-    a_uint32_t data;
+    a_uint32_t data = 0;
     sw_error_t rv;
 
     HSL_DEV_ID_CHECK(dev_id);
@@ -175,7 +175,7 @@ _isisc_port_unk_uc_filter_set(a_uint32_t dev_id, fal_port_t port_id,
                              a_bool_t enable)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -212,7 +212,7 @@ _isisc_port_unk_mc_filter_set(a_uint32_t dev_id, fal_port_t port_id,
                              a_bool_t enable)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -248,7 +248,7 @@ static sw_error_t
 _isisc_port_bc_filter_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -311,7 +311,7 @@ _isisc_port_bc_filter_get(a_uint32_t dev_id, fal_port_t port_id,
                          a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t reg, field;
+    a_uint32_t reg = 0, field;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -342,7 +342,7 @@ _isisc_port_unk_uc_filter_get(a_uint32_t dev_id, fal_port_t port_id,
                              a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t reg, field;
+    a_uint32_t reg = 0, field;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -373,7 +373,7 @@ _isisc_port_unk_mc_filter_get(a_uint32_t dev_id, fal_port_t port_id,
                              a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t reg, field;
+    a_uint32_t reg = 0, field;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -403,7 +403,7 @@ static sw_error_t
 _isisc_cpu_port_status_get(a_uint32_t dev_id, a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -453,7 +453,7 @@ static sw_error_t
 _isisc_cpu_vid_en_get(a_uint32_t dev_id, a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -503,7 +503,7 @@ static sw_error_t
 _isisc_rtd_pppoe_en_get(a_uint32_t dev_id, a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -554,7 +554,7 @@ static sw_error_t
 _isisc_pppoe_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -604,7 +604,7 @@ static sw_error_t
 _isisc_pppoe_status_get(a_uint32_t dev_id, a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -658,7 +658,7 @@ static sw_error_t
 _isisc_arp_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -714,7 +714,7 @@ static sw_error_t
 _isisc_eapol_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -741,7 +741,7 @@ static sw_error_t
 _isisc_pppoe_session_add(a_uint32_t dev_id, fal_pppoe_session_t * session_tbl)
 {
     sw_error_t rv;
-    a_uint32_t reg, i, valid, id, entry_idx = ISISC_MAX_PPPOE_SESSION;
+    a_uint32_t reg = 0, i, valid, id, entry_idx = ISISC_MAX_PPPOE_SESSION;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -811,7 +811,7 @@ static sw_error_t
 _isisc_pppoe_session_del(a_uint32_t dev_id, fal_pppoe_session_t * session_tbl)
 {
     sw_error_t rv;
-    a_uint32_t reg, i, valid, id;
+    a_uint32_t reg = 0, i, valid, id;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -846,7 +846,7 @@ static sw_error_t
 _isisc_pppoe_session_get(a_uint32_t dev_id, fal_pppoe_session_t * session_tbl)
 {
     sw_error_t rv;
-    a_uint32_t reg, i, valid, id;
+    a_uint32_t reg = 0, i, valid, id;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -915,7 +915,7 @@ _isisc_pppoe_session_id_get(a_uint32_t dev_id, a_uint32_t index,
                            a_uint32_t * id)
 {
     sw_error_t rv;
-    a_uint32_t reg, tmp;
+    a_uint32_t reg = 0, tmp;
 
     if (ISISC_MAX_PPPOE_SESSION <= index)
     {
@@ -966,7 +966,7 @@ _isisc_ripv1_status_set(a_uint32_t dev_id, a_bool_t enable)
 static sw_error_t
 _isisc_ripv1_status_get(a_uint32_t dev_id, a_bool_t * enable)
 {
-    a_uint32_t data;
+    a_uint32_t data = 0;
     sw_error_t rv;
 
     HSL_DEV_ID_CHECK(dev_id);
@@ -996,7 +996,7 @@ static sw_error_t
 _isisc_intr_mask_set(a_uint32_t dev_id, a_uint32_t intr_mask)
 {
     sw_error_t rv;
-    a_uint32_t reg;
+    a_uint32_t reg = 0;
 
     HSL_REG_ENTRY_GET(rv, dev_id, GBL_INT_MASK1, 0, (a_uint8_t *) (&reg),
                       sizeof (a_uint32_t));
@@ -1020,7 +1020,7 @@ static sw_error_t
 _isisc_intr_mask_get(a_uint32_t dev_id, a_uint32_t * intr_mask)
 {
     sw_error_t rv;
-    a_uint32_t reg;
+    a_uint32_t reg = 0;
 
     *intr_mask = 0;
     HSL_REG_ENTRY_GET(rv, dev_id, GBL_INT_MASK1, 0, (a_uint8_t *) (&reg),
@@ -1039,7 +1039,7 @@ static sw_error_t
 _isisc_intr_status_get(a_uint32_t dev_id, a_uint32_t * intr_status)
 {
     sw_error_t rv;
-    a_uint32_t reg;
+    a_uint32_t reg = 0;
 
     *intr_status = 0;
     HSL_REG_ENTRY_GET(rv, dev_id, GBL_INT_STATUS1, 0, (a_uint8_t *) (&reg),
@@ -1150,7 +1150,7 @@ static sw_error_t
 _isisc_intr_mask_mac_linkchg_set(a_uint32_t dev_id, a_uint32_t port_id, a_bool_t enable)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1187,7 +1187,7 @@ static sw_error_t
 _isisc_intr_mask_mac_linkchg_get(a_uint32_t dev_id, a_uint32_t port_id, a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t reg, field;
+    a_uint32_t reg = 0, field;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1218,7 +1218,7 @@ static sw_error_t
 _isisc_intr_status_mac_linkchg_get(a_uint32_t dev_id, fal_pbmp_t* port_bitmap)
 {
     sw_error_t rv;
-    a_uint32_t reg;
+    a_uint32_t reg = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
