@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2015, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015-2016, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -43,7 +43,7 @@ _isisc_port_duplex_set(a_uint32_t dev_id, fal_port_t port_id,
                       fal_port_duplex_t duplex)
 {
     sw_error_t rv;
-    a_uint32_t phy_id, reg_save, reg_val, force, tmp;
+    a_uint32_t phy_id, reg_save, reg_val = 0, force, tmp;
     hsl_phy_ops_t *phy_drv;
     a_bool_t status;
 
@@ -132,7 +132,7 @@ _isisc_port_speed_set(a_uint32_t dev_id, fal_port_t port_id,
                      fal_port_speed_t speed)
 {
     sw_error_t rv;
-    a_uint32_t phy_id, reg_save, reg_val, force, tmp;
+    a_uint32_t phy_id, reg_save, reg_val = 0, force, tmp;
     hsl_phy_ops_t *phy_drv;
     a_bool_t status;
 
@@ -232,7 +232,7 @@ static sw_error_t
 _isisc_port_flowctrl_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
     sw_error_t rv;
-    a_uint32_t val, force, reg, tmp;
+    a_uint32_t val, force, reg = 0, tmp;
 
     if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
     {
@@ -280,7 +280,7 @@ _isisc_port_flowctrl_forcemode_set(a_uint32_t dev_id, fal_port_t port_id,
                                   a_bool_t enable)
 {
     sw_error_t rv;
-    a_uint32_t reg, tmp;
+    a_uint32_t reg = 0, tmp;
 
     if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
     {
@@ -566,7 +566,7 @@ _isisc_port_flowctrl_get(a_uint32_t dev_id, fal_port_t port_id,
                         a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t rx, reg;
+    a_uint32_t rx, reg = 0;
 
     if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
     {
@@ -759,7 +759,7 @@ _isisc_port_rxhdr_mode_set(a_uint32_t dev_id, fal_port_t port_id,
                           fal_port_header_mode_t mode)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -829,7 +829,7 @@ _isisc_port_txhdr_mode_set(a_uint32_t dev_id, fal_port_t port_id,
                           fal_port_header_mode_t mode)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -897,7 +897,7 @@ _isisc_port_txhdr_mode_get(a_uint32_t dev_id, fal_port_t port_id,
 static sw_error_t
 _isisc_header_type_set(a_uint32_t dev_id, a_bool_t enable, a_uint32_t type)
 {
-    a_uint32_t reg;
+    a_uint32_t reg = 0;
     sw_error_t rv;
 
     HSL_DEV_ID_CHECK(dev_id);
@@ -933,7 +933,7 @@ _isisc_header_type_set(a_uint32_t dev_id, a_bool_t enable, a_uint32_t type)
 static sw_error_t
 _isisc_header_type_get(a_uint32_t dev_id, a_bool_t * enable, a_uint32_t * type)
 {
-    a_uint32_t data, reg;
+    a_uint32_t data, reg = 0;
     sw_error_t rv;
 
     HSL_DEV_ID_CHECK(dev_id);
@@ -962,7 +962,7 @@ static sw_error_t
 _isisc_port_txmac_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
     sw_error_t rv;
-    a_uint32_t reg, force, val, tmp;
+    a_uint32_t reg, force, val = 0, tmp;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1019,7 +1019,7 @@ static sw_error_t
 _isisc_port_txmac_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1048,7 +1048,7 @@ static sw_error_t
 _isisc_port_rxmac_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
     sw_error_t rv;
-    a_uint32_t reg, force, val, tmp;
+    a_uint32_t reg = 0, force, val = 0, tmp;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1134,7 +1134,7 @@ static sw_error_t
 _isisc_port_txfc_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
     sw_error_t rv;
-    a_uint32_t val, reg, force, tmp;
+    a_uint32_t val, reg = 0, force, tmp;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1220,7 +1220,7 @@ static sw_error_t
 _isisc_port_rxfc_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
     sw_error_t rv;
-    a_uint32_t val, reg, force, tmp;
+    a_uint32_t val = 0, reg, force, tmp;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1398,7 +1398,7 @@ static sw_error_t
 _isisc_port_link_forcemode_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
     sw_error_t rv;
-    a_uint32_t reg, tmp;
+    a_uint32_t reg = 0, tmp = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1446,7 +1446,7 @@ static sw_error_t
 _isisc_port_link_forcemode_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1476,7 +1476,7 @@ static sw_error_t
 _isisc_port_bp_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
     sw_error_t rv;
-    a_uint32_t val, tmp;
+    a_uint32_t val = 0, tmp;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1585,7 +1585,7 @@ static sw_error_t
 _isisc_port_mac_loopback_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
