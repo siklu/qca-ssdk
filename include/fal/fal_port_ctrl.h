@@ -299,28 +299,14 @@ enum
 	FUNC_ADPT_PORT_SOURCE_FILTER_SET,
 };
 
-typedef enum {
-	MRU_MTU_FORWARD = 0,
-	MRU_MTU_DROP = 1,
-	MRU_MTU_CPYCPU = 2,
-	MRU_MTU_RDTCPU = 3,
-} fal_mtu_action_t;
-
-typedef enum {
-	MRU_MRU_FORWARD = 0,
-	MRU_MRU_DROP = 1,
-	MRU_MRU_CPYCPU = 2,
-	MRU_MRU_RDTCPU = 3,
-} fal_mru_action_t;
-
 typedef struct {
 	a_uint32_t 		mtu_size;
-	fal_mtu_action_t 	action;
+	fal_fwd_cmd_t 	action;
 } fal_mtu_ctrl_t;
 
 typedef struct {
 	a_uint32_t 		mru_size;
-	fal_mru_action_t 	action;
+	fal_fwd_cmd_t 	action;
 } fal_mru_ctrl_t;
 
 sw_error_t
