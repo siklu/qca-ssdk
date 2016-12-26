@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2016, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -60,7 +60,7 @@ _isis_trunk_group_set(a_uint32_t dev_id, a_uint32_t trunk_id,
                       a_bool_t enable, fal_pbmp_t member)
 {
     sw_error_t rv;
-    a_uint32_t i, reg, cnt = 0, data0 = 0, data1 = 0;
+    a_uint32_t i, reg = 0, cnt = 0, data0 = 0, data1 = 0;
 
     if (ISIS_MAX_TRUNK_ID < trunk_id)
     {
@@ -136,7 +136,7 @@ _isis_trunk_group_get(a_uint32_t dev_id, a_uint32_t trunk_id,
                       a_bool_t * enable, fal_pbmp_t * member)
 {
     sw_error_t rv;
-    a_uint32_t data, reg;
+    a_uint32_t data, reg = 0;
 
     if (ISIS_MAX_TRUNK_ID < trunk_id)
     {
@@ -231,7 +231,7 @@ static sw_error_t
 _isis_trunk_hash_mode_get(a_uint32_t dev_id, a_uint32_t * hash_mode)
 {
     sw_error_t rv;
-    a_uint32_t reg, data = 0;
+    a_uint32_t reg = 0, data = 0;
 
     HSL_REG_ENTRY_GET(rv, dev_id, TRUNK_HASH_MODE, 0,
                       (a_uint8_t *) (&reg), sizeof (a_uint32_t));
