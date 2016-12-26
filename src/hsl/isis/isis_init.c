@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2016, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -144,7 +144,7 @@ isis_hw_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 static sw_error_t
 isis_dev_init(a_uint32_t dev_id, hsl_init_mode cpu_mode)
 {
-    a_uint32_t entry;
+    a_uint32_t entry = 0;
     sw_error_t rv;
     hsl_dev_t *pdev = NULL;
 
