@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2014, 2016, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -44,7 +44,7 @@ _dess_cosmap_dscp_to_pri_dp_set(a_uint32_t dev_id, a_uint32_t mode,
                                 a_uint32_t dscp, a_uint32_t val)
 {
     sw_error_t rv;
-    a_uint32_t index, data;
+    a_uint32_t index, data = 0;
 
     if (DESS_MAX_DSCP < dscp)
     {
@@ -87,7 +87,7 @@ _dess_cosmap_dscp_to_pri_dp_get(a_uint32_t dev_id, a_uint32_t mode,
                                 a_uint32_t dscp, a_uint32_t * val)
 {
     sw_error_t rv;
-    a_uint32_t index, data;
+    a_uint32_t index, data = 0;
 
     if (DESS_MAX_DSCP < dscp)
     {
@@ -117,7 +117,7 @@ _dess_cosmap_up_to_pri_dp_set(a_uint32_t dev_id, a_uint32_t mode, a_uint32_t up,
                               a_uint32_t val)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     if (DESS_MAX_UP < up)
     {
@@ -159,7 +159,7 @@ _dess_cosmap_up_to_pri_dp_get(a_uint32_t dev_id, a_uint32_t mode, a_uint32_t up,
                               a_uint32_t * val)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     if (DESS_MAX_UP < up)
     {
@@ -189,7 +189,7 @@ _dess_cosmap_dscp_to_ehpri_dp_set(a_uint32_t dev_id, a_uint32_t mode,
                                 a_uint32_t dscp, a_uint32_t val)
 {
     sw_error_t rv;
-    a_uint32_t index, data;
+    a_uint32_t index, data = 0;
 
     if (DESS_MAX_DSCP < dscp)
     {
@@ -232,7 +232,7 @@ _dess_cosmap_dscp_to_ehpri_dp_get(a_uint32_t dev_id, a_uint32_t mode,
                                 a_uint32_t dscp, a_uint32_t * val)
 {
     sw_error_t rv;
-    a_uint32_t index, data;
+    a_uint32_t index, data = 0;
 
     if (DESS_MAX_DSCP < dscp)
     {
@@ -262,7 +262,7 @@ _dess_cosmap_up_to_ehpri_dp_set(a_uint32_t dev_id, a_uint32_t mode, a_uint32_t u
                               a_uint32_t val)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     if (DESS_MAX_UP < up)
     {
@@ -304,7 +304,7 @@ _dess_cosmap_up_to_ehpri_dp_get(a_uint32_t dev_id, a_uint32_t mode, a_uint32_t u
                               a_uint32_t * val)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     if (DESS_MAX_UP < up)
     {
@@ -334,7 +334,7 @@ _dess_cosmap_pri_to_queue_set(a_uint32_t dev_id, a_uint32_t pri,
                               a_uint32_t queue)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     if ((DESS_MAX_PRI < pri) || (DESS_MAX_QUEUE < queue))
     {
@@ -358,7 +358,7 @@ _dess_cosmap_pri_to_queue_get(a_uint32_t dev_id, a_uint32_t pri,
                               a_uint32_t * queue)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     if (DESS_MAX_PRI < pri)
     {
@@ -378,7 +378,7 @@ _dess_cosmap_pri_to_ehqueue_set(a_uint32_t dev_id, a_uint32_t pri,
                                 a_uint32_t queue)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     if ((DESS_MAX_PRI < pri) || (DESS_MAX_EH_QUEUE < queue))
     {
@@ -402,7 +402,7 @@ _dess_cosmap_pri_to_ehqueue_get(a_uint32_t dev_id, a_uint32_t pri,
                                 a_uint32_t * queue)
 {
     sw_error_t rv;
-    a_uint32_t data;
+    a_uint32_t data = 0;
 
     if (DESS_MAX_PRI < pri)
     {
@@ -450,7 +450,7 @@ _dess_cosmap_egress_remark_get(a_uint32_t dev_id, a_uint32_t tbl_id,
                                fal_egress_remark_table_t * tbl)
 {
     sw_error_t rv;
-    a_uint32_t data, addr;
+    a_uint32_t data = 0, addr;
 
     if (DESS_EGRESS_REAMRK_NUM <= tbl_id)
     {
