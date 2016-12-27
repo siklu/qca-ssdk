@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2016, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -1942,7 +1942,7 @@ _shiva_acl_rule_set(a_uint32_t dev_id, a_uint32_t base_addr,
 {
     sw_error_t rv;
     a_uint32_t ent_idx, tmp_ent_idx;
-    a_uint32_t i, flt_nr, flt_idx[4];
+    a_uint32_t i, flt_nr, flt_idx[4] = {0};
     a_uint32_t act_idx, slct_idx;
 
     act_idx = base_addr;
@@ -1983,7 +1983,7 @@ _shiva_acl_rule_get(a_uint32_t dev_id, shiva_acl_hw_rule_t * rule,
                     a_uint32_t * ent_idx, a_uint32_t rule_idx)
 {
     sw_error_t rv;
-    a_uint32_t i, tmp_idx, flt_nr, flt_idx[4];
+    a_uint32_t i = 0, tmp_idx = 0, flt_nr = 0, flt_idx[4] = {0};
 
     tmp_idx = *ent_idx;
 
@@ -2505,9 +2505,9 @@ _shiva_acl_rule_delete(a_uint32_t dev_id, a_uint32_t list_id,
                        a_uint32_t rule_id, a_uint32_t rule_nr)
 {
     sw_error_t rv;
-    a_uint32_t flt_idx[4];
+    a_uint32_t flt_idx[4] = {0};
     a_uint32_t i, j, flt_nr;
-    a_uint32_t list_idx, addr, size, rule_idx, cnt;
+    a_uint32_t list_idx = 0, addr, size, rule_idx, cnt;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -2700,7 +2700,7 @@ static sw_error_t
 _shiva_acl_status_get(a_uint32_t dev_id, a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -2746,7 +2746,7 @@ HSL_LOCAL sw_error_t
 shiva_acl_rule_dump(a_uint32_t dev_id)
 {
     a_uint32_t slt_idx, flt_nr, i, j;
-    a_uint32_t flt_idx[4];
+    a_uint32_t flt_idx[4] = {0};
     sw_error_t rv;
     shiva_acl_hw_rule_t rule;
 
