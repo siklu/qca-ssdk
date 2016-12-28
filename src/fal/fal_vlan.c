@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2016, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -334,7 +334,7 @@ _fal_vlan_member_update(a_uint32_t dev_id, a_uint32_t vlan_id,
                         fal_pbmp_t member, fal_pbmp_t u_member)
 {
     sw_error_t rv;
-    fal_vlan_t vlan_entry;
+    fal_vlan_t vlan_entry = {0};
     hsl_api_t *p_api;
     hsl_dev_t *p_dev = NULL;
 

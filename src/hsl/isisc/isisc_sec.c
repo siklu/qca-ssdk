@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2016, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -35,7 +35,7 @@ _isisc_sec_norm_item_set(a_uint32_t dev_id, fal_norm_item_t item, void *value)
     sw_error_t rv;
     fal_fwd_cmd_t cmd;
     a_bool_t enable;
-    a_uint32_t addr, offset, len, reg, val;
+    a_uint32_t addr, offset, len, reg = 0, val;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -383,7 +383,7 @@ static sw_error_t
 _isisc_sec_norm_item_get(a_uint32_t dev_id, fal_norm_item_t item, void *value)
 {
     sw_error_t rv;
-    a_uint32_t addr, offset, len, reg, val;
+    a_uint32_t addr, offset, len, reg = 0, val;
     a_uint32_t status_chk = 0, val_chk = 0, scmd_chk = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
