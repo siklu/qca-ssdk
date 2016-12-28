@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2016, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -1180,7 +1180,7 @@ static sw_error_t
 _isisc_acl_status_get(a_uint32_t dev_id, a_bool_t * enable)
 {
     sw_error_t rv;
-    a_uint32_t val;
+    a_uint32_t val = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1206,7 +1206,7 @@ _isisc_acl_port_udf_profile_set(a_uint32_t dev_id, fal_port_t port_id,
                                a_uint32_t length)
 {
     sw_error_t rv;
-    a_uint32_t reg;
+    a_uint32_t reg = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1280,7 +1280,7 @@ _isisc_acl_port_udf_profile_get(a_uint32_t dev_id, fal_port_t port_id,
                                a_uint32_t * length)
 {
     sw_error_t rv;
-    a_uint32_t reg;
+    a_uint32_t reg = 0;
 
     HSL_DEV_ID_CHECK(dev_id);
 
@@ -1391,7 +1391,7 @@ _isisc_acl_rule_src_filter_sts_set(a_uint32_t dev_id,
                                   a_uint32_t rule_id, a_bool_t enable)
 {
     sw_error_t rv;
-    a_uint32_t reg, regIdx;
+    a_uint32_t reg = 0, regIdx;
     isisc_acl_rule_t *sw_rule;
 
     HSL_DEV_ID_CHECK(dev_id);
@@ -1434,7 +1434,7 @@ _isisc_acl_rule_src_filter_sts_get(a_uint32_t dev_id,
                                   a_uint32_t rule_id, a_bool_t* enable)
 {
     sw_error_t rv;
-    a_uint32_t reg, regIdx;
+    a_uint32_t reg = 0, regIdx;
     isisc_acl_rule_t *sw_rule;
 
     HSL_DEV_ID_CHECK(dev_id);

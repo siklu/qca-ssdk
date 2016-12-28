@@ -1339,13 +1339,13 @@ static int ssdk_switch_register(void)
 			return ret;
 	}
 
-	ret = qca_phy_mib_work_start(priv);
+	ret = qca_phy_mib_work_start(qca_phy_priv_global);
 	if (ret != 0) {
 			printk("qca_phy_mib_work_start failed for %s\n", sw_dev->name);
 			return ret;
 	}
 
-	ret = qm_err_check_work_start(priv);
+	ret = qm_err_check_work_start(qca_phy_priv_global);
 	if (ret != 0) {
 			printk("qm_err_check_work_start failed for %s\n", sw_dev->name);
 			return ret;
@@ -2074,7 +2074,7 @@ void ssdk_psgmii_single_phy_testing(int phy, a_bool_t enable)
 	qca_ar8327_phy_write(0, phy, 0x0, 0x4140);
 	j = 0;
 	while (j < 100) {
-		u16 status;
+		u16 status = 0;
 		qca_ar8327_phy_read(0, phy, 0x11, &status);
 		if (status & (1 << 10))
 			break;
@@ -2125,7 +2125,7 @@ void ssdk_psgmii_all_phy_testing(a_bool_t enable)
 	j = 0;
 	while (j < 100) {
 		for (phy = 0; phy < 5; phy++) {
-			u16 status;
+			u16 status = 0;
 			qca_ar8327_phy_read(0, phy, 0x11, &status);
 			if (!(status & (1 << 10)))
 				break;
