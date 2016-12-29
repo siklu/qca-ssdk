@@ -3698,6 +3698,11 @@ extern "C" {
     SW_PARAM_DEF(SW_API_POLICER_ACL_ENTRY_GET, SW_POLICER_ACL_CONFIG, sizeof(fal_policer_config_t), SW_PARAM_PTR|SW_PARAM_OUT, "ACL Config"), \
     SW_PARAM_DEF(SW_API_POLICER_ACL_ENTRY_GET, SW_POLICER_CMD_CONFIG, sizeof(fal_policer_action_t), SW_PARAM_PTR|SW_PARAM_OUT, "CMD"),
 
+#define SW_API_POLICER_GLOBAL_COUNTER_GET_DESC \
+    SW_PARAM_DEF(SW_API_POLICER_GLOBAL_COUNTER_GET, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"), \
+    SW_PARAM_DEF(SW_API_POLICER_GLOBAL_COUNTER_GET, SW_POLICER_GLOBAL_COUNTER, sizeof(fal_policer_global_counter_t), SW_PARAM_PTR|SW_PARAM_OUT, "Global Statistics"),
+
+
 #define SW_API_DESC(api_id) api_id##_DESC
 
 #ifdef __cplusplus

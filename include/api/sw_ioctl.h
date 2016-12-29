@@ -808,6 +808,8 @@ extern "C" {
 #define SW_API_POLICER_PORT_ENTRY_GET               (7  + SW_API_POLICER_OFFSET)
 #define SW_API_POLICER_ACL_ENTRY_SET               (8  + SW_API_POLICER_OFFSET)
 #define SW_API_POLICER_ACL_ENTRY_GET               (9  + SW_API_POLICER_OFFSET)
+#define SW_API_POLICER_GLOBAL_COUNTER_GET               (10  + SW_API_POLICER_OFFSET)
+
 
 /* SHAPER */
 #define SW_API_SHAPER_OFFSET        2900
