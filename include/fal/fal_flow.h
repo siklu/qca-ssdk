@@ -72,7 +72,7 @@ typedef struct {
 	a_bool_t tcp_spec_bypass_en; /*0 for disable and 1 for enable*/
 	a_bool_t all_bypass_en; /*0 for disable and 1 for enable*/
 	a_uint8_t key_sel; /*0 for source ip address and 1 for destination ip address*/
-} fal_flow_ctrl_t;
+} fal_flow_mgmt_t;
 
 typedef struct {
 	a_uint32_t entry_id; /*entry index*/ 
@@ -162,18 +162,18 @@ sw_error_t
 fal_flow_age_timer_get(a_uint32_t dev_id, fal_flow_age_timer_t *age_timer);
 
 sw_error_t
-fal_flow_ctrl_set(
+fal_flow_mgmt_set(
 		a_uint32_t dev_id,
 		fal_flow_pkt_type_t type,
 		fal_flow_direction_t dir,
-		fal_flow_ctrl_t *ctrl);
+		fal_flow_mgmt_t *mgmt);
 
 sw_error_t
-fal_flow_ctrl_get(
+fal_flow_mgmt_get(
 		a_uint32_t dev_id,
 		fal_flow_pkt_type_t type,
 		fal_flow_direction_t dir,
-		fal_flow_ctrl_t *ctrl);
+		fal_flow_mgmt_t *mgmt);
 
 sw_error_t
 fal_flow_entry_add(

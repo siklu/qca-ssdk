@@ -418,7 +418,7 @@ typedef sw_error_t (*adpt_flow_ctrl_set_func)(
 		a_uint32_t dev_id,
 		fal_flow_pkt_type_t type,
 		fal_flow_direction_t dir,
-		fal_flow_ctrl_t *ctrl);
+		fal_flow_mgmt_t *ctrl);
 typedef sw_error_t (*adpt_flow_age_timer_get_func)(
 		a_uint32_t dev_id, fal_flow_age_timer_t *age_timer);
 typedef sw_error_t (*adpt_flow_status_set_func)(
@@ -435,7 +435,7 @@ typedef sw_error_t (*adpt_flow_ctrl_get_func)(
 		a_uint32_t dev_id,
 		fal_flow_pkt_type_t type,
 		fal_flow_direction_t dir,
-		fal_flow_ctrl_t *ctrl);
+		fal_flow_mgmt_t *ctrl);
 typedef sw_error_t (*adpt_flow_age_timer_set_func)(
 		a_uint32_t dev_id, fal_flow_age_timer_t *age_timer);
 typedef sw_error_t (*adpt_flow_entry_add_func)(

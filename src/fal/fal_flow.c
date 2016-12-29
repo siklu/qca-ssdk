@@ -88,11 +88,11 @@ _fal_flow_status_get(a_uint32_t dev_id, a_bool_t *enable)
 	return rv;
 }
 sw_error_t
-_fal_flow_ctrl_set(
+_fal_flow_mgmt_set(
 		a_uint32_t dev_id,
 		fal_flow_pkt_type_t type,
 		fal_flow_direction_t dir,
-		fal_flow_ctrl_t *ctrl)
+		fal_flow_mgmt_t *mgmt)
 {
 	adpt_api_t *p_api;
 	sw_error_t rv = SW_OK;
@@ -102,7 +102,7 @@ _fal_flow_ctrl_set(
 	if (NULL == p_api->adpt_flow_ctrl_set)
 		return SW_NOT_SUPPORTED;
 
-	rv = p_api->adpt_flow_ctrl_set(dev_id, type, dir, ctrl);
+	rv = p_api->adpt_flow_ctrl_set(dev_id, type, dir, mgmt);
 	return rv;
 }
 sw_error_t
@@ -168,11 +168,11 @@ _fal_flow_host_del(
 	return rv;
 }
 sw_error_t
-_fal_flow_ctrl_get(
+_fal_flow_mgmt_get(
 		a_uint32_t dev_id,
 		fal_flow_pkt_type_t type,
 		fal_flow_direction_t dir,
-		fal_flow_ctrl_t *ctrl)
+		fal_flow_mgmt_t *mgmt)
 {
 	adpt_api_t *p_api;
 	sw_error_t rv = SW_OK;
@@ -182,7 +182,7 @@ _fal_flow_ctrl_get(
 	if (NULL == p_api->adpt_flow_ctrl_get)
 		return SW_NOT_SUPPORTED;
 
-	rv = p_api->adpt_flow_ctrl_get(dev_id, type, dir, ctrl);
+	rv = p_api->adpt_flow_ctrl_get(dev_id, type, dir, mgmt);
 	return rv;
 }
 sw_error_t
@@ -302,16 +302,16 @@ fal_flow_status_get(a_uint32_t dev_id, a_bool_t *enable)
 	return rv;
 }
 sw_error_t
-fal_flow_ctrl_set(
+fal_flow_mgmt_set(
 		a_uint32_t dev_id,
 		fal_flow_pkt_type_t type,
 		fal_flow_direction_t dir,
-		fal_flow_ctrl_t *ctrl)
+		fal_flow_mgmt_t *mgmt)
 {
 	sw_error_t rv = SW_OK;
 
 	FAL_API_LOCK;
-	rv = _fal_flow_ctrl_set(dev_id, type, dir, ctrl);
+	rv = _fal_flow_mgmt_set(dev_id, type, dir, mgmt);
 	FAL_API_UNLOCK;
 	return rv;
 }
@@ -362,16 +362,16 @@ fal_flow_host_del(
 	return rv;
 }
 sw_error_t
-fal_flow_ctrl_get(
+fal_flow_mgmt_get(
 		a_uint32_t dev_id,
 		fal_flow_pkt_type_t type,
 		fal_flow_direction_t dir,
-		fal_flow_ctrl_t *ctrl)
+		fal_flow_mgmt_t *mgmt)
 {
 	sw_error_t rv = SW_OK;
 
 	FAL_API_LOCK;
-	rv = _fal_flow_ctrl_get(dev_id, type, dir, ctrl);
+	rv = _fal_flow_mgmt_get(dev_id, type, dir, mgmt);
 	FAL_API_UNLOCK;
 	return rv;
 }

@@ -815,7 +815,7 @@ struct sub_cmd_des_t g_qos_des[] =
 	{"ptFCpriSts", "set",   SW_API_QOS_PT_FORCE_CPRI_ST_SET, NULL},
 	{"ptQuRemark", "set",   SW_API_QOS_QUEUE_REMARK_SET, NULL},
 	{"ptGroup", "set", SW_API_QOS_PORT_GROUP_SET, NULL},
-	{"ptPri", "set", SW_API_QOS_PORT_PRI_SET, NULL},
+	{"ptpriprece", "set", SW_API_QOS_PORT_PRI_SET, NULL},
 	{"ptRemark", "set", SW_API_QOS_PORT_REMARK_SET, NULL},
 	{"pcpmap", "set", SW_API_QOS_PCP_MAP_SET, NULL},
 	{"flowmap", "set", SW_API_QOS_FLOW_MAP_SET, NULL},
@@ -1059,11 +1059,13 @@ struct sub_cmd_des_t g_ip_des[] =
 #ifdef IN_FLOW
 struct sub_cmd_des_t g_flow_des[] =
 {
-	{"flowstatus", "set", SW_API_FLOW_STATUS_SET, NULL},
-	{"flowage", "set", SW_API_FLOW_AGE_TIMER_SET, NULL},
-	{"flowactrl", "set", SW_API_FLOW_CTRL_SET, NULL},
+	{"status", "set", SW_API_FLOW_STATUS_SET, NULL},
+	{"age", "set", SW_API_FLOW_AGE_TIMER_SET, NULL},
+	{"mgmt", "set", SW_API_FLOW_CTRL_SET, NULL},
 	{"entry", "add", SW_API_FLOW_ENTRY_ADD, NULL},
+	{"entry", "set", SW_API_FLOW_ENTRY_ADD, NULL},
 	{"entry", "del", SW_API_FLOW_ENTRY_DEL, NULL},
+	{"host", "set", SW_API_FLOW_HOST_ADD, NULL},
 	{"host", "add", SW_API_FLOW_HOST_ADD, NULL},
 	{"host", "del", SW_API_FLOW_HOST_DEL, NULL},
 	{"global", "set", SW_API_FLOW_GLOBAL_CFG_SET, NULL},
@@ -1197,6 +1199,7 @@ struct sub_cmd_des_t g_qm_des[] =
     {"ucastpriclass", "set", SW_API_UCAST_PRIORITY_CLASS_SET, NULL},
     {"mcastpriclass", "set", SW_API_MCAST_PRIORITY_CLASS_SET, NULL},
     {"queue", "flush", SW_API_QUEUE_FLUSH, NULL},
+    {"queue", "set", SW_API_QUEUE_FLUSH, NULL},
     {"ucasthash", "set", SW_API_UCAST_HASH_MAP_SET, NULL},
     {"ucastdflthash", "set", SW_API_UCAST_DFLT_HASH_MAP_SET, NULL},
     {"mcastcpucode", "set", SW_API_MCAST_CPUCODE_CLASS_SET, NULL},
@@ -1208,6 +1211,7 @@ struct sub_cmd_des_t g_qm_des[] =
     {"acgbuff", "set", SW_API_GOURP_BUFFER_SET, NULL},
     {"cntctrl", "set", SW_API_QUEUE_CNT_CTRL_SET, NULL},
     {"cnt", "cleanup", SW_API_QUEUE_CNT_CLEANUP, NULL},
+    {"cnt", "set", SW_API_QUEUE_CNT_CLEANUP, NULL},
     {"enqueue", "set", SW_API_QM_ENQUEUE_CTRL_SET, NULL},
     {NULL, NULL, (int)NULL, NULL},/*end of desc*/
 
@@ -1219,7 +1223,7 @@ struct sub_cmd_des_t g_qm_des[] =
 struct sub_cmd_des_t g_bm_des[] =
 {
 
-    {"bmctrl", "set", SW_API_BM_CTRL_SET, NULL},
+    {"ctrl", "set", SW_API_BM_CTRL_SET, NULL},
     {"portgroupmap", "set", SW_API_BM_PORTGROUP_MAP_SET, NULL},
     {"groupbuff", "set", SW_API_BM_GROUP_BUFFER_SET, NULL},
     {"portrsvbuff", "set", SW_API_BM_PORT_RSVBUFFER_SET, NULL},

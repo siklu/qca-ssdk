@@ -1381,8 +1381,8 @@ extern "C" {
     SW_API_DEF(SW_API_FLOW_STATUS_GET, fal_flow_status_get), \
     SW_API_DEF(SW_API_FLOW_AGE_TIMER_SET, fal_flow_age_timer_set), \
     SW_API_DEF(SW_API_FLOW_AGE_TIMER_GET, fal_flow_age_timer_get), \
-    SW_API_DEF(SW_API_FLOW_CTRL_SET, fal_flow_ctrl_set), \
-    SW_API_DEF(SW_API_FLOW_CTRL_GET, fal_flow_ctrl_get), \
+    SW_API_DEF(SW_API_FLOW_CTRL_SET, fal_flow_mgmt_set), \
+    SW_API_DEF(SW_API_FLOW_CTRL_GET, fal_flow_mgmt_get), \
     SW_API_DEF(SW_API_FLOW_ENTRY_ADD, fal_flow_entry_add), \
     SW_API_DEF(SW_API_FLOW_ENTRY_DEL, fal_flow_entry_del), \
     SW_API_DEF(SW_API_FLOW_ENTRY_GET, fal_flow_entry_get), \

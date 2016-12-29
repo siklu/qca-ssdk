@@ -314,7 +314,7 @@ typedef struct
 	a_bool_t mru_deacclr_en; /*0 for disable and 1 for enable*/
 	fal_fwd_cmd_t mtu_fail_action; /*mtu check fail action*/
 	a_bool_t mtu_deacclr_en; /*0 for disable and 1 for enable*/
-	fal_fwd_cmd_t mtu_df_fail_action; /*mtu check fail action for non-fragment */
+	fal_fwd_cmd_t mtu_nonfrag_fail_action; /*mtu check fail action for non-fragment */
 	a_bool_t mtu_df_deacclr_en; /*0 for disable and 1 for enable*/
 	fal_fwd_cmd_t prefix_bc_action; /*0 forward, 1 drop, 2 copy, 3 rdt_cpu*/
 	a_bool_t prefix_deacclr_en; /*0 for disable and 1 for enable*/

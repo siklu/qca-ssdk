@@ -1239,7 +1239,7 @@ adpt_hppe_flow_ctrl_set(
 		a_uint32_t dev_id,
 		fal_flow_pkt_type_t type,
 		fal_flow_direction_t dir,
-		fal_flow_ctrl_t *ctrl)
+		fal_flow_mgmt_t *ctrl)
 {
 	sw_error_t rv = SW_OK;
 	union flow_ctrl1_u flow_ctrl1;
@@ -1330,7 +1330,7 @@ adpt_hppe_flow_ctrl_get(
 		a_uint32_t dev_id,
 		fal_flow_pkt_type_t type,
 		fal_flow_direction_t dir,
-		fal_flow_ctrl_t *ctrl)
+		fal_flow_mgmt_t *ctrl)
 {
 	sw_error_t rv = SW_OK;
 	union flow_ctrl1_u flow_ctrl1;

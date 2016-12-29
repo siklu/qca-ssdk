@@ -1131,7 +1131,7 @@ adpt_hppe_ip_global_ctrl_get(a_uint32_t dev_id, fal_ip_global_cfg_t *cfg)
 	cfg->mru_deacclr_en = l3_route_ctrl.bf.ip_mru_check_fail_de_acce;
 	cfg->mtu_fail_action = l3_route_ctrl.bf.ip_mtu_fail;
 	cfg->mtu_deacclr_en = l3_route_ctrl.bf.ip_mtu_fail_de_acce;
-	cfg->mtu_df_fail_action = l3_route_ctrl.bf.ip_mtu_df_fail;
+	cfg->mtu_nonfrag_fail_action = l3_route_ctrl.bf.ip_mtu_df_fail;
 	cfg->mtu_df_deacclr_en = l3_route_ctrl.bf.ip_mtu_df_fail_de_acce;
 	cfg->prefix_bc_action = l3_route_ctrl.bf.ip_prefix_bc_cmd;
 	cfg->prefix_deacclr_en = l3_route_ctrl.bf.ip_prefix_bc_de_acce;
@@ -1167,7 +1167,7 @@ adpt_hppe_ip_global_ctrl_set(a_uint32_t dev_id, fal_ip_global_cfg_t *cfg)
 	l3_route_ctrl.bf.ip_mru_check_fail_de_acce = cfg->mru_deacclr_en;
 	l3_route_ctrl.bf.ip_mtu_fail = cfg->mtu_fail_action;
 	l3_route_ctrl.bf.ip_mtu_fail_de_acce = cfg->mtu_deacclr_en;
-	l3_route_ctrl.bf.ip_mtu_df_fail = cfg->mtu_df_fail_action;
+	l3_route_ctrl.bf.ip_mtu_df_fail = cfg->mtu_nonfrag_fail_action;
 	l3_route_ctrl.bf.ip_mtu_df_fail_de_acce = cfg->mtu_df_deacclr_en;
 	l3_route_ctrl.bf.ip_prefix_bc_cmd =cfg->prefix_bc_action;
 	l3_route_ctrl.bf.ip_prefix_bc_de_acce = cfg->prefix_deacclr_en;
