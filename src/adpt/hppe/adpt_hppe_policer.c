@@ -877,6 +877,35 @@ adpt_hppe_policer_time_slot_set(a_uint32_t dev_id, a_uint32_t time_slot)
 
 	return SW_OK;
 }
+sw_error_t
+adpt_hppe_policer_global_counter_get(a_uint32_t dev_id,
+		fal_policer_global_counter_t *counter)
+{
+	sw_error_t rv = SW_OK;
+	union pc_global_cnt_tbl_u pc_global_cnt_tbl;
+	a_uint32_t index = 0;
+
+	memset(&pc_global_cnt_tbl, 0, sizeof(pc_global_cnt_tbl));
+	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(counter);
+
+	hppe_pc_global_cnt_tbl_get(dev_id, index, &pc_global_cnt_tbl);
+	counter->policer_drop_packet_counter = pc_global_cnt_tbl.bf.pkt_cnt;
+	counter->policer_drop_byte_counter = pc_global_cnt_tbl.bf.byte_cnt_1;
+	counter->policer_drop_byte_counter = (counter->policer_drop_byte_counter << 32) | pc_global_cnt_tbl.bf.byte_cnt_0;
+
+	hppe_pc_global_cnt_tbl_get(dev_id, index + 1, &pc_global_cnt_tbl);
+	counter->policer_forward_packet_counter = pc_global_cnt_tbl.bf.pkt_cnt;
+	counter->policer_forward_byte_counter = pc_global_cnt_tbl.bf.byte_cnt_1;
+	counter->policer_forward_byte_counter = (counter->policer_forward_byte_counter << 32) | pc_global_cnt_tbl.bf.byte_cnt_0;
+
+	hppe_pc_global_cnt_tbl_get(dev_id, index + 2, &pc_global_cnt_tbl);
+	counter->policer_bypass_packet_counter = pc_global_cnt_tbl.bf.pkt_cnt;
+	counter->policer_bypass_byte_counter = pc_global_cnt_tbl.bf.byte_cnt_1;
+	counter->policer_bypass_byte_counter = (counter->policer_bypass_byte_counter << 32) | pc_global_cnt_tbl.bf.byte_cnt_0;
+
+	return SW_OK;
+}
 
 void adpt_hppe_policer_func_bitmap_init(a_uint32_t dev_id)
 {
@@ -896,7 +925,8 @@ void adpt_hppe_policer_func_bitmap_init(a_uint32_t dev_id)
 						(1 << FUNC_ADPT_ACL_POLICER_ENTRY_SET)|
 						(1 << FUNC_ADPT_POLICER_TIME_SLOT_GET)|
 						(1 << FUNC_ADPT_PORT_COMPENSATION_BYTE_SET)|
-						(1 << FUNC_ADPT_POLICER_TIME_SLOT_SET));
+						(1 << FUNC_ADPT_POLICER_TIME_SLOT_SET) |
+						(1 << FUNC_ADPT_POLICER_GLOBAL_COUNTER_GET));
 
 	return;
 
@@ -917,6 +947,7 @@ static void adpt_hppe_policer_func_unregister(a_uint32_t dev_id, adpt_api_t *p_a
 	p_adpt_api->adpt_policer_time_slot_get = NULL;
 	p_adpt_api->adpt_port_compensation_byte_set = NULL;
 	p_adpt_api->adpt_policer_time_slot_set = NULL;
+	p_adpt_api->adpt_policer_global_counter_get = NULL;
 
 	return;
 
@@ -973,6 +1004,10 @@ sw_error_t adpt_hppe_policer_init(a_uint32_t dev_id)
 	if(p_adpt_api->adpt_policer_func_bitmap & (1 << FUNC_ADPT_POLICER_TIME_SLOT_SET))
 	{
 		p_adpt_api->adpt_policer_time_slot_set = adpt_hppe_policer_time_slot_set;
+	}
+	if(p_adpt_api->adpt_policer_func_bitmap & (1 << FUNC_ADPT_POLICER_GLOBAL_COUNTER_GET))
+	{
+		p_adpt_api->adpt_policer_global_counter_get = adpt_hppe_policer_global_counter_get;
 	}
 
 	return SW_OK;

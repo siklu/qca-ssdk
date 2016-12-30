@@ -177,6 +177,22 @@ _fal_port_policer_compensation_byte_set(a_uint32_t dev_id, a_uint32_t port_id,
     return rv;
 }
 
+sw_error_t
+_fal_policer_global_counter_get(a_uint32_t dev_id,
+		fal_policer_global_counter_t *counter)
+{
+	adpt_api_t *p_api;
+	sw_error_t rv = SW_OK;
+
+	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+	if (NULL == p_api->adpt_policer_global_counter_get)
+		return SW_NOT_SUPPORTED;
+
+	rv = p_api->adpt_policer_global_counter_get(dev_id, counter);
+	return rv;
+}
+
 /*insert flag for inner fal, don't remove it*/
 
 sw_error_t
@@ -288,6 +304,17 @@ fal_port_policer_compensation_byte_set(a_uint32_t dev_id, fal_port_t port_id,
     FAL_API_UNLOCK;
     return rv;
 }
+sw_error_t
+fal_policer_global_counter_get(a_uint32_t dev_id,
+		fal_policer_global_counter_t *counter)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_API_LOCK;
+    rv = _fal_policer_global_counter_get(dev_id, counter);
+    FAL_API_UNLOCK;
+    return rv;
+}
 
 EXPORT_SYMBOL(fal_acl_policer_counter_get);
 EXPORT_SYMBOL(fal_port_policer_counter_get);
@@ -299,6 +326,7 @@ EXPORT_SYMBOL(fal_policer_timeslot_get);
 EXPORT_SYMBOL(fal_policer_timeslot_set);
 EXPORT_SYMBOL(fal_port_policer_compensation_byte_get);
 EXPORT_SYMBOL(fal_port_policer_compensation_byte_set);
+EXPORT_SYMBOL(fal_policer_global_counter_get);
 
 
 /*insert flag for outter fal, don't remove it*/

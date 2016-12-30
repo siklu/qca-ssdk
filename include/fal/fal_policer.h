@@ -72,6 +72,16 @@ typedef struct
     a_uint64_t red_byte_counter; /*red byte counter */
 } fal_policer_counter_t;
 
+typedef struct
+{
+    a_uint32_t policer_drop_packet_counter; /*drop packet counter by policer*/
+    a_uint64_t policer_drop_byte_counter; /*drop byte counter by policer */
+    a_uint32_t policer_forward_packet_counter; /*forward packet counter by policer*/
+    a_uint64_t policer_forward_byte_counter; /*forward byte counter by policer*/
+    a_uint32_t policer_bypass_packet_counter; /*bypass packet counter by policer*/
+    a_uint64_t policer_bypass_byte_counter; /*bypass byte counter by policer */
+} fal_policer_global_counter_t;
+
 enum
 {
 	FUNC_ADPT_ACL_POLICER_COUNTER_GET = 0,
@@ -84,6 +94,7 @@ enum
 	FUNC_ADPT_POLICER_TIME_SLOT_GET,
 	FUNC_ADPT_PORT_COMPENSATION_BYTE_SET,
 	FUNC_ADPT_POLICER_TIME_SLOT_SET,
+	FUNC_ADPT_POLICER_GLOBAL_COUNTER_GET,
 };
 
 
@@ -124,6 +135,10 @@ fal_policer_timeslot_set(a_uint32_t dev_id, a_uint32_t timeslot);
 
 sw_error_t
 fal_policer_timeslot_get(a_uint32_t dev_id, a_uint32_t *timeslot);
+
+sw_error_t
+fal_policer_global_counter_get(a_uint32_t dev_id,
+		fal_policer_global_counter_t *counter);
 
 #ifdef __cplusplus
 }

@@ -1863,7 +1863,8 @@ extern "C" {
     SW_API_DEF(SW_API_POLICER_PORT_ENTRY_SET, fal_port_policer_entry_set), \
     SW_API_DEF(SW_API_POLICER_PORT_ENTRY_GET, fal_port_policer_entry_get), \
     SW_API_DEF(SW_API_POLICER_ACL_ENTRY_SET, fal_acl_policer_entry_set), \
-    SW_API_DEF(SW_API_POLICER_ACL_ENTRY_GET,fal_acl_policer_entry_get),
+    SW_API_DEF(SW_API_POLICER_ACL_ENTRY_GET,fal_acl_policer_entry_get), \
+    SW_API_DEF(SW_API_POLICER_GLOBAL_COUNTER_GET, fal_policer_global_counter_get),
 
 
 #define POLICER_API_PARAM \
@@ -1876,7 +1877,8 @@ extern "C" {
     SW_API_DESC(SW_API_POLICER_PORT_ENTRY_SET) \
     SW_API_DESC(SW_API_POLICER_PORT_ENTRY_GET) \
     SW_API_DESC(SW_API_POLICER_ACL_ENTRY_SET) \
-    SW_API_DESC(SW_API_POLICER_ACL_ENTRY_GET)
+    SW_API_DESC(SW_API_POLICER_ACL_ENTRY_GET) \
+    SW_API_DESC(SW_API_POLICER_GLOBAL_COUNTER_GET)
 
 #else
 #define POLICER_API

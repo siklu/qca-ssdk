@@ -815,6 +815,9 @@ typedef sw_error_t (*adpt_port_compensation_byte_set_func)(a_uint32_t dev_id, fa
 		a_uint32_t  length);
 typedef sw_error_t (*adpt_policer_time_slot_set_func)(a_uint32_t dev_id, a_uint32_t time_slot);
 
+typedef sw_error_t (*adpt_policer_global_counter_get_func)(a_uint32_t dev_id,
+		fal_policer_global_counter_t *counter);
+
 typedef struct
 {
 	a_uint32_t adpt_fdb_func_bitmap;
@@ -1227,6 +1230,8 @@ typedef struct
 	adpt_policer_time_slot_get_func adpt_policer_time_slot_get;
 	adpt_port_compensation_byte_set_func adpt_port_compensation_byte_set;
 	adpt_policer_time_slot_set_func adpt_policer_time_slot_set;
+	adpt_policer_global_counter_get_func adpt_policer_global_counter_get;
+
 }adpt_api_t;
 
 
