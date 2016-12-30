@@ -93,7 +93,7 @@ endif
 BLD_DIR=$(PRJ_PATH)/build/$(OS)
 BIN_DIR=$(PRJ_PATH)/build/bin
 
-VER=1.3.0
+VER=2.0.0
 BUILD_NUMBER=$(shell cat $(PRJ_PATH)/make/.build_number)
 VERSION=$(VER).$(BUILD_NUMBER)
 BUILD_DATE=$(shell date -u  +%F-%T)
