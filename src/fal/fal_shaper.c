@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -86,7 +86,7 @@ _fal_port_shaper_get(a_uint32_t dev_id, fal_port_t port_id,
     return rv;
 }
 sw_error_t
-_fal_flow_shaper_time_slot_get(a_uint32_t dev_id, a_uint32_t *time_slot)
+_fal_flow_shaper_timeslot_get(a_uint32_t dev_id, a_uint32_t *timeslot)
 {
     adpt_api_t *p_api;
 	sw_error_t rv = SW_OK;
@@ -96,11 +96,11 @@ _fal_flow_shaper_time_slot_get(a_uint32_t dev_id, a_uint32_t *time_slot)
     if (NULL == p_api->adpt_flow_shaper_time_slot_get)
         return SW_NOT_SUPPORTED;
 
-    rv = p_api->adpt_flow_shaper_time_slot_get(dev_id, time_slot);
+    rv = p_api->adpt_flow_shaper_time_slot_get(dev_id, timeslot);
     return rv;
 }
 sw_error_t
-_fal_port_shaper_time_slot_get(a_uint32_t dev_id, a_uint32_t *time_slot)
+_fal_port_shaper_timeslot_get(a_uint32_t dev_id, a_uint32_t *timeslot)
 {
     adpt_api_t *p_api;
 	sw_error_t rv = SW_OK;
@@ -110,11 +110,11 @@ _fal_port_shaper_time_slot_get(a_uint32_t dev_id, a_uint32_t *time_slot)
     if (NULL == p_api->adpt_port_shaper_time_slot_get)
         return SW_NOT_SUPPORTED;
 
-    rv = p_api->adpt_port_shaper_time_slot_get(dev_id, time_slot);
+    rv = p_api->adpt_port_shaper_time_slot_get(dev_id, timeslot);
     return rv;
 }
 sw_error_t
-_fal_flow_shaper_time_slot_set(a_uint32_t dev_id, a_uint32_t time_slot)
+_fal_flow_shaper_timeslot_set(a_uint32_t dev_id, a_uint32_t timeslot)
 {
     adpt_api_t *p_api;
 	sw_error_t rv = SW_OK;
@@ -124,7 +124,7 @@ _fal_flow_shaper_time_slot_set(a_uint32_t dev_id, a_uint32_t time_slot)
     if (NULL == p_api->adpt_flow_shaper_time_slot_set)
         return SW_NOT_SUPPORTED;
 
-    rv = p_api->adpt_flow_shaper_time_slot_set(dev_id, time_slot);
+    rv = p_api->adpt_flow_shaper_time_slot_set(dev_id, timeslot);
     return rv;
 }
 sw_error_t
@@ -158,7 +158,7 @@ _fal_queue_shaper_token_number_get(a_uint32_t dev_id, a_uint32_t queue_id,
     return rv;
 }
 sw_error_t
-_fal_queue_shaper_time_slot_get(a_uint32_t dev_id, a_uint32_t *time_slot)
+_fal_queue_shaper_timeslot_get(a_uint32_t dev_id, a_uint32_t *timeslot)
 {
     adpt_api_t *p_api;
 	sw_error_t rv = SW_OK;
@@ -168,7 +168,7 @@ _fal_queue_shaper_time_slot_get(a_uint32_t dev_id, a_uint32_t *time_slot)
     if (NULL == p_api->adpt_queue_shaper_time_slot_get)
         return SW_NOT_SUPPORTED;
 
-    rv = p_api->adpt_queue_shaper_time_slot_get(dev_id, time_slot);
+    rv = p_api->adpt_queue_shaper_time_slot_get(dev_id, timeslot);
     return rv;
 }
 sw_error_t
@@ -232,7 +232,7 @@ _fal_port_shaper_set(a_uint32_t dev_id, fal_port_t port_id,
     return rv;
 }
 sw_error_t
-_fal_port_shaper_time_slot_set(a_uint32_t dev_id, a_uint32_t time_slot)
+_fal_port_shaper_timeslot_set(a_uint32_t dev_id, a_uint32_t timeslot)
 {
     adpt_api_t *p_api;
 	sw_error_t rv = SW_OK;
@@ -242,7 +242,7 @@ _fal_port_shaper_time_slot_set(a_uint32_t dev_id, a_uint32_t time_slot)
     if (NULL == p_api->adpt_port_shaper_time_slot_set)
         return SW_NOT_SUPPORTED;
 
-    rv = p_api->adpt_port_shaper_time_slot_set(dev_id, time_slot);
+    rv = p_api->adpt_port_shaper_time_slot_set(dev_id, timeslot);
     return rv;
 }
 sw_error_t
@@ -276,7 +276,7 @@ _fal_queue_shaper_set(a_uint32_t dev_id,a_uint32_t queue_id,
     return rv;
 }
 sw_error_t
-_fal_queue_shaper_time_slot_set(a_uint32_t dev_id, a_uint32_t time_slot)
+_fal_queue_shaper_timeslot_set(a_uint32_t dev_id, a_uint32_t timeslot)
 {
     adpt_api_t *p_api;
 	sw_error_t rv = SW_OK;
@@ -286,7 +286,7 @@ _fal_queue_shaper_time_slot_set(a_uint32_t dev_id, a_uint32_t time_slot)
     if (NULL == p_api->adpt_queue_shaper_time_slot_set)
         return SW_NOT_SUPPORTED;
 
-    rv = p_api->adpt_queue_shaper_time_slot_set(dev_id, time_slot);
+    rv = p_api->adpt_queue_shaper_time_slot_set(dev_id, timeslot);
     return rv;
 }
 
@@ -367,32 +367,32 @@ fal_port_shaper_get(a_uint32_t dev_id, fal_port_t port_id,
     return rv;
 }
 sw_error_t
-fal_flow_shaper_time_slot_get(a_uint32_t dev_id, a_uint32_t *time_slot)
+fal_flow_shaper_timeslot_get(a_uint32_t dev_id, a_uint32_t *timeslot)
 {
     sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
-    rv = _fal_flow_shaper_time_slot_get(dev_id, time_slot);
+    rv = _fal_flow_shaper_timeslot_get(dev_id, timeslot);
     FAL_API_UNLOCK;
     return rv;
 }
 sw_error_t
-fal_port_shaper_time_slot_get(a_uint32_t dev_id, a_uint32_t *time_slot)
+fal_port_shaper_timeslot_get(a_uint32_t dev_id, a_uint32_t *timeslot)
 {
     sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
-    rv = _fal_port_shaper_time_slot_get(dev_id, time_slot);
+    rv = _fal_port_shaper_timeslot_get(dev_id, timeslot);
     FAL_API_UNLOCK;
     return rv;
 }
 sw_error_t
-fal_flow_shaper_time_slot_set(a_uint32_t dev_id, a_uint32_t time_slot)
+fal_flow_shaper_timeslot_set(a_uint32_t dev_id, a_uint32_t timeslot)
 {
     sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
-    rv = _fal_flow_shaper_time_slot_set(dev_id, time_slot);
+    rv = _fal_flow_shaper_timeslot_set(dev_id, timeslot);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -419,12 +419,12 @@ fal_queue_shaper_token_number_get(a_uint32_t dev_id, a_uint32_t queue_id,
     return rv;
 }
 sw_error_t
-fal_queue_shaper_time_slot_get(a_uint32_t dev_id, a_uint32_t *time_slot)
+fal_queue_shaper_timeslot_get(a_uint32_t dev_id, a_uint32_t *timeslot)
 {
     sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
-    rv = _fal_queue_shaper_time_slot_get(dev_id, time_slot);
+    rv = _fal_queue_shaper_timeslot_get(dev_id, timeslot);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -473,12 +473,12 @@ fal_port_shaper_set(a_uint32_t dev_id, fal_port_t port_id,
     return rv;
 }
 sw_error_t
-fal_port_shaper_time_slot_set(a_uint32_t dev_id, a_uint32_t time_slot)
+fal_port_shaper_timeslot_set(a_uint32_t dev_id, a_uint32_t timeslot)
 {
     sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
-    rv = _fal_port_shaper_time_slot_set(dev_id, time_slot);
+    rv = _fal_port_shaper_timeslot_set(dev_id, timeslot);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -505,12 +505,12 @@ fal_queue_shaper_set(a_uint32_t dev_id,a_uint32_t queue_id,
     return rv;
 }
 sw_error_t
-fal_queue_shaper_time_slot_set(a_uint32_t dev_id, a_uint32_t time_slot)
+fal_queue_shaper_timeslot_set(a_uint32_t dev_id, a_uint32_t timeslot)
 {
     sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
-    rv = _fal_queue_shaper_time_slot_set(dev_id, time_slot);
+    rv = _fal_queue_shaper_timeslot_set(dev_id, timeslot);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -559,17 +559,17 @@ EXPORT_SYMBOL(fal_port_shaper_token_number_set);
 
 EXPORT_SYMBOL(fal_port_shaper_token_number_get);
 
-EXPORT_SYMBOL(fal_port_shaper_time_slot_set);
+EXPORT_SYMBOL(fal_port_shaper_timeslot_set);
 
-EXPORT_SYMBOL(fal_port_shaper_time_slot_get);
+EXPORT_SYMBOL(fal_port_shaper_timeslot_get);
 
-EXPORT_SYMBOL(fal_queue_shaper_time_slot_set);
+EXPORT_SYMBOL(fal_queue_shaper_timeslot_set);
 
-EXPORT_SYMBOL(fal_queue_shaper_time_slot_get);
+EXPORT_SYMBOL(fal_queue_shaper_timeslot_get);
 
-EXPORT_SYMBOL(fal_flow_shaper_time_slot_set);
+EXPORT_SYMBOL(fal_flow_shaper_timeslot_set);
 
-EXPORT_SYMBOL(fal_flow_shaper_time_slot_get);
+EXPORT_SYMBOL(fal_flow_shaper_timeslot_get);
 
 EXPORT_SYMBOL(fal_shaper_ipg_preamble_length_set);
 
