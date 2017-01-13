@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2016-2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -69,6 +69,16 @@ _fal_portvlan_member_add(a_uint32_t dev_id, fal_port_t port_id,
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_portvlan_member_add)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_portvlan_member_add(dev_id, port_id, mem_port_id);
+        return rv;
+    }
+
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -86,6 +96,16 @@ _fal_portvlan_member_del(a_uint32_t dev_id, fal_port_t port_id,
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_portvlan_member_del)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_portvlan_member_del(dev_id, port_id, mem_port_id);
+        return rv;
+    }
+
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -103,6 +123,16 @@ _fal_portvlan_member_update(a_uint32_t dev_id, fal_port_t port_id,
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_portvlan_member_update)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_portvlan_member_update(dev_id, port_id, mem_port_map);
+        return rv;
+    }
+
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -381,6 +411,16 @@ _fal_portvlan_member_get(a_uint32_t dev_id, fal_port_t port_id,
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_portvlan_member_get)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_portvlan_member_get(dev_id, port_id, mem_port_map);
+        return rv;
+    }
+
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -2025,7 +2065,7 @@ _fal_port_vsi_egmode_get(a_uint32_t dev_id, a_uint32_t vsi, a_uint32_t port_id, 
     return rv;
 }
 sw_error_t
-_fal_port_vlantag_vsi_egmode_enable_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+_fal_port_vlantag_vsi_egmode_enable(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
     sw_error_t rv;
     adpt_api_t *p_api;
@@ -2039,7 +2079,7 @@ _fal_port_vlantag_vsi_egmode_enable_set(a_uint32_t dev_id, fal_port_t port_id, a
     return rv;
 }
 sw_error_t
-_fal_port_vlantag_vsi_egmode_enable_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
+_fal_port_vlantag_vsi_egmode_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
 {
     sw_error_t rv;
     adpt_api_t *p_api;
@@ -2396,22 +2436,22 @@ fal_port_vsi_egmode_get(a_uint32_t dev_id, a_uint32_t vsi, a_uint32_t port_id, f
     return rv;
 }
 sw_error_t
-fal_port_vlantag_vsi_egmode_enable_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+fal_port_vlantag_vsi_egmode_enable(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
     sw_error_t rv = SW_OK;
 
     FAL_PORTVLAN_API_LOCK;
-    rv = _fal_port_vlantag_vsi_egmode_enable_set(dev_id, port_id, enable);
+    rv = _fal_port_vlantag_vsi_egmode_enable(dev_id, port_id, enable);
     FAL_PORTVLAN_API_UNLOCK;
     return rv;
 }
 sw_error_t
-fal_port_vlantag_vsi_egmode_enable_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
+fal_port_vlantag_vsi_egmode_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
 {
     sw_error_t rv = SW_OK;
 
     FAL_PORTVLAN_API_LOCK;
-    rv = _fal_port_vlantag_vsi_egmode_enable_get(dev_id, port_id, enable);
+    rv = _fal_port_vlantag_vsi_egmode_status_get(dev_id, port_id, enable);
     FAL_PORTVLAN_API_UNLOCK;
     return rv;
 }
@@ -2530,8 +2570,8 @@ EXPORT_SYMBOL(fal_port_vlan_xlt_miss_cmd_set);
 EXPORT_SYMBOL(fal_port_vlan_xlt_miss_cmd_get);
 EXPORT_SYMBOL(fal_port_vsi_egmode_set);
 EXPORT_SYMBOL(fal_port_vsi_egmode_get);
-EXPORT_SYMBOL(fal_port_vlantag_vsi_egmode_enable_set);
-EXPORT_SYMBOL(fal_port_vlantag_vsi_egmode_enable_get);
+EXPORT_SYMBOL(fal_port_vlantag_vsi_egmode_enable);
+EXPORT_SYMBOL(fal_port_vlantag_vsi_egmode_status_get);
 EXPORT_SYMBOL(fal_port_vlan_trans_adv_add);
 EXPORT_SYMBOL(fal_port_vlan_trans_adv_del);
 EXPORT_SYMBOL(fal_port_vlan_trans_adv_getfirst);
@@ -2540,3 +2580,7 @@ EXPORT_SYMBOL(fal_port_vlan_counter_enable);
 EXPORT_SYMBOL(fal_port_vlan_counter_status_get);
 EXPORT_SYMBOL(fal_port_vlan_counter_get);
 EXPORT_SYMBOL(fal_port_vlan_counter_cleanup);
+EXPORT_SYMBOL(fal_portvlan_member_add);
+EXPORT_SYMBOL(fal_portvlan_member_del);
+EXPORT_SYMBOL(fal_portvlan_member_update);
+EXPORT_SYMBOL(fal_portvlan_member_get);

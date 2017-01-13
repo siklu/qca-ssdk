@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2016-2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -252,6 +252,10 @@ enum {
 	FUNC_PORT_VLAN_COUNTER_STATUS_GET,
 	FUNC_PORT_VLAN_COUNTER_GET,
 	FUNC_PORT_VLAN_COUNTER_CLEANUP,
+	FUNC_PORT_VLAN_MEMBER_ADD,
+	FUNC_PORT_VLAN_MEMBER_DEL,
+	FUNC_PORT_VLAN_MEMBER_UPDATE,
+	FUNC_PORT_VLAN_MEMBER_GET,
 };
 
     sw_error_t
@@ -717,10 +721,10 @@ enum {
     fal_port_vsi_egmode_get(a_uint32_t dev_id, a_uint32_t vsi, a_uint32_t port_id, fal_pt_1q_egmode_t * egmode);
 
     sw_error_t
-    fal_port_vlantag_vsi_egmode_enable_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable);
+    fal_port_vlantag_vsi_egmode_enable(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable);
 
     sw_error_t
-    fal_port_vlantag_vsi_egmode_enable_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable);
+    fal_port_vlantag_vsi_egmode_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable);
 
     sw_error_t
     fal_port_vlan_trans_adv_add(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_direction_t direction,

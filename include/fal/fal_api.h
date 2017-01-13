@@ -335,8 +335,8 @@ extern "C" {
     SW_API_DEF(SW_API_PT_VLAN_XLT_MISS_CMD_GET, fal_port_vlan_xlt_miss_cmd_get), \
     SW_API_DEF(SW_API_PT_VSI_EGMODE_SET, fal_port_vsi_egmode_set), \
     SW_API_DEF(SW_API_PT_VSI_EGMODE_GET, fal_port_vsi_egmode_get), \
-    SW_API_DEF(SW_API_PT_VLANTAG_VSI_EGMODE_EN_SET, fal_port_vlantag_vsi_egmode_enable_set), \
-    SW_API_DEF(SW_API_PT_VLANTAG_VSI_EGMODE_EN_GET, fal_port_vlantag_vsi_egmode_enable_get), \
+    SW_API_DEF(SW_API_PT_VLANTAG_VSI_EGMODE_EN_SET, fal_port_vlantag_vsi_egmode_enable), \
+    SW_API_DEF(SW_API_PT_VLANTAG_VSI_EGMODE_EN_GET, fal_port_vlantag_vsi_egmode_status_get), \
     SW_API_DEF(SW_API_PT_VLAN_TRANS_ADV_ADD, fal_port_vlan_trans_adv_add), \
     SW_API_DEF(SW_API_PT_VLAN_TRANS_ADV_DEL, fal_port_vlan_trans_adv_del), \
     SW_API_DEF(SW_API_PT_VLAN_TRANS_ADV_GETFIRST, fal_port_vlan_trans_adv_getfirst), \
