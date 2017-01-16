@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2014, 2016, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -35,8 +35,8 @@
 static sw_error_t
 _dess_port_3az_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
-    sw_error_t rv;
-    a_uint32_t reg, field, offset, device_id, rev_id, reverse = 0;
+    sw_error_t rv = SW_OK;
+    a_uint32_t reg = 0, field, offset, device_id, rev_id, reverse = 0;
 
     HSL_REG_ENTRY_GET(rv, dev_id, MASK_CTL, 0,
                       (a_uint8_t *) (&reg), sizeof (a_uint32_t));
@@ -106,8 +106,8 @@ _dess_port_3az_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable
 static sw_error_t
 _dess_port_3az_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
 {
-    sw_error_t rv;
-    a_uint32_t reg, field, offset, device_id, rev_id, reverse = 0;
+    sw_error_t rv = SW_OK;
+    a_uint32_t reg = 0, field, offset, device_id, rev_id, reverse = 0;
 
     HSL_REG_ENTRY_GET(rv, dev_id, MASK_CTL, 0,
                       (a_uint8_t *) (&reg), sizeof (a_uint32_t));
@@ -171,7 +171,7 @@ static sw_error_t
 _dess_interface_mac_mode_set(a_uint32_t dev_id, fal_port_t port_id, fal_mac_config_t * config)
 {
 	sw_error_t rv = SW_OK;
-	a_uint32_t reg, field;
+	a_uint32_t reg = 0, field;
 
 	HSL_DEV_ID_CHECK(dev_id);
 
@@ -211,7 +211,7 @@ static sw_error_t
 _dess_interface_mac_mode_get(a_uint32_t dev_id, fal_port_t port_id, fal_mac_config_t * config)
 {
 	sw_error_t rv = SW_OK;
-	a_uint32_t reg, field;
+	a_uint32_t reg = 0, field;
 
 	HSL_DEV_ID_CHECK(dev_id);
 
