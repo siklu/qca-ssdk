@@ -3290,7 +3290,7 @@ qca_hppe_portvlan_hw_init()
 
 	/* configure port0 - port7 vsi tag mode control to enable */
 	for (port_id = 0; port_id < 8; port_id++)
-		fal_port_vlantag_vsi_egmode_enable_set(0, port_id, A_TRUE);
+		fal_port_vlantag_vsi_egmode_enable(0, port_id, A_TRUE);
 
 	return 0;
 }

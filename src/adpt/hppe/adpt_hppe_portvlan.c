@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -24,6 +24,8 @@
 #include "hppe_portctrl.h"
 #include "hppe_policer_reg.h"
 #include "hppe_policer.h"
+#include "hppe_fdb.h"
+#include "hppe_fdb_reg.h"
 #include "adpt.h"
 
 a_uint32_t
@@ -1887,6 +1889,84 @@ adpt_hppe_port_vlan_counter_cleanup(a_uint32_t dev_id, a_uint32_t cnt_index)
 
 	SW_RTN_ON_ERROR(hppe_vlan_dev_cnt_tbl_set(dev_id, cnt_index, &vlan_dev_cnt_tbl));
 	SW_RTN_ON_ERROR(hppe_vlan_dev_tx_counter_tbl_set(dev_id, cnt_index, &vlan_dev_tx_counter_tbl));
+
+	return SW_OK;
+}
+
+sw_error_t
+adpt_hppe_portvlan_member_add(a_uint32_t dev_id, fal_port_t port_id, fal_port_t mem_port_id)
+{
+	union port_bridge_ctrl_u port_bridge_ctrl;
+
+	port_id = FAL_PORT_ID_VALUE(port_id);
+	mem_port_id = FAL_PORT_ID_VALUE(mem_port_id);
+
+	memset(&port_bridge_ctrl, 0, sizeof(port_bridge_ctrl));
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	hppe_port_bridge_ctrl_get(dev_id, port_id, &port_bridge_ctrl);
+
+	port_bridge_ctrl.bf.port_isolation_bitmap |= (0x1 << mem_port_id);
+
+	SW_RTN_ON_ERROR(hppe_port_bridge_ctrl_set(dev_id, port_id, &port_bridge_ctrl));
+
+	return SW_OK;
+}
+
+sw_error_t
+adpt_hppe_portvlan_member_del(a_uint32_t dev_id, fal_port_t port_id, fal_port_t mem_port_id)
+{
+	union port_bridge_ctrl_u port_bridge_ctrl;
+
+	port_id = FAL_PORT_ID_VALUE(port_id);
+	mem_port_id = FAL_PORT_ID_VALUE(mem_port_id);
+
+	memset(&port_bridge_ctrl, 0, sizeof(port_bridge_ctrl));
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	hppe_port_bridge_ctrl_get(dev_id, port_id, &port_bridge_ctrl);
+
+	port_bridge_ctrl.bf.port_isolation_bitmap &= ~(0x1 << mem_port_id);
+
+	SW_RTN_ON_ERROR(hppe_port_bridge_ctrl_set(dev_id, port_id, &port_bridge_ctrl));
+
+	return SW_OK;
+}
+
+sw_error_t
+adpt_hppe_portvlan_member_update(a_uint32_t dev_id, fal_port_t port_id, fal_pbmp_t mem_port_map)
+{
+	union port_bridge_ctrl_u port_bridge_ctrl;
+
+	port_id = FAL_PORT_ID_VALUE(port_id);
+
+	memset(&port_bridge_ctrl, 0, sizeof(port_bridge_ctrl));
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	hppe_port_bridge_ctrl_get(dev_id, port_id, &port_bridge_ctrl);
+
+	port_bridge_ctrl.bf.port_isolation_bitmap = mem_port_map;
+
+	SW_RTN_ON_ERROR(hppe_port_bridge_ctrl_set(dev_id, port_id, &port_bridge_ctrl));
+
+	return SW_OK;
+}
+
+sw_error_t
+adpt_hppe_portvlan_member_get(a_uint32_t dev_id, fal_port_t port_id, fal_pbmp_t * mem_port_map)
+{
+	union port_bridge_ctrl_u port_bridge_ctrl;
+
+	port_id = FAL_PORT_ID_VALUE(port_id);
+
+	memset(&port_bridge_ctrl, 0, sizeof(port_bridge_ctrl));
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	hppe_port_bridge_ctrl_get(dev_id, port_id, &port_bridge_ctrl);
+
+	*mem_port_map = port_bridge_ctrl.bf.port_isolation_bitmap;
+
+	return SW_OK;
 }
 
 void adpt_hppe_portvlan_func_bitmap_init(a_uint32_t dev_id)
@@ -1938,7 +2018,11 @@ void adpt_hppe_portvlan_func_bitmap_init(a_uint32_t dev_id)
 						(1 << (FUNC_PORT_VLAN_COUNTER_ENABLE % 32)) |
 						(1 << (FUNC_PORT_VLAN_COUNTER_STATUS_GET % 32)) |
 						(1 << (FUNC_PORT_VLAN_COUNTER_GET % 32)) |
-						(1 << (FUNC_PORT_VLAN_COUNTER_CLEANUP % 32)));
+						(1 << (FUNC_PORT_VLAN_COUNTER_CLEANUP % 32)) |
+						(1 << (FUNC_PORT_VLAN_MEMBER_ADD % 32)) |
+						(1 << (FUNC_PORT_VLAN_MEMBER_DEL % 32)) |
+						(1 << (FUNC_PORT_VLAN_MEMBER_UPDATE % 32)) |
+						(1 << (FUNC_PORT_VLAN_MEMBER_GET % 32)));
 
 	return;
 }
@@ -1992,6 +2076,11 @@ static void adpt_hppe_portvlan_func_unregister(a_uint32_t dev_id, adpt_api_t *p_
 	p_adpt_api->adpt_port_vlan_counter_status_get = NULL;
 	p_adpt_api->adpt_port_vlan_counter_get = NULL;
 	p_adpt_api->adpt_port_vlan_counter_cleanup = NULL;
+
+	p_adpt_api->adpt_portvlan_member_add = NULL;
+	p_adpt_api->adpt_portvlan_member_del = NULL;
+	p_adpt_api->adpt_portvlan_member_update = NULL;
+	p_adpt_api->adpt_portvlan_member_get = NULL;
 
 	return;
 }
@@ -2091,6 +2180,14 @@ sw_error_t adpt_hppe_portvlan_init(a_uint32_t dev_id)
 		p_adpt_api->adpt_port_vlan_counter_get = adpt_hppe_port_vlan_counter_get;
 	if (p_adpt_api->adpt_portvlan_func_bitmap[1] & (1 << (FUNC_PORT_VLAN_COUNTER_CLEANUP % 32)))
 		p_adpt_api->adpt_port_vlan_counter_cleanup = adpt_hppe_port_vlan_counter_cleanup;
+	if (p_adpt_api->adpt_portvlan_func_bitmap[1] & (1 << (FUNC_PORT_VLAN_MEMBER_ADD % 32)))
+		p_adpt_api->adpt_portvlan_member_add = adpt_hppe_portvlan_member_add;
+	if (p_adpt_api->adpt_portvlan_func_bitmap[1] & (1 << (FUNC_PORT_VLAN_MEMBER_DEL % 32)))
+		p_adpt_api->adpt_portvlan_member_del = adpt_hppe_portvlan_member_del;
+	if (p_adpt_api->adpt_portvlan_func_bitmap[1] & (1 << (FUNC_PORT_VLAN_MEMBER_UPDATE % 32)))
+		p_adpt_api->adpt_portvlan_member_update = adpt_hppe_portvlan_member_update;
+	if (p_adpt_api->adpt_portvlan_func_bitmap[1] & (1 << (FUNC_PORT_VLAN_MEMBER_GET % 32)))
+		p_adpt_api->adpt_portvlan_member_get = adpt_hppe_portvlan_member_get;
 
 	return SW_OK;
 }

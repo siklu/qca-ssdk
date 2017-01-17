@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -69,6 +69,8 @@ enum {
 	IN_VLAN_ASSIGN_FAIL_BYP = 24,
 	SOURCE_GUARD_BYP,
 	MRU_MTU_CHECK_BYP,
+	FLOW_SRC_CHECK_BYP,
+	FLOW_QOS_BYP,
 
 	EG_VLAN_MEMBER_CHECK_BYP = 32,
 	EG_VLAN_XLT_BYP,

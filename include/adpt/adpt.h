@@ -615,6 +615,10 @@ typedef sw_error_t (*adpt_port_vlan_counter_enable_func)(a_uint32_t dev_id, fal_
 typedef sw_error_t (*adpt_port_vlan_counter_status_get_func)(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_counter_en_t * cnt_en);
 typedef sw_error_t (*adpt_port_vlan_counter_get_func)(a_uint32_t dev_id, a_uint32_t cnt_index, fal_port_vlan_counter_t * counter);
 typedef sw_error_t (*adpt_port_vlan_counter_cleanup_func)(a_uint32_t dev_id, a_uint32_t cnt_index);
+typedef sw_error_t (*adpt_portvlan_member_add_func)(a_uint32_t dev_id, fal_port_t port_id, fal_port_t mem_port_id);
+typedef sw_error_t (*adpt_portvlan_member_del_func)(a_uint32_t dev_id, fal_port_t port_id, fal_port_t mem_port_id);
+typedef sw_error_t (*adpt_portvlan_member_update_func)(a_uint32_t dev_id, fal_port_t port_id, fal_pbmp_t mem_port_map);
+typedef sw_error_t (*adpt_portvlan_member_get_func)(a_uint32_t dev_id, fal_port_t port_id, fal_pbmp_t * mem_port_map);
 /*portvlan module end*/
 
 /*ctrlpkt module end*/
@@ -1099,6 +1103,10 @@ typedef struct
 	adpt_port_vlan_counter_status_get_func adpt_port_vlan_counter_status_get;
 	adpt_port_vlan_counter_get_func adpt_port_vlan_counter_get;
 	adpt_port_vlan_counter_cleanup_func adpt_port_vlan_counter_cleanup;
+	adpt_portvlan_member_add_func adpt_portvlan_member_add;
+	adpt_portvlan_member_del_func adpt_portvlan_member_del;
+	adpt_portvlan_member_update_func adpt_portvlan_member_update;
+	adpt_portvlan_member_get_func adpt_portvlan_member_get;
 	/*portvlan module end*/
 
 	/*ctrlpkt module begin*/
