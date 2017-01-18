@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2015, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015-2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -95,9 +95,9 @@ extern "C" {
     SW_API_DEF(SW_API_PT_INTERFACE_MODE_SET, fal_port_interface_mode_set), \
     SW_API_DEF(SW_API_PT_INTERFACE_MODE_GET, fal_port_interface_mode_get), \
     SW_API_DEF(SW_API_PT_INTERFACE_MODE_STATUS_GET, fal_port_interface_mode_status_get), \
-    SW_API_DEF(SW_API_PT_COUNTER_SET, fal_port_counter_set), \
-    SW_API_DEF(SW_API_PT_COUNTER_GET, fal_port_counter_get), \
-    SW_API_DEF(SW_API_PT_COUNTER_SHOW, fal_port_counter_show),\
+    SW_API_DEF(SW_API_DEBUG_PHYCOUNTER_SET, fal_debug_phycounter_set), \
+    SW_API_DEF(SW_API_DEBUG_PHYCOUNTER_GET, fal_debug_phycounter_get), \
+    SW_API_DEF(SW_API_DEBUG_PHYCOUNTER_SHOW, fal_debug_phycounter_show),\
     SW_API_DEF(SW_API_PT_MTU_SET, fal_port_mtu_set), \
     SW_API_DEF(SW_API_PT_MTU_GET, fal_port_mtu_get), \
     SW_API_DEF(SW_API_PT_MRU_SET, fal_port_mru_set), \
@@ -179,9 +179,9 @@ extern "C" {
     SW_API_DESC(SW_API_PT_INTERFACE_MODE_SET) \
     SW_API_DESC(SW_API_PT_INTERFACE_MODE_GET) \
     SW_API_DESC(SW_API_PT_INTERFACE_MODE_STATUS_GET) \
-    SW_API_DESC(SW_API_PT_COUNTER_SET) \
-    SW_API_DESC(SW_API_PT_COUNTER_GET) \
-    SW_API_DESC(SW_API_PT_COUNTER_SHOW) \
+    SW_API_DESC(SW_API_DEBUG_PHYCOUNTER_SET) \
+    SW_API_DESC(SW_API_DEBUG_PHYCOUNTER_GET) \
+    SW_API_DESC(SW_API_DEBUG_PHYCOUNTER_SHOW) \
     SW_API_DESC(SW_API_PT_MTU_SET) \
     SW_API_DESC(SW_API_PT_MTU_GET) \
     SW_API_DESC(SW_API_PT_MRU_SET) \

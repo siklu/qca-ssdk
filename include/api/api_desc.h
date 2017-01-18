@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2015, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015-2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -399,21 +399,21 @@ extern "C" {
     SW_PARAM_DEF(SW_API_PT_INTERFACE_MODE_STATUS_GET, SW_INTERFACE_MODE, sizeof(fal_port_interface_mode_t), SW_PARAM_PTR|SW_PARAM_OUT, \
               "Interface Status"),
 
-#define SW_API_PT_COUNTER_SET_DESC \
-		SW_PARAM_DEF(SW_API_PT_COUNTER_SET, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"), \
-		SW_PARAM_DEF(SW_API_PT_COUNTER_SET, SW_UINT32, 4, SW_PARAM_IN, "Port ID"), \
-		SW_PARAM_DEF(SW_API_PT_COUNTER_SET, SW_ENABLE, 4, SW_PARAM_IN, "Counter Status"),
+#define SW_API_DEBUG_PHYCOUNTER_SET_DESC \
+    SW_PARAM_DEF(SW_API_DEBUG_PHYCOUNTER_SET, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"), \
+    SW_PARAM_DEF(SW_API_DEBUG_PHYCOUNTER_SET, SW_UINT32, 4, SW_PARAM_IN, "Port ID"), \
+    SW_PARAM_DEF(SW_API_DEBUG_PHYCOUNTER_SET, SW_ENABLE, 4, SW_PARAM_IN, "Counter Status"),
 
-#define SW_API_PT_COUNTER_GET_DESC \
-		SW_PARAM_DEF(SW_API_PT_COUNTER_GET, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"), \
-		SW_PARAM_DEF(SW_API_PT_COUNTER_GET, SW_UINT32, 4, SW_PARAM_IN, "Port ID"), \
-		SW_PARAM_DEF(SW_API_PT_COUNTER_GET, SW_ENABLE, 4, SW_PARAM_PTR|SW_PARAM_OUT, "Counter Status"),
+#define SW_API_DEBUG_PHYCOUNTER_GET_DESC \
+    SW_PARAM_DEF(SW_API_DEBUG_PHYCOUNTER_GET, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"), \
+    SW_PARAM_DEF(SW_API_DEBUG_PHYCOUNTER_GET, SW_UINT32, 4, SW_PARAM_IN, "Port ID"), \
+    SW_PARAM_DEF(SW_API_DEBUG_PHYCOUNTER_GET, SW_ENABLE, 4, SW_PARAM_PTR|SW_PARAM_OUT, "Counter Status"),
 
-#define SW_API_PT_COUNTER_SHOW_DESC \
-    SW_PARAM_DEF(SW_API_PT_COUNTER_SHOW, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"), \
-    SW_PARAM_DEF(SW_API_PT_COUNTER_SHOW, SW_UINT32, 4, SW_PARAM_IN, "Port ID"), \
-    SW_PARAM_DEF(SW_API_PT_COUNTER_SHOW, SW_COUNTER_INFO, sizeof(fal_port_counter_info_t), SW_PARAM_PTR|SW_PARAM_OUT, \
-              "Phy Statistics"),
+#define SW_API_DEBUG_PHYCOUNTER_SHOW_DESC \
+    SW_PARAM_DEF(SW_API_DEBUG_PHYCOUNTER_SHOW, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"), \
+    SW_PARAM_DEF(SW_API_DEBUG_PHYCOUNTER_SHOW, SW_UINT32, 4, SW_PARAM_IN, "Port ID"), \
+    SW_PARAM_DEF(SW_API_DEBUG_PHYCOUNTER_SHOW, SW_COUNTER_INFO, sizeof(fal_port_counter_info_t), SW_PARAM_PTR|SW_PARAM_OUT, \
+              "Phy Counter Statistics On Port"),
 
 #define SW_API_PT_MTU_SET_DESC \
 	SW_PARAM_DEF(SW_API_PT_MTU_SET, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"),  \
