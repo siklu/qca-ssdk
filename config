@@ -110,6 +110,12 @@ ifeq ($(KVER),$(filter 3.18%,$(KVER)))
 endif
 endif
 
+ifeq ($(ARCH), arm64)
+ifeq ($(KVER),$(filter 4.4%,$(KVER)))
+  CPU_CFLAG=  -DMODULE -Os -pipe -march=armv8-a -mcpu=cortex-a53+crypto -fno-caller-saves -fhonour-copts -fno-common -Wno-error=unused-but-set-variable -Wno-error=unused-result -mcmodel=large
+endif
+endif
+
 ifeq ($(BOARD_TYPE), ap136)
 OS_SUB=31
 GCC_VER=4

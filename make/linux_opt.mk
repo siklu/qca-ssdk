@@ -295,9 +295,26 @@ ifeq (KSLIB, $(MODULE_TYPE))
                 MODULE_CFLAG += -DKVER34
                 MODULE_CFLAG += -DKVER32
             MODULE_CFLAG += -DLNX26_22
+	    ifeq ($(ARCH), arm64)
             MODULE_INC += -I$(SYS_PATH) \
                   -I$(TOOL_PATH)/../lib/gcc/arm-openwrt-linux-$(TARGET_SUFFIX)/$(GCC_VERSION)/include/ \
                   -I$(SYS_PATH)/include \
+              -I$(SYS_PATH)/source/include \
+	      -I$(SYS_PATH)/source/arch/arm64/mach-msm/include \
+              -I$(SYS_PATH)/arch/arm64/mach-msm/include \
+              -I$(SYS_PATH)/source/arch/arm64/include \
+              -I$(SYS_PATH)/arch/arm64/include \
+              -I$(SYS_PATH)/source/arch/arm64/include/asm \
+              -I$(SYS_PATH)/arch/arm64/include/generated \
+              -I$(SYS_PATH)/include/generated/uapi \
+              -I$(SYS_PATH)/include/uapi \
+              -I$(SYS_PATH)/arch/arm64/include/uapi \
+              -I$(SYS_PATH)/source/arch/arm64/include/asm/mach \
+	      -include $(SYS_PATH)/include/linux/kconfig.h
+	    else
+	    MODULE_INC += -I$(SYS_PATH) \
+              -I$(TOOL_PATH)/../lib/gcc/arm-openwrt-linux-$(TARGET_SUFFIX)/$(GCC_VERSION)/include/ \
+              -I$(SYS_PATH)/include \
               -I$(SYS_PATH)/source/include \
               -I$(SYS_PATH)/source/arch/arm/mach-msm/include \
               -I$(SYS_PATH)/arch/arm/mach-msm/include \
@@ -309,7 +326,8 @@ ifeq (KSLIB, $(MODULE_TYPE))
               -I$(SYS_PATH)/include/uapi \
               -I$(SYS_PATH)/arch/arm/include/uapi \
               -I$(SYS_PATH)/source/arch/arm/include/asm/mach \
-                  -include $(SYS_PATH)/include/linux/kconfig.h
+              -include $(SYS_PATH)/include/linux/kconfig.h
+	    endif
 
   endif
 
