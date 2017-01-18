@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2014-2015, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2014-2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -3214,8 +3214,14 @@ qca_hppe_portctrl_hw_init()
 static int
 qca_hppe_policer_hw_init()
 {
+	a_uint32_t i = 0;
 
 	fal_policer_timeslot_set(0, 600);
+
+	for(i = 0; i < 8; i ++)
+	{
+		fal_port_policer_compensation_byte_set(0, i, 4);
+	}
 
 	return 0;
 }
@@ -3223,19 +3229,41 @@ qca_hppe_policer_hw_init()
 static int
 qca_hppe_shaper_hw_init()
 {
-	fal_shaper_token_number_t token_number;
+	fal_shaper_token_number_t port_token_number, queue_token_number;
+	fal_shaper_token_number_t flow_token_number;
 	a_uint32_t i = 0;
 
-	token_number.c_token_number_negative_en = 0;
-	token_number.c_token_number = 0xfffffff;
+	port_token_number.c_token_number_negative_en = 0;
+	port_token_number.c_token_number = 0x3fffffff;
+	queue_token_number.c_token_number_negative_en = 0;
+	queue_token_number.c_token_number = 0x3fffffff;
+	queue_token_number.e_token_number_negative_en = 0;
+	queue_token_number.e_token_number = 0x3fffffff;
+	flow_token_number.c_token_number_negative_en = 0;
+	flow_token_number.c_token_number = 0x3fffffff;
+	flow_token_number.e_token_number_negative_en = 0;
+	flow_token_number.e_token_number = 0x3fffffff;
 
-	fal_port_shaper_time_slot_set(0, 8);
-	fal_flow_shaper_time_slot_set(0, 64);
-	fal_queue_shaper_time_slot_set(0, 300);
 	for(i = 0; i < 8; i ++)
 	{
-		fal_port_shaper_token_number_set(0, i, &token_number);
+		fal_port_shaper_token_number_set(0, i, &port_token_number);
 	}
+
+	for(i = 0; i < 300; i ++)
+	{
+		fal_queue_shaper_token_number_set(0, i, &queue_token_number);
+	}
+
+	for(i = 0; i < 64; i ++)
+	{
+		fal_flow_shaper_token_number_set(0, i, &flow_token_number);
+	}
+
+	fal_port_shaper_timeslot_set(0, 8);
+	fal_flow_shaper_timeslot_set(0, 64);
+	fal_queue_shaper_timeslot_set(0, 300);
+	fal_shaper_ipg_preamble_length_set(0, 20);
+
 	return 0;
 }
 

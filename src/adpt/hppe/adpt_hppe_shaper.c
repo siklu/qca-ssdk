@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -763,8 +763,8 @@ adpt_hppe_queue_shaper_token_number_set(a_uint32_t dev_id,a_uint32_t queue_id,
 	l0_shp_credit_tbl.bf.c_shaper_credit_neg = token_number->c_token_number_negative_en;
 	l0_shp_credit_tbl.bf.c_shaper_credit = token_number->c_token_number;
 	l0_shp_credit_tbl.bf.e_shaper_credit_neg = token_number->e_token_number_negative_en;
-	l0_shp_credit_tbl.bf.e_shaper_credit_0 = token_number->c_token_number & 0x1;
-	l0_shp_credit_tbl.bf.e_shaper_credit_1 = token_number->c_token_number >> 1;
+	l0_shp_credit_tbl.bf.e_shaper_credit_0 = token_number->e_token_number & 0x1;
+	l0_shp_credit_tbl.bf.e_shaper_credit_1 = token_number->e_token_number >> 1;
 
 	hppe_l0_shp_credit_tbl_set(dev_id, queue_id, &l0_shp_credit_tbl);
 
@@ -921,6 +921,8 @@ adpt_hppe_queue_shaper_token_number_get(a_uint32_t dev_id, a_uint32_t queue_id,
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(token_number);
 
+	if ((queue_id < 0) || (queue_id > 299))
+		return SW_BAD_PARAM;
 
 	rv = hppe_l0_shp_credit_tbl_get(dev_id, queue_id, &l0_shp_credit_tbl);
 
@@ -1020,6 +1022,8 @@ adpt_hppe_flow_shaper_token_number_get(a_uint32_t dev_id, a_uint32_t flow_id,
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(token_number);
 
+	if ((flow_id < 0) || (flow_id > 63))
+		return SW_BAD_PARAM;
 
 	rv = hppe_l1_shp_credit_tbl_get(dev_id, flow_id, &l1_shp_credit_tbl);
 

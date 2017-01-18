@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -128,22 +128,22 @@ fal_port_shaper_token_number_get(a_uint32_t dev_id, fal_port_t port_id,
 		fal_shaper_token_number_t *token_number);
 
 sw_error_t
-fal_port_shaper_time_slot_set(a_uint32_t dev_id, a_uint32_t time_slot);
+fal_port_shaper_timeslot_set(a_uint32_t dev_id, a_uint32_t timeslot);
 
 sw_error_t
-fal_port_shaper_time_slot_get(a_uint32_t dev_id, a_uint32_t *time_slot);
+fal_port_shaper_timeslot_get(a_uint32_t dev_id, a_uint32_t *timeslot);
 
 sw_error_t
-fal_queue_shaper_time_slot_set(a_uint32_t dev_id, a_uint32_t time_slot);
+fal_queue_shaper_timeslot_set(a_uint32_t dev_id, a_uint32_t timeslot);
 
 sw_error_t
-fal_queue_shaper_time_slot_get(a_uint32_t dev_id, a_uint32_t *time_slot);
+fal_queue_shaper_timeslot_get(a_uint32_t dev_id, a_uint32_t *timeslot);
 
 sw_error_t
-fal_flow_shaper_time_slot_set(a_uint32_t dev_id, a_uint32_t time_slot);
+fal_flow_shaper_timeslot_set(a_uint32_t dev_id, a_uint32_t timeslot);
 
 sw_error_t
-fal_flow_shaper_time_slot_get(a_uint32_t dev_id, a_uint32_t *time_slot);
+fal_flow_shaper_timeslot_get(a_uint32_t dev_id, a_uint32_t *timeslot);
 
 sw_error_t
 fal_shaper_ipg_preamble_length_set(a_uint32_t dev_id, a_uint32_t ipg_pre_length);

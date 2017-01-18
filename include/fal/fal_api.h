@@ -1807,12 +1807,12 @@ extern "C" {
 
 #ifdef IN_SHAPER
 #define SHAPER_API \
-    SW_API_DEF(SW_API_PORT_SHAPER_TIMESLOT_SET, fal_port_shaper_time_slot_set), \
-    SW_API_DEF(SW_API_PORT_SHAPER_TIMESLOT_GET, fal_port_shaper_time_slot_get), \
-    SW_API_DEF(SW_API_FLOW_SHAPER_TIMESLOT_SET, fal_flow_shaper_time_slot_set), \
-    SW_API_DEF(SW_API_FLOW_SHAPER_TIMESLOT_GET, fal_flow_shaper_time_slot_get), \
-    SW_API_DEF(SW_API_QUEUE_SHAPER_TIMESLOT_SET, fal_queue_shaper_time_slot_set), \
-    SW_API_DEF(SW_API_QUEUE_SHAPER_TIMESLOT_GET, fal_queue_shaper_time_slot_get), \
+    SW_API_DEF(SW_API_PORT_SHAPER_TIMESLOT_SET, fal_port_shaper_timeslot_set), \
+    SW_API_DEF(SW_API_PORT_SHAPER_TIMESLOT_GET, fal_port_shaper_timeslot_get), \
+    SW_API_DEF(SW_API_FLOW_SHAPER_TIMESLOT_SET, fal_flow_shaper_timeslot_set), \
+    SW_API_DEF(SW_API_FLOW_SHAPER_TIMESLOT_GET, fal_flow_shaper_timeslot_get), \
+    SW_API_DEF(SW_API_QUEUE_SHAPER_TIMESLOT_SET, fal_queue_shaper_timeslot_set), \
+    SW_API_DEF(SW_API_QUEUE_SHAPER_TIMESLOT_GET, fal_queue_shaper_timeslot_get), \
     SW_API_DEF(SW_API_PORT_SHAPER_TOKEN_NUMBER_SET, fal_port_shaper_token_number_set), \
     SW_API_DEF(SW_API_PORT_SHAPER_TOKEN_NUMBER_GET, fal_port_shaper_token_number_get), \
     SW_API_DEF(SW_API_FLOW_SHAPER_TOKEN_NUMBER_SET, fal_flow_shaper_token_number_set), \
