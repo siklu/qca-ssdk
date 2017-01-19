@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2015, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015, 2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -20,6 +20,8 @@
 
 #define NAPT_TABLE_SIZE 1024
 
+#define S17_WAN_PORT nat_helper_wan_port_get()
+
 void host_helper_init(void);
 void host_helper_exit(void);
 void  napt_helper_init(void);
@@ -29,6 +31,8 @@ void nat_ipt_helper_exit(void);
 
 void nat_helper_bg_task_init(void);
 void nat_helper_bg_task_exit(void);
+
+a_uint32_t nat_helper_wan_port_get(void);
 
 void hnat_log_msg(int level, char *string, ...);
 #define NAT_LOG_MAX_SIZE 1024

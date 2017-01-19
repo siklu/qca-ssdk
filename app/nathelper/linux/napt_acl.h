@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -57,7 +57,7 @@
 
 
 /* port # of WAN, 1 for DB120 demo board */
-#define S17_WAN_PORT    5
+//#define S17_WAN_PORT    5
 #define S17_CPU_PORT    0
 
 #define S17_CPU_PORT_W    6
@@ -66,6 +66,7 @@
 #define S17_LAN_PORT1   2
 #define S17_LAN_PORT2   3
 #define S17_LAN_PORT3   4
+#define S17_LAN_PORT4   5
 
 
 

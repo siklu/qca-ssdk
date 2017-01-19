@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -277,6 +277,7 @@ void pppoe_add_acl_rules(
     fal_acl_rule_t myacl;
     uint32_t rtnval, cnt;
     a_bool_t val;
+    int i;
 
     /* do the 1st, 2nd and 3rd rules */
     for (cnt = 0; cnt < 3; cnt++)
@@ -379,10 +380,10 @@ void pppoe_add_acl_rules(
                     break;
                 }
                 /* bind to LAN ports (1-4) */
-                ACL_LIST_BIND(0, S17_ACL_LIST_PPPOE+1, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, S17_LAN_PORT0);
-                ACL_LIST_BIND(0, S17_ACL_LIST_PPPOE+1, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, S17_LAN_PORT1);
-                ACL_LIST_BIND(0, S17_ACL_LIST_PPPOE+1, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, S17_LAN_PORT2);
-                ACL_LIST_BIND(0, S17_ACL_LIST_PPPOE+1, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, S17_LAN_PORT3);
+                for (i = S17_LAN_PORT0; i <= S17_LAN_PORT4; i++) {
+                    if (i != S17_WAN_PORT)
+                        ACL_LIST_BIND(0, S17_ACL_LIST_PPPOE+1, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, i);
+                }
 
                 break;
 
@@ -463,10 +464,12 @@ void pppoe_add_acl_rules(
 
 static void pppoe_del_acl_rule1(void)
 {
-	    ACL_LIST_UNBIND(0, S17_ACL_LIST_PPPOE+1, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, S17_LAN_PORT0);
-	    ACL_LIST_UNBIND(0, S17_ACL_LIST_PPPOE+1, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, S17_LAN_PORT1);
-	    ACL_LIST_UNBIND(0, S17_ACL_LIST_PPPOE+1, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, S17_LAN_PORT2);
-	    ACL_LIST_UNBIND(0, S17_ACL_LIST_PPPOE+1, FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, S17_LAN_PORT3);
+	int i;
+	for (i = S17_LAN_PORT0; i <= S17_LAN_PORT4; i++) {
+		if (i != S17_WAN_PORT)
+			ACL_LIST_UNBIND(0, S17_ACL_LIST_PPPOE+1,
+				FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORT, i);
+	}
 
 	    ACL_RULE_DEL(0, S17_ACL_LIST_PPPOE+1, 0, 1);
 

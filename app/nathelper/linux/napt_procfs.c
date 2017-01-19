@@ -70,6 +70,7 @@ extern int scan_period;
 extern int scan_enable;
 extern int napt_need_clean;
 extern int wan_switch;
+extern char nat_wan_port;
 extern void napt_wan_switch_prehandle(void);
 /* for IPv6 over PPPoE (only for S17c)*/
 int nf_athrs17_hnat_ppp_id2 = 0;
@@ -937,6 +938,37 @@ static ssize_t napt_wan_switch_set(struct device *dev,
 	return count;
 }
 
+static ssize_t napt_wan_port_get(struct device *dev,
+		  struct device_attribute *attr,
+		  char *buf)
+{
+	ssize_t count;
+	a_uint32_t num;
+
+	num = (a_uint32_t)nat_wan_port;
+
+	count = snprintf(buf, (ssize_t)PAGE_SIZE, "%u", num);
+	return count;
+}
+
+static ssize_t napt_wan_port_set(struct device *dev,
+		  struct device_attribute *attr,
+		  const char *buf, size_t count)
+{
+	char num_buf[12];
+	a_uint32_t num;
+
+
+	if (count >= sizeof(num_buf)) return 0;
+	memcpy(num_buf, buf, count);
+	num_buf[count] = '\0';
+	sscanf(num_buf, "%u", &num);
+
+	nat_wan_port = num;
+
+	return count;
+}
+
 extern void napt_helper_show(void);
 static ssize_t napt_log_show_get(struct device *dev,
 		  struct device_attribute *attr,
@@ -981,6 +1013,8 @@ static const struct device_attribute napt_need_clean_attr =
 	__ATTR(napt_clean, 0660, napt_need_clean_get, napt_need_clean_set);
 static const struct device_attribute napt_wan_switch_attr =
 	__ATTR(napt_switch, 0660, napt_wan_switch_get, napt_wan_switch_set);
+static const struct device_attribute napt_wan_port_attr =
+	__ATTR(wan_port, 0660, napt_wan_port_get, napt_wan_port_set);
 
 
 int napt_procfs_init(void)
@@ -1080,7 +1114,14 @@ int napt_procfs_init(void)
 		printk("Failed to register napt wan switch SysFS file\n");
 		goto CLEANUP_17;
 	}
+	ret = sysfs_create_file(napt_sys, &napt_wan_port_attr.attr);
+	if (ret) {
+		printk("Failed to register napt wan port SysFS file\n");
+		goto CLEANUP_18;
+	}
 	return 0;
+CLEANUP_18:
+	sysfs_remove_file(napt_sys, &napt_wan_switch_attr.attr);
 CLEANUP_17:
 	sysfs_remove_file(napt_sys, &napt_need_clean_attr.attr);
 CLEANUP_16:
@@ -1123,6 +1164,7 @@ void napt_procfs_exit(void)
 {
 	printk("napt procfs exit\n");
 
+	sysfs_remove_file(napt_sys, &napt_wan_port_attr.attr);
 	sysfs_remove_file(napt_sys, &napt_wan_switch_attr.attr);
 	sysfs_remove_file(napt_sys, &napt_need_clean_attr.attr);
 	sysfs_remove_file(napt_sys, &napt_scan_enable_attr.attr);

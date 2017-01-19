@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2015, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015, 2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -232,6 +232,18 @@ int bg_ring_buf_read(struct nat_helper_bg_msg *msg)
 
 
 #endif
+
+a_uint32_t nat_helper_wan_port_get(void)
+{
+	a_uint32_t i = 0;
+
+	for (i = 0; i < 6; i ++) {
+		if ((nat_wan_port >> i) & 1)
+			break;
+	}
+
+	return i;
+}
 
 static int wan_nh_get(u_int32_t host_ip)
 {
@@ -1263,6 +1275,7 @@ static uint32_t get_netmask_from_netdevice(const struct net_device *in_net_dev)
 }
 #endif
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,4,0))
 static unsigned int
 arp_in(unsigned int hook,
        struct sk_buff *skb,
@@ -1282,16 +1295,38 @@ arp_in(unsigned int hook,
 		msg.arp_in.in = (struct net_device *)in;
 
 		/*send msg to background task*/
-		/*spin_lock_irqsave(&task_cb.bg_lock, flags);*/
 		if(bg_ring_buf_write(msg))
 			kfree_skb(new_skb);
-		/*spin_unlock_irqrestore(&task_cb.bg_lock, flags);*/
-		/*up(&task_cb.bg_sem);*/
 	}
 	
 	return NF_ACCEPT;
 	
 }
+#else
+static unsigned int
+arp_in(void *priv,
+       struct sk_buff *skb,
+       struct nf_hook_state *state)
+{
+	struct sk_buff *new_skb = NULL;
+	struct nat_helper_bg_msg msg;
+	/*unsigned long flags = 0;*/
+
+	new_skb = skb_clone(skb, GFP_ATOMIC);
+	if(new_skb) {
+		memset(&msg, 0, sizeof(msg));
+		msg.msg_type = NAT_HELPER_ARP_IN_MSG;
+		msg.arp_in.skb = new_skb;
+		msg.arp_in.in = state->in;
+
+		/*send msg to background task*/
+		if(bg_ring_buf_write(msg))
+			kfree_skb(new_skb);
+	}
+
+	return NF_ACCEPT;
+}
+#endif
 
 
 #ifdef NAT_BACKGROUND_TASK
