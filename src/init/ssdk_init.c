@@ -3602,6 +3602,12 @@ qca_hppe_qm_hw_init()
 	queue_dst.service_code = 3;
 	fal_ucast_queue_base_profile_set(0, &queue_dst, 128, 0);
 
+	queue_dst.service_code = 4;
+	fal_ucast_queue_base_profile_set(0, &queue_dst, 128, 0);
+
+	queue_dst.service_code = 5;
+	fal_ucast_queue_base_profile_set(0, &queue_dst, 0, 0);
+
 	queue_dst.service_code_en = A_FALSE;
 	queue_dst.service_code = 0;
 	for(i = 1; i < 8; i++) {
