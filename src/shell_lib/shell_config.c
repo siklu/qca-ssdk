@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, 2015, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2013, 2015, 2017, The Linux Foundation. All rights reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -653,7 +653,6 @@ struct sub_cmd_des_t g_port_des[] =
 	{"magicFrameMac", "set",   SW_API_PT_MAGIC_FRAME_MAC_SET, NULL},
 	{"wolstatus", "set",   SW_API_PT_WOL_STATUS_SET, NULL},
 	{"interfaceMode", "set",   SW_API_PT_INTERFACE_MODE_SET, NULL},
-	{"counter", "set",   SW_API_PT_COUNTER_SET, NULL},
 	#endif
 	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
 };

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2015, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015, 2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -100,10 +100,9 @@ extern "C" {
 #define SW_API_PT_INTERFACE_MODE_SET  (68 + SW_API_PORT_OFFSET)
 #define SW_API_PT_INTERFACE_MODE_GET  (69 + SW_API_PORT_OFFSET)
 #define SW_API_PT_INTERFACE_MODE_STATUS_GET  (70 + SW_API_PORT_OFFSET)
-#define SW_API_PT_COUNTER_SET  (71 + SW_API_PORT_OFFSET)
-#define SW_API_PT_COUNTER_GET  (72 + SW_API_PORT_OFFSET)
-#define SW_API_PT_COUNTER_SHOW  (73 + SW_API_PORT_OFFSET)
-
+#define SW_API_DEBUG_PHYCOUNTER_SET  (71 + SW_API_PORT_OFFSET)
+#define SW_API_DEBUG_PHYCOUNTER_GET  (72 + SW_API_PORT_OFFSET)
+#define SW_API_DEBUG_PHYCOUNTER_SHOW  (73 + SW_API_PORT_OFFSET)
     /*vlan*/
 #define SW_API_VLAN_OFFSET         110
 #define SW_API_VLAN_ADD            (0 + SW_API_VLAN_OFFSET)
