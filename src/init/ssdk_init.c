@@ -3618,7 +3618,7 @@ qca_hppe_qm_hw_init()
 
 	/* queue ac*/
 	ac_ctrl.ac_en = 1;
-	ac_ctrl.ac_fc_en = 1;
+	ac_ctrl.ac_fc_en = 0;
 	for (i = 0; i < 300; i++) {
 		obj.type = FAL_AC_QUEUE;
 		obj.obj_id = i;
