@@ -1167,7 +1167,7 @@ struct sub_cmd_des_t g_pppoe_des[] =
 struct sub_cmd_des_t g_policer_des[] =
 {
 	{"timeslot", "set",   SW_API_POLICER_TIMESLOT_SET, NULL},
-	{"compensation", "set",   SW_API_POLICER_COMPENSATION_SET, NULL},
+	{"fcscompensation", "set",   SW_API_POLICER_COMPENSATION_SET, NULL},
 	{"portentry", "set",   SW_API_POLICER_PORT_ENTRY_SET, NULL},
 	{"aclentry", "set",   SW_API_POLICER_ACL_ENTRY_SET, NULL},
 	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
@@ -1176,16 +1176,16 @@ struct sub_cmd_des_t g_policer_des[] =
 #ifdef IN_SHAPER
 	struct sub_cmd_des_t g_shaper_des[] =
 	{
-		{"PortTimeslot", "set",   SW_API_PORT_SHAPER_TIMESLOT_SET, NULL},
-		{"FlowTimeslot", "set",   SW_API_FLOW_SHAPER_TIMESLOT_SET, NULL},
-		{"QueueTimeslot", "set",	 SW_API_QUEUE_SHAPER_TIMESLOT_SET, NULL},
-		{"PortToken", "set",   SW_API_PORT_SHAPER_TOKEN_NUMBER_SET, NULL},
-		{"FlowToken", "set",   SW_API_FLOW_SHAPER_TOKEN_NUMBER_SET, NULL},
-		{"QueueToken", "set",   SW_API_QUEUE_SHAPER_TOKEN_NUMBER_SET, NULL},
-		{"PortShaper", "set",   SW_API_PORT_SHAPER_SET, NULL},
-		{"FlowShaper", "set",   SW_API_FLOW_SHAPER_SET, NULL},
-		{"QueueShaper", "set",   SW_API_QUEUE_SHAPER_SET, NULL},
-		{"Ipg", "set",   SW_API_SHAPER_IPG_PRE_SET, NULL},
+		{"porttimeslot", "set",   SW_API_PORT_SHAPER_TIMESLOT_SET, NULL},
+		{"flowtimeslot", "set",   SW_API_FLOW_SHAPER_TIMESLOT_SET, NULL},
+		{"queuetimeslot", "set",	 SW_API_QUEUE_SHAPER_TIMESLOT_SET, NULL},
+		{"porttoken", "set",   SW_API_PORT_SHAPER_TOKEN_NUMBER_SET, NULL},
+		{"flowtoken", "set",   SW_API_FLOW_SHAPER_TOKEN_NUMBER_SET, NULL},
+		{"queuetoken", "set",   SW_API_QUEUE_SHAPER_TOKEN_NUMBER_SET, NULL},
+		{"portshaper", "set",   SW_API_PORT_SHAPER_SET, NULL},
+		{"flowshaper", "set",   SW_API_FLOW_SHAPER_SET, NULL},
+		{"queueshaper", "set",   SW_API_QUEUE_SHAPER_SET, NULL},
+		{"ipgcompensation", "set",   SW_API_SHAPER_IPG_PRE_SET, NULL},
 		{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
 	};
 #endif
