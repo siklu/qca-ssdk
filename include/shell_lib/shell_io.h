@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, 2015-2016, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2013, 2015-2017, The Linux Foundation. All rights reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -60,6 +60,30 @@ sw_error_t cmd_data_check_1qmode(char *cmd_str, a_uint32_t * arg_val,
                                  a_uint32_t size);
 sw_error_t cmd_data_check_egmode(char *cmd_str, a_uint32_t * arg_val,
                                  a_uint32_t size);
+sw_error_t
+cmd_data_check_global_qinqmode(char *info, void *val, a_uint32_t size);
+sw_error_t
+cmd_data_check_port_qinqmode(char *info, void *val, a_uint32_t size);
+sw_error_t
+cmd_data_check_tpid(char *info, void *val, a_uint32_t size);
+sw_error_t
+cmd_data_check_ingress_filter(char *info, void *val, a_uint32_t size);
+sw_error_t
+cmd_data_check_port_vlan_direction(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size);
+sw_error_t
+cmd_data_check_port_default_vid_en(char *info, void *val, a_uint32_t size);
+sw_error_t
+cmd_data_check_port_vlan_tag(char *info, void *val, a_uint32_t size);
+sw_error_t
+cmd_data_check_tag_propagation(char *info, void *val, a_uint32_t size);
+sw_error_t
+cmd_data_check_egress_mode(char *info, void *val, a_uint32_t size);
+sw_error_t
+cmd_data_check_port_vlan_translation_adv_rule(char *info, void *val,
+				a_uint32_t size);
+sw_error_t
+cmd_data_check_port_vlan_translation_adv_action(char *info, void *val,
+				a_uint32_t size);
 #endif
 #ifdef IN_PORTCONTROL
 sw_error_t cmd_data_check_capable(char *cmd_str, a_uint32_t * arg_val,
@@ -67,6 +91,7 @@ sw_error_t cmd_data_check_capable(char *cmd_str, a_uint32_t * arg_val,
 #endif
 #ifdef IN_FDB
 sw_error_t cmd_data_check_fdbentry(char *cmdstr, void *val, a_uint32_t size);
+sw_error_t cmd_data_check_maclimit_ctrl(char *info, void *val, a_uint32_t size);
 #endif
 sw_error_t cmd_data_check_macaddr(char *cmdstr, void *val, a_uint32_t size);
 #ifdef IN_VLAN
@@ -383,5 +408,23 @@ sw_error_t
 cmd_data_check_shaper_config(char *cmd_str, void * val, a_uint32_t size);
 
 #endif
+
+#ifdef IN_SERVCODE
+sw_error_t
+cmd_data_check_servcode_config(char *info, fal_servcode_config_t *val, a_uint32_t size);
+#endif
+
+#ifdef IN_MIRROR
+sw_error_t
+cmd_data_check_mirr_analy_cfg(char *info, void *val, a_uint32_t size);
+sw_error_t
+cmd_data_check_mirr_direction(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size);
+#endif
+
+#ifdef IN_CTRLPKT
+sw_error_t
+cmd_data_check_ctrlpkt_appprofile(char *info, void *val, a_uint32_t size);
+#endif
+
 #endif
 

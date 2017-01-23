@@ -4056,7 +4056,6 @@ static int __init regi_init(void)
 			printk("Initializing HPPE!!\n");
 			qca_hppe_hw_init(&cfg);
 			printk("Initializing HPPE Done!!\n");
-			goto out;
 		}
 		#endif
 		#ifdef DESS

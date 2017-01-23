@@ -130,6 +130,7 @@ static sw_data_type_t sw_data_type[] =
     SW_TYPE_DEF(SW_MACADDR, cmd_data_check_macaddr, NULL),
 	#ifdef IN_FDB
     SW_TYPE_DEF(SW_FDBENTRY, cmd_data_check_fdbentry, NULL),
+    SW_TYPE_DEF(SW_MACLIMIT_CTRL, cmd_data_check_maclimit_ctrl, NULL),
 	#endif
 	#ifdef IN_QOS
 	#ifndef IN_QOS_MINI
@@ -166,6 +167,19 @@ static sw_data_type_t sw_data_type[] =
 	#endif
 	#ifdef IN_PORTVLAN
     SW_TYPE_DEF(SW_INVLAN, cmd_data_check_invlan_mode, NULL),
+
+    SW_TYPE_DEF(SW_GLOBAL_QINQMODE, cmd_data_check_global_qinqmode, NULL),
+    SW_TYPE_DEF(SW_PT_QINQMODE, cmd_data_check_port_qinqmode, NULL),
+    SW_TYPE_DEF(SW_TPID, cmd_data_check_tpid, NULL),
+    SW_TYPE_DEF(SW_INGRESS_FILTER, cmd_data_check_ingress_filter, NULL),
+    SW_TYPE_DEF(SW_PT_VLAN_DIRECTION, cmd_data_check_port_vlan_direction, NULL),
+    SW_TYPE_DEF(SW_PT_DEF_VID_EN, cmd_data_check_port_default_vid_en, NULL),
+    SW_TYPE_DEF(SW_PT_VLAN_TAG, cmd_data_check_port_vlan_tag, NULL),
+    SW_TYPE_DEF(SW_TAG_PROPAGATION, cmd_data_check_tag_propagation, NULL),
+    SW_TYPE_DEF(SW_EGRESS_MODE, cmd_data_check_egress_mode, NULL),
+    SW_TYPE_DEF(SW_PT_VLAN_TRANS_ADV_RULE, cmd_data_check_port_vlan_translation_adv_rule, NULL),
+    SW_TYPE_DEF(SW_PT_VLAN_TRANS_ADV_ACTION, cmd_data_check_port_vlan_translation_adv_action, NULL),
+
 	#ifndef IN_PORTVLAN_MINI
     SW_TYPE_DEF(SW_VLANPROPAGATION, cmd_data_check_vlan_propagation, NULL),
     SW_TYPE_DEF(SW_VLANTRANSLATION, cmd_data_check_vlan_translation, NULL),
@@ -303,6 +317,16 @@ static sw_data_type_t sw_data_type[] =
     SW_TYPE_DEF(SW_POLICER_PORT_CONFIG, cmd_data_check_port_policer_config, NULL),
     SW_TYPE_DEF(SW_POLICER_CMD_CONFIG, cmd_data_check_policer_cmd_config, NULL),
   #endif
+    #ifdef IN_SERVCODE
+    SW_TYPE_DEF(SW_SERVCODE_CONFIG, cmd_data_check_servcode_config, NULL),
+    #endif
+    #ifdef IN_MIRROR
+    SW_TYPE_DEF(SW_MIRR_DIRECTION, cmd_data_check_mirr_direction, NULL),
+    SW_TYPE_DEF(SW_MIRR_ANALYSIS_CONFIG, cmd_data_check_mirr_analy_cfg, NULL),
+    #endif
+    #ifdef IN_CTRLPKT
+    SW_TYPE_DEF(SW_CTRLPKT_PROFILE, cmd_data_check_ctrlpkt_appprofile, NULL),
+    #endif
 };
 
 sw_data_type_t *
@@ -2257,6 +2281,92 @@ cmd_data_check_fdbentry(char *info, void *val, a_uint32_t size)
 
     return SW_OK;
 }
+
+sw_error_t
+cmd_data_check_maclimit_ctrl(char *info, void *val, a_uint32_t size)
+{
+    char *cmd, *cmd_find;
+    sw_error_t rv;
+    fal_maclimit_ctrl_t maclimit_ctrl;
+
+    memset(&maclimit_ctrl, 0, sizeof (fal_maclimit_ctrl_t));
+
+    do
+    {
+        cmd = get_sub_cmd("enable", "yes");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <yes/no/y/n>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_confirm(cmd, A_TRUE, &maclimit_ctrl.enable,
+                                        sizeof (a_bool_t));
+            if (SW_OK != rv)
+                dprintf("usage: <yes/no/y/n>\n");
+        }
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    do
+    {
+        cmd = get_sub_cmd("limit num", "2048");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: the range is 0 -- 2048 \n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint32(cmd, &maclimit_ctrl.limit_num,
+                                        sizeof (a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: the range is 0 -- 2048 \n");
+        }
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    do
+    {
+        cmd = get_sub_cmd("action", "forward");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <forward/drop/cpycpu/rdtcpu>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_maccmd(cmd, &maclimit_ctrl.action,
+                                        sizeof (fal_fwd_cmd_t));
+            if (SW_OK != rv)
+                dprintf("usage: <forward/drop/cpycpu/rdtcpu>\n");
+        }
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    *(fal_maclimit_ctrl_t *) val = maclimit_ctrl;
+
+    return SW_OK;
+}
 #endif
 sw_error_t
 cmd_data_check_integer(char *cmd_str, a_uint32_t * arg_val, a_uint32_t max_val,
@@ -2921,6 +3031,1803 @@ cmd_data_check_invlan_mode(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
 
     return SW_OK;
 }
+
+sw_error_t
+cmd_data_check_global_qinqmode(char *info, void *val, a_uint32_t size)
+{
+    char *cmd;
+    sw_error_t rv;
+    fal_global_qinq_mode_t *pEntry = (fal_global_qinq_mode_t *)val;
+
+    memset(pEntry, 0, sizeof(fal_global_qinq_mode_t));
+
+    /* get mask */
+    do
+    {
+        cmd = get_sub_cmd("mask", "0x0");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <bit 0 for ingress and bit 1 for egress>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint32(cmd, &(pEntry->mask), sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: <bit 0 for ingress and bit 1 for egress>\n");
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    /* get ingress mode */
+    do
+    {
+        cmd = get_sub_cmd("ingress_qinq_mode", "ctag");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <stag/ctag>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_qinq_mode(cmd, &(pEntry->ingress_mode), sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: <stag/ctag>\n");
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    /* get egress mode */
+    do
+    {
+        cmd = get_sub_cmd("egress_qinq_mode", "ctag");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <stag/ctag>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_qinq_mode(cmd, &(pEntry->egress_mode), sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: <stag/ctag>\n");
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    return SW_OK;
+}
+
+sw_error_t
+cmd_data_check_port_qinqmode(char *info, void *val, a_uint32_t size)
+{
+    char *cmd;
+    sw_error_t rv;
+    fal_port_qinq_role_t *pEntry = (fal_port_qinq_role_t *)val;
+
+    memset(pEntry, 0, sizeof(fal_port_qinq_role_t));
+
+    /* get mask */
+    do
+    {
+        cmd = get_sub_cmd("mask", "0x0");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <bit 0 for ingress and bit 1 for egress>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint32(cmd, &(pEntry->mask), sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: <bit 0 for ingress and bit 1 for egress>\n");
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    /* get ingress mode */
+    do
+    {
+        cmd = get_sub_cmd("ingress_qinq_role", "edge");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <edge/core>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_qinq_role(cmd, &(pEntry->ingress_port_role), sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: <edge/core>\n");
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    /* get egress mode */
+    do
+    {
+        cmd = get_sub_cmd("egress_qinq_role", "edge");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <edge/core>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_qinq_role(cmd, &(pEntry->egress_port_role), sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: <edge/core>\n");
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    return SW_OK;
+}
+
+sw_error_t
+cmd_data_check_tpid(char *info, void *val, a_uint32_t size)
+{
+    char *cmd;
+    sw_error_t rv;
+    fal_tpid_t *pEntry = (fal_tpid_t *)val;
+    a_uint32_t tmp = 0;
+
+    memset(pEntry, 0, sizeof(fal_tpid_t));
+
+    /* get mask */
+    do
+    {
+        cmd = get_sub_cmd("mask", "0x0");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <bit 0 for ctpid and bit 1 for stpid>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint32(cmd, &(pEntry->mask), sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: <bit 0 for ctpid and bit 1 for stpid>\n");
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    /* get ctpid */
+    do
+    {
+        cmd = get_sub_cmd("ctagtpid", "0x8100");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <0x8100>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint16(cmd, &tmp, sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: <0x8100>\n");
+
+	     pEntry->ctpid = (a_uint16_t)tmp;
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    /* get stpid */
+    do
+    {
+        cmd = get_sub_cmd("stagtpid", "0x88a8");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <0x88a8>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint16(cmd, &tmp, sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: <0x88a8>\n");
+
+	     pEntry->stpid = (a_uint16_t)tmp;
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    return SW_OK;
+}
+
+sw_error_t
+cmd_data_check_ingress_filter(char *info, void *val, a_uint32_t size)
+{
+    char *cmd;
+    sw_error_t rv;
+    fal_ingress_vlan_filter_t *pEntry = (fal_ingress_vlan_filter_t *)val;
+
+    memset(pEntry, 0, sizeof(fal_ingress_vlan_filter_t));
+
+    /* get in vlan filter */
+    do
+    {
+        cmd = get_sub_cmd("membership_filter_en", "disable");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <enable/disable>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_enable(cmd, &(pEntry->membership_filter), sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: <enable/disable>\n");
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    /* get tag filter */
+    do
+    {
+        cmd = get_sub_cmd("tagged_filter_en", "disable");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <enable/disable>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_enable(cmd, &(pEntry->tagged_filter), sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: <enable/disable>\n");
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    /* get untag filter */
+    do
+    {
+        cmd = get_sub_cmd("untagged_filter_en", "disable");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <enable/disable>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_enable(cmd, &(pEntry->untagged_filter), sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: <enable/disable>\n");
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    /* get priority tag filter */
+    do
+    {
+        cmd = get_sub_cmd("priority_tagged_filter_en", "disable");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <enable/disable>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_enable(cmd, &(pEntry->priority_filter), sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: <enable/disable>\n");
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    return SW_OK;
+}
+
+sw_error_t
+cmd_data_check_port_vlan_direction(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
+{
+    if (cmd_str == NULL)
+        return SW_BAD_PARAM;
+
+    if (!strcasecmp(cmd_str, "all"))
+    {
+        *arg_val = FAL_PORT_VLAN_ALL;
+    }
+    else if (!strcasecmp(cmd_str, "ingress"))
+    {
+        *arg_val = FAL_PORT_VLAN_INGRESS;
+    }
+    else if (!strcasecmp(cmd_str, "egress"))
+    {
+        *arg_val = FAL_PORT_VLAN_EGRESS;
+    }
+    else
+    {
+        //dprintf("input error \n");
+        return SW_BAD_VALUE;
+    }
+
+    return SW_OK;
+}
+
+sw_error_t
+cmd_data_check_port_default_vid_en(char *info, void *val, a_uint32_t size)
+{
+    char *cmd;
+    sw_error_t rv;
+    fal_port_default_vid_enable_t *pEntry = (fal_port_default_vid_enable_t *)val;
+    a_uint32_t tmp = 0;
+
+    memset(pEntry, 0, sizeof(fal_port_default_vid_enable_t));
+
+    do
+    {
+        cmd = get_sub_cmd("default_ctag_vid_en", "disable");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <enable/disable>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_enable(cmd, &(pEntry->default_cvid_en), sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: <enable/disable>\n");
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    do
+    {
+        cmd = get_sub_cmd("default_stag_vid_en", "disable");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <enable/disable>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_enable(cmd, &(pEntry->default_svid_en), sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: <enable/disable>\n");
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    return SW_OK;
+}
+
+sw_error_t
+cmd_data_check_port_vlan_tag(char *info, void *val, a_uint32_t size)
+{
+    char *cmd;
+    sw_error_t rv;
+    fal_port_vlan_tag_t *pEntry = (fal_port_vlan_tag_t *)val;
+    a_uint32_t tmp = 0;
+
+    memset(pEntry, 0, sizeof(fal_port_vlan_tag_t));
+
+    /* get mask */
+    do
+    {
+        cmd = get_sub_cmd("mask", "0x0");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <bit 0 for cvid and bit 1 for svid; bit 2 for cpri and bit 3 for spri; bit 4 for cdei and bit 5 for sdei>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint32(cmd, &(pEntry->mask), sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: <bit 0 for cvid and bit 1 for svid; bit 2 for cpri and bit 3 for spri; bit 4 for cdei and bit 5 for sdei>\n");
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    /* get cvid */
+    do
+    {
+        cmd = get_sub_cmd("default_ctag_vid", "0");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <0-4095>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint16(cmd, &tmp, sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: <0-4095>\n");
+
+	     pEntry->cvid = (a_uint16_t)tmp;
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    /* get svid */
+    do
+    {
+        cmd = get_sub_cmd("default_stag_vid", "0");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <0-4095>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint16(cmd, &tmp, sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: <0-4095>\n");
+
+	     pEntry->svid = (a_uint16_t)tmp;
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    /* get cpri */
+    do
+    {
+        cmd = get_sub_cmd("default_ctag_pri", "0");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <0-7>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint16(cmd, &tmp, sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: <0-7>\n");
+
+	     pEntry->cpri = (a_uint16_t)tmp;
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    /* get spri */
+    do
+    {
+        cmd = get_sub_cmd("default_stag_pri", "0");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <0-7>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint16(cmd, &tmp, sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: <0-7>\n");
+
+	     pEntry->spri = (a_uint16_t)tmp;
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    /* get cdei */
+    do
+    {
+        cmd = get_sub_cmd("default_ctag_dei", "0");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <0-1>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint16(cmd, &tmp, sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: <0-1>\n");
+
+	     pEntry->cdei = (a_uint16_t)tmp;
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    /* get sdei */
+    do
+    {
+        cmd = get_sub_cmd("default_stag_dei", "0");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <0-1>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint16(cmd, &tmp, sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: <0-1>\n");
+
+	     pEntry->sdei = (a_uint16_t)tmp;
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    return SW_OK;
+}
+
+sw_error_t
+cmd_data_check_tag_propagation(char *info, void *val, a_uint32_t size)
+{
+    char *cmd;
+    sw_error_t rv;
+    fal_vlantag_propagation_t *pEntry = (fal_vlantag_propagation_t *)val;
+
+    memset(pEntry, 0, sizeof(fal_vlantag_propagation_t));
+
+    /* get mask */
+    do
+    {
+        cmd = get_sub_cmd("mask", "0x0");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <bit 0 for vid and bit 1 for pri; bit 2 for dei>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint32(cmd, &(pEntry->mask), sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: <bit 0 for vid and bit 1 for pri; bit 2 for dei>\n");
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    /* get vid propagation */
+    do
+    {
+        cmd = get_sub_cmd("vid_propagation_en", "disable");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <disable/clone/replace>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_vlan_propagation(cmd, (a_uint32_t *) & (pEntry->vid_propagation), sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: <disable/clone/replace>\n");
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    /* get pri propagation */
+    do
+    {
+        cmd = get_sub_cmd("pri_propagation_en", "disable");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <disable/clone/replace>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_vlan_propagation(cmd, (a_uint32_t *) & (pEntry->pri_propagation), sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: <disable/clone/replace>\n");
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    /* get dei propagation */
+    do
+    {
+        cmd = get_sub_cmd("dei_propagation_en", "disable");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <disable/clone/replace>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_vlan_propagation(cmd, (a_uint32_t *) & (pEntry->dei_propagation), sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: <disable/clone/replace>\n");
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    return SW_OK;
+}
+
+sw_error_t
+cmd_data_check_egress_mode(char *info, void *val, a_uint32_t size)
+{
+    char *cmd;
+    sw_error_t rv;
+    fal_vlantag_egress_mode_t *pEntry = (fal_vlantag_egress_mode_t *)val;
+
+    memset(pEntry, 0, sizeof(fal_vlantag_egress_mode_t));
+
+    /* get mask */
+    do
+    {
+        cmd = get_sub_cmd("mask", "0x0");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <bit 0 for ctpidag and bit 1 for stag>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint32(cmd, &(pEntry->mask), sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: <bit 0 for ctpidag and bit 1 for stag>\n");
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    /* get ctag mode */
+    do
+    {
+        cmd = get_sub_cmd("ctag_egress_vlan_mode", "unmodified");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <tagged/untagged/unmodified/untouched>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_egmode(cmd, (a_uint32_t *) & (pEntry->ctag_mode), sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: <tagged/untagged/unmodified/untouched>\n");
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    /* get stag mode */
+    do
+    {
+        cmd = get_sub_cmd("stag_egress_vlan_mode", "unmodified");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <tagged/untagged/unmodified/untouched>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_egmode(cmd, (a_uint32_t *) & (pEntry->stag_mode), sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: <tagged/untagged/unmodified/untouched>\n");
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    return SW_OK;
+}
+
+sw_error_t
+cmd_data_check_port_vlan_translation_adv_rule(char *info, void *val, a_uint32_t size)
+{
+	char *cmd = NULL;
+	sw_error_t rv;
+	fal_vlan_trans_adv_rule_t *pEntry = (fal_vlan_trans_adv_rule_t *)val;
+
+	memset(pEntry, 0, sizeof(fal_vlan_trans_adv_rule_t));
+
+	do
+	{
+		cmd = get_sub_cmd("stagformat", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: bit 0 for untagged, bit 1 for priority tagged and bit 2 for tagged\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_uint32(cmd, &(pEntry->s_tagged), sizeof (a_uint32_t));
+			if (SW_OK != rv)
+				dprintf("usage: bit 0 for untagged, bit 1 for priority tagged and bit 2 for tagged\n");
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("svid_en", "yes");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: <yes/no/y/n>\n");
+			rv = SW_BAD_VALUE;
+
+		}
+		else
+		{
+			rv = cmd_data_check_confirm(cmd, A_TRUE, &(pEntry->s_vid_enable),
+					sizeof (a_bool_t));
+			if (SW_OK != rv)
+				dprintf("usage: <yes/no/y/n>\n");
+		}
+
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("svid", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: the range is 0 -- 4095\n");
+			rv = SW_BAD_VALUE;
+
+		}
+		else
+		{
+			rv = cmd_data_check_uint32(cmd, &(pEntry->s_vid), sizeof (a_uint32_t));
+			if (SW_OK != rv)
+				dprintf("usage: the range is 0 -- 4095\n");
+		}
+
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("spcp_en", "yes");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: <yes/no/y/n>\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_confirm(cmd, A_TRUE, &(pEntry->s_pcp_enable),
+					sizeof (a_bool_t));
+			if (SW_OK != rv)
+				dprintf("usage: <yes/no/y/n>\n");
+		}
+
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("spcp", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: the range is 0 -- 7\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_uint32(cmd, &(pEntry->s_pcp), sizeof (a_uint32_t));
+			if (SW_OK != rv)
+				dprintf("usage: the range is 0 -- 7\n");
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("sdei_en", "yes");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: <yes/no/y/n>\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_confirm(cmd, A_TRUE, &(pEntry->s_dei_enable),
+					sizeof (a_bool_t));
+			if (SW_OK != rv)
+				dprintf("usage: <yes/no/y/n>\n");
+		}
+
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("sdei", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: the range is 0 -- 1\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_uint32(cmd, &(pEntry->s_dei), sizeof (a_uint32_t));
+			if (SW_OK != rv)
+				dprintf("usage: the range is 0 -- 1\n");
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("ctagformat", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: bit 0 for untagged, bit 1 for priority tagged and bit 2 for tagged\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_uint32(cmd, &(pEntry->c_tagged), sizeof (a_uint32_t));
+			if (SW_OK != rv)
+				dprintf("usage: bit 0 for untagged, bit 1 for priority tagged and bit 2 for tagged\n");
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("cvid_en", "yes");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: <yes/no/y/n>\n");
+			rv = SW_BAD_VALUE;
+
+		}
+		else
+		{
+			rv = cmd_data_check_confirm(cmd, A_TRUE, &(pEntry->c_vid_enable),
+					sizeof (a_bool_t));
+			if (SW_OK != rv)
+				dprintf("usage: <yes/no/y/n>\n");
+		}
+
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("cvid", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: the range is 0 -- 4095\n");
+			rv = SW_BAD_VALUE;
+
+		}
+		else
+		{
+			rv = cmd_data_check_uint32(cmd, &(pEntry->c_vid), sizeof (a_uint32_t));
+			if (SW_OK != rv)
+				dprintf("usage: the range is 0 -- 4095\n");
+		}
+
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("cpcp_en", "yes");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: <yes/no/y/n>\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_confirm(cmd, A_TRUE, &(pEntry->c_pcp_enable),
+					sizeof (a_bool_t));
+			if (SW_OK != rv)
+				dprintf("usage: <yes/no/y/n>\n");
+		}
+
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("cpcp", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: the range is 0 -- 7\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_uint32(cmd, &(pEntry->c_pcp), sizeof (a_uint32_t));
+			if (SW_OK != rv)
+				dprintf("usage: the range is 0 -- 7\n");
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("cdei_en", "yes");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: <yes/no/y/n>\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_confirm(cmd, A_TRUE, &(pEntry->c_dei_enable),
+					sizeof (a_bool_t));
+			if (SW_OK != rv)
+				dprintf("usage: <yes/no/y/n>\n");
+		}
+
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("cdei", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: the range is 0 -- 1\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_uint32(cmd, &(pEntry->c_dei), sizeof (a_uint32_t));
+			if (SW_OK != rv)
+				dprintf("usage: the range is 0 -- 1\n");
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("frame_type_en", "yes");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: <yes/no/y/n>\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_confirm(cmd, A_FALSE, &(pEntry->frmtype_enable),
+					sizeof (a_bool_t));
+			if (SW_OK != rv)
+				dprintf("usage: <yes/no/y/n>\n");
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("frametype", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: 0 for ethernet, 1 for rfc1024, 2 for llc and 3 for ethernet or rfc1024\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_uint32(cmd, &(pEntry->frmtype), sizeof (a_uint32_t));
+			if (SW_OK != rv)
+				dprintf("usage: 0 for ethernet, 1 for rfc1024, 2 for llc and 3 for ethernet or rfc1024\n");
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("protocol_en", "yes");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: <yes/no/y/n>\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_confirm(cmd, A_FALSE, &(pEntry->protocol_enable),
+					sizeof (a_bool_t));
+			if (SW_OK != rv)
+				dprintf("usage: <yes/no/y/n>\n");
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("protocol", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: for example:0x0800 \n");
+			rv = SW_BAD_VALUE;
+
+		}
+		else
+		{
+			rv = cmd_data_check_uint32(cmd, &(pEntry->protocol), sizeof (a_uint32_t));
+			if (SW_OK != rv)
+				dprintf("usage: for example:0x0800 \n");
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("vsivalid", "yes");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: <yes/no/y/n>\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_confirm(cmd, A_FALSE, &(pEntry->vsi_valid),
+					sizeof (a_bool_t));
+			if (SW_OK != rv)
+				dprintf("usage: <yes/no/y/n>\n");
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("vsi_en", "yes");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: <yes/no/y/n>\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_confirm(cmd, A_FALSE, &(pEntry->vsi_enable),
+					sizeof (a_bool_t));
+			if (SW_OK != rv)
+				dprintf("usage: <yes/no/y/n>\n");
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("vsi", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: the range is 0 -- 31\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_uint32(cmd, &(pEntry->vsi), sizeof (a_uint32_t));
+			if (SW_OK != rv)
+				dprintf("usage: the range is 0 -- 31\n");
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	return SW_OK;
+}
+
+sw_error_t
+cmd_data_check_port_vlan_translation_adv_action(char *info, void *val, a_uint32_t size)
+{
+	char *cmd = NULL;
+	sw_error_t rv;
+	fal_vlan_trans_adv_action_t *pEntry = (fal_vlan_trans_adv_action_t *)val;
+
+	memset(pEntry, 0, sizeof(fal_vlan_trans_adv_action_t));
+
+	do
+	{
+		cmd = get_sub_cmd("swap_svid_cvid", "yes");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: <yes/no/y/n>\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_confirm(cmd, A_TRUE, &(pEntry->swap_svid_cvid),
+					sizeof (a_bool_t));
+			if (SW_OK != rv)
+				dprintf("usage: <yes/no/y/n>\n");
+		}
+
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("svid_translation_cmd", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: 0 for unchanged, 1 for add and replace and 2 for delete tag\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_uint32(cmd, &(pEntry->svid_xlt_cmd), sizeof (a_uint32_t));
+			if (SW_OK != rv)
+				dprintf("usage: 0 for unchanged, 1 for add and replace and 2 for delete tag\n");
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("svidtranslation", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: the range is 0 -- 4095\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_uint32(cmd, &(pEntry->svid_xlt), sizeof (a_uint32_t));
+			if (SW_OK != rv)
+				dprintf("usage: the range is 0 -- 4095\n");
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("cvid_translation_cmd", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: 0 for unchanged, 1 for add and replace and 2 for delete tag\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_uint32(cmd, &(pEntry->cvid_xlt_cmd), sizeof (a_uint32_t));
+			if (SW_OK != rv)
+				dprintf("usage: 0 for unchanged, 1 for add and replace and 2 for delete tag\n");
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("cvidtranslation", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: the range is 0 -- 4095\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_uint32(cmd, &(pEntry->cvid_xlt), sizeof (a_uint32_t));
+			if (SW_OK != rv)
+				dprintf("usage: the range is 0 -- 4095\n");
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("swap_spcp_cpcp", "yes");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: <yes/no/y/n>\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_confirm(cmd, A_TRUE, &(pEntry->swap_spcp_cpcp),
+					sizeof (a_bool_t));
+			if (SW_OK != rv)
+				dprintf("usage: <yes/no/y/n>\n");
+		}
+
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("spcp_translation_en", "yes");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: <yes/no/y/n>\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_confirm(cmd, A_TRUE, &(pEntry->spcp_xlt_enable),
+					sizeof (a_bool_t));
+			if (SW_OK != rv)
+				dprintf("usage: <yes/no/y/n>\n");
+		}
+
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("spcptranslation", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: the range is 0 -- 7\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_uint32(cmd, &(pEntry->spcp_xlt), sizeof (a_uint32_t));
+			if (SW_OK != rv)
+				dprintf("usage: the range is 0 -- 7\n");
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("cpcp_translation_en", "yes");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: <yes/no/y/n>\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_confirm(cmd, A_TRUE, &(pEntry->cpcp_xlt_enable),
+					sizeof (a_bool_t));
+			if (SW_OK != rv)
+				dprintf("usage: <yes/no/y/n>\n");
+		}
+
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("cpcptranslation", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: the range is 0 -- 7\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_uint32(cmd, &(pEntry->cpcp_xlt), sizeof (a_uint32_t));
+			if (SW_OK != rv)
+				dprintf("usage: the range is 0 -- 7\n");
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("swap_sdei_cdei", "yes");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: <yes/no/y/n>\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_confirm(cmd, A_TRUE, &(pEntry->swap_sdei_cdei),
+					sizeof (a_bool_t));
+			if (SW_OK != rv)
+				dprintf("usage: <yes/no/y/n>\n");
+		}
+
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("sdei_translation_en", "yes");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: <yes/no/y/n>\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_confirm(cmd, A_TRUE, &(pEntry->sdei_xlt_enable),
+					sizeof (a_bool_t));
+			if (SW_OK != rv)
+				dprintf("usage: <yes/no/y/n>\n");
+		}
+
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("sdeitranslation", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: the range is 0 -- 1\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_uint32(cmd, &(pEntry->sdei_xlt), sizeof (a_uint32_t));
+			if (SW_OK != rv)
+				dprintf("usage: the range is 0 -- 1\n");
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("cdei_translation_en", "yes");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: <yes/no/y/n>\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_confirm(cmd, A_TRUE, &(pEntry->cdei_xlt_enable),
+					sizeof (a_bool_t));
+			if (SW_OK != rv)
+				dprintf("usage: <yes/no/y/n>\n");
+		}
+
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("cdeitranslation", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: the range is 0 -- 7\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_uint32(cmd, &(pEntry->cdei_xlt), sizeof (a_uint32_t));
+			if (SW_OK != rv)
+				dprintf("usage: the range is 0 -- 7\n");
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("counter_en", "yes");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: <yes/no/y/n>\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_confirm(cmd, A_TRUE, &(pEntry->counter_enable),
+					sizeof (a_bool_t));
+			if (SW_OK != rv)
+				dprintf("usage: <yes/no/y/n>\n");
+		}
+
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("counter_id", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: the range is 0 -- 63\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_uint32(cmd, &(pEntry->counter_id), sizeof (a_uint32_t));
+			if (SW_OK != rv)
+				dprintf("usage: the range is 0 -- 53\n");
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("vsi_translation_en", "yes");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: <yes/no/y/n>\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_confirm(cmd, A_TRUE, &(pEntry->vsi_xlt_enable),
+					sizeof (a_bool_t));
+			if (SW_OK != rv)
+				dprintf("usage: <yes/no/y/n>\n");
+		}
+
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("vsitranslation", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: the range is 0 -- 32\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_uint32(cmd, &(pEntry->vsi_xlt), sizeof (a_uint32_t));
+			if (SW_OK != rv)
+				dprintf("usage: the range is 0 -- 32\n");
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	return SW_OK;
+}
+
 #ifndef IN_PORTVLAN_MINI
 sw_error_t
 cmd_data_check_vlan_propagation(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
@@ -3185,6 +5092,41 @@ cmd_data_check_pppoe(char *cmd_str, void * val, a_uint32_t size)
                         "usage: the range is 0 -- 7\n",
                         cmd_data_check_uint32, &entry.vrf_id,
                         sizeof (a_uint32_t));
+    if (rv)
+        return rv;
+
+    rv = __cmd_data_check_complex("port", "null",
+                        "usage: input port number such as 1,3\n",
+                        cmd_data_check_portmap, &entry.port_bitmap,
+                        sizeof (fal_pbmp_t));
+    if (rv)
+        return rv;
+
+    rv = __cmd_data_check_complex("l3_interface_index", "0",
+                        "usage: the range is 0 -- 255\n",
+                        cmd_data_check_uint32, &entry.l3_if_index,
+                        sizeof (a_uint32_t));
+    if (rv)
+        return rv;
+
+    rv = __cmd_data_check_boolean("l3_interface_index_valid", "no",
+                        "usage: <yes/no/y/n>\n",
+                        cmd_data_check_confirm, A_FALSE, &entry.l3_if_valid,
+                        sizeof (a_bool_t));
+    if (rv)
+        return rv;
+
+    rv = __cmd_data_check_complex("smac_addr", NULL,
+                        "usage: the format is xx-xx-xx-xx-xx-xx \n",
+                        cmd_data_check_macaddr, &(entry.smac_addr),
+                        sizeof (fal_mac_addr_t));
+    if (rv)
+        return rv;
+
+    rv = __cmd_data_check_boolean("smac_valid", "no",
+                        "usage: <yes/no/y/n>\n",
+                        cmd_data_check_confirm, A_FALSE, &entry.smac_valid,
+                        sizeof (a_bool_t));
     if (rv)
         return rv;
 
@@ -11366,4 +13308,798 @@ cmd_data_check_policer_cmd_config(char *cmd_str, void * val, a_uint32_t size)
     return SW_OK;
 }
 
+#endif
+
+#ifdef IN_SERVCODE
+cmd_data_check_servcode_config(char *info, fal_servcode_config_t *val, a_uint32_t size)
+{
+	char *cmd = NULL;
+	sw_error_t rv;
+	fal_servcode_config_t entry;
+
+	memset(&entry, 0, sizeof (fal_servcode_config_t));
+
+	do
+	{
+		cmd = get_sub_cmd("dest_port_valid", "yes");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: <yes/no/y/n>\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_confirm(cmd, A_TRUE, &entry.dest_port_valid,
+					sizeof (a_bool_t));
+			if (SW_OK != rv)
+				dprintf("usage: <yes/no/y/n>\n");
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("dest_port_id", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("physical port id: 0 - 7\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = rv = cmd_data_check_uint32(cmd, &entry.dest_port_id, sizeof (a_uint32_t));
+			if (SW_OK != rv)
+				dprintf("physical port id: 0 - 7\n");
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("bypass_bitmap[0]", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: refer to service spec\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = rv = cmd_data_check_uint32(cmd, &entry.bypass_bitmap[0], sizeof (a_uint32_t));
+			if (SW_OK != rv)
+				dprintf("usage: refer to service spec\n");
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("bypass_bitmap[1]", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: refer to service spec\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = rv = cmd_data_check_uint32(cmd, &entry.bypass_bitmap[1], sizeof (a_uint32_t));
+			if (SW_OK != rv)
+				dprintf("usage: refer to service spec\n");
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("bypass_bitmap[2]", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: refer to service spec\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = rv = cmd_data_check_uint32(cmd, &entry.bypass_bitmap[2], sizeof (a_uint32_t));
+			if (SW_OK != rv)
+				dprintf("usage: refer to service spec\n");
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("direction", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: 0:dest, 1:src \n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = rv = cmd_data_check_uint32(cmd, &entry.direction, sizeof (a_uint32_t));
+			if (SW_OK != rv)
+				dprintf("usage: 0:dest, 1:src \n");
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("field_update_bitmap", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: refer to service spec\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = rv = cmd_data_check_uint32(cmd, &entry.field_update_bitmap, sizeof (a_uint32_t));
+			if (SW_OK != rv)
+				dprintf("usage: refer to service spec\n");
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("next_service_code", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: refer to service spec\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = rv = cmd_data_check_uint32(cmd, &entry.next_service_code, sizeof (a_uint32_t));
+			if (SW_OK != rv)
+				dprintf("usage: refer to service spec\n");
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("hw_services", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: refer to service spec\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = rv = cmd_data_check_uint32(cmd, &entry.hw_services, sizeof (a_uint32_t));
+			if (SW_OK != rv)
+				dprintf("usage: refer to service spec\n");
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("offset_sel", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			dprintf("usage: refer to service spec\n");
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = rv = cmd_data_check_uint32(cmd, &entry.offset_sel, sizeof (a_uint32_t));
+			if (SW_OK != rv)
+				dprintf("usage: refer to service spec\n");
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	*val = entry;
+	return SW_OK;
+}
+#endif
+
+#ifdef IN_MIRROR
+sw_error_t
+cmd_data_check_mirr_analy_cfg(char *info, void *val, a_uint32_t size)
+{
+    char *cmd;
+    sw_error_t rv;
+    fal_mirr_analysis_config_t *pEntry = (fal_mirr_analysis_config_t *)val;
+
+    memset(pEntry, 0, sizeof(fal_mirr_analysis_config_t));
+
+    do
+    {
+        cmd = get_sub_cmd("analysis_port", "0");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: port id\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint32(cmd, &(pEntry->port_id), sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: port id\n");
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    do
+    {
+        cmd = get_sub_cmd("analysis_priority", "0");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: priority range 0x0-0xf\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint32(cmd, &(pEntry->priority), sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: priority range 0x0-0xf\n");
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    return SW_OK;
+}
+
+sw_error_t
+cmd_data_check_mirr_direction(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
+{
+    if (cmd_str == NULL)
+        return SW_BAD_PARAM;
+
+    if (!strcasecmp(cmd_str, "both"))
+    {
+        *arg_val = FAL_MIRR_BOTH;
+    }
+    else if (!strcasecmp(cmd_str, "ingress"))
+    {
+        *arg_val = FAL_MIRR_INGRESS;
+    }
+    else if (!strcasecmp(cmd_str, "egress"))
+    {
+        *arg_val = FAL_MIRR_EGRESS;
+    }
+    else
+    {
+        //dprintf("input error \n");
+        return SW_BAD_VALUE;
+    }
+
+    return SW_OK;
+}
+#endif
+
+#ifdef IN_CTRLPKT
+sw_error_t
+cmd_data_check_ctrlpkt_appprofile(char *info, void *val, a_uint32_t size)
+{
+    char *cmd;
+    sw_error_t rv;
+    fal_ctrlpkt_profile_t *pEntry = (fal_ctrlpkt_profile_t *)val;
+    a_uint32_t tmp = 0;
+
+    memset(pEntry, 0, sizeof(fal_ctrlpkt_profile_t));
+
+    /* get port bitmap */
+    do
+    {
+        cmd = get_sub_cmd("port_bitmap", "0");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: toal 8 bits for 8 ports\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint32(cmd, &tmp, sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: toal 8 bits for 8 ports\n");
+
+	     pEntry->port_map = tmp;
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    /* get ethernet type profile */
+    do
+    {
+        cmd = get_sub_cmd("ethtype_profile_bitmap", "0");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: toal 4 bits for 4 ethernet types\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint32(cmd, &tmp, sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: toal 4 bits for 4 ethernet types\n");
+
+	     pEntry->ethtype_profile_bitmap = tmp;
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    /* get rfdb profile */
+    do
+    {
+        cmd = get_sub_cmd("rfdb_profile_bitmap", "0");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: toal 32 bits for 32 rfdbs\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint32(cmd, &tmp, sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: toal 4 bits for 4 ethernet type\n");
+
+	     pEntry->rfdb_profile_bitmap= tmp;
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    /* get mgt_eapol */
+    do
+    {
+        cmd = get_sub_cmd("eapol_en", "no");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <yes/no/y/n>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(pEntry->protocol_types.mgt_eapol),
+                                        sizeof (a_bool_t));
+            if (SW_OK != rv)
+                dprintf("usage: <yes/no/y/n>\n");
+        }
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    /* get mgt_eapol */
+    do
+    {
+        cmd = get_sub_cmd("pppoe_en", "no");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <yes/no/y/n>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(pEntry->protocol_types.mgt_pppoe),
+                                        sizeof (a_bool_t));
+            if (SW_OK != rv)
+                dprintf("usage: <yes/no/y/n>\n");
+        }
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    /* get mgt_igmp */
+    do
+    {
+        cmd = get_sub_cmd("igmp_en", "no");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <yes/no/y/n>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(pEntry->protocol_types.mgt_igmp),
+                                        sizeof (a_bool_t));
+            if (SW_OK != rv)
+                dprintf("usage: <yes/no/y/n>\n");
+        }
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    /* get mgt_arp_req */
+    do
+    {
+        cmd = get_sub_cmd("arp_request_en", "no");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <yes/no/y/n>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(pEntry->protocol_types.mgt_arp_req),
+                                        sizeof (a_bool_t));
+            if (SW_OK != rv)
+                dprintf("usage: <yes/no/y/n>\n");
+        }
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    /* get mgt_arp_rep */
+    do
+    {
+        cmd = get_sub_cmd("arp_response_en", "no");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <yes/no/y/n>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(pEntry->protocol_types.mgt_arp_rep),
+                                        sizeof (a_bool_t));
+            if (SW_OK != rv)
+                dprintf("usage: <yes/no/y/n>\n");
+        }
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    /* get mgt_dhcp4 */
+    do
+    {
+        cmd = get_sub_cmd("dhcp4_en", "no");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <yes/no/y/n>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(pEntry->protocol_types.mgt_dhcp4),
+                                        sizeof (a_bool_t));
+            if (SW_OK != rv)
+                dprintf("usage: <yes/no/y/n>\n");
+        }
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    /* get mgt_dhcp6 */
+    do
+    {
+        cmd = get_sub_cmd("dhcp6_en", "no");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <yes/no/y/n>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(pEntry->protocol_types.mgt_dhcp6),
+                                        sizeof (a_bool_t));
+            if (SW_OK != rv)
+                dprintf("usage: <yes/no/y/n>\n");
+        }
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    /* get mgt_mld */
+    do
+    {
+        cmd = get_sub_cmd("mld_en", "no");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <yes/no/y/n>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(pEntry->protocol_types.mgt_mld),
+                                        sizeof (a_bool_t));
+            if (SW_OK != rv)
+                dprintf("usage: <yes/no/y/n>\n");
+        }
+    }
+    while (talk_mode && (SW_OK != rv));
+
+
+    /* get mgt_ns */
+    do
+    {
+        cmd = get_sub_cmd("ip6ns_en", "no");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <yes/no/y/n>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(pEntry->protocol_types.mgt_ns),
+                                        sizeof (a_bool_t));
+            if (SW_OK != rv)
+                dprintf("usage: <yes/no/y/n>\n");
+        }
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    /* get mgt_na */
+    do
+    {
+        cmd = get_sub_cmd("ip6na_en", "no");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <yes/no/y/n>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(pEntry->protocol_types.mgt_na),
+                                        sizeof (a_bool_t));
+            if (SW_OK != rv)
+                dprintf("usage: <yes/no/y/n>\n");
+        }
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    /* get forward command */
+    do
+    {
+        cmd = get_sub_cmd("ctrlpkt_profile_action", "forward");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: forward/drop/rdtcpu/cpycpu\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_maccmd(cmd, &(pEntry->action.action), sizeof(a_uint32_t));
+            if (SW_OK != rv)
+                dprintf("usage: forward/drop/rdtcpu/cpycpu\n");
+        }
+    }while (talk_mode && (SW_OK != rv));
+
+    /* get sg_byp */
+    do
+    {
+        cmd = get_sub_cmd("sourceguard_bypass", "no");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <yes/no/y/n>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(pEntry->action.sg_bypass),
+                                        sizeof (a_bool_t));
+            if (SW_OK != rv)
+                dprintf("usage: <yes/no/y/n>\n");
+        }
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    /* get l2_filter_byp */
+    do
+    {
+        cmd = get_sub_cmd("l2filter_bypass", "no");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <yes/no/y/n>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(pEntry->action.l2_filter_bypass),
+                                        sizeof (a_bool_t));
+            if (SW_OK != rv)
+                dprintf("usage: <yes/no/y/n>\n");
+        }
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    /* get in_stp_byp */
+    do
+    {
+        cmd = get_sub_cmd("ingress_stp_bypass", "no");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <yes/no/y/n>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(pEntry->action.in_stp_bypass),
+                                        sizeof (a_bool_t));
+            if (SW_OK != rv)
+                dprintf("usage: <yes/no/y/n>\n");
+        }
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    /* get in_vlan_fltr_byp */
+    do
+    {
+        cmd = get_sub_cmd("ingress_vlan_filter_bypass", "no");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            dprintf("usage: <yes/no/y/n>\n");
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(pEntry->action.in_vlan_fltr_bypass),
+                                        sizeof (a_bool_t));
+            if (SW_OK != rv)
+                dprintf("usage: <yes/no/y/n>\n");
+        }
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    return SW_OK;
+}
 #endif
