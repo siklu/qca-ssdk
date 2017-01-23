@@ -37,10 +37,19 @@ set_talk_mode(int mode)
     talk_mode = mode;
 }
 
+char ** full_cmdstrp_bak;
+
 void
 set_full_cmdstrp(char **cmdstrp)
 {
     full_cmdstrp = cmdstrp;
+    full_cmdstrp_bak = cmdstrp;
+}
+
+int
+get_jump(void)
+{
+    return (full_cmdstrp-full_cmdstrp_bak);
 }
 
 static char *

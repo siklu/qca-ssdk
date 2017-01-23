@@ -32,6 +32,7 @@ typedef struct
 void  set_talk_mode(int mode);
 int get_talk_mode(void);
 void set_full_cmdstrp(char **cmdstrp);
+int get_jump(void);
 sw_data_type_t * cmd_data_type_find(sw_data_type_e type);
 void  cmd_strtol(char *str, a_uint32_t * arg_val);
 
