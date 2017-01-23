@@ -319,6 +319,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
               -I$(SYS_PATH)/include/genearted \
               -I$(SYS_PATH)/arch/arm/include/uapi \
               -I$(SYS_PATH)/source/arch/arm/include/uapi \
+              -I$(EXT_PATH) \
               -I$(SYS_PATH)/source/arch/arm/include/asm/mach
 	ifneq ($(wildcard $(SYS_PATH)/include/linux/kconfig.h),)
 		MODULE_INC += \
