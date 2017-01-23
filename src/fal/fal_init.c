@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2016, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2016-2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -174,6 +174,17 @@ fal_module_func_ctrl_get(a_uint32_t dev_id, a_uint32_t module, fal_func_ctrl_t *
     return rv;
 }
 
+sw_error_t
+fal_module_func_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
+{
+    sw_error_t rv;
+    HSL_DEV_ID_CHECK(dev_id);
+
+    rv = adpt_module_func_init(dev_id, cfg);
+    SW_RTN_ON_ERROR(rv);
+
+    return rv;
+}
 
 /**
  * @}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -34,12 +34,12 @@ extern "C" {
 
 typedef struct{
 	a_uint32_t lrn_en; /*0: disable new address learn, 1: enable new address learn*/
-	a_uint32_t action;/*0:forward, 1:drop, 2: copy to CPU, 3: redirect to CPU*/
+	fal_fwd_cmd_t action;/*0:forward, 1:drop, 2: copy to CPU, 3: redirect to CPU*/
 }fal_vsi_newaddr_lrn_t;
 
 typedef struct{
 	a_uint32_t stamove_en;/*0:disable station move, 1: enable station move*/
-	a_uint32_t action;/*0:forward, 1:drop, 2: copy to CPU, 3: redirect to CPU*/
+	fal_fwd_cmd_t action;/*0:forward, 1:drop, 2: copy to CPU, 3: redirect to CPU*/
 }fal_vsi_stamove_t;
 
 typedef struct{

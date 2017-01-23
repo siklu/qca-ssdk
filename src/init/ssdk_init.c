@@ -3804,7 +3804,6 @@ qca_hppe_hw_init(ssdk_init_cfg *cfg)
 	qca_hppe_xgmac_hw_init();
 	printk("hppe xgmac init success\n");
 #endif
-
 	return 0;
 }
 #endif
@@ -4107,6 +4106,7 @@ static int __init regi_init(void)
 	}
 
 out:
+	fal_module_func_init(0, &cfg);
 	if (rv == 0)
 		printk("qca-ssdk module init succeeded!\n");
 	else {

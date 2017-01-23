@@ -1135,10 +1135,10 @@ struct sub_cmd_des_t g_vsi_des[] =
 {
 	{"vsi", "alloc", SW_API_VSI_ALLOC, NULL},
 	{"vsi", "free", SW_API_VSI_FREE, NULL},
-	{"port_vsi", "set", SW_API_PORT_VSI_SET, NULL},
-	{"vlan_vsi", "set", SW_API_PORT_VLAN_VSI_SET, NULL},
-	{"newaddr_lrn", "set", SW_API_VSI_NEWADDR_LRN_SET, NULL},
-	{"stamove", "set", SW_API_VSI_STAMOVE_SET, NULL},
+	{"portbasedvsi", "set", SW_API_PORT_VSI_SET, NULL},
+	{"vlanbasedvsi", "set", SW_API_PORT_VLAN_VSI_SET, NULL},
+	{"learnctrl", "set", SW_API_VSI_NEWADDR_LRN_SET, NULL},
+	{"stationmove", "set", SW_API_VSI_STAMOVE_SET, NULL},
 	{"member", "set", SW_API_VSI_MEMBER_SET, NULL},
     {"counter", "cleanup", SW_API_VSI_COUNTER_CLEANUP, NULL},
 	{NULL, NULL, NULL, NULL, (int)NULL, NULL}/*end of desc*/

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -245,82 +245,204 @@ sw_error_t adpt_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 				return SW_FAIL;
 			}
 
+			g_adpt_api[dev_id]->adpt_mirror_func_bitmap = 0xffffffff;
+			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_MIRROR);
+			SW_RTN_ON_ERROR(rv);
+
+			g_adpt_api[dev_id]->adpt_fdb_func_bitmap = 0xffffffff;
+			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_FDB);
+			SW_RTN_ON_ERROR(rv);
+
+			g_adpt_api[dev_id]->adpt_stp_func_bitmap = 0xffffffff;
+			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_STP);
+			SW_RTN_ON_ERROR(rv);
+
+			g_adpt_api[dev_id]->adpt_trunk_func_bitmap = 0xffffffff;
+			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_TRUNK);
+			SW_RTN_ON_ERROR(rv);
+
+			g_adpt_api[dev_id]->adpt_portvlan_func_bitmap[0] = 0xffffffff;
+			g_adpt_api[dev_id]->adpt_portvlan_func_bitmap[1] = 0xffffffff;
+			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_PORTVLAN);
+			SW_RTN_ON_ERROR(rv);
+
+			g_adpt_api[dev_id]->adpt_ctrlpkt_func_bitmap = 0xffffffff;
+			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_CTRLPKT);
+			SW_RTN_ON_ERROR(rv);
+
+			g_adpt_api[dev_id]->adpt_sec_func_bitmap = 0xffffffff;
+			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_SEC);
+			SW_RTN_ON_ERROR(rv);
+
+			g_adpt_api[dev_id]->adpt_acl_func_bitmap = 0xffffffff;
+			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_ACL);
+			SW_RTN_ON_ERROR(rv);
+
+			g_adpt_api[dev_id]->adpt_vsi_func_bitmap = 0xffffffff;
+			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_VSI);
+			SW_RTN_ON_ERROR(rv);
+
+			g_adpt_api[dev_id]->adpt_ip_func_bitmap[0] = 0xffffffff;
+			g_adpt_api[dev_id]->adpt_ip_func_bitmap[1] = 0xffffffff;
+			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_IP);
+			SW_RTN_ON_ERROR(rv);
+
+			g_adpt_api[dev_id]->adpt_flow_func_bitmap = 0xffffffff;
+			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_FLOW);
+			SW_RTN_ON_ERROR(rv);
+
+			g_adpt_api[dev_id]->adpt_qm_func_bitmap = 0xffffffff;
+			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_QM);
+			SW_RTN_ON_ERROR(rv);
+
+			g_adpt_api[dev_id]->adpt_qos_func_bitmap = 0xffffffff;
+			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_QOS);
+			SW_RTN_ON_ERROR(rv);
+
+			g_adpt_api[dev_id]->adpt_bm_func_bitmap = 0xffffffff;
+			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_BM);
+			SW_RTN_ON_ERROR(rv);
+
+			g_adpt_api[dev_id]->adpt_servcode_func_bitmap = 0xffffffff;
+			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_SERVCODE);
+			SW_RTN_ON_ERROR(rv);
+
+			g_adpt_api[dev_id]->adpt_pppoe_func_bitmap = 0xffffffff;
+			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_PPPOE);
+			SW_RTN_ON_ERROR(rv);
+
+			g_adpt_api[dev_id]->adpt_port_ctrl_func_bitmap[0] = 0xffffffff;
+			g_adpt_api[dev_id]->adpt_port_ctrl_func_bitmap[1] = 0xffffffff;
+			g_adpt_api[dev_id]->adpt_port_ctrl_func_bitmap[2] = 0xffffffff;
+			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_PORTCTRL);
+			SW_RTN_ON_ERROR(rv);
+
+			g_adpt_api[dev_id]->adpt_shaper_func_bitmap = 0xffffffff;
+			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_SHAPER);
+			SW_RTN_ON_ERROR(rv);
+
+			g_adpt_api[dev_id]->adpt_mib_func_bitmap = 0xffffffff;
+			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_MIB);
+			SW_RTN_ON_ERROR(rv);
+
+			g_adpt_api[dev_id]->adpt_policer_func_bitmap = 0xffffffff;
+			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_POLICER);
+			SW_RTN_ON_ERROR(rv);
+
+			break;
+		default:
+			break;
+	}
+	return rv;
+}
+
+sw_error_t adpt_module_func_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
+{
+	sw_error_t rv= SW_OK;
+
+	switch (cfg->chip_type)
+	{
+		case CHIP_HPPE:
+			g_adpt_api[dev_id]->adpt_mirror_func_bitmap = 0;
 			adpt_hppe_mirror_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_MIRROR);
 			SW_RTN_ON_ERROR(rv);
 
+			g_adpt_api[dev_id]->adpt_fdb_func_bitmap = 0;
 			adpt_hppe_fdb_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_FDB);
 			SW_RTN_ON_ERROR(rv);
 
+			g_adpt_api[dev_id]->adpt_stp_func_bitmap = 0;
 			adpt_hppe_stp_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_STP);
 			SW_RTN_ON_ERROR(rv);
 
+			g_adpt_api[dev_id]->adpt_trunk_func_bitmap = 0;
 			adpt_hppe_trunk_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_TRUNK);
 			SW_RTN_ON_ERROR(rv);
 
+			g_adpt_api[dev_id]->adpt_portvlan_func_bitmap[0] = 0;
+			g_adpt_api[dev_id]->adpt_portvlan_func_bitmap[1] = 0;
 			adpt_hppe_portvlan_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_PORTVLAN);
 			SW_RTN_ON_ERROR(rv);
 
+			g_adpt_api[dev_id]->adpt_ctrlpkt_func_bitmap = 0;
 			adpt_hppe_ctrlpkt_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_CTRLPKT);
 			SW_RTN_ON_ERROR(rv);
 
+			g_adpt_api[dev_id]->adpt_sec_func_bitmap = 0;
 			adpt_hppe_sec_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_SEC);
 			SW_RTN_ON_ERROR(rv);
 
+			g_adpt_api[dev_id]->adpt_acl_func_bitmap = 0;
 			adpt_hppe_acl_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_ACL);
 			SW_RTN_ON_ERROR(rv);
 
+			g_adpt_api[dev_id]->adpt_vsi_func_bitmap = 0;
 			adpt_hppe_vsi_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_VSI);
 			SW_RTN_ON_ERROR(rv);
 
+			g_adpt_api[dev_id]->adpt_ip_func_bitmap[0] = 0;
+			g_adpt_api[dev_id]->adpt_ip_func_bitmap[1] = 0;
 			adpt_hppe_ip_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_IP);
 			SW_RTN_ON_ERROR(rv);
 
+			g_adpt_api[dev_id]->adpt_flow_func_bitmap = 0;
 			adpt_hppe_flow_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_FLOW);
 			SW_RTN_ON_ERROR(rv);
 
+			g_adpt_api[dev_id]->adpt_qm_func_bitmap = 0;
 			adpt_hppe_qm_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_QM);
 			SW_RTN_ON_ERROR(rv);
 
+			g_adpt_api[dev_id]->adpt_qos_func_bitmap = 0;
 			adpt_hppe_qos_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_QOS);
 			SW_RTN_ON_ERROR(rv);
 
+			g_adpt_api[dev_id]->adpt_bm_func_bitmap = 0;
 			adpt_hppe_bm_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_BM);
 			SW_RTN_ON_ERROR(rv);
 
+			g_adpt_api[dev_id]->adpt_servcode_func_bitmap = 0;
 			adpt_hppe_servcode_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_SERVCODE);
 			SW_RTN_ON_ERROR(rv);
 
+			g_adpt_api[dev_id]->adpt_pppoe_func_bitmap = 0;
 			adpt_hppe_pppoe_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_PPPOE);
 			SW_RTN_ON_ERROR(rv);
 
+			g_adpt_api[dev_id]->adpt_port_ctrl_func_bitmap[0] = 0;
+			g_adpt_api[dev_id]->adpt_port_ctrl_func_bitmap[1] = 0;
+			g_adpt_api[dev_id]->adpt_port_ctrl_func_bitmap[2] = 0;
 			adpt_hppe_port_ctrl_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_PORTCTRL);
 			SW_RTN_ON_ERROR(rv);
 
+			g_adpt_api[dev_id]->adpt_shaper_func_bitmap = 0;
 			adpt_hppe_shaper_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_SHAPER);
 			SW_RTN_ON_ERROR(rv);
 
+			g_adpt_api[dev_id]->adpt_mib_func_bitmap = 0;
 			adpt_hppe_mib_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_MIB);
 			SW_RTN_ON_ERROR(rv);
 
+			g_adpt_api[dev_id]->adpt_policer_func_bitmap = 0;
 			adpt_hppe_policer_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_POLICER);
 			SW_RTN_ON_ERROR(rv);

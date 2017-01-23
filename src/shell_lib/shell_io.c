@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, 2015-2016, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2013, 2015-2017, The Linux Foundation. All rights reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -24,6 +24,26 @@
 #define DEFAULT_FLAG "default"
 static char **full_cmdstrp;
 static int talk_mode = 1;
+
+#define cmd_data_check_element(info, defval, usage, chk_func, param) \
+{\
+    sw_error_t ret;\
+    do {\
+        cmd = get_sub_cmd(info, defval);\
+        SW_RTN_ON_NULL_PARAM(cmd);\
+        \
+        if (!strncasecmp(cmd, "quit", 4)) {\
+            return SW_BAD_VALUE;\
+        } else if (!strncasecmp(cmd, "help", 4)) {\
+            dprintf("%s", usage);\
+            ret = SW_BAD_VALUE;\
+        } else {\
+            ret = chk_func param; \
+            if (SW_OK != ret)\
+                dprintf("%s", usage);\
+        }\
+    } while (talk_mode && (SW_OK != ret));\
+}
 
 int
 get_talk_mode(void)
@@ -7675,19 +7695,11 @@ cmd_data_check_newadr_lrn(char *cmd_str, void * val, a_uint32_t size)
 
 	aos_mem_zero(&entry, sizeof (fal_vsi_newaddr_lrn_t));
 
-	rv = __cmd_data_check_complex("lrn_en", "1",
-                        "usage: 0-disable 1-enable\n",
-                        cmd_data_check_uint32, &(entry.lrn_en),
-                        sizeof (a_uint32_t));
-	if (rv)
-		return rv;
+	cmd_data_check_element("learnstatus_en", "enable", "usage: enable/disable\n",
+			cmd_data_check_enable, (cmd, &(entry.lrn_en), sizeof(entry.lrn_en)));
 
-	rv = __cmd_data_check_complex("action", 0,
-                            "usage: 0-Forward 1-Drop 2-Copy to CPU 3-redirect to CPU\n",
-                            cmd_data_check_uint32, &(entry.action),
-                            4);
-	if (rv)
-		return rv;
+	cmd_data_check_element("learnaction", "forward", "usage: forward/drop/cpycpu/rdtcpu\n",
+			cmd_data_check_maccmd, (cmd, &(entry.action), sizeof(entry.action)));
 
 	*(fal_vsi_newaddr_lrn_t *)val = entry;
 	return SW_OK;
@@ -7697,29 +7709,21 @@ sw_error_t
 cmd_data_check_stamove(char *cmd_str, void * val, a_uint32_t size)
 {
 	char *cmd;
-	a_uint32_t tmp;
 	sw_error_t rv;
 	fal_vsi_stamove_t entry;
 
 	aos_mem_zero(&entry, sizeof (fal_vsi_stamove_t));
 
-	rv = __cmd_data_check_complex("stamove", "1",
-                        "usage: 0-disable 1-enable\n",
-                        cmd_data_check_uint32, &(entry.stamove_en),
-                        sizeof (a_uint32_t));
-	if (rv)
-		return rv;
+	cmd_data_check_element("stationmove_en", "enable", "usage: enable/disable\n",
+			cmd_data_check_enable, (cmd, &(entry.stamove_en), sizeof(entry.stamove_en)));
 
-	rv = __cmd_data_check_complex("action", 0,
-                            "usage: 0-Forward 1-Drop 2-Copy to CPU 3-redirect to CPU\n",
-                            cmd_data_check_uint32, &(entry.action),
-                            4);
-	if (rv)
-		return rv;
+	cmd_data_check_element("stationmove_action", "forward", "usage: forward/drop/cpycpu/rdtcpu\n",
+			cmd_data_check_maccmd, (cmd, &(entry.action), sizeof(entry.action)));
 
 	*(fal_vsi_stamove_t *)val = entry;
 	return SW_OK;
 }
+
 sw_error_t
 cmd_data_check_vsi_member(char *cmd_str, void * val, a_uint32_t size)
 {
@@ -7730,28 +7734,28 @@ cmd_data_check_vsi_member(char *cmd_str, void * val, a_uint32_t size)
 
 	aos_mem_zero(&entry, sizeof (fal_vsi_member_t));
 
-	rv = __cmd_data_check_complex("member_ports", 0,
+	rv = __cmd_data_check_complex("membership", 0,
                         "usage: Bit0-port0 Bit1-port1 ....\n",
                         cmd_data_check_pbmp, &(entry.member_ports),
                         sizeof (a_uint32_t));
 	if (rv)
 		return rv;
 
-	rv = __cmd_data_check_complex("uuc_ports", 0,
+	rv = __cmd_data_check_complex("unknown_unicast_membership", 0,
                         "usage: Bit0-port0 Bit1-port1 ....\n",
                         cmd_data_check_pbmp, &(entry.uuc_ports),
                         sizeof (a_uint32_t));
 	if (rv)
 		return rv;
 
-	rv = __cmd_data_check_complex("umc_ports", 0,
+	rv = __cmd_data_check_complex("unknown_multicast_membership", 0,
                         "usage: Bit0-port0 Bit1-port1 ....\n",
                         cmd_data_check_pbmp, &(entry.umc_ports),
                         sizeof (a_uint32_t));
 	if (rv)
 		return rv;
 
-	rv = __cmd_data_check_complex("bc_ports", 0,
+	rv = __cmd_data_check_complex("broadcast_membership", 0,
                         "usage: Bit0-port0 Bit1-port1 ....\n",
                         cmd_data_check_pbmp, &(entry.bc_ports),
                         sizeof (a_uint32_t));
