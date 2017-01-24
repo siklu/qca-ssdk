@@ -9947,7 +9947,7 @@ cmd_data_check_port_shaper_token_config(char *cmd_str, void * val, a_uint32_t si
 
     do
     {
-        cmd = get_sub_cmd("c_token_negative_en", "no");
+        cmd = get_sub_cmd("ctoken_negative_enable", "no");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -9972,7 +9972,7 @@ cmd_data_check_port_shaper_token_config(char *cmd_str, void * val, a_uint32_t si
 
     do
     {
-        cmd = get_sub_cmd("c_token_number", "0-0x3FFFFFFF");
+        cmd = get_sub_cmd("ctoken_number", "0-0x3FFFFFFF");
 	SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10010,7 +10010,7 @@ cmd_data_check_shaper_token_config(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("c_token_negative_en", "no");
+        cmd = get_sub_cmd("ctoken_negative_enable", "no");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10035,7 +10035,7 @@ cmd_data_check_shaper_token_config(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("c_token_number", "0-0x3FFFFFFF");
+        cmd = get_sub_cmd("ctoken_number", "0-0x3FFFFFFF");
 	SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10058,7 +10058,7 @@ cmd_data_check_shaper_token_config(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("e_token_negative_en", "no");
+        cmd = get_sub_cmd("etoken_negative_enable", "no");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10084,7 +10084,7 @@ cmd_data_check_shaper_token_config(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("e_token_number", "0-0x3FFFFFFF");
+        cmd = get_sub_cmd("etoken_number", "0-0x3FFFFFFF");
 	SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10145,7 +10145,7 @@ cmd_data_check_port_shaper_config(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("c_shaper_enable", "no");
+        cmd = get_sub_cmd("cshaper_enable", "no");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10302,7 +10302,7 @@ cmd_data_check_shaper_config(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("c_shaper_enable", "no");
+        cmd = get_sub_cmd("cshaper_enable", "no");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10373,7 +10373,7 @@ cmd_data_check_shaper_config(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("e_shaper_enable", "no");
+        cmd = get_sub_cmd("eshaper_enable", "no");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10959,7 +10959,7 @@ cmd_data_check_policer_cmd_config(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("yellow_priority_en", "no");
+        cmd = get_sub_cmd("yellow_priority_remark", "no");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10984,7 +10984,7 @@ cmd_data_check_policer_cmd_config(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("yellow_drop_priority_en", "no");
+        cmd = get_sub_cmd("yellow_drop_priority_remark", "no");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -11010,7 +11010,7 @@ cmd_data_check_policer_cmd_config(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("yellow_pcp_en", "no");
+        cmd = get_sub_cmd("yellow_pcp_remark", "no");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -11035,7 +11035,7 @@ cmd_data_check_policer_cmd_config(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("yellow_dei_en", "no");
+        cmd = get_sub_cmd("yellow_dei_remark", "no");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -11176,7 +11176,7 @@ cmd_data_check_policer_cmd_config(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("red_priority_en", "no");
+        cmd = get_sub_cmd("red_priority_remark", "no");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -11201,7 +11201,7 @@ cmd_data_check_policer_cmd_config(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("red_drop_priority_en", "no");
+        cmd = get_sub_cmd("red_drop_priority_remark", "no");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -11226,7 +11226,7 @@ cmd_data_check_policer_cmd_config(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("red_pcp_en", "no");
+        cmd = get_sub_cmd("red_pcp_remark", "no");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -11251,7 +11251,7 @@ cmd_data_check_policer_cmd_config(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("red_dei_en", "no");
+        cmd = get_sub_cmd("red_dei_remark", "no");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
