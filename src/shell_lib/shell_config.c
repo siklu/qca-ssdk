@@ -693,6 +693,19 @@ struct sub_cmd_des_t g_portvlan_des[] =
 	{"nestVlan", "set",   SW_API_PT_NESTVLAN_SET, NULL},
 	{"sVlanTPID", "set",   SW_API_NESTVLAN_TPID_SET, NULL},
 	{"invlan", "set",   SW_API_PT_IN_VLAN_MODE_SET, NULL},
+	{"globalQinQMode", "set", SW_API_GLOBAL_QINQ_MODE_SET, NULL},
+	{"ptQinQMode", "set", SW_API_PORT_QINQ_MODE_SET, NULL},
+	{"inTpid", "set", SW_API_TPID_SET, NULL},
+	{"egTpid", "set", SW_API_EGRESS_TPID_SET, NULL},
+	{"ingressFilter", "set", SW_API_PT_INGRESS_VLAN_FILTER_SET, NULL},
+	{"defaultVlanTag", "set", SW_API_PT_DEFAULT_VLANTAG_SET, NULL},
+	{"tagPropagation", "set", SW_API_PT_TAG_PROPAGATION_SET, NULL},
+	{"translationMissAction", "set", SW_API_PT_VLAN_XLT_MISS_CMD_SET, NULL},
+	{"egMode", "set", SW_API_PT_VLANTAG_EGMODE_SET, NULL},
+	{"vsiEgMode", "set", SW_API_PT_VSI_EGMODE_SET, NULL},
+	{"vsiEgModeEn", "set", SW_API_PT_VLANTAG_VSI_EGMODE_EN_SET, NULL},
+	{"counter", "set", SW_API_PT_VLAN_COUNTER_CLEANUP, NULL},
+	{"translationAdv", "set", SW_API_PT_VLAN_TRANS_ADV_ADD, NULL},
 	#ifndef IN_PORTVLAN_MINI
 	{"tlsMode", "set",   SW_API_PT_TLS_SET, NULL},
 	{"priPropagation", "set",   SW_API_PT_PRI_PROPAGATION_SET, NULL},
@@ -743,6 +756,10 @@ struct sub_cmd_des_t g_fdb_des[] =
 	{"ptLearnstatic", "set",   SW_API_FDB_PT_LEARN_STATIC_SET, NULL},
 	{"port", "add",   SW_API_FDB_PORT_ADD, NULL},
 	{"port", "del",   SW_API_FDB_PORT_DEL, NULL},
+	{"LearnCtrl", "set", SW_API_FDB_LEARN_CTRL_SET, NULL},
+	{"PtLearnCtrl", "set", SW_API_FDB_PT_NEWADDR_LEARN_SET, NULL},
+	{"PtStationMove", "set", SW_API_FDB_PT_STAMOVE_SET, NULL},
+	{"PtMacLimitCtrl", "set", SW_API_FDB_PT_MACLIMIT_CTRL_SET, NULL},
 #endif
 	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
 };
@@ -867,6 +884,7 @@ struct sub_cmd_des_t g_mirror_des[] =
 	{"analyPt", "set", SW_API_MIRROR_ANALY_PT_SET, NULL},
 	{"ptIngress", "set", SW_API_MIRROR_IN_PT_SET, NULL},
 	{"ptEgress", "set", SW_API_MIRROR_EG_PT_SET, NULL},
+	{"analyCfg", "set", SW_API_MIRROR_ANALYSIS_CONFIG_SET, NULL},
 	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
 };
 #endif
@@ -1001,6 +1019,19 @@ struct sub_cmd_des_t g_misc_des[] =
 	{"glomacaddr", "set",   SW_API_GLOBAL_MACADDR_SET, NULL},
 	{"lldp", "set",   SW_API_LLDP_STATUS_SET, NULL},
 	{"framecrc", "set",   SW_API_FRAME_CRC_RESERVE_SET, NULL},
+#endif
+#ifdef IN_PPPOE
+	{"pppoesession", "add", SW_API_PPPOE_SESSION_ADD, NULL},
+	{"pppoesession", "del", SW_API_PPPOE_SESSION_DEL, NULL},
+	{"extendpppoe", "set",   SW_API_PPPOE_SESSION_TABLE_ADD, NULL},
+	{"extendpppoe", "add",   SW_API_PPPOE_SESSION_TABLE_ADD, NULL},
+	{"extendpppoe", "del",   SW_API_PPPOE_SESSION_TABLE_DEL, NULL},
+	{"pppoeid", "set",   SW_API_PPPOE_SESSION_ID_SET, NULL},
+	{"PppoeCmd", "set",   SW_API_PPPOE_CMD_SET, NULL},
+	{"PppoeCmd", "set",   SW_API_PPPOE_CMD_SET, NULL},
+	{"rtdPppoe", "set",   SW_API_RTD_PPPOE_EN_SET, NULL},
+	{"Pppoe", "set",   SW_API_PPPOE_STATUS_SET, NULL},
+	{"pppoeen", "set", SW_API_PPPOE_EN_SET, NULL},
 #endif
 	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
 };
@@ -1145,24 +1176,6 @@ struct sub_cmd_des_t g_vsi_des[] =
 };
 #endif
 
-#ifdef IN_PPPOE
-struct sub_cmd_des_t g_pppoe_des[] =
-{
-	{"pppoesession", "add", SW_API_PPPOE_SESSION_ADD, NULL},
-	{"pppoesession", "del", SW_API_PPPOE_SESSION_DEL, NULL},
-	{"extendpppoe", "set",   SW_API_PPPOE_SESSION_TABLE_ADD, NULL},
-	{"extendpppoe", "add",   SW_API_PPPOE_SESSION_TABLE_ADD, NULL},
-	{"extendpppoe", "del",   SW_API_PPPOE_SESSION_TABLE_DEL, NULL},
-	{"pppoeid", "set",   SW_API_PPPOE_SESSION_ID_SET, NULL},
-	{"PppoeCmd", "set",   SW_API_PPPOE_CMD_SET, NULL},
-	{"PppoeCmd", "set",   SW_API_PPPOE_CMD_SET, NULL},
-	{"rtdPppoe", "set",   SW_API_RTD_PPPOE_EN_SET, NULL},
-	{"Pppoe", "set",   SW_API_PPPOE_STATUS_SET, NULL},
-	{"pppoeen", "set", SW_API_PPPOE_EN_SET, NULL},
-	{NULL, NULL, (int)NULL, NULL},/*end of desc*/
-};
-#endif
-
 #ifdef IN_POLICER
 struct sub_cmd_des_t g_policer_des[] =
 {
@@ -1233,6 +1246,26 @@ struct sub_cmd_des_t g_bm_des[] =
 };
 #endif
 
+/*Servcode*/
+#ifdef IN_SERVCODE
+struct sub_cmd_des_t g_servcode_des[] =
+{
+    {"config", "set", SW_API_SERVCODE_CONFIG_SET, NULL},
+    {"loopcheck", "set", SW_API_SERVCODE_LOOPCHECK_EN, NULL},
+    {NULL, NULL, (int)NULL, NULL},/*end of desc*/
+};
+#endif
+
+/*Servcode*/
+#ifdef IN_CTRLPKT
+struct sub_cmd_des_t g_ctrlpkt_des[] =
+{
+    {"ethernetType", "set", SW_API_MGMTCTRL_ETHTYPE_PROFILE_SET, NULL},
+    {"rfdb", "set", SW_API_MGMTCTRL_RFDB_PROFILE_SET, NULL},
+    {"appProfile", "set", SW_API_MGMTCTRL_CTRLPKT_PROFILE_ADD, NULL},
+    {NULL, NULL, (int)NULL, NULL},/*end of desc*/
+};
+#endif
 
 struct cmd_des_t gcmd_des[] =
 {
@@ -1390,12 +1423,6 @@ struct cmd_des_t gcmd_des[] =
     },
 #endif
 
-#ifdef IN_PPPOE
-    {
-        "pppoe", g_pppoe_des,
-    },
-#endif
-
 	/*policer*/
 #ifdef IN_POLICER
 		{
@@ -1420,6 +1447,18 @@ struct cmd_des_t gcmd_des[] =
 #ifdef IN_BM
     {
         "bm", g_bm_des,
+    },
+#endif
+
+#ifdef IN_SERVCODE
+    {
+        "servcode", g_servcode_des,
+    },
+#endif
+
+#ifdef IN_CTRLPKT
+    {
+        "ctrlpkt", g_ctrlpkt_des,
     },
 #endif
 
