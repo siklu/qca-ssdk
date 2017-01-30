@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, 2015-2016, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2013, 2015-2017, The Linux Foundation. All rights reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -6726,8 +6726,8 @@ static int name_transfer(char *name, char *module, char *cmd)
         }
 
         if(i<len) {
-		strlcpy(module, name, i);
-		strlcpy(cmd, p, len-i);
+		strlcpy(module, name, i+1);
+		strlcpy(cmd, p, COMMAND_NAME_MAX_LEN);
 		return 0;
         }
 	
