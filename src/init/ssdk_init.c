@@ -83,6 +83,8 @@
 #else
 #include <net/switch.h>
 #include <linux/ar8216_platform.h>
+#include <drivers/net/phy/ar8216.h>
+#include <drivers/net/ethernet/atheros/ag71xx/ag71xx.h>
 #endif
 #include "ssdk_plat.h"
 #include "ref_vlan.h"
@@ -1519,12 +1521,13 @@ static struct phy_driver qca_phy_driver = {
 	.driver		= { .owner = THIS_MODULE },
 };
 
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 struct ag71xx_mdio {
 	struct mii_bus		*mii_bus;
 	int			mii_irq[PHY_MAX_ADDR];
 	void __iomem		*mdio_base;
 };
-
+#endif
 static struct mii_bus *miibus = NULL;
 static int phy_address[5] = {0,1,2,3,4};
 
@@ -2405,13 +2408,20 @@ ssdk_plat_init(ssdk_init_cfg *cfg)
 		cfg->reg_mode = HSL_MDIO;
 
 		printk("Register QCA PHY driver\n");
-		#ifndef BOARD_AR71XX
+#ifndef BOARD_AR71XX
 		return phy_driver_register(&qca_phy_driver);
-		#else
+#else
 		rv = phy_driver_register(&qca_phy_driver);
 		ssdk_uci_takeover_init();
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,4,0))
+#ifdef CONFIG_AR8216_PHY
+		ar8327_port_link_notify_register(ssdk_port_link_notify);
+#endif
+		ar7240_port_link_notify_register(ssdk_port_link_notify);
+#endif
 		return rv;
-		#endif
+
+#endif
 	} else
 		return 0;
 

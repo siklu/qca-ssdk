@@ -50,7 +50,8 @@ dess_rgmii_sw_mac_polling_task(struct switch_dev *dev);
 
 int ssdk_port_link_notify_register(struct notifier_block *nb);
 int ssdk_port_link_notify_unregister(struct notifier_block *nb);
-
+int ssdk_port_link_notify(unsigned char port_id,
+            unsigned char link, unsigned char speed, unsigned char duplex);
 #ifdef __cplusplus
 }
 #endif                          /* __cplusplus */

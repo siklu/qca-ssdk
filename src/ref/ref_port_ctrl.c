@@ -506,7 +506,7 @@ qca_phy_status_get(a_uint32_t port_id, a_uint32_t *speed_status, a_uint32_t *lin
 /* Initialize notifier list for QCA SSDK */
 static BLOCKING_NOTIFIER_HEAD(ssdk_port_link_notifier_list);
 
-static int ssdk_port_link_notify(unsigned char port_id,
+int ssdk_port_link_notify(unsigned char port_id,
             unsigned char link, unsigned char speed, unsigned char duplex)
 {
     ssdk_port_status port_status;
