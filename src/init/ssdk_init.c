@@ -174,6 +174,8 @@ static int switch_chip_reg = ISIS_CHIP_REG;
 ssdk_dt_cfg ssdk_dt_global = {0};
 u8  __iomem      *hw_addr = NULL;
 u8  __iomem      *psgmii_hw_addr = NULL;
+void __iomem *hppe_uniphy_addr = NULL;
+
 
 
 #ifdef ESS_ONLY_FPGA
@@ -2460,6 +2462,15 @@ ssdk_plat_init(ssdk_init_cfg *cfg)
 		}
 		return 0;
 	}
+	if(ssdk_dt_global.uniphy_reg_access_mode == HSL_REG_LOCAL_BUS) {
+		hppe_uniphy_addr = ioremap_nocache(ssdk_dt_global.uniphyreg_base_addr,
+					ssdk_dt_global.uniphyreg_size);
+		if (!hppe_uniphy_addr) {
+			printk("%s ioremap fail.", __func__);
+			return -1;
+		}
+		return 0;
+	}
 	#endif
 
 
@@ -2629,6 +2640,7 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 	struct device_node *switch_node = NULL,*mdio_node = NULL;
 	struct device_node *psgmii_node = NULL;
 	struct device_node *child = NULL;
+	struct device_node *uniphy_node = NULL;
 	a_uint32_t len = 0,i = 0,j = 0;
 	const __be32 *reg_cfg, *mac_mode,*led_source,*led_mode, *led_speed, *led_freq, *phy_addr;
 	a_uint8_t *led_str;
@@ -2671,6 +2683,54 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 	else
 		ssdk_dt_global.switch_reg_access_mode = HSL_REG_MDIO;
 
+	mac_mode = of_get_property(switch_node, "switch_mac_mode", &len);
+	if (!mac_mode)
+		printk("%s: error reading device node properties for mac mode\n", switch_node->name);
+	else {
+		cfg->mac_mode = be32_to_cpup(mac_mode);
+		printk("mac mode = %d\n", be32_to_cpup(mac_mode));
+		ssdk_dt_global.mac_mode = cfg->mac_mode;
+	}
+
+	mac_mode = of_get_property(switch_node, "switch_mac_mode1", &len);
+	if(!mac_mode)
+		printk("%s: error reading device node properties for mac mode1\n", switch_node->name);
+	else {
+		cfg->mac_mode1 = be32_to_cpup(mac_mode);
+		printk("mac mode1 = %d\n", be32_to_cpup(mac_mode));
+		ssdk_dt_global.mac_mode1 = cfg->mac_mode1;
+	}
+
+	mac_mode = of_get_property(switch_node, "switch_mac_mode2", &len);
+	if(!mac_mode)
+		printk("%s: error reading device node properties for mac mode2\n", switch_node->name);
+	else {
+		cfg->mac_mode2 = be32_to_cpup(mac_mode);
+		printk("mac mode2 = %d\n", be32_to_cpup(mac_mode));
+		ssdk_dt_global.mac_mode2 = cfg->mac_mode2;
+	}
+
+	// read uniphy register base and address space
+	uniphy_node = of_find_node_by_name(NULL, "ess-uniphy");
+	if (!uniphy_node)
+		printk("ess-uniphy DT doesn't exist!\n");
+	else {
+		printk("ess-uniphy DT exist!\n");
+	}
+	reg_cfg = of_get_property(uniphy_node, "reg", &len);
+	if(!reg_cfg)
+		printk("%s: error reading device node properties for reg\n", uniphy_node->name);
+	else {
+		ssdk_dt_global.uniphyreg_base_addr = be32_to_cpup(reg_cfg);
+		ssdk_dt_global.uniphyreg_size = be32_to_cpup(reg_cfg + 1);
+	}
+	if (of_property_read_string(uniphy_node, "uniphy_access_mode", &ssdk_dt_global.uniphy_access_mode))
+		printk("%s: error reading device node properties for uniphy_access_mode\n", uniphy_node->name);
+	else {
+		if(!strcmp(ssdk_dt_global.uniphy_access_mode, "local bus"))
+			ssdk_dt_global.uniphy_reg_access_mode = HSL_REG_LOCAL_BUS;
+	}
+
 	if (of_property_read_u32(switch_node, "switch_cpu_bmp", &cfg->port_cfg.cpu_bmp)
 		|| of_property_read_u32(switch_node, "switch_lan_bmp", &cfg->port_cfg.lan_bmp)
 		|| of_property_read_u32(switch_node, "switch_wan_bmp", &cfg->port_cfg.wan_bmp)) {
@@ -2699,15 +2759,6 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 	if(!strcmp(ssdk_dt_global.psgmii_reg_access_str, "local bus"))
 		ssdk_dt_global.psgmii_reg_access_mode = HSL_REG_LOCAL_BUS;
 
-	mac_mode = of_get_property(switch_node, "switch_mac_mode", &len);
-	if(!mac_mode) {
-		printk("%s: error reading device node properties for mac mode\n", switch_node->name);
-		return SW_BAD_PARAM;
-	}
-	cfg->mac_mode = be32_to_cpup(mac_mode);
-	printk("mac mode=%d\n", be32_to_cpup(mac_mode));
-	ssdk_dt_global.mac_mode = cfg->mac_mode;
-	printk("current mac mode = %d\n", ssdk_dt_global.mac_mode);
 	for_each_available_child_of_node(switch_node, child) {
 
 		led_source = of_get_property(child, "source", &len);

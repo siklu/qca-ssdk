@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2015, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015-2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -78,7 +78,11 @@ enum ssdk_port_wrapper_cfg {
 	PORT_WRAPPER_SGMII0_RGMII4,
 	PORT_WRAPPER_SGMII1_RGMII4,
 	PORT_WRAPPER_SGMII4_RGMII4,
-	PORT_WRAPPER_MAX
+	PORT_WRAPPER_QSGMII,
+	PORT_WRAPPER_SGMII_PLUS,
+	PORT_WRAPPER_USXGMII,
+	PORT_WRAPPER_XFI,
+	PORT_WRAPPER_MAX = 0xFF
 };
 
     typedef struct
@@ -155,6 +159,8 @@ typedef struct
 	a_uint32_t led_source_num;
 	led_source_cfg_t led_source_cfg[14];
 	a_uint32_t      phy_id;
+	a_uint32_t      mac_mode1;
+	a_uint32_t      mac_mode2;
 } ssdk_init_cfg;
 
 	typedef struct
@@ -169,6 +175,12 @@ typedef struct
 		hsl_reg_mode psgmii_reg_access_mode;
 		struct clk *ess_clk;
 		a_uint32_t      mac_mode;
+		a_uint32_t      mac_mode1;
+		a_uint32_t      mac_mode2;
+		a_uint32_t uniphyreg_base_addr;
+		a_uint32_t uniphyreg_size;
+		a_uint8_t *uniphy_access_mode;
+		hsl_reg_mode uniphy_reg_access_mode;
 	} ssdk_dt_cfg;
 
 typedef struct phy_identification {
