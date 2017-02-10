@@ -1364,13 +1364,13 @@ static int ssdk_switch_register(void)
 			return ret;
 	}
 
-	ret = qca_phy_mib_work_start(priv);
+	ret = qca_phy_mib_work_start(qca_phy_priv_global);
 	if (ret != 0) {
 			printk("qca_phy_mib_work_start failed for %s\n", sw_dev->name);
 			return ret;
 	}
 
-	ret = qm_err_check_work_start(priv);
+	ret = qm_err_check_work_start(qca_phy_priv_global);
 	if (ret != 0) {
 			printk("qm_err_check_work_start failed for %s\n", sw_dev->name);
 			return ret;
@@ -1918,7 +1918,7 @@ static int ssdk_phy_id_get(ssdk_init_cfg *cfg)
 	cfg->phy_id = phy_id;
 	printk("PHY ID is 0x%x\n",cfg->phy_id);
 
-	return SW_OK;;
+	return SW_OK;
 }
 int ssdk_phy_init(ssdk_init_cfg *cfg)
 {
@@ -2099,7 +2099,7 @@ void ssdk_psgmii_single_phy_testing(int phy, a_bool_t enable)
 	qca_ar8327_phy_write(0, phy, 0x0, 0x4140);
 	j = 0;
 	while (j < 100) {
-		u16 status;
+		u16 status = 0;
 		qca_ar8327_phy_read(0, phy, 0x11, &status);
 		if (status & (1 << 10))
 			break;
@@ -2150,7 +2150,7 @@ void ssdk_psgmii_all_phy_testing(a_bool_t enable)
 	j = 0;
 	while (j < 100) {
 		for (phy = 0; phy < 5; phy++) {
-			u16 status;
+			u16 status = 0;
 			qca_ar8327_phy_read(0, phy, 0x11, &status);
 			if (!(status & (1 << 10)))
 				break;
@@ -2905,8 +2905,56 @@ static int ssdk_dess_mac_mode_init(a_uint32_t mac_mode)
 				qca_switch_reg_write(0, 0x8c, (a_uint8_t *)&reg_value, 4);
 			}
 			break;
+		case PORT_WRAPPER_PSGMII_RMII0_RMII1:
+		case PORT_WRAPPER_PSGMII_RMII0:
+		case PORT_WRAPPER_PSGMII_RMII1:
+			reg_value = 0x2200;
+			qca_psgmii_reg_write(0, DESS_PSGMII_MODE_CONTROL,
+				(a_uint8_t *)&reg_value, 4);
+			reg_value = 0x8380;
+			qca_psgmii_reg_write(0, DESS_PSGMIIPHY_TX_CONTROL,
+					(a_uint8_t *)&reg_value, 4);
+			/*switch RMII clock source to gcc_ess_clk,ESS_RGMII_CTRL:0x0C000004,dakota rmii1/rmii0 master mode*/
+			if(mac_mode== PORT_WRAPPER_PSGMII_RMII0_RMII1)
+				reg_value = 0x3000000;
+			if(mac_mode== PORT_WRAPPER_PSGMII_RMII0)
+				reg_value = 0x1000000;
+			if(mac_mode== PORT_WRAPPER_PSGMII_RMII1)
+				reg_value = 0x2000000;
+			qca_switch_reg_write(0, 0x4, (a_uint8_t *)&reg_value, 4);
+			/*enable RMII MAC5 100M/full*/
+			if(mac_mode == PORT_WRAPPER_PSGMII_RMII0_RMII1 || mac_mode == PORT_WRAPPER_PSGMII_RMII0)
+			{
+				reg_value = 0x7d;
+				qca_switch_reg_write(0, 0x90, (a_uint8_t *)&reg_value, 4);
+			}
 
+			/*enable RMII MAC4 100M/full*/
+			if(mac_mode == PORT_WRAPPER_PSGMII_RMII0_RMII1 || mac_mode == PORT_WRAPPER_PSGMII_RMII1)
+			{
+				reg_value = 0x7d;
+				qca_switch_reg_write(0, 0x8C, (a_uint8_t *)&reg_value, 4);
+			}
+			/*set QM CONTROL REGISTER FLOW_DROP_CNT as max*/
+			reg_value = 0x7f007f;
+			qca_switch_reg_write(0, 0x808, (a_uint8_t *)&reg_value, 4);
+
+			/*relock PSGMII PLL*/
+			reg_value = 0x2803;
+			fal_psgmii_reg_set(0, DESS_PSGMII_PLL_VCO_RELATED_CONTROL_1,
+							(a_uint8_t *)&reg_value, 4);
+			udelay(1000);
+			reg_value = 0x4ADA;
+			fal_psgmii_reg_set(0, DESS_PSGMII_VCO_CALIBRATION_CONTROL_1,
+							(a_uint8_t *)&reg_value, 4);
+			udelay(1000);
+			reg_value = 0xADA;
+			fal_psgmii_reg_set(0, DESS_PSGMII_VCO_CALIBRATION_CONTROL_1,
+							(a_uint8_t *)&reg_value, 4);
+			udelay(1000);
+			break;
 	}
+
 	return 0;
 }
 
