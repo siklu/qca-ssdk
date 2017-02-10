@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -39,7 +39,7 @@ sw_error_t adpt_hppe_stp_init(a_uint32_t dev_id);
 void adpt_hppe_vsi_func_bitmap_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_vsi_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_port_ctrl_init(a_uint32_t dev_id);
-
+sw_error_t adpt_hppe_misc_init(a_uint32_t dev_id);
 
 void adpt_hppe_mirror_func_bitmap_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_mirror_init(a_uint32_t dev_id);

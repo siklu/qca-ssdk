@@ -248,8 +248,6 @@ enum {
 	FUNC_PORT_VLAN_TRANS_ADV_DEL,
 	FUNC_PORT_VLAN_TRANS_ADV_GETFIRST,
 	FUNC_PORT_VLAN_TRANS_ADV_GETNEXT,
-	FUNC_PORT_VLAN_COUNTER_ENABLE,
-	FUNC_PORT_VLAN_COUNTER_STATUS_GET,
 	FUNC_PORT_VLAN_COUNTER_GET,
 	FUNC_PORT_VLAN_COUNTER_CLEANUP,
 	FUNC_PORT_VLAN_MEMBER_ADD,
@@ -642,17 +640,6 @@ enum {
 		a_uint32_t tx_packet_counter; /* egress vlan translation pkt counter */
 		a_uint64_t tx_byte_counter; /* egress vlan translation byte counter */
 	} fal_port_vlan_counter_t;
-
-	typedef struct
-	{
-		a_bool_t rx_counter_en; /* enable rx counter */
-		a_bool_t tx_counter_en; /* enable tx counter */
-	} fal_port_vlan_counter_en_t;
-
-	sw_error_t
-	fal_port_vlan_counter_enable(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_counter_en_t * cnt_en);
-	sw_error_t
-	fal_port_vlan_counter_status_get(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_counter_en_t * cnt_en);
 
 	sw_error_t
 	fal_port_vlan_counter_get(a_uint32_t dev_id, a_uint32_t cnt_index, fal_port_vlan_counter_t * counter);
