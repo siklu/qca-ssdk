@@ -307,6 +307,13 @@ uint32_t qca_switch_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr,
     ssdk_hsl_access_mode_set(a_uint32_t dev_id, hsl_access_mode reg_mode);
 	a_uint32_t ssdk_dt_global_get_mac_mode(void);
 
+uint32_t
+qca_hppe_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t uniphy_index,
+				a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len);
+
+uint32_t
+qca_hppe_uniphy_reg_read(a_uint32_t dev_id, a_uint32_t uniphy_index,
+				a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len);
 #ifdef __cplusplus
 }
 #endif                          /* __cplusplus */

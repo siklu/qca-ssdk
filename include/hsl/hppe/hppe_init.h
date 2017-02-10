@@ -26,6 +26,16 @@ extern "C" {
 
 #include "init/ssdk_init.h"
 
+#define HPPE_UNIPHY_INSTANCE0	0
+#define HPPE_UNIPHY_INSTANCE1	1
+#define HPPE_UNIPHY_INSTANCE2	2
+#define HPPE_UNIPHY_BASE1	0x10000
+#define HPPE_UNIPHY_BASE2	0x20000
+#define HPPE_UNIPHY_MAX_DIRECT_ACCESS_REG	0x7fff
+#define HPPE_UNIPHY_INDIRECT_REG_ADDR  0x83fc
+#define HPPE_UNIPHY_INDIRECT_HIGH_ADDR  0x1fff00
+#define HPPE_UNIPHY_INDIRECT_LOW_ADDR  0xff
+#define HPPE_UNIPHY_INDIRECT_DATA  0x20
 
 sw_error_t hppe_init(a_uint32_t dev_id, ssdk_init_cfg *cfg);
 

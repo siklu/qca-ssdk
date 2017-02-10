@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -18,6 +18,8 @@
  * @{
  */
 #include "sw.h"
+#include "ssdk_init.h"
+
 extern uint32_t
 qca_switch_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len);
 extern uint32_t
@@ -52,4 +54,16 @@ sw_error_t hppe_reg_tbl_set(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint32_t *
 	}
 	return SW_OK;   
 } 
+
+sw_error_t hppe_uniphy_reg_get(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint32_t index, a_uint32_t *val)
+{
+	qca_hppe_uniphy_reg_read(dev_id, index, reg_addr, (a_uint8_t *)val, 4);
+	return SW_OK;
+}
+
+sw_error_t hppe_uniphy_reg_set(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint32_t index, a_uint32_t val)
+{
+	qca_hppe_uniphy_reg_write(dev_id, index, reg_addr, (a_uint8_t *)&val, 4);
+	return SW_OK;
+}
 

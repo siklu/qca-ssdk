@@ -21,6 +21,7 @@ SRC_LIST+=hppe_shaper.c
 SRC_LIST+=hppe_xgmacmib.c
 SRC_LIST+=hppe_xgportctrl.c
 SRC_LIST+=hppe_global.c
+SRC_LIST+=hppe_uniphy.c
 ifeq (, $(findstring HPPE, $(SUPPORT_CHIP)))
   SRC_LIST=
 endif
