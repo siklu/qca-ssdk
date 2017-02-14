@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2015-2016, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015-2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -168,8 +168,8 @@ extern "C" {
 		SW_PT_VLAN_DIRECTION,
                 SW_PT_VLAN_TRANS_ADV_RULE,
                 SW_PT_VLAN_TRANS_ADV_ACTION,
-		SW_PT_VLAN_COUNTER_EN,
 		SW_PT_VLAN_COUNTER,
+		SW_DEBUG_COUNTER_EN,
 		SW_TAG_PROPAGATION,
 		SW_EGRESS_DEFAULT_VID,
 		SW_EGRESS_MODE,

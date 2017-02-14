@@ -48,6 +48,7 @@ extern "C" {
 #include "fal_bm.h"
 #include "fal_init.h"
 #include "fal_policer.h"
+#include "fal_misc.h"
 
 #define ADPT_DEV_ID_CHECK(dev_id) \
 do { \
@@ -611,8 +612,6 @@ typedef sw_error_t (*adpt_port_vlan_trans_adv_getfirst_func)(a_uint32_t dev_id, 
                                 fal_vlan_trans_adv_rule_t * rule, fal_vlan_trans_adv_action_t * action);
 typedef sw_error_t (*adpt_port_vlan_trans_adv_getnext_func)(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_direction_t direction,
                                 fal_vlan_trans_adv_rule_t * rule, fal_vlan_trans_adv_action_t * action);
-typedef sw_error_t (*adpt_port_vlan_counter_enable_func)(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_counter_en_t * cnt_en);
-typedef sw_error_t (*adpt_port_vlan_counter_status_get_func)(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_counter_en_t * cnt_en);
 typedef sw_error_t (*adpt_port_vlan_counter_get_func)(a_uint32_t dev_id, a_uint32_t cnt_index, fal_port_vlan_counter_t * counter);
 typedef sw_error_t (*adpt_port_vlan_counter_cleanup_func)(a_uint32_t dev_id, a_uint32_t cnt_index);
 typedef sw_error_t (*adpt_portvlan_member_add_func)(a_uint32_t dev_id, fal_port_t port_id, fal_port_t mem_port_id);
@@ -821,6 +820,12 @@ typedef sw_error_t (*adpt_policer_time_slot_set_func)(a_uint32_t dev_id, a_uint3
 
 typedef sw_error_t (*adpt_policer_global_counter_get_func)(a_uint32_t dev_id,
 		fal_policer_global_counter_t *counter);
+
+/* misc */
+typedef sw_error_t (*adpt_debug_port_counter_enable_func)(a_uint32_t dev_id,
+			fal_port_t port_id, fal_counter_en_t * cnt_en);
+typedef sw_error_t (*adpt_debug_port_counter_status_get_func)(a_uint32_t dev_id,
+			fal_port_t port_id, fal_counter_en_t * cnt_en);
 
 typedef struct
 {
@@ -1099,8 +1104,6 @@ typedef struct
 	adpt_port_vlan_trans_adv_del_func adpt_port_vlan_trans_adv_del;
 	adpt_port_vlan_trans_adv_getfirst_func adpt_port_vlan_trans_adv_getfirst;
 	adpt_port_vlan_trans_adv_getnext_func adpt_port_vlan_trans_adv_getnext;
-	adpt_port_vlan_counter_enable_func adpt_port_vlan_counter_enable;
-	adpt_port_vlan_counter_status_get_func adpt_port_vlan_counter_status_get;
 	adpt_port_vlan_counter_get_func adpt_port_vlan_counter_get;
 	adpt_port_vlan_counter_cleanup_func adpt_port_vlan_counter_cleanup;
 	adpt_portvlan_member_add_func adpt_portvlan_member_add;
@@ -1240,6 +1243,9 @@ typedef struct
 	adpt_policer_time_slot_set_func adpt_policer_time_slot_set;
 	adpt_policer_global_counter_get_func adpt_policer_global_counter_get;
 
+	/* misc */
+	adpt_debug_port_counter_enable_func adpt_debug_port_counter_enable;
+	adpt_debug_port_counter_status_get_func adpt_debug_port_counter_status_get;
 }adpt_api_t;
 
 

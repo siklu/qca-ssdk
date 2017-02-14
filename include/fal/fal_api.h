@@ -341,8 +341,6 @@ extern "C" {
     SW_API_DEF(SW_API_PT_VLAN_TRANS_ADV_DEL, fal_port_vlan_trans_adv_del), \
     SW_API_DEF(SW_API_PT_VLAN_TRANS_ADV_GETFIRST, fal_port_vlan_trans_adv_getfirst), \
     SW_API_DEF(SW_API_PT_VLAN_TRANS_ADV_GETNEXT, fal_port_vlan_trans_adv_getnext), \
-    SW_API_DEF(SW_API_PT_VLAN_COUNTER_ENABLE, fal_port_vlan_counter_enable), \
-    SW_API_DEF(SW_API_PT_VLAN_COUNTER_STATUS_GET, fal_port_vlan_counter_status_get), \
     SW_API_DEF(SW_API_PT_VLAN_COUNTER_GET, fal_port_vlan_counter_get), \
     SW_API_DEF(SW_API_PT_VLAN_COUNTER_CLEANUP, fal_port_vlan_counter_cleanup),
 
@@ -419,8 +417,6 @@ extern "C" {
     SW_API_DESC(SW_API_PT_VLAN_TRANS_ADV_DEL) \
     SW_API_DESC(SW_API_PT_VLAN_TRANS_ADV_GETFIRST) \
     SW_API_DESC(SW_API_PT_VLAN_TRANS_ADV_GETNEXT) \
-    SW_API_DESC(SW_API_PT_VLAN_COUNTER_ENABLE) \
-    SW_API_DESC(SW_API_PT_VLAN_COUNTER_STATUS_GET) \
     SW_API_DESC(SW_API_PT_VLAN_COUNTER_GET) \
     SW_API_DESC(SW_API_PT_VLAN_COUNTER_CLEANUP)
 
@@ -1009,7 +1005,9 @@ extern "C" {
     SW_API_DEF(SW_API_LLDP_STATUS_SET, fal_lldp_status_set), \
     SW_API_DEF(SW_API_LLDP_STATUS_GET, fal_lldp_status_get), \
     SW_API_DEF(SW_API_FRAME_CRC_RESERVE_SET, fal_frame_crc_reserve_set), \
-    SW_API_DEF(SW_API_FRAME_CRC_RESERVE_GET, fal_frame_crc_reserve_get),
+    SW_API_DEF(SW_API_FRAME_CRC_RESERVE_GET, fal_frame_crc_reserve_get), \
+    SW_API_DEF(SW_API_DEBUG_PORT_COUNTER_ENABLE, fal_debug_port_counter_enable), \
+    SW_API_DEF(SW_API_DEBUG_PORT_COUNTER_STATUS_GET, fal_debug_port_counter_status_get),
 
 
 
@@ -1062,7 +1060,9 @@ extern "C" {
     SW_API_DESC(SW_API_LLDP_STATUS_SET) \
     SW_API_DESC(SW_API_LLDP_STATUS_GET) \
     SW_API_DESC(SW_API_FRAME_CRC_RESERVE_SET) \
-    SW_API_DESC(SW_API_FRAME_CRC_RESERVE_GET)
+    SW_API_DESC(SW_API_FRAME_CRC_RESERVE_GET) \
+    SW_API_DESC(SW_API_DEBUG_PORT_COUNTER_ENABLE) \
+    SW_API_DESC(SW_API_DEBUG_PORT_COUNTER_STATUS_GET)
 #else
 #define MISC_API \
     SW_API_DEF(SW_API_PT_UNK_SA_CMD_SET, fal_port_unk_sa_cmd_set), \

@@ -2153,34 +2153,6 @@ _fal_port_vlan_trans_adv_getnext(a_uint32_t dev_id, fal_port_t port_id, fal_port
     return rv;
 }
 sw_error_t
-_fal_port_vlan_counter_enable(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_counter_en_t * cnt_en)
-{
-    sw_error_t rv;
-    adpt_api_t *p_api;
-
-    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
-
-    if (NULL == p_api->adpt_port_vlan_counter_enable)
-        return SW_NOT_SUPPORTED;
-
-    rv = p_api->adpt_port_vlan_counter_enable(dev_id, port_id, cnt_en);
-    return rv;
-}
-sw_error_t
-_fal_port_vlan_counter_status_get(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_counter_en_t * cnt_en)
-{
-    sw_error_t rv;
-    adpt_api_t *p_api;
-
-    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
-
-    if (NULL == p_api->adpt_port_vlan_counter_status_get)
-        return SW_NOT_SUPPORTED;
-
-    rv = p_api->adpt_port_vlan_counter_status_get(dev_id, port_id, cnt_en);
-    return rv;
-}
-sw_error_t
 _fal_port_vlan_counter_get(a_uint32_t dev_id, a_uint32_t cnt_index, fal_port_vlan_counter_t * counter)
 {
     sw_error_t rv;
@@ -2500,26 +2472,6 @@ fal_port_vlan_trans_adv_getnext(a_uint32_t dev_id, fal_port_t port_id, fal_port_
     return rv;
 }
 sw_error_t
-fal_port_vlan_counter_enable(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_counter_en_t * cnt_en)
-{
-    sw_error_t rv = SW_OK;
-
-    FAL_PORTVLAN_API_LOCK;
-    rv = _fal_port_vlan_counter_enable(dev_id, port_id, cnt_en);
-    FAL_PORTVLAN_API_UNLOCK;
-    return rv;
-}
-sw_error_t
-fal_port_vlan_counter_status_get(a_uint32_t dev_id, fal_port_t port_id, fal_port_vlan_counter_en_t * cnt_en)
-{
-    sw_error_t rv = SW_OK;
-
-    FAL_PORTVLAN_API_LOCK;
-    rv = _fal_port_vlan_counter_status_get(dev_id, port_id, cnt_en);
-    FAL_PORTVLAN_API_UNLOCK;
-    return rv;
-}
-sw_error_t
 fal_port_vlan_counter_get(a_uint32_t dev_id, a_uint32_t cnt_index, fal_port_vlan_counter_t * counter)
 {
     sw_error_t rv = SW_OK;
@@ -2576,8 +2528,6 @@ EXPORT_SYMBOL(fal_port_vlan_trans_adv_add);
 EXPORT_SYMBOL(fal_port_vlan_trans_adv_del);
 EXPORT_SYMBOL(fal_port_vlan_trans_adv_getfirst);
 EXPORT_SYMBOL(fal_port_vlan_trans_adv_getnext);
-EXPORT_SYMBOL(fal_port_vlan_counter_enable);
-EXPORT_SYMBOL(fal_port_vlan_counter_status_get);
 EXPORT_SYMBOL(fal_port_vlan_counter_get);
 EXPORT_SYMBOL(fal_port_vlan_counter_cleanup);
 EXPORT_SYMBOL(fal_portvlan_member_add);
