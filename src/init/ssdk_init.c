@@ -624,6 +624,11 @@ int qca_ar8327_hw_init(struct qca_phy_priv *priv)
 	/*After switch software reset, need disable all ports' MAC with 1000M FULL*/
 	qca_switch_set_mac_force(priv);
 
+	value = priv->mii_read(AR8327_REG_MODULE_EN);
+	value &= ~AR8327_REG_MODULE_EN_QM_ERR;
+	value &= ~AR8327_REG_MODULE_EN_LOOKUP_ERR;
+	priv->mii_write(AR8327_REG_MODULE_EN, value);
+
 	/* Configure switch register from DT information */
 	paddr = of_get_property(np, "qca,ar8327-initvals", &len);
 	if (!paddr || len < (2 * sizeof(*paddr))) {
@@ -930,9 +935,8 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 {
 	struct ar8327_platform_data *plat_data;
 	a_uint32_t i = 0;
-#ifndef BOARD_AR71XX
 	a_uint32_t value = 0;
-#endif
+
 	plat_data = priv->phy->dev.platform_data;
 	if (plat_data == NULL) {
 		return -EINVAL;
@@ -956,6 +960,11 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 
 	/*After switch software reset, need disable all ports' MAC with 1000M FULL*/
 	qca_switch_set_mac_force(priv);
+
+	value = priv->mii_read(AR8327_REG_MODULE_EN);
+	value &= ~AR8327_REG_MODULE_EN_QM_ERR;
+	value &= ~AR8327_REG_MODULE_EN_LOOKUP_ERR;
+	priv->mii_write(AR8327_REG_MODULE_EN, value);
 
 	qca_ar8327_set_pad_cfg(priv, plat_data);
 
