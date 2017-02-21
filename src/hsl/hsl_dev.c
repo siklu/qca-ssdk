@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -41,6 +41,9 @@
 #if defined DESS
 #include "dess_init.h"
 #endif
+#if defined HPPE
+#include "hppe_init.h"
+#endif
 #include "sw_api.h"
 #ifdef KERNEL_MODULE
 #include "sw_api_ks.h"
@@ -74,6 +77,8 @@ static sw_error_t hsl_set_current_chip_type(ssdk_chip_type chip_type)
         SSDK_CURRENT_CHIP_TYPE = CHIP_ISISC;
 #elif defined DESS
         SSDK_CURRENT_CHIP_TYPE = CHIP_DESS;
+#elif defined HPPE
+        SSDK_CURRENT_CHIP_TYPE = CHIP_HPPE;
 #else
         rv = SW_FAIL;
 #endif
@@ -172,6 +177,11 @@ hsl_dev_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
             rv = dess_init(dev_id, cfg);
 #endif
             break;
+        case CHIP_HPPE:
+#if defined HPPE
+            rv = hppe_init(dev_id, cfg);
+#endif
+            break;
 
         case CHIP_UNSPECIFIED:
 #if defined ATHENA
@@ -255,6 +265,10 @@ hsl_ssdk_cfg(a_uint32_t dev_id, ssdk_cfg_t *ssdk_cfg)
 
         case CHIP_DESS:
             aos_mem_copy(ssdk_cfg->chip_type, "dess", sizeof("dess"));
+            break;
+
+        case CHIP_HPPE:
+            aos_mem_copy(ssdk_cfg->chip_type, "hppe", sizeof("hppe"));
             break;
 
         case CHIP_UNSPECIFIED:

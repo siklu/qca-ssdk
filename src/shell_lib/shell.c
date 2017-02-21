@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2013, 2017, The Linux Foundation. All rights reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -241,7 +241,7 @@ cmd_parse_api(char **cmd_str, a_uint32_t * arg_val)
     void *pentry;
     sw_api_param_t *pptmp = NULL;
     sw_api_t sw_api;
-    a_uint32_t ignorecnt = 0;
+    a_uint32_t ignorecnt = 0, jump = 0;
     sw_data_type_t *data_type;
     sw_api.api_id = arg_val[0];
     SW_RTN_ON_ERROR(sw_api_get(&sw_api));
@@ -261,7 +261,7 @@ cmd_parse_api(char **cmd_str, a_uint32_t * arg_val)
 
         if (pptmp->param_type & SW_PARAM_IN)
         {
-            tmp_str = cmd_str[arg_index - reserve_index - ignorecnt];
+            tmp_str = cmd_str[arg_index - reserve_index - ignorecnt + jump];
             last_param_in = arg_index;
             if((pptmp->api_id == 314) && last_param_in == 2) last_param_in = 4;//SW_API_FDB_EXTEND_NEXT wr
             if((pptmp->api_id == 327) && last_param_in == 2) last_param_in = 4;//SW_API_FDB_EXTEND_FIRST wr
@@ -286,7 +286,7 @@ cmd_parse_api(char **cmd_str, a_uint32_t * arg_val)
             if(pptmp->param_type & SW_PARAM_PTR)   //quiet mode
             {
                 if(!get_talk_mode())
-                    set_full_cmdstrp((char **)(cmd_str + (last_param_in - reserve_index)));
+                    set_full_cmdstrp((char **)(cmd_str + (last_param_in - reserve_index) + jump));
             }
 #endif
             /*check and convert input param */
@@ -294,6 +294,10 @@ cmd_parse_api(char **cmd_str, a_uint32_t * arg_val)
             {
                 if (data_type->param_check(tmp_str, (a_uint32_t *)pentry, (a_uint32_t)pptmp->data_size) != SW_OK)
                     return SW_BAD_PARAM;
+		if(!get_talk_mode() && (pptmp->param_type & SW_PARAM_PTR)) {
+			if (get_jump())
+				jump += get_jump() -1;
+		}
             }
         }
     }

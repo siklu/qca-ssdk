@@ -109,6 +109,12 @@ ifeq ($(KVER),$(filter 3.18%,$(KVER)))
 endif
 endif
 
+ifeq ($(ARCH), arm64)
+ifeq ($(KVER),$(filter 4.4%,$(KVER)))
+  CPU_CFLAG=  -DMODULE -Os -pipe -march=armv8-a -mcpu=cortex-a53+crypto -fno-caller-saves -fhonour-copts -fno-common -Wno-error=unused-but-set-variable -Wno-error=unused-result -mcmodel=large
+endif
+endif
+
 ifeq ($(BOARD_TYPE), ap136)
 OS_SUB=31
 GCC_VER=4
@@ -134,7 +140,7 @@ endif
 #FAL=FALSE or not define FAL, FAL will not be included in SSDK
 FAL=TRUE
 
-#CHIP_TYPE can be defined as ATHENA, GARUDA, SHIVA, HORUS, ISIS, ISISC, DESS and ALL_CHIP(ALL_CHIP means GARUDA, SHIVA, HORUS, ISIS, ISISC and DESS)
+#CHIP_TYPE can be defined as ATHENA, GARUDA, SHIVA, HORUS, ISIS, ISISC, DESS, HPPE and ALL_CHIP(ALL_CHIP means GARUDA, SHIVA, HORUS, ISIS, ISISC, DESS and HPPE)
 CHIP_TYPE=ALL_CHIP
 
 #UK_IF=FALSE or not define UK_IF, UK_IF will not be included in SSDK
@@ -178,8 +184,11 @@ IN_COSMAP=TRUE
 IN_COSMAP_MINI=FALSE
 IN_IP=TRUE
 IN_NAT=TRUE
+IN_FLOW=TRUE
 IN_TRUNK=TRUE
 IN_SEC=TRUE
+IN_QM=TRUE
+IN_PPPOE=TRUE
 ifeq ($(HNAT_FEATURE), enable)
 IN_NAT_HELPER=TRUE
 else
@@ -198,3 +207,9 @@ IN_SFE=TRUE
 else
 IN_SFE=FALSE
 endif
+IN_VSI=TRUE
+IN_CTRLPKT=TRUE
+IN_SERVCODE=TRUE
+IN_BM=TRUE
+IN_SHAPER=TRUE
+IN_POLICER=TRUE

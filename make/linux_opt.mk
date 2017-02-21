@@ -101,6 +101,10 @@ ifeq (TRUE, $(IN_NAT))
   MODULE_CFLAG += -DIN_NAT
 endif
 
+ifeq (TRUE, $(IN_FLOW))
+  MODULE_CFLAG += -DIN_FLOW
+endif
+
 ifeq (TRUE, $(IN_SFE))
   MODULE_CFLAG += -DIN_SFE
 endif
@@ -113,12 +117,24 @@ ifeq (TRUE, $(IN_SEC))
   MODULE_CFLAG += -DIN_SEC
 endif
 
+ifeq (TRUE, $(IN_QM))
+  MODULE_CFLAG += -DIN_QM
+endif
+
 ifeq (TRUE, $(IN_NAT_HELPER))
   MODULE_CFLAG += -DIN_NAT_HELPER
 endif
 
 ifeq (TRUE, $(IN_INTERFACECONTROL))
   MODULE_CFLAG += -DIN_INTERFACECONTROL
+endif
+
+ifeq (TRUE, $(IN_CTRLPKT))
+  MODULE_CFLAG += -DIN_CTRLPKT
+endif
+
+ifeq (TRUE, $(IN_SERVCODE))
+  MODULE_CFLAG += -DIN_SERVCODE
 endif
 
 ifeq (TRUE, $(IN_MACBLOCK))
@@ -131,6 +147,26 @@ endif
 
 ifeq (TRUE, $(IN_MALIBU_PHY))
   MODULE_CFLAG += -DIN_MALIBU_PHY
+endif
+
+ifeq (TRUE, $(IN_VSI))
+  MODULE_CFLAG += -DIN_VSI
+endif
+
+ifeq (TRUE, $(IN_PPPOE))
+  MODULE_CFLAG += -DIN_PPPOE
+endif
+
+ifeq (TRUE, $(IN_BM))
+  MODULE_CFLAG += -DIN_BM
+endif
+
+ifeq (TRUE, $(IN_SHAPER))
+  MODULE_CFLAG += -DIN_SHAPER
+endif
+
+ifeq (TRUE, $(IN_POLICER))
+  MODULE_CFLAG += -DIN_POLICER
 endif
 
 ifneq (TRUE, $(FAL))
@@ -168,6 +204,7 @@ MODULE_INC += -I$(PRJ_PATH)/include \
                    -I$(PRJ_PATH)/include/api \
                    -I$(PRJ_PATH)/include/fal \
                    -I$(PRJ_PATH)/include/ref \
+                   -I$(PRJ_PATH)/include/adpt \
                    -I$(PRJ_PATH)/include/hsl \
                    -I$(PRJ_PATH)/include/hsl/phy \
                    -I$(PRJ_PATH)/include/sal/os \
@@ -213,6 +250,12 @@ ifneq (,$(findstring DESS, $(SUPPORT_CHIP)))
   MODULE_CFLAG += -DDESS
 endif
 
+ifneq (,$(findstring HPPE, $(SUPPORT_CHIP)))
+  MODULE_INC   += -I$(PRJ_PATH)/include/hsl/hppe
+  MODULE_INC   += -I$(PRJ_PATH)/include/adpt/hppe
+  MODULE_CFLAG += -DHPPE
+endif
+
 # check for GCC version
 ifeq (4, $(GCC_VER))
   MODULE_CFLAG += -DGCCV4
@@ -249,10 +292,26 @@ ifeq (KSLIB, $(MODULE_TYPE))
                 MODULE_CFLAG += -DKVER34
                 MODULE_CFLAG += -DKVER32
             MODULE_CFLAG += -DLNX26_22
-            ifeq ($(ARCH), arm)
+	    ifeq ($(ARCH), arm64)
             MODULE_INC += -I$(SYS_PATH) \
                   -I$(TOOL_PATH)/../lib/gcc/arm-openwrt-linux-$(TARGET_SUFFIX)/$(GCC_VERSION)/include/ \
-	          -I$(SYS_PATH)/include \
+                  -I$(SYS_PATH)/include \
+              -I$(SYS_PATH)/source/include \
+	      -I$(SYS_PATH)/source/arch/arm64/mach-msm/include \
+              -I$(SYS_PATH)/arch/arm64/mach-msm/include \
+              -I$(SYS_PATH)/source/arch/arm64/include \
+              -I$(SYS_PATH)/arch/arm64/include \
+              -I$(SYS_PATH)/source/arch/arm64/include/asm \
+              -I$(SYS_PATH)/arch/arm64/include/generated \
+              -I$(SYS_PATH)/include/generated/uapi \
+              -I$(SYS_PATH)/include/uapi \
+              -I$(SYS_PATH)/arch/arm64/include/uapi \
+              -I$(SYS_PATH)/source/arch/arm64/include/asm/mach \
+	      -include $(SYS_PATH)/include/linux/kconfig.h
+	    else ifeq ($(ARCH), arm)
+	    MODULE_INC += -I$(SYS_PATH) \
+              -I$(TOOL_PATH)/../lib/gcc/arm-openwrt-linux-$(TARGET_SUFFIX)/$(GCC_VERSION)/include/ \
+              -I$(SYS_PATH)/include \
               -I$(SYS_PATH)/source/include \
               -I$(SYS_PATH)/source/arch/arm/mach-msm/include \
               -I$(SYS_PATH)/arch/arm/mach-msm/include \

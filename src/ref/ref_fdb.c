@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -54,7 +54,7 @@ qca_ar8327_sw_atu_flush(struct switch_dev *dev,
 				struct switch_val *val)
 {
 	/* 0: dynamic 1:dynamic, static */
-	fal_fdb_del_all(0, 1);
+	fal_fdb_entry_flush(0, 1);
 
 	return 0;
 }
@@ -78,9 +78,9 @@ qca_ar8327_sw_atu_dump(struct switch_dev *dev,
 	memset(&entry, 0, sizeof(fal_fdb_entry_t));
 
 	if (priv->version == QCA_VER_AR8227)
-		rv = fal_fdb_first(0, &entry);
+		rv = fal_fdb_entry_getfirst(0, &entry);
 	else
-		rv = fal_fdb_extend_first(0, &option, &entry);
+		rv = fal_fdb_entry_extend_getfirst(0, &option, &entry);
 	while (!rv)
     {
 		len += snprintf(buf+len, 2048-len, "MAC: %02x:%02x:%02x:%02x:%02x:%02x PORTMAP: 0x%02x VID: 0x%x STATUS: 0x%x\n",
@@ -94,9 +94,9 @@ qca_ar8327_sw_atu_dump(struct switch_dev *dev,
 			break;
 		}
 		if (priv->version == QCA_VER_AR8227)
-			rv = fal_fdb_iterate(0, &i, &entry);
+			rv = fal_fdb_entry_getnext_byindex(0, &i, &entry);
 		else
-			rv = fal_fdb_extend_next(0, &option, &entry);
+			rv = fal_fdb_entry_extend_getnext(0, &option, &entry);
     }
 
 	val->value.s = (char*)(priv->buf);

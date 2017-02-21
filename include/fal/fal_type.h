@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2016-2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -25,6 +25,22 @@ extern "C" {
 #endif                          /* __cplusplus */
 
     typedef a_uint32_t fal_port_t;
+
+/*fal_port_t definition,
+	bit31-bit24: port_type, 0-physical port, 1-trunk port, 2-virtual port
+	bit23-bit0: physical port id or trunk id or virtual port id*/
+#define FAL_PORT_TYPE_PPORT 0
+#define FAL_PORT_TYPE_TRUNK 1
+#define FAL_PORT_TYPE_VPORT 2
+
+#define FAL_PORT_ID_TYPE(port_id) (((port_id)>>24)&0xff)
+#define FAL_PORT_ID_VALUE(port_id) ((port_id)&0xffffff)
+#define FAL_PORT_ID(type, value) (((type)<<24)|(value))
+
+#define FAL_IS_PPORT(port_id) (((FAL_PORT_ID_TYPE(port_id))==FAL_PORT_TYPE_PPORT)?1:0)
+#define FAL_IS_TRUNK(port_id) (((FAL_PORT_ID_TYPE(port_id))==FAL_PORT_TYPE_TRUNK)?1:0)
+#define FAL_IS_VPORT(port_id) (((FAL_PORT_ID_TYPE(port_id))==FAL_PORT_TYPE_VPORT)?1:0)
+
 
 #if (SW_MAX_NR_PORT <= 32)
     typedef a_uint32_t fal_pbmp_t;

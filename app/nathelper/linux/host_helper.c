@@ -1391,7 +1391,7 @@ arp_in_bg_handle(struct nat_helper_bg_msg *msg)
 
 	smac = skb_mac_header(skb) + MAC_LEN;
     aos_mem_copy(&(entry.addr), smac, sizeof(fal_mac_addr_t));
-    if(fal_fdb_find(0, &entry) == SW_OK) {
+    if(fal_fdb_entry_search(0, &entry) == SW_OK) {
         vid  = entry.fid;
         sport = 0;
         while (sport < 32) {
@@ -1953,7 +1953,7 @@ static unsigned int ipv6_bg_handle(struct nat_helper_bg_msg *msg)
             smac = skb_mac_header(skb) + MAC_LEN;
             aos_mem_copy(&(entry.addr), smac, sizeof(fal_mac_addr_t));
 
-            if(fal_fdb_find(0, &entry) == SW_OK) {
+            if(fal_fdb_entry_search(0, &entry) == SW_OK) {
                 vid  = entry.fid;
                 sport = 0;
                 while (sport < 32) {
