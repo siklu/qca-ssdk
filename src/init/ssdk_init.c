@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2014-2015, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2014-2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -16,33 +16,7 @@
 #include "sw.h"
 #include "ssdk_init.h"
 #include "fal_init.h"
-#ifdef IN_MISC
-#include "fal_misc.h"
-#endif
-#ifdef IN_MIB
-#include "fal_mib.h"
-#endif
-#ifdef IN_PORTCONTROL
-#include "fal_port_ctrl.h"
-#endif
-#ifdef IN_PORTVLAN
-#include "fal_portvlan.h"
-#endif
-#ifdef IN_FDB
-#include "fal_fdb.h"
-#endif
-#ifdef IN_STP
-#include "fal_stp.h"
-#endif
-#ifdef IN_IGMP
-#include "fal_igmp.h"
-#endif
-#ifdef IN_QOS
-#include "fal_qos.h"
-#endif
-#ifdef IN_LED
-#include "fal_led.h"
-#endif
+#include "fal.h"
 #include "hsl.h"
 #include "hsl_dev.h"
 #include "ssdk_init.h"
@@ -93,6 +67,7 @@
 #include "ref_port_ctrl.h"
 #include "ref_misc.h"
 #include "ref_uci.h"
+#include "ref_vsi.h"
 #include "shell.h"
 #ifdef BOARD_AR71XX
 #include "ssdk_uci.h"
@@ -116,11 +91,12 @@
 #include "fal_rfs.h"
 #endif
 #endif
+#include "hppe_reg_access.h"
+#include "hppe_fdb_reg.h"
+#include "hppe_fdb.h"
+#include "hppe_init.h"
 
-#define ISIS_CHIP_ID 0x18
-#define ISIS_CHIP_REG 0
-#define SHIVA_CHIP_ID 0x1f
-#define SHIVA_CHIP_REG 0x10
+#include "adpt.h"
 
 #ifdef IN_RFS
 struct rfs_device rfs_dev;
@@ -140,21 +116,17 @@ extern a_uint32_t hsl_dev_wan_port_get(a_uint32_t dev_id);
 #define QCA_QM_ITEM_NUMBER 41
 #define QCA_RGMII_WORK_DELAY	1000
 
-/*
- * Using ISIS's address as default
-  */
-static int switch_chip_id = ISIS_CHIP_ID;
-static int switch_chip_reg = ISIS_CHIP_REG;
 ssdk_dt_cfg ssdk_dt_global = {0};
-u8  __iomem      *hw_addr = NULL;
-u8  __iomem      *psgmii_hw_addr = NULL;
+void __iomem *hppe_uniphy_addr = NULL;
+void __iomem *gcc_uniphy_base = NULL;
+void __iomem *gcc_hppe_clock_config1_base = NULL;
+void __iomem *gcc_hppe_clock_config2_base = NULL;
 
 a_uint32_t ssdk_dt_global_get_mac_mode(void)
 {
 	return ssdk_dt_global.mac_mode;
 }
 
-static struct mutex switch_mdio_lock;
 phy_identification_t phy_array[] =
 {
 	#ifdef IN_MALIBU_PHY
@@ -351,6 +323,7 @@ qca_switch_init(a_uint32_t dev_id)
 	#ifdef IN_MIB
 	/* Enable MIB counters */
 	fal_mib_status_set(dev_id, A_TRUE);
+	fal_mib_cpukeep_set(dev_id, A_FALSE);
 	#endif
 	#ifdef IN_IGMP
 	fal_igmp_mld_rp_set(dev_id, 0);
@@ -625,11 +598,6 @@ int qca_ar8327_hw_init(struct qca_phy_priv *priv)
 
 	/*After switch software reset, need disable all ports' MAC with 1000M FULL*/
 	qca_switch_set_mac_force(priv);
-
-	value = priv->mii_read(AR8327_REG_MODULE_EN);
-	value &= ~AR8327_REG_MODULE_EN_QM_ERR;
-	value &= ~AR8327_REG_MODULE_EN_LOOKUP_ERR;
-	priv->mii_write(AR8327_REG_MODULE_EN, value);
 
 	/* Configure switch register from DT information */
 	paddr = of_get_property(np, "qca,ar8327-initvals", &len);
@@ -937,8 +905,9 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 {
 	struct ar8327_platform_data *plat_data;
 	a_uint32_t i = 0;
+#ifndef BOARD_AR71XX
 	a_uint32_t value = 0;
-
+#endif
 	plat_data = priv->phy->dev.platform_data;
 	if (plat_data == NULL) {
 		return -EINVAL;
@@ -962,11 +931,6 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 
 	/*After switch software reset, need disable all ports' MAC with 1000M FULL*/
 	qca_switch_set_mac_force(priv);
-
-	value = priv->mii_read(AR8327_REG_MODULE_EN);
-	value &= ~AR8327_REG_MODULE_EN_QM_ERR;
-	value &= ~AR8327_REG_MODULE_EN_LOOKUP_ERR;
-	priv->mii_write(AR8327_REG_MODULE_EN, value);
 
 	qca_ar8327_set_pad_cfg(priv, plat_data);
 
@@ -1183,10 +1147,13 @@ qm_err_check_work_task(struct work_struct *work)
 int
 qm_err_check_work_start(struct qca_phy_priv *priv)
 {
+	if (priv->version == QCA_VER_HPPE)
+		return 0;
+
 	/*Only valid for S17c chip*/
 	if (priv->version != QCA_VER_AR8337 &&
 		priv->version != QCA_VER_AR8327 &&
-		priv->version != 0x14)
+		priv->version != QCA_VER_DESS)
 		return -1;
 
 	mutex_init(&priv->qm_lock);
@@ -1210,7 +1177,7 @@ qm_err_check_work_stop(struct qca_phy_priv *priv)
 	/*Only valid for S17c chip*/
 	if (priv->version != QCA_VER_AR8337 &&
 		priv->version != QCA_VER_AR8327 &&
-		priv->version != 0x14) return;
+		priv->version != QCA_VER_DESS) return;
 
 	cancel_delayed_work_sync(&priv->qm_dwork);
 }
@@ -1276,7 +1243,7 @@ qca_phy_config_init(struct phy_device *pdev)
 {
 	struct qca_phy_priv *priv = pdev->priv;
 	struct switch_dev *sw_dev;
-	int ret;
+	int ret = 0;
 
 	if (pdev->addr != 0) {
         pdev->supported |= SUPPORTED_1000baseT_Full;
@@ -1334,7 +1301,7 @@ qca_phy_config_init(struct phy_device *pdev)
 
 struct qca_phy_priv *qca_phy_priv_global;
 
-#ifdef DESS
+#if defined(DESS) || defined(HPPE)
 static int ssdk_switch_register(void)
 {
 	struct switch_dev *sw_dev;
@@ -1342,11 +1309,7 @@ static int ssdk_switch_register(void)
 	int ret = 0;
 	a_uint32_t chip_id = 0;
 
-	priv = kzalloc(sizeof(struct qca_phy_priv), GFP_KERNEL);
-	if (priv == NULL) {
-		return -ENOMEM;
-	}
-	qca_phy_priv_global = priv;
+	priv = qca_phy_priv_global;
 
 	priv->mii_read = qca_ar8216_mii_read;
 	priv->mii_write = qca_ar8216_mii_write;
@@ -1358,7 +1321,7 @@ static int ssdk_switch_register(void)
 	if (fal_reg_get(0, 0, (a_uint8_t *)&chip_id, 4) == SW_OK) {
 		priv->version = ((chip_id >> 8) & 0xff);
 		priv->revision = (chip_id & 0xff);
-		printk("Dakota Chip version 0x%02x%02x\n", priv->version, priv->revision);
+		printk("Chip version 0x%02x%02x\n", priv->version, priv->revision);
 	}
 
 	mutex_init(&priv->reg_mutex);
@@ -1413,7 +1376,6 @@ static int ssdk_switch_unregister(void)
 	qca_phy_mib_work_stop(qca_phy_priv_global);
 	qm_err_check_work_stop(qca_phy_priv_global);
 	unregister_switch(&qca_phy_priv_global->sw_dev);
-	kfree(qca_phy_priv_global);
 	return 0;
 }
 #endif
@@ -1521,433 +1483,6 @@ static struct phy_driver qca_phy_driver = {
 	.driver		= { .owner = THIS_MODULE },
 };
 
-#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-struct ag71xx_mdio {
-	struct mii_bus		*mii_bus;
-	int			mii_irq[PHY_MAX_ADDR];
-	void __iomem		*mdio_base;
-};
-#endif
-static struct mii_bus *miibus = NULL;
-static int phy_address[5] = {0,1,2,3,4};
-
-#ifdef BOARD_IPQ806X
-#define IPQ806X_MDIO_BUS_NAME			"mdio-gpio"
-#endif
-
-#ifdef BOARD_AR71XX
-#define IPQ806X_MDIO_BUS_NAME			"ag71xx-mdio"
-#endif
-#define MDIO_BUS_0						0
-#define MDIO_BUS_1						1
-#define IPQ806X_MDIO_BUS_NUM			MDIO_BUS_0
-
-static inline void
-split_addr(uint32_t regaddr, uint16_t *r1, uint16_t *r2, uint16_t *page)
-{
-	regaddr >>= 1;
-	*r1 = regaddr & 0x1e;
-
-	regaddr >>= 5;
-	*r2 = regaddr & 0x7;
-
-	regaddr >>= 3;
-	*page = regaddr & 0x3ff;
-}
-
-a_uint32_t
-qca_ar8216_mii_read(a_uint32_t reg)
-{
-        struct mii_bus *bus = miibus;
-        uint16_t r1, r2, page;
-        uint16_t lo, hi;
-
-        split_addr((uint32_t) reg, &r1, &r2, &page);
-        mutex_lock(&switch_mdio_lock);
-        mdiobus_write(bus, switch_chip_id, switch_chip_reg, page);
-	udelay(100);
-        lo = mdiobus_read(bus, 0x10 | r2, r1);
-        hi = mdiobus_read(bus, 0x10 | r2, r1 + 1);
-        mutex_unlock(&switch_mdio_lock);
-        return (hi << 16) | lo;
-}
-
-void
-qca_ar8216_mii_write(a_uint32_t reg, a_uint32_t val)
-{
-        struct mii_bus *bus = miibus;
-        uint16_t r1, r2, r3;
-        uint16_t lo, hi;
-
-        split_addr((a_uint32_t) reg, &r1, &r2, &r3);
-        lo = val & 0xffff;
-        hi = (a_uint16_t) (val >> 16);
-
-        mutex_lock(&switch_mdio_lock);
-        mdiobus_write(bus, switch_chip_id, switch_chip_reg, r3);
-	udelay(100);
-        if(SSDK_CURRENT_CHIP_TYPE != CHIP_SHIVA) {
-            mdiobus_write(bus, 0x10 | r2, r1, lo);
-            mdiobus_write(bus, 0x10 | r2, r1 + 1, hi);
-        } else {
-            mdiobus_write(bus, 0x10 | r2, r1 + 1, hi);
-            mdiobus_write(bus, 0x10 | r2, r1, lo);
-        }
-        mutex_unlock(&switch_mdio_lock);
-}
-
-a_bool_t
-phy_addr_validation_check(a_uint32_t phy_addr)
-{
-
-	if (phy_addr  == SSDK_PHY_BCAST_ID)
-		return A_TRUE;
-	else if ((phy_addr > SSDK_PSGMII_ID) || (phy_addr < SSDK_PHY_MIN_ID))
-		return A_FALSE;
-	else
-		return A_TRUE;
-}
-
-sw_error_t
-qca_ar8327_phy_read(a_uint32_t dev_id, a_uint32_t phy_addr,
-                           a_uint32_t reg, a_uint16_t* data)
-{
-	struct mii_bus *bus = miibus;
-	int phy_dest_addr;
-	if (A_TRUE != phy_addr_validation_check (phy_addr))
-	{
-		return SW_BAD_PARAM;
-	}
-	if (phy_addr == SSDK_PSGMII_ID)
-		phy_dest_addr = phy_address[phy_addr -1] + 1;
-	else if (phy_addr == SSDK_PHY_BCAST_ID)
-		phy_dest_addr = SSDK_PHY_BCAST_ID;
-	else
-		phy_dest_addr = phy_address[phy_addr];
-
-	*data = mdiobus_read(bus, phy_dest_addr, reg);
-	return 0;
-}
-
-sw_error_t
-qca_ar8327_phy_write(a_uint32_t dev_id, a_uint32_t phy_addr,
-                            a_uint32_t reg, a_uint16_t data)
-{
-	struct mii_bus *bus = miibus;
-	int phy_dest_addr;
-	if (A_TRUE != phy_addr_validation_check (phy_addr))
-	{
-		return SW_BAD_PARAM;
-	}
-	if (phy_addr == SSDK_PSGMII_ID)
-		phy_dest_addr = phy_address[phy_addr -1] + 1;
-	else if (phy_addr == SSDK_PHY_BCAST_ID)
-		phy_dest_addr = SSDK_PHY_BCAST_ID;
-	else
-		phy_dest_addr = phy_address[phy_addr];
-
-	mdiobus_write(bus, phy_dest_addr, reg, data);
-	return 0;
-}
-
-void
-qca_ar8327_phy_dbg_write(a_uint32_t dev_id, a_uint32_t phy_addr,
-                                a_uint16_t dbg_addr, a_uint16_t dbg_data)
-{
-	struct mii_bus *bus = miibus;
-	int phy_dest_addr;
-	if (A_TRUE != phy_addr_validation_check (phy_addr))
-	{
-		return ;
-	}
-	if (phy_addr == SSDK_PSGMII_ID)
-		phy_dest_addr = phy_address[phy_addr -1] + 1;
-	else if (phy_addr == SSDK_PHY_BCAST_ID)
-		phy_dest_addr = SSDK_PHY_BCAST_ID;
-	else
-		phy_dest_addr = phy_address[phy_addr];
-
-	mdiobus_write(bus, phy_dest_addr, QCA_MII_DBG_ADDR, dbg_addr);
-	mdiobus_write(bus, phy_dest_addr, QCA_MII_DBG_DATA, dbg_data);
-}
-
-void
-qca_ar8327_phy_dbg_read(a_uint32_t dev_id, a_uint32_t phy_addr,
-		                a_uint16_t dbg_addr, a_uint16_t *dbg_data)
-{
-	struct mii_bus *bus = miibus;
-	int phy_dest_addr;
-	if (A_TRUE != phy_addr_validation_check (phy_addr))
-	{
-		return ;
-	}
-	if (phy_addr == SSDK_PSGMII_ID)
-		phy_dest_addr = phy_address[phy_addr -1] + 1;
-	else if (phy_addr == SSDK_PHY_BCAST_ID)
-		phy_dest_addr = SSDK_PHY_BCAST_ID;
-	else
-		phy_dest_addr = phy_address[phy_addr];
-
-	mdiobus_write(bus, phy_dest_addr, QCA_MII_DBG_ADDR, dbg_addr);
-	*dbg_data = mdiobus_read(bus, phy_dest_addr, QCA_MII_DBG_DATA);
-}
-
-
-void
-qca_ar8327_mmd_write(a_uint32_t dev_id, a_uint32_t phy_addr,
-                          a_uint16_t addr, a_uint16_t data)
-{
-	struct mii_bus *bus = miibus;
-	int phy_dest_addr;
-	if (A_TRUE != phy_addr_validation_check (phy_addr))
-	{
-		return ;
-	}
-	if (phy_addr == SSDK_PSGMII_ID)
-		phy_dest_addr = phy_address[phy_addr -1] + 1;
-	else if (phy_addr == SSDK_PHY_BCAST_ID)
-		phy_dest_addr = SSDK_PHY_BCAST_ID;
-	else
-		phy_dest_addr = phy_address[phy_addr];
-
-	mdiobus_write(bus, phy_dest_addr, QCA_MII_MMD_ADDR, addr);
-	mdiobus_write(bus, phy_dest_addr, QCA_MII_MMD_DATA, data);
-}
-
-void qca_phy_mmd_write(u32 dev_id, u32 phy_id,
-                     u16 mmd_num, u16 reg_id, u16 reg_val)
-{
-	qca_ar8327_phy_write(dev_id, phy_id,
-			QCA_MII_MMD_ADDR, mmd_num);
-	qca_ar8327_phy_write(dev_id, phy_id,
-			QCA_MII_MMD_DATA, reg_id);
-	qca_ar8327_phy_write(dev_id, phy_id,
-			QCA_MII_MMD_ADDR,
-			0x4000 | mmd_num);
-	qca_ar8327_phy_write(dev_id, phy_id,
-		QCA_MII_MMD_DATA, reg_val);
-}
-
-u16 qca_phy_mmd_read(u32 dev_id, u32 phy_id,
-		u16 mmd_num, u16 reg_id)
-{
-	u16 value = 0;
-	qca_ar8327_phy_write(dev_id, phy_id,
-			QCA_MII_MMD_ADDR, mmd_num);
-	qca_ar8327_phy_write(dev_id, phy_id,
-			QCA_MII_MMD_DATA, reg_id);
-	qca_ar8327_phy_write(dev_id, phy_id,
-			QCA_MII_MMD_ADDR,
-			0x4000 | mmd_num);
-	qca_ar8327_phy_read(dev_id, phy_id,
-			QCA_MII_MMD_DATA, &value);
-	return value;
-}
-
-sw_error_t
-qca_switch_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
-{
-	uint32_t reg_val = 0;
-
-	if (len != sizeof (a_uint32_t))
-        return SW_BAD_LEN;
-
-	if ((reg_addr%4)!= 0)
-	return SW_BAD_PARAM;
-
-	reg_val = readl(hw_addr + reg_addr);
-
-	aos_mem_copy(reg_data, &reg_val, sizeof (a_uint32_t));
-	return 0;
-}
-
-sw_error_t
-qca_switch_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
-{
-	uint32_t reg_val = 0;
-	if (len != sizeof (a_uint32_t))
-        return SW_BAD_LEN;
-
-	if ((reg_addr%4)!= 0)
-	return SW_BAD_PARAM;
-
-	aos_mem_copy(&reg_val, reg_data, sizeof (a_uint32_t));
-	writel(reg_val, hw_addr + reg_addr);
-	return 0;
-}
-
-sw_error_t
-qca_psgmii_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
-{
-	uint32_t reg_val = 0;
-
-	if (len != sizeof (a_uint32_t))
-        return SW_BAD_LEN;
-
-	if((reg_addr%4)!=0)
-	return SW_BAD_PARAM;
-
-	if (psgmii_hw_addr == NULL)
-		return SW_NOT_SUPPORTED;
-
-	reg_val = readl(psgmii_hw_addr + reg_addr);
-
-	aos_mem_copy(reg_data, &reg_val, sizeof (a_uint32_t));
-	return 0;
-}
-
-sw_error_t
-qca_psgmii_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
-{
-	uint32_t reg_val = 0;
-	if (len != sizeof (a_uint32_t))
-        return SW_BAD_LEN;
-
-	if((reg_addr%4)!=0)
-	return SW_BAD_PARAM;
-
-	if (psgmii_hw_addr == NULL)
-		return SW_NOT_SUPPORTED;
-
-	aos_mem_copy(&reg_val, reg_data, sizeof (a_uint32_t));
-	writel(reg_val, psgmii_hw_addr + reg_addr);
-	return 0;
-}
-
-#ifdef BOARD_AR71XX
-static uint32_t switch_chip_id_adjuest(void)
-{
-	uint32_t chip_version = 0;
-	chip_version = (qca_ar8216_mii_read(0)&0xff00)>>8;
-	if((chip_version !=0) && (chip_version !=0xff))
-		return 0;
-
-	switch_chip_id = SHIVA_CHIP_ID;
-	switch_chip_reg = SHIVA_CHIP_REG;
-
-	chip_version = (qca_ar8216_mii_read(0)&0xff00)>>8;
-	printk("chip_version:0x%x\n", chip_version);
-	return 1;
-}
-#endif
-
-static int miibus_get(void)
-{
-#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-	#ifndef BOARD_AR71XX
-	struct device_node *mdio_node = NULL;
-	struct platform_device *mdio_plat = NULL;
-	struct ipq40xx_mdio_data *mdio_data = NULL;
-
-	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS)
-		mdio_node = of_find_compatible_node(NULL, NULL, "qcom,ipq40xx-mdio");
-	else
-		mdio_node = of_find_compatible_node(NULL, NULL, "virtual,mdio-gpio");
-
-	if (!mdio_node) {
-		printk("No MDIO node found in DTS!\n");
-		return 1;
-	}
-
-	mdio_plat = of_find_device_by_node(mdio_node);
-	if (!mdio_plat) {
-		printk("cannot find platform device from mdio node\n");
-		return 1;
-	}
-
-	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS)
-	{
-		mdio_data = dev_get_drvdata(&mdio_plat->dev);
-		if (!mdio_data) {
-                	printk("cannot get mdio_data reference from device data\n");
-                	return 1;
-        	}
-		miibus = mdio_data->mii_bus;
-	}
-	else
-		miibus = dev_get_drvdata(&mdio_plat->dev);
-
-	if (!miibus) {
-		printk("cannot get mii bus reference from device data\n");
-		return 1;
-	}
-	#else
-	struct ag71xx_mdio *am;
-	struct device_node *mdio_node = NULL;
-	struct platform_device *mdio_plat = NULL;
-
-	mdio_node = of_find_compatible_node(NULL, NULL, "qca,ag71xx-mdio");
-	if (!mdio_node) {
-		printk("No MDIO node found in DTS!\n");
-		return 1;
-	}
-	mdio_plat = of_find_device_by_node(mdio_node);
-	if (!mdio_plat) {
-		printk("cannot find platform device from mdio node\n");
-		return 1;
-	}
-	am = dev_get_drvdata(&mdio_plat->dev);
-	if (!am) {
-                	printk("cannot get mdio_data reference from device data\n");
-                	return 1;
-	}
-	miibus = am->mii_bus;
-	if (!miibus) {
-		printk("cannot get mii bus reference from device data\n");
-		return 1;
-	}
-	switch_chip_id_adjuest();
-	#endif
-#else
-#ifdef BOARD_AR71XX
-	struct ag71xx_mdio *am;
-#endif
-	struct device *miidev;
-	char busid[MII_BUS_ID_SIZE];
-	snprintf(busid, MII_BUS_ID_SIZE, "%s.%d",
-		IPQ806X_MDIO_BUS_NAME, IPQ806X_MDIO_BUS_NUM);
-
-	miidev = bus_find_device_by_name(&platform_bus_type, NULL, busid);
-	if (!miidev) {
-		printk("cannot get mii bus\n");
-		return 1;
-	}
-
-#ifdef BOARD_AR71XX
-	am = dev_get_drvdata(miidev);
-	miibus = am->mii_bus;
-#else
-	miibus = dev_get_drvdata(miidev);
-#endif
-
-#ifdef BOARD_AR71XX
-	if(switch_chip_id_adjuest()) {
-
-		snprintf(busid, MII_BUS_ID_SIZE, "%s.%d",
-		IPQ806X_MDIO_BUS_NAME, MDIO_BUS_1);
-
-		miidev = bus_find_device_by_name(&platform_bus_type, NULL, busid);
-		if (!miidev) {
-			printk("cannot get mii bus\n");
-			return 1;
-		}
-
-		am = dev_get_drvdata(miidev);
-		miibus = am->mii_bus;
-		printk("chip_version:0x%x\n", (qca_ar8216_mii_read(0)&0xff00)>>8);
-	}
-#endif
-
-	if(!miidev){
-		printk("mdio bus '%s' get FAIL\n", busid);
-		return 1;
-	}
-#endif
-
-	return 0;
-}
-
-
 static int ssdk_phy_id_get(ssdk_init_cfg *cfg)
 {
 	a_uint32_t phy_id = 0;
@@ -2002,7 +1537,7 @@ static int ssdk_probe(struct platform_device *pdev)
 	ess_mac_clock_disable[3] = devm_reset_control_get(&pdev->dev, "ess_mac4_clk_dis");
 	ess_mac_clock_disable[4] = devm_reset_control_get(&pdev->dev, "ess_mac5_clk_dis");
 
-	if (!ess_rst) {
+	if (IS_ERR(ess_rst)) {
 		printk("ess rst fail!\n");
 		return -1;
 	}
@@ -2277,8 +1812,8 @@ void ssdk_psgmii_self_test(a_bool_t enable, a_uint32_t times, a_uint32_t *result
 		phy_t_status = 0;
 
 		for(phy = 0; phy < 5; phy++) {
-			value = readl(hw_addr + 0x66c + phy * 0xc);
-			writel((value|(1<<21)), (hw_addr + 0x66c + phy * 0xc));
+			value = readl(qca_phy_priv_global->hw_addr + 0x66c + phy * 0xc);
+			writel((value|(1<<21)), (qca_phy_priv_global->hw_addr + 0x66c + phy * 0xc));
 		}
 
 		for (phy = 0; phy < 5; phy++) {
@@ -2327,136 +1862,16 @@ void clear_self_test_config(void)
 	for(phy = 0; phy < 5; phy++)
 	{
 		/*disable mac loop back*/
-		value = readl(hw_addr+0x66c+phy*0xc);
-		writel((value&(~(1<<21))), (hw_addr+0x66c+phy*0xc));
+		value = readl(qca_phy_priv_global->hw_addr+0x66c+phy*0xc);
+		writel((value&(~(1<<21))), (qca_phy_priv_global->hw_addr+0x66c+phy*0xc));
 		/*diable phy mdio broadcast write*/
 		qca_phy_mmd_write(0, phy, 7, 0x8028, 0x001f);
 	}
 
 	/* clear fdb entry */
-	fal_fdb_del_all(0,1);
+	fal_fdb_entry_flush(0,1);
 }
 #endif
-
-int
-ssdk_plat_init(ssdk_init_cfg *cfg)
-{
-	#ifdef BOARD_AR71XX
-	int rv = 0;
-	#endif
-	printk("ssdk_plat_init start\n");
-	mutex_init(&switch_mdio_lock);
-
-	if(miibus_get())
-		return -ENODEV;
-
-	#ifdef DESS
-	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
-		/* Enable ess clock here */
-		if(!IS_ERR(ssdk_dt_global.ess_clk))
-		{
-			printk("enable ess clk\n");
-			clk_prepare_enable(ssdk_dt_global.ess_clk);
-		}
-
-		if (!request_mem_region(ssdk_dt_global.switchreg_base_addr,
-				ssdk_dt_global.switchreg_size, "switch_mem")) {
-			printk("%s Unable to request resource.", __func__);
-			return -1;
-		}
-
-		hw_addr = ioremap_nocache(ssdk_dt_global.switchreg_base_addr,
-				ssdk_dt_global.switchreg_size);
-		if (!hw_addr) {
-			printk("%s ioremap fail.", __func__);
-			return -1;
-		}
-		cfg->reg_mode = HSL_HEADER;
-#ifndef BOARD_AR71XX
-#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-		platform_driver_register(&ssdk_driver);
-#endif
-#endif
-	}
-
-	if(ssdk_dt_global.psgmii_reg_access_mode == HSL_REG_LOCAL_BUS) {
-		if (!request_mem_region(ssdk_dt_global.psgmiireg_base_addr,
-				ssdk_dt_global.psgmiireg_size, "psgmii_mem")) {
-			printk("%s Unable to request psgmii resource.", __func__);
-			return -1;
-		}
-
-		psgmii_hw_addr = ioremap_nocache(ssdk_dt_global.psgmiireg_base_addr,
-				ssdk_dt_global.psgmiireg_size);
-		if (!psgmii_hw_addr) {
-			printk("%s ioremap fail.", __func__);
-			cfg->reg_func.psgmii_reg_set = NULL;
-			cfg->reg_func.psgmii_reg_get = NULL;
-			return -1;
-		}
-
-		cfg->reg_func.psgmii_reg_set = qca_psgmii_reg_write;
-		cfg->reg_func.psgmii_reg_get = qca_psgmii_reg_read;
-	}
-	#endif
-
-	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_MDIO) {
-		if(driver_find(qca_phy_driver.name, &mdio_bus_type)){
-			printk("QCA PHY driver had been Registered\n");
-			return 0;
-		}
-		cfg->reg_mode = HSL_MDIO;
-
-		printk("Register QCA PHY driver\n");
-#ifndef BOARD_AR71XX
-		return phy_driver_register(&qca_phy_driver);
-#else
-		rv = phy_driver_register(&qca_phy_driver);
-		ssdk_uci_takeover_init();
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,4,0))
-#ifdef CONFIG_AR8216_PHY
-		ar8327_port_link_notify_register(ssdk_port_link_notify);
-#endif
-		ar7240_port_link_notify_register(ssdk_port_link_notify);
-#endif
-		return rv;
-
-#endif
-	} else
-		return 0;
-
-}
-
-void
-ssdk_plat_exit(void)
-{
-    printk("ssdk_plat_exit\n");
-
-	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_MDIO) {
-#ifndef BOARD_AR71XX
-		phy_driver_unregister(&qca_phy_driver);
-#endif
-
-	#ifdef BOARD_AR71XX
-		ssdk_uci_takeover_exit();
-	#endif
-	}
-
-	if (ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
-		iounmap(hw_addr);
-		iounmap(psgmii_hw_addr);
-		release_mem_region(ssdk_dt_global.switchreg_base_addr,
-					ssdk_dt_global.switchreg_size);
-		release_mem_region(ssdk_dt_global.psgmiireg_base_addr,
-					ssdk_dt_global.psgmiireg_size);
-#ifndef BOARD_AR71XX
-#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-		platform_driver_unregister(&ssdk_driver);
-#endif
-#endif
-	}
-
-}
 
 sw_error_t
 ssdk_init(a_uint32_t dev_id, ssdk_init_cfg * cfg)
@@ -2465,11 +1880,13 @@ ssdk_init(a_uint32_t dev_id, ssdk_init_cfg * cfg)
 
 	rv = fal_init(dev_id, cfg);
 	if (rv != SW_OK)
-		printk("ssdk fal init failed \r\n");
+		printk("ssdk fal init failed: %d. \r\n", rv);
 
-	ssdk_phy_init(cfg);
-	if (rv != SW_OK)
-		printk("ssdk phy init failed \r\n");
+	if (cfg->chip_type != CHIP_HPPE) {
+		rv = ssdk_phy_init(cfg);
+		if (rv != SW_OK)
+			printk("ssdk phy init failed: %d. \r\n", rv);
+	}
 
 	return rv;
 }
@@ -2515,6 +1932,7 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 	struct device_node *switch_node = NULL,*mdio_node = NULL;
 	struct device_node *psgmii_node = NULL;
 	struct device_node *child = NULL;
+	struct device_node *uniphy_node = NULL;
 	a_uint32_t len = 0,i = 0,j = 0;
 	const __be32 *reg_cfg, *mac_mode,*led_source,*phy_addr;
 	const __be32 *led_number;
@@ -2559,6 +1977,53 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 	else
 		ssdk_dt_global.switch_reg_access_mode = HSL_REG_MDIO;
 
+	mac_mode = of_get_property(switch_node, "switch_mac_mode", &len);
+	if (!mac_mode)
+		printk("%s: error reading device node properties for mac mode\n", switch_node->name);
+	else {
+		cfg->mac_mode = be32_to_cpup(mac_mode);
+		printk("mac mode = %d\n", be32_to_cpup(mac_mode));
+		ssdk_dt_global.mac_mode = cfg->mac_mode;
+	}
+
+	mac_mode = of_get_property(switch_node, "switch_mac_mode1", &len);
+	if(!mac_mode)
+		printk("%s: error reading device node properties for mac mode1\n", switch_node->name);
+	else {
+		cfg->mac_mode1 = be32_to_cpup(mac_mode);
+		printk("mac mode1 = %d\n", be32_to_cpup(mac_mode));
+		ssdk_dt_global.mac_mode1 = cfg->mac_mode1;
+	}
+
+	mac_mode = of_get_property(switch_node, "switch_mac_mode2", &len);
+	if(!mac_mode)
+		printk("%s: error reading device node properties for mac mode2\n", switch_node->name);
+	else {
+		cfg->mac_mode2 = be32_to_cpup(mac_mode);
+		printk("mac mode2 = %d\n", be32_to_cpup(mac_mode));
+		ssdk_dt_global.mac_mode2 = cfg->mac_mode2;
+	}
+
+	// read uniphy register base and address space
+	uniphy_node = of_find_node_by_name(NULL, "ess-uniphy");
+	if (!uniphy_node)
+		printk("ess-uniphy DT doesn't exist!\n");
+	else {
+		reg_cfg = of_get_property(uniphy_node, "reg", &len);
+		if(!reg_cfg)
+			printk("%s: error reading device node properties for reg\n", uniphy_node->name);
+		else {
+			ssdk_dt_global.uniphyreg_base_addr = be32_to_cpup(reg_cfg);
+			ssdk_dt_global.uniphyreg_size = be32_to_cpup(reg_cfg + 1);
+        	}
+		if (of_property_read_string(uniphy_node, "uniphy_access_mode", (const char **)&ssdk_dt_global.uniphy_access_mode))
+			printk("%s: error reading device node properties for uniphy_access_mode\n", uniphy_node->name);
+		else {
+			if(!strcmp(ssdk_dt_global.uniphy_access_mode, "local bus"))
+				ssdk_dt_global.uniphy_reg_access_mode = HSL_REG_LOCAL_BUS;
+		}
+	}
+
 	if (of_property_read_u32(switch_node, "switch_cpu_bmp", &cfg->port_cfg.cpu_bmp)
 		|| of_property_read_u32(switch_node, "switch_lan_bmp", &cfg->port_cfg.lan_bmp)
 		|| of_property_read_u32(switch_node, "switch_wan_bmp", &cfg->port_cfg.wan_bmp)) {
@@ -2587,15 +2052,6 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 	if(!strcmp(ssdk_dt_global.psgmii_reg_access_str, "local bus"))
 		ssdk_dt_global.psgmii_reg_access_mode = HSL_REG_LOCAL_BUS;
 
-	mac_mode = of_get_property(switch_node, "switch_mac_mode", &len);
-	if(!mac_mode) {
-		printk("%s: error reading device node properties for mac mode\n", switch_node->name);
-		return SW_BAD_PARAM;
-	}
-	cfg->mac_mode = be32_to_cpup(mac_mode);
-	printk("mac mode=%d\n", be32_to_cpup(mac_mode));
-	ssdk_dt_global.mac_mode = cfg->mac_mode;
-	printk("current mac mode = %d\n", ssdk_dt_global.mac_mode);
 	for_each_available_child_of_node(switch_node, child) {
 
 		led_source = of_get_property(child, "source", &len);
@@ -2650,7 +2106,7 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 
 		phy_addr = of_get_property(child, "reg", &len);
 		if (phy_addr)
-			phy_address[j] = be32_to_cpup(phy_addr);
+			qca_phy_priv_global->phy_address[j] = be32_to_cpup(phy_addr);
 		j++;
 		if (j >= 5)
 			break;
@@ -2659,6 +2115,61 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 }
 #endif
 #endif
+
+static void ssdk_driver_register(void)
+{
+#ifdef DESS
+	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
+#ifndef BOARD_AR71XX
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+		platform_driver_register(&ssdk_driver);
+#endif
+#endif
+	}
+#endif
+
+	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_MDIO) {
+		if(driver_find(qca_phy_driver.name, &mdio_bus_type)){
+			printk("QCA PHY driver had been Registered\n");
+			return;
+		}
+
+		printk("Register QCA PHY driver\n");
+#ifndef BOARD_AR71XX
+		phy_driver_register(&qca_phy_driver);
+#else
+		phy_driver_register(&qca_phy_driver);
+		ssdk_uci_takeover_init();
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,4,0))
+#ifdef CONFIG_AR8216_PHY
+		ar8327_port_link_notify_register(ssdk_port_link_notify);
+#endif
+		ar7240_port_link_notify_register(ssdk_port_link_notify);
+#endif		
+#endif
+	}
+}
+
+static void ssdk_driver_unregister(void)
+{
+	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_MDIO) {
+#ifndef BOARD_AR71XX
+		phy_driver_unregister(&qca_phy_driver);
+#endif
+
+	#ifdef BOARD_AR71XX
+		ssdk_uci_takeover_exit();
+	#endif
+	}
+
+	if (ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
+#ifndef BOARD_AR71XX
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+		platform_driver_unregister(&ssdk_driver);
+#endif
+#endif
+	}
+}
 
 static int chip_ver_get(ssdk_init_cfg* cfg)
 {
@@ -2672,14 +2183,16 @@ static int chip_ver_get(ssdk_init_cfg* cfg)
 		chip_ver = (reg_val&0xff00)>>8;
 	}
 
-	if(chip_ver == 0x02)
+	if(chip_ver == QCA_VER_AR8227)
 		cfg->chip_type = CHIP_SHIVA;
-	else if(chip_ver == 0x13)
+	else if(chip_ver == QCA_VER_AR8337)
 		cfg->chip_type = CHIP_ISISC;
-	else if(chip_ver == 0x12)
+	else if(chip_ver == QCA_VER_AR8327)
 		cfg->chip_type = CHIP_ISIS;
-	else if(chip_ver == 0x14)
+	else if(chip_ver == QCA_VER_DESS)
 		cfg->chip_type = CHIP_DESS;
+	else if(chip_ver == QCA_VER_HPPE)
+		cfg->chip_type = CHIP_HPPE;
 	else
 		rv = -ENODEV;
 
@@ -3064,6 +2577,942 @@ qca_dess_hw_init(ssdk_init_cfg *cfg)
 }
 #endif
 
+#ifdef HPPE
+static int qca_hppe_vsi_hw_init(void)
+{
+	return ppe_vsi_init(0);
+#if 0
+#ifdef ESS_ONLY_FPGA
+	a_uint32_t port_default_vsi[6] = {2, 2, 2, 2, 3, 3};
+#else
+	a_uint32_t port_default_vsi[6] = {0, 1, 2, 3, 4, 5};
+#endif
+	a_uint32_t port_id = 0;
+
+	fal_vsi_newaddr_lrn_t newaddr_lrn = {0};
+	fal_vsi_stamove_t stamove = {0};
+	fal_vsi_member_t member = {0};
+	newaddr_lrn.action = 0;
+	newaddr_lrn.lrn_en = 1;
+	stamove.action = 0;
+	stamove.stamove_en = 1;
+
+	for(port_id = 1; port_id <= 6; port_id++)/*clean vsi table as zero*/
+		fal_vsi_member_set(0, port_default_vsi[port_id-1], &member);
+
+	for(port_id = 1; port_id <= 6; port_id++)
+	{
+		fal_vsi_newaddr_lrn_set(0, port_default_vsi[port_id-1], &newaddr_lrn);
+		fal_vsi_stamove_set(0, port_default_vsi[port_id-1], &stamove);
+		fal_port_vsi_set(0, port_id, port_default_vsi[port_id-1]);
+		fal_vsi_member_get(0, port_default_vsi[port_id-1], &member);
+		member.member_ports |= ((1<<port_id)|0x1);
+		member.bc_ports |= ((1<<port_id)|0x1);
+		member.umc_ports |= ((1<<port_id)|0x1);
+		member.uuc_ports |= ((1<<port_id)|0x1);
+		fal_vsi_member_set(0, port_default_vsi[port_id-1], &member);
+	}
+
+	return 0;
+#endif
+}
+
+static int qca_hppe_fdb_hw_init(void)
+{
+	union port_bridge_ctrl_u value = {0};
+	a_uint32_t port = 0;
+
+	for(port = 0; port < 7; port++)
+	{
+		value.bf.new_addr_lrn_en = 1;
+		value.bf.new_addr_fwd_cmd = 0;
+		value.bf.station_move_lrn_en = 1;
+		value.bf.station_move_fwd_cmd = 0;
+		value.bf.port_isolation_bitmap = 0x7f;
+		value.bf.txmac_en = 1;
+		value.bf.promisc_en = 1;
+
+		hppe_port_bridge_ctrl_set(0, port, &value);
+	}
+
+	value.bf.txmac_en = 0;
+	//hppe_port_bridge_ctrl_set(0, 0, &value);
+	hppe_port_bridge_ctrl_set(0, 7, &value);
+
+	hppe_l2_global_conf_age_en_set(0, 1);
+	hppe_l2_global_conf_lrn_en_set(0, 1);
+
+	return 0;
+}
+
+static int
+qca_hppe_portctrl_hw_init(void)
+{
+	a_uint32_t i = 0, val;
+	a_uint32_t addr_delta = 0x200;
+
+	for(i = 0; i < 6; i++) {
+		val = 0x73;
+		qca_switch_reg_write(0, 0x001000 + (addr_delta*i), (a_uint8_t *)&val, 4);
+		val = 0x2;
+		qca_switch_reg_write(0, 0x001004 + (addr_delta*i), (a_uint8_t *)&val, 4);
+		val = 0x1;
+		qca_switch_reg_write(0, 0x001034 + (addr_delta*i), (a_uint8_t *)&val, 4);
+	}
+
+	return 0;
+}
+
+static int
+qca_hppe_policer_hw_init(void)
+{
+	a_uint32_t i = 0;
+
+	fal_policer_timeslot_set(0, 600);
+
+	for(i = 0; i < 8; i ++)
+	{
+		fal_port_policer_compensation_byte_set(0, i, 4);
+	}
+
+	return 0;
+}
+
+static int
+qca_hppe_shaper_hw_init(void)
+{
+	fal_shaper_token_number_t port_token_number, queue_token_number;
+	fal_shaper_token_number_t flow_token_number;
+	a_uint32_t i = 0;
+
+	port_token_number.c_token_number_negative_en = 0;
+	port_token_number.c_token_number = 0x3fffffff;
+	queue_token_number.c_token_number_negative_en = 0;
+	queue_token_number.c_token_number = 0x3fffffff;
+	queue_token_number.e_token_number_negative_en = 0;
+	queue_token_number.e_token_number = 0x3fffffff;
+	flow_token_number.c_token_number_negative_en = 0;
+	flow_token_number.c_token_number = 0x3fffffff;
+	flow_token_number.e_token_number_negative_en = 0;
+	flow_token_number.e_token_number = 0x3fffffff;
+
+	for(i = 0; i < 8; i ++)
+	{
+		fal_port_shaper_token_number_set(0, i, &port_token_number);
+	}
+
+	for(i = 0; i < 300; i ++)
+	{
+		fal_queue_shaper_token_number_set(0, i, &queue_token_number);
+	}
+
+	for(i = 0; i < 64; i ++)
+	{
+		fal_flow_shaper_token_number_set(0, i, &flow_token_number);
+	}
+
+	fal_port_shaper_timeslot_set(0, 8);
+	fal_flow_shaper_timeslot_set(0, 64);
+	fal_queue_shaper_timeslot_set(0, 300);
+	fal_shaper_ipg_preamble_length_set(0, 20);
+
+	return 0;
+}
+
+static int
+qca_hppe_portvlan_hw_init(void)
+{
+	a_uint32_t port_id = 0, vsi_idx = 0;
+	fal_global_qinq_mode_t global_qinq_mode;
+	fal_port_qinq_role_t port_qinq_role;
+	fal_tpid_t in_eg_tpid;
+	fal_vlantag_egress_mode_t vlantag_eg_mode;
+
+	/* configure ingress/egress global QinQ mode as ctag/ctag */
+	global_qinq_mode.mask = 0x3;
+	global_qinq_mode.ingress_mode = FAL_QINQ_CTAG_MODE;
+	global_qinq_mode.egress_mode = FAL_QINQ_CTAG_MODE;
+	fal_global_qinq_mode_set(0, &global_qinq_mode);
+
+	/* configure port0 - port7 ingress/egress QinQ role as edge/edge */
+	port_qinq_role.mask = 0x3;
+	port_qinq_role.ingress_port_role = FAL_QINQ_CORE_PORT;
+	port_qinq_role.egress_port_role = FAL_QINQ_CORE_PORT;
+	fal_port_qinq_mode_set(0, 0, &port_qinq_role);
+	port_qinq_role.mask = 0x3;
+	port_qinq_role.ingress_port_role = FAL_QINQ_EDGE_PORT;
+	port_qinq_role.egress_port_role = FAL_QINQ_EDGE_PORT;
+	for (port_id = 1; port_id < 8; port_id++)
+		fal_port_qinq_mode_set(0, port_id, &port_qinq_role);
+
+	/* configure ingress and egress stpid/ctpid as 0x88a8/0x8100 */
+	in_eg_tpid.mask = 0x3;
+	in_eg_tpid.ctpid = FAL_DEF_VLAN_CTPID;
+	in_eg_tpid.stpid = FAL_DEF_VLAN_STPID;
+	fal_ingress_tpid_set(0, &in_eg_tpid);
+	fal_egress_tpid_set(0, &in_eg_tpid);
+
+	/* configure port0 - port7 ingress vlan translation mismatched command as forward*/
+	for (port_id = 0; port_id < 8; port_id++)
+		fal_port_vlan_xlt_miss_cmd_set(0, port_id, FAL_MAC_FRWRD);
+
+	/* configure port0 - port7 stag/ctag egress mode as unmodified/unmodified */
+	vlantag_eg_mode.mask = 0x3;
+	vlantag_eg_mode.stag_mode = FAL_EG_UNMODIFIED;
+	vlantag_eg_mode.ctag_mode = FAL_EG_UNMODIFIED;
+	for (port_id = 0; port_id < 8; port_id++)
+		fal_port_vlantag_egmode_set(0, port_id, &vlantag_eg_mode);
+
+	/* configure the port0 - port7 of vsi0 - vsi31 to unmodified */
+	for (vsi_idx = 0; vsi_idx < 32; vsi_idx++)
+		for (port_id = 0; port_id < 8; port_id++)
+			fal_port_vsi_egmode_set(0, vsi_idx, port_id, FAL_EG_UNMODIFIED);
+
+	/* configure port0 - port7 vsi tag mode control to enable */
+	for (port_id = 0; port_id < 8; port_id++)
+		fal_port_vlantag_vsi_egmode_enable(0, port_id, A_TRUE);
+
+	return 0;
+}
+
+fal_port_scheduler_cfg_t port_scheduler_tbl[] = {
+	{0xee, 6, 0},
+	{0xde, 4, 5},
+	{0x9f, 0, 6},
+	{0xbe, 5, 0},
+	{0x7e, 6, 7},
+	{0x5f, 0, 5},
+	{0x9f, 7, 6},
+	{0xbe, 5, 0},
+	{0xfc, 6, 1},
+	{0xdd, 0, 5},
+	{0xde, 1, 0},
+	{0xbe, 5, 6},
+	{0xbb, 0, 2},
+	{0xdb, 6, 5},
+	{0xde, 2, 0},
+	{0xbe, 5, 6},
+	{0x3f, 0, 7},
+	{0x7e, 6, 0},
+	{0xde, 7, 5},
+	{0x9f, 0, 6},
+	{0xb7, 5, 3},
+	{0xf6, 6, 0},
+	{0xde, 3, 5},
+	{0x9f, 0, 6},
+	{0xbe, 5, 0},
+	{0xee, 6, 4},
+	{0xcf, 0, 5},
+	{0x9f, 4, 6},
+	{0xbe, 5, 0},
+	{0x7e, 6, 7},
+	{0x5f, 0, 5},
+	{0xde, 7, 0},
+	{0xbe, 5, 6},
+	{0xbd, 0, 1},
+	{0xdd, 6, 5},
+	{0xde, 1, 0},
+	{0xbe, 5, 6},
+	{0xbb, 0, 2},
+	{0xfa, 6, 0},
+	{0xde, 2, 5},
+	{0x9f, 0, 6},
+	{0x3f, 5, 7},
+	{0x7e, 6, 0},
+	{0xde, 7, 5},
+	{0x9f, 0, 6},
+	{0xb7, 5, 3},
+	{0xf6, 6, 0},
+	{0xde, 3, 5},
+	{0x9f, 0, 6},
+	{0xaf, 5, 4},
+};
+
+fal_port_tdm_tick_cfg_t port_tdm_tbl[] = {
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 1},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 3},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 2},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 4},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 1},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 3},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 2},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 4},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+};
+
+static int
+qca_hppe_tdm_hw_init(void)
+{
+	adpt_api_t *p_api;
+	a_uint32_t i = 0;
+	a_uint32_t num = sizeof(port_scheduler_tbl) / sizeof(fal_port_scheduler_cfg_t);
+	fal_port_tdm_ctrl_t tdm_ctrl;
+
+	p_api = adpt_api_ptr_get(0);
+	if (!p_api)
+		return SW_FAIL;
+
+	if (!p_api->adpt_port_scheduler_cfg_set ||
+		!p_api->adpt_tdm_tick_num_set)
+		return SW_FAIL;
+
+	for (i = 0; i < num; i++) {
+		p_api->adpt_port_scheduler_cfg_set(0, i, &port_scheduler_tbl[i]);
+	}
+	p_api->adpt_tdm_tick_num_set(0, num);
+
+	num = sizeof(port_tdm_tbl) / sizeof(fal_port_tdm_tick_cfg_t);
+	for (i = 0; i < num; i++) {
+		p_api->adpt_port_tdm_tick_cfg_set(0, i, &port_tdm_tbl[i]);
+	}
+	tdm_ctrl.enable = 1;
+	tdm_ctrl.offset = 0;
+	tdm_ctrl.depth = 100;
+	p_api->adpt_port_tdm_ctrl_set(0, &tdm_ctrl);
+	printk("tdm setup num=%d\n", num);
+	return 0;
+}
+
+static int
+qca_hppe_xgmac_hw_init(void)
+{
+	a_uint32_t val = 0, i = 0;
+	a_uint32_t xgmac_addr_delta = 0x4000;
+
+	val = 0x15;
+	qca_switch_reg_write(0, 0x00000010, (a_uint8_t *)&val, 4);
+
+	for (i = 0; i < 2; i ++)
+	{
+		val = 0x80010001;
+		qca_switch_reg_write(0, 0x00003000 + (xgmac_addr_delta*i), (a_uint8_t *)&val, 4);
+		val = 0x271c00c7;
+		qca_switch_reg_write(0, 0x00003004 + (xgmac_addr_delta*i), (a_uint8_t *)&val, 4);
+		val = 0x00000001;
+		qca_switch_reg_write(0, 0x00003008 + (xgmac_addr_delta*i), (a_uint8_t *)&val, 4);
+		val = 0x00000001;
+		qca_switch_reg_write(0, 0x00003090 + (xgmac_addr_delta*i), (a_uint8_t *)&val, 4);
+		val = 0x00000002;
+		qca_switch_reg_write(0, 0x00003070 + (xgmac_addr_delta*i), (a_uint8_t *)&val, 4);
+		val = 0x40000;
+		qca_switch_reg_write(0, 0x00003050 + (xgmac_addr_delta*i), (a_uint8_t *)&val, 4);
+	}
+
+	val = 0x0;
+	qca_switch_reg_write(0, 0x00001800, (a_uint8_t *)&val, 4);
+	val = 0x0;
+	qca_switch_reg_write(0, 0x00001a00, (a_uint8_t *)&val, 4);
+
+	return 0;
+}
+
+static int
+qca_hppe_bm_hw_init(void)
+{
+	a_uint32_t i = 0;
+	fal_bm_dynamic_cfg_t cfg;
+
+	for (i = 0; i <  15; i++) {
+		/* enable fc */
+		fal_port_bm_ctrl_set(0, i, 1);
+		/* map to group 0 */
+		fal_port_bufgroup_map_set(0, i, 0);
+	}
+
+	fal_bm_bufgroup_buffer_set(0, 0, 1600);
+
+	/* set reserved buffer */
+	fal_bm_port_reserved_buffer_set(0, 0, 0, 52);
+	for (i = 1; i < 8; i++)
+		fal_bm_port_reserved_buffer_set(0, i, 0, 18);
+	for (i = 8; i < 14; i++)
+		fal_bm_port_reserved_buffer_set(0, i, 0, 163);
+	fal_bm_port_reserved_buffer_set(0, 14, 0, 40);
+
+	memset(&cfg, 0, sizeof(cfg));
+	cfg.resume_min_thresh = 0;
+	cfg.resume_off = 36;
+	cfg.weight= 4;
+	cfg.shared_ceiling = 250;
+	for (i = 0; i < 15; i++)
+		fal_bm_port_dynamic_thresh_set(0, i, &cfg);
+	return 0;
+}
+
+static int
+qca_hppe_qm_hw_init(void)
+{
+	a_uint32_t i, queue_base = 200;
+	fal_ucast_queue_dest_t queue_dst;
+	fal_ac_obj_t obj;
+	fal_ac_ctrl_t ac_ctrl;
+	fal_ac_group_buffer_t group_buff;
+	fal_ac_dynamic_threshold_t  dthresh_cfg;
+	fal_ac_static_threshold_t sthresh_cfg;
+
+	memset(&queue_dst, 0, sizeof(queue_dst));
+	fal_ucast_queue_base_profile_set(0, &queue_dst, 0, 0);
+	/*
+	 * Redirect service code 2 to queue 1
+	 * TODO: keep sync with  NSS
+	 */
+	queue_dst.service_code_en = A_TRUE;
+	queue_dst.service_code = 2;
+	fal_ucast_queue_base_profile_set(0, &queue_dst, 1, 0);
+
+	queue_dst.service_code = 3;
+	fal_ucast_queue_base_profile_set(0, &queue_dst, 128, 0);
+
+	queue_dst.service_code = 4;
+	fal_ucast_queue_base_profile_set(0, &queue_dst, 128, 0);
+
+	queue_dst.service_code = 5;
+	fal_ucast_queue_base_profile_set(0, &queue_dst, 0, 0);
+
+	queue_dst.service_code_en = A_FALSE;
+	queue_dst.service_code = 0;
+	for(i = 1; i < 8; i++) {
+		queue_dst.dst_port = i;
+		fal_ucast_queue_base_profile_set(0, &queue_dst,
+						queue_base + (i-1) * 8, i);
+	}
+
+	/* queue ac*/
+	ac_ctrl.ac_en = 1;
+	ac_ctrl.ac_fc_en = 0;
+	for (i = 0; i < 300; i++) {
+		obj.type = FAL_AC_QUEUE;
+		obj.obj_id = i;
+		fal_ac_ctrl_set(0, &obj, &ac_ctrl);
+		fal_ac_queue_group_set(0, i, 0);
+		fal_ac_prealloc_buffer_set(0, &obj, 0);
+	}
+
+	group_buff.prealloc_buffer = 0;
+	group_buff.total_buffer = 2000;
+	fal_ac_group_buffer_set(0, 0, &group_buff);
+
+	memset(&dthresh_cfg, 0, sizeof(dthresh_cfg));
+	dthresh_cfg.shared_weight = 4;
+	dthresh_cfg.ceiling = 250;
+	dthresh_cfg.green_resume_off = 36;
+	for (i = 0; i < 256; i++)
+		fal_ac_dynamic_threshold_set(0, i, &dthresh_cfg);
+
+	memset(&sthresh_cfg, 0, sizeof(sthresh_cfg));
+	sthresh_cfg.green_max = 250;
+	sthresh_cfg.green_resume_off = 36;
+	for (i = 256; i < 300; i++) {
+		obj.type = FAL_AC_QUEUE;
+		obj.obj_id = i;
+		fal_ac_static_threshold_set(0, &obj, &sthresh_cfg);
+	}
+
+	return 0;
+}
+
+static int
+qca_hppe_qos_scheduler_hw_init(void)
+{
+	a_uint32_t i = 0, j = 0;
+	fal_qos_scheduler_cfg_t cfg;
+	fal_queue_bmp_t queue_bmp;
+	fal_qos_group_t group_sel;
+	fal_qos_pri_precedence_t pri_pre;
+
+	memset(&cfg, 0, sizeof(cfg));
+
+	/* L1 shceduler */
+	for (i = 0; i < 8; i++) {
+		cfg.sp_id = i;
+		cfg.c_pri = 0;
+		cfg.e_pri = 0;
+		cfg.c_drr_id = i;
+		cfg.e_drr_id = i;
+		cfg.c_drr_wt = 1;
+		cfg.e_drr_wt = 1;
+		fal_queue_scheduler_set(0, i, 1, i, &cfg);
+	}
+
+	/* L0 shceduler */
+	/* cpu port unicast queue: 0 ~ 199 */
+	cfg.sp_id = 0;
+	cfg.c_drr_wt = 2;
+	cfg.e_drr_wt = 2;
+	for (i = 0; i < 200; i++) {
+		cfg.c_pri = i % 8;
+		cfg.e_pri = i % 8;
+		cfg.c_drr_id = i % 8;
+		cfg.e_drr_id = i % 8;
+		fal_queue_scheduler_set(0, i, 0, 0, &cfg);
+	}
+	/* cpu port multicast queue: 256 ~ 271 */
+	cfg.c_drr_wt = 1;
+	cfg.e_drr_wt = 1;
+	for (i = 256; i < 272; i++) {
+		cfg.c_pri = i % 8;
+		cfg.e_pri = i % 8;
+		cfg.c_drr_id = i % 8;
+		cfg.e_drr_id = i % 8;
+		fal_queue_scheduler_set(0, i, 0, 0, &cfg);
+	}
+	/* port 1~7 unicast queue: 200 ~ 255  */
+	/* port 1~7 multicast queue: 272 ~ 299  */
+	for (j = 1; j < 8; j++) {
+		cfg.sp_id = j;
+		cfg.c_drr_wt = 2;
+		cfg.e_drr_wt = 2;
+		for (i = 0; i < 8; i++) {
+			cfg.c_pri = i;
+			cfg.e_pri = i;
+			cfg.c_drr_id = i + 8 * j;
+			cfg.e_drr_id = i + 8 * j;
+			fal_queue_scheduler_set(0, 200 + i + (j-1)*8, 0, j, &cfg);
+		}
+
+		cfg.c_drr_wt = 1;
+		cfg.e_drr_wt = 1;
+		for (i = 0; i < 4; i++) {
+			cfg.c_pri = i;
+			cfg.e_pri = i;
+			cfg.c_drr_id = i + 8 * j;
+			cfg.e_drr_id = i + 8 * j;
+			fal_queue_scheduler_set(0,272 + i + (j-1)*4, 0, j, &cfg);
+		}
+	}
+
+	/* queue--edma ring mapping*/
+	memset(&queue_bmp, 0, sizeof(queue_bmp));
+	queue_bmp.bmp[0] = 1;
+	fal_edma_ring_queue_map_set(0, 0, &queue_bmp);
+	queue_bmp.bmp[0] = 2;
+	fal_edma_ring_queue_map_set(0, 1, &queue_bmp);
+	queue_bmp.bmp[0] = 0;
+	queue_bmp.bmp[4] = 0xFFFF;
+	fal_edma_ring_queue_map_set(0, 2, &queue_bmp);
+
+	/* chose qos group 0 */
+	group_sel.dscp_group = 0;
+	group_sel.flow_group = 0;
+	group_sel.pcp_group = 0;
+	for (i = 0; i < 8; i++)
+		fal_qos_port_group_get(0, i, &group_sel);
+	/* qos precedence */
+	pri_pre.flow_pri = 4;
+	pri_pre.acl_pri = 2;
+	pri_pre.dscp_pri = 1;
+	pri_pre.pcp_pri = 0;
+	pri_pre.preheader_pri = 3;
+	for (i = 0; i < 8; i++)
+		fal_qos_port_pri_precedence_set(0, i, &pri_pre);
+
+	return 0;
+}
+
+#ifdef HAWKEYE_CHIP
+static int
+qca_hppe_gcc_uniphy_init(void)
+{
+	gcc_uniphy_base = ioremap_nocache(0x01856000, 0x280);
+	if (!gcc_uniphy_base) {
+		printk("can't get gcc uniphy address!\n");
+		return -1;
+	}
+	printk("Get gcc uniphy address successfully!\n");
+
+	return 0;
+}
+
+static int
+qca_hppe_gcc_speed_clock_init(void)
+{
+	gcc_hppe_clock_config1_base = ioremap_nocache(0x01868020, 0x5c);
+	if (!gcc_hppe_clock_config1_base) {
+		printk("can't get gcc hppe colck config1 address!\n");
+		return -1;
+	}
+	printk("Get gcc hppe colck config1 address successfully!\n");
+
+	gcc_hppe_clock_config2_base = ioremap_nocache(0x01868400, 0x60);
+	if (!gcc_hppe_clock_config2_base) {
+		printk("can't get gcc hppe colck config2 address!\n");
+		return -1;
+	}
+	printk("Get gcc hppe colck config2 address successfully!\n");
+
+	return 0;
+}
+
+uint32_t
+qca_hppe_gcc_speed_clock1_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr,
+				a_uint8_t * reg_data, a_uint32_t len)
+{
+	if (len != sizeof (a_uint32_t))
+        return SW_BAD_LEN;
+
+	if ((reg_addr%4)!= 0)
+	return SW_BAD_PARAM;
+
+	writel(reg_data, gcc_hppe_clock_config1_base + reg_addr);
+
+	return 0;
+}
+
+uint32_t
+qca_hppe_gcc_speed_clock1_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr,
+				a_uint8_t * reg_data, a_uint32_t len)
+{
+	uint32_t reg_val = 0;
+
+	if (len != sizeof (a_uint32_t))
+        return SW_BAD_LEN;
+
+	if ((reg_addr%4)!= 0)
+	return SW_BAD_PARAM;
+
+	reg_val = readl(gcc_hppe_clock_config1_base + reg_addr);
+	aos_mem_copy(reg_data, &reg_val, sizeof (a_uint32_t));
+
+	return 0;
+}
+
+uint32_t
+qca_hppe_gcc_speed_clock2_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr,
+				a_uint8_t * reg_data, a_uint32_t len)
+{
+	if (len != sizeof (a_uint32_t))
+        return SW_BAD_LEN;
+
+	if ((reg_addr%4)!= 0)
+	return SW_BAD_PARAM;
+
+	writel(reg_data, gcc_hppe_clock_config2_base + reg_addr);
+
+	return 0;
+}
+
+uint32_t
+qca_hppe_gcc_speed_clock2_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr,
+				a_uint8_t * reg_data, a_uint32_t len)
+{
+	uint32_t reg_val = 0;
+
+	if (len != sizeof (a_uint32_t))
+        return SW_BAD_LEN;
+
+	if ((reg_addr%4)!= 0)
+	return SW_BAD_PARAM;
+
+	reg_val = readl(gcc_hppe_clock_config2_base + reg_addr);
+	aos_mem_copy(reg_data, &reg_val, sizeof (a_uint32_t));
+
+	return 0;
+}
+
+uint32_t
+qca_hppe_gcc_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
+{
+	if (len != sizeof (a_uint32_t))
+        return SW_BAD_LEN;
+
+	if ((reg_addr%4)!= 0)
+	return SW_BAD_PARAM;
+
+	writel(reg_data, gcc_uniphy_base + reg_addr);
+
+	return 0;
+}
+
+uint32_t
+qca_hppe_gcc_uniphy_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
+{
+	uint32_t reg_val = 0;
+
+	if (len != sizeof (a_uint32_t))
+        return SW_BAD_LEN;
+
+	if ((reg_addr%4)!= 0)
+	return SW_BAD_PARAM;
+
+	reg_val = readl(gcc_uniphy_base + reg_addr);
+	aos_mem_copy(reg_data, &reg_val, sizeof (a_uint32_t));
+
+	return 0;
+}
+static void
+qca_hppe_gcc_uniphy_port_clock_set(a_uint32_t dev_id, a_uint32_t uniphy_index,
+			a_uint32_t port_id, a_bool_t enable)
+{
+	a_uint32_t i, reg_value;
+
+	for (i = 0; i < 2; i++)
+	{
+		reg_value = 0;
+		qca_hppe_gcc_uniphy_reg_read(0, (((0x10 + i * 4) + 0x8 * (port_id - 1))
+				+ (uniphy_index * HPPE_GCC_UNIPHY_REG_INC)), (a_uint8_t *)&reg_value, 4);
+		if (enable == A_TRUE)
+			reg_value |= 0x1;
+		else
+			reg_value &= ~0x1;
+		qca_hppe_gcc_uniphy_reg_write(0, (((0x10 + i * 4)+ 0x8 * (port_id - 1))
+				+ (uniphy_index * HPPE_GCC_UNIPHY_REG_INC)), (a_uint8_t *)&reg_value, 4);
+	}
+
+}
+
+sw_error_t
+qca_hppe_xgphy_read(a_uint32_t dev_id, a_uint32_t phy_addr,
+                           a_uint32_t reg, a_uint16_t* data)
+{
+	struct mii_bus *bus = miibus;
+	int phy_dest_addr;
+
+	phy_dest_addr = phy_address[phy_addr];
+	reg = MII_PHYADDR_C45 | reg;
+	*data = mdiobus_read(bus, phy_dest_addr, reg);
+
+	return 0;
+}
+sw_error_t
+qca_hppe_xgphy_write(a_uint32_t dev_id, a_uint32_t phy_addr,
+                            a_uint32_t reg, a_uint16_t data)
+{
+	struct mii_bus *bus = miibus;
+	int phy_dest_addr;
+
+	phy_dest_addr = phy_address[phy_addr];
+	reg = MII_PHYADDR_C45 | reg;
+	mdiobus_write(bus, phy_dest_addr, reg, data);
+
+	return 0;
+}
+#endif
+
+uint32_t
+qca_hppe_uniphy_reg_read(a_uint32_t dev_id, a_uint32_t uniphy_index,
+				a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
+{
+	uint32_t reg_val = 0;
+	void __iomem *hppe_uniphy_base = NULL;
+	a_uint32_t reg_addr1, reg_addr2;
+
+	if (len != sizeof (a_uint32_t))
+        return SW_BAD_LEN;
+
+	if ((reg_addr%4)!= 0)
+	return SW_BAD_PARAM;
+
+	if (HPPE_UNIPHY_INSTANCE0 == uniphy_index)
+		hppe_uniphy_base = hppe_uniphy_addr;
+	else if (HPPE_UNIPHY_INSTANCE1 == uniphy_index)
+		hppe_uniphy_base = hppe_uniphy_addr + HPPE_UNIPHY_BASE1;
+
+	else if (HPPE_UNIPHY_INSTANCE2 == uniphy_index)
+		hppe_uniphy_base = hppe_uniphy_addr + HPPE_UNIPHY_BASE2;
+
+	if ( reg_addr > HPPE_UNIPHY_MAX_DIRECT_ACCESS_REG)
+	{
+		// uniphy reg indireclty access
+		reg_addr1 = reg_addr & HPPE_UNIPHY_INDIRECT_HIGH_ADDR;
+		writel(reg_addr1, hppe_uniphy_base + HPPE_UNIPHY_INDIRECT_REG_ADDR);
+
+		reg_addr2 = reg_addr & HPPE_UNIPHY_INDIRECT_LOW_ADDR;
+		reg_addr = (HPPE_UNIPHY_INDIRECT_DATA << 10) | (reg_addr2 << 2);
+
+		reg_val = readl(hppe_uniphy_base + reg_addr);
+		aos_mem_copy(reg_data, &reg_val, sizeof (a_uint32_t));
+	}
+	else
+	{	// uniphy reg directly access
+		reg_val = readl(hppe_uniphy_base + reg_addr);
+		aos_mem_copy(reg_data, &reg_val, sizeof (a_uint32_t));
+	}
+
+	return 0;
+}
+
+uint32_t
+qca_hppe_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t uniphy_index,
+				a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
+{
+	void __iomem *hppe_uniphy_base = NULL;
+	a_uint32_t reg_addr1, reg_addr2;
+
+	if (len != sizeof (a_uint32_t))
+        return SW_BAD_LEN;
+
+	if ((reg_addr%4)!= 0)
+	return SW_BAD_PARAM;
+
+	if (HPPE_UNIPHY_INSTANCE0 == uniphy_index)
+		hppe_uniphy_base = hppe_uniphy_addr;
+	else if (HPPE_UNIPHY_INSTANCE1 == uniphy_index)
+		hppe_uniphy_base = hppe_uniphy_addr + HPPE_UNIPHY_BASE1;
+
+	else if (HPPE_UNIPHY_INSTANCE2 == uniphy_index)
+		hppe_uniphy_base = hppe_uniphy_addr + HPPE_UNIPHY_BASE2;
+
+	if ( reg_addr > HPPE_UNIPHY_MAX_DIRECT_ACCESS_REG)
+	{
+		// uniphy reg indireclty access
+		reg_addr1 = reg_addr & HPPE_UNIPHY_INDIRECT_HIGH_ADDR;
+		writel(reg_addr1, hppe_uniphy_base + HPPE_UNIPHY_INDIRECT_REG_ADDR);
+
+		reg_addr2 = reg_addr & HPPE_UNIPHY_INDIRECT_LOW_ADDR;
+		reg_addr = (HPPE_UNIPHY_INDIRECT_DATA << 10) | (reg_addr2 << 2);
+		writel(reg_data, hppe_uniphy_base + reg_addr);
+	}
+	else
+	{	// uniphy reg directly access
+		writel(reg_data, hppe_uniphy_base + reg_addr);
+	}
+
+	return 0;
+}
+
+
+static int
+qca_hppe_hw_init(ssdk_init_cfg *cfg)
+{
+	a_uint32_t val;
+	void __iomem *ppe_gpio_base;
+
+
+	qca_switch_init(0);
+
+	/*fixme*/
+	ppe_gpio_base = ioremap_nocache(0x01008000, 0x100);
+	if (!ppe_gpio_base) {
+		printk("can't get gpio address!\n");
+		return -1;
+	}
+	/* RUMI specific GPIO configuration for enabling XGMAC */
+	writel(0x201, ppe_gpio_base + 0);
+	writel(0x2, ppe_gpio_base + 4);
+	iounmap(ppe_gpio_base);
+	printk("set gpio to enable XGMAC successfully!\n");
+	val = 0x3b;
+	qca_switch_reg_write(0, 0x000010, (a_uint8_t *)&val, 4);
+	val = 0;
+	qca_switch_reg_write(0, 0x000008, (a_uint8_t *)&val, 4);
+
+	qca_hppe_bm_hw_init();
+	qca_hppe_qm_hw_init();
+	qca_hppe_qos_scheduler_hw_init();
+	qca_hppe_tdm_hw_init();
+
+	qca_hppe_fdb_hw_init();
+	qca_hppe_vsi_hw_init();
+	qca_hppe_portvlan_hw_init();
+
+	qca_hppe_portctrl_hw_init();
+
+	qca_hppe_policer_hw_init();
+
+	qca_hppe_shaper_hw_init();
+
+	qca_hppe_xgmac_hw_init();
+	printk("hppe xgmac init success\n");
+#ifdef HAWKEYE_CHIP
+	qca_hppe_gcc_uniphy_init();
+
+	qca_hppe_gcc_speed_clock_init();
+#endif
+	return 0;
+}
+#endif
+
 static void ssdk_cfg_default_init(ssdk_init_cfg *cfg)
 {
 	memset(cfg, 0, sizeof(ssdk_init_cfg));
@@ -3286,13 +3735,20 @@ static int ssdk_dev_event(struct notifier_block *this, unsigned long event, void
 static int __init regi_init(void)
 {
 	ssdk_init_cfg cfg;
-	int rv = 0;
+	int rv = 0, cnt = 0;
 	garuda_init_spec_cfg chip_spec_cfg;
 	#ifdef DESS
 	a_uint32_t psgmii_result = 0;
 	#endif
 	ssdk_dt_global.switch_reg_access_mode = HSL_REG_MDIO;
 	ssdk_dt_global.psgmii_reg_access_mode = HSL_REG_MDIO;
+
+	qca_phy_priv_global = kzalloc(sizeof(struct qca_phy_priv), GFP_KERNEL);
+	if (qca_phy_priv_global == NULL) {
+		return -ENOMEM;
+	}
+	for (cnt = 0; cnt < 5; cnt ++)
+		qca_phy_priv_global->phy_address[cnt] = cnt;
 
 	ssdk_cfg_default_init(&cfg);
 
@@ -3306,11 +3762,15 @@ static int __init regi_init(void)
 	if(rv)
 		goto out;
 
+	ssdk_driver_register();
+
 	rv = chip_ver_get(&cfg);
 	if(rv)
 		goto out;
 
-	ssdk_phy_id_get(&cfg);
+	if(cfg.chip_type != CHIP_HPPE)
+		ssdk_phy_id_get(&cfg);
+
 
 	memset(&chip_spec_cfg, 0, sizeof(garuda_init_spec_cfg));
 	cfg.chip_spec_cfg = &chip_spec_cfg;
@@ -3323,8 +3783,14 @@ static int __init regi_init(void)
 	ssdk_dev_notifier.priority = 1;
 	register_netdevice_notifier(&ssdk_dev_notifier);
 
-	#ifdef DESS
+	#if defined(DESS) || defined(HPPE)
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
+		if(cfg.chip_type == CHIP_HPPE)
+		{
+			printk("Initializing HPPE!!\n");
+			qca_hppe_hw_init(&cfg);
+			printk("Initializing HPPE Done!!\n");
+		}
 		/*Do Malibu self test to fix packet drop issue firstly*/
 		if ((cfg.chip_type == CHIP_DESS) && (ssdk_dt_global.mac_mode == PORT_WRAPPER_PSGMII)) {
 			ssdk_psgmii_self_test(A_FALSE, 100, &psgmii_result);
@@ -3366,6 +3832,7 @@ static int __init regi_init(void)
 	#endif
 
 out:
+	fal_module_func_init(0, &cfg);
 	if (rv == 0)
 		printk("qca-ssdk module init succeeded!\n");
 	else {
@@ -3389,6 +3856,8 @@ regi_exit(void)
 	else
 		printk("qca-ssdk module exit failed! (code: %d)\n", rv);
 
+	kfree(qca_phy_priv_global);
+
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS){
 		#ifdef DESS
 		ssdk_switch_unregister();
@@ -3411,6 +3880,8 @@ regi_exit(void)
 	}
 
 	ssdk_plat_exit();
+
+	ssdk_driver_unregister();
 }
 
 module_init(regi_init);

@@ -19,6 +19,25 @@
  */
 #include "sw.h"
 #include "ssdk_init.h"
+#include <linux/kconfig.h>
+#include <linux/version.h>
+#include <linux/kernel.h>
+#include <linux/module.h>
+#include <linux/phy.h>
+#include <linux/platform_device.h>
+#include <linux/types.h>
+#include <generated/autoconf.h>
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+#include <linux/switch.h>
+#else
+#include <net/switch.h>
+#include <linux/ar8216_platform.h>
+#endif
+#include <linux/delay.h>
+#include <linux/phy.h>
+#include <linux/netdevice.h>
+#include "ssdk_plat.h"
+#include <linux/string.h>
 
 sw_error_t hppe_reg_get(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint32_t *val)
 {
@@ -52,17 +71,13 @@ sw_error_t hppe_reg_tbl_set(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint32_t *
 
 sw_error_t hppe_uniphy_reg_get(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint32_t index, a_uint32_t *val)
 {
-#if 0
 	qca_hppe_uniphy_reg_read(dev_id, index, reg_addr, (a_uint8_t *)val, 4);
-#endif
 	return SW_OK;
 }
 
 sw_error_t hppe_uniphy_reg_set(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint32_t index, a_uint32_t val)
 {
-#if 0
 	qca_hppe_uniphy_reg_write(dev_id, index, reg_addr, (a_uint8_t *)&val, 4);
-#endif
 	return SW_OK;
 }
 

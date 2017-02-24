@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2014-2015, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2014-2015, 2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -101,7 +101,7 @@
 
 #define AR8327_REG_MODULE_EN  0x30
 #define   AR8327_REG_MODULE_EN_QM_ERR	BIT(8)
-#define   AR8327_REG_MODULE_EN_LOOKUP_ERR	BIT(9)
+#define   AR8327_REG_MODULE_EN_LOOKUP_ERR      BIT(9)
 
 #define AR8327_REG_MAC_SFT_RST		0x68
 
@@ -157,7 +157,9 @@ enum {
 	QCA_VER_AR8236 = 0x03,
 	QCA_VER_AR8316 = 0x10,
 	QCA_VER_AR8327 = 0x12,
-	QCA_VER_AR8337 = 0x13
+	QCA_VER_AR8337 = 0x13,
+	QCA_VER_DESS = 0x14,
+	QCA_VER_HPPE = 0x15
 };
 
 /*poll mib per 120secs*/
@@ -189,7 +191,7 @@ struct qca_phy_priv {
 	a_uint8_t revision;
 	a_uint32_t (*mii_read)(a_uint32_t reg);
 	void (*mii_write)(a_uint32_t reg, a_uint32_t val);
-        void (*phy_dbg_write)(a_uint32_t dev_id, a_uint32_t phy_addr,
+    void (*phy_dbg_write)(a_uint32_t dev_id, a_uint32_t phy_addr,
                         a_uint16_t dbg_addr, a_uint16_t dbg_data);
 	void (*phy_dbg_read)(a_uint32_t dev_id, a_uint32_t phy_addr,
                         a_uint16_t dbg_addr, a_uint16_t *dbg_data);
@@ -220,7 +222,9 @@ struct qca_phy_priv {
     a_uint8_t  vlan_table[AR8327_MAX_VLANS];
     a_uint8_t  vlan_tagged[AR8327_MAX_VLANS];
     a_uint16_t pvid[AR8327_NUM_PORTS];
-
+	u8 __iomem *hw_addr;
+	u8 __iomem *psgmii_hw_addr;
+	int phy_address[5];
 };
 
 struct ipq40xx_mdio_data {
@@ -237,6 +241,9 @@ a_uint32_t
 qca_ar8216_mii_read(a_uint32_t reg);
 void
 qca_ar8216_mii_write(a_uint32_t reg, a_uint32_t val);
+sw_error_t
+qca_ar8327_phy_read(a_uint32_t dev_id, a_uint32_t phy_addr,
+			a_uint32_t reg, a_uint16_t* data);
 sw_error_t
 qca_ar8327_phy_write(a_uint32_t dev_id, a_uint32_t phy_addr,
                             a_uint32_t reg, a_uint16_t data);
@@ -257,5 +264,24 @@ qca_phy_mmd_write(u32 dev_id, u32 phy_id,
 u16
 qca_phy_mmd_read(u32 dev_id, u32 phy_id,
 		u16 mmd_num, u16 reg_id);
+
+sw_error_t
+qca_switch_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr,
+			a_uint8_t * reg_data, a_uint32_t len);
+
+sw_error_t
+qca_switch_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr,
+			a_uint8_t * reg_data, a_uint32_t len);
+
+sw_error_t
+qca_psgmii_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr,
+			a_uint8_t * reg_data, a_uint32_t len);
+
+sw_error_t
+qca_psgmii_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr,
+			a_uint8_t * reg_data, a_uint32_t len);
+
+int ssdk_plat_init(ssdk_init_cfg *cfg);
+void ssdk_plat_exit(void);
 
 #endif

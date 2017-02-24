@@ -68,6 +68,6 @@ sw_error_t ppe_port_vsi_get(a_uint32_t dev_id, fal_port_t port_id,
 sw_error_t ppe_vsi_alloc(a_uint32_t dev_id, a_uint32_t *vsi);
 sw_error_t ppe_vsi_free(a_uint32_t dev_id, a_uint32_t vsi_id);
 sw_error_t ppe_vsi_tbl_dump(a_uint32_t dev_id);
-
+sw_error_t ppe_vsi_init(a_uint32_t dev_id);
 #endif
 
