@@ -48,6 +48,12 @@
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
 #include <linux/switch.h>
 #include <linux/of.h>
+#ifdef BOARD_AR71XX
+#ifdef CONFIG_AR8216_PHY
+#include "drivers/net/phy/ar8327.h"
+#endif
+#include "drivers/net/ethernet/atheros/ag71xx/ag71xx.h"
+#endif
 #elif defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 #include <linux/switch.h>
 #include <linux/of.h>
@@ -2150,12 +2156,10 @@ static void ssdk_driver_register(void)
 #else
 		phy_driver_register(&qca_phy_driver);
 		ssdk_uci_takeover_init();
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,4,0))
 #ifdef CONFIG_AR8216_PHY
 		ar8327_port_link_notify_register(ssdk_port_link_notify);
 #endif
 		ar7240_port_link_notify_register(ssdk_port_link_notify);
-#endif		
 #endif
 	}
 }
