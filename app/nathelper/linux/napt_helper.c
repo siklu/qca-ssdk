@@ -49,11 +49,13 @@ extern void __rcu_read_unlock(void);
 extern unsigned int nf_conntrack_htable_size;
 #endif
 
+a_bool_t napt_aging_ctrl_en = 0;
+
 void
 napt_ct_aging_disable(uint32_t ct_addr)
 {
 	struct nf_conn *ct = NULL;
-	if(nf_athrs17_hnat_sync_counter_en)
+	if(nf_athrs17_hnat_sync_counter_en || !napt_aging_ctrl_en)
 		return;
 
     if(!ct_addr)
@@ -78,7 +80,7 @@ napt_ct_aging_is_enable(uint32_t ct_addr)
         return 0;
     }
 
-	if(nf_athrs17_hnat_sync_counter_en)
+	if(nf_athrs17_hnat_sync_counter_en || !napt_aging_ctrl_en)
 		return 0;
 
 	ct = (struct nf_conn *)ct_addr;
@@ -92,7 +94,7 @@ napt_ct_aging_enable(uint32_t ct_addr)
 	struct nf_conn *ct = NULL;
 	uint16_t l3num = 0;
 	uint8_t protonum = 0;
-	if(nf_athrs17_hnat_sync_counter_en)
+	if(nf_athrs17_hnat_sync_counter_en || !napt_aging_ctrl_en)
 		return;
 
     if(!ct_addr)
