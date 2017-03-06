@@ -285,6 +285,8 @@ static sw_data_type_t sw_data_type[] =
     SW_TYPE_DEF(SW_CROSSOVER_STATUS, cmd_data_check_crossover_status, NULL),
     SW_TYPE_DEF(SW_PREFER_MEDIUM, cmd_data_check_prefer_medium, NULL),
     SW_TYPE_DEF(SW_FIBER_MODE, cmd_data_check_fiber_mode, NULL),
+    SW_TYPE_DEF(SW_MTU_ENTRY, (param_check_t)cmd_data_check_mtu_entry, NULL),
+    SW_TYPE_DEF(SW_MRU_ENTRY, (param_check_t)cmd_data_check_mru_entry, NULL),
 	#endif
 	#endif
 	#ifdef IN_INTERFACECONTROL
@@ -314,6 +316,7 @@ static sw_data_type_t sw_data_type[] =
     SW_TYPE_DEF(SW_FLOW_CTRL, (param_check_t)cmd_data_check_flow_ctrl, NULL),
     SW_TYPE_DEF(SW_FLOW_ENTRY, (param_check_t)cmd_data_check_flow, NULL),
     SW_TYPE_DEF(SW_FLOW_GLOBAL, (param_check_t)cmd_data_check_flow_global, NULL),
+    SW_TYPE_DEF(SW_FLOW_HOST, (param_check_t)cmd_data_check_flow_host, NULL),
     #endif
     SW_TYPE_DEF(SW_MTU_INFO, NULL, NULL),
     SW_TYPE_DEF(SW_MRU_INFO, NULL, NULL),
@@ -972,7 +975,7 @@ cmd_data_check_port_group(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("pcp group", "0");
+        cmd = get_sub_cmd("pcp_group", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -994,7 +997,7 @@ cmd_data_check_port_group(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("dscp group", "0");
+        cmd = get_sub_cmd("dscp_group", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -1016,7 +1019,7 @@ cmd_data_check_port_group(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("flow group", "0");
+        cmd = get_sub_cmd("flow_group", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -1051,7 +1054,7 @@ cmd_data_check_port_pri(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("pcp pri", "0");
+        cmd = get_sub_cmd("pcp_pri_prece", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -1073,7 +1076,7 @@ cmd_data_check_port_pri(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("dscp pri", "0");
+        cmd = get_sub_cmd("dscp_pri_prece", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -1095,7 +1098,7 @@ cmd_data_check_port_pri(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("preheader pri", "0");
+        cmd = get_sub_cmd("preheader_pri_prece", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -1117,7 +1120,7 @@ cmd_data_check_port_pri(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("flow pri", "0");
+        cmd = get_sub_cmd("flow_pri_prece", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -1139,7 +1142,7 @@ cmd_data_check_port_pri(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("acl pri", "0");
+        cmd = get_sub_cmd("acl_pri_prece", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -1174,7 +1177,7 @@ cmd_data_check_port_remark(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("pcp change en", "enable");
+        cmd = get_sub_cmd("pcp_change_en", "no");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -1187,7 +1190,7 @@ cmd_data_check_port_remark(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.pcp_change_en),
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(entry.pcp_change_en),
                                        sizeof (a_bool_t));
         }
 
@@ -1196,7 +1199,7 @@ cmd_data_check_port_remark(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("dei change en", "enable");
+        cmd = get_sub_cmd("dei_change_en", "no");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -1209,7 +1212,7 @@ cmd_data_check_port_remark(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.dei_chage_en),
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(entry.dei_chage_en),
                                        sizeof (a_bool_t));
         }
 
@@ -1218,7 +1221,7 @@ cmd_data_check_port_remark(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("dscp change en", "enable");
+        cmd = get_sub_cmd("dscp_change_en", "no");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -1231,7 +1234,7 @@ cmd_data_check_port_remark(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.dscp_change_en),
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(entry.dscp_change_en),
                                        sizeof (a_bool_t));
         }
 
@@ -1253,7 +1256,7 @@ cmd_data_check_cosmap(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("internal pcp", "0");
+        cmd = get_sub_cmd("internal_pcp", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -1275,7 +1278,7 @@ cmd_data_check_cosmap(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("internal dei", "0");
+        cmd = get_sub_cmd("internal_dei", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -1297,7 +1300,7 @@ cmd_data_check_cosmap(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("internal pri", "0");
+        cmd = get_sub_cmd("internal_pri", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -1319,7 +1322,7 @@ cmd_data_check_cosmap(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("internal dscp", "0");
+        cmd = get_sub_cmd("internal_dscp", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -1341,7 +1344,7 @@ cmd_data_check_cosmap(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("internal dp", "0");
+        cmd = get_sub_cmd("internal_dp", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -1376,7 +1379,7 @@ cmd_data_check_queue_scheduler(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("sp id", "0");
+        cmd = get_sub_cmd("sp_id", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -1398,7 +1401,7 @@ cmd_data_check_queue_scheduler(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("e pri", "0");
+        cmd = get_sub_cmd("e_pri", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -1420,7 +1423,7 @@ cmd_data_check_queue_scheduler(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("c pri", "0");
+        cmd = get_sub_cmd("c_pri", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -1442,7 +1445,7 @@ cmd_data_check_queue_scheduler(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("e drr id", "0");
+        cmd = get_sub_cmd("e_drr_id", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -1464,7 +1467,7 @@ cmd_data_check_queue_scheduler(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("c drr id", "0");
+        cmd = get_sub_cmd("c_drr_id", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -1486,7 +1489,7 @@ cmd_data_check_queue_scheduler(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("e drr wt", "0");
+        cmd = get_sub_cmd("e_drr_wt", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -1508,7 +1511,7 @@ cmd_data_check_queue_scheduler(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("c drr wt", "0");
+        cmd = get_sub_cmd("c_drr_wt", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -1530,7 +1533,7 @@ cmd_data_check_queue_scheduler(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("c drr ut", "0");
+        cmd = get_sub_cmd("c_drr_ut", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -1552,7 +1555,7 @@ cmd_data_check_queue_scheduler(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("e drr ut", "0");
+        cmd = get_sub_cmd("e_drr_ut", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -1574,7 +1577,7 @@ cmd_data_check_queue_scheduler(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("drr frame mode", "0");
+        cmd = get_sub_cmd("drr_frame_mode", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -2336,6 +2339,42 @@ cmd_data_check_ruletype(char *cmd_str, fal_acl_rule_type_t * arg_val,
 
     return SW_OK;
 }
+
+sw_error_t
+cmd_data_check_udf_type(char *cmdstr, fal_acl_udf_type_t * arg_val, a_uint32_t size)
+{
+    if (NULL == cmdstr)
+    {
+        return SW_BAD_VALUE;
+    }
+
+    if (!strcasecmp(cmdstr, "l2"))
+    {
+        *arg_val = FAL_ACL_UDF_TYPE_L2;
+    }
+    else if (!strcasecmp(cmdstr, "l2snap"))
+    {
+        *arg_val = FAL_ACL_UDF_TYPE_L2_SNAP;
+    }
+    else if (!strcasecmp(cmdstr, "l3"))
+    {
+        *arg_val = FAL_ACL_UDF_TYPE_L3;
+    }
+    else if (!strcasecmp(cmdstr, "l3plus"))
+    {
+        *arg_val = FAL_ACL_UDF_TYPE_L3_PLUS;
+    }
+    else if (!strcasecmp(cmdstr, "l4"))
+    {
+        *arg_val = FAL_ACL_UDF_TYPE_L4;
+    }
+    else
+    {
+        return SW_BAD_VALUE;
+    }
+
+    return SW_OK;
+}
 #endif
 sw_error_t
 cmd_data_check_ip4addr(char *cmdstr, void * val, a_uint32_t size)
@@ -2554,6 +2593,11 @@ cmd_data_check_ip6addr(char *cmdstr, void * val, a_uint32_t size)
         if (8 <= i)
         {
             return SW_BAD_VALUE;
+        }
+
+        if (!strcmp(tmp, "")) {
+                tmp = (void *)strsep(&cmdstr, ":");
+                continue;
         }
 
         if ((4 < strlen(tmp)) || (0 == strlen(tmp)))
@@ -6277,6 +6321,7 @@ sw_error_t
 cmd_data_check_l4_parser(char *cmd_str, void * val, a_uint32_t size)
 {
     char *cmd;
+    a_uint32_t tmp;
     sw_error_t rv;
     fal_l4_excep_parser_ctrl entry;
 
@@ -6297,8 +6342,9 @@ cmd_data_check_l4_parser(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, (a_uint32_t *)&(entry.tcp_flags[0]),
-                                       sizeof (a_uint8_t));
+            rv = cmd_data_check_uint8(cmd, &tmp,
+                                       sizeof (tmp));
+	entry.tcp_flags[0] = tmp;
         }
 
     }
@@ -6319,8 +6365,9 @@ cmd_data_check_l4_parser(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, (a_uint32_t *)&(entry.tcp_flags_mask[0]),
-                                       sizeof (a_uint8_t));
+            rv = cmd_data_check_uint8(cmd, &tmp,
+                                       sizeof (tmp));
+	entry.tcp_flags_mask[0] = tmp;
         }
 
     }
@@ -6341,8 +6388,9 @@ cmd_data_check_l4_parser(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, (a_uint32_t *)&(entry.tcp_flags[1]),
-                                       sizeof (a_uint8_t));
+            rv = cmd_data_check_uint8(cmd, &tmp,
+                                       sizeof (tmp));
+	entry.tcp_flags[1] = tmp;
         }
 
     }
@@ -6363,8 +6411,9 @@ cmd_data_check_l4_parser(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, (a_uint32_t *)&(entry.tcp_flags_mask[1]),
-                                       sizeof (a_uint8_t));
+            rv = cmd_data_check_uint8(cmd, &tmp,
+                                       sizeof (tmp));
+	entry.tcp_flags_mask[1] = tmp;
         }
 
     }
@@ -6385,8 +6434,9 @@ cmd_data_check_l4_parser(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, (a_uint32_t *)&(entry.tcp_flags[2]),
-                                       sizeof (a_uint8_t));
+            rv = cmd_data_check_uint8(cmd, &tmp,
+                                       sizeof (tmp));
+	entry.tcp_flags[2] = tmp;
         }
 
     }
@@ -6407,8 +6457,9 @@ cmd_data_check_l4_parser(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, (a_uint32_t *)&(entry.tcp_flags_mask[2]),
-                                       sizeof (a_uint8_t));
+            rv = cmd_data_check_uint8(cmd, &tmp,
+                                       sizeof (tmp));
+	entry.tcp_flags_mask[2] = tmp;
         }
 
     }
@@ -6429,8 +6480,9 @@ cmd_data_check_l4_parser(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, (a_uint32_t *)&(entry.tcp_flags[3]),
-                                       sizeof (a_uint8_t));
+            rv = cmd_data_check_uint8(cmd, &tmp,
+                                       sizeof (tmp));
+	entry.tcp_flags[3] = tmp;
         }
 
     }
@@ -6451,8 +6503,9 @@ cmd_data_check_l4_parser(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, (a_uint32_t *)&(entry.tcp_flags_mask[3]),
-                                       sizeof (a_uint8_t));
+            rv = cmd_data_check_uint8(cmd, &tmp,
+                                       sizeof (tmp));
+	entry.tcp_flags_mask[3] = tmp;
         }
 
     }
@@ -6473,8 +6526,9 @@ cmd_data_check_l4_parser(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, (a_uint32_t *)&(entry.tcp_flags[4]),
-                                       sizeof (a_uint8_t));
+            rv = cmd_data_check_uint8(cmd, &tmp,
+                                       sizeof (tmp));
+	entry.tcp_flags[4] = tmp;
         }
 
     }
@@ -6495,8 +6549,9 @@ cmd_data_check_l4_parser(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, (a_uint32_t *)&(entry.tcp_flags_mask[4]),
-                                       sizeof (a_uint8_t));
+            rv = cmd_data_check_uint8(cmd, &tmp,
+                                       sizeof (tmp));
+	entry.tcp_flags_mask[4] = tmp;
         }
 
     }
@@ -6517,8 +6572,9 @@ cmd_data_check_l4_parser(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, (a_uint32_t *)&(entry.tcp_flags[5]),
-                                       sizeof (a_uint8_t));
+            rv = cmd_data_check_uint8(cmd, &tmp,
+                                       sizeof (tmp));
+	entry.tcp_flags[5] = tmp;
         }
 
     }
@@ -6539,8 +6595,9 @@ cmd_data_check_l4_parser(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, (a_uint32_t *)&(entry.tcp_flags_mask[5]),
-                                       sizeof (a_uint8_t));
+            rv = cmd_data_check_uint8(cmd, &tmp,
+                                       sizeof (tmp));
+	entry.tcp_flags_mask[5]= tmp;
         }
 
     }
@@ -6561,8 +6618,9 @@ cmd_data_check_l4_parser(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, (a_uint32_t *)&(entry.tcp_flags[6]),
-                                       sizeof (a_uint8_t));
+            rv = cmd_data_check_uint8(cmd, &tmp,
+                                       sizeof (tmp));
+	entry.tcp_flags[6] = tmp;
         }
 
     }
@@ -6583,8 +6641,9 @@ cmd_data_check_l4_parser(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, (a_uint32_t *)&(entry.tcp_flags_mask[6]),
-                                       sizeof (a_uint8_t));
+            rv = cmd_data_check_uint8(cmd, &tmp,
+                                       sizeof (tmp));
+	entry.tcp_flags_mask[6] = tmp;
         }
 
     }
@@ -6605,8 +6664,9 @@ cmd_data_check_l4_parser(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, (a_uint32_t *)&(entry.tcp_flags[7]),
-                                       sizeof (a_uint8_t));
+            rv = cmd_data_check_uint8(cmd, &tmp,
+                                       sizeof (tmp));
+	entry.tcp_flags[7] = tmp;
         }
 
     }
@@ -6627,8 +6687,9 @@ cmd_data_check_l4_parser(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, (a_uint32_t *)&(entry.tcp_flags_mask[7]),
-                                       sizeof (a_uint8_t));
+            rv = cmd_data_check_uint8(cmd, &tmp,
+                                       sizeof (tmp));
+	entry.tcp_flags_mask[7] = tmp;
         }
 
     }
@@ -6651,7 +6712,7 @@ cmd_data_check_exp_ctrl(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("exp cmd", "forward");
+        cmd = get_sub_cmd("excep_cmd", "forward");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -6673,7 +6734,7 @@ cmd_data_check_exp_ctrl(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("de acce en", "0");
+        cmd = get_sub_cmd("deacclr_en", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -6686,7 +6747,7 @@ cmd_data_check_exp_ctrl(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, &(entry.de_acce_en),
+            rv = cmd_data_check_uint8(cmd, &(entry.deacclr_en),
                                        sizeof (a_uint8_t));
         }
 
@@ -6695,7 +6756,7 @@ cmd_data_check_exp_ctrl(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("l3 only en", "0");
+        cmd = get_sub_cmd("l3_only_en", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -6717,7 +6778,7 @@ cmd_data_check_exp_ctrl(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("l2 only en", "0");
+        cmd = get_sub_cmd("l2_only_en", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -6739,7 +6800,7 @@ cmd_data_check_exp_ctrl(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("l2 flow en", "0");
+        cmd = get_sub_cmd("l2_flow_en", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -6761,7 +6822,7 @@ cmd_data_check_exp_ctrl(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("l3 flow en", "0");
+        cmd = get_sub_cmd("l3_flow_en", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -6783,7 +6844,7 @@ cmd_data_check_exp_ctrl(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("multicast en", "0");
+        cmd = get_sub_cmd("multicast_en", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -7340,7 +7401,7 @@ cmd_data_check_ip_global(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("mru fail action", "forward");
+        cmd = get_sub_cmd("mru_fail_action", "forward");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -7362,7 +7423,7 @@ cmd_data_check_ip_global(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("mru deaclr", "enable");
+        cmd = get_sub_cmd("mru_deacclr_en", "no");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -7375,7 +7436,7 @@ cmd_data_check_ip_global(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.mru_deacclr_en),
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(entry.mru_deacclr_en),
                                        sizeof (a_bool_t));
         }
 
@@ -7384,7 +7445,7 @@ cmd_data_check_ip_global(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("mtu fail action", "forward");
+        cmd = get_sub_cmd("mtu_fail_action", "forward");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -7406,7 +7467,7 @@ cmd_data_check_ip_global(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("mtu deaclr", "enable");
+        cmd = get_sub_cmd("mtu_deacclr_en", "no");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -7419,7 +7480,7 @@ cmd_data_check_ip_global(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.mtu_deacclr_en),
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(entry.mtu_deacclr_en),
                                        sizeof (a_bool_t));
         }
 
@@ -7428,7 +7489,7 @@ cmd_data_check_ip_global(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("mtu nonfrag fail action", "forward");
+        cmd = get_sub_cmd("mtu_nonfrag_fail_action", "forward");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -7450,7 +7511,7 @@ cmd_data_check_ip_global(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("mtu nanfrag deaclr", "enable");
+        cmd = get_sub_cmd("mtu_nonfrag_deacclr_en", "no");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -7463,7 +7524,7 @@ cmd_data_check_ip_global(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.mtu_df_deacclr_en),
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(entry.mtu_df_deacclr_en),
                                        sizeof (a_bool_t));
         }
 
@@ -7472,7 +7533,7 @@ cmd_data_check_ip_global(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("prefix bc action", "forward");
+        cmd = get_sub_cmd("prefix_bc_action", "forward");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -7494,7 +7555,7 @@ cmd_data_check_ip_global(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("prefix bc deaclr", "enable");
+        cmd = get_sub_cmd("prefix_bc_deacclr_en", "no");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -7507,7 +7568,7 @@ cmd_data_check_ip_global(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.prefix_deacclr_en),
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(entry.prefix_deacclr_en),
                                        sizeof (a_bool_t));
         }
 
@@ -7516,7 +7577,7 @@ cmd_data_check_ip_global(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("icmp rdt action", "forward");
+        cmd = get_sub_cmd("icmp_rdt_action", "forward");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -7538,7 +7599,7 @@ cmd_data_check_ip_global(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("icmp rdt deaclr", "enable");
+        cmd = get_sub_cmd("icmp_rdt_deacclr_en", "no");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -7551,7 +7612,7 @@ cmd_data_check_ip_global(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.icmp_rdt_deacclr_en),
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(entry.icmp_rdt_deacclr_en),
                                        sizeof (a_bool_t));
         }
 
@@ -7560,7 +7621,7 @@ cmd_data_check_ip_global(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("hash mode 0", "0");
+        cmd = get_sub_cmd("hash_mode_0", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -7582,7 +7643,7 @@ cmd_data_check_ip_global(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("hash mode 1", "0");
+        cmd = get_sub_cmd("hash_mode_1", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -7618,7 +7679,7 @@ cmd_data_check_ip_mcmode(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("ipv4 mc en", "enable");
+        cmd = get_sub_cmd("ipv4_mc_en", "yes");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -7631,14 +7692,14 @@ cmd_data_check_ip_mcmode(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.l2_ipv4_mc_en), sizeof (a_bool_t));
+            rv = cmd_data_check_confirm(cmd, A_TRUE, &(entry.l2_ipv4_mc_en), sizeof (a_bool_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
 
     do
     {
-        cmd = get_sub_cmd("ipv4 mc mode", "0");
+        cmd = get_sub_cmd("ipv4_igmpv3_mode", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -7658,7 +7719,7 @@ cmd_data_check_ip_mcmode(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("ipv6 mc en", "enable");
+        cmd = get_sub_cmd("ipv6_mc_en", "yes");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -7671,14 +7732,14 @@ cmd_data_check_ip_mcmode(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.l2_ipv6_mc_en), sizeof (a_bool_t));
+            rv = cmd_data_check_confirm(cmd, A_TRUE, &(entry.l2_ipv6_mc_en), sizeof (a_bool_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
 
     do
     {
-        cmd = get_sub_cmd("ipv6 mc mode", "0");
+        cmd = get_sub_cmd("ipv6_mldv2_mode", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -7711,7 +7772,7 @@ cmd_data_check_ip_portmac(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("entry valid", "0");
+        cmd = get_sub_cmd("entry_valid", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -7729,7 +7790,7 @@ cmd_data_check_ip_portmac(char *cmd_str, void * val, a_uint32_t size)
     }
     while (talk_mode && (SW_OK != rv));
 
-    rv = __cmd_data_check_complex("mac addr", NULL,
+    rv = __cmd_data_check_complex("mac_addr", NULL,
                         "usage: the format is xx-xx-xx-xx-xx-xx \n",
                         (param_check_t)cmd_data_check_macaddr, &(entry.mac_addr),
                         sizeof (fal_mac_addr_t));
@@ -7748,7 +7809,7 @@ cmd_data_check_ip_pub(char *cmd_str, void * val, a_uint32_t size)
 
     aos_mem_zero(&entry, sizeof (fal_ip_pub_addr_t));
 
-    rv = __cmd_data_check_complex(" dnat_ip", NULL,
+    rv = __cmd_data_check_complex(" pub_ip_addr", NULL,
                             "usage: the format is xx.xx.xx.xx \n",
                             (param_check_t)cmd_data_check_ip4addr, &(entry.pub_ip_addr),
                             4);
@@ -7770,7 +7831,7 @@ cmd_data_check_ip_sg(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("ipv4 sg en", "enable");
+        cmd = get_sub_cmd("ipv4_sg_en", "yes");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -7783,14 +7844,14 @@ cmd_data_check_ip_sg(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.ipv4_sg_en), sizeof (a_bool_t));
+            rv = cmd_data_check_confirm(cmd, A_TRUE, &(entry.ipv4_sg_en), sizeof (a_bool_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
 
     do
     {
-        cmd = get_sub_cmd("ipv4 sg vio cmd", "forward");
+        cmd = get_sub_cmd("ipv4_sg_violation_action", "forward");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -7812,7 +7873,7 @@ cmd_data_check_ip_sg(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("ipv4 sg port en", "enable");
+        cmd = get_sub_cmd("ipv4_sg_port_en", "yes");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -7825,14 +7886,14 @@ cmd_data_check_ip_sg(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.ipv4_sg_port_en), sizeof (a_bool_t));
+            rv = cmd_data_check_confirm(cmd, A_TRUE, &(entry.ipv4_sg_port_en), sizeof (a_bool_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
 
     do
     {
-        cmd = get_sub_cmd("ipv4 sg svlan en", "enable");
+        cmd = get_sub_cmd("ipv4_sg_svlan_en", "yes");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -7845,14 +7906,14 @@ cmd_data_check_ip_sg(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.ipv4_sg_svlan_en), sizeof (a_bool_t));
+            rv = cmd_data_check_confirm(cmd, A_TRUE, &(entry.ipv4_sg_svlan_en), sizeof (a_bool_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
 
     do
     {
-        cmd = get_sub_cmd("ipv4 sg cvlan en", "enable");
+        cmd = get_sub_cmd("ipv4_sg_cvlan_en", "yes");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -7865,14 +7926,14 @@ cmd_data_check_ip_sg(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.ipv4_sg_cvlan_en), sizeof (a_bool_t));
+            rv = cmd_data_check_confirm(cmd, A_TRUE, &(entry.ipv4_sg_cvlan_en), sizeof (a_bool_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
 
     do
     {
-        cmd = get_sub_cmd("ipv4 src unk cmd", "forward");
+        cmd = get_sub_cmd("ipv4_src_unk_action", "forward");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -7894,7 +7955,7 @@ cmd_data_check_ip_sg(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("ipv6 sg en", "enable");
+        cmd = get_sub_cmd("ipv6_sg_en", "yes");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -7907,14 +7968,14 @@ cmd_data_check_ip_sg(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.ipv6_sg_en), sizeof (a_bool_t));
+            rv = cmd_data_check_confirm(cmd, A_TRUE, &(entry.ipv6_sg_en), sizeof (a_bool_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
 
     do
     {
-        cmd = get_sub_cmd("ipv6 sg vio cmd", "forward");
+        cmd = get_sub_cmd("ipv6_sg_violation_action", "forward");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -7936,7 +7997,7 @@ cmd_data_check_ip_sg(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("ipv6 sg port en", "enable");
+        cmd = get_sub_cmd("ipv6_sg_port_en", "yes");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -7949,14 +8010,14 @@ cmd_data_check_ip_sg(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.ipv6_sg_port_en), sizeof (a_bool_t));
+            rv = cmd_data_check_confirm(cmd, A_TRUE, &(entry.ipv6_sg_port_en), sizeof (a_bool_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
 
     do
     {
-        cmd = get_sub_cmd("ipv6 sg svlan en", "enable");
+        cmd = get_sub_cmd("ipv6_sg_svlan_en", "yes");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -7969,14 +8030,14 @@ cmd_data_check_ip_sg(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.ipv6_sg_svlan_en), sizeof (a_bool_t));
+            rv = cmd_data_check_confirm(cmd, A_TRUE, &(entry.ipv6_sg_svlan_en), sizeof (a_bool_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
 
     do
     {
-        cmd = get_sub_cmd("ipv6 sg cvlan en", "enable");
+        cmd = get_sub_cmd("ipv6_sg_cvlan_en", "yes");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -7989,14 +8050,14 @@ cmd_data_check_ip_sg(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.ipv6_sg_cvlan_en), sizeof (a_bool_t));
+            rv = cmd_data_check_confirm(cmd, A_TRUE, &(entry.ipv6_sg_cvlan_en), sizeof (a_bool_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
 
     do
     {
-        cmd = get_sub_cmd("ipv6 src unk cmd", "forward");
+        cmd = get_sub_cmd("ipv6_src_unk_action", "forward");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -8093,7 +8154,7 @@ cmd_data_check_nexthop(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("post l3 if", "0");
+        cmd = get_sub_cmd("if_index", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -8113,7 +8174,7 @@ cmd_data_check_nexthop(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("ip to me", "enable");
+        cmd = get_sub_cmd("ip_to_me_en", "no");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -8126,14 +8187,14 @@ cmd_data_check_nexthop(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.ip_to_me_en), sizeof (a_bool_t));
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(entry.ip_to_me_en), sizeof (a_bool_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
 
     do
     {
-        cmd = get_sub_cmd("pubip index", "0");
+        cmd = get_sub_cmd("pub_ip_index", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -8153,7 +8214,7 @@ cmd_data_check_nexthop(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("stag fmt", "0");
+        cmd = get_sub_cmd("stag_fmt", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -8193,7 +8254,7 @@ cmd_data_check_nexthop(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("ctag fmt", "0");
+        cmd = get_sub_cmd("ctag_fmt", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -8231,7 +8292,7 @@ cmd_data_check_nexthop(char *cmd_str, void * val, a_uint32_t size)
     }
     while (talk_mode && (SW_OK != rv));
 
-    rv = __cmd_data_check_complex("mac addr", NULL,
+    rv = __cmd_data_check_complex("mac_addr", NULL,
     		"usage: the format is xx-xx-xx-xx-xx-xx \n",
     		(param_check_t)cmd_data_check_macaddr, &(entry.mac_addr),
     		sizeof (fal_mac_addr_t));
@@ -8261,7 +8322,7 @@ cmd_data_check_vsi_intf(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("l3 if valid", "0");
+        cmd = get_sub_cmd("l3_if_valid", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -8281,7 +8342,7 @@ cmd_data_check_vsi_intf(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("l3 if index", "0");
+        cmd = get_sub_cmd("l3_if_index", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -8354,7 +8415,7 @@ cmd_data_check_intf(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("ttl dec bypass", "enable");
+        cmd = get_sub_cmd("ttl_dec_bypass_en", "no");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -8367,14 +8428,14 @@ cmd_data_check_intf(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.ttl_dec_bypass_en), sizeof (a_bool_t));
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(entry.ttl_dec_bypass_en), sizeof (a_bool_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
 
     do
     {
-        cmd = get_sub_cmd("ipv4 uc route en", "enable");
+        cmd = get_sub_cmd("ipv4_uc_route_en", "yes");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -8387,14 +8448,14 @@ cmd_data_check_intf(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.ipv4_uc_route_en), sizeof (a_bool_t));
+            rv = cmd_data_check_confirm(cmd, A_TRUE, &(entry.ipv4_uc_route_en), sizeof (a_bool_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
 
     do
     {
-        cmd = get_sub_cmd("ipv6 uc route en", "enable");
+        cmd = get_sub_cmd("ipv6_uc_route_en", "yes");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -8407,14 +8468,14 @@ cmd_data_check_intf(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.ipv6_uc_route_en), sizeof (a_bool_t));
+            rv = cmd_data_check_confirm(cmd, A_TRUE, &(entry.ipv6_uc_route_en), sizeof (a_bool_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
 
     do
     {
-        cmd = get_sub_cmd("icmp trigger en", "enable");
+        cmd = get_sub_cmd("icmp_trigger_en", "yes");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -8427,14 +8488,14 @@ cmd_data_check_intf(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.icmp_trigger_en), sizeof (a_bool_t));
+            rv = cmd_data_check_confirm(cmd, A_TRUE, &(entry.icmp_trigger_en), sizeof (a_bool_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
 
     do
     {
-        cmd = get_sub_cmd("ttl exceed cmd", "forward");
+        cmd = get_sub_cmd("ttl_exceed_action", "forward");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -8456,7 +8517,7 @@ cmd_data_check_intf(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("ttl exceed deaclr", "enable");
+        cmd = get_sub_cmd("ttl_exceed_deacclr_en", "no");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -8469,14 +8530,14 @@ cmd_data_check_intf(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.ttl_exceed_deacclr_en), sizeof (a_bool_t));
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(entry.ttl_exceed_deacclr_en), sizeof (a_bool_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
 
     do
     {
-        cmd = get_sub_cmd("macaddr bitmap", "0");
+        cmd = get_sub_cmd("mac_addr_bitmap", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -8494,7 +8555,7 @@ cmd_data_check_intf(char *cmd_str, void * val, a_uint32_t size)
     }
     while (talk_mode && (SW_OK != rv));
 
-    rv = __cmd_data_check_complex("macaddr", NULL,
+    rv = __cmd_data_check_complex("mac_addr", NULL,
     		"usage: the format is xx-xx-xx-xx-xx-xx \n",
     		(param_check_t)cmd_data_check_macaddr, &(entry.mac_addr),
     		sizeof (fal_mac_addr_t));
@@ -8536,7 +8597,7 @@ cmd_data_check_network_route(char *cmd_str, void * val, a_uint32_t size)
 
     if (entry.type == 0) /*IPv4*/
     {
-        rv = __cmd_data_check_complex("ip4 addr", NULL,
+        rv = __cmd_data_check_complex("ip4_addr", NULL,
                         "usage: the format is xx.xx.xx.xx \n",
                         (param_check_t)cmd_data_check_ip4addr, &(entry.route_addr.ip4_addr),
                         4);
@@ -8545,7 +8606,7 @@ cmd_data_check_network_route(char *cmd_str, void * val, a_uint32_t size)
     }
     else if (entry.type == 1) /*IPv6*/
     {
-	  rv = __cmd_data_check_complex("ip6 addr", NULL,
+	  rv = __cmd_data_check_complex("ip6_addr", NULL,
                         "usage: the format is xxxx::xxxx \n",
                         (param_check_t)cmd_data_check_ip6addr, &(entry.route_addr.ip6_addr),
                         16);
@@ -8560,7 +8621,7 @@ cmd_data_check_network_route(char *cmd_str, void * val, a_uint32_t size)
 
      if (entry.type == 0) /*IPv4*/
     {
-        rv = __cmd_data_check_complex("ip4 addr mask", NULL,
+        rv = __cmd_data_check_complex("ip4_addr_mask", NULL,
                             "usage: the format is xx.xx.xx.xx \n",
                             (param_check_t)cmd_data_check_ip4addr, &(entry.route_addr_mask.ip4_addr_mask),
                             4);
@@ -8569,7 +8630,7 @@ cmd_data_check_network_route(char *cmd_str, void * val, a_uint32_t size)
     }
     else if (entry.type == 1) /*IPv6*/
     {
-        rv = __cmd_data_check_complex("ip6 addr mask", NULL,
+        rv = __cmd_data_check_complex("ip6_addr_mask", NULL,
                             "usage: the format is xxxx::xxxx \n",
                             (param_check_t)cmd_data_check_ip6addr, &(entry.route_addr_mask.ip6_addr_mask),
                             16);
@@ -8583,7 +8644,7 @@ cmd_data_check_network_route(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("fwd cmd", "forward");
+        cmd = get_sub_cmd("action", "forward");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -8605,7 +8666,7 @@ cmd_data_check_network_route(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("dst info", "0");
+        cmd = get_sub_cmd("dst_info", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -8625,7 +8686,7 @@ cmd_data_check_network_route(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("lan wan", "0");
+        cmd = get_sub_cmd("lan_wan", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -8660,7 +8721,7 @@ cmd_data_check_arp_sg(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("arp sg en", "enable");
+        cmd = get_sub_cmd("arp_sg_en", "yes");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -8673,14 +8734,14 @@ cmd_data_check_arp_sg(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.ipv4_arp_sg_en), sizeof (a_bool_t));
+            rv = cmd_data_check_confirm(cmd, A_TRUE, &(entry.ipv4_arp_sg_en), sizeof (a_bool_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
 
     do
     {
-        cmd = get_sub_cmd("arp sg vio cmd", "forward");
+        cmd = get_sub_cmd("arp_sg_violation_action", "forward");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -8702,7 +8763,7 @@ cmd_data_check_arp_sg(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("arp sg port en", "enable");
+        cmd = get_sub_cmd("arp_sg_port_en", "yes");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -8715,14 +8776,14 @@ cmd_data_check_arp_sg(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.ipv4_arp_sg_port_en), sizeof (a_bool_t));
+            rv = cmd_data_check_confirm(cmd, A_TRUE, &(entry.ipv4_arp_sg_port_en), sizeof (a_bool_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
 
     do
     {
-        cmd = get_sub_cmd("arp sg svlan en", "enable");
+        cmd = get_sub_cmd("arp_sg_svlan_en", "yes");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -8735,14 +8796,14 @@ cmd_data_check_arp_sg(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.ipv4_arp_sg_svlan_en), sizeof (a_bool_t));
+            rv = cmd_data_check_confirm(cmd, A_TRUE, &(entry.ipv4_arp_sg_svlan_en), sizeof (a_bool_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
 
     do
     {
-        cmd = get_sub_cmd("arp sg cvlan en", "enable");
+        cmd = get_sub_cmd("arp_sg_cvlan_en", "yes");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -8755,14 +8816,14 @@ cmd_data_check_arp_sg(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.ipv4_arp_sg_cvlan_en), sizeof (a_bool_t));
+            rv = cmd_data_check_confirm(cmd, A_TRUE, &(entry.ipv4_arp_sg_cvlan_en), sizeof (a_bool_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
 
     do
     {
-        cmd = get_sub_cmd("arp sg unk cmd", "forward");
+        cmd = get_sub_cmd("arp_sg_unk_action", "forward");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -8784,7 +8845,7 @@ cmd_data_check_arp_sg(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("nd sg en", "enable");
+        cmd = get_sub_cmd("nd_sg_en", "yes");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -8797,14 +8858,14 @@ cmd_data_check_arp_sg(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.ip_nd_sg_en), sizeof (a_bool_t));
+            rv = cmd_data_check_confirm(cmd, A_TRUE, &(entry.ip_nd_sg_en), sizeof (a_bool_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
 
     do
     {
-        cmd = get_sub_cmd("nd sg vio cmd", "forward");
+        cmd = get_sub_cmd("nd_sg_violation_action", "forward");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -8826,7 +8887,7 @@ cmd_data_check_arp_sg(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("nd sg port en", "enable");
+        cmd = get_sub_cmd("nd_sg_port_en", "yes");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -8839,14 +8900,14 @@ cmd_data_check_arp_sg(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.ip_nd_sg_port_en), sizeof (a_bool_t));
+            rv = cmd_data_check_confirm(cmd, A_TRUE, &(entry.ip_nd_sg_port_en), sizeof (a_bool_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
 
     do
     {
-        cmd = get_sub_cmd("nd sg svlan en", "enable");
+        cmd = get_sub_cmd("nd_sg_svlan_en", "yes");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -8859,14 +8920,14 @@ cmd_data_check_arp_sg(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.ip_nd_sg_svlan_en), sizeof (a_bool_t));
+            rv = cmd_data_check_confirm(cmd, A_TRUE, &(entry.ip_nd_sg_svlan_en), sizeof (a_bool_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
 
     do
     {
-        cmd = get_sub_cmd("nd sg cvlan en", "enable");
+        cmd = get_sub_cmd("nd_sg_cvlan_en", "yes");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -8879,14 +8940,14 @@ cmd_data_check_arp_sg(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.ip_nd_sg_cvlan_en), sizeof (a_bool_t));
+            rv = cmd_data_check_confirm(cmd, A_TRUE, &(entry.ip_nd_sg_cvlan_en), sizeof (a_bool_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
 
     do
     {
-        cmd = get_sub_cmd("nd sg unk cmd", "forward");
+        cmd = get_sub_cmd("nd_sg_unk_action", "forward");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -9042,7 +9103,7 @@ cmd_data_check_flow_global(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("src if check", "forward");
+        cmd = get_sub_cmd("src_if_check_action", "forward");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -9064,7 +9125,7 @@ cmd_data_check_flow_global(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("src if deacclr", "enable");
+        cmd = get_sub_cmd("src_if_deacclr_en", "no");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -9077,7 +9138,7 @@ cmd_data_check_flow_global(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.src_if_check_deacclr_en),
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(entry.src_if_check_deacclr_en),
                                        sizeof (a_bool_t));
         }
 
@@ -9086,7 +9147,7 @@ cmd_data_check_flow_global(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("loop en", "0");
+        cmd = get_sub_cmd("service_loop_en", "no");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -9099,7 +9160,7 @@ cmd_data_check_flow_global(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.service_loop_en),
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(entry.service_loop_en),
                                        sizeof (a_bool_t));
         }
 
@@ -9108,7 +9169,7 @@ cmd_data_check_flow_global(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("loop action", "forward");
+        cmd = get_sub_cmd("service_loop_action", "forward");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -9130,7 +9191,7 @@ cmd_data_check_flow_global(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("loop deacclr", "enable");
+        cmd = get_sub_cmd("service_loop_deacclr_en", "no");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -9143,7 +9204,7 @@ cmd_data_check_flow_global(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.service_loop_deacclr_en),
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(entry.service_loop_deacclr_en),
                                        sizeof (a_bool_t));
         }
 
@@ -9152,7 +9213,7 @@ cmd_data_check_flow_global(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("flow deacclr", "forward");
+        cmd = get_sub_cmd("flow_deacclr_action", "forward");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -9174,7 +9235,7 @@ cmd_data_check_flow_global(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("sync mismatch action", "forward");
+        cmd = get_sub_cmd("sync_mismatch_action", "forward");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -9196,7 +9257,7 @@ cmd_data_check_flow_global(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("sync mismatch deacclr", "enable");
+        cmd = get_sub_cmd("sync_mismatch_deacclr_en", "no");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -9209,7 +9270,7 @@ cmd_data_check_flow_global(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.sync_mismatch_deacclr_en),
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(entry.sync_mismatch_deacclr_en),
                                        sizeof (a_bool_t));
         }
 
@@ -9218,7 +9279,7 @@ cmd_data_check_flow_global(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("hash mode 0", "0");
+        cmd = get_sub_cmd("hash_mode_0", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -9240,7 +9301,7 @@ cmd_data_check_flow_global(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("hash mode 1", "0");
+        cmd = get_sub_cmd("hash_mode_1", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -9827,7 +9888,7 @@ cmd_data_check_flow_ctrl(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("miss action", "forward");
+        cmd = get_sub_cmd("miss_action", "forward");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -9849,7 +9910,7 @@ cmd_data_check_flow_ctrl(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("frag bypass", "enable");
+        cmd = get_sub_cmd("frag_bypass_en", "yes");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -9862,14 +9923,14 @@ cmd_data_check_flow_ctrl(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.frag_bypass_en), sizeof (a_bool_t));
+            rv = cmd_data_check_confirm(cmd, A_TRUE, &(entry.frag_bypass_en), sizeof (a_bool_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
 
     do
     {
-        cmd = get_sub_cmd("tcpspec bypass", "enable");
+        cmd = get_sub_cmd("tcpspec_bypass_en", "yes");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -9882,14 +9943,14 @@ cmd_data_check_flow_ctrl(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.tcp_spec_bypass_en), sizeof (a_bool_t));
+            rv = cmd_data_check_confirm(cmd, A_TRUE, &(entry.tcp_spec_bypass_en), sizeof (a_bool_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
 
     do
     {
-        cmd = get_sub_cmd("all bypass", "enable");
+        cmd = get_sub_cmd("all_bypass_en", "yes");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -9902,14 +9963,14 @@ cmd_data_check_flow_ctrl(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.all_bypass_en), sizeof (a_bool_t));
+            rv = cmd_data_check_confirm(cmd, A_TRUE, &(entry.all_bypass_en), sizeof (a_bool_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
 
     do
     {
-        cmd = get_sub_cmd("key sel", "0");
+        cmd = get_sub_cmd("key_sel", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -9942,7 +10003,7 @@ cmd_data_check_flow_age(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("age time", "0");
+        cmd = get_sub_cmd("age_time", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -9962,7 +10023,7 @@ cmd_data_check_flow_age(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("age unit", "0");
+        cmd = get_sub_cmd("age_unit", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -9984,6 +10045,19 @@ cmd_data_check_flow_age(char *cmd_str, void * val, a_uint32_t size)
     return SW_OK;
 }
 
+sw_error_t
+cmd_data_check_flow_host(char *cmd_str, void * val, a_uint32_t size)
+{
+        fal_flow_host_entry_t *flow_host = (fal_flow_host_entry_t *)val;
+        fal_flow_entry_t *flow_entry = &(flow_host->flow_entry);
+        fal_host_entry_t *host_entry = &(flow_host->host_entry);
+
+        cmd_data_check_flow(cmd_str, flow_entry, size);
+#ifdef IN_IP
+        cmd_data_check_host_entry(cmd_str, host_entry, size);
+#endif
+	return SW_OK;
+}
 #endif
 
 #ifdef IN_BM
@@ -9998,7 +10072,7 @@ cmd_data_check_bm_static_thresh(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("max thresh", "0");
+        cmd = get_sub_cmd("max_thresh", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10020,7 +10094,7 @@ cmd_data_check_bm_static_thresh(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("resume offset", "0");
+        cmd = get_sub_cmd("resume_off", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10077,7 +10151,7 @@ cmd_data_check_bm_dynamic_thresh(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("shared ceiling", "0");
+        cmd = get_sub_cmd("shared_ceiling", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10099,7 +10173,7 @@ cmd_data_check_bm_dynamic_thresh(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("resume offset", "0");
+        cmd = get_sub_cmd("resume_off", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10121,7 +10195,7 @@ cmd_data_check_bm_dynamic_thresh(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("resume min thresh", "0");
+        cmd = get_sub_cmd("resume_min_thresh", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10158,7 +10232,7 @@ cmd_data_check_u_qmap(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("src profile", "0");
+        cmd = get_sub_cmd("src_profile", "0");
 		SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10178,7 +10252,7 @@ cmd_data_check_u_qmap(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("srv code en", "enable");
+        cmd = get_sub_cmd("service_code_en", "no");
 		SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10191,14 +10265,14 @@ cmd_data_check_u_qmap(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.service_code_en), sizeof (a_bool_t));
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(entry.service_code_en), sizeof (a_bool_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
 
     do
     {
-        cmd = get_sub_cmd("srv code", "0");
+        cmd = get_sub_cmd("service_code", "0");
 		SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10218,7 +10292,7 @@ cmd_data_check_u_qmap(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("cpu code en", "enable");
+        cmd = get_sub_cmd("cpu_code_en", "no");
 		SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10231,14 +10305,14 @@ cmd_data_check_u_qmap(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.cpu_code_en), sizeof (a_bool_t));
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(entry.cpu_code_en), sizeof (a_bool_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
 
     do
     {
-        cmd = get_sub_cmd("cpu code", "0");
+        cmd = get_sub_cmd("cpu_code", "0");
 		SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10258,7 +10332,7 @@ cmd_data_check_u_qmap(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("dst port", "0");
+        cmd = get_sub_cmd("dst_port", "0");
 		SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10291,7 +10365,7 @@ cmd_data_check_ac_static_thresh(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("color en", "enable");
+        cmd = get_sub_cmd("color_en", "no");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10304,7 +10378,7 @@ cmd_data_check_ac_static_thresh(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.color_enable), sizeof (a_bool_t));
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(entry.color_enable), sizeof (a_bool_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
@@ -10312,7 +10386,7 @@ cmd_data_check_ac_static_thresh(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("wred en", "enable");
+        cmd = get_sub_cmd("wred_en", "no");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10325,14 +10399,14 @@ cmd_data_check_ac_static_thresh(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.wred_enable), sizeof (a_bool_t));
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(entry.wred_enable), sizeof (a_bool_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
 
     do
     {
-        cmd = get_sub_cmd("green max", "0");
+        cmd = get_sub_cmd("green_max", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10352,7 +10426,7 @@ cmd_data_check_ac_static_thresh(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("green min off", "0");
+        cmd = get_sub_cmd("green_min_off", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10372,7 +10446,7 @@ cmd_data_check_ac_static_thresh(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("yel max off", "0");
+        cmd = get_sub_cmd("yel_max_off", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10392,7 +10466,7 @@ cmd_data_check_ac_static_thresh(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("yel min off", "0");
+        cmd = get_sub_cmd("yel_min_off", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10412,7 +10486,7 @@ cmd_data_check_ac_static_thresh(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("red max off", "0");
+        cmd = get_sub_cmd("red_max_off", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10432,7 +10506,7 @@ cmd_data_check_ac_static_thresh(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("red min off", "0");
+        cmd = get_sub_cmd("red_min_off", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10452,7 +10526,7 @@ cmd_data_check_ac_static_thresh(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("green resume off", "0");
+        cmd = get_sub_cmd("green_resume_off", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10472,7 +10546,7 @@ cmd_data_check_ac_static_thresh(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("yellow resume off", "0");
+        cmd = get_sub_cmd("yel_resume_off", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10492,7 +10566,7 @@ cmd_data_check_ac_static_thresh(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("red resume off", "0");
+        cmd = get_sub_cmd("red_resume_off", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10525,7 +10599,7 @@ cmd_data_check_ac_dynamic_thresh(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("color en", "enable");
+        cmd = get_sub_cmd("color_en", "enable");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10546,7 +10620,7 @@ cmd_data_check_ac_dynamic_thresh(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("wred en", "enable");
+        cmd = get_sub_cmd("wred_en", "enable");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10566,7 +10640,7 @@ cmd_data_check_ac_dynamic_thresh(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("weight", "0");
+        cmd = get_sub_cmd("shared_weight", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10586,7 +10660,7 @@ cmd_data_check_ac_dynamic_thresh(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("green min off", "0");
+        cmd = get_sub_cmd("green_min_off", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10606,7 +10680,7 @@ cmd_data_check_ac_dynamic_thresh(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("yel max off", "0");
+        cmd = get_sub_cmd("yel_max_off", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10626,7 +10700,7 @@ cmd_data_check_ac_dynamic_thresh(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("yel min off", "0");
+        cmd = get_sub_cmd("yel_min_off", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10646,7 +10720,7 @@ cmd_data_check_ac_dynamic_thresh(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("red max off", "0");
+        cmd = get_sub_cmd("red_max_off", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10666,7 +10740,7 @@ cmd_data_check_ac_dynamic_thresh(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("red min off", "0");
+        cmd = get_sub_cmd("red_min_off", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10686,7 +10760,7 @@ cmd_data_check_ac_dynamic_thresh(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("green resume off", "0");
+        cmd = get_sub_cmd("green_resume_off", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10706,7 +10780,7 @@ cmd_data_check_ac_dynamic_thresh(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("yellow resume off", "0");
+        cmd = get_sub_cmd("yel_resume_off", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10726,7 +10800,7 @@ cmd_data_check_ac_dynamic_thresh(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("red resume off", "0");
+        cmd = get_sub_cmd("red_resume_off", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10777,7 +10851,7 @@ cmd_data_check_ac_group_buff(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("prealloc buffer", "0");
+        cmd = get_sub_cmd("prealloc_buffer", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10797,7 +10871,7 @@ cmd_data_check_ac_group_buff(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("total buffer", "0");
+        cmd = get_sub_cmd("total_buffer", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10828,7 +10902,7 @@ cmd_data_check_ac_ctrl(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("ac en", "enable");
+        cmd = get_sub_cmd("ac_en", "yes");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10841,14 +10915,14 @@ cmd_data_check_ac_ctrl(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.ac_en), sizeof (a_bool_t));
+            rv = cmd_data_check_confirm(cmd, A_TRUE, &(entry.ac_en), sizeof (a_bool_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
 
     do
     {
-        cmd = get_sub_cmd("ac fc en", "enable");
+        cmd = get_sub_cmd("ac_fc_en", "yes");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10861,7 +10935,7 @@ cmd_data_check_ac_ctrl(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_enable(cmd, &(entry.ac_fc_en), sizeof (a_bool_t));
+            rv = cmd_data_check_confirm(cmd, A_TRUE, &(entry.ac_fc_en), sizeof (a_bool_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
@@ -10879,7 +10953,7 @@ cmd_data_check_ac_obj(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("obj type", "0");
+        cmd = get_sub_cmd("obj_type", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -10899,7 +10973,7 @@ cmd_data_check_ac_obj(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("obj id", "0");
+        cmd = get_sub_cmd("obj_id", "0");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -11994,8 +12068,8 @@ cmd_data_check_policer_cmd_config(char *cmd_str, void * val, a_uint32_t size)
 
        do
     {
-        cmd = get_sub_cmd("red_action", "0-1");
-		SW_RTN_ON_NULL_PARAM(cmd);
+        cmd = get_sub_cmd("red_action", "drop");
+        SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
         {
@@ -12007,7 +12081,7 @@ cmd_data_check_policer_cmd_config(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint32(cmd, &(entry.red_action), sizeof (a_uint32_t));
+            rv = cmd_data_check_maccmd(cmd, &(entry.red_action), sizeof(a_uint32_t));
         }
     }
     while (talk_mode && (SW_OK != rv));

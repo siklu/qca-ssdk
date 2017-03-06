@@ -67,7 +67,7 @@ typedef enum {
 
 
 typedef struct {
-	fal_flow_type_t miss_action; /* flow mismatch action*/
+	fal_fwd_cmd_t miss_action; /* flow mismatch action*/
 	a_bool_t frag_bypass_en; /*0 for disable and 1 for enable*/
 	a_bool_t tcp_spec_bypass_en; /*0 for disable and 1 for enable*/
 	a_bool_t all_bypass_en; /*0 for disable and 1 for enable*/

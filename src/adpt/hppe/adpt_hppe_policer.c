@@ -526,7 +526,10 @@ adpt_hppe_port_policer_entry_get(a_uint32_t dev_id, fal_port_t port_id,
 	action->yellow_drop_priority = in_port_meter_cfg_tbl.bf.exceed_dp;
 	action->yellow_pcp = in_port_meter_cfg_tbl.bf.exceed_pcp;
 	action->yellow_dei = in_port_meter_cfg_tbl.bf.exceed_dei;
-	action->red_action = in_port_meter_cfg_tbl.bf.violate_cmd;
+	if (in_port_meter_cfg_tbl.bf.violate_cmd == 0)
+		action->red_action = FAL_MAC_DROP;
+	else
+		action->red_action = FAL_MAC_FRWRD;
 	action->red_priority_en = in_port_meter_cfg_tbl.bf.violate_chg_pri_cmd;
 	action->red_drop_priority_en = in_port_meter_cfg_tbl.bf.violate_chg_dp_cmd;
 	action->red_pcp_en = in_port_meter_cfg_tbl.bf.violate_chg_pcp_cmd;
@@ -624,7 +627,10 @@ adpt_hppe_port_policer_entry_set(a_uint32_t dev_id, fal_port_t port_id,
 	in_port_meter_cfg_tbl.bf.exceed_dp = action->yellow_drop_priority;
 	in_port_meter_cfg_tbl.bf.exceed_pcp = action->yellow_pcp;
 	in_port_meter_cfg_tbl.bf.exceed_dei = action->yellow_dei;
-	in_port_meter_cfg_tbl.bf.violate_cmd = action->red_action;
+	if (action->red_action == FAL_MAC_DROP)
+		in_port_meter_cfg_tbl.bf.violate_cmd = 0;
+	else
+		in_port_meter_cfg_tbl.bf.violate_cmd = 1;
 	in_port_meter_cfg_tbl.bf.violate_chg_pri_cmd = action->red_priority_en;
 	in_port_meter_cfg_tbl.bf.violate_chg_dp_cmd = action->red_drop_priority_en;
 	in_port_meter_cfg_tbl.bf.violate_chg_pcp_cmd = action->red_pcp_en;
@@ -695,7 +701,10 @@ adpt_hppe_acl_policer_entry_get(a_uint32_t dev_id, a_uint32_t index,
 	action->yellow_drop_priority = in_acl_meter_cfg_tbl.bf.exceed_dp;
 	action->yellow_pcp = in_acl_meter_cfg_tbl.bf.exceed_pcp;
 	action->yellow_dei = in_acl_meter_cfg_tbl.bf.exceed_dei;
-	action->red_action = in_acl_meter_cfg_tbl.bf.violate_cmd;
+	if (in_acl_meter_cfg_tbl.bf.violate_cmd == 0)
+		action->red_action = FAL_MAC_DROP;
+	else
+		action->red_action = FAL_MAC_FRWRD;
 	action->red_priority_en = in_acl_meter_cfg_tbl.bf.violate_chg_pri_cmd;
 	action->red_drop_priority_en = in_acl_meter_cfg_tbl.bf.violate_chg_dp_cmd;
 	action->red_pcp_en = in_acl_meter_cfg_tbl.bf.violate_chg_pcp_cmd;
@@ -792,7 +801,10 @@ adpt_hppe_acl_policer_entry_set(a_uint32_t dev_id, a_uint32_t index,
 	in_acl_meter_cfg_tbl.bf.exceed_dp = action->yellow_drop_priority;
 	in_acl_meter_cfg_tbl.bf.exceed_pcp = action->yellow_pcp;
 	in_acl_meter_cfg_tbl.bf.exceed_dei = action->yellow_dei;
-	in_acl_meter_cfg_tbl.bf.violate_cmd = action->red_action;
+	if (action->red_action == FAL_MAC_DROP)
+		in_acl_meter_cfg_tbl.bf.violate_cmd = 0;
+	else
+		in_acl_meter_cfg_tbl.bf.violate_cmd = 1;
 	in_acl_meter_cfg_tbl.bf.violate_chg_pri_cmd = action->red_priority_en;
 	in_acl_meter_cfg_tbl.bf.violate_chg_dp_cmd = action->red_drop_priority_en;
 	in_acl_meter_cfg_tbl.bf.violate_chg_pcp_cmd = action->red_pcp_en;

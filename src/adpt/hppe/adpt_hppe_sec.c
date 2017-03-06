@@ -61,7 +61,7 @@ adpt_hppe_sec_l3_excep_ctrl_get(a_uint32_t dev_id, a_uint32_t excep_type, fal_l3
 	hppe_l3_exp_multicast_ctrl_get(dev_id, excep_type, &multicast_ctrl);
 
 	ctrl->cmd = l3_exception_cmd.bf.l3_excep_cmd;
-	ctrl->de_acce_en = l3_exception_cmd.bf.de_acce;
+	ctrl->deacclr_en = l3_exception_cmd.bf.de_acce;
 	ctrl->l3_only_en = l3_only_ctrl.bf.excep_en;
 	ctrl->l2_only_en = l2_only_ctrl.bf.excep_en;
 	ctrl->l3_flow_en = l3_flow_ctrl.bf.excep_en;
@@ -141,7 +141,7 @@ adpt_hppe_sec_l3_excep_ctrl_set(a_uint32_t dev_id, a_uint32_t excep_type, fal_l3
 		return SW_BAD_VALUE;
 
 	l3_exception_cmd.bf.l3_excep_cmd= ctrl->cmd;
-	l3_exception_cmd.bf.de_acce= ctrl->de_acce_en;
+	l3_exception_cmd.bf.de_acce= ctrl->deacclr_en;
 	l3_only_ctrl.bf.excep_en = ctrl->l3_only_en;
 	l2_only_ctrl.bf.excep_en = ctrl->l2_only_en;
 	l3_flow_ctrl.bf.excep_en = ctrl->l3_flow_en;

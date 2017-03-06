@@ -51,7 +51,7 @@ typedef struct
 	a_uint32_t yellow_drop_priority; /* yellow traffic internal drop priority value*/
 	a_uint32_t yellow_pcp; /* yellow traffic pcp value*/
 	a_uint32_t yellow_dei; /* yellow traffic dei value*/
-	a_uint32_t red_action; /* red traffic drop or remark, 0 drop; 1 remark*/
+	fal_fwd_cmd_t red_action; /* red traffic drop or remark, 0 drop; 1 remark*/
 	a_bool_t red_priority_en; /* red traffic internal priority change enable*/
 	a_bool_t red_drop_priority_en; /* red traffic internal drop priority change enable*/
 	a_bool_t red_pcp_en; /* red traffic pcp change enable*/
