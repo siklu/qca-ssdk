@@ -13,8 +13,10 @@
  */
 
 #include "adpt.h"
-#include "adpt_hppe.h"
 #include "ssdk_init.h"
+#if defined(HPPE)
+#include "adpt_hppe.h"
+#endif
 
 adpt_api_t *g_adpt_api[SW_MAX_NR_DEV] = {NULL};
 ssdk_chip_type  g_chip_type = 0;
@@ -27,6 +29,7 @@ adpt_api_t *adpt_api_ptr_get(a_uint32_t dev_id)
 	return g_adpt_api[dev_id];
 }
 
+#if defined(HPPE)
 static sw_error_t adpt_hppe_module_func_register(a_uint32_t dev_id, a_uint32_t module)
 {
 	sw_error_t rv= SW_OK;
@@ -102,7 +105,7 @@ static sw_error_t adpt_hppe_module_func_register(a_uint32_t dev_id, a_uint32_t m
 
 	return rv;
 }
-
+#endif
 
 sw_error_t adpt_module_func_ctrl_set(a_uint32_t dev_id,
 		a_uint32_t module, fal_func_ctrl_t *func_ctrl)
@@ -164,14 +167,16 @@ sw_error_t adpt_module_func_ctrl_set(a_uint32_t dev_id,
 
 	switch (g_chip_type)
 	{
+		#if defined(HPPE)
 		case CHIP_HPPE:
 			rv = adpt_hppe_module_func_register(dev_id, module);
 			break;
+		#endif
 		default:
 			break;
 	}
 
-	return SW_OK;
+	return rv;
 }
 
 sw_error_t adpt_module_func_ctrl_get(a_uint32_t dev_id,
@@ -240,6 +245,7 @@ sw_error_t adpt_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 
 	switch (cfg->chip_type)
 	{
+		#if defined(HPPE)
 		case CHIP_HPPE:
 			g_adpt_api[dev_id] = aos_mem_alloc(sizeof(adpt_api_t));
 			if(g_adpt_api[dev_id] == NULL)
@@ -335,6 +341,7 @@ sw_error_t adpt_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_MISC);
 			SW_RTN_ON_ERROR(rv);
 			break;
+		#endif
 		default:
 			break;
 	}
@@ -347,6 +354,7 @@ sw_error_t adpt_module_func_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 
 	switch (cfg->chip_type)
 	{
+		#if defined(HPPE)
 		case CHIP_HPPE:
 			g_adpt_api[dev_id]->adpt_mirror_func_bitmap = 0;
 			adpt_hppe_mirror_func_bitmap_init(dev_id);
@@ -453,6 +461,7 @@ sw_error_t adpt_module_func_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 			SW_RTN_ON_ERROR(rv);
 
 			break;
+		#endif
 		default:
 			break;
 	}

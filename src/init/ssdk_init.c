@@ -91,10 +91,13 @@
 #include "fal_rfs.h"
 #endif
 #endif
+
+#if defined(HPPE)
 #include "hppe_reg_access.h"
 #include "hppe_fdb_reg.h"
 #include "hppe_fdb.h"
 #include "hppe_init.h"
+#endif
 
 #include "adpt.h"
 
@@ -3783,53 +3786,58 @@ static int __init regi_init(void)
 	ssdk_dev_notifier.priority = 1;
 	register_netdevice_notifier(&ssdk_dev_notifier);
 
-	#if defined(DESS) || defined(HPPE)
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
+		#if defined(HPPE)
 		if(cfg.chip_type == CHIP_HPPE)
 		{
 			printk("Initializing HPPE!!\n");
 			qca_hppe_hw_init(&cfg);
 			printk("Initializing HPPE Done!!\n");
 		}
-		/*Do Malibu self test to fix packet drop issue firstly*/
-		if ((cfg.chip_type == CHIP_DESS) && (ssdk_dt_global.mac_mode == PORT_WRAPPER_PSGMII)) {
-			ssdk_psgmii_self_test(A_FALSE, 100, &psgmii_result);
-			clear_self_test_config();
+		#endif
+		#if defined(DESS)
+		if(cfg.chip_type == CHIP_DESS)
+		{
+			/*Do Malibu self test to fix packet drop issue firstly*/
+			if ((cfg.chip_type == CHIP_DESS) && (ssdk_dt_global.mac_mode == PORT_WRAPPER_PSGMII)) {
+				ssdk_psgmii_self_test(A_FALSE, 100, &psgmii_result);
+				clear_self_test_config();
+			}
+
+			qca_dess_hw_init(&cfg);
+
+			#if defined (CONFIG_NF_FLOW_COOKIE)
+			#ifdef IN_NAT
+			#ifdef IN_SFE
+			sfe_register_flow_cookie_cb(ssdk_flow_cookie_set);
+			#endif
+			#endif
+			#endif
+
+			#ifdef IN_RFS
+			memset(&rfs_dev, 0, sizeof(rfs_dev));
+			rfs_dev.name = NULL;
+			#ifdef IN_FDB
+			rfs_dev.mac_rule_cb = ssdk_rfs_mac_rule_set;
+			#endif
+			#ifdef IN_IP
+			rfs_dev.ip4_rule_cb = ssdk_rfs_ip4_rule_set;
+			rfs_dev.ip6_rule_cb = ssdk_rfs_ip6_rule_set;
+			#endif
+			rfs_ess_device_register(&rfs_dev);
+			#if defined(CONFIG_RFS_ACCEL)
+			#endif
+			ssdk_inet_notifier.notifier_call = ssdk_inet_event;
+			ssdk_inet_notifier.priority = 1;
+			register_inetaddr_notifier(&ssdk_inet_notifier);
+			#endif
+
+			/* Setup Cpu port for Dakota platform. */
+			switch_cpuport_setup();
 		}
-
+		#endif
 		rv = ssdk_switch_register();
-		qca_dess_hw_init(&cfg);
-
-		#if defined (CONFIG_NF_FLOW_COOKIE)
-		#ifdef IN_NAT
-		#ifdef IN_SFE
-		sfe_register_flow_cookie_cb(ssdk_flow_cookie_set);
-		#endif
-		#endif
-		#endif
-
-		#ifdef IN_RFS
-		memset(&rfs_dev, 0, sizeof(rfs_dev));
-		rfs_dev.name = NULL;
-		#ifdef IN_FDB
-		rfs_dev.mac_rule_cb = ssdk_rfs_mac_rule_set;
-		#endif
-		#ifdef IN_IP
-		rfs_dev.ip4_rule_cb = ssdk_rfs_ip4_rule_set;
-		rfs_dev.ip6_rule_cb = ssdk_rfs_ip6_rule_set;
-		#endif
-		rfs_ess_device_register(&rfs_dev);
-		#if defined(CONFIG_RFS_ACCEL)
-		#endif
-		ssdk_inet_notifier.notifier_call = ssdk_inet_event;
-		ssdk_inet_notifier.priority = 1;
-		register_inetaddr_notifier(&ssdk_inet_notifier);
-		#endif
-
-		/* Setup Cpu port for Dakota platform. */
-		switch_cpuport_setup();
 	}
-	#endif
 
 out:
 	fal_module_func_init(0, &cfg);
