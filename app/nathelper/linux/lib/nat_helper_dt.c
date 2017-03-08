@@ -739,6 +739,34 @@ napt_ct_counter_sync(a_uint32_t hw_index)
 	return 0;
 }
 
+static a_int32_t
+napt_ct_timer_update(a_uint32_t hw_index)
+{
+	struct nf_conn *ct = NULL;
+	struct nf_conn_counter *cct = NULL;
+	a_uint64_t delta_jiffies = 0, now_jiffies;
+	a_uint32_t ct_addr = napt_ct_addr[hw_index];
+	struct napt_ct *napt_ct;
+
+	if((napt_ct_addr[hw_index] == 0) || (hw_index >= NAPT_TABLE_SIZE))
+		return -1;
+
+	ct = (struct nf_conn *)napt_ct_addr[hw_index];
+	cct = (struct nf_conn_counter *)nf_conn_acct_find(ct);
+	napt_ct = napt_ct_buf_ct_find(ct_addr);
+	if (napt_ct) {
+		now_jiffies = (a_uint64_t)get_jiffies_64();
+		delta_jiffies = now_jiffies - napt_ct->last_jiffies;
+		napt_ct->last_jiffies = now_jiffies;
+	}
+
+	if (!test_bit(IPS_FIXED_TIMEOUT_BIT, &ct->status)) {
+		ct->timeout.expires += delta_jiffies;
+	}
+
+	return 0;
+}
+
 void napt_ct_counter_decrease(void)
 {
 	ct_buf_ct_cnt--;
@@ -783,7 +811,10 @@ napt_ct_hw_sync(a_uint8_t napt_ct_valid[])
                                 hw_index);
             }
         }
-	napt_ct_counter_sync(hw_index);
+	if (nf_athrs17_hnat_sync_counter_en)
+		napt_ct_counter_sync(hw_index);
+	else
+		napt_ct_timer_update(hw_index);
 
         if(napt_ct_valid[hw_index])
         {
@@ -862,9 +893,8 @@ napt_ct_check_add_one(a_uint32_t ct_addr, a_uint8_t *napt_ct_valid)
                 if(napt_ct_hw_add(ct_addr, &hw_index) == 0)
                 {
                     NAPT_CT_AGING_DISABLE(ct_addr);
-			if (nf_athrs17_hnat_sync_counter_en) {
-				napt_ct->last_jiffies = get_jiffies_64();
-			}
+	       napt_ct->last_jiffies = get_jiffies_64();
+
                     napt_ct_buf_in_hw_set(napt_ct, hw_index);
 #ifdef NAT_TODO
                     ct->in_hnat = 1; /* contrack in HNAT now. */
