@@ -1646,17 +1646,18 @@ static sw_error_t
 _adpt_hppe_acl_l2_fields_check(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_id, a_uint32_t rule_nr,
 				fal_acl_rule_t * rule, a_uint32_t *rule_type_map)
 {
+	a_uint32_t l2_rule_type_map = 0;
 	acl_print("%s, %d: fields[0] = 0x%x, fields[1] = 0x%x\n", __FUNCTION__, __LINE__, rule->field_flg[0], rule->field_flg[1]);
 
 	if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_MAC_DA))
 	{
 		acl_print("%s, %d: select MAC DA rule\n", __FUNCTION__, __LINE__);
-		*rule_type_map |= (1<<ADPT_ACL_HPPE_MAC_DA_RULE);
+		l2_rule_type_map |= (1<<ADPT_ACL_HPPE_MAC_DA_RULE);
 	}
 	if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_MAC_SA))
 	{
 		acl_print("%s, %d: select MAC SA rule\n", __FUNCTION__, __LINE__);
-		*rule_type_map |= (1<<ADPT_ACL_HPPE_MAC_SA_RULE);
+		l2_rule_type_map |= (1<<ADPT_ACL_HPPE_MAC_SA_RULE);
 	}
 	if((FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_MAC_STAG_PRI)) ||
 		(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_MAC_STAG_DEI)) ||
@@ -1669,44 +1670,46 @@ _adpt_hppe_acl_l2_fields_check(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t
 		(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_VSI_VALID)))
 	{
 		acl_print("%s, %d: select VLAN rule\n", __FUNCTION__, __LINE__);
-		*rule_type_map |= (1<<ADPT_ACL_HPPE_VLAN_RULE);
+		l2_rule_type_map |= (1<<ADPT_ACL_HPPE_VLAN_RULE);
 	}
 
 	if((FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_MAC_ETHTYPE)) ||
 		(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_PPPOE_SESSIONID)))
 	{
 		acl_print("%s, %d: select L2 MISC rule\n", __FUNCTION__, __LINE__);
-		*rule_type_map |= (1<<ADPT_ACL_HPPE_L2_MISC_RULE);
+		l2_rule_type_map |= (1<<ADPT_ACL_HPPE_L2_MISC_RULE);
 	}
 
-	if(!((*rule_type_map & (1<<ADPT_ACL_HPPE_VLAN_RULE))||
-		(*rule_type_map & (1<<ADPT_ACL_HPPE_L2_MISC_RULE))))
+	if(!((l2_rule_type_map & (1<<ADPT_ACL_HPPE_VLAN_RULE))||
+		(l2_rule_type_map & (1<<ADPT_ACL_HPPE_L2_MISC_RULE))))
 	{
 		if(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_MAC_STAG_VID))
 		{
 			if(rule->stag_vid_op == FAL_ACL_FIELD_MASK)
 			{
 				acl_print("%s, %d: select VLAN rule\n", __FUNCTION__, __LINE__);
-				*rule_type_map |= (1<<ADPT_ACL_HPPE_VLAN_RULE);
+				l2_rule_type_map |= (1<<ADPT_ACL_HPPE_VLAN_RULE);
 			}
 			else
 			{
 				acl_print("%s, %d: select L2 MISC rule\n", __FUNCTION__, __LINE__);
-				*rule_type_map |= (1<<ADPT_ACL_HPPE_L2_MISC_RULE);
+				l2_rule_type_map |= (1<<ADPT_ACL_HPPE_L2_MISC_RULE);
 			}
 		}
 	}
 
-	if(*rule_type_map == 0)
+	if(l2_rule_type_map == 0)
 	{
 		if((FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_SNAP)) ||
 			(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_ETHERNET)) ||
 			(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_FAKE_MAC_HEADER)))
 		{
 			acl_print("%s, %d: select MAC DA rule\n", __FUNCTION__, __LINE__);
-			*rule_type_map |= (1<<ADPT_ACL_HPPE_MAC_DA_RULE);
+			l2_rule_type_map |= (1<<ADPT_ACL_HPPE_MAC_DA_RULE);
 		}
 	}
+
+	*rule_type_map |= l2_rule_type_map;
 	acl_print("%s, %d: rule_type_map = 0x%x\n", __FUNCTION__, __LINE__, *rule_type_map);
 
 	return SW_OK;
@@ -1738,6 +1741,8 @@ _adpt_hppe_acl_ipv4_fields_check(a_uint32_t dev_id, a_uint32_t list_id, a_uint32
 		FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_IPV4_OPTION) ||
 		FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_L3_TTL) ||
 		FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_L3_FRAGMENT) ||
+		FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_AH_HEADER) ||
+		FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_ESP_HEADER) ||
 		FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_IP_PROTO))
 	{
 		*rule_type_map |= (1<<ADPT_ACL_HPPE_IPMISC_RULE);

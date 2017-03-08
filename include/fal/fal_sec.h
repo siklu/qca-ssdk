@@ -186,24 +186,24 @@ extern "C" {
     fal_norm_item_t;
 
 	typedef struct {
-		fal_fwd_cmd_t cmd;
-		a_bool_t de_acce_en;
-		a_bool_t l3_only_en;
-		a_bool_t l2_only_en;
-		a_bool_t l3_flow_en;
-		a_bool_t l2_flow_en;
-		a_bool_t multicast_en;
+		fal_fwd_cmd_t cmd; /* action for the exception */
+		a_bool_t deacclr_en; /* 0 for disable and 1 for disable */
+		a_bool_t l3_only_en; /* 0 for disable and 1 for disable */
+		a_bool_t l2_only_en; /* 0 for disable and 1 for disable */
+		a_bool_t l3_flow_en; /* 0 for disable and 1 for disable */
+		a_bool_t l2_flow_en; /* 0 for disable and 1 for disable */
+		a_bool_t multicast_en; /* 0 for disable and 1 for disable */
 	} fal_l3_excep_ctrl_t;
 
 	typedef struct {
-		a_uint8_t small_ttl;
-		a_uint8_t small_hop_limit;
+		a_uint8_t small_ttl; /* small ttl value checking */
+		a_uint8_t small_hop_limit; /*small hoplimit value for check*/
 	} fal_l3_excep_parser_ctrl;
 
 #define TCP_FLAGS_MAX	8
 	typedef struct {
-		a_uint8_t tcp_flags[TCP_FLAGS_MAX];
-		a_uint8_t tcp_flags_mask[TCP_FLAGS_MAX];
+		a_uint8_t tcp_flags[TCP_FLAGS_MAX]; /*flag for exception*/
+		a_uint8_t tcp_flags_mask[TCP_FLAGS_MAX]; /*flag mask*/
 	} fal_l4_excep_parser_ctrl;
 
 enum {

@@ -653,6 +653,10 @@ struct sub_cmd_des_t g_port_des[] =
 	{"magicFrameMac", "set",   SW_API_PT_MAGIC_FRAME_MAC_SET, NULL},
 	{"wolstatus", "set",   SW_API_PT_WOL_STATUS_SET, NULL},
 	{"interfaceMode", "set",   SW_API_PT_INTERFACE_MODE_SET, NULL},
+	{"mtu", "set",   SW_API_PT_MTU_SET, NULL},
+	{"mru", "set",   SW_API_PT_MRU_SET, NULL},
+	{"srcfilter", "set",   SW_API_PT_SOURCE_FILTER_SET, NULL},
+	{"frameMaxSize", "set",   SW_API_PT_FRAME_MAX_SIZE_SET, NULL},
 	#endif
 	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
 };
@@ -1079,9 +1083,9 @@ struct sub_cmd_des_t g_ip_des[] =
 	{"pubip", "set",  SW_API_IP_PUB_IP_SET, NULL},
 	{"portmac", "set",  SW_API_IP_PORT_MAC_SET, NULL},
 	{"routemiss", "set",  SW_API_IP_ROUTE_MISS_SET, NULL},
-	{"portarp", "set",  SW_API_IP_PORT_ARP_SG_SET, NULL},
+	{"portarpsg", "set",  SW_API_IP_PORT_ARP_SG_SET, NULL},
 	{"mcmode", "set",  SW_API_IP_VSI_MC_MODE_SET, NULL},
-	{"global", "set",  SW_API_GLOBAL_CTRL_SET, NULL},
+	{"globalctrl", "set",  SW_API_GLOBAL_CTRL_SET, NULL},
 	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
 };
 #endif

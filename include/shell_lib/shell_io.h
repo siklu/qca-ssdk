@@ -387,6 +387,8 @@ sw_error_t
 cmd_data_check_flow(char *cmd_str, void * val, a_uint32_t size);
 sw_error_t
 cmd_data_check_flow_global(char *cmd_str, void * val, a_uint32_t size);
+sw_error_t
+cmd_data_check_flow_host(char *cmd_str, void * val, a_uint32_t size);
 #endif
 
 #ifdef IN_POLICER
@@ -427,11 +429,15 @@ cmd_data_check_mirr_analy_cfg(char *info, void *val, a_uint32_t size);
 sw_error_t
 cmd_data_check_mirr_direction(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size);
 #endif
-
+sw_error_t
+cmd_data_check_integer(char *cmd_str, a_uint32_t * arg_val, a_uint32_t max_val, a_uint32_t min_val);
 #ifdef IN_CTRLPKT
 sw_error_t
 cmd_data_check_ctrlpkt_appprofile(char *info, void *val, a_uint32_t size);
 #endif
-
+#ifdef IN_ACL
+sw_error_t
+cmd_data_check_udf_type(char *cmdstr, fal_acl_udf_type_t * arg_val, a_uint32_t size);
+#endif
 #endif
 

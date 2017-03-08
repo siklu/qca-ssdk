@@ -473,8 +473,9 @@ cmd_parse(char *cmd_str, int *cmd_index, int *cmd_index_sub)
     tmp_str[cmd_nr] = (void *) strsep(&cmd_str, " ");
     while (tmp_str[cmd_nr])
     {
-        if (++cmd_nr == CMDSTR_ARGS_MAX)
-            break;
+        if (strcmp(tmp_str[cmd_nr], ""))
+            if (++cmd_nr == CMDSTR_ARGS_MAX)
+                break;
         tmp_str[cmd_nr] = (void *) strsep(&cmd_str, " ");
     }
 
