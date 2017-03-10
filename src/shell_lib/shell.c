@@ -20,8 +20,8 @@
 #include "shell_config.h"
 #include "api_access.h"
 
-a_uint32_t ioctl_buf[IOCTL_BUF_SIZE];
-a_uint32_t ioctl_argp[CMDSTR_ARGS_MAX*4];
+unsigned long ioctl_buf[IOCTL_BUF_SIZE];
+unsigned long ioctl_argp[CMDSTR_ARGS_MAX*4];
 
 void
 cmd_print_error(sw_error_t rtn)
@@ -36,10 +36,10 @@ cmd_print(char *fmt, ...)
 }
 
 static sw_error_t
-cmd_input_parser(a_uint32_t *arg_val, a_uint32_t arg_index, sw_api_param_t *pp)
+cmd_input_parser(unsigned long *arg_val, a_uint32_t arg_index, sw_api_param_t *pp)
 {
     a_int16_t i;
-    a_uint32_t *pbuf;
+    unsigned long *pbuf;
     a_uint16_t rtn_size = 1;
     sw_api_param_t *pptmp = NULL;;
 
@@ -62,15 +62,15 @@ cmd_input_parser(a_uint32_t *arg_val, a_uint32_t arg_index, sw_api_param_t *pp)
         return SW_NO_RESOURCE;
     }
 
-    *arg_val = (a_uint32_t) pbuf;
+    *arg_val = (unsigned long) pbuf;
 
     return SW_OK;
 }
 
 static sw_error_t
-cmd_api_func(sw_api_func_t *fp, a_uint32_t nr_param, a_uint32_t * args)
+cmd_api_func(sw_api_func_t *fp, a_uint32_t nr_param, unsigned long * args)
 {
-    a_uint32_t *p = &args[2];
+    unsigned long *p = &args[2];
     sw_error_t rv;
 
     switch (nr_param)
@@ -84,80 +84,80 @@ cmd_api_func(sw_api_func_t *fp, a_uint32_t nr_param, a_uint32_t * args)
 	}
         case 1:
 	{
-            sw_error_t(*func1) (a_uint32_t);
+            sw_error_t(*func1) (unsigned long);
             func1 = fp->func;
             rv = (func1) (p[0]);
             break;
 	}
         case 2:
 	{
-            sw_error_t(*func2) (a_uint32_t, a_uint32_t);
+            sw_error_t(*func2) (unsigned long, unsigned long);
             func2 = fp->func;
             rv = (func2) (p[0], p[1]);
             break;
 	}
         case 3:
 	{
-            sw_error_t(*func3) (a_uint32_t, a_uint32_t, a_uint32_t);
+            sw_error_t(*func3) (unsigned long, unsigned long, unsigned long);
             func3 = fp->func;
             rv = (func3) (p[0], p[1], p[2]);
             break;
 	}
         case 4:
 	{
-            sw_error_t(*func4) (a_uint32_t, a_uint32_t, a_uint32_t, \
-			a_uint32_t);
+            sw_error_t(*func4) (unsigned long, unsigned long, unsigned long, \
+			unsigned long);
             func4 = fp->func;
             rv = (func4) (p[0], p[1], p[2], p[3]);
             break;
 	}
         case 5:
 	{
-            sw_error_t(*func5) (a_uint32_t, a_uint32_t, a_uint32_t, \
-			a_uint32_t, a_uint32_t);
+            sw_error_t(*func5) (unsigned long, unsigned long, unsigned long, \
+			unsigned long, unsigned long);
             func5 = fp->func;
             rv = (func5) (p[0], p[1], p[2], p[3], p[4]);
             break;
 	}
         case 6:
 	{
-            sw_error_t(*func6) (a_uint32_t, a_uint32_t, a_uint32_t, \
-			a_uint32_t, a_uint32_t, a_uint32_t);
+            sw_error_t(*func6) (unsigned long, unsigned long, unsigned long, \
+			unsigned long, unsigned long, unsigned long);
             func6 = fp->func;
             rv = (func6) (p[0], p[1], p[2], p[3], p[4], p[5]);
             break;
 	}
         case 7:
 	{
-            sw_error_t(*func7) (a_uint32_t, a_uint32_t, a_uint32_t, \
-			a_uint32_t, a_uint32_t, a_uint32_t, a_uint32_t);
+            sw_error_t(*func7) (unsigned long, unsigned long, unsigned long, \
+			unsigned long, unsigned long, unsigned long, unsigned long);
             func7 = fp->func;
             rv = (func7) (p[0], p[1], p[2], p[3], p[4], p[5], p[6]);
             break;
 	}
         case 8:
 	{
-            sw_error_t(*func8) (a_uint32_t, a_uint32_t, a_uint32_t, \
-			a_uint32_t, a_uint32_t, a_uint32_t, a_uint32_t, \
-			a_uint32_t);
+            sw_error_t(*func8) (unsigned long, unsigned long, unsigned long, \
+			unsigned long, unsigned long, unsigned long, unsigned long, \
+			unsigned long);
             func8 = fp->func;
             rv = (func8) (p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7]);
             break;
 	}
         case 9:
 	{
-            sw_error_t(*func9) (a_uint32_t, a_uint32_t, a_uint32_t, \
-			a_uint32_t, a_uint32_t, a_uint32_t, a_uint32_t, \
-			a_uint32_t, a_uint32_t);
+            sw_error_t(*func9) (unsigned long, unsigned long, unsigned long, \
+			unsigned long, unsigned long, unsigned long, unsigned long, \
+			unsigned long, unsigned long);
             func9 = fp->func;
             rv = (func9) (p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8]);
             break;
 	}
         case 10:
 	{
-            sw_error_t(*func10) (a_uint32_t, a_uint32_t, a_uint32_t, \
-			a_uint32_t, a_uint32_t, a_uint32_t, a_uint32_t, \
-			a_uint32_t, a_uint32_t, a_uint32_t);
+            sw_error_t(*func10) (unsigned long, unsigned long, unsigned long, \
+			unsigned long, unsigned long, unsigned long, unsigned long, \
+			unsigned long, unsigned long, unsigned long);
             func10 = fp->func;
             rv = (func10) (p[0], p[1], p[2], p[3], p[4], p[5],
                          p[6], p[7], p[8], p[9]);
@@ -167,7 +167,7 @@ cmd_api_func(sw_api_func_t *fp, a_uint32_t nr_param, a_uint32_t * args)
             rv = SW_OUT_OF_RANGE;
     }
 
-    *(a_uint32_t *) args[1] = rv;
+    *(unsigned long *) args[1] = rv;
 
     return rv;
 }
@@ -232,12 +232,12 @@ cmd_strtol(char *str, a_uint32_t * arg_val)
 }
 
 static sw_error_t
-cmd_parse_api(char **cmd_str, a_uint32_t * arg_val)
+cmd_parse_api(char **cmd_str, unsigned long * arg_val)
 {
     char *tmp_str;
     a_uint32_t arg_index, arg_start = 2, reserve_index = 1; /*reserve for dev_id */
     a_uint32_t last_param_in = 0;
-    a_uint32_t *temp;
+    unsigned long *temp;
     void *pentry;
     sw_api_param_t *pptmp = NULL;
     sw_api_t sw_api;
@@ -313,7 +313,7 @@ cmd_parse_api(char **cmd_str, a_uint32_t * arg_val)
 
 /*user command api*/
 sw_error_t
-cmd_exec_api(a_uint32_t *arg_val)
+cmd_exec_api(unsigned long *arg_val)
 {
     sw_error_t rv;
     sw_api_t sw_api;
@@ -322,7 +322,7 @@ cmd_exec_api(a_uint32_t *arg_val)
     SW_RTN_ON_ERROR(sw_api_get(&sw_api));
 
     /*save cmd return value */
-    arg_val[1] = (a_uint32_t) ioctl_buf;
+    arg_val[1] = (unsigned long) ioctl_buf;
     /*save set device id */
     arg_val[2] = get_devid();
 
@@ -422,11 +422,11 @@ cmd_lookup(char **cmd_str, int *cmd_index, int *cmd_index_sub)
     return cmd_deepth;
 }
 
-static a_uint32_t *
+static unsigned long *
 cmd_parse(char *cmd_str, int *cmd_index, int *cmd_index_sub)
 {
     int cmd_nr = 0;
-    a_uint32_t *arg_val = ioctl_argp;
+    unsigned long *arg_val = ioctl_argp;
     char *tmp_str[CMDSTR_ARGS_MAX];
     int rtn_code = 0;
     int cmd_depth;
@@ -434,7 +434,7 @@ cmd_parse(char *cmd_str, int *cmd_index, int *cmd_index_sub)
     if (cmd_str == NULL)
         return NULL;
 
-    memset(arg_val, 0, CMDSTR_ARGS_MAX * sizeof (a_uint32_t));
+    memset(arg_val, 0, CMDSTR_ARGS_MAX * sizeof (unsigned long));
 
     /* split string into array */
     if ((tmp_str[cmd_nr] = (void *) strsep(&cmd_str, " ")) == NULL)
@@ -480,7 +480,7 @@ cmd_parse(char *cmd_str, int *cmd_index, int *cmd_index_sub)
     }
 
     arg_val[0] = GCMD_SUB_API(*cmd_index, *cmd_index_sub);
-    arg_val[1] = (a_uint32_t) ioctl_buf;
+    arg_val[1] = (unsigned long) ioctl_buf;
 
     if (arg_val[0] < SW_API_MAX)
     {
@@ -507,9 +507,9 @@ cmd_parse(char *cmd_str, int *cmd_index, int *cmd_index_sub)
 }
 
 static int
-cmd_exec(a_uint32_t *arg_val, int cmd_index, int cmd_index_sub)
+cmd_exec(unsigned long *arg_val, int cmd_index, int cmd_index_sub)
 {
-    a_uint32_t api_id = arg_val[0];
+    unsigned long api_id = arg_val[0];
     sw_error_t rtn = SW_OK;
 
     if( api_id < SW_API_MAX )
@@ -534,7 +534,7 @@ cmd_exec(a_uint32_t *arg_val, int cmd_index, int cmd_index_sub)
 int
 cmd_run_one(char *cmd_str)
 {
-    a_uint32_t *arg_list;
+    unsigned long *arg_list;
     int cmd_index = 0, cmd_index_sub = 0;
 
     if ((arg_list = cmd_parse(cmd_str, &cmd_index, &cmd_index_sub)) != NULL)
