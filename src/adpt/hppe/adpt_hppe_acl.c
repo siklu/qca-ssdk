@@ -1437,7 +1437,7 @@ adpt_hppe_acl_rule_query(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_
 		rv |= hppe_ipo_mask_reg_get(dev_id, list_id*ADPT_ACL_ENTRY_NUM_PER_LIST+hw_index, &hw_mask);
 		rv |= hppe_ipo_action_get(dev_id, list_id*ADPT_ACL_ENTRY_NUM_PER_LIST+hw_index, &hw_act);
 		rule->post_routing = hw_reg.bf.post_routing_en;
-		rule->res_chain = hw_reg.bf.res_chain;
+		rule->acl_pool = hw_reg.bf.res_chain;
 		rule->pri = hw_reg.bf.pri&0x7;
 
 		if(hw_reg.bf.rule_type == ADPT_ACL_HPPE_MAC_DA_RULE)
@@ -2833,7 +2833,7 @@ _adpt_hppe_acl_rule_hw_add(a_uint32_t dev_id, a_uint32_t list_id,
 	a_uint32_t i = 0;
 
 	hw_reg.bf.post_routing_en = rule->post_routing;
-	hw_reg.bf.res_chain = rule->res_chain;
+	hw_reg.bf.res_chain = rule->acl_pool;
 	hw_reg.bf.pri = (g_acl_list[dev_id][list_id].list_pri<<3)|rule->pri;
 
 	for( i = 0; i < ADPT_ACL_HPPE_RULE_TYPE_NUM; i++)
