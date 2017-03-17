@@ -1940,6 +1940,7 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 	const __be32 *reg_cfg, *mac_mode,*led_source,*phy_addr;
 	const __be32 *led_number;
 	a_uint8_t *led_str;
+	a_uint8_t *status_value;
 
 
 	/*
@@ -1951,6 +1952,12 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 		return SW_BAD_PARAM;
 	}
 	printk("ess-switch DT exist!\n");
+
+	if (!of_property_read_string(switch_node, "status", (const char **)&status_value))
+	{
+		if (!strcmp(status_value, "disabled"))
+			return SW_DISABLE;
+	}
 
 	reg_cfg = of_get_property(switch_node, "reg", &len);
 	if(!reg_cfg) {
@@ -3757,7 +3764,10 @@ static int __init regi_init(void)
 
 	#ifndef BOARD_AR71XX
 	#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-	ssdk_dt_parse(&cfg);
+	if(SW_DISABLE == ssdk_dt_parse(&cfg)) {
+		printk("ess-switch status value is disabled\n");
+		return SW_OK;
+	}
 	#endif
 	#endif
 
