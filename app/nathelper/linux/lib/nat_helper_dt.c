@@ -359,8 +359,7 @@ napt_ct_buf_ct_add(a_uint32_t ct_addr)
 static a_uint32_t napt_ct_addr[NAPT_TABLE_SIZE] = {0};
 a_uint32_t napt_cookie[NAPT_TABLE_SIZE*2] = {0};
 
-
-#define NAPT_CT_PACKET_THRES_BASE    (50)
+a_uint32_t packet_thres_base = 50;
 static a_uint64_t packets_bdir_total = 0;
 static a_uint64_t packets_bdir_thres = 0;
 
@@ -922,7 +921,7 @@ static void
 napt_ct_pkts_thres_calc_init(void)
 {
     packets_bdir_total = 0;
-    packets_bdir_thres = NAPT_CT_PACKET_THRES_BASE;
+    packets_bdir_thres = packet_thres_base;
 
 }
 
@@ -1008,7 +1007,7 @@ napt_ct_pkts_thres_calc(a_uint32_t cnt, a_uint32_t napt_ct_offload_cnt)
                               uint64_div_uint32((packets_bdir_avg *(a_uint64_t)napt_ct_offload_cnt),
                                       NAPT_TABLE_SIZE);
 
-    if(packets_bdir_thres_temp > NAPT_CT_PACKET_THRES_BASE)
+    if(packets_bdir_thres_temp > packet_thres_base)
     {
         packets_bdir_thres = packets_bdir_thres_temp;
     }
