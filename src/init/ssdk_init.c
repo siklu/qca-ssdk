@@ -2015,6 +2015,195 @@ static void ssdk_dt_parse_uniphy(void)
 
 	return;
 }
+
+static void ssdk_dt_parse_l1_scheduler_cfg(
+	struct device_node *port_node,
+	a_uint32_t port_id)
+{
+	struct device_node *scheduler_node;
+	struct device_node *child;
+	ssdk_dt_scheduler_cfg *cfg = &(ssdk_dt_global.scheduler_cfg);
+	a_uint32_t tmp_cfg[4];
+	const __be32 *paddr;
+	a_uint32_t len, i, sp_id;
+
+	scheduler_node = of_find_node_by_name(port_node, "l1scheduler");
+	if (!scheduler_node) {
+		printk("cannot find l1scheduler node for port\n");
+		return;
+	}
+	for_each_available_child_of_node(scheduler_node, child) {
+		paddr = of_get_property(child, "sp", &len);
+		len /= sizeof(a_uint32_t);
+		if (!paddr) {
+			printk("error reading sp property\n");
+			return;
+		}
+		if (of_property_read_u32_array(child,
+				"cfg", tmp_cfg, 4)) {
+			printk("error reading cfg property!\n");
+			return;
+		}
+		for (i = 0; i < len; i++) {
+			sp_id = be32_to_cpup(paddr+i);
+			if (sp_id >= SSDK_L1SCHEDULER_CFG_MAX) {
+				printk("Invalid parameter for sp(%d)\n",
+					sp_id);
+				return;
+			}
+			cfg->l1cfg[sp_id].valid = 1;
+			cfg->l1cfg[sp_id].port_id = port_id;
+			cfg->l1cfg[sp_id].cpri = tmp_cfg[0];
+			cfg->l1cfg[sp_id].cdrr_id = tmp_cfg[1];
+			cfg->l1cfg[sp_id].epri = tmp_cfg[2];
+			cfg->l1cfg[sp_id].edrr_id = tmp_cfg[3];
+		}
+	}
+}
+
+static void ssdk_dt_parse_l0_scheduler_cfg(
+	struct device_node *port_node,
+	a_uint32_t port_id)
+{
+	struct device_node *scheduler_node;
+	struct device_node *child;
+	ssdk_dt_scheduler_cfg *cfg = &(ssdk_dt_global.scheduler_cfg);
+	a_uint32_t tmp_cfg[5];
+	const __be32 *paddr;
+	a_uint32_t len, i, queue_id;
+
+	scheduler_node = of_find_node_by_name(port_node, "l0scheduler");
+	if (!scheduler_node) {
+		printk("cannot find l0scheduler node for port\n");
+		return;
+	}
+	for_each_available_child_of_node(scheduler_node, child) {
+		paddr = of_get_property(child, "ucast_queue", &len);
+		len /= sizeof(a_uint32_t);
+		if (!paddr) {
+			printk("error reading ucast_queue property\n");
+			return;
+		}
+		if (of_property_read_u32_array(child,
+				"cfg", tmp_cfg, 5)) {
+			printk("error reading cfg property!\n");
+			return;
+		}
+		for (i = 0; i < len; i++) {
+			queue_id = be32_to_cpup(paddr+i);
+			if (queue_id >= SSDK_L0SCHEDULER_UCASTQ_CFG_MAX) {
+				printk("Invalid parameter for Uqueue(%d)\n",
+					queue_id);
+				return;
+			}
+			cfg->l0cfg[queue_id].valid = 1;
+			cfg->l0cfg[queue_id].port_id = port_id;
+			cfg->l0cfg[queue_id].sp_id = tmp_cfg[0];
+			cfg->l0cfg[queue_id].cpri = tmp_cfg[1];
+			cfg->l0cfg[queue_id].cdrr_id = tmp_cfg[2];
+			cfg->l0cfg[queue_id].epri = tmp_cfg[3];
+			cfg->l0cfg[queue_id].edrr_id = tmp_cfg[4];
+		}
+		paddr = of_get_property(child, "mcast_queue", &len);
+		len /= sizeof(a_uint32_t);
+		if (!paddr) {
+			printk("error reading Mcast_queue property\n");
+			return;
+		}
+		for (i = 0; i < len; i++) {
+			queue_id = be32_to_cpup(paddr+i);
+			if (queue_id >= SSDK_L0SCHEDULER_CFG_MAX) {
+				printk("Invalid parameter for Mqueue(%d)\n",
+					queue_id);
+				return;
+			}
+			cfg->l0cfg[queue_id].valid = 1;
+			cfg->l0cfg[queue_id].port_id = port_id;
+			cfg->l0cfg[queue_id].sp_id = tmp_cfg[0];
+			cfg->l0cfg[queue_id].cpri = tmp_cfg[1];
+			cfg->l0cfg[queue_id].cdrr_id = tmp_cfg[2];
+			cfg->l0cfg[queue_id].epri = tmp_cfg[3];
+			cfg->l0cfg[queue_id].edrr_id = tmp_cfg[4];
+		}
+	}
+}
+
+static void ssdk_dt_parse_scheduler_resource(
+	struct device_node *port_node,
+	a_uint32_t port_id)
+{
+	a_uint32_t uq[2], mq[2], l0sp[2], l0cdrr[2];
+	a_uint32_t l0edrr[2], l1cdrr[2], l1edrr[2];
+	ssdk_dt_scheduler_cfg *cfg = &(ssdk_dt_global.scheduler_cfg);
+
+	if (of_property_read_u32_array(port_node, "ucast_queue", uq, 2)
+		|| of_property_read_u32_array(port_node, "mcast_queue", mq, 2)
+		|| of_property_read_u32_array(port_node, "l0sp", l0sp, 2)
+		|| of_property_read_u32_array(port_node, "l0cdrr", l0cdrr, 2)
+		|| of_property_read_u32_array(port_node, "l0edrr", l0edrr, 2)
+		|| of_property_read_u32_array(port_node, "l1cdrr", l1cdrr, 2)
+		|| of_property_read_u32_array(port_node, "l1edrr", l1edrr, 2)){
+		printk("error reading port resource scheduler properties\n");
+		return;
+	}
+	cfg->pool[port_id].ucastq_start = uq[0];
+	cfg->pool[port_id].ucastq_end = uq[1];
+	cfg->pool[port_id].mcastq_start = mq[0];
+	cfg->pool[port_id].mcastq_end = mq[1];
+	cfg->pool[port_id].l0sp_start = l0sp[0];
+	cfg->pool[port_id].l0sp_end = l0sp[1];
+	cfg->pool[port_id].l0cdrr_start = l0cdrr[0];
+	cfg->pool[port_id].l0cdrr_end = l0cdrr[1];
+	cfg->pool[port_id].l0edrr_start = l0edrr[0];
+	cfg->pool[port_id].l0edrr_end = l0edrr[1];
+	cfg->pool[port_id].l1cdrr_start = l1cdrr[0];
+	cfg->pool[port_id].l1cdrr_end = l1cdrr[1];
+	cfg->pool[port_id].l1edrr_start = l1edrr[0];
+	cfg->pool[port_id].l1edrr_end = l1edrr[1];
+}
+
+static void ssdk_dt_parse_scheduler_cfg(struct device_node *switch_node)
+{
+	struct device_node *scheduler_node;
+	struct device_node *child;
+	a_uint32_t port_id;
+
+	scheduler_node = of_find_node_by_name(switch_node, "port_scheduler_resource");
+	if (!scheduler_node) {
+		printk("cannot find port_scheduler_resource node\n");
+		return;
+	}
+	for_each_available_child_of_node(scheduler_node, child) {
+		if (of_property_read_u32(child, "port_id", &port_id)) {
+			printk("error reading for port_id property!\n");
+			return;
+		}
+		if (port_id >= SSDK_MAX_PORT_NUM) {
+			printk("invalid parameter for port_id(%d)!\n", port_id);
+			return;
+		}
+		ssdk_dt_parse_scheduler_resource(child, port_id);
+	}
+
+	scheduler_node = of_find_node_by_name(switch_node, "port_scheduler_config");
+	if (!scheduler_node) {
+		printk("cannot find port_scheduler_config node\n");
+		return ;
+	}
+	for_each_available_child_of_node(scheduler_node, child) {
+		if (of_property_read_u32(child, "port_id", &port_id)) {
+			printk("error reading for port_id property!\n");
+			return;
+		}
+		if (port_id >= SSDK_MAX_PORT_NUM) {
+			printk("invalid parameter for port_id(%d)!\n", port_id);
+			return;
+		}
+		ssdk_dt_parse_l1_scheduler_cfg(child, port_id);
+		ssdk_dt_parse_l0_scheduler_cfg(child, port_id);
+	}
+}
+
 static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 {
 	struct device_node *switch_node = NULL,*mdio_node = NULL;
@@ -2074,6 +2263,8 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 	ssdk_dt_parse_mac_mode(cfg, switch_node);
 
 	ssdk_dt_parse_uniphy();
+
+	ssdk_dt_parse_scheduler_cfg(switch_node);
 
 	if (of_property_read_u32(switch_node, "switch_cpu_bmp", &cfg->port_cfg.cpu_bmp)
 		|| of_property_read_u32(switch_node, "switch_lan_bmp", &cfg->port_cfg.lan_bmp)
@@ -3105,16 +3296,17 @@ qca_hppe_bm_hw_init(void)
 static int
 qca_hppe_qm_hw_init(void)
 {
-	a_uint32_t i, queue_base = 200;
+	a_uint32_t i;
 	fal_ucast_queue_dest_t queue_dst;
 	fal_ac_obj_t obj;
 	fal_ac_ctrl_t ac_ctrl;
 	fal_ac_group_buffer_t group_buff;
 	fal_ac_dynamic_threshold_t  dthresh_cfg;
 	fal_ac_static_threshold_t sthresh_cfg;
+	a_uint32_t qbase = 0;
 
 	memset(&queue_dst, 0, sizeof(queue_dst));
-	fal_ucast_queue_base_profile_set(0, &queue_dst, 0, 0);
+
 	/*
 	 * Redirect service code 2 to queue 1
 	 * TODO: keep sync with  NSS
@@ -3134,10 +3326,10 @@ qca_hppe_qm_hw_init(void)
 
 	queue_dst.service_code_en = A_FALSE;
 	queue_dst.service_code = 0;
-	for(i = 1; i < 8; i++) {
+	for(i = 0; i < SSDK_MAX_PORT_NUM; i++) {
 		queue_dst.dst_port = i;
-		fal_ucast_queue_base_profile_set(0, &queue_dst,
-						queue_base + (i-1) * 8, i);
+		qbase = ssdk_dt_global.scheduler_cfg.pool[i].ucastq_start;
+		fal_ucast_queue_base_profile_set(0, &queue_dst, qbase, i);
 	}
 
 	/* queue ac*/
@@ -3177,70 +3369,42 @@ qca_hppe_qm_hw_init(void)
 static int
 qca_hppe_qos_scheduler_hw_init(void)
 {
-	a_uint32_t i = 0, j = 0;
+	a_uint32_t i = 0;
 	fal_qos_scheduler_cfg_t cfg;
 	fal_queue_bmp_t queue_bmp;
 	fal_qos_group_t group_sel;
 	fal_qos_pri_precedence_t pri_pre;
+	ssdk_dt_scheduler_cfg *dt_cfg = &(ssdk_dt_global.scheduler_cfg);
 
 	memset(&cfg, 0, sizeof(cfg));
 
 	/* L1 shceduler */
-	for (i = 0; i < 8; i++) {
-		cfg.sp_id = i;
-		cfg.c_pri = 0;
-		cfg.e_pri = 0;
-		cfg.c_drr_id = i;
-		cfg.e_drr_id = i;
-		cfg.c_drr_wt = 1;
-		cfg.e_drr_wt = 1;
-		fal_queue_scheduler_set(0, i, 1, i, &cfg);
+	for (i = 0; i < SSDK_L1SCHEDULER_CFG_MAX; i++) {
+		if (dt_cfg->l1cfg[i].valid) {
+			cfg.sp_id = dt_cfg->l1cfg[i].port_id;
+			cfg.c_pri = dt_cfg->l1cfg[i].cpri;
+			cfg.e_pri = dt_cfg->l1cfg[i].epri;
+			cfg.c_drr_id = dt_cfg->l1cfg[i].cdrr_id;
+			cfg.e_drr_id = dt_cfg->l1cfg[i].edrr_id;
+			cfg.c_drr_wt = 1;
+			cfg.e_drr_wt = 1;
+			fal_queue_scheduler_set(0, i, 1,
+					dt_cfg->l1cfg[i].port_id, &cfg);
+		}
 	}
 
 	/* L0 shceduler */
-	/* cpu port unicast queue: 0 ~ 199 */
-	cfg.sp_id = 0;
-	cfg.c_drr_wt = 2;
-	cfg.e_drr_wt = 2;
-	for (i = 0; i < 200; i++) {
-		cfg.c_pri = i % 8;
-		cfg.e_pri = i % 8;
-		cfg.c_drr_id = i % 8;
-		cfg.e_drr_id = i % 8;
-		fal_queue_scheduler_set(0, i, 0, 0, &cfg);
-	}
-	/* cpu port multicast queue: 256 ~ 271 */
-	cfg.c_drr_wt = 1;
-	cfg.e_drr_wt = 1;
-	for (i = 256; i < 272; i++) {
-		cfg.c_pri = i % 8;
-		cfg.e_pri = i % 8;
-		cfg.c_drr_id = i % 8;
-		cfg.e_drr_id = i % 8;
-		fal_queue_scheduler_set(0, i, 0, 0, &cfg);
-	}
-	/* port 1~7 unicast queue: 200 ~ 255  */
-	/* port 1~7 multicast queue: 272 ~ 299  */
-	for (j = 1; j < 8; j++) {
-		cfg.sp_id = j;
-		cfg.c_drr_wt = 2;
-		cfg.e_drr_wt = 2;
-		for (i = 0; i < 8; i++) {
-			cfg.c_pri = i;
-			cfg.e_pri = i;
-			cfg.c_drr_id = i + 8 * j;
-			cfg.e_drr_id = i + 8 * j;
-			fal_queue_scheduler_set(0, 200 + i + (j-1)*8, 0, j, &cfg);
-		}
-
-		cfg.c_drr_wt = 1;
-		cfg.e_drr_wt = 1;
-		for (i = 0; i < 4; i++) {
-			cfg.c_pri = i;
-			cfg.e_pri = i;
-			cfg.c_drr_id = i + 8 * j;
-			cfg.e_drr_id = i + 8 * j;
-			fal_queue_scheduler_set(0,272 + i + (j-1)*4, 0, j, &cfg);
+	for (i = 0; i < SSDK_L0SCHEDULER_CFG_MAX; i++) {
+		if (dt_cfg->l0cfg[i].valid) {
+			cfg.sp_id = dt_cfg->l0cfg[i].sp_id;
+			cfg.c_pri = dt_cfg->l0cfg[i].cpri;
+			cfg.e_pri = dt_cfg->l0cfg[i].epri;
+			cfg.c_drr_id = dt_cfg->l0cfg[i].cdrr_id;
+			cfg.e_drr_id = dt_cfg->l0cfg[i].edrr_id;
+			cfg.c_drr_wt = 1;
+			cfg.e_drr_wt = 1;
+			fal_queue_scheduler_set(0, i,
+					0, dt_cfg->l0cfg[i].port_id, &cfg);
 		}
 	}
 

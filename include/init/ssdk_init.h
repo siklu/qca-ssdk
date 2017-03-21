@@ -24,7 +24,10 @@ extern "C" {
 #include "common/sw.h"
 #include "fal_led.h"
 
-#define SSDK_MAX_PORT_NUM 7
+#define SSDK_MAX_PORT_NUM 8
+#define SSDK_L0SCHEDULER_CFG_MAX	300
+#define SSDK_L0SCHEDULER_UCASTQ_CFG_MAX	256
+#define SSDK_L1SCHEDULER_CFG_MAX	64
 
     typedef enum {
         HSL_MDIO = 1,
@@ -164,6 +167,48 @@ typedef struct
 	a_uint32_t      mac_mode2;
 } ssdk_init_cfg;
 
+	typedef struct {
+		a_uint16_t ucastq_start;
+		a_uint16_t ucastq_end;
+		a_uint16_t mcastq_start;
+		a_uint16_t mcastq_end;
+		a_uint8_t l0sp_start;
+		a_uint8_t l0sp_end;
+		a_uint8_t l0cdrr_start;
+		a_uint8_t l0cdrr_end;
+		a_uint8_t l0edrr_start;
+		a_uint8_t l0edrr_end;
+		a_uint8_t l1cdrr_start;
+		a_uint8_t l1cdrr_end;
+		a_uint8_t l1edrr_start;
+		a_uint8_t l1edrr_end;
+	} ssdk_dt_portscheduler_cfg;
+
+	typedef struct {
+		a_uint8_t valid;
+		a_uint8_t port_id;
+		a_uint8_t cpri;
+		a_uint8_t cdrr_id;
+		a_uint8_t epri;
+		a_uint8_t edrr_id;
+		a_uint8_t sp_id;
+	} ssdk_dt_l0scheduler_cfg;
+
+	typedef struct {
+		a_uint8_t valid;
+		a_uint8_t port_id;
+		a_uint8_t cpri;
+		a_uint8_t cdrr_id;
+		a_uint8_t epri;
+		a_uint8_t edrr_id;
+	} ssdk_dt_l1scheduler_cfg;
+
+	typedef struct {
+		ssdk_dt_portscheduler_cfg pool[SSDK_MAX_PORT_NUM];
+		ssdk_dt_l0scheduler_cfg l0cfg[SSDK_L0SCHEDULER_CFG_MAX];
+		ssdk_dt_l1scheduler_cfg l1cfg[SSDK_L1SCHEDULER_CFG_MAX];
+	} ssdk_dt_scheduler_cfg;
+
 	typedef struct
 	{
 		a_uint32_t switchreg_base_addr;
@@ -182,6 +227,7 @@ typedef struct
 		a_uint32_t uniphyreg_size;
 		a_uint8_t *uniphy_access_mode;
 		hsl_reg_mode uniphy_reg_access_mode;
+		ssdk_dt_scheduler_cfg scheduler_cfg;
 	} ssdk_dt_cfg;
 
 typedef struct phy_identification {
