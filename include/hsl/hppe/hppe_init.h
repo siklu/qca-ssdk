@@ -27,6 +27,12 @@ extern "C" {
 #include "init/ssdk_init.h"
 #define MII_PHYADDR_C45 (1<<30)
 #define HPPE_GCC_UNIPHY_REG_INC 0x100
+#define HPPE_TO_XGMAC_PORT_ID(port_id)  (port_id - 5)
+#define HPPE_TO_GMAC_PORT_ID(port_id) (port_id -1)
+#define HPPE_MUX_PORT1  5
+#define HPPE_MUX_PORT2  6
+#define HPPE_PORT_GMAC_TYPE	1
+#define HPPE_PORT_XGMAC_TYPE	2
 #define HPPE_UNIPHY_INSTANCE0	0
 #define HPPE_UNIPHY_INSTANCE1	1
 #define HPPE_UNIPHY_INSTANCE2	2

@@ -131,11 +131,26 @@ void __iomem *gcc_uniphy_base = NULL;
 void __iomem *gcc_hppe_clock_config1_base = NULL;
 void __iomem *gcc_hppe_clock_config2_base = NULL;
 
-a_uint32_t ssdk_dt_global_get_mac_mode(void)
+a_uint32_t ssdk_dt_global_get_mac_mode(a_uint32_t index)
 {
-	return ssdk_dt_global.mac_mode;
+	if (index == 0)
+		return ssdk_dt_global.mac_mode;
+	if (index == 1)
+		return ssdk_dt_global.mac_mode1;
+	if (index == 2)
+		return ssdk_dt_global.mac_mode2;
+	return 0;
 }
 
+a_uint32_t hppe_port_type[6] = {0,0,0,0,0,0}; // this variable should be init by ssdk_init
+
+a_uint32_t
+qca_hppe_port_mac_type_get(a_uint32_t dev_id, a_uint32_t port_id)
+{
+	if ((port_id < 1) || (port_id > 6))
+		return 0;
+	return hppe_port_type[port_id - 1];
+}
 phy_identification_t phy_array[] =
 {
 	#ifdef IN_MALIBU_PHY
@@ -1936,14 +1951,77 @@ void switch_cpuport_setup(void)
 
 #ifndef BOARD_AR71XX
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+static void ssdk_dt_parse_mac_mode(ssdk_init_cfg *cfg, struct device_node *switch_node)
+{
+	const __be32 *mac_mode;
+	a_uint32_t len = 0;
+
+	mac_mode = of_get_property(switch_node, "switch_mac_mode", &len);
+	if (!mac_mode)
+		printk("mac mode doesn't exit!\n");
+	else {
+		cfg->mac_mode = be32_to_cpup(mac_mode);
+		printk("mac mode = 0x%x\n", be32_to_cpup(mac_mode));
+		ssdk_dt_global.mac_mode = cfg->mac_mode;
+	}
+
+	mac_mode = of_get_property(switch_node, "switch_mac_mode1", &len);
+	if(!mac_mode)
+		printk("mac mode1 doesn't exit!\n");
+	else {
+		cfg->mac_mode1 = be32_to_cpup(mac_mode);
+		printk("mac mode1 = 0x%x\n", be32_to_cpup(mac_mode));
+		ssdk_dt_global.mac_mode1 = cfg->mac_mode1;
+	}
+
+	mac_mode = of_get_property(switch_node, "switch_mac_mode2", &len);
+	if(!mac_mode)
+		printk("mac mode2 doesn't exit!\n");
+	else {
+		cfg->mac_mode2 = be32_to_cpup(mac_mode);
+		printk("mac mode2 = 0x%x\n", be32_to_cpup(mac_mode));
+		ssdk_dt_global.mac_mode2 = cfg->mac_mode2;
+	}
+
+	return;
+}
+
+static void ssdk_dt_parse_uniphy(void)
+{
+	struct device_node *uniphy_node = NULL;
+	a_uint32_t len = 0;
+	const __be32 *reg_cfg;
+
+	/* read uniphy register base and address space */
+	uniphy_node = of_find_node_by_name(NULL, "ess-uniphy");
+	if (!uniphy_node)
+		printk("ess-uniphy DT doesn't exist!\n");
+	else {
+		printk("ess-uniphy DT exist!\n");
+		reg_cfg = of_get_property(uniphy_node, "reg", &len);
+		if(!reg_cfg)
+			printk("uniphy reg address doesn't exist!\n");
+		else {
+			ssdk_dt_global.uniphyreg_base_addr = be32_to_cpup(reg_cfg);
+			ssdk_dt_global.uniphyreg_size = be32_to_cpup(reg_cfg + 1);
+		}
+		if (of_property_read_string(uniphy_node, "uniphy_access_mode", (const char **)&ssdk_dt_global.uniphy_access_mode))
+			printk("uniphy access mode doesn't exist!\n");
+		else {
+			if(!strcmp(ssdk_dt_global.uniphy_access_mode, "local bus"))
+				ssdk_dt_global.uniphy_reg_access_mode = HSL_REG_LOCAL_BUS;
+		}
+	}
+
+	return;
+}
 static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 {
 	struct device_node *switch_node = NULL,*mdio_node = NULL;
 	struct device_node *psgmii_node = NULL;
 	struct device_node *child = NULL;
-	struct device_node *uniphy_node = NULL;
 	a_uint32_t len = 0,i = 0,j = 0;
-	const __be32 *reg_cfg, *mac_mode,*led_source,*phy_addr;
+	const __be32 *reg_cfg,*led_source,*phy_addr;
 	const __be32 *led_number;
 	a_uint8_t *led_str;
 	a_uint8_t *status_value;
@@ -1993,52 +2071,9 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 	else
 		ssdk_dt_global.switch_reg_access_mode = HSL_REG_MDIO;
 
-	mac_mode = of_get_property(switch_node, "switch_mac_mode", &len);
-	if (!mac_mode)
-		printk("%s: error reading device node properties for mac mode\n", switch_node->name);
-	else {
-		cfg->mac_mode = be32_to_cpup(mac_mode);
-		printk("mac mode = %d\n", be32_to_cpup(mac_mode));
-		ssdk_dt_global.mac_mode = cfg->mac_mode;
-	}
+	ssdk_dt_parse_mac_mode(cfg, switch_node);
 
-	mac_mode = of_get_property(switch_node, "switch_mac_mode1", &len);
-	if(!mac_mode)
-		printk("%s: error reading device node properties for mac mode1\n", switch_node->name);
-	else {
-		cfg->mac_mode1 = be32_to_cpup(mac_mode);
-		printk("mac mode1 = %d\n", be32_to_cpup(mac_mode));
-		ssdk_dt_global.mac_mode1 = cfg->mac_mode1;
-	}
-
-	mac_mode = of_get_property(switch_node, "switch_mac_mode2", &len);
-	if(!mac_mode)
-		printk("%s: error reading device node properties for mac mode2\n", switch_node->name);
-	else {
-		cfg->mac_mode2 = be32_to_cpup(mac_mode);
-		printk("mac mode2 = %d\n", be32_to_cpup(mac_mode));
-		ssdk_dt_global.mac_mode2 = cfg->mac_mode2;
-	}
-
-	// read uniphy register base and address space
-	uniphy_node = of_find_node_by_name(NULL, "ess-uniphy");
-	if (!uniphy_node)
-		printk("ess-uniphy DT doesn't exist!\n");
-	else {
-		reg_cfg = of_get_property(uniphy_node, "reg", &len);
-		if(!reg_cfg)
-			printk("%s: error reading device node properties for reg\n", uniphy_node->name);
-		else {
-			ssdk_dt_global.uniphyreg_base_addr = be32_to_cpup(reg_cfg);
-			ssdk_dt_global.uniphyreg_size = be32_to_cpup(reg_cfg + 1);
-        	}
-		if (of_property_read_string(uniphy_node, "uniphy_access_mode", (const char **)&ssdk_dt_global.uniphy_access_mode))
-			printk("%s: error reading device node properties for uniphy_access_mode\n", uniphy_node->name);
-		else {
-			if(!strcmp(ssdk_dt_global.uniphy_access_mode, "local bus"))
-				ssdk_dt_global.uniphy_reg_access_mode = HSL_REG_LOCAL_BUS;
-		}
-	}
+	ssdk_dt_parse_uniphy();
 
 	if (of_property_read_u32(switch_node, "switch_cpu_bmp", &cfg->port_cfg.cpu_bmp)
 		|| of_property_read_u32(switch_node, "switch_lan_bmp", &cfg->port_cfg.lan_bmp)
@@ -2674,6 +2709,29 @@ qca_hppe_portctrl_hw_init(void)
 		qca_switch_reg_write(0, 0x001034 + (addr_delta*i), (a_uint8_t *)&val, 4);
 	}
 
+#ifdef HAWKEYE_CHIP
+	for(i = 1; i < 7; i++) {
+		hppe_port_type[i - 1] = HPPE_PORT_GMAC_TYPE;
+		fal_port_txmac_status_set (0, i, A_FALSE);
+		fal_port_rxmac_status_set (0, i, A_FALSE);
+		fal_port_rxfc_status_set(0, i, A_TRUE);
+		fal_port_txfc_status_set(0, i, A_TRUE);
+		fal_port_max_frame_size_set(0, i, 1518);
+	}
+
+	for(i = 5; i < 7; i++) {
+		hppe_port_type[i - 1] = HPPE_PORT_XGMAC_TYPE;
+		fal_port_txmac_status_set (0, i, A_FALSE);
+		fal_port_rxmac_status_set (0, i, A_FALSE);
+		fal_port_rxfc_status_set(0, i, A_TRUE);
+		fal_port_txfc_status_set(0, i, A_TRUE);
+		fal_port_max_frame_size_set(0, i, 1518);
+	}
+
+	for(i = 1; i < 7; i++) {
+		hppe_port_type[i -1] = 0;
+	}
+#endif
 	return 0;
 }
 
@@ -3344,7 +3402,7 @@ qca_hppe_gcc_uniphy_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t *
 
 	return 0;
 }
-static void
+void
 qca_hppe_gcc_uniphy_port_clock_set(a_uint32_t dev_id, a_uint32_t uniphy_index,
 			a_uint32_t port_id, a_bool_t enable)
 {
@@ -3364,7 +3422,6 @@ qca_hppe_gcc_uniphy_port_clock_set(a_uint32_t dev_id, a_uint32_t uniphy_index,
 	}
 
 }
-
 sw_error_t
 qca_hppe_xgphy_read(a_uint32_t dev_id, a_uint32_t phy_addr,
                            a_uint32_t reg, a_uint16_t* data)
@@ -3390,6 +3447,129 @@ qca_hppe_xgphy_write(a_uint32_t dev_id, a_uint32_t phy_addr,
 	mdiobus_write(bus, phy_dest_addr, reg, data);
 
 	return 0;
+}
+static sw_error_t
+qca_hppe_port_mux_set(fal_port_t port_id, a_uint32_t mode1, a_uint32_t mode2)
+{
+	adpt_api_t *p_api;
+	a_uint32_t  mode;
+	sw_error_t rv = SW_OK;
+
+	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(0));
+
+	if ((NULL == p_api->adpt_port_mac_mux_set) || (NULL == p_api->adpt_port_mac_speed_set) ||
+				(NULL == p_api->adpt_port_mac_duplex_set))
+		return SW_NOT_SUPPORTED;
+
+	if (hppe_port_type[port_id - 1] == HPPE_PORT_GMAC_TYPE)
+	{
+		rv = p_api->adpt_port_mac_speed_set(0, port_id, FAL_SPEED_1000);
+		rv = p_api->adpt_port_mac_duplex_set(0, port_id, FAL_FULL_DUPLEX);
+	}
+	else if (hppe_port_type[port_id - 1] == HPPE_PORT_XGMAC_TYPE)
+	{
+		if (port_id == HPPE_MUX_PORT1)
+			mode = mode1;
+		else if (port_id == HPPE_MUX_PORT2)
+			mode = mode2;
+		if (mode == PORT_WRAPPER_SGMII_PLUS)
+		{
+			rv = p_api->adpt_port_mac_speed_set(0, port_id, FAL_SPEED_2500);
+			rv = p_api->adpt_port_mac_duplex_set(0, port_id, FAL_FULL_DUPLEX);
+		}
+		else
+		{
+			rv = p_api->adpt_port_mac_speed_set(0, port_id, FAL_SPEED_10000);
+			rv = p_api->adpt_port_mac_duplex_set(0, port_id, FAL_FULL_DUPLEX);
+		}
+	}
+	if ((hppe_port_type[port_id - 1] == HPPE_PORT_GMAC_TYPE) ||
+			(hppe_port_type[port_id - 1] == HPPE_PORT_XGMAC_TYPE))
+		rv = p_api->adpt_port_mac_mux_set(0, port_id, hppe_port_type[port_id - 1]);
+
+	return rv;
+}
+
+static sw_error_t
+qca_hppe_port_mac_type_set(a_uint32_t port_id, a_uint32_t mode)
+{
+	sw_error_t rv = SW_OK;
+
+	switch (mode) {
+
+		case PORT_WRAPPER_PSGMII:
+		case PORT_WRAPPER_QSGMII:
+		case PORT_WRAPPER_SGMII0_RGMII4:
+		case PORT_WRAPPER_SGMII1_RGMII4:
+		case PORT_WRAPPER_SGMII4_RGMII4:
+			hppe_port_type[port_id - 1] = HPPE_PORT_GMAC_TYPE;
+			break;
+		case PORT_WRAPPER_SGMII_PLUS:
+		case PORT_WRAPPER_USXGMII:
+		case PORT_WRAPPER_XFI:
+			hppe_port_type[port_id -1] = HPPE_PORT_XGMAC_TYPE;
+			break;
+	}
+	return rv;
+}
+static sw_error_t
+qca_hppe_port_mux_mac_type_init(a_uint32_t mode0, a_uint32_t mode1, a_uint32_t mode2)
+{
+	a_uint32_t  mode;
+	sw_error_t rv = SW_OK;
+	fal_port_t port_id;
+
+	switch (mode0) {
+		case PORT_WRAPPER_PSGMII:
+			for(port_id = 1; port_id < 6; port_id++) {
+				qca_hppe_port_mac_type_set(port_id, mode0);
+			}
+			break;
+		case PORT_WRAPPER_QSGMII:
+			for(port_id = 1; port_id < 5; port_id++) {
+				qca_hppe_port_mac_type_set(port_id, mode0);
+			}
+			break;
+		case PORT_WRAPPER_SGMII0_RGMII4:
+			qca_hppe_port_mac_type_set(1, mode0);
+			break;
+		case PORT_WRAPPER_SGMII1_RGMII4:
+			qca_hppe_port_mac_type_set(2, mode0);
+			break;
+		case PORT_WRAPPER_SGMII4_RGMII4:
+			qca_hppe_port_mac_type_set(5, mode0);
+			break;
+	}
+
+	qca_hppe_port_mac_type_set(5, mode1);
+	qca_hppe_port_mac_type_set(6, mode2);
+
+	for (port_id = 1; port_id < 7; port_id++) {
+		qca_hppe_port_mux_set(port_id,mode1, mode2);
+	}
+
+	return rv;
+}
+
+static sw_error_t
+qca_hppe_interface_mode_init(a_uint32_t mode0, a_uint32_t mode1, a_uint32_t mode2)
+{
+
+	adpt_api_t *p_api;
+	sw_error_t rv = SW_OK;
+
+	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(0));
+
+	if (NULL == p_api->adpt_uniphy_mode_set)
+		return SW_NOT_SUPPORTED;
+
+	rv = p_api->adpt_uniphy_mode_set(0, HPPE_UNIPHY_INSTANCE0, mode0);
+	rv = p_api->adpt_uniphy_mode_set(0, HPPE_UNIPHY_INSTANCE1, mode1);
+	rv = p_api->adpt_uniphy_mode_set(0, HPPE_UNIPHY_INSTANCE2, mode2);
+
+	rv = qca_hppe_port_mux_mac_type_init(mode0, mode1, mode2);
+
+	return rv;
 }
 #endif
 
@@ -3479,7 +3659,7 @@ qca_hppe_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t uniphy_index,
 static int
 qca_hppe_hw_init(ssdk_init_cfg *cfg)
 {
-	a_uint32_t val;
+	a_uint32_t val, i = 0;
 	void __iomem *ppe_gpio_base;
 
 
@@ -3516,12 +3696,40 @@ qca_hppe_hw_init(ssdk_init_cfg *cfg)
 
 	qca_hppe_shaper_hw_init();
 
-	qca_hppe_xgmac_hw_init();
-	printk("hppe xgmac init success\n");
 #ifdef HAWKEYE_CHIP
 	qca_hppe_gcc_uniphy_init();
 
 	qca_hppe_gcc_speed_clock_init();
+
+	qca_hppe_interface_mode_init(cfg->mac_mode, cfg->mac_mode1,
+				cfg->mac_mode2);
+#else
+#ifndef ESS_ONLY_FPGA
+	qca_hppe_xgmac_hw_init();
+	printk("hppe xgmac init success\n");
+
+	for(i = 0; i < 4; i++) {
+		hppe_port_type[i] = HPPE_PORT_GMAC_TYPE;
+	}
+	for(i = 4; i < 6; i++) {
+		hppe_port_type[i] = HPPE_PORT_XGMAC_TYPE;
+	}
+
+	ssdk_dt_global.mac_mode = PORT_WRAPPER_QSGMII;
+	ssdk_dt_global.mac_mode1 = PORT_WRAPPER_USXGMII;
+	ssdk_dt_global.mac_mode2 = PORT_WRAPPER_USXGMII;
+
+#else
+
+	for(i = 0; i < 5; i++) {
+		hppe_port_type[i] = HPPE_PORT_GMAC_TYPE;
+	}
+	hppe_port_type[i] = HPPE_PORT_XGMAC_TYPE;
+
+	ssdk_dt_global.mac_mode = PORT_WRAPPER_PSGMII;
+	ssdk_dt_global.mac_mode1 = PORT_WRAPPER_MAX;
+	ssdk_dt_global.mac_mode2 = PORT_WRAPPER_USXGMII;
+#endif
 #endif
 	return 0;
 }
