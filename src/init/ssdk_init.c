@@ -3475,6 +3475,28 @@ qca_hppe_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t uniphy_index,
 	return 0;
 }
 
+static sw_error_t
+qca_hppe_flow_hw_init(void)
+{
+	fal_flow_direction_t dir, dir_max;
+	fal_flow_mgmt_t mgmt;
+	sw_error_t rv;
+
+	memset(&mgmt, 0, sizeof(fal_flow_mgmt_t));
+	dir_max = FAL_FLOW_UNKOWN_DIR_DIR;
+
+	/*set redirect to cpu for multicast flow*/
+	for (dir = FAL_FLOW_LAN_TO_LAN_DIR; dir <= dir_max; dir++) {
+		rv = fal_flow_mgmt_get(0, FAL_FLOW_MCAST, dir, &mgmt);
+		if (rv)
+			return rv;
+		mgmt.miss_action = FAL_MAC_RDT_TO_CPU;
+		rv = fal_flow_mgmt_set(0, FAL_FLOW_MCAST, dir, &mgmt);
+		if (rv)
+			return rv;
+	}
+	return SW_OK;
+}
 
 static int
 qca_hppe_hw_init(ssdk_init_cfg *cfg)
@@ -3515,6 +3537,7 @@ qca_hppe_hw_init(ssdk_init_cfg *cfg)
 	qca_hppe_policer_hw_init();
 
 	qca_hppe_shaper_hw_init();
+	qca_hppe_flow_hw_init();
 
 	qca_hppe_xgmac_hw_init();
 	printk("hppe xgmac init success\n");
