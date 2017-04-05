@@ -64,6 +64,7 @@
 #include "ssdk_init.h"
 #include "shell.h"
 #include "shell_io.h"
+#include "shell_sw.h"
 #include <linux/kconfig.h>
 #include <linux/version.h>
 #include <linux/kernel.h>
@@ -11216,6 +11217,7 @@ qca_ar8327_sw_switch_ext(struct switch_dev *dev,
 			 	struct switch_val *val) 
 {
 	struct switch_ext *switch_ext_p, *ext_value_p;
+	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 	unsigned int i = 0;
 	int rv = -1;
 	switch_ext_p = val->value.ext_val;
@@ -11362,6 +11364,7 @@ qca_ar8327_sw_switch_ext(struct switch_dev *dev,
 		printk("command_line:%s\n", whole_command_line);
 #endif
 	}
+	uci_set_devid(priv->device_id);
 	set_talk_mode(0);
 	rv = cmd_run_one(whole_command_line);
 	set_talk_mode(1);

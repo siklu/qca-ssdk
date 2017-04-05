@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2015-2016, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015-2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -884,7 +884,7 @@ f2_phy_init(a_uint32_t dev_id, int phy_id,
 
 #endif
 
-static int f2_phy_probe(struct phy_device *pdev)
+static int f2_phy_probe(a_uint32_t dev_id, struct phy_device *pdev)
 {
 	int ret;
 	hsl_phy_ops_t f2_phy_api_ops = { 0 };
@@ -912,7 +912,7 @@ static int f2_phy_probe(struct phy_device *pdev)
 	f2_phy_api_ops.phy_reg_read = f2_phy_reg_read;
 	f2_phy_api_ops.phy_debug_write = f2_phy_debug_write;
 	f2_phy_api_ops.phy_debug_read = f2_phy_debug_read;
-	ret = hsl_phy_api_ops_register(&f2_phy_api_ops);
+	ret = hsl_phy_api_ops_register(dev_id, &f2_phy_api_ops);
 
 	if (ret == 0)
 		printk("qca probe f2 phy driver succeeded!\n");
@@ -922,9 +922,9 @@ static int f2_phy_probe(struct phy_device *pdev)
 	return ret;
 }
 
-int f2_phy_init(void)
+int f2_phy_init(a_uint32_t dev_id)
 {
-	phy_api_ops_init(0);
-	return f2_phy_probe((struct phy_device *)NULL);
+	phy_api_ops_init(dev_id);
+	return f2_phy_probe(dev_id, (struct phy_device *)NULL);
 }
 

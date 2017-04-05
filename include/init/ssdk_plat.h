@@ -183,6 +183,26 @@ enum {
 			SSDK_GLOBAL_INT0_HARDWARE_INI_DONE	\
 			)
 
+#define SSDK_LOG_LEVEL_ERROR    0
+#define SSDK_LOG_LEVEL_WARN     1
+#define SSDK_LOG_LEVEL_INFO     2
+#define SSDK_LOG_LEVEL_DEBUG    3
+#define SSDK_LOG_LEVEL_DEFAULT  SSDK_LOG_LEVEL_INFO
+
+extern a_uint32_t ssdk_log_level;
+
+#define __SSDK_LOG_FUN(lev, fmt, ...) \
+	do { \
+		if (SSDK_LOG_LEVEL_##lev <= ssdk_log_level) { \
+			printk("%s[%u]:"#lev":", __FUNCTION__, __LINE__); \
+			printk(fmt, ##__VA_ARGS__); \
+		} \
+	} while(0)
+
+#define SSDK_ERROR(fmt, ...) __SSDK_LOG_FUN(ERROR, fmt, ##__VA_ARGS__)
+#define SSDK_WARN(fmt, ...)  __SSDK_LOG_FUN(WARN, fmt, ##__VA_ARGS__)
+#define SSDK_INFO(fmt, ...)  __SSDK_LOG_FUN(INFO, fmt, ##__VA_ARGS__)
+#define SSDK_DEBUG(fmt, ...) __SSDK_LOG_FUN(DEBUG, fmt, ##__VA_ARGS__)
 
 struct qca_phy_priv {
 	struct phy_device *phy;
@@ -207,7 +227,15 @@ struct qca_phy_priv {
 	/*qm_err_check*/
 	struct mutex 	qm_lock;
 	struct delayed_work qm_dwork;
+	a_uint32_t port_link_down[AR8327_NUM_PORTS];
+	a_uint32_t port_link_up[AR8327_NUM_PORTS];
+	a_uint32_t port_old_link[AR8327_NUM_PORTS];
+	a_uint32_t port_old_speed[AR8327_NUM_PORTS];
+	a_uint32_t port_old_duplex[AR8327_NUM_PORTS];
+	a_uint32_t port_old_phy_status[AR8327_NUM_PORTS];
+	a_uint32_t port_qm_buf[AR8327_NUM_PORTS];
 	/*qm_err_check end*/
+	a_uint8_t device_id;
 	/*dess_rgmii_mac*/
 	struct mutex rgmii_lock;
 	struct delayed_work rgmii_dwork;

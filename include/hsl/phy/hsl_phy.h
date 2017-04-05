@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2015, 2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -270,9 +270,9 @@ extern "C" {
 		hsl_phy_counter_show  phy_counter_show;
 	} hsl_phy_ops_t;
 
-	sw_error_t hsl_phy_api_ops_register(hsl_phy_ops_t * phy_api_ops);
+	sw_error_t hsl_phy_api_ops_register(a_uint32_t dev_id, hsl_phy_ops_t * phy_api_ops);
 
-	sw_error_t hsl_phy_api_ops_unregister(hsl_phy_ops_t * phy_api_ops);
+	sw_error_t hsl_phy_api_ops_unregister(a_uint32_t dev_id, hsl_phy_ops_t * phy_api_ops);
 
 	hsl_phy_ops_t *hsl_phy_api_ops_get(a_uint32_t dev_id);
 

@@ -223,7 +223,7 @@ sw_error_t hppe_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 	{
 		hsl_api_t *p_api;
 
-		SW_RTN_ON_ERROR(hsl_port_prop_init());
+		SW_RTN_ON_ERROR(hsl_port_prop_init(dev_id));
 		SW_RTN_ON_ERROR(hsl_port_prop_init_by_dev(dev_id));
 		SW_RTN_ON_ERROR(hppe_portproperty_init(dev_id));
 

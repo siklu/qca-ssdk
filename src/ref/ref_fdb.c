@@ -53,8 +53,9 @@ qca_ar8327_sw_atu_flush(struct switch_dev *dev,
 				const struct switch_attr *attr,
 				struct switch_val *val)
 {
+	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 	/* 0: dynamic 1:dynamic, static */
-	fal_fdb_entry_flush(0, 1);
+	fal_fdb_entry_flush(priv->device_id, 1);
 
 	return 0;
 }
@@ -78,9 +79,9 @@ qca_ar8327_sw_atu_dump(struct switch_dev *dev,
 	memset(&entry, 0, sizeof(fal_fdb_entry_t));
 
 	if (priv->version == QCA_VER_AR8227)
-		rv = fal_fdb_entry_getfirst(0, &entry);
+		rv = fal_fdb_entry_getfirst(priv->device_id, &entry);
 	else
-		rv = fal_fdb_entry_extend_getfirst(0, &option, &entry);
+		rv = fal_fdb_entry_extend_getfirst(priv->device_id, &option, &entry);
 	while (!rv)
     {
 		len += snprintf(buf+len, 2048-len, "MAC: %02x:%02x:%02x:%02x:%02x:%02x PORTMAP: 0x%02x VID: 0x%x STATUS: 0x%x\n",
@@ -94,9 +95,9 @@ qca_ar8327_sw_atu_dump(struct switch_dev *dev,
 			break;
 		}
 		if (priv->version == QCA_VER_AR8227)
-			rv = fal_fdb_entry_getnext_byindex(0, &i, &entry);
+			rv = fal_fdb_entry_getnext_byindex(priv->device_id, &i, &entry);
 		else
-			rv = fal_fdb_entry_extend_getnext(0, &option, &entry);
+			rv = fal_fdb_entry_extend_getnext(priv->device_id, &option, &entry);
     }
 
 	val->value.s = (char*)(priv->buf);
