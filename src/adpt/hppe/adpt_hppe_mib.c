@@ -24,13 +24,8 @@
 #include "hppe_xgmacmib_reg.h"
 #include "hppe_xgmacmib.h"
 
-#define to_xgmac_port_id(port_id)  (port_id - 5)
+#include "hppe_init.h"
 
-static a_bool_t
-xgmac_port_check(fal_port_t port_id)
-{
-	return ((port_id == 5) ||( port_id == 6));
-}
 sw_error_t
 adpt_hppe_mib_cpukeep_get(a_uint32_t dev_id, a_bool_t *enable)
 {
@@ -89,7 +84,7 @@ adpt_hppe_get_mib_info(a_uint32_t dev_id, fal_port_t port_id,
 	ADPT_NULL_POINT_CHECK(mib_info);
 	memset(mib_info, 0, sizeof(fal_mib_info_t));
 
-	port_id = port_id -1;
+	port_id = HPPE_TO_GMAC_PORT_ID(port_id);
 	hppe_rxbroad_get(dev_id, (a_uint32_t)port_id, (union rxbroad_u *)&mib_info->RxBroad);
 	hppe_rxpause_get(dev_id, (a_uint32_t)port_id, (union rxpause_u *)&mib_info->RxPause);
 	hppe_rxmulti_get(dev_id, (a_uint32_t)port_id, (union rxmulti_u *)&mib_info->RxMulti);
@@ -146,7 +141,7 @@ adpt_hppe_get_tx_mib_info(a_uint32_t dev_id, fal_port_t port_id,
 	ADPT_NULL_POINT_CHECK(mib_info);
 	memset(mib_info, 0, sizeof(fal_mib_info_t));
 
-	port_id = port_id -1;
+	port_id = HPPE_TO_GMAC_PORT_ID(port_id);
 	hppe_txbroad_get(dev_id, (a_uint32_t)port_id, (union txbroad_u *)&mib_info->TxBroad);
 	hppe_txpause_get(dev_id, (a_uint32_t)port_id, (union txpause_u *)&mib_info->TxPause);
 	hppe_txmulti_get(dev_id, (a_uint32_t)port_id, (union txmulti_u *)&mib_info->TxMulti);
@@ -204,7 +199,6 @@ adpt_hppe_mib_status_set(a_uint32_t dev_id, a_bool_t enable)
 sw_error_t
 adpt_hppe_mib_port_flush_counters(a_uint32_t dev_id, fal_port_t port_id)
 {
-	a_uint32_t gmac_port_id = 0, xgmac_port_id = 0;
 	union mmc_control_u mmc_control;
 
 	memset(&mmc_control, 0, sizeof(mmc_control));
@@ -213,14 +207,20 @@ adpt_hppe_mib_port_flush_counters(a_uint32_t dev_id, fal_port_t port_id)
 	if(port_id < 1 || port_id > 7)
 		return SW_BAD_PARAM;
 	/*GMAC*/
-	gmac_port_id = port_id -1;
-	hppe_mac_mib_ctrl_mib_reset_set(dev_id, gmac_port_id, A_TRUE);
-	hppe_mac_mib_ctrl_mib_reset_set(dev_id, gmac_port_id, A_FALSE);
+	if(!hppe_xgmac_port_check(port_id))
+	{
+		port_id = HPPE_TO_GMAC_PORT_ID(port_id);
+		hppe_mac_mib_ctrl_mib_reset_set(dev_id, port_id, A_TRUE);
+		hppe_mac_mib_ctrl_mib_reset_set(dev_id, port_id, A_FALSE);
+	}
 	/*XGMAC*/
-	xgmac_port_id = to_xgmac_port_id(port_id);
-	hppe_mmc_control_get(dev_id, xgmac_port_id, &mmc_control);
+	else
+	{
+		port_id = HPPE_TO_XGMAC_PORT_ID(port_id);
+		hppe_mmc_control_get(dev_id, port_id, &mmc_control);
 	mmc_control.bf.cntrst = 1;
-	hppe_mmc_control_set(dev_id, xgmac_port_id, &mmc_control);
+		hppe_mmc_control_set(dev_id, port_id, &mmc_control);
+	}
 
 	return SW_OK;
 }
@@ -251,7 +251,7 @@ adpt_hppe_get_rx_mib_info(a_uint32_t dev_id, fal_port_t port_id,
 	ADPT_NULL_POINT_CHECK(mib_info);
 	memset(mib_info, 0, sizeof(fal_mib_info_t));
 
-	port_id = port_id -1;
+	port_id = HPPE_TO_GMAC_PORT_ID(port_id);
 	hppe_rxbroad_get(dev_id, (a_uint32_t)port_id, (union rxbroad_u *)&mib_info->RxBroad);
 	hppe_rxpause_get(dev_id, (a_uint32_t)port_id, (union rxpause_u *)&mib_info->RxPause);
 	hppe_rxmulti_get(dev_id, (a_uint32_t)port_id, (union rxmulti_u *)&mib_info->RxMulti);
@@ -332,12 +332,12 @@ adpt_hppe_get_xgmib_info(a_uint32_t dev_id, fal_port_t port_id,
 	ADPT_NULL_POINT_CHECK(mib_info);
 	memset(mib_info, 0, sizeof( * mib_info ));
 
-	if(!(xgmac_port_check(port_id)))
+	if(!(hppe_xgmac_port_check(port_id)))
 	{
 		printk("this port is not xg port!\n");
 		return SW_FAIL;
 	}
-	port_id = to_xgmac_port_id(port_id);
+	port_id = HPPE_TO_XGMAC_PORT_ID(port_id);
 
 	/*get tx xgmib information*/
 	data_low = 0; data_high = 0;
@@ -581,12 +581,12 @@ adpt_hppe_get_tx_xgmib_info(a_uint32_t dev_id, fal_port_t port_id,
 	ADPT_NULL_POINT_CHECK(mib_info);
 	memset(mib_info, 0, sizeof(* mib_info));
 
-	if(!(xgmac_port_check(port_id)))
+	if(!(hppe_xgmac_port_check(port_id)))
 	{
 		printk("this port is not xg port!\n");
 		return SW_FAIL;
 	}
-	port_id = to_xgmac_port_id(port_id);
+	port_id = HPPE_TO_XGMAC_PORT_ID(port_id);
 
 	/*get tx xgmib information*/
 	data_low = 0; data_high = 0;
@@ -700,12 +700,12 @@ adpt_hppe_get_rx_xgmib_info(a_uint32_t dev_id, fal_port_t port_id,
 	ADPT_NULL_POINT_CHECK(mib_info);
 	memset(mib_info, 0, sizeof(* mib_info));
 
-	if(!(xgmac_port_check(port_id)))
+	if(!(hppe_xgmac_port_check(port_id)))
 	{
 		printk("this port is not xg port!\n");
 		return SW_FAIL;
 	}
-	port_id = to_xgmac_port_id(port_id);
+	port_id = HPPE_TO_XGMAC_PORT_ID(port_id);
 
 	/*get tx xgmib information*/
 	data_low = 0; data_high = 0;

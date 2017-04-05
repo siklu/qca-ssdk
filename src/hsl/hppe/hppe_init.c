@@ -59,6 +59,10 @@ enum hppe_port_wrapper_cfg hppe_get_port_config(void)
 	return hppe_cfg[0]->mac_mode;
 }
 
+a_bool_t hppe_xgmac_port_check(fal_port_t port_id)
+{
+	return ((port_id == 5) ||( port_id == 6));
+}
 a_bool_t hppe_mac_port_valid_check(fal_port_t port_id)
 {
 	a_uint32_t bitmap = 0;

@@ -25,14 +25,19 @@ extern "C" {
 #endif /* __cplusplus */
 
 #include "init/ssdk_init.h"
+
 #define MII_PHYADDR_C45 (1<<30)
 #define HPPE_GCC_UNIPHY_REG_INC 0x100
 #define HPPE_TO_XGMAC_PORT_ID(port_id)  (port_id - 5)
 #define HPPE_TO_GMAC_PORT_ID(port_id) (port_id -1)
+#define HPPE_MAX_FRAME_SIZE 0x3FFF
+#define HPPE_FCS_LEN  4
+
 #define HPPE_MUX_PORT1  5
 #define HPPE_MUX_PORT2  6
 #define HPPE_PORT_GMAC_TYPE	1
 #define HPPE_PORT_XGMAC_TYPE	2
+
 #define HPPE_UNIPHY_INSTANCE0	0
 #define HPPE_UNIPHY_INSTANCE1	1
 #define HPPE_UNIPHY_INSTANCE2	2
@@ -45,8 +50,8 @@ extern "C" {
 #define HPPE_UNIPHY_INDIRECT_DATA  0x20
 
 sw_error_t hppe_init(a_uint32_t dev_id, ssdk_init_cfg *cfg);
-
-
+a_bool_t hppe_mac_port_valid_check(fal_port_t port_id);
+a_bool_t hppe_xgmac_port_check(fal_port_t port_id);
 sw_error_t hppe_cleanup(a_uint32_t dev_id);
 
 #ifdef __cplusplus

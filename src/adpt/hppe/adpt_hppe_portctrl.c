@@ -36,20 +36,122 @@
 #include "hppe_init.h"
 #include "ssdk_init.h"
 
-extern a_bool_t hppe_mac_port_valid_check (fal_port_t port_id);
-
 static a_bool_t
 __adpt_hppe_port_phy_connected (a_uint32_t dev_id, fal_port_t port_id)
 {
   if (0 == port_id)
-    {
       return A_FALSE;
-    }
   else
-    {
-
       return hppe_mac_port_valid_check (port_id);
-    }
+}
+
+static sw_error_t
+__adpt_hppe_port_xgmac_loopback_get(a_uint32_t dev_id, fal_port_t port_id,
+				 a_bool_t * enable)
+{
+	sw_error_t rv = SW_OK;
+
+	port_id = HPPE_TO_XGMAC_PORT_ID(port_id);
+	rv = hppe_mac_rx_configuration_lm_get(dev_id, port_id, (a_uint32_t*)enable);
+
+	return rv;
+}
+
+static sw_error_t
+__adpt_hppe_port_gmac_loopback_get(a_uint32_t dev_id, fal_port_t port_id,
+				 a_bool_t * enable)
+{
+	sw_error_t rv = SW_OK;
+
+	port_id = HPPE_TO_GMAC_PORT_ID(port_id);
+	rv = hppe_mac_ctrl2_mac_loop_back_get(dev_id, port_id, (a_uint32_t*)enable);
+
+	return rv;
+}
+
+static sw_error_t
+__adpt_hppe_port_xgmac_loopback_set(a_uint32_t dev_id, fal_port_t port_id,
+				 a_bool_t enable)
+{
+	sw_error_t rv = SW_OK;
+
+	port_id = HPPE_TO_XGMAC_PORT_ID(port_id);
+	rv = hppe_mac_rx_configuration_lm_set(dev_id, port_id, (a_uint32_t)enable);
+
+	return rv;
+}
+
+static sw_error_t
+__adpt_hppe_port_gmac_loopback_set(a_uint32_t dev_id, fal_port_t port_id,
+				 a_bool_t enable)
+{
+	sw_error_t rv = SW_OK;
+
+	port_id = HPPE_TO_GMAC_PORT_ID(port_id);
+	rv = hppe_mac_ctrl2_mac_loop_back_set(dev_id, port_id, (a_uint32_t)enable);
+
+	return rv;
+}
+
+static sw_error_t
+__adpt_hppe_port_jumbo_size_set(a_uint32_t dev_id, fal_port_t port_id,
+		a_uint32_t jumbo_size)
+{
+	sw_error_t rv = SW_OK;
+
+	port_id = HPPE_TO_GMAC_PORT_ID(port_id);
+	rv = hppe_mac_jumbo_size_mac_jumbo_size_set(dev_id, port_id, jumbo_size);
+
+	return rv;
+}
+
+static sw_error_t
+__adpt_xgmac_port_max_frame_size_get(a_uint32_t dev_id, fal_port_t port_id,
+		a_uint32_t *max_frame)
+{
+	sw_error_t rv = SW_OK;
+
+	port_id = HPPE_TO_XGMAC_PORT_ID(port_id);
+	rv = hppe_mac_rx_configuration_gpsl_get(dev_id,port_id, max_frame);
+
+	return rv;
+}
+
+static sw_error_t
+__adpt_gmac_port_max_frame_size_get(a_uint32_t dev_id, fal_port_t port_id,
+		a_uint32_t *max_frame)
+{
+	sw_error_t rv = SW_OK;
+
+	port_id = HPPE_TO_GMAC_PORT_ID(port_id);
+	rv = hppe_mac_jumbo_size_mac_jumbo_size_get(dev_id, port_id, max_frame);
+
+	return rv;
+}
+
+static sw_error_t
+__adpt_xgmac_port_max_frame_size_set(a_uint32_t dev_id, fal_port_t port_id,
+		a_uint32_t max_frame)
+{
+	sw_error_t rv = SW_OK;
+
+	port_id = HPPE_TO_XGMAC_PORT_ID(port_id);
+	rv |= hppe_mac_tx_configuration_jd_set(dev_id, port_id, (a_uint32_t)A_TRUE);
+	rv |= hppe_mac_rx_configuration_gpsl_set(dev_id, port_id, max_frame);
+
+	return rv;
+}
+
+static sw_error_t
+__adpt_gmac_port_max_frame_size_set(a_uint32_t dev_id, fal_port_t port_id,
+		a_uint32_t max_frame)
+{
+	sw_error_t rv = SW_OK;
+
+	port_id = HPPE_TO_GMAC_PORT_ID(port_id);
+	rv |= hppe_mac_ctrl2_maxfr_set(dev_id, port_id, max_frame);
+
+	return rv;
 }
 static sw_error_t
 __adpt_xgmac_port_rx_status_get(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t* port_rxmac_status)
@@ -639,20 +741,75 @@ adpt_hppe_port_hibernate_set(a_uint32_t dev_id, fal_port_t port_id,
 	return rv;
 
 }
+
+sw_error_t
+adpt_hppe_port_mru_set(a_uint32_t dev_id, fal_port_t port_id,
+		fal_mru_ctrl_t *ctrl)
+{
+	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(ctrl);
+
+	hppe_mru_mtu_ctrl_tbl_mru_set(dev_id, port_id, ctrl->mru_size);
+	hppe_mru_mtu_ctrl_tbl_mru_cmd_set(dev_id, port_id, (a_uint32_t)ctrl->action);
+
+	return SW_OK;
+}
+
+sw_error_t
+adpt_hppe_port_mtu_set(a_uint32_t dev_id, fal_port_t port_id,
+		fal_mtu_ctrl_t *ctrl)
+{
+	union mru_mtu_ctrl_tbl_u mru_mtu_ctrl_tbl;
+
+	memset(&mru_mtu_ctrl_tbl, 0, sizeof(mru_mtu_ctrl_tbl));
+	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(ctrl);
+
+	hppe_mru_mtu_ctrl_tbl_get(dev_id, port_id, &mru_mtu_ctrl_tbl);
+	mru_mtu_ctrl_tbl.bf.mtu = ctrl->mtu_size;
+	mru_mtu_ctrl_tbl.bf.mtu_cmd = (a_uint32_t)ctrl->action;
+	hppe_mru_mtu_ctrl_tbl_set(dev_id, port_id, &mru_mtu_ctrl_tbl);
+
+	if ((port_id >= 0) && (port_id <= 7))
+	{
+		hppe_mc_mtu_ctrl_tbl_mtu_set(dev_id, port_id, ctrl->mtu_size);
+		hppe_mc_mtu_ctrl_tbl_mtu_cmd_set(dev_id, port_id, (a_uint32_t)ctrl->action);
+	}
+
+	return SW_OK;
+}
+
 sw_error_t
 adpt_hppe_port_max_frame_size_set(a_uint32_t dev_id, fal_port_t port_id,
 		a_uint32_t max_frame)
 {
-	union mac_ctrl2_u mac_ctrl2;
+	fal_mtu_ctrl_t mtu_ctrl;
+	fal_mru_ctrl_t mru_ctrl;
+	a_uint32_t port_mac_type = 0;
+	sw_error_t rv = SW_OK;
 
-	memset(&mac_ctrl2, 0, sizeof(mac_ctrl2));
 	ADPT_DEV_ID_CHECK(dev_id);
+	mtu_ctrl.mtu_size = max_frame - HPPE_FCS_LEN;
+	mtu_ctrl.action = FAL_MAC_DROP;
+	rv |= adpt_hppe_port_mtu_set( dev_id, port_id, &mtu_ctrl);
+	mru_ctrl.mru_size = max_frame - HPPE_FCS_LEN;
+	mru_ctrl.action = FAL_MAC_DROP;
+	rv |= adpt_hppe_port_mru_set( dev_id, port_id, &mru_ctrl);
 
-	port_id = port_id -1;
-	hppe_mac_ctrl2_get(dev_id, port_id, &mac_ctrl2);
-	mac_ctrl2.bf.maxfr = max_frame;
-	hppe_mac_ctrl2_set(dev_id, port_id, &mac_ctrl2);
-	return SW_OK;
+	port_mac_type =qca_hppe_port_mac_type_get(dev_id, port_id);
+	if (port_mac_type == HPPE_PORT_XGMAC_TYPE)
+		rv |= __adpt_xgmac_port_max_frame_size_set( dev_id, port_id, max_frame);
+	else if (port_mac_type == HPPE_PORT_GMAC_TYPE)
+	{
+		/*for gmac, rxtoolong have counters when package length is longer than jumbo size and shorter than max frame size,
+		   when package length is longer than max frame size, the rxbadbyte have counters.*/
+		rv |= __adpt_hppe_port_jumbo_size_set(dev_id, port_id, max_frame);
+		rv |= __adpt_gmac_port_max_frame_size_set( dev_id, port_id, HPPE_MAX_FRAME_SIZE);
+	}
+	else
+		return SW_BAD_VALUE;
+
+	return rv;
 }
 
 sw_error_t
@@ -765,22 +922,6 @@ adpt_hppe_port_remote_loopback_set(a_uint32_t dev_id, fal_port_t port_id,
 
 }
 
-sw_error_t
-adpt_hppe_port_mru_set(a_uint32_t dev_id, fal_port_t port_id,
-		fal_mru_ctrl_t *ctrl)
-{
-	union mru_mtu_ctrl_tbl_u mru_mtu_ctrl_tbl;
-
-	memset(&mru_mtu_ctrl_tbl, 0, sizeof(mru_mtu_ctrl_tbl));
-	ADPT_DEV_ID_CHECK(dev_id);
-	ADPT_NULL_POINT_CHECK(ctrl);
-
-	hppe_mru_mtu_ctrl_tbl_get(dev_id, port_id, &mru_mtu_ctrl_tbl);
-	mru_mtu_ctrl_tbl.bf.mru = ctrl->mru_size;
-	mru_mtu_ctrl_tbl.bf.mru_cmd = (a_uint32_t)ctrl->action;
-
-	return hppe_mru_mtu_ctrl_tbl_set(dev_id, port_id, &mru_mtu_ctrl_tbl);
-}
 sw_error_t
 adpt_hppe_port_autoneg_status_get(a_uint32_t dev_id, fal_port_t port_id,
 					a_bool_t * status)
@@ -919,23 +1060,21 @@ sw_error_t
 adpt_hppe_port_mac_loopback_set(a_uint32_t dev_id, fal_port_t port_id,
 				 a_bool_t enable)
 {
-	union mac_ctrl2_u mac_ctrl2;
+	sw_error_t rv = SW_OK;
+	a_uint32_t port_mac_type = 0;
 
-	memset(&mac_ctrl2, 0, sizeof(mac_ctrl2));
 	ADPT_DEV_ID_CHECK(dev_id);
+	port_mac_type = qca_hppe_port_mac_type_get(dev_id, port_id);
+	if (port_mac_type == HPPE_PORT_XGMAC_TYPE)
+		rv = __adpt_hppe_port_xgmac_loopback_set( dev_id, port_id, enable);
+	else if(port_mac_type == HPPE_PORT_GMAC_TYPE)
+		rv = __adpt_hppe_port_gmac_loopback_set( dev_id, port_id, enable);
+	else
+		return SW_BAD_VALUE;
 
-	port_id = port_id - 1;
-	hppe_mac_ctrl2_get(dev_id, port_id, &mac_ctrl2);
-
-	if (A_TRUE == enable)
-		mac_ctrl2.bf.mac_loop_back = 1;
-	if (A_FALSE== enable)
-		mac_ctrl2.bf.mac_loop_back = 0;
-
-	hppe_mac_ctrl2_set(dev_id, port_id, &mac_ctrl2);
-
-	return SW_OK;
+	return rv;
 }
+
 sw_error_t
 adpt_hppe_port_phy_id_get(a_uint32_t dev_id, fal_port_t port_id,
 		      a_uint16_t * org_id, a_uint16_t * rev_id)
@@ -976,7 +1115,6 @@ adpt_hppe_port_mru_get(a_uint32_t dev_id, fal_port_t port_id,
 	memset(&mru_mtu_ctrl_tbl, 0, sizeof(mru_mtu_ctrl_tbl));
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(ctrl);
-
 
 	rv = hppe_mru_mtu_ctrl_tbl_get(dev_id, port_id, &mru_mtu_ctrl_tbl);
 
@@ -1208,42 +1346,6 @@ adpt_hppe_port_mdix_status_get(a_uint32_t dev_id, fal_port_t port_id,
 }
 
 sw_error_t
-adpt_hppe_port_mtu_set(a_uint32_t dev_id, fal_port_t port_id,
-		fal_mtu_ctrl_t *ctrl)
-{
-	union mru_mtu_ctrl_tbl_u mru_mtu_ctrl_tbl;
-	union mac_jumbo_size_u mac_jumbo_ctrl;
-	union mc_mtu_ctrl_tbl_u mc_mtu_ctrl_tb;
-
-	memset(&mru_mtu_ctrl_tbl, 0, sizeof(mru_mtu_ctrl_tbl));
-	memset(&mac_jumbo_ctrl, 0, sizeof(mac_jumbo_ctrl));
-	memset(&mc_mtu_ctrl_tb, 0, sizeof(mc_mtu_ctrl_tb));
-	ADPT_DEV_ID_CHECK(dev_id);
-	ADPT_NULL_POINT_CHECK(ctrl);
-
-	if ((port_id > 0) && (port_id < 7))
-	{
-		hppe_mac_jumbo_size_get(dev_id, port_id - 1, &mac_jumbo_ctrl);
-		mac_jumbo_ctrl.bf.mac_jumbo_size = ctrl->mtu_size;
-		hppe_mac_jumbo_size_set(dev_id, port_id - 1, &mac_jumbo_ctrl);
-	}
-
-	hppe_mru_mtu_ctrl_tbl_get(dev_id, port_id, &mru_mtu_ctrl_tbl);
-	mru_mtu_ctrl_tbl.bf.mtu = ctrl->mtu_size;
-	mru_mtu_ctrl_tbl.bf.mtu_cmd = (a_uint32_t)ctrl->action;
-	hppe_mru_mtu_ctrl_tbl_set(dev_id, port_id, &mru_mtu_ctrl_tbl);
-
-	if ((port_id >= 0) && (port_id <= 7))
-	{
-		hppe_mc_mtu_ctrl_tbl_get(dev_id, port_id, &mc_mtu_ctrl_tb);
-		mc_mtu_ctrl_tb.bf.mtu = ctrl->mtu_size;
-		mc_mtu_ctrl_tb.bf.mtu_cmd = (a_uint32_t)ctrl->action;
-		hppe_mc_mtu_ctrl_tbl_set(dev_id, port_id, &mc_mtu_ctrl_tb);
-	}
-
-	return SW_OK;
-}
-sw_error_t
 adpt_hppe_port_link_status_get(a_uint32_t dev_id, fal_port_t port_id,
 				     a_bool_t * status)
 {
@@ -1376,27 +1478,28 @@ adpt_hppe_port_combo_prefer_medium_get(a_uint32_t dev_id,
 	return rv;
 
 }
+
 sw_error_t
 adpt_hppe_port_max_frame_size_get(a_uint32_t dev_id, fal_port_t port_id,
 		a_uint32_t *max_frame)
 {
 	sw_error_t rv = SW_OK;
-	union mac_ctrl2_u mac_ctrl2;
+	a_uint32_t port_mac_type = 0;
 
-	memset(&mac_ctrl2, 0, sizeof(mac_ctrl2));
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(max_frame);
 
+	port_mac_type =qca_hppe_port_mac_type_get(dev_id, port_id);
+	if (port_mac_type == HPPE_PORT_XGMAC_TYPE)
+		rv = __adpt_xgmac_port_max_frame_size_get( dev_id, port_id, max_frame);
+	else if (port_mac_type == HPPE_PORT_GMAC_TYPE)
+		rv = __adpt_gmac_port_max_frame_size_get( dev_id, port_id, max_frame);
+	else
+		return SW_BAD_VALUE;
 
-	rv = hppe_mac_ctrl2_get(dev_id, port_id, &mac_ctrl2);
-
-	if( rv != SW_OK )
-		return rv;
-
-	*max_frame = mac_ctrl2.bf.maxfr;
-
-	return SW_OK;
+	return rv;
 }
+
 
 sw_error_t
 adpt_hppe_port_combo_prefer_medium_set(a_uint32_t dev_id,
@@ -1709,26 +1812,26 @@ adpt_hppe_port_interface_mode_set(a_uint32_t dev_id, fal_port_t port_id,
 	return rv;
 
 }
+
 sw_error_t
 adpt_hppe_port_mac_loopback_get(a_uint32_t dev_id, fal_port_t port_id,
 				 a_bool_t * enable)
 {
 	sw_error_t rv = SW_OK;
-	union mac_ctrl2_u mac_ctrl2;
+	a_uint32_t port_mac_type = 0;
 
-	memset(&mac_ctrl2, 0, sizeof(mac_ctrl2));
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(enable);
 
-	port_id = port_id - 1;
-	rv = hppe_mac_ctrl2_get(dev_id, port_id, &mac_ctrl2);
+	port_mac_type = qca_hppe_port_mac_type_get(dev_id, port_id);
+	if (port_mac_type == HPPE_PORT_XGMAC_TYPE)
+		rv = __adpt_hppe_port_xgmac_loopback_get( dev_id, port_id, enable);
+	else if (port_mac_type == HPPE_PORT_GMAC_TYPE)
+		rv = __adpt_hppe_port_gmac_loopback_get( dev_id, port_id, enable);
+	else
+		return SW_BAD_VALUE;
 
-	if( rv != SW_OK )
-		return rv;
-
-	*enable = mac_ctrl2.bf.mac_loop_back;
-
-	return SW_OK;
+	return rv;
 }
 
 sw_error_t

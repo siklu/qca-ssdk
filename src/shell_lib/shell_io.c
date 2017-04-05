@@ -703,7 +703,7 @@ cmd_data_check_mtu_entry(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("mtu_action", "0");
+        cmd = get_sub_cmd("mtu_action", "forward");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -716,7 +716,7 @@ cmd_data_check_mtu_entry(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint32(cmd, (a_uint32_t *)&(entry.action), sizeof (a_uint32_t));
+            rv = cmd_data_check_maccmd(cmd, &(entry.action), sizeof (a_uint32_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
@@ -756,7 +756,7 @@ cmd_data_check_mru_entry(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("mru_action", "0");
+        cmd = get_sub_cmd("mru_action", "forward");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -769,7 +769,7 @@ cmd_data_check_mru_entry(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint32(cmd, (a_uint32_t *)&(entry.action), sizeof (a_uint32_t));
+            rv = cmd_data_check_maccmd(cmd, &(entry.action), sizeof (a_uint32_t));
         }
     }
     while (talk_mode && (SW_OK != rv));

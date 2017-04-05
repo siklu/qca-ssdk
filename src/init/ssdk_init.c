@@ -3247,7 +3247,7 @@ qca_hppe_xgmac_hw_init(void)
 		qca_switch_reg_write(0, 0x00003008 + (xgmac_addr_delta*i), (a_uint8_t *)&val, 4);
 		val = 0x00000001;
 		qca_switch_reg_write(0, 0x00003090 + (xgmac_addr_delta*i), (a_uint8_t *)&val, 4);
-		val = 0x00000002;
+		val = 0xffff0002;
 		qca_switch_reg_write(0, 0x00003070 + (xgmac_addr_delta*i), (a_uint8_t *)&val, 4);
 		val = 0x40000;
 		qca_switch_reg_write(0, 0x00003050 + (xgmac_addr_delta*i), (a_uint8_t *)&val, 4);
@@ -4033,6 +4033,7 @@ static int ssdk_dev_event(struct notifier_block *this, unsigned long event, void
 #else
 	struct net_device *dev = (struct net_device *)ptr;
 #endif
+	a_uint32_t port_id, eth_num = 3, dev_id = 0;
 
 	switch (event) {
 #ifdef IN_RFS
@@ -4049,16 +4050,21 @@ static int ssdk_dev_event(struct notifier_block *this, unsigned long event, void
 			break;
 #endif
 #endif
-
 		case NETDEV_CHANGEMTU:
 			if(dev->type == ARPHRD_ETHER) {
-				fal_frame_max_size_set(0, dev->mtu + 18);
+				if(qca_phy_priv_global->version== QCA_VER_HPPE)
+				{
+					port_id = dev->name[eth_num] - '0' +1;
+					fal_port_max_frame_size_set(dev_id, port_id, dev->mtu);
+				}
+				else
+					fal_frame_max_size_set(0, dev->mtu + 18);
 			}
 			break;
-                }
+	}
+
 	return NOTIFY_DONE;
 }
-//#endif
 
 static int __init regi_init(void)
 {
