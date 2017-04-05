@@ -884,12 +884,12 @@ static void setup_dev_list(void)
 				/*wan port*/
 				HNAT_PRINTK("wan port vid:%d\n", tmp_vid);
 				nat_wan_vid = tmp_vid;
-				snprintf(nat_wan_dev_list, IFNAMSIZ, "eth0.%d eth0 pppoe-wan", tmp_vid);
+				snprintf(nat_wan_dev_list, IFNAMSIZ*4, "eth0.%d eth0 pppoe-wan", tmp_vid);
 			} else {
 				/*lan port*/
 				HNAT_PRINTK("lan port vid:%d\n", tmp_vid);
 				nat_lan_vid = tmp_vid;
-				snprintf(nat_lan_dev_list, IFNAMSIZ, "eth0.%d eth1", tmp_vid);
+				snprintf(nat_lan_dev_list, IFNAMSIZ*4, "eth0.%d eth1 eth1.%d", tmp_vid, tmp_vid);
 			}
 		}
 	}
@@ -2131,8 +2131,6 @@ void host_helper_wan_port_init(void)
 void host_helper_init(void)
 {
 	int i;
-	sw_error_t rv;
-	a_uint32_t entry;
 
 	REG_GET(0, 0, (a_uint8_t *)&nat_chip_ver, 4);
 
@@ -2165,10 +2163,6 @@ void host_helper_init(void)
 	}
     CPU_PORT_STATUS_SET(0, A_TRUE);
     IP_ROUTE_STATUS_SET(0, A_TRUE);
-
-    /* CPU port with VLAN tag, others w/o VLAN */
-    entry = 0x01111112;
-    HSL_REG_ENTRY_SET(rv, 0, ROUTER_EG, 0, (a_uint8_t *) (&entry), sizeof (a_uint32_t));
 
     napt_procfs_init();
     memcpy(nat_bridge_dev, nat_lan_dev_list, strlen(nat_lan_dev_list)+1);
