@@ -137,6 +137,10 @@ ifeq (TRUE, $(IN_SERVCODE))
   MODULE_CFLAG += -DIN_SERVCODE
 endif
 
+ifeq (TRUE, $(IN_RSS_HASH))
+  MODULE_CFLAG += -DIN_RSS_HASH
+endif
+
 ifeq (TRUE, $(IN_MACBLOCK))
   MODULE_CFLAG += -DIN_MACBLOCK
 endif
