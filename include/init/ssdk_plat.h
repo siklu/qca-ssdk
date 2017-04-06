@@ -309,12 +309,12 @@ sw_error_t
 qca_psgmii_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr,
 			a_uint8_t * reg_data, a_uint32_t len);
 
-uint32_t
-qca_hppe_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t uniphy_index,
+sw_error_t
+qca_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t uniphy_index,
 				a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len);
 
-uint32_t
-qca_hppe_uniphy_reg_read(a_uint32_t dev_id, a_uint32_t uniphy_index,
+sw_error_t
+qca_uniphy_reg_read(a_uint32_t dev_id, a_uint32_t uniphy_index,
 				a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len);
 
 int ssdk_plat_init(ssdk_init_cfg *cfg);

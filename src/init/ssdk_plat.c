@@ -426,8 +426,8 @@ qca_psgmii_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_dat
 	return 0;
 }
 
-uint32_t
-qca_hppe_uniphy_reg_read(a_uint32_t dev_id, a_uint32_t uniphy_index,
+sw_error_t
+qca_uniphy_reg_read(a_uint32_t dev_id, a_uint32_t uniphy_index,
 				a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
 {
 #ifdef HPPE
@@ -470,8 +470,8 @@ qca_hppe_uniphy_reg_read(a_uint32_t dev_id, a_uint32_t uniphy_index,
 	return 0;
 }
 
-uint32_t
-qca_hppe_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t uniphy_index,
+sw_error_t
+qca_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t uniphy_index,
 				a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
 {
 #ifdef HPPE
@@ -752,6 +752,19 @@ ssdk_plat_init(ssdk_init_cfg *cfg)
 
 
 	#if defined(DESS) || defined(HPPE)
+
+	if(ssdk_dt_global.uniphy_reg_access_mode == HSL_REG_LOCAL_BUS) {
+		hppe_uniphy_addr = ioremap_nocache(ssdk_dt_global.uniphyreg_base_addr,
+					ssdk_dt_global.uniphyreg_size);
+		if (!hppe_uniphy_addr) {
+			printk("%s ioremap fail.", __func__);
+			cfg->reg_func.uniphy_reg_set = NULL;
+			cfg->reg_func.uniphy_reg_get = NULL;
+			return -1;
+		}
+		cfg->reg_func.uniphy_reg_set = qca_uniphy_reg_write;
+		cfg->reg_func.uniphy_reg_get = qca_uniphy_reg_read;
+	}
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
 		qca_phy_priv_global->hw_addr = ioremap_nocache(ssdk_dt_global.switchreg_base_addr,
 					ssdk_dt_global.switchreg_size);
@@ -759,14 +772,7 @@ ssdk_plat_init(ssdk_init_cfg *cfg)
 			printk("%s ioremap fail.", __func__);
 			return -1;
 		}
-		if(ssdk_dt_global.uniphy_reg_access_mode == HSL_REG_LOCAL_BUS) {
-			hppe_uniphy_addr = ioremap_nocache(ssdk_dt_global.uniphyreg_base_addr,
-						ssdk_dt_global.uniphyreg_size);
-			if (!hppe_uniphy_addr) {
-				printk("%s ioremap fail.", __func__);
-				return -1;
-			}
-		}
+
 		if (!ssdk_dt_global.ess_clk || IS_ERR(ssdk_dt_global.ess_clk))
 			return 0;
 		/* Enable ess clock here */

@@ -69,6 +69,12 @@ extern "C" {
     typedef sw_error_t
     (*psgmii_reg_get) (a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t *reg_data, a_uint32_t len);
 
+	typedef sw_error_t
+	(*uniphy_reg_set) (a_uint32_t dev_id, a_uint32_t index, a_uint32_t reg_addr, a_uint8_t *reg_data, a_uint32_t len);
+
+	typedef sw_error_t
+	(*uniphy_reg_get) (a_uint32_t dev_id, a_uint32_t index, a_uint32_t reg_addr, a_uint8_t *reg_data, a_uint32_t len);
+
 enum ssdk_port_wrapper_cfg {
 	PORT_WRAPPER_PSGMII = 0,
 	PORT_WRAPPER_PSGMII_RGMII5,
@@ -96,6 +102,8 @@ enum ssdk_port_wrapper_cfg {
         hdr_reg_get     header_reg_get;
         psgmii_reg_set     psgmii_reg_set;
         psgmii_reg_get     psgmii_reg_get;
+        uniphy_reg_set     uniphy_reg_set;
+        uniphy_reg_get     uniphy_reg_get;
     } hsl_reg_func;
 
     typedef struct
@@ -360,7 +368,6 @@ qca_hppe_gcc_speed_clock2_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr,
 uint32_t
 qca_hppe_gcc_speed_clock2_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr,
 				a_uint8_t * reg_data, a_uint32_t len);
-
 
 sw_error_t
 qca_hppe_xgphy_read(a_uint32_t dev_id, a_uint32_t phy_addr,

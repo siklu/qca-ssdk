@@ -71,13 +71,13 @@ sw_error_t hppe_reg_tbl_set(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint32_t *
 
 sw_error_t hppe_uniphy_reg_get(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint32_t index, a_uint32_t *val)
 {
-	qca_hppe_uniphy_reg_read(dev_id, index, reg_addr, (a_uint8_t *)val, 4);
+	qca_uniphy_reg_read(dev_id, index, reg_addr, (a_uint8_t *)val, 4);
 	return SW_OK;
 }
 
 sw_error_t hppe_uniphy_reg_set(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint32_t index, a_uint32_t val)
 {
-	qca_hppe_uniphy_reg_write(dev_id, index, reg_addr, (a_uint8_t *)&val, 4);
+	qca_uniphy_reg_write(dev_id, index, reg_addr, (a_uint8_t *)&val, 4);
 	return SW_OK;
 }
 
