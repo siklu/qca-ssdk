@@ -199,7 +199,8 @@ struct qca_phy_priv {
                           a_uint16_t addr, a_uint16_t data);
     sw_error_t (*phy_write)(a_uint32_t dev_id, a_uint32_t phy_addr,
                             a_uint32_t reg, a_uint16_t data);
-
+    sw_error_t (*phy_read)(a_uint32_t dev_id, a_uint32_t phy_addr,
+                           a_uint32_t reg, a_uint16_t* data);
 	bool init;
 	struct mutex reg_mutex;
 	struct mutex mib_lock;
@@ -207,6 +208,8 @@ struct qca_phy_priv {
 	/*qm_err_check*/
 	struct mutex 	qm_lock;
 	struct delayed_work qm_dwork;
+	struct delayed_work qm_dwork_polling;
+	struct work_struct	 intr_workqueue;
 	/*qm_err_check end*/
 	/*dess_rgmii_mac*/
 	struct mutex rgmii_lock;
@@ -215,7 +218,10 @@ struct qca_phy_priv {
 	u64 *mib_counters;
 	/* dump buf */
 	a_uint8_t  buf[2048];
-
+	a_uint32_t link_polling_required;
+	/* it is valid only when link_polling_required is false*/
+	a_uint32_t link_interrupt_no;
+	a_uint32_t interrupt_flag;
     /* VLAN database */
     bool       vlan;  /* True: 1q vlan mode, False: port vlan mode */
     a_uint16_t vlan_id[AR8327_MAX_VLANS];

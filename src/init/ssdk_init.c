@@ -36,6 +36,8 @@
 #include <linux/clk.h>
 #include <linux/delay.h>
 #include <linux/string.h>
+#include <linux/gpio.h>
+
 #if defined(ISIS) ||defined(ISISC) ||defined(GARUDA)
 #include <f1_phy.h>
 #endif
@@ -1148,11 +1150,12 @@ qca_phy_mib_work_stop(struct qca_phy_priv *priv)
 }
 
 #define SSDK_QM_CHANGE_WQ
+extern int qca_intr_init(struct qca_phy_priv * priv);
 static void
-qm_err_check_work_task(struct work_struct *work)
+qm_err_check_work_task_polling(struct work_struct *work)
 {
 	struct qca_phy_priv *priv = container_of(work, struct qca_phy_priv,
-                                            qm_dwork.work);
+                                            qm_dwork_polling.work);
 
 	mutex_lock(&priv->qm_lock);
 
@@ -1164,9 +1167,71 @@ qm_err_check_work_task(struct work_struct *work)
 	schedule_delayed_work(&priv->qm_dwork,
 							msecs_to_jiffies(QCA_QM_WORK_DELAY));
 	#else
-	queue_delayed_work_on(0, system_long_wq, &priv->qm_dwork,
+	queue_delayed_work_on(0, system_long_wq, &priv->qm_dwork_polling,
 							msecs_to_jiffies(QCA_QM_WORK_DELAY));
 	#endif
+}
+
+static int config_gpio(a_uint32_t  gpio_num)
+{
+	int  error;
+
+	if (gpio_is_valid(gpio_num))
+	{
+		error = gpio_request_one(gpio_num, GPIOF_IN, "linkchange");
+		if (error < 0) {
+			printk("gpio request faild \n");
+			return -1;
+		}
+		gpio_set_debounce(gpio_num, 60000);
+	}
+	else
+	{
+		printk("gpio is invalid\n");
+		return -1;
+	}
+
+	return 0;
+}
+static int qca_link_polling_select(struct qca_phy_priv *priv)
+{
+	struct device_node *np = NULL;
+	const __be32 *link_polling_required, *link_intr_gpio;
+	a_int32_t len;
+
+	if(priv->version == QCA_VER_DESS)
+		np = of_find_node_by_name(NULL, "ess-switch");
+	else
+		 /*ap148*/
+		np = priv->phy->dev.of_node;
+	if(!np)
+	{
+		printk("np is null !\n");
+		return -1;
+	}
+
+	link_polling_required = of_get_property(np, "link-polling-required", &len);
+	if (!link_polling_required )
+	{
+		printk("cannot find link-polling-required node\n");
+		return -1;
+	}
+	priv->link_polling_required  = be32_to_cpup(link_polling_required);
+	if(!priv->link_polling_required)
+	{
+		link_intr_gpio = of_get_property(np, "link-intr-gpio", &len);
+		if (!link_intr_gpio )
+		{
+			printk("cannot find link-intr-gpio node\n");
+			return -1;
+		}
+		if(config_gpio(be32_to_cpup(link_intr_gpio)))
+			return -1;
+		priv->link_interrupt_no = gpio_to_irq (be32_to_cpup(link_intr_gpio));
+		printk("the interrupt number is:%x\n",priv->link_interrupt_no);
+	}
+
+	return 0;
 }
 
 int
@@ -1182,14 +1247,12 @@ qm_err_check_work_start(struct qca_phy_priv *priv)
 		return -1;
 
 	mutex_init(&priv->qm_lock);
-
-	INIT_DELAYED_WORK(&priv->qm_dwork, qm_err_check_work_task);
-
+	INIT_DELAYED_WORK(&priv->qm_dwork_polling, qm_err_check_work_task_polling);
 	#ifndef SSDK_MIB_CHANGE_WQ
-	schedule_delayed_work(&priv->qm_dwork,
+	schedule_delayed_work(&priv->qm_dwork_polling,
 							msecs_to_jiffies(QCA_QM_WORK_DELAY));
 	#else
-	queue_delayed_work_on(0, system_long_wq, &priv->qm_dwork,
+	queue_delayed_work_on(0, system_long_wq, &priv->qm_dwork_polling,
 							msecs_to_jiffies(QCA_QM_WORK_DELAY));
 	#endif
 
@@ -1204,7 +1267,8 @@ qm_err_check_work_stop(struct qca_phy_priv *priv)
 		priv->version != QCA_VER_AR8327 &&
 		priv->version != QCA_VER_DESS) return;
 
-	cancel_delayed_work_sync(&priv->qm_dwork);
+		cancel_delayed_work_sync(&priv->qm_dwork_polling);
+
 }
 #ifdef DESS
 static void
@@ -1293,10 +1357,14 @@ qca_phy_config_init(struct phy_device *pdev)
 	priv->mii_read = qca_ar8216_mii_read;
 	priv->mii_write = qca_ar8216_mii_write;
 	priv->phy_write = qca_ar8327_phy_write;
+	priv->phy_read = qca_ar8327_phy_read;
 	priv->phy_dbg_write = qca_ar8327_phy_dbg_write;
 	priv->phy_dbg_read = qca_ar8327_phy_dbg_read;
 	priv->phy_mmd_write = qca_ar8327_mmd_write;
 
+	ret = qca_link_polling_select(priv);
+	if(ret)
+		priv->link_polling_required = 1;
 	pdev->priv = priv;
 	pdev->supported |= SUPPORTED_1000baseT_Full;
 	pdev->advertising |= ADVERTISED_1000baseT_Full;
@@ -1319,7 +1387,24 @@ qca_phy_config_init(struct phy_device *pdev)
 
 	qca_phy_mib_work_start(priv);
 
-	qm_err_check_work_start(priv);
+	if(priv->link_polling_required)
+	{
+		printk("polling is selected\n");
+		ret = qm_err_check_work_start(priv);
+		if (ret != 0)
+		{
+			printk("qm_err_check_work_start failed for %s\n", sw_dev->name);
+			return ret;
+		}
+	}
+	else
+	{
+		printk("interrupt is selected\n");
+		priv->interrupt_flag = IRQF_TRIGGER_LOW;
+		ret = qca_intr_init(priv);
+		if(ret)
+			printk("the interrupt init faild !\n");
+	}
 
 	return ret;
 }
@@ -1339,6 +1424,7 @@ static int ssdk_switch_register(void)
 	priv->mii_read = qca_ar8216_mii_read;
 	priv->mii_write = qca_ar8216_mii_write;
 	priv->phy_write = qca_ar8327_phy_write;
+	priv->phy_read = qca_ar8327_phy_read;
 	priv->phy_dbg_write = qca_ar8327_phy_dbg_write;
 	priv->phy_dbg_read = qca_ar8327_phy_dbg_read;
 	priv->phy_mmd_write = qca_ar8327_mmd_write;
@@ -1370,12 +1456,31 @@ static int ssdk_switch_register(void)
 			printk("qca_phy_mib_work_start failed for %s\n", sw_dev->name);
 			return ret;
 	}
-
-	ret = qm_err_check_work_start(qca_phy_priv_global);
-	if (ret != 0) {
+	ret = qca_link_polling_select(priv);
+	if(ret)
+		priv->link_polling_required = 1;
+	if(priv->link_polling_required)
+	{
+		printk("polling is selected\n");
+		ret = qm_err_check_work_start(priv);
+		if (ret != 0)
+		{
 			printk("qm_err_check_work_start failed for %s\n", sw_dev->name);
 			return ret;
+		}
 	}
+	else
+	{
+		printk("interrupt is selected\n");
+		priv->interrupt_flag = IRQF_TRIGGER_MASK;
+		ret = qca_intr_init(priv);
+		if(ret)
+		{
+			printk("the interrupt init faild !\n");
+			return ret;
+		}
+	}
+
 	#if 0
 	#ifdef DESS
 	if ((ssdk_dt_global.mac_mode == PORT_WRAPPER_SGMII0_RGMII5)

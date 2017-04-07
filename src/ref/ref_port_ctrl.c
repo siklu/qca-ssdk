@@ -613,7 +613,7 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 						/* Force MAC 1000M Full before auto negotiation */
 						qca_switch_force_mac_1000M_full(dev, i);
 						mdelay(10);
-						// printk("%s, %d, port %d link down\n",__FUNCTION__,__LINE__,i);
+						//printk("%s, %d, port %d link down\n",__FUNCTION__,__LINE__,i);
 					}
 					qca_ar8327_phy_dbg_read(0, i-1, 0, &value);
 					value &= (~(1<<12));
@@ -629,11 +629,12 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 					if (qm_buffer_err) {
 						if(priv->version != 0x14)
 								qca_qm_err_recovery(priv);
+					if(priv->link_polling_required)
 						return;
 					}
 				}
-				else{
-					//a_uint32_t pstatus = 0;
+				if(port_link_up[i])
+				{
 					port_link_up[i]=0;
 					qca_switch_force_mac_status(dev, i, speed, duplex);
 					udelay(100);
@@ -646,9 +647,8 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 						fal_port_txmac_status_set(0, i, A_TRUE);
 					}
 					udelay(100);
-					//qca_switch_reg_read(0, AR8327_REG_PORT_STATUS(i), (a_uint8_t *)&pstatus, 4);
-					//printk("%s, %d, port %d link up speed %d, duplex %d pstatus 0x%x\n",__FUNCTION__,__LINE__,i, speed, duplex, pstatus);
-                    ssdk_port_link_notify(i, 1, speed, duplex);
+					//printk("%s, %d, port %d link up speed %d, duplex %d\n",__FUNCTION__,__LINE__,i, speed, duplex);
+					ssdk_port_link_notify(i, 1, speed, duplex);
 					if((speed == 0x01) && (priv->version != 0x14))/*PHY is link up 100M*/
 					{
 						a_uint16_t value = 0;
