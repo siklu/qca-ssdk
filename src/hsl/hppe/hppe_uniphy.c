@@ -3769,3 +3769,2265 @@ hppe_vr_mii_an_intr_sts_cl37_ancmplt_intr_set(
 	return ret;
 }
 
+sw_error_t
+hppe_uniphy_pll_control_vco_related_selection_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union uniphy_pll_control_vco_related_selection_u *value)
+{
+	if (index >= UNIPHY_PLL_CONTROL_VCO_RELATED_SELECTION_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+	return hppe_uniphy_reg_get(
+				dev_id,
+				NSS_UNIPHY_BASE_ADDR + UNIPHY_PLL_CONTROL_VCO_RELATED_SELECTION_ADDRESS,
+				index * UNIPHY_PLL_CONTROL_VCO_RELATED_SELECTION_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_uniphy_pll_control_vco_related_selection_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union uniphy_pll_control_vco_related_selection_u *value)
+{
+	return hppe_uniphy_reg_set(
+				dev_id,
+				NSS_UNIPHY_BASE_ADDR + UNIPHY_PLL_CONTROL_VCO_RELATED_SELECTION_ADDRESS,
+				index * UNIPHY_PLL_CONTROL_VCO_RELATED_SELECTION_INC,
+				value->val);
+}
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union uniphy_tx_ac_jtag_mux_driver_selection_u *value)
+{
+	if (index >= UNIPHY_TX_AC_JTAG_MUX_DRIVER_SELECTION_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+	return hppe_uniphy_reg_get(
+				dev_id,
+				NSS_UNIPHY_BASE_ADDR + UNIPHY_TX_AC_JTAG_MUX_DRIVER_SELECTION_ADDRESS,
+				index * UNIPHY_TX_AC_JTAG_MUX_DRIVER_SELECTION_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union uniphy_tx_ac_jtag_mux_driver_selection_u *value)
+{
+	return hppe_uniphy_reg_set(
+				dev_id,
+				NSS_UNIPHY_BASE_ADDR + UNIPHY_TX_AC_JTAG_MUX_DRIVER_SELECTION_ADDRESS,
+				index * UNIPHY_TX_AC_JTAG_MUX_DRIVER_SELECTION_INC,
+				value->val);
+}
+
+sw_error_t
+hppe_uniphy_resistor_calibration_1_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union uniphy_resistor_calibration_1_u *value)
+{
+	if (index >= UNIPHY_RESISTOR_CALIBRATION_1_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+	return hppe_uniphy_reg_get(
+				dev_id,
+				NSS_UNIPHY_BASE_ADDR + UNIPHY_RESISTOR_CALIBRATION_1_ADDRESS,
+				index * UNIPHY_RESISTOR_CALIBRATION_1_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_uniphy_resistor_calibration_1_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union uniphy_resistor_calibration_1_u *value)
+{
+	return hppe_uniphy_reg_set(
+				dev_id,
+				NSS_UNIPHY_BASE_ADDR + UNIPHY_RESISTOR_CALIBRATION_1_ADDRESS,
+				index * UNIPHY_RESISTOR_CALIBRATION_1_INC,
+				value->val);
+}
+
+sw_error_t
+hppe_uniphy_pll_vco_related_control_1_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union uniphy_pll_vco_related_control_1_u *value)
+{
+	if (index >= UNIPHY_PLL_VCO_RELATED_CONTROL_1_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+	return hppe_uniphy_reg_get(
+				dev_id,
+				NSS_UNIPHY_BASE_ADDR + UNIPHY_PLL_VCO_RELATED_CONTROL_1_ADDRESS,
+				index * UNIPHY_PLL_VCO_RELATED_CONTROL_1_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_uniphy_pll_vco_related_control_1_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union uniphy_pll_vco_related_control_1_u *value)
+{
+	return hppe_uniphy_reg_set(
+				dev_id,
+				NSS_UNIPHY_BASE_ADDR + UNIPHY_PLL_VCO_RELATED_CONTROL_1_ADDRESS,
+				index * UNIPHY_PLL_VCO_RELATED_CONTROL_1_INC,
+				value->val);
+}
+
+sw_error_t
+hppe_uniphy_rx_afe_2_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union uniphy_rx_afe_2_u *value)
+{
+	if (index >= UNIPHY_RX_AFE_2_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+	return hppe_uniphy_reg_get(
+				dev_id,
+				NSS_UNIPHY_BASE_ADDR + UNIPHY_RX_AFE_2_ADDRESS,
+				index * UNIPHY_RX_AFE_2_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_uniphy_rx_afe_2_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union uniphy_rx_afe_2_u *value)
+{
+	return hppe_uniphy_reg_set(
+				dev_id,
+				NSS_UNIPHY_BASE_ADDR + UNIPHY_RX_AFE_2_ADDRESS,
+				index * UNIPHY_RX_AFE_2_INC,
+				value->val);
+}
+
+sw_error_t
+hppe_bandgap_ip_mbias_2_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union bandgap_ip_mbias_2_u *value)
+{
+	if (index >= BANDGAP_IP_MBIAS_2_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+	return hppe_uniphy_reg_get(
+				dev_id,
+				NSS_UNIPHY_BASE_ADDR + BANDGAP_IP_MBIAS_2_ADDRESS,
+				index * BANDGAP_IP_MBIAS_2_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_bandgap_ip_mbias_2_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union bandgap_ip_mbias_2_u *value)
+{
+	return hppe_uniphy_reg_set(
+				dev_id,
+				NSS_UNIPHY_BASE_ADDR + BANDGAP_IP_MBIAS_2_ADDRESS,
+				index * BANDGAP_IP_MBIAS_2_INC,
+				value->val);
+}
+
+sw_error_t
+hppe_ldo_0p9v_related_1_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union ldo_0p9v_related_1_u *value)
+{
+	if (index >= LDO_0P9V_RELATED_1_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+	return hppe_uniphy_reg_get(
+				dev_id,
+				NSS_UNIPHY_BASE_ADDR + LDO_0P9V_RELATED_1_ADDRESS,
+				index * LDO_0P9V_RELATED_1_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_ldo_0p9v_related_1_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union ldo_0p9v_related_1_u *value)
+{
+	return hppe_uniphy_reg_set(
+				dev_id,
+				NSS_UNIPHY_BASE_ADDR + LDO_0P9V_RELATED_1_ADDRESS,
+				index * LDO_0P9V_RELATED_1_INC,
+				value->val);
+}
+
+sw_error_t
+hppe_otp_vtt_ldo_related_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union otp_vtt_ldo_related_u *value)
+{
+	if (index >= OTP_VTT_LDO_RELATED_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+	return hppe_uniphy_reg_get(
+				dev_id,
+				NSS_UNIPHY_BASE_ADDR + OTP_VTT_LDO_RELATED_ADDRESS,
+				index * OTP_VTT_LDO_RELATED_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_otp_vtt_ldo_related_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union otp_vtt_ldo_related_u *value)
+{
+	return hppe_uniphy_reg_set(
+				dev_id,
+				NSS_UNIPHY_BASE_ADDR + OTP_VTT_LDO_RELATED_ADDRESS,
+				index * OTP_VTT_LDO_RELATED_INC,
+				value->val);
+}
+
+sw_error_t
+hppe_otp_temperature_compensate_1_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union otp_temperature_compensate_1_u *value)
+{
+	if (index >= OTP_TEMPERATURE_COMPENSATE_1_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+	return hppe_uniphy_reg_get(
+				dev_id,
+				NSS_UNIPHY_BASE_ADDR + OTP_TEMPERATURE_COMPENSATE_1_ADDRESS,
+				index * OTP_TEMPERATURE_COMPENSATE_1_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_otp_temperature_compensate_1_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union otp_temperature_compensate_1_u *value)
+{
+	return hppe_uniphy_reg_set(
+				dev_id,
+				NSS_UNIPHY_BASE_ADDR + OTP_TEMPERATURE_COMPENSATE_1_ADDRESS,
+				index * OTP_TEMPERATURE_COMPENSATE_1_INC,
+				value->val);
+}
+
+sw_error_t
+hppe_pll_vco_related_control_1_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union pll_vco_related_control_1_u *value)
+{
+	if (index >= PLL_VCO_RELATED_CONTROL_1_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+	return hppe_uniphy_reg_get(
+				dev_id,
+				NSS_UNIPHY_BASE_ADDR + PLL_VCO_RELATED_CONTROL_1_ADDRESS,
+				index * PLL_VCO_RELATED_CONTROL_1_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_pll_vco_related_control_1_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union pll_vco_related_control_1_u *value)
+{
+	return hppe_uniphy_reg_set(
+				dev_id,
+				NSS_UNIPHY_BASE_ADDR + PLL_VCO_RELATED_CONTROL_1_ADDRESS,
+				index * PLL_VCO_RELATED_CONTROL_1_INC,
+				value->val);
+}
+
+sw_error_t
+hppe_pll_control_vco_related_selection_2_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union pll_control_vco_related_selection_2_u *value)
+{
+	if (index >= PLL_CONTROL_VCO_RELATED_SELECTION_2_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+	return hppe_uniphy_reg_get(
+				dev_id,
+				NSS_UNIPHY_BASE_ADDR + PLL_CONTROL_VCO_RELATED_SELECTION_2_ADDRESS,
+				index * PLL_CONTROL_VCO_RELATED_SELECTION_2_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_pll_control_vco_related_selection_2_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union pll_control_vco_related_selection_2_u *value)
+{
+	return hppe_uniphy_reg_set(
+				dev_id,
+				NSS_UNIPHY_BASE_ADDR + PLL_CONTROL_VCO_RELATED_SELECTION_2_ADDRESS,
+				index * PLL_CONTROL_VCO_RELATED_SELECTION_2_INC,
+				value->val);
+}
+
+sw_error_t
+hppe_uniphy_pll_control_vco_related_selection_mmd1_reg_src_uphy_pll_vco_gain_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union uniphy_pll_control_vco_related_selection_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_pll_control_vco_related_selection_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.mmd1_reg_src_uphy_pll_vco_gain;
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_pll_control_vco_related_selection_mmd1_reg_src_uphy_pll_vco_gain_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union uniphy_pll_control_vco_related_selection_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_pll_control_vco_related_selection_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.mmd1_reg_src_uphy_pll_vco_gain = value;
+	ret = hppe_uniphy_pll_control_vco_related_selection_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_pll_control_vco_related_selection_mmd1_reg_src_uphy_pll_vco_temp_cmp_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union uniphy_pll_control_vco_related_selection_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_pll_control_vco_related_selection_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.mmd1_reg_src_uphy_pll_vco_temp_cmp;
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_pll_control_vco_related_selection_mmd1_reg_src_uphy_pll_vco_temp_cmp_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union uniphy_pll_control_vco_related_selection_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_pll_control_vco_related_selection_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.mmd1_reg_src_uphy_pll_vco_temp_cmp = value;
+	ret = hppe_uniphy_pll_control_vco_related_selection_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_pll_control_vco_related_selection_mmd1_reg_src_uphy_pll_lpf_c2_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union uniphy_pll_control_vco_related_selection_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_pll_control_vco_related_selection_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.mmd1_reg_src_uphy_pll_lpf_c2;
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_pll_control_vco_related_selection_mmd1_reg_src_uphy_pll_lpf_c2_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union uniphy_pll_control_vco_related_selection_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_pll_control_vco_related_selection_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.mmd1_reg_src_uphy_pll_lpf_c2 = value;
+	ret = hppe_uniphy_pll_control_vco_related_selection_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_pll_control_vco_related_selection_mmd1_reg_src_uphy_pll_vco_amp_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union uniphy_pll_control_vco_related_selection_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_pll_control_vco_related_selection_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.mmd1_reg_src_uphy_pll_vco_amp;
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_pll_control_vco_related_selection_mmd1_reg_src_uphy_pll_vco_amp_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union uniphy_pll_control_vco_related_selection_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_pll_control_vco_related_selection_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.mmd1_reg_src_uphy_pll_vco_amp = value;
+	ret = hppe_uniphy_pll_control_vco_related_selection_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_pll_control_vco_related_selection_mmd1_reg_src_uphy_pll_lpf_dc_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union uniphy_pll_control_vco_related_selection_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_pll_control_vco_related_selection_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.mmd1_reg_src_uphy_pll_lpf_dc;
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_pll_control_vco_related_selection_mmd1_reg_src_uphy_pll_lpf_dc_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union uniphy_pll_control_vco_related_selection_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_pll_control_vco_related_selection_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.mmd1_reg_src_uphy_pll_lpf_dc = value;
+	ret = hppe_uniphy_pll_control_vco_related_selection_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_pll_control_vco_related_selection_mmd1_reg_src_uphy_pll_cp_sel_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union uniphy_pll_control_vco_related_selection_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_pll_control_vco_related_selection_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.mmd1_reg_src_uphy_pll_cp_sel;
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_pll_control_vco_related_selection_mmd1_reg_src_uphy_pll_cp_sel_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union uniphy_pll_control_vco_related_selection_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_pll_control_vco_related_selection_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.mmd1_reg_src_uphy_pll_cp_sel = value;
+	ret = hppe_uniphy_pll_control_vco_related_selection_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_pll_control_vco_related_selection_mmd1_reg_src_uphy_pll_lpf_res_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union uniphy_pll_control_vco_related_selection_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_pll_control_vco_related_selection_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.mmd1_reg_src_uphy_pll_lpf_res;
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_pll_control_vco_related_selection_mmd1_reg_src_uphy_pll_lpf_res_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union uniphy_pll_control_vco_related_selection_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_pll_control_vco_related_selection_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.mmd1_reg_src_uphy_pll_lpf_res = value;
+	ret = hppe_uniphy_pll_control_vco_related_selection_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_mmd1_reg_src_uphy_tx_vcm_delta_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union uniphy_tx_ac_jtag_mux_driver_selection_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_tx_ac_jtag_mux_driver_selection_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.mmd1_reg_src_uphy_tx_vcm_delta;
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_mmd1_reg_src_uphy_tx_vcm_delta_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union uniphy_tx_ac_jtag_mux_driver_selection_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_tx_ac_jtag_mux_driver_selection_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.mmd1_reg_src_uphy_tx_vcm_delta = value;
+	ret = hppe_uniphy_tx_ac_jtag_mux_driver_selection_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_mmd1_reg_src_uphy_tx_emp_lsb_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union uniphy_tx_ac_jtag_mux_driver_selection_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_tx_ac_jtag_mux_driver_selection_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.mmd1_reg_src_uphy_tx_emp_lsb_en;
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_mmd1_reg_src_uphy_tx_emp_lsb_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union uniphy_tx_ac_jtag_mux_driver_selection_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_tx_ac_jtag_mux_driver_selection_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.mmd1_reg_src_uphy_tx_emp_lsb_en = value;
+	ret = hppe_uniphy_tx_ac_jtag_mux_driver_selection_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_mmd1_reg_src_uphy_tx_emp_lvl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union uniphy_tx_ac_jtag_mux_driver_selection_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_tx_ac_jtag_mux_driver_selection_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.mmd1_reg_src_uphy_tx_emp_lvl;
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_mmd1_reg_src_uphy_tx_emp_lvl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union uniphy_tx_ac_jtag_mux_driver_selection_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_tx_ac_jtag_mux_driver_selection_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.mmd1_reg_src_uphy_tx_emp_lvl = value;
+	ret = hppe_uniphy_tx_ac_jtag_mux_driver_selection_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_mmd1_reg_src_uphy_tx_acjtag_beacon_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union uniphy_tx_ac_jtag_mux_driver_selection_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_tx_ac_jtag_mux_driver_selection_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.mmd1_reg_src_uphy_tx_acjtag_beacon_en;
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_mmd1_reg_src_uphy_tx_acjtag_beacon_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union uniphy_tx_ac_jtag_mux_driver_selection_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_tx_ac_jtag_mux_driver_selection_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.mmd1_reg_src_uphy_tx_acjtag_beacon_en = value;
+	ret = hppe_uniphy_tx_ac_jtag_mux_driver_selection_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_mmd1_reg_src_uphy_tx_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union uniphy_tx_ac_jtag_mux_driver_selection_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_tx_ac_jtag_mux_driver_selection_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.mmd1_reg_src_uphy_tx_en;
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_mmd1_reg_src_uphy_tx_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union uniphy_tx_ac_jtag_mux_driver_selection_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_tx_ac_jtag_mux_driver_selection_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.mmd1_reg_src_uphy_tx_en = value;
+	ret = hppe_uniphy_tx_ac_jtag_mux_driver_selection_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_mmd1_reg_src_uphy_txd_bit_width_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union uniphy_tx_ac_jtag_mux_driver_selection_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_tx_ac_jtag_mux_driver_selection_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.mmd1_reg_src_uphy_txd_bit_width;
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_mmd1_reg_src_uphy_txd_bit_width_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union uniphy_tx_ac_jtag_mux_driver_selection_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_tx_ac_jtag_mux_driver_selection_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.mmd1_reg_src_uphy_txd_bit_width = value;
+	ret = hppe_uniphy_tx_ac_jtag_mux_driver_selection_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_mmd1_reg_src_uphy_tx_rescal_code_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union uniphy_tx_ac_jtag_mux_driver_selection_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_tx_ac_jtag_mux_driver_selection_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.mmd1_reg_src_uphy_tx_rescal_code;
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_mmd1_reg_src_uphy_tx_rescal_code_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union uniphy_tx_ac_jtag_mux_driver_selection_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_tx_ac_jtag_mux_driver_selection_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.mmd1_reg_src_uphy_tx_rescal_code = value;
+	ret = hppe_uniphy_tx_ac_jtag_mux_driver_selection_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_mmd1_reg_src_uphy_tx_amp_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union uniphy_tx_ac_jtag_mux_driver_selection_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_tx_ac_jtag_mux_driver_selection_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.mmd1_reg_src_uphy_tx_amp;
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_mmd1_reg_src_uphy_tx_amp_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union uniphy_tx_ac_jtag_mux_driver_selection_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_tx_ac_jtag_mux_driver_selection_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.mmd1_reg_src_uphy_tx_amp = value;
+	ret = hppe_uniphy_tx_ac_jtag_mux_driver_selection_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_resistor_calibration_1_mmd1_reg_disable_load_res_txrx_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union uniphy_resistor_calibration_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_resistor_calibration_1_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.mmd1_reg_disable_load_res_txrx;
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_resistor_calibration_1_mmd1_reg_disable_load_res_txrx_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union uniphy_resistor_calibration_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_resistor_calibration_1_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.mmd1_reg_disable_load_res_txrx = value;
+	ret = hppe_uniphy_resistor_calibration_1_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_resistor_calibration_1_mmd1_reg_calib_tx_reg_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union uniphy_resistor_calibration_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_resistor_calibration_1_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.mmd1_reg_calib_tx_reg;
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_resistor_calibration_1_mmd1_reg_calib_tx_reg_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union uniphy_resistor_calibration_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_resistor_calibration_1_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.mmd1_reg_calib_tx_reg = value;
+	ret = hppe_uniphy_resistor_calibration_1_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_resistor_calibration_1_mmd1_reg_calib_rx_reg_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union uniphy_resistor_calibration_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_resistor_calibration_1_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.mmd1_reg_calib_rx_reg;
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_resistor_calibration_1_mmd1_reg_calib_rx_reg_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union uniphy_resistor_calibration_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_resistor_calibration_1_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.mmd1_reg_calib_rx_reg = value;
+	ret = hppe_uniphy_resistor_calibration_1_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_resistor_calibration_1_mmd1_reg_vref_lvl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union uniphy_resistor_calibration_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_resistor_calibration_1_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.mmd1_reg_vref_lvl;
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_resistor_calibration_1_mmd1_reg_vref_lvl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union uniphy_resistor_calibration_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_resistor_calibration_1_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.mmd1_reg_vref_lvl = value;
+	ret = hppe_uniphy_resistor_calibration_1_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_pll_vco_related_control_1_miireg_uphy_pll_lckdt_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union uniphy_pll_vco_related_control_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_pll_vco_related_control_1_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.miireg_uphy_pll_lckdt_en;
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_pll_vco_related_control_1_miireg_uphy_pll_lckdt_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union uniphy_pll_vco_related_control_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_pll_vco_related_control_1_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.miireg_uphy_pll_lckdt_en = value;
+	ret = hppe_uniphy_pll_vco_related_control_1_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_pll_vco_related_control_1_miireg_autoload_sel_pll_vco_calib_ready_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union uniphy_pll_vco_related_control_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_pll_vco_related_control_1_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.miireg_autoload_sel_pll_vco_calib_ready;
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_pll_vco_related_control_1_miireg_autoload_sel_pll_vco_calib_ready_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union uniphy_pll_vco_related_control_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_pll_vco_related_control_1_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.miireg_autoload_sel_pll_vco_calib_ready = value;
+	ret = hppe_uniphy_pll_vco_related_control_1_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_pll_vco_related_control_1_miireg_reg_uphy_pll_vco_calib_ready_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union uniphy_pll_vco_related_control_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_pll_vco_related_control_1_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.miireg_reg_uphy_pll_vco_calib_ready;
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_pll_vco_related_control_1_miireg_reg_uphy_pll_vco_calib_ready_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union uniphy_pll_vco_related_control_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_pll_vco_related_control_1_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.miireg_reg_uphy_pll_vco_calib_ready = value;
+	ret = hppe_uniphy_pll_vco_related_control_1_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_pll_vco_related_control_1_miireg_reg_uphy_pll_vco_temp_cmp_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union uniphy_pll_vco_related_control_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_pll_vco_related_control_1_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.miireg_reg_uphy_pll_vco_temp_cmp;
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_pll_vco_related_control_1_miireg_reg_uphy_pll_vco_temp_cmp_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union uniphy_pll_vco_related_control_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_pll_vco_related_control_1_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.miireg_reg_uphy_pll_vco_temp_cmp = value;
+	ret = hppe_uniphy_pll_vco_related_control_1_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_pll_vco_related_control_1_miireg_reg_uphy_pll_vco_amp_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union uniphy_pll_vco_related_control_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_pll_vco_related_control_1_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.miireg_reg_uphy_pll_vco_amp;
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_pll_vco_related_control_1_miireg_reg_uphy_pll_vco_amp_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union uniphy_pll_vco_related_control_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_pll_vco_related_control_1_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.miireg_reg_uphy_pll_vco_amp = value;
+	ret = hppe_uniphy_pll_vco_related_control_1_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_pll_vco_related_control_1_miireg_reg_uphy_pll_vco_gain_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union uniphy_pll_vco_related_control_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_pll_vco_related_control_1_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.miireg_reg_uphy_pll_vco_gain;
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_pll_vco_related_control_1_miireg_reg_uphy_pll_vco_gain_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union uniphy_pll_vco_related_control_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_pll_vco_related_control_1_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.miireg_reg_uphy_pll_vco_gain = value;
+	ret = hppe_uniphy_pll_vco_related_control_1_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_rx_afe_2_miireg_reg_uphy_rx_afe_res1_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union uniphy_rx_afe_2_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_rx_afe_2_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.miireg_reg_uphy_rx_afe_res1;
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_rx_afe_2_miireg_reg_uphy_rx_afe_res1_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union uniphy_rx_afe_2_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_rx_afe_2_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.miireg_reg_uphy_rx_afe_res1 = value;
+	ret = hppe_uniphy_rx_afe_2_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_rx_afe_2_miireg_reg_uphy_rx_afe_cap1_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union uniphy_rx_afe_2_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_rx_afe_2_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.miireg_reg_uphy_rx_afe_cap1;
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_rx_afe_2_miireg_reg_uphy_rx_afe_cap1_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union uniphy_rx_afe_2_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_rx_afe_2_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.miireg_reg_uphy_rx_afe_cap1 = value;
+	ret = hppe_uniphy_rx_afe_2_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_rx_afe_2_miireg_reg_uphy_rx_rescal_code_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union uniphy_rx_afe_2_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_rx_afe_2_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.miireg_reg_uphy_rx_rescal_code;
+	return ret;
+}
+
+sw_error_t
+hppe_uniphy_rx_afe_2_miireg_reg_uphy_rx_rescal_code_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union uniphy_rx_afe_2_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_uniphy_rx_afe_2_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.miireg_reg_uphy_rx_rescal_code = value;
+	ret = hppe_uniphy_rx_afe_2_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_bandgap_ip_mbias_2_cmn_mmd1_reg_mbias_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union bandgap_ip_mbias_2_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_bandgap_ip_mbias_2_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mmd1_reg_mbias_en;
+	return ret;
+}
+
+sw_error_t
+hppe_bandgap_ip_mbias_2_cmn_mmd1_reg_mbias_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union bandgap_ip_mbias_2_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_bandgap_ip_mbias_2_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mmd1_reg_mbias_en = value;
+	ret = hppe_bandgap_ip_mbias_2_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_bandgap_ip_mbias_2_cmn_mmd1_reg_cmn_icc_rescode_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union bandgap_ip_mbias_2_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_bandgap_ip_mbias_2_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mmd1_reg_cmn_icc_rescode;
+	return ret;
+}
+
+sw_error_t
+hppe_bandgap_ip_mbias_2_cmn_mmd1_reg_cmn_icc_rescode_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union bandgap_ip_mbias_2_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_bandgap_ip_mbias_2_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mmd1_reg_cmn_icc_rescode = value;
+	ret = hppe_bandgap_ip_mbias_2_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_bandgap_ip_mbias_2_cmn_mmd1_reg_cmn_bg_rsv_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union bandgap_ip_mbias_2_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_bandgap_ip_mbias_2_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mmd1_reg_cmn_bg_rsv;
+	return ret;
+}
+
+sw_error_t
+hppe_bandgap_ip_mbias_2_cmn_mmd1_reg_cmn_bg_rsv_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union bandgap_ip_mbias_2_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_bandgap_ip_mbias_2_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mmd1_reg_cmn_bg_rsv = value;
+	ret = hppe_bandgap_ip_mbias_2_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_ldo_ocp_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union ldo_0p9v_related_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_ldo_0p9v_related_1_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mmd1_reg_cmn_ldo_ocp_en;
+	return ret;
+}
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_ldo_ocp_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union ldo_0p9v_related_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_ldo_0p9v_related_1_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mmd1_reg_cmn_ldo_ocp_en = value;
+	ret = hppe_ldo_0p9v_related_1_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_ldo_int_load_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union ldo_0p9v_related_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_ldo_0p9v_related_1_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mmd1_reg_cmn_ldo_int_load_en;
+	return ret;
+}
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_ldo_int_load_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union ldo_0p9v_related_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_ldo_0p9v_related_1_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mmd1_reg_cmn_ldo_int_load_en = value;
+	ret = hppe_ldo_0p9v_related_1_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_ldo_int_res_ctrl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union ldo_0p9v_related_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_ldo_0p9v_related_1_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mmd1_reg_cmn_ldo_int_res_ctrl;
+	return ret;
+}
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_ldo_int_res_ctrl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union ldo_0p9v_related_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_ldo_0p9v_related_1_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mmd1_reg_cmn_ldo_int_res_ctrl = value;
+	ret = hppe_ldo_0p9v_related_1_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_ldo_vout_ctrl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union ldo_0p9v_related_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_ldo_0p9v_related_1_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mmd1_reg_cmn_ldo_vout_ctrl;
+	return ret;
+}
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_ldo_vout_ctrl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union ldo_0p9v_related_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_ldo_0p9v_related_1_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mmd1_reg_cmn_ldo_vout_ctrl = value;
+	ret = hppe_ldo_0p9v_related_1_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_ldo_ocp_current_sel_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union ldo_0p9v_related_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_ldo_0p9v_related_1_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mmd1_reg_cmn_ldo_ocp_current_sel;
+	return ret;
+}
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_ldo_ocp_current_sel_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union ldo_0p9v_related_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_ldo_0p9v_related_1_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mmd1_reg_cmn_ldo_ocp_current_sel = value;
+	ret = hppe_ldo_0p9v_related_1_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_vtt_ldo_biasgen_sel_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union ldo_0p9v_related_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_ldo_0p9v_related_1_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mmd1_reg_cmn_vtt_ldo_biasgen_sel;
+	return ret;
+}
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_vtt_ldo_biasgen_sel_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union ldo_0p9v_related_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_ldo_0p9v_related_1_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mmd1_reg_cmn_vtt_ldo_biasgen_sel = value;
+	ret = hppe_ldo_0p9v_related_1_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_ldo_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union ldo_0p9v_related_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_ldo_0p9v_related_1_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mmd1_reg_cmn_ldo_en;
+	return ret;
+}
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_ldo_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union ldo_0p9v_related_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_ldo_0p9v_related_1_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mmd1_reg_cmn_ldo_en = value;
+	ret = hppe_ldo_0p9v_related_1_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_ldo_comp_current_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union ldo_0p9v_related_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_ldo_0p9v_related_1_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mmd1_reg_cmn_ldo_comp_current_en;
+	return ret;
+}
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_ldo_comp_current_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union ldo_0p9v_related_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_ldo_0p9v_related_1_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mmd1_reg_cmn_ldo_comp_current_en = value;
+	ret = hppe_ldo_0p9v_related_1_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_ldo_bias_ctrl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union ldo_0p9v_related_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_ldo_0p9v_related_1_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mmd1_reg_cmn_ldo_bias_ctrl;
+	return ret;
+}
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_ldo_bias_ctrl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union ldo_0p9v_related_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_ldo_0p9v_related_1_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mmd1_reg_cmn_ldo_bias_ctrl = value;
+	ret = hppe_ldo_0p9v_related_1_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_otp_vtt_ldo_related_cmn_mmd1_reg_cmn_ana_isolation_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union otp_vtt_ldo_related_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_otp_vtt_ldo_related_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mmd1_reg_cmn_ana_isolation;
+	return ret;
+}
+
+sw_error_t
+hppe_otp_vtt_ldo_related_cmn_mmd1_reg_cmn_ana_isolation_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union otp_vtt_ldo_related_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_otp_vtt_ldo_related_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mmd1_reg_cmn_ana_isolation = value;
+	ret = hppe_otp_vtt_ldo_related_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_otp_vtt_ldo_related_cmn_mmd1_reg_cmn_vtt_ldo_ocp_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union otp_vtt_ldo_related_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_otp_vtt_ldo_related_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mmd1_reg_cmn_vtt_ldo_ocp_en;
+	return ret;
+}
+
+sw_error_t
+hppe_otp_vtt_ldo_related_cmn_mmd1_reg_cmn_vtt_ldo_ocp_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union otp_vtt_ldo_related_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_otp_vtt_ldo_related_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mmd1_reg_cmn_vtt_ldo_ocp_en = value;
+	ret = hppe_otp_vtt_ldo_related_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_otp_vtt_ldo_related_cmn_mmd1_reg_cmn_vtt_ldo_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union otp_vtt_ldo_related_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_otp_vtt_ldo_related_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mmd1_reg_cmn_vtt_ldo_en;
+	return ret;
+}
+
+sw_error_t
+hppe_otp_vtt_ldo_related_cmn_mmd1_reg_cmn_vtt_ldo_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union otp_vtt_ldo_related_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_otp_vtt_ldo_related_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mmd1_reg_cmn_vtt_ldo_en = value;
+	ret = hppe_otp_vtt_ldo_related_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_otp_vtt_ldo_related_cmn_mmd1_reg_cmn_vtt_ldo_bias_ctrl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union otp_vtt_ldo_related_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_otp_vtt_ldo_related_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mmd1_reg_cmn_vtt_ldo_bias_ctrl;
+	return ret;
+}
+
+sw_error_t
+hppe_otp_vtt_ldo_related_cmn_mmd1_reg_cmn_vtt_ldo_bias_ctrl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union otp_vtt_ldo_related_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_otp_vtt_ldo_related_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mmd1_reg_cmn_vtt_ldo_bias_ctrl = value;
+	ret = hppe_otp_vtt_ldo_related_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_otp_vtt_ldo_related_cmn_mmd1_reg_cmn_vtt_ldo_rsv_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union otp_vtt_ldo_related_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_otp_vtt_ldo_related_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mmd1_reg_cmn_vtt_ldo_rsv;
+	return ret;
+}
+
+sw_error_t
+hppe_otp_vtt_ldo_related_cmn_mmd1_reg_cmn_vtt_ldo_rsv_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union otp_vtt_ldo_related_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_otp_vtt_ldo_related_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mmd1_reg_cmn_vtt_ldo_rsv = value;
+	ret = hppe_otp_vtt_ldo_related_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_otp_vtt_ldo_related_cmn_mmd1_reg_cmn_vtt_ldo_ocp_current_sel_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union otp_vtt_ldo_related_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_otp_vtt_ldo_related_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mmd1_reg_cmn_vtt_ldo_ocp_current_sel;
+	return ret;
+}
+
+sw_error_t
+hppe_otp_vtt_ldo_related_cmn_mmd1_reg_cmn_vtt_ldo_ocp_current_sel_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union otp_vtt_ldo_related_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_otp_vtt_ldo_related_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mmd1_reg_cmn_vtt_ldo_ocp_current_sel = value;
+	ret = hppe_otp_vtt_ldo_related_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_otp_vtt_ldo_related_cmn_mmd1_reg_cmn_vtt_ldo_int_load_ctrl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union otp_vtt_ldo_related_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_otp_vtt_ldo_related_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mmd1_reg_cmn_vtt_ldo_int_load_ctrl;
+	return ret;
+}
+
+sw_error_t
+hppe_otp_vtt_ldo_related_cmn_mmd1_reg_cmn_vtt_ldo_int_load_ctrl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union otp_vtt_ldo_related_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_otp_vtt_ldo_related_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mmd1_reg_cmn_vtt_ldo_int_load_ctrl = value;
+	ret = hppe_otp_vtt_ldo_related_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_otp_temperature_compensate_1_cmn_mmd1_reg_uphy_ictat100u_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union otp_temperature_compensate_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_otp_temperature_compensate_1_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mmd1_reg_uphy_ictat100u_en;
+	return ret;
+}
+
+sw_error_t
+hppe_otp_temperature_compensate_1_cmn_mmd1_reg_uphy_ictat100u_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union otp_temperature_compensate_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_otp_temperature_compensate_1_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mmd1_reg_uphy_ictat100u_en = value;
+	ret = hppe_otp_temperature_compensate_1_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_otp_temperature_compensate_1_cmn_mmd1_reg_cmn_pll_ictat100u_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union otp_temperature_compensate_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_otp_temperature_compensate_1_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mmd1_reg_cmn_pll_ictat100u_en;
+	return ret;
+}
+
+sw_error_t
+hppe_otp_temperature_compensate_1_cmn_mmd1_reg_cmn_pll_ictat100u_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union otp_temperature_compensate_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_otp_temperature_compensate_1_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mmd1_reg_cmn_pll_ictat100u_en = value;
+	ret = hppe_otp_temperature_compensate_1_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_otp_temperature_compensate_1_cmn_mmd1_reg_uphy_ictat100u_ctrl1_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union otp_temperature_compensate_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_otp_temperature_compensate_1_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mmd1_reg_uphy_ictat100u_ctrl1;
+	return ret;
+}
+
+sw_error_t
+hppe_otp_temperature_compensate_1_cmn_mmd1_reg_uphy_ictat100u_ctrl1_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union otp_temperature_compensate_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_otp_temperature_compensate_1_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mmd1_reg_uphy_ictat100u_ctrl1 = value;
+	ret = hppe_otp_temperature_compensate_1_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_otp_temperature_compensate_1_cmn_mmd1_reg_uphy_ictat100u_ctrl2_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union otp_temperature_compensate_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_otp_temperature_compensate_1_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mmd1_reg_uphy_ictat100u_ctrl2;
+	return ret;
+}
+
+sw_error_t
+hppe_otp_temperature_compensate_1_cmn_mmd1_reg_uphy_ictat100u_ctrl2_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union otp_temperature_compensate_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_otp_temperature_compensate_1_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mmd1_reg_uphy_ictat100u_ctrl2 = value;
+	ret = hppe_otp_temperature_compensate_1_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_otp_temperature_compensate_1_cmn_mmd1_reg_uphy_ictat100u_ctrl0_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union otp_temperature_compensate_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_otp_temperature_compensate_1_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mmd1_reg_uphy_ictat100u_ctrl0;
+	return ret;
+}
+
+sw_error_t
+hppe_otp_temperature_compensate_1_cmn_mmd1_reg_uphy_ictat100u_ctrl0_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union otp_temperature_compensate_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_otp_temperature_compensate_1_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mmd1_reg_uphy_ictat100u_ctrl0 = value;
+	ret = hppe_otp_temperature_compensate_1_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_pll_vco_related_control_1_cmn_mii_reg_reg_cmn_pll_vco_calib_ready_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union pll_vco_related_control_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_pll_vco_related_control_1_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mii_reg_reg_cmn_pll_vco_calib_ready;
+	return ret;
+}
+
+sw_error_t
+hppe_pll_vco_related_control_1_cmn_mii_reg_reg_cmn_pll_vco_calib_ready_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union pll_vco_related_control_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_pll_vco_related_control_1_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mii_reg_reg_cmn_pll_vco_calib_ready = value;
+	ret = hppe_pll_vco_related_control_1_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_pll_vco_related_control_1_cmn_mii_reg_reg_cmn_pll_vco_temp_cmp_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union pll_vco_related_control_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_pll_vco_related_control_1_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mii_reg_reg_cmn_pll_vco_temp_cmp;
+	return ret;
+}
+
+sw_error_t
+hppe_pll_vco_related_control_1_cmn_mii_reg_reg_cmn_pll_vco_temp_cmp_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union pll_vco_related_control_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_pll_vco_related_control_1_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mii_reg_reg_cmn_pll_vco_temp_cmp = value;
+	ret = hppe_pll_vco_related_control_1_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_pll_vco_related_control_1_cmn_mii_reg_cmn_pll_lckdt_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union pll_vco_related_control_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_pll_vco_related_control_1_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mii_reg_cmn_pll_lckdt_en;
+	return ret;
+}
+
+sw_error_t
+hppe_pll_vco_related_control_1_cmn_mii_reg_cmn_pll_lckdt_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union pll_vco_related_control_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_pll_vco_related_control_1_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mii_reg_cmn_pll_lckdt_en = value;
+	ret = hppe_pll_vco_related_control_1_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_pll_vco_related_control_1_cmn_mii_reg_reg_cmn_pll_vco_amp_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union pll_vco_related_control_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_pll_vco_related_control_1_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mii_reg_reg_cmn_pll_vco_amp;
+	return ret;
+}
+
+sw_error_t
+hppe_pll_vco_related_control_1_cmn_mii_reg_reg_cmn_pll_vco_amp_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union pll_vco_related_control_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_pll_vco_related_control_1_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mii_reg_reg_cmn_pll_vco_amp = value;
+	ret = hppe_pll_vco_related_control_1_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_pll_vco_related_control_1_cmn_mii_reg_autoload_sel_pll_vco_calib_ready_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union pll_vco_related_control_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_pll_vco_related_control_1_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mii_reg_autoload_sel_pll_vco_calib_ready;
+	return ret;
+}
+
+sw_error_t
+hppe_pll_vco_related_control_1_cmn_mii_reg_autoload_sel_pll_vco_calib_ready_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union pll_vco_related_control_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_pll_vco_related_control_1_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mii_reg_autoload_sel_pll_vco_calib_ready = value;
+	ret = hppe_pll_vco_related_control_1_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_pll_control_vco_related_selection_2_cmn_mmd1_reg_src_cmn_pll_vco_calib_ready_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union pll_control_vco_related_selection_2_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_pll_control_vco_related_selection_2_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mmd1_reg_src_cmn_pll_vco_calib_ready;
+	return ret;
+}
+
+sw_error_t
+hppe_pll_control_vco_related_selection_2_cmn_mmd1_reg_src_cmn_pll_vco_calib_ready_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union pll_control_vco_related_selection_2_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_pll_control_vco_related_selection_2_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mmd1_reg_src_cmn_pll_vco_calib_ready = value;
+	ret = hppe_pll_control_vco_related_selection_2_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_pll_control_vco_related_selection_2_cmn_mmd1_reg_src_cmn_pll_vco_temp_cmp_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union pll_control_vco_related_selection_2_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_pll_control_vco_related_selection_2_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mmd1_reg_src_cmn_pll_vco_temp_cmp;
+	return ret;
+}
+
+sw_error_t
+hppe_pll_control_vco_related_selection_2_cmn_mmd1_reg_src_cmn_pll_vco_temp_cmp_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union pll_control_vco_related_selection_2_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_pll_control_vco_related_selection_2_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mmd1_reg_src_cmn_pll_vco_temp_cmp = value;
+	ret = hppe_pll_control_vco_related_selection_2_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_pll_control_vco_related_selection_2_cmn_mmd1_reg_src_cmn_pll_vco_amp_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union pll_control_vco_related_selection_2_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_pll_control_vco_related_selection_2_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mmd1_reg_src_cmn_pll_vco_amp;
+	return ret;
+}
+
+sw_error_t
+hppe_pll_control_vco_related_selection_2_cmn_mmd1_reg_src_cmn_pll_vco_amp_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union pll_control_vco_related_selection_2_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_pll_control_vco_related_selection_2_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mmd1_reg_src_cmn_pll_vco_amp = value;
+	ret = hppe_pll_control_vco_related_selection_2_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_pll_control_vco_related_selection_2_cmn_mmd1_reg_src_cmn_pll_vco_calib_start_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union pll_control_vco_related_selection_2_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_pll_control_vco_related_selection_2_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mmd1_reg_src_cmn_pll_vco_calib_start;
+	return ret;
+}
+
+sw_error_t
+hppe_pll_control_vco_related_selection_2_cmn_mmd1_reg_src_cmn_pll_vco_calib_start_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union pll_control_vco_related_selection_2_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_pll_control_vco_related_selection_2_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mmd1_reg_src_cmn_pll_vco_calib_start = value;
+	ret = hppe_pll_control_vco_related_selection_2_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_pll_control_vco_related_selection_2_cmn_mmd1_reg_src_cmn_pll_vco_calib_code_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union pll_control_vco_related_selection_2_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_pll_control_vco_related_selection_2_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mmd1_reg_src_cmn_pll_vco_calib_code;
+	return ret;
+}
+
+sw_error_t
+hppe_pll_control_vco_related_selection_2_cmn_mmd1_reg_src_cmn_pll_vco_calib_code_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union pll_control_vco_related_selection_2_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_pll_control_vco_related_selection_2_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mmd1_reg_src_cmn_pll_vco_calib_code = value;
+	ret = hppe_pll_control_vco_related_selection_2_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_pll_control_vco_related_selection_2_cmn_mmd1_reg_src_cmn_pll_fbclk_div_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union pll_control_vco_related_selection_2_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_pll_control_vco_related_selection_2_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.cmn_mmd1_reg_src_cmn_pll_fbclk_div;
+	return ret;
+}
+
+sw_error_t
+hppe_pll_control_vco_related_selection_2_cmn_mmd1_reg_src_cmn_pll_fbclk_div_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union pll_control_vco_related_selection_2_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_pll_control_vco_related_selection_2_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.cmn_mmd1_reg_src_cmn_pll_fbclk_div = value;
+	ret = hppe_pll_control_vco_related_selection_2_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+
