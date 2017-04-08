@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -106,7 +106,7 @@ qca_ar8327_sw_reset_switch(struct switch_dev *dev)
 	rv += qca_ar8327_sw_hw_apply(dev);
 	priv->init = false;
 
-	mac_mode = ssdk_dt_global_get_mac_mode();
+	mac_mode = ssdk_dt_global_get_mac_mode(0);
 	/* set mac5 flowcontol force for RGMII */
 	if ((mac_mode == PORT_WRAPPER_SGMII0_RGMII5)
 		||(mac_mode == PORT_WRAPPER_SGMII1_RGMII5)) {
