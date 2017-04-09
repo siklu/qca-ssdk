@@ -119,7 +119,7 @@ typedef struct {
 	fal_fwd_cmd_t sync_mismatch_action; /*sync toggle mismatch action*/
 	a_bool_t sync_mismatch_deacclr_en; /*0 for disable and 1 for enable*/
 	a_uint8_t hash_mode_0; /*0 crc10, 1 xor, 2 crc16*/
-	a_uint8_t hash_mode_1;
+	a_uint8_t hash_mode_1; /*0 crc10, 1 xor, 2 crc16*/
 } fal_flow_global_cfg_t;
 
 typedef struct {
