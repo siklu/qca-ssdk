@@ -422,7 +422,7 @@ enum{
 	/*new add match fields for hawkeye*/
         a_uint8_t pri; /*rule priority 0-7*/
         a_bool_t post_routing;
-        a_uint8_t res_chain;
+        a_uint8_t acl_pool;
 
 	a_bool_t is_ip_val;
 	a_uint8_t is_ip_mask;

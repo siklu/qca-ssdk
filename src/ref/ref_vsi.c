@@ -283,7 +283,7 @@ sw_error_t ppe_port_vlan_vsi_get(a_uint32_t dev_id, fal_port_t port_id,
 	REF_DEV_ID_CHECK(dev_id);
 	REF_NULL_POINT_CHECK(vsi_id);
 
-	for( i = PPE_VSI_RESERVE_MAX; i <= PPE_VSI_MAX; i++ )
+	for( i = 0; i <= PPE_VSI_MAX; i++ )
 	{
 		p_vsi_info = ref_vsi_mapping[dev_id][i].pHead;
 		while(p_vsi_info != NULL)
