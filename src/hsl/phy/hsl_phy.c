@@ -23,16 +23,6 @@
 #ifdef IN_MALIBU_PHY
 #include <malibu_phy.h>
 #endif
-#include <linux/kconfig.h>
-#include <linux/version.h>
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/phy.h>
-#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-#include <linux/switch.h>
-#else
-#include <net/switch.h>
-#endif
 #include "ssdk_plat.h"
 
 a_uint32_t phy_address[SW_MAX_NR_DEV][SW_MAX_NR_PORT] = {0};
@@ -185,6 +175,12 @@ void qca_ssdk_port_bmp_set(a_uint32_t dev_id, a_uint32_t value)
 	port_bmp[dev_id] = value;
 
 	return;
+}
+
+a_uint32_t qca_ssdk_port_bmp_get(a_uint32_t dev_id)
+{
+
+	return port_bmp[dev_id];
 }
 
 a_uint32_t qca_ssdk_phy_type_port_bmp_get(a_uint32_t dev_id,

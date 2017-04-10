@@ -15,6 +15,18 @@
 #ifndef __SSDK_PLAT_H
 #define __SSDK_PLAT_H
 
+#include "common/sw.h"
+#include <linux/kconfig.h>
+#include <linux/version.h>
+#include <linux/kernel.h>
+#include <linux/module.h>
+#include <linux/phy.h>
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+#include <linux/switch.h>
+#else
+#include <net/switch.h>
+#endif
+
 #ifndef BIT
 #define BIT(_n)			(1UL << (_n))
 #endif
@@ -234,12 +246,19 @@ struct qca_phy_priv {
 	a_uint32_t port_old_duplex[AR8327_NUM_PORTS];
 	a_uint32_t port_old_phy_status[AR8327_NUM_PORTS];
 	a_uint32_t port_qm_buf[AR8327_NUM_PORTS];
+	a_uint32_t port_old_tx_flowctrl[AR8327_NUM_PORTS];
+	a_uint32_t port_old_rx_flowctrl[AR8327_NUM_PORTS];
 	/*qm_err_check end*/
 	a_uint8_t device_id;
 	/*dess_rgmii_mac*/
 	struct mutex rgmii_lock;
 	struct delayed_work rgmii_dwork;
 	/*dess_rgmii_mac end*/
+	/*hppe_mac_sw_sync*/
+	struct mutex mac_sw_sync_lock;
+	struct delayed_work mac_sw_sync_dwork;
+	/*hppe_mac_sw_sync end*/
+
 	u64 *mib_counters;
 	/* dump buf */
 	a_uint8_t  buf[2048];
@@ -291,6 +310,14 @@ qca_phy_mmd_write(u32 dev_id, u32 phy_id,
 u16
 qca_phy_mmd_read(u32 dev_id, u32 phy_id,
 		u16 mmd_num, u16 reg_id);
+
+sw_error_t
+qca_xgphy_read(a_uint32_t dev_id, a_uint32_t phy_addr,
+                           a_uint32_t reg, a_uint16_t* data);
+
+sw_error_t
+qca_xgphy_write(a_uint32_t dev_id, a_uint32_t phy_addr,
+                           a_uint32_t reg, a_uint16_t data);
 
 sw_error_t
 qca_switch_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr,

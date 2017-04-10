@@ -126,6 +126,7 @@ extern a_uint32_t hsl_dev_wan_port_get(a_uint32_t dev_id);
 #define QCA_QM_WORK_DELAY	100
 #define QCA_QM_ITEM_NUMBER 41
 #define QCA_RGMII_WORK_DELAY	1000
+#define QCA_MAC_SW_SYNC_WORK_DELAY	1000
 
 ssdk_dt_cfg ssdk_dt_global = {0};
 void __iomem *gcc_uniphy_base = NULL;
@@ -1224,6 +1225,54 @@ dess_rgmii_mac_work_stop(struct qca_phy_priv *priv)
 	cancel_delayed_work_sync(&priv->rgmii_dwork);
 }
 #endif
+
+void
+qca_mac_sw_sync_work_task(struct work_struct *work)
+{
+	adpt_api_t *p_adpt_api;
+
+	struct qca_phy_priv *priv = container_of(work, struct qca_phy_priv,
+					mac_sw_sync_dwork.work);
+
+	mutex_lock(&priv->mac_sw_sync_lock);
+
+	 if((p_adpt_api = adpt_api_ptr_get(0)) != NULL) {
+		if (NULL == p_adpt_api->adpt_port_polling_sw_sync_set)
+			return;
+		p_adpt_api->adpt_port_polling_sw_sync_set(priv);
+	}
+
+	mutex_unlock(&priv->mac_sw_sync_lock);
+
+	schedule_delayed_work(&priv->mac_sw_sync_dwork,
+					msecs_to_jiffies(QCA_MAC_SW_SYNC_WORK_DELAY));
+}
+
+int
+qca_mac_sw_sync_work_start(struct qca_phy_priv *priv)
+{
+	if (priv->version != QCA_VER_HPPE)
+		return -1;
+
+	mutex_init(&priv->mac_sw_sync_lock);
+
+	INIT_DELAYED_WORK(&priv->mac_sw_sync_dwork,
+					qca_mac_sw_sync_work_task);
+	schedule_delayed_work(&priv->mac_sw_sync_dwork,
+					msecs_to_jiffies(QCA_MAC_SW_SYNC_WORK_DELAY));
+
+	return 0;
+}
+
+void
+qca_mac_sw_sync_work_stop(struct qca_phy_priv *priv)
+{
+	if (priv->version != QCA_VER_HPPE)
+		return;
+
+	cancel_delayed_work_sync(&priv->mac_sw_sync_dwork);
+}
+
 int
 qca_phy_id_chip(struct qca_phy_priv *priv)
 {
@@ -1333,6 +1382,19 @@ static int ssdk_switch_register(void)
 		printk("Chip version 0x%02x%02x\n", priv->version, priv->revision);
 	}
 
+#ifdef HAWKEYE_CHIP
+	if (priv->version == QCA_VER_HPPE)
+	{
+		priv->port_old_link[AR8327_NUM_PORTS] = {0};
+		priv->port_old_speed[AR8327_NUM_PORTS] = {1000,
+				1000,1000,1000,1000,10000,1000};
+		priv->port_old_duplex[AR8327_NUM_PORTS] = {1,
+				1,1,1,1,1,1};
+		priv->port_old_tx_flowctrl[AR8327_NUM_PORTS] = {0};
+		priv->port_old_rx_flowctrl[AR8327_NUM_PORTS] = {0};
+	}
+#endif
+
 	mutex_init(&priv->reg_mutex);
 
 	sw_dev = &priv->sw_dev;
@@ -1375,6 +1437,15 @@ static int ssdk_switch_register(void)
 	}
 	#endif
 	#endif
+	#ifdef HPPE
+	#ifdef HAWKEYE_CHIP
+	ret = qca_mac_sw_sync_work_start(priv);
+	if (ret != 0) {
+			printk("qca_mac_sw_sync_work_start failed for %s\n", sw_dev->name);
+			return ret;
+	}
+	#endif
+	#endif
 
 	return 0;
 
@@ -1384,6 +1455,11 @@ static int ssdk_switch_unregister(void)
 {
 	qca_phy_mib_work_stop(qca_phy_priv_global);
 	qm_err_check_work_stop(qca_phy_priv_global);
+	#ifdef HPPE
+	#ifdef HAWKEYE_CHIP
+	qca_mac_sw_sync_work_stop(qca_phy_priv_global);
+	#endif
+	#endif
 	unregister_switch(&qca_phy_priv_global->sw_dev);
 	return 0;
 }
@@ -3557,48 +3633,22 @@ qca_hppe_gcc_uniphy_port_clock_set(a_uint32_t dev_id, a_uint32_t uniphy_index,
 	for (i = 0; i < 2; i++)
 	{
 		reg_value = 0;
-		qca_hppe_gcc_uniphy_reg_read(0, (((0x10 + i * 4) + 0x8 * (port_id - 1))
+		qca_hppe_gcc_uniphy_reg_read(dev_id, (((0x10 + i * 4) + 0x8 * (port_id - 1))
 				+ (uniphy_index * HPPE_GCC_UNIPHY_REG_INC)), (a_uint8_t *)&reg_value, 4);
 		if (enable == A_TRUE)
 			reg_value |= 0x1;
 		else
 			reg_value &= ~0x1;
-		qca_hppe_gcc_uniphy_reg_write(0, (((0x10 + i * 4)+ 0x8 * (port_id - 1))
+		qca_hppe_gcc_uniphy_reg_write(dev_id, (((0x10 + i * 4)+ 0x8 * (port_id - 1))
 				+ (uniphy_index * HPPE_GCC_UNIPHY_REG_INC)), (a_uint8_t *)&reg_value, 4);
 	}
 
-}
-sw_error_t
-qca_hppe_xgphy_read(a_uint32_t dev_id, a_uint32_t phy_addr,
-                           a_uint32_t reg, a_uint16_t* data)
-{
-	struct mii_bus *bus = miibus;
-	int phy_dest_addr;
-
-	phy_dest_addr = phy_address[phy_addr];
-	reg = MII_PHYADDR_C45 | reg;
-	*data = mdiobus_read(bus, phy_dest_addr, reg);
-
-	return 0;
-}
-sw_error_t
-qca_hppe_xgphy_write(a_uint32_t dev_id, a_uint32_t phy_addr,
-                            a_uint32_t reg, a_uint16_t data)
-{
-	struct mii_bus *bus = miibus;
-	int phy_dest_addr;
-
-	phy_dest_addr = phy_address[phy_addr];
-	reg = MII_PHYADDR_C45 | reg;
-	mdiobus_write(bus, phy_dest_addr, reg, data);
-
-	return 0;
 }
 static sw_error_t
 qca_hppe_port_mux_set(fal_port_t port_id, a_uint32_t mode1, a_uint32_t mode2)
 {
 	adpt_api_t *p_api;
-	a_uint32_t  mode;
+	a_uint32_t  mode = 0;
 	sw_error_t rv = SW_OK;
 
 	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(0));
@@ -3653,7 +3703,7 @@ qca_hppe_port_mac_type_set(a_uint32_t port_id, a_uint32_t mode)
 		case PORT_WRAPPER_SGMII_PLUS:
 		case PORT_WRAPPER_USXGMII:
 		case PORT_WRAPPER_XFI:
-			hppe_port_type[port_id -1] = HPPE_PORT_XGMAC_TYPE;
+			hppe_port_type[port_id - 1] = HPPE_PORT_XGMAC_TYPE;
 			break;
 	}
 	return rv;
@@ -3661,7 +3711,6 @@ qca_hppe_port_mac_type_set(a_uint32_t port_id, a_uint32_t mode)
 static sw_error_t
 qca_hppe_port_mux_mac_type_init(a_uint32_t mode0, a_uint32_t mode1, a_uint32_t mode2)
 {
-	a_uint32_t  mode;
 	sw_error_t rv = SW_OK;
 	fal_port_t port_id;
 

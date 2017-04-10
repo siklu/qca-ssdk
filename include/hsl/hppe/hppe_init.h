@@ -38,6 +38,12 @@ extern "C" {
 #define HPPE_PORT_GMAC_TYPE	1
 #define HPPE_PORT_XGMAC_TYPE	2
 
+#define HPPE_GCC_UNIPHY_PSGMII_SOFT_RESET 0x3ff2
+#define HPPE_GCC_UNIPHY_USXGMII_SOFT_RESET 0x32
+#define PORT_LINK_UP 1
+#define PORT_LINK_DOWN 0
+#define HPPE_MAX_PORT_NUM 6
+
 #define HPPE_UNIPHY_INSTANCE0	0
 #define HPPE_UNIPHY_INSTANCE1	1
 #define HPPE_UNIPHY_INSTANCE2	2
@@ -48,6 +54,12 @@ extern "C" {
 #define HPPE_UNIPHY_INDIRECT_HIGH_ADDR  0x1fff00
 #define HPPE_UNIPHY_INDIRECT_LOW_ADDR  0xff
 #define HPPE_UNIPHY_INDIRECT_DATA  0x20
+#define UNIPHY_CALIBRATION_DONE 0x80
+#define UNIPHY_10GR_LINKUP 0x1000
+
+#define AQ_PHY_AUTO_STATUS_REG 0x70001
+#define AQ_PHY_LINK_STATUS_REG 0x7c800
+#define AQ_PHY_LINK_PARTNER_REG 0x70013
 
 sw_error_t hppe_init(a_uint32_t dev_id, ssdk_init_cfg *cfg);
 a_bool_t hppe_mac_port_valid_check(fal_port_t port_id);

@@ -25,6 +25,8 @@
 #include "adpt.h"
 
 #ifdef HAWKEYE_CHIP
+extern void adpt_hppe_gcc_port_speed_clock_set(a_uint32_t dev_id,
+				a_uint32_t port_id, fal_port_speed_t phy_speed);
 static sw_error_t
 __adpt_hppe_uniphy_10g_r_linkup(a_uint32_t dev_id, a_uint32_t uniphy_index)
 {
@@ -36,7 +38,7 @@ __adpt_hppe_uniphy_10g_r_linkup(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	memset(&sr_xs_pcs_kr_sts1, 0, sizeof(sr_xs_pcs_kr_sts1));
 	ADPT_DEV_ID_CHECK(dev_id);
 
-	//wait 10G_R link up  to uniphy;
+	/* wait 10G_R link up  to uniphy */
 	while (linkup != UNIPHY_10GR_LINKUP) {
 		mdelay(1);
 		if (retries-- == 0)
@@ -61,7 +63,7 @@ __adpt_hppe_uniphy_calibration(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	memset(&uniphy_offset_calib_4, 0, sizeof(uniphy_offset_calib_4));
 	ADPT_DEV_ID_CHECK(dev_id);
 
-	//wait calibration done to uniphy;
+	/* wait calibration done to uniphy */
 	while (calibration_done != UNIPHY_CALIBRATION_DONE) {
 		mdelay(1);
 		if (retries-- == 0)
@@ -79,10 +81,56 @@ __adpt_hppe_uniphy_calibration(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	return SW_OK;
 }
 
+static void
+__adpt_hppe_gcc_uniphy_xpcs_reset(a_uint32_t dev_id, a_uint32_t uniphy_index, a_bool_t enable)
+{
+	a_uint32_t reg_value;
+
+	reg_value = 0;
+	qca_hppe_gcc_uniphy_reg_read(0, 0x4 + (uniphy_index * HPPE_GCC_UNIPHY_REG_INC),
+		(a_uint8_t *)&reg_value, 4);
+	if (enable == A_TRUE)
+		/*keep xpcs to reset */
+		reg_value |= 0x4;
+	else
+		/*keep xpcs to reset release */
+		reg_value &= ~0x4;
+	qca_hppe_gcc_uniphy_reg_write(0, 0x4 + (uniphy_index * HPPE_GCC_UNIPHY_REG_INC),
+		(a_uint8_t *)&reg_value, 4);
+
+	return;
+}
+
+static void
+__adpt_hppe_gcc_uniphy_software_reset(a_uint32_t dev_id, a_uint32_t uniphy_index)
+{
+	a_uint32_t reg_value;
+
+	/* configure uniphy gcc software reset */
+	reg_value = 0;
+	qca_hppe_gcc_uniphy_reg_read(0, 0x4 + (uniphy_index * HPPE_GCC_UNIPHY_REG_INC),
+		(a_uint8_t *)&reg_value, 4);
+
+	if (uniphy_index == HPPE_UNIPHY_INSTANCE0)
+		reg_value |= HPPE_GCC_UNIPHY_PSGMII_SOFT_RESET;
+	else
+		reg_value |= HPPE_GCC_UNIPHY_USXGMII_SOFT_RESET;
+	qca_hppe_gcc_uniphy_reg_write(0, 0x4 + (uniphy_index * HPPE_GCC_UNIPHY_REG_INC),
+		(a_uint8_t *)&reg_value, 4);
+	/* release reset */
+	if (uniphy_index == HPPE_UNIPHY_INSTANCE0)
+		reg_value &= ~HPPE_GCC_UNIPHY_PSGMII_SOFT_RESET;
+	else
+		reg_value &= ~HPPE_GCC_UNIPHY_USXGMII_SOFT_RESET;
+	qca_hppe_gcc_uniphy_reg_write(0, 0x4 + (uniphy_index * HPPE_GCC_UNIPHY_REG_INC),
+		(a_uint8_t *)&reg_value, 4);
+
+	return;
+}
+
 static sw_error_t
 __adpt_hppe_uniphy_usxgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 {
-	a_uint32_t reg_value, i;
 	sw_error_t rv = SW_OK;
 
 	union uniphy_mode_ctrl_u uniphy_mode_ctrl;
@@ -96,22 +144,14 @@ __adpt_hppe_uniphy_usxgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	memset(&sr_mii_ctrl, 0, sizeof(sr_mii_ctrl));
 	ADPT_DEV_ID_CHECK(dev_id);
 
-	// disable instance clock;
-	for (i = 1; i < 2; i++)
-	{
-		qca_hppe_gcc_uniphy_port_clock_set(0, uniphy_index,
-			i, A_FALSE);
-	}
+	/* disable instance clock */
+	qca_hppe_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
+			1, A_FALSE);
 
-	// keep xpcs to reset status;
-	reg_value = 0;
-	qca_hppe_gcc_uniphy_reg_read(0, 0x4 + (uniphy_index * HPPE_GCC_UNIPHY_REG_INC),
-		(a_uint8_t *)&reg_value, 4);
-	reg_value |= 0x4;
-	qca_hppe_gcc_uniphy_reg_write(0, 0x4 + (uniphy_index * HPPE_GCC_UNIPHY_REG_INC),
-		(a_uint8_t *)&reg_value, 4);
+	/* keep xpcs to reset status */
+	__adpt_hppe_gcc_uniphy_xpcs_reset(dev_id, uniphy_index, A_TRUE);
 
-	// configure uniphy to usxgmii mode;
+	/* configure uniphy to usxgmii mode */
 	hppe_uniphy_mode_ctrl_get(0, uniphy_index, &uniphy_mode_ctrl);
 	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_psgmii_qsgmii = 0;
 	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_qsgmii_sgmii = 0;
@@ -120,51 +160,34 @@ __adpt_hppe_uniphy_usxgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	uniphy_mode_ctrl.bf.newaddedfromhere_xpcs_mode = 1;
 	hppe_uniphy_mode_ctrl_set(0, uniphy_index, &uniphy_mode_ctrl);
 
-	//configure uniphy usxgmii gcc software reset;
-	reg_value = 0;
-	qca_hppe_gcc_uniphy_reg_read(0, 0x4 + (uniphy_index * HPPE_GCC_UNIPHY_REG_INC),
-		(a_uint8_t *)&reg_value, 4);
-	reg_value |= HPPE_GCC_UNIPHY_USXGMII_SOFT_RESET;
-	qca_hppe_gcc_uniphy_reg_write(0, 0x4 + (uniphy_index * HPPE_GCC_UNIPHY_REG_INC),
-		(a_uint8_t *)&reg_value, 4);
-	// release reset;
-	reg_value &= ~HPPE_GCC_UNIPHY_USXGMII_SOFT_RESET;
-	qca_hppe_gcc_uniphy_reg_write(0, 0x4 + (uniphy_index * HPPE_GCC_UNIPHY_REG_INC),
-		(a_uint8_t *)&reg_value, 4);
+	/* configure uniphy usxgmii gcc software reset */
+	__adpt_hppe_gcc_uniphy_software_reset(dev_id, uniphy_index);
 
-	//wait calibration done to uniphy;
+	/* wait calibration done to uniphy */
 	rv = __adpt_hppe_uniphy_calibration(dev_id, uniphy_index);
 
-	// enable instance clock;
-	for (i = 1; i < 2; i++)
-	{
-		qca_hppe_gcc_uniphy_port_clock_set(0, uniphy_index,
-			i, A_TRUE);
-	}
+	/* enable instance clock */
+	qca_hppe_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
+			1, A_TRUE);
 
-	// release xpcs reset status;
-	reg_value = 0;
-	qca_hppe_gcc_uniphy_reg_read(0, 0x4 + (uniphy_index * HPPE_GCC_UNIPHY_REG_INC),
-		(a_uint8_t *)&reg_value, 4);
-	reg_value &= ~0x4;
-	qca_hppe_gcc_uniphy_reg_write(0, 0x4 + (uniphy_index * HPPE_GCC_UNIPHY_REG_INC),
-		(a_uint8_t *)&reg_value, 4);
+	/* release xpcs reset status */
+	__adpt_hppe_gcc_uniphy_xpcs_reset(dev_id, uniphy_index, A_FALSE);
 
-	//wait 10g base_r link up;
+	/* wait 10g base_r link up */
 	rv = __adpt_hppe_uniphy_10g_r_linkup(dev_id, uniphy_index);
 
-	//enable uniphy usxgmii;
+	/* enable uniphy usxgmii */
 	hppe_vr_xs_pcs_dig_ctrl1_get(0, uniphy_index, &vr_xs_pcs_dig_ctrl1);
 	vr_xs_pcs_dig_ctrl1.bf.usxg_en = 1;
 	hppe_vr_xs_pcs_dig_ctrl1_set(0, uniphy_index, &vr_xs_pcs_dig_ctrl1);
 
-	//enable uniphy autoneg complete interrupt and 10M/100M 8-bits MII width;
+	/* enable uniphy autoneg complete interrupt and 10M/100M 8-bits MII width */
 	hppe_vr_mii_an_ctrl_get(0, uniphy_index, &vr_mii_an_ctrl);
 	vr_mii_an_ctrl.bf.mii_an_intr_en = 1;
 	vr_mii_an_ctrl.bf.mii_ctrl = 1;
 	hppe_vr_mii_an_ctrl_set(0, uniphy_index, &vr_mii_an_ctrl);
 
-	//enable uniphy autoneg ability and usxgmii 10g speed and full duplex;
+	/* enable uniphy autoneg ability and usxgmii 10g speed and full duplex */
 	hppe_sr_mii_ctrl_get(0, uniphy_index, &sr_mii_ctrl);
 	sr_mii_ctrl.bf.an_enable = 1;
 	sr_mii_ctrl.bf.ss5 = 0;
@@ -177,9 +200,9 @@ __adpt_hppe_uniphy_usxgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 }
 
 static sw_error_t
-__adpt_hppe_uniphy_psgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
+__adpt_hppe_uniphy_10g_r_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 {
-	a_uint32_t reg_value, i;
+	a_uint32_t port_id = 0;
 	sw_error_t rv = SW_OK;
 
 	union uniphy_mode_ctrl_u uniphy_mode_ctrl;
@@ -187,21 +210,215 @@ __adpt_hppe_uniphy_psgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	memset(&uniphy_mode_ctrl, 0, sizeof(uniphy_mode_ctrl));
 	ADPT_DEV_ID_CHECK(dev_id);
 
-	// keep xpcs to reset status;
-	reg_value = 0;
-	qca_hppe_gcc_uniphy_reg_read(0, 0x4 + (uniphy_index * HPPE_GCC_UNIPHY_REG_INC),
-		(a_uint8_t *)&reg_value, 4);
-	reg_value |= 0x4;
-	qca_hppe_gcc_uniphy_reg_write(0, 0x4 + (uniphy_index * HPPE_GCC_UNIPHY_REG_INC),
-		(a_uint8_t *)&reg_value, 4);
-	// disable instance0 clock;
-	for (i = 1; i < 6; i++)
+	/* keep xpcs to reset status */
+	__adpt_hppe_gcc_uniphy_xpcs_reset(dev_id, uniphy_index, A_TRUE);
+
+	/* disable instance clock */
+	qca_hppe_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
+				1, A_FALSE);
+
+	/* configure uniphy to 10g_r mode */
+	hppe_uniphy_mode_ctrl_get(0, uniphy_index, &uniphy_mode_ctrl);
+
+	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_psgmii_qsgmii = 0;
+	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_qsgmii_sgmii = 0;
+	uniphy_mode_ctrl.bf.newaddedfromhere_sg_mode = 0;
+	uniphy_mode_ctrl.bf.newaddedfromhere_sgplus_mode = 0;
+	uniphy_mode_ctrl.bf.newaddedfromhere_xpcs_mode = 1;
+
+	hppe_uniphy_mode_ctrl_set(0, uniphy_index, &uniphy_mode_ctrl);
+
+	/* configure uniphy gcc software reset */
+	__adpt_hppe_gcc_uniphy_software_reset(dev_id, uniphy_index);
+
+	/* wait uniphy calibration done */
+	rv = __adpt_hppe_uniphy_calibration(dev_id, uniphy_index);
+
+	/* configure gcc speed clock to 10g r mode*/
+	if (uniphy_index == HPPE_UNIPHY_INSTANCE1)
+		port_id = HPPE_MUX_PORT1;
+	else if (uniphy_index == HPPE_UNIPHY_INSTANCE2)
+		port_id = HPPE_MUX_PORT2;
+	adpt_hppe_gcc_port_speed_clock_set(dev_id, port_id, FAL_SPEED_10000);
+
+	/* enable instance clock */
+	qca_hppe_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
+			1, A_TRUE);
+
+	/* release xpcs reset status */
+	__adpt_hppe_gcc_uniphy_xpcs_reset(dev_id, uniphy_index, A_FALSE);
+
+	return rv;
+}
+
+static sw_error_t
+__adpt_hppe_uniphy_sgmiiplus_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
+{
+	sw_error_t rv = SW_OK;
+
+	union uniphy_mode_ctrl_u uniphy_mode_ctrl;
+
+	memset(&uniphy_mode_ctrl, 0, sizeof(uniphy_mode_ctrl));
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	/* keep xpcs to reset status */
+	__adpt_hppe_gcc_uniphy_xpcs_reset(dev_id, uniphy_index, A_TRUE);
+
+	/* disable instance clock */
+	qca_hppe_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
+				1, A_FALSE);
+
+	/* configure uniphy to Athr mode and sgmiiplus mode */
+	hppe_uniphy_mode_ctrl_get(0, uniphy_index, &uniphy_mode_ctrl);
+
+	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_athr_csco_mode_25m = 0;
+	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_psgmii_qsgmii = 0;
+	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_qsgmii_sgmii = 0;
+	uniphy_mode_ctrl.bf.newaddedfromhere_sg_mode = 0;
+	uniphy_mode_ctrl.bf.newaddedfromhere_sgplus_mode = 1;
+	uniphy_mode_ctrl.bf.newaddedfromhere_xpcs_mode = 0;
+
+	hppe_uniphy_mode_ctrl_set(0, uniphy_index, &uniphy_mode_ctrl);
+
+	/* configure uniphy gcc software reset */
+	__adpt_hppe_gcc_uniphy_software_reset(dev_id, uniphy_index);
+
+	/* wait uniphy calibration done */
+	rv = __adpt_hppe_uniphy_calibration(dev_id, uniphy_index);
+
+	return rv;
+}
+
+static sw_error_t
+__adpt_hppe_uniphy_sgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index, a_uint32_t channel)
+{
+	a_uint32_t i, max_port;
+	sw_error_t rv = SW_OK;
+
+	union uniphy_mode_ctrl_u uniphy_mode_ctrl;
+
+	memset(&uniphy_mode_ctrl, 0, sizeof(uniphy_mode_ctrl));
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	/* keep xpcs to reset status */
+	__adpt_hppe_gcc_uniphy_xpcs_reset(dev_id, uniphy_index, A_TRUE);
+
+	/* disable instance clock */
+	if (uniphy_index == HPPE_UNIPHY_INSTANCE0)
+		max_port = 5;
+	else
+		max_port = 1;
+
+	for (i = 1; i <= max_port; i++)
 	{
-		qca_hppe_gcc_uniphy_port_clock_set(0, uniphy_index,
+		qca_hppe_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
 			i, A_FALSE);
 	}
 
-	// configure uniphy to Athr mode and psgmii mode
+	/* configure uniphy to Athr mode and sgmii mode */
+	hppe_uniphy_mode_ctrl_get(0, uniphy_index, &uniphy_mode_ctrl);
+	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_athr_csco_mode_25m = 0;
+	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_psgmii_qsgmii = 0;
+	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_qsgmii_sgmii = 0;
+	uniphy_mode_ctrl.bf.newaddedfromhere_sgplus_mode = 0;
+	uniphy_mode_ctrl.bf.newaddedfromhere_xpcs_mode = 0;
+	if (uniphy_index == HPPE_UNIPHY_INSTANCE0) {
+		uniphy_mode_ctrl.bf.newaddedfromhere_sg_mode = 0;
+		/* select channel as a sgmii interface */
+		if (channel == 0)
+		{
+			uniphy_mode_ctrl.bf.newaddedfromhere_ch1_ch0_sgmii = 0;
+			uniphy_mode_ctrl.bf.newaddedfromhere_ch4_ch1_0_sgmii = 0;
+		}
+		else if (channel == 1)
+		{
+			uniphy_mode_ctrl.bf.newaddedfromhere_ch1_ch0_sgmii = 1;
+			uniphy_mode_ctrl.bf.newaddedfromhere_ch4_ch1_0_sgmii = 0;
+		}
+		else if (channel == 4)
+		{
+			uniphy_mode_ctrl.bf.newaddedfromhere_ch1_ch0_sgmii = 0;
+			uniphy_mode_ctrl.bf.newaddedfromhere_ch4_ch1_0_sgmii = 1;
+		}
+	}
+	else
+	{
+		uniphy_mode_ctrl.bf.newaddedfromhere_sg_mode = 1;
+	}
+
+	hppe_uniphy_mode_ctrl_set(0, uniphy_index, &uniphy_mode_ctrl);
+
+	/* configure uniphy gcc software reset */
+	__adpt_hppe_gcc_uniphy_software_reset(dev_id, uniphy_index);
+
+	/* wait uniphy calibration done */
+	rv = __adpt_hppe_uniphy_calibration(dev_id, uniphy_index);
+
+	return rv;
+}
+
+static sw_error_t
+__adpt_hppe_uniphy_qsgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
+{
+	a_uint32_t i;
+	sw_error_t rv = SW_OK;
+
+	union uniphy_mode_ctrl_u uniphy_mode_ctrl;
+
+	memset(&uniphy_mode_ctrl, 0, sizeof(uniphy_mode_ctrl));
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	/* keep xpcs to reset status */
+	__adpt_hppe_gcc_uniphy_xpcs_reset(dev_id, uniphy_index, A_TRUE);
+
+	/* disable instance0 clock */
+	for (i = 1; i < 6; i++)
+	{
+		qca_hppe_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
+			i, A_FALSE);
+	}
+
+	/* configure uniphy to Athr mode and qsgmii mode */
+	hppe_uniphy_mode_ctrl_get(0, uniphy_index, &uniphy_mode_ctrl);
+	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_athr_csco_mode_25m = 0;
+	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_psgmii_qsgmii = 0;
+	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_qsgmii_sgmii = 1;
+	uniphy_mode_ctrl.bf.newaddedfromhere_sg_mode = 0;
+	uniphy_mode_ctrl.bf.newaddedfromhere_sgplus_mode = 0;
+	uniphy_mode_ctrl.bf.newaddedfromhere_xpcs_mode = 0;
+	hppe_uniphy_mode_ctrl_set(0, uniphy_index, &uniphy_mode_ctrl);
+
+	/* configure uniphy gcc software reset */
+	__adpt_hppe_gcc_uniphy_software_reset(dev_id, uniphy_index);
+
+	/* wait uniphy calibration done */
+	rv = __adpt_hppe_uniphy_calibration(dev_id, uniphy_index);
+
+	return rv;
+}
+
+static sw_error_t
+__adpt_hppe_uniphy_psgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
+{
+	a_uint32_t i;
+	sw_error_t rv = SW_OK;
+
+	union uniphy_mode_ctrl_u uniphy_mode_ctrl;
+
+	memset(&uniphy_mode_ctrl, 0, sizeof(uniphy_mode_ctrl));
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	/* keep xpcs to reset status */
+	__adpt_hppe_gcc_uniphy_xpcs_reset(dev_id, uniphy_index, A_TRUE);
+
+	/* disable instance0 clock */
+	for (i = 1; i < 6; i++)
+	{
+		qca_hppe_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
+			i, A_FALSE);
+	}
+
+	/* configure uniphy to Athr mode and psgmii mode */
 	hppe_uniphy_mode_ctrl_get(0, uniphy_index, &uniphy_mode_ctrl);
 	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_athr_csco_mode_25m = 0;
 	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_psgmii_qsgmii = 1;
@@ -211,24 +428,14 @@ __adpt_hppe_uniphy_psgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	uniphy_mode_ctrl.bf.newaddedfromhere_xpcs_mode = 0;
 	hppe_uniphy_mode_ctrl_set(0, uniphy_index, &uniphy_mode_ctrl);
 
-	//configure uniphy gcc software reset;
-	reg_value = 0;
-	qca_hppe_gcc_uniphy_reg_read(0, 0x4 + (uniphy_index * HPPE_GCC_UNIPHY_REG_INC),
-		(a_uint8_t *)&reg_value, 4);
-	reg_value |= HPPE_GCC_UNIPHY_PSGMII_SOFT_RESET;
-	qca_hppe_gcc_uniphy_reg_write(0, 0x4 + (uniphy_index * HPPE_GCC_UNIPHY_REG_INC),
-		(a_uint8_t *)&reg_value, 4);
-	// release reset;
-	reg_value &= ~HPPE_GCC_UNIPHY_PSGMII_SOFT_RESET;
-	qca_hppe_gcc_uniphy_reg_write(0, 0x4 + (uniphy_index * HPPE_GCC_UNIPHY_REG_INC),
-		(a_uint8_t *)&reg_value, 4);
+	/* configure uniphy gcc software reset */
+	__adpt_hppe_gcc_uniphy_software_reset(dev_id, uniphy_index);
 
-	//wait uniphy calibration done;
+	/* wait uniphy calibration done */
 	rv = __adpt_hppe_uniphy_calibration(dev_id, uniphy_index);
 
 	return rv;
 }
-
 
 sw_error_t
 adpt_hppe_uniphy_mode_set(a_uint32_t dev_id, a_uint32_t index, a_uint32_t mode)
@@ -244,7 +451,27 @@ adpt_hppe_uniphy_mode_set(a_uint32_t dev_id, a_uint32_t index, a_uint32_t mode)
 			break;
 
 		case PORT_WRAPPER_QSGMII:
+			rv = __adpt_hppe_uniphy_qsgmii_mode_set(dev_id, index);
+			break;
 
+		case PORT_WRAPPER_SGMII0_RGMII4:
+			rv = __adpt_hppe_uniphy_sgmii_mode_set(dev_id, index, 0);
+			break;
+
+		case PORT_WRAPPER_SGMII1_RGMII4:
+			rv = __adpt_hppe_uniphy_sgmii_mode_set(dev_id, index, 1);
+			break;
+
+		case PORT_WRAPPER_SGMII4_RGMII4:
+			rv = __adpt_hppe_uniphy_sgmii_mode_set(dev_id, index, 4);
+			break;
+
+		case PORT_WRAPPER_SGMII_PLUS:
+			rv = __adpt_hppe_uniphy_sgmiiplus_mode_set(dev_id, index);
+			break;
+
+		case PORT_WRAPPER_XFI:
+			rv = __adpt_hppe_uniphy_10g_r_mode_set(dev_id, index);
 			break;
 
 		case PORT_WRAPPER_USXGMII:

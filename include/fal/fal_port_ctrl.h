@@ -50,6 +50,15 @@ extern "c" {
 		FAL_CABLE_STATUS_BUTT = 0xffff,
 	} fal_cable_status_t;
 
+struct port_phy_status
+{
+	a_uint32_t link_status;
+	fal_port_speed_t speed;
+	fal_port_duplex_t duplex;
+	a_uint32_t tx_flowctrl;
+	a_uint32_t rx_flowctrl;
+};
+
 #define FAL_ENABLE      1
 #define FAL_DISABLE     0
 #define FAL_MAX_PORT_NUMBER     8

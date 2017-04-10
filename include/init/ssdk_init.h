@@ -369,13 +369,6 @@ uint32_t
 qca_hppe_gcc_speed_clock2_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr,
 				a_uint8_t * reg_data, a_uint32_t len);
 
-sw_error_t
-qca_hppe_xgphy_read(a_uint32_t dev_id, a_uint32_t phy_addr,
-                           a_uint32_t reg, a_uint16_t* data);
-
-sw_error_t
-qca_hppe_xgphy_write(a_uint32_t dev_id, a_uint32_t phy_addr,
-                           a_uint32_t reg, a_uint16_t data);
 
 a_uint32_t
 qca_hppe_port_mac_type_get(a_uint32_t dev_id, a_uint32_t port_id);
@@ -389,7 +382,6 @@ qca_hppe_gcc_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr,
 uint32_t
 qca_hppe_gcc_uniphy_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr,
 			a_uint8_t * reg_data, a_uint32_t len);
-
 
 #ifdef __cplusplus
 }

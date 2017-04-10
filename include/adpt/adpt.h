@@ -50,6 +50,7 @@ extern "C" {
 #include "fal_init.h"
 #include "fal_policer.h"
 #include "fal_misc.h"
+#include "ssdk_plat.h"
 
 #define ADPT_DEV_ID_CHECK(dev_id) \
 do { \
@@ -285,6 +286,8 @@ typedef sw_error_t (*adpt_port_mac_speed_set_func)(a_uint32_t dev_id, fal_port_t
 				fal_port_speed_t speed);
 typedef sw_error_t (*adpt_port_mac_duplex_set_func)(a_uint32_t dev_id, fal_port_t port_id,
 				fal_port_duplex_t duplex);
+typedef sw_error_t (*adpt_port_polling_sw_sync_func)(struct qca_phy_priv *priv);
+
 // mirror
 typedef sw_error_t (*adpt_mirr_port_in_set_func)(a_uint32_t dev_id, fal_port_t port_id,
                          a_bool_t enable);
@@ -982,6 +985,8 @@ typedef struct
 	adpt_port_mac_mux_set_func adpt_port_mac_mux_set;
 	adpt_port_mac_speed_set_func adpt_port_mac_speed_set;
 	adpt_port_mac_duplex_set_func adpt_port_mac_duplex_set;
+	adpt_port_polling_sw_sync_func adpt_port_polling_sw_sync_set;
+
 // mirror
 	a_uint32_t adpt_mirror_func_bitmap;
 	adpt_mirr_port_in_set_func adpt_mirr_port_in_set;
