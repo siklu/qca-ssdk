@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2016,  The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2016-2017,  The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -233,7 +233,7 @@ qca_ar8327_sw_rgmii_mode_valid(a_uint32_t port_id)
 {
 	a_uint32_t rgmii_mode;
 
-	rgmii_mode = ssdk_dt_global_get_mac_mode();
+	rgmii_mode = ssdk_dt_global_get_mac_mode(0);
 
 	if(((rgmii_mode == PORT_WRAPPER_SGMII0_RGMII5) ||
 		(rgmii_mode == PORT_WRAPPER_SGMII1_RGMII5)) && (port_id == 5))
@@ -471,7 +471,7 @@ qca_ar8327_sw_mac_polling_port_valid(struct switch_dev *dev, a_uint32_t port_id)
 {
 	a_uint32_t mac_mode;
 
-	mac_mode = ssdk_dt_global_get_mac_mode();
+	mac_mode = ssdk_dt_global_get_mac_mode(0);
 
 	if( port_id >= AR8327_NUM_PORTS-1 || port_id < 1)
 		return A_FALSE;
@@ -694,7 +694,7 @@ dess_rgmii_sw_mac_polling_task(struct switch_dev *dev)
 	a_uint16_t phy_spec_status, phy_link_status;
 	a_uint32_t speed, duplex;
 
-	mac_mode = ssdk_dt_global_get_mac_mode();
+	mac_mode = ssdk_dt_global_get_mac_mode(0);
 
 	if ((mac_mode == PORT_WRAPPER_SGMII0_RGMII5)
 		||(mac_mode == PORT_WRAPPER_SGMII1_RGMII5)

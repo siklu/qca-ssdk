@@ -7550,6 +7550,9 @@ parse_acl_rule(struct switch_val *val)
 	a_uint32_t i;
 	a_uint32_t portmap = 0;
 	a_uint32_t rule_id = 0;
+	a_uint32_t obj_type = 0;
+	a_uint32_t obj_value = 0;
+	a_uint32_t list_id = 0xffffffff;
 	fal_acl_rule_t  rule;
 	struct switch_ext *switch_ext_p, *ext_value_p;
 	int rv = 0;
@@ -7562,30 +7565,34 @@ parse_acl_rule(struct switch_val *val)
 		if(!strcmp(ext_value_p->option_name, "name")) {
 			switch_ext_p = switch_ext_p->next;
 			continue;
+		} else if(!strcmp(ext_value_p->option_name, "list_id")) {
+			cmd_data_check_uint32((char*)ext_value_p->option_value,
+						&list_id, sizeof(a_uint32_t));
+			val_ptr[0] = (char*)ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "rule_id")) {
 			cmd_data_check_uint32((char*)ext_value_p->option_value,
 						&rule_id, sizeof(a_uint32_t));
 			if(rule_id == 0) {
 				printk("ACL rule ID should begin with 1. Please Notice!\r\n");
 			}
-			val_ptr[0] = (char*)ext_value_p->option_value;
+			val_ptr[1] = (char*)ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "priority")) {
 			cmd_data_check_uint32((char*)ext_value_p->option_value,
 						&prio, sizeof(a_uint32_t));
-			val_ptr[1] = (char*)ext_value_p->option_value;
+			val_ptr[2] = (char*)ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "rule_type")) {
 			cmd_data_check_ruletype((char*)ext_value_p->option_value,
 						&(rule.rule_type), sizeof(a_uint32_t));
-			val_ptr[2] = (char*)ext_value_p->option_value;
+			val_ptr[3] = (char*)ext_value_p->option_value;
 		} else if(!strcmp(ext_value_p->option_name, "is_postrouting")) {
 			cmd_data_check_confirm((char*)ext_value_p->option_value, A_FALSE,
 						&(rule.post_routing), sizeof(rule.post_routing));
 			FAL_FIELD_FLG_SET(rule.field_flg,
 					FAL_ACL_FIELD_POST_ROURING_EN);
-		} else if(!strcmp(ext_value_p->option_name, "resource_chain")) {
+		} else if(!strcmp(ext_value_p->option_name, "acl_pool")) {
 			cmd_data_check_integer((char*)ext_value_p->option_value,
 						&(tmpdata), 1, 0);
-			rule.res_chain = tmpdata;
+			rule.acl_pool = tmpdata;
 			FAL_FIELD_FLG_SET(rule.field_flg,
 					FAL_ACL_FIELD_RES_CHAIN);
 		} else if(!strcmp(ext_value_p->option_name, "dst_mac_address")) {
@@ -8064,7 +8071,11 @@ parse_acl_rule(struct switch_val *val)
 					FAL_ACL_ACTION_REMARK_QUEUE);
 		} else if(!strcmp(ext_value_p->option_name, "port_bitmap")) {
 			cmd_data_check_pbmp((char*)ext_value_p->option_value, &portmap, 4);
-		} else if(!strcmp(ext_value_p->option_name, "user_defined_field_value")) {
+		} else if(!strcmp((char*)ext_value_p->option_name, "obj_type")) {
+			cmd_data_check_uint32((char*)ext_value_p->option_value, &obj_type, 4);
+		} else if(!strcmp((char*)ext_value_p->option_name, "obj_value")) {
+			cmd_data_check_uint32((char*)ext_value_p->option_value, &obj_value, 4);
+		} else if(!strcmp((char*)ext_value_p->option_name, "user_defined_field_value")) {
 			cmd_data_check_udf_element((char*)ext_value_p->option_value,
 						(a_uint8_t *)&(rule.udf_val[0]), (a_uint32_t *)&(rule.udf_len));
 			FAL_FIELD_FLG_SET(rule.field_flg,
@@ -8243,13 +8254,26 @@ parse_acl_rule(struct switch_val *val)
 		parameter_length++;
 		switch_ext_p = switch_ext_p->next;
 	}
-	fal_acl_list_creat(0, rule_id, prio);
-	fal_acl_rule_add(0, rule_id, 0, 1, &rule);
-	for (i = 0; i < AR8327_NUM_PORTS; i ++) {
-		fal_acl_list_unbind(0, rule_id, 0, 0, i);
-		if (portmap & (0x1 << i)) {
-			fal_acl_list_bind(0, rule_id, 0, 0, i);
+	/*to be compatible with previous version which didn't define list id*/
+	if(0xffffffff == list_id) {
+		list_id = rule_id;
+		rule_id = 0;
+	} else {
+		rule.pri = prio & 0x7;
+		prio = (prio >> 3) & 0x3f;
+	}
+	fal_acl_list_creat(0, list_id, prio);
+	fal_acl_rule_add(0, list_id, rule_id, 1, &rule);
+	/*bind to port bitmap*/
+	if( portmap != 0 ) {
+		for (i = 0; i < AR8327_NUM_PORTS; i ++) {
+			fal_acl_list_unbind(0, list_id, 0, 0, i);
+			if (portmap & (0x1 << i)) {
+				fal_acl_list_bind(0, list_id, 0, 0, i);
+			}
 		}
+	} else {
+		fal_acl_list_bind(0, list_id, 0, obj_type, obj_value);
 	}
 	fal_acl_status_set(0, A_TRUE);
 
