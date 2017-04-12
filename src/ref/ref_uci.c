@@ -4662,9 +4662,9 @@ parse_sec_expctrl(struct switch_val *val)
 			val_ptr[1] = (char*)ext_value_p->option_value;
 		} else if (!strcmp(ext_value_p->option_name, "deacclr_en")) {
 			val_ptr[2] = (char*)ext_value_p->option_value;
-		} else if (!strcmp(ext_value_p->option_name, "l3only_en")) {
+		} else if (!strcmp(ext_value_p->option_name, "l3route_only_en")) {
 			val_ptr[3] = (char*)ext_value_p->option_value;
-		} else if (!strcmp(ext_value_p->option_name, "l2only_en")) {
+		} else if (!strcmp(ext_value_p->option_name, "l2fwd_only_en")) {
 			val_ptr[4] = (char*)ext_value_p->option_value;
 		} else if (!strcmp(ext_value_p->option_name, "l2flow_en")) {
 			val_ptr[5] = (char*)ext_value_p->option_value;
@@ -4697,9 +4697,9 @@ parse_sec_l3parser(struct switch_val *val)
 		if (!strcmp(ext_value_p->option_name, "name")) {
 			switch_ext_p = switch_ext_p->next;
 			continue;
-		} else if (!strcmp(ext_value_p->option_name, "smallttl")) {
+		} else if (!strcmp(ext_value_p->option_name, "small_ip4ttl")) {
 			val_ptr[0] = (char*)ext_value_p->option_value;
-		} else if (!strcmp(ext_value_p->option_name, "small_hoplimit")) {
+		} else if (!strcmp(ext_value_p->option_name, "small_ip6hoplimit")) {
 			val_ptr[1] = (char*)ext_value_p->option_value;
 		}  else {
 			rv = -1;
@@ -10846,7 +10846,7 @@ parse_flow(const char *command_name, struct switch_val *val)
 		rv = parse_flow_entry(val);
 	} else if (!strcmp(command_name, "Status")) {
 		rv = parse_flow_status(val);
-	} else if (!strcmp(command_name, "Age")) {
+	} else if (!strcmp(command_name, "Agetime")) {
 		rv = parse_flow_age(val);
 	} else if (!strcmp(command_name, "Mgmt")) {
 		rv = parse_flow_mgmt(val);
@@ -10912,7 +10912,7 @@ parse_qm(const char *command_name, struct switch_val *val)
 		rv = parse_qm_acsthresh(val);
 	} else if (!strcmp(command_name, "Acdthresh")) {
 		rv = parse_qm_acdthresh(val);
-	} else if (!strcmp(command_name, "Acgbuff")) {
+	} else if (!strcmp(command_name, "Acgroupbuff")) {
 		rv = parse_qm_acgbuff(val);
 	} else if (!strcmp(command_name, "Cntctrl")) {
 		rv = parse_qm_cntctrl(val);

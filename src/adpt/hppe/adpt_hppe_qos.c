@@ -73,6 +73,52 @@ adpt_hppe_l1_flow_map_get(a_uint32_t dev_id,
 }
 
 sw_error_t
+adpt_hppe_qos_port_mode_pri_set(a_uint32_t dev_id, fal_port_t port_id,
+				fal_qos_mode_t mode, a_uint32_t pri)
+{
+	union port_qos_ctrl_u port_qos_ctrl;
+
+	memset(&port_qos_ctrl, 0, sizeof(port_qos_ctrl));
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	hppe_port_qos_ctrl_get(dev_id, port_id, &port_qos_ctrl);
+
+	if (mode == FAL_QOS_UP_MODE)
+		port_qos_ctrl.bf.port_pcp_qos_pri = pri;
+	else if (mode == FAL_QOS_DSCP_MODE)
+		port_qos_ctrl.bf.port_dscp_qos_pri = pri;
+	else if (mode == FAL_QOS_FLOW_MODE)
+		port_qos_ctrl.bf.port_flow_qos_pri = pri;
+	else
+		return SW_NOT_SUPPORTED;
+	
+	return hppe_port_qos_ctrl_set(dev_id, port_id, &port_qos_ctrl);
+}
+
+sw_error_t
+adpt_hppe_qos_port_mode_pri_get(a_uint32_t dev_id, fal_port_t port_id,
+				fal_qos_mode_t mode, a_uint32_t *pri)
+{
+	union port_qos_ctrl_u port_qos_ctrl;
+
+	memset(&port_qos_ctrl, 0, sizeof(port_qos_ctrl));
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	hppe_port_qos_ctrl_get(dev_id, port_id, &port_qos_ctrl);
+
+	if (mode == FAL_QOS_UP_MODE)
+		*pri = port_qos_ctrl.bf.port_pcp_qos_pri;
+	else if (mode == FAL_QOS_DSCP_MODE)
+		*pri = port_qos_ctrl.bf.port_dscp_qos_pri;
+	else if (mode == FAL_QOS_FLOW_MODE)
+		*pri = port_qos_ctrl.bf.port_flow_qos_pri;
+	else
+		return SW_NOT_SUPPORTED;
+	
+	return SW_OK;
+}
+
+sw_error_t
 adpt_hppe_qos_port_pri_set(a_uint32_t dev_id, fal_port_t port_id,
 					fal_qos_pri_precedence_t *pri)
 {
@@ -751,7 +797,9 @@ void adpt_hppe_qos_func_bitmap_init(a_uint32_t dev_id)
 						(1 << FUNC_PORT_SCHEDULER_CFG_SET) |
 						(1 << FUNC_PORT_SCHEDULER_CFG_GET) |
 						(1 << FUNC_SCHEDULER_DEQUEUE_CTRL_GET) |
-						(1 << FUNC_SCHEDULER_DEQUEUE_CTRL_SET));
+						(1 << FUNC_SCHEDULER_DEQUEUE_CTRL_SET) |
+						(1 << FUNC_QOS_PORT_MODE_PRI_GET) |
+						(1 << FUNC_QOS_PORT_MODE_PRI_SET));
 	return;
 }
 
@@ -783,6 +831,8 @@ static void adpt_hppe_qos_func_unregister(a_uint32_t dev_id, adpt_api_t *p_adpt_
 	p_adpt_api->adpt_port_scheduler_cfg_get = NULL;
 	p_adpt_api->adpt_scheduler_dequeue_ctrl_get = NULL;
 	p_adpt_api->adpt_scheduler_dequeue_ctrl_set = NULL;
+	p_adpt_api->adpt_qos_port_mode_pri_get = NULL;
+	p_adpt_api->adpt_qos_port_mode_pri_set = NULL;
 
 	return;
 }
@@ -844,6 +894,10 @@ sw_error_t adpt_hppe_qos_init(a_uint32_t dev_id)
 		p_adpt_api->adpt_scheduler_dequeue_ctrl_get = adpt_hppe_scheduler_dequeue_ctrl_get;
 	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_SCHEDULER_DEQUEUE_CTRL_SET))
 		p_adpt_api->adpt_scheduler_dequeue_ctrl_set = adpt_hppe_scheduler_dequeue_ctrl_set;
+	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_QOS_PORT_MODE_PRI_GET))
+		p_adpt_api->adpt_qos_port_mode_pri_get = adpt_hppe_qos_port_mode_pri_get;
+	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_QOS_PORT_MODE_PRI_SET))
+		p_adpt_api->adpt_qos_port_mode_pri_set = adpt_hppe_qos_port_mode_pri_set;
 
 	return SW_OK;
 }
