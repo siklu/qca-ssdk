@@ -1260,7 +1260,16 @@ struct sub_cmd_des_t g_servcode_des[] =
 };
 #endif
 
-/*Servcode*/
+/*rss hash*/
+#ifdef IN_RSS_HASH
+struct sub_cmd_des_t g_rss_hash_des[] =
+{
+    {"config", "set", SW_API_RSS_HASH_CONFIG_SET, NULL},
+    {NULL, NULL, (int)NULL, NULL},/*end of desc*/
+};
+#endif
+
+/*Ctrlpkt*/
 #ifdef IN_CTRLPKT
 struct sub_cmd_des_t g_ctrlpkt_des[] =
 {
@@ -1457,6 +1466,12 @@ struct cmd_des_t gcmd_des[] =
 #ifdef IN_SERVCODE
     {
         "servcode", g_servcode_des,
+    },
+#endif
+
+#ifdef IN_RSS_HASH
+    {
+        "rsshash", g_rss_hash_des,
     },
 #endif
 

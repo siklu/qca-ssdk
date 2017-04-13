@@ -29,6 +29,7 @@ extern "C" {
 #include "fal_portvlan.h"
 #include "fal_ctrlpkt.h"
 #include "fal_servcode.h"
+#include "fal_rss_hash.h"
 #include "fal_mib.h"
 #include "fal_port_ctrl.h"
 #include "fal_mirror.h"
@@ -299,6 +300,10 @@ typedef sw_error_t (*adpt_mirr_analysis_config_set_func)(a_uint32_t dev_id, fal_
 				fal_mirr_analysis_config_t * config);
 typedef sw_error_t (*adpt_mirr_analysis_config_get_func)(a_uint32_t dev_id, fal_mirr_direction_t direction,
 				fal_mirr_analysis_config_t * config);
+
+//rss hash
+typedef sw_error_t (*adpt_rss_hash_config_set_func)(a_uint32_t dev_id, fal_rss_hash_mode_t mode, fal_rss_hash_config_t * config);
+typedef sw_error_t (*adpt_rss_hash_config_get_func)(a_uint32_t dev_id, fal_rss_hash_mode_t mode, fal_rss_hash_config_t * config);
 
 //trunk
 typedef sw_error_t (*adpt_trunk_fail_over_en_get_func)(a_uint32_t dev_id, a_bool_t * fail_over);
@@ -987,6 +992,10 @@ typedef struct
 	adpt_mirr_analysis_port_get_func adpt_mirr_analysis_port_get;
 	adpt_mirr_analysis_config_set_func adpt_mirr_analysis_config_set;
 	adpt_mirr_analysis_config_get_func adpt_mirr_analysis_config_get;
+//rss hash
+	a_uint32_t adpt_rss_hash_func_bitmap;
+	adpt_rss_hash_config_set_func adpt_rss_hash_config_set;
+	adpt_rss_hash_config_get_func adpt_rss_hash_config_get;
 //trunk
 	a_uint32_t adpt_trunk_func_bitmap;
 	adpt_trunk_fail_over_en_get_func adpt_trunk_fail_over_en_get;
