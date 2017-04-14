@@ -889,7 +889,8 @@ static void setup_dev_list(void)
 				/*lan port*/
 				HNAT_PRINTK("lan port vid:%d\n", tmp_vid);
 				nat_lan_vid = tmp_vid;
-				snprintf(nat_lan_dev_list, IFNAMSIZ*4, "eth0.%d eth1 eth1.%d", tmp_vid, tmp_vid);
+				snprintf(nat_lan_dev_list, IFNAMSIZ*4, "eth0.%d eth1 eth1.%d br-lan",
+					tmp_vid, tmp_vid);
 			}
 		}
 	}
