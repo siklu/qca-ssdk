@@ -19,6 +19,9 @@
 #include "hsl.h"
 #include "hsl_dev.h"
 #include "ssdk_init.h"
+#ifdef HPPE
+#include "hppe_init.h"
+#endif
 #include <linux/kconfig.h>
 #include <linux/version.h>
 #include <linux/kernel.h>
@@ -96,7 +99,7 @@ static struct mii_bus *miibus = NULL;
 extern struct qca_phy_priv *qca_phy_priv_global;
 extern ssdk_dt_cfg ssdk_dt_global;
 extern ssdk_chip_type SSDK_CURRENT_CHIP_TYPE;
-extern void __iomem *hppe_uniphy_addr;
+void __iomem *hppe_uniphy_addr = NULL;
 
 static struct mutex switch_mdio_lock;
 
@@ -416,6 +419,90 @@ qca_psgmii_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_dat
 
 	aos_mem_copy(&reg_val, reg_data, sizeof (a_uint32_t));
 	writel(reg_val, qca_phy_priv_global->psgmii_hw_addr + reg_addr);
+	return 0;
+}
+
+uint32_t
+qca_hppe_uniphy_reg_read(a_uint32_t dev_id, a_uint32_t uniphy_index,
+				a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
+{
+#ifdef HPPE
+	uint32_t reg_val = 0;
+	void __iomem *hppe_uniphy_base = NULL;
+	a_uint32_t reg_addr1, reg_addr2;
+
+	if (len != sizeof (a_uint32_t))
+        return SW_BAD_LEN;
+
+	if ((reg_addr%4)!= 0)
+	return SW_BAD_PARAM;
+
+	if (HPPE_UNIPHY_INSTANCE0 == uniphy_index)
+		hppe_uniphy_base = hppe_uniphy_addr;
+	else if (HPPE_UNIPHY_INSTANCE1 == uniphy_index)
+		hppe_uniphy_base = hppe_uniphy_addr + HPPE_UNIPHY_BASE1;
+
+	else if (HPPE_UNIPHY_INSTANCE2 == uniphy_index)
+		hppe_uniphy_base = hppe_uniphy_addr + HPPE_UNIPHY_BASE2;
+
+	if ( reg_addr > HPPE_UNIPHY_MAX_DIRECT_ACCESS_REG)
+	{
+		// uniphy reg indireclty access
+		reg_addr1 = reg_addr & HPPE_UNIPHY_INDIRECT_HIGH_ADDR;
+		writel(reg_addr1, hppe_uniphy_base + HPPE_UNIPHY_INDIRECT_REG_ADDR);
+
+		reg_addr2 = reg_addr & HPPE_UNIPHY_INDIRECT_LOW_ADDR;
+		reg_addr = (HPPE_UNIPHY_INDIRECT_DATA << 10) | (reg_addr2 << 2);
+
+		reg_val = readl(hppe_uniphy_base + reg_addr);
+		aos_mem_copy(reg_data, &reg_val, sizeof (a_uint32_t));
+	}
+	else
+	{	// uniphy reg directly access
+		reg_val = readl(hppe_uniphy_base + reg_addr);
+		aos_mem_copy(reg_data, &reg_val, sizeof (a_uint32_t));
+	}
+#endif
+	return 0;
+}
+
+uint32_t
+qca_hppe_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t uniphy_index,
+				a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
+{
+#ifdef HPPE
+	void __iomem *hppe_uniphy_base = NULL;
+	a_uint32_t reg_addr1, reg_addr2;
+
+	if (len != sizeof (a_uint32_t))
+        return SW_BAD_LEN;
+
+	if ((reg_addr%4)!= 0)
+	return SW_BAD_PARAM;
+
+	if (HPPE_UNIPHY_INSTANCE0 == uniphy_index)
+		hppe_uniphy_base = hppe_uniphy_addr;
+	else if (HPPE_UNIPHY_INSTANCE1 == uniphy_index)
+		hppe_uniphy_base = hppe_uniphy_addr + HPPE_UNIPHY_BASE1;
+
+	else if (HPPE_UNIPHY_INSTANCE2 == uniphy_index)
+		hppe_uniphy_base = hppe_uniphy_addr + HPPE_UNIPHY_BASE2;
+
+	if ( reg_addr > HPPE_UNIPHY_MAX_DIRECT_ACCESS_REG)
+	{
+		// uniphy reg indireclty access
+		reg_addr1 = reg_addr & HPPE_UNIPHY_INDIRECT_HIGH_ADDR;
+		writel(reg_addr1, hppe_uniphy_base + HPPE_UNIPHY_INDIRECT_REG_ADDR);
+
+		reg_addr2 = reg_addr & HPPE_UNIPHY_INDIRECT_LOW_ADDR;
+		reg_addr = (HPPE_UNIPHY_INDIRECT_DATA << 10) | (reg_addr2 << 2);
+		writel(reg_data, hppe_uniphy_base + reg_addr);
+	}
+	else
+	{	// uniphy reg directly access
+		writel(reg_data, hppe_uniphy_base + reg_addr);
+	}
+#endif
 	return 0;
 }
 

@@ -127,7 +127,6 @@ extern a_uint32_t hsl_dev_wan_port_get(a_uint32_t dev_id);
 #define QCA_RGMII_WORK_DELAY	1000
 
 ssdk_dt_cfg ssdk_dt_global = {0};
-void __iomem *hppe_uniphy_addr = NULL;
 void __iomem *gcc_uniphy_base = NULL;
 void __iomem *gcc_hppe_clock_config1_base = NULL;
 void __iomem *gcc_hppe_clock_config2_base = NULL;
@@ -3573,88 +3572,6 @@ qca_hppe_interface_mode_init(a_uint32_t mode0, a_uint32_t mode1, a_uint32_t mode
 	return rv;
 }
 #endif
-
-uint32_t
-qca_hppe_uniphy_reg_read(a_uint32_t dev_id, a_uint32_t uniphy_index,
-				a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
-{
-	uint32_t reg_val = 0;
-	void __iomem *hppe_uniphy_base = NULL;
-	a_uint32_t reg_addr1, reg_addr2;
-
-	if (len != sizeof (a_uint32_t))
-        return SW_BAD_LEN;
-
-	if ((reg_addr%4)!= 0)
-	return SW_BAD_PARAM;
-
-	if (HPPE_UNIPHY_INSTANCE0 == uniphy_index)
-		hppe_uniphy_base = hppe_uniphy_addr;
-	else if (HPPE_UNIPHY_INSTANCE1 == uniphy_index)
-		hppe_uniphy_base = hppe_uniphy_addr + HPPE_UNIPHY_BASE1;
-
-	else if (HPPE_UNIPHY_INSTANCE2 == uniphy_index)
-		hppe_uniphy_base = hppe_uniphy_addr + HPPE_UNIPHY_BASE2;
-
-	if ( reg_addr > HPPE_UNIPHY_MAX_DIRECT_ACCESS_REG)
-	{
-		// uniphy reg indireclty access
-		reg_addr1 = reg_addr & HPPE_UNIPHY_INDIRECT_HIGH_ADDR;
-		writel(reg_addr1, hppe_uniphy_base + HPPE_UNIPHY_INDIRECT_REG_ADDR);
-
-		reg_addr2 = reg_addr & HPPE_UNIPHY_INDIRECT_LOW_ADDR;
-		reg_addr = (HPPE_UNIPHY_INDIRECT_DATA << 10) | (reg_addr2 << 2);
-
-		reg_val = readl(hppe_uniphy_base + reg_addr);
-		aos_mem_copy(reg_data, &reg_val, sizeof (a_uint32_t));
-	}
-	else
-	{	// uniphy reg directly access
-		reg_val = readl(hppe_uniphy_base + reg_addr);
-		aos_mem_copy(reg_data, &reg_val, sizeof (a_uint32_t));
-	}
-
-	return 0;
-}
-
-uint32_t
-qca_hppe_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t uniphy_index,
-				a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
-{
-	void __iomem *hppe_uniphy_base = NULL;
-	a_uint32_t reg_addr1, reg_addr2;
-
-	if (len != sizeof (a_uint32_t))
-        return SW_BAD_LEN;
-
-	if ((reg_addr%4)!= 0)
-	return SW_BAD_PARAM;
-
-	if (HPPE_UNIPHY_INSTANCE0 == uniphy_index)
-		hppe_uniphy_base = hppe_uniphy_addr;
-	else if (HPPE_UNIPHY_INSTANCE1 == uniphy_index)
-		hppe_uniphy_base = hppe_uniphy_addr + HPPE_UNIPHY_BASE1;
-
-	else if (HPPE_UNIPHY_INSTANCE2 == uniphy_index)
-		hppe_uniphy_base = hppe_uniphy_addr + HPPE_UNIPHY_BASE2;
-
-	if ( reg_addr > HPPE_UNIPHY_MAX_DIRECT_ACCESS_REG)
-	{
-		// uniphy reg indireclty access
-		reg_addr1 = reg_addr & HPPE_UNIPHY_INDIRECT_HIGH_ADDR;
-		writel(reg_addr1, hppe_uniphy_base + HPPE_UNIPHY_INDIRECT_REG_ADDR);
-
-		reg_addr2 = reg_addr & HPPE_UNIPHY_INDIRECT_LOW_ADDR;
-		reg_addr = (HPPE_UNIPHY_INDIRECT_DATA << 10) | (reg_addr2 << 2);
-		writel(reg_data, hppe_uniphy_base + reg_addr);
-	}
-	else
-	{	// uniphy reg directly access
-		writel(reg_data, hppe_uniphy_base + reg_addr);
-	}
-
-	return 0;
-}
 
 static sw_error_t
 qca_hppe_flow_hw_init(void)
