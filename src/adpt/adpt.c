@@ -60,6 +60,9 @@ static sw_error_t adpt_hppe_module_func_register(a_uint32_t dev_id, a_uint32_t m
 		case FAL_MODULE_SERVCODE:
 			rv = adpt_hppe_servcode_init( dev_id);
 			break;
+		case FAL_MODULE_RSS_HASH:
+			rv = adpt_hppe_rss_hash_init( dev_id);
+			break;
 		case FAL_MODULE_PPPOE:
 			rv = adpt_hppe_pppoe_init(dev_id);
 			break;
@@ -136,6 +139,8 @@ sw_error_t adpt_module_func_ctrl_set(a_uint32_t dev_id,
 		p_adpt_api->adpt_bm_func_bitmap = func_ctrl->bitmap[0];
 	} else if (module == FAL_MODULE_SERVCODE) {
 		p_adpt_api->adpt_servcode_func_bitmap = func_ctrl->bitmap[0];
+	} else if (module == FAL_MODULE_RSS_HASH) {
+		p_adpt_api->adpt_rss_hash_func_bitmap = func_ctrl->bitmap[0];
 	} else if (module == FAL_MODULE_PPPOE) {
 		p_adpt_api->adpt_pppoe_func_bitmap = func_ctrl->bitmap[0];
 	} else if (module == FAL_MODULE_PORTCTRL) {
@@ -206,6 +211,8 @@ sw_error_t adpt_module_func_ctrl_get(a_uint32_t dev_id,
 		func_ctrl->bitmap[0] = p_adpt_api->adpt_bm_func_bitmap;
 	} else if (module == FAL_MODULE_SERVCODE) {
 		func_ctrl->bitmap[0] = p_adpt_api->adpt_servcode_func_bitmap;
+	} else if (module == FAL_MODULE_RSS_HASH) {
+		func_ctrl->bitmap[0] = p_adpt_api->adpt_rss_hash_func_bitmap;
 	} else if (module == FAL_MODULE_PPPOE) {
 		func_ctrl->bitmap[0] = p_adpt_api->adpt_pppoe_func_bitmap;
 	} else if (module == FAL_MODULE_PORTCTRL) {
@@ -314,6 +321,10 @@ sw_error_t adpt_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 
 			g_adpt_api[dev_id]->adpt_servcode_func_bitmap = 0xffffffff;
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_SERVCODE);
+			SW_RTN_ON_ERROR(rv);
+
+			g_adpt_api[dev_id]->adpt_rss_hash_func_bitmap = 0xffffffff;
+			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_RSS_HASH);
 			SW_RTN_ON_ERROR(rv);
 
 			g_adpt_api[dev_id]->adpt_pppoe_func_bitmap = 0xffffffff;
@@ -437,6 +448,11 @@ sw_error_t adpt_module_func_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 			g_adpt_api[dev_id]->adpt_servcode_func_bitmap = 0;
 			adpt_hppe_servcode_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_SERVCODE);
+			SW_RTN_ON_ERROR(rv);
+
+			g_adpt_api[dev_id]->adpt_rss_hash_func_bitmap = 0;
+			adpt_hppe_rss_hash_func_bitmap_init(dev_id);
+			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_RSS_HASH);
 			SW_RTN_ON_ERROR(rv);
 
 			g_adpt_api[dev_id]->adpt_pppoe_func_bitmap = 0;

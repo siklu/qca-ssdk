@@ -29,6 +29,7 @@ extern "C" {
 #include "fal_portvlan.h"
 #include "fal_ctrlpkt.h"
 #include "fal_servcode.h"
+#include "fal_rss_hash.h"
 #include "fal_mib.h"
 #include "fal_port_ctrl.h"
 #include "fal_mirror.h"
@@ -299,6 +300,10 @@ typedef sw_error_t (*adpt_mirr_analysis_config_set_func)(a_uint32_t dev_id, fal_
 				fal_mirr_analysis_config_t * config);
 typedef sw_error_t (*adpt_mirr_analysis_config_get_func)(a_uint32_t dev_id, fal_mirr_direction_t direction,
 				fal_mirr_analysis_config_t * config);
+
+//rss hash
+typedef sw_error_t (*adpt_rss_hash_config_set_func)(a_uint32_t dev_id, fal_rss_hash_mode_t mode, fal_rss_hash_config_t * config);
+typedef sw_error_t (*adpt_rss_hash_config_get_func)(a_uint32_t dev_id, fal_rss_hash_mode_t mode, fal_rss_hash_config_t * config);
 
 //trunk
 typedef sw_error_t (*adpt_trunk_fail_over_en_get_func)(a_uint32_t dev_id, a_bool_t * fail_over);
@@ -778,6 +783,10 @@ typedef sw_error_t (*adpt_scheduler_dequeue_ctrl_get_func)(a_uint32_t dev_id, a_
 					a_bool_t *enable);
 typedef sw_error_t (*adpt_scheduler_dequeue_ctrl_set_func)(a_uint32_t dev_id, a_uint32_t queue_id,
 					a_bool_t enable);
+typedef sw_error_t (*adpt_qos_port_mode_pri_get_func)(a_uint32_t dev_id, fal_port_t port_id,
+					fal_qos_mode_t mode, a_uint32_t *pri);
+typedef sw_error_t (*adpt_qos_port_mode_pri_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+					fal_qos_mode_t mode, a_uint32_t pri);
 typedef sw_error_t (*adpt_port_bufgroup_map_get_func)(a_uint32_t dev_id, fal_port_t port,
 			a_uint8_t *group);
 typedef sw_error_t (*adpt_bm_port_reserved_buffer_get_func)(a_uint32_t dev_id, fal_port_t port,
@@ -983,6 +992,10 @@ typedef struct
 	adpt_mirr_analysis_port_get_func adpt_mirr_analysis_port_get;
 	adpt_mirr_analysis_config_set_func adpt_mirr_analysis_config_set;
 	adpt_mirr_analysis_config_get_func adpt_mirr_analysis_config_get;
+//rss hash
+	a_uint32_t adpt_rss_hash_func_bitmap;
+	adpt_rss_hash_config_set_func adpt_rss_hash_config_set;
+	adpt_rss_hash_config_get_func adpt_rss_hash_config_get;
 //trunk
 	a_uint32_t adpt_trunk_func_bitmap;
 	adpt_trunk_fail_over_en_get_func adpt_trunk_fail_over_en_get;
@@ -1200,6 +1213,8 @@ typedef struct
 	adpt_port_scheduler_cfg_get_func adpt_port_scheduler_cfg_get;
 	adpt_scheduler_dequeue_ctrl_get_func adpt_scheduler_dequeue_ctrl_get;
 	adpt_scheduler_dequeue_ctrl_set_func adpt_scheduler_dequeue_ctrl_set;
+	adpt_qos_port_mode_pri_get_func adpt_qos_port_mode_pri_get;
+	adpt_qos_port_mode_pri_set_func adpt_qos_port_mode_pri_set;
 
 	/* bm */
 	a_uint32_t adpt_bm_func_bitmap;

@@ -47,6 +47,7 @@
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
 #include <linux/switch.h>
 #include <linux/of.h>
+#include <linux/of_platform.h>
 #elif defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 #include <linux/switch.h>
 #include <linux/of.h>

@@ -109,6 +109,10 @@ ifeq (TRUE, $(IN_SERVCODE))
   SRC_LIST += fal_servcode.c
 endif
 
+ifeq (TRUE, $(IN_RSS_HASH))
+  SRC_LIST += fal_rss_hash.c
+endif
+
 ifeq (TRUE, $(IN_PPPOE))
   SRC_LIST += fal_pppoe.c
 endif

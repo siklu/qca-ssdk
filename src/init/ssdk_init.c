@@ -48,6 +48,7 @@
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
 #include <linux/switch.h>
 #include <linux/of.h>
+#include <linux/reset.h>
 #ifdef BOARD_AR71XX
 #ifdef CONFIG_AR8216_PHY
 #include "drivers/net/phy/ar8327.h"

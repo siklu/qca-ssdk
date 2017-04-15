@@ -834,9 +834,9 @@ struct sub_cmd_des_t g_qos_des[] =
 	{"ptFSpriSts", "set",   SW_API_QOS_PT_FORCE_SPRI_ST_SET, NULL},
 	{"ptFCpriSts", "set",   SW_API_QOS_PT_FORCE_CPRI_ST_SET, NULL},
 	{"ptQuRemark", "set",   SW_API_QOS_QUEUE_REMARK_SET, NULL},
-	{"ptGroup", "set", SW_API_QOS_PORT_GROUP_SET, NULL},
+	{"ptgroup", "set", SW_API_QOS_PORT_GROUP_SET, NULL},
 	{"ptpriprece", "set", SW_API_QOS_PORT_PRI_SET, NULL},
-	{"ptRemark", "set", SW_API_QOS_PORT_REMARK_SET, NULL},
+	{"ptremark", "set", SW_API_QOS_PORT_REMARK_SET, NULL},
 	{"pcpmap", "set", SW_API_QOS_PCP_MAP_SET, NULL},
 	{"flowmap", "set", SW_API_QOS_FLOW_MAP_SET, NULL},
 	{"dscpmap", "set", SW_API_QOS_DSCP_MAP_SET, NULL},
@@ -1094,7 +1094,7 @@ struct sub_cmd_des_t g_ip_des[] =
 struct sub_cmd_des_t g_flow_des[] =
 {
 	{"status", "set", SW_API_FLOW_STATUS_SET, NULL},
-	{"age", "set", SW_API_FLOW_AGE_TIMER_SET, NULL},
+	{"agetime", "set", SW_API_FLOW_AGE_TIMER_SET, NULL},
 	{"mgmt", "set", SW_API_FLOW_CTRL_SET, NULL},
 	{"entry", "add", SW_API_FLOW_ENTRY_ADD, NULL},
 	{"entry", "set", SW_API_FLOW_ENTRY_ADD, NULL},
@@ -1222,9 +1222,9 @@ struct sub_cmd_des_t g_qm_des[] =
     {"acctrl", "set", SW_API_AC_CTRL_SET, NULL},
     {"acprebuffer", "set", SW_API_AC_PRE_BUFFER_SET, NULL},
     {"acqgroup", "set", SW_API_QUEUE_GROUP_SET, NULL},
-    {"acsthresh", "set", SW_API_STATIC_THRESH_SET, NULL},
-    {"acdthresh", "set", SW_API_DYNAMIC_THRESH_SET, NULL},
-    {"acgbuff", "set", SW_API_GOURP_BUFFER_SET, NULL},
+    {"acstaticthresh", "set", SW_API_STATIC_THRESH_SET, NULL},
+    {"acdynamicthresh", "set", SW_API_DYNAMIC_THRESH_SET, NULL},
+    {"acgroupbuff", "set", SW_API_GOURP_BUFFER_SET, NULL},
     {"cntctrl", "set", SW_API_QUEUE_CNT_CTRL_SET, NULL},
     {"cnt", "cleanup", SW_API_QUEUE_CNT_CLEANUP, NULL},
     {"cnt", "set", SW_API_QUEUE_CNT_CLEANUP, NULL},
@@ -1260,7 +1260,16 @@ struct sub_cmd_des_t g_servcode_des[] =
 };
 #endif
 
-/*Servcode*/
+/*rss hash*/
+#ifdef IN_RSS_HASH
+struct sub_cmd_des_t g_rss_hash_des[] =
+{
+    {"config", "set", SW_API_RSS_HASH_CONFIG_SET, NULL},
+    {NULL, NULL, (int)NULL, NULL},/*end of desc*/
+};
+#endif
+
+/*Ctrlpkt*/
 #ifdef IN_CTRLPKT
 struct sub_cmd_des_t g_ctrlpkt_des[] =
 {
@@ -1457,6 +1466,12 @@ struct cmd_des_t gcmd_des[] =
 #ifdef IN_SERVCODE
     {
         "servcode", g_servcode_des,
+    },
+#endif
+
+#ifdef IN_RSS_HASH
+    {
+        "rsshash", g_rss_hash_des,
     },
 #endif
 
