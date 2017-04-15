@@ -137,6 +137,10 @@ ifeq (TRUE, $(IN_SERVCODE))
   MODULE_CFLAG += -DIN_SERVCODE
 endif
 
+ifeq (TRUE, $(IN_RSS_HASH))
+  MODULE_CFLAG += -DIN_RSS_HASH
+endif
+
 ifeq (TRUE, $(IN_MACBLOCK))
   MODULE_CFLAG += -DIN_MACBLOCK
 endif
@@ -264,14 +268,16 @@ endif
 ifeq (KSLIB, $(MODULE_TYPE))
 
   MODULE_INC += -I$(PRJ_PATH)/include/shell_lib
+  ifndef TARGET_NAME
+	TARGET_NAME=arm-openwrt-linux-$(TARGET_SUFFIX)
+  endif
 
   ifeq (3_18, $(OS_VER))
 		MODULE_CFLAG += -DKVER34
 		MODULE_CFLAG += -DKVER32
 	    MODULE_CFLAG += -DLNX26_22
 	    MODULE_INC += -I$(SYS_PATH) \
-	          -I$(TOOL_PATH)/../lib/gcc/arm-openwrt-linux-uclibcgnueabi/4.8.3/include/ \
-		  -I$(TOOL_PATH)/../lib/gcc/arm-openwrt-linux-uclibcgnueabi/5.2.0/include/ \
+                  -I$(TOOL_PATH)/../lib/gcc/$(TARGET_NAME)/$(GCC_VERSION)/include/ \
 	          -I$(SYS_PATH)/include \
               -I$(SYS_PATH)/source/include \
               -I$(SYS_PATH)/source/arch/arm/mach-msm/include \
@@ -294,7 +300,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
             MODULE_CFLAG += -DLNX26_22
 	    ifeq ($(ARCH), arm64)
             MODULE_INC += -I$(SYS_PATH) \
-                  -I$(TOOL_PATH)/../lib/gcc/arm-openwrt-linux-$(TARGET_SUFFIX)/$(GCC_VERSION)/include/ \
+                  -I$(TOOL_PATH)/../lib/gcc/$(TARGET_NAME)/$(GCC_VERSION)/include/ \
                   -I$(SYS_PATH)/include \
               -I$(SYS_PATH)/source/include \
 	      -I$(SYS_PATH)/source/arch/arm64/mach-msm/include \
@@ -310,7 +316,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
 	      -include $(SYS_PATH)/include/linux/kconfig.h
 	    else ifeq ($(ARCH), arm)
 	    MODULE_INC += -I$(SYS_PATH) \
-              -I$(TOOL_PATH)/../lib/gcc/arm-openwrt-linux-$(TARGET_SUFFIX)/$(GCC_VERSION)/include/ \
+              -I$(TOOL_PATH)/../lib/gcc/$(TARGET_NAME)/$(GCC_VERSION)/include/ \
               -I$(SYS_PATH)/include \
               -I$(SYS_PATH)/source/include \
               -I$(SYS_PATH)/source/arch/arm/mach-msm/include \
@@ -326,7 +332,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
 	          -include $(SYS_PATH)/include/linux/kconfig.h
             else
             MODULE_INC += -I$(SYS_PATH) \
-	      -I$(TOOL_PATH)/../lib/gcc/mips-openwrt-linux-$(TARGET_SUFFIX)/$(GCC_VERSION)/include/ \
+              -I$(TOOL_PATH)/../lib/gcc/$(TARGET_NAME)/$(GCC_VERSION)/include/ \
               -I$(SYS_PATH)/include \
 	      -I$(SYS_PATH)/source/include \
               -I$(SYS_PATH)/source/arch/mips/mach-msm/include \
@@ -359,8 +365,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
 		MODULE_CFLAG += -DKVER32
 	    MODULE_CFLAG += -DLNX26_22
 	    MODULE_INC += -I$(SYS_PATH) \
-	          -I$(TOOL_PATH)/../lib/gcc/arm-openwrt-linux-uclibcgnueabi/4.8.3/include/ \
-		  -I$(TOOL_PATH)/../lib/gcc/arm-openwrt-linux-uclibcgnueabi/5.2.0/include/ \
+                  -I$(TOOL_PATH)/../lib/gcc/$(TARGET_NAME)/$(GCC_VERSION)/include/ \
 		  -I$(TOOL_PATH)/../../lib/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/5.3.0/include/ \
 	          -I$(SYS_PATH)/include \
               -I$(SYS_PATH)/source/ \

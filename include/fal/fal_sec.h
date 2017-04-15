@@ -188,16 +188,16 @@ extern "C" {
 	typedef struct {
 		fal_fwd_cmd_t cmd; /* action for the exception */
 		a_bool_t deacclr_en; /* 0 for disable and 1 for disable */
-		a_bool_t l3_only_en; /* 0 for disable and 1 for disable */
-		a_bool_t l2_only_en; /* 0 for disable and 1 for disable */
-		a_bool_t l3_flow_en; /* 0 for disable and 1 for disable */
-		a_bool_t l2_flow_en; /* 0 for disable and 1 for disable */
+		a_bool_t l3route_only_en; /*host/network route 0: disable and 1: enable*/
+		a_bool_t l2fwd_only_en; /*l2 forward 0: disable and 1: enable*/
+		a_bool_t l3flow_en; /* 0 for disable and 1 for disable */
+		a_bool_t l2flow_en; /* 0 for disable and 1 for disable */
 		a_bool_t multicast_en; /* 0 for disable and 1 for disable */
 	} fal_l3_excep_ctrl_t;
 
 	typedef struct {
-		a_uint8_t small_ttl; /* small ttl value checking */
-		a_uint8_t small_hop_limit; /*small hoplimit value for check*/
+		a_uint8_t small_ip4ttl; /* small ttl value checking */
+		a_uint8_t small_ip6hoplimit; /*small hoplimit value for check*/
 	} fal_l3_excep_parser_ctrl;
 
 #define TCP_FLAGS_MAX	8
