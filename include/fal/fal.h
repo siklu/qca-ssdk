@@ -49,6 +49,7 @@ extern "C" {
 #include "fal_multi.h"
 #include "fal_ctrlpkt.h"
 #include "fal_servcode.h"
+#include "fal_rss_hash.h"
 #include "fal_vsi.h"
 #include "fal_pppoe.h"
 #include "fal_bm.h"

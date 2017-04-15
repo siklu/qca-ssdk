@@ -33,8 +33,8 @@ adpt_hppe_sec_l3_excep_parser_ctrl_set(a_uint32_t dev_id, fal_l3_excep_parser_ct
 
 	memset(&l3_exception_parsing_ctrl, 0, sizeof(l3_exception_parsing_ctrl));
 
-	l3_exception_parsing_ctrl.bf.small_ttl = ctrl->small_ttl;
-	l3_exception_parsing_ctrl.bf.small_hop_limit = ctrl->small_hop_limit;
+	l3_exception_parsing_ctrl.bf.small_ttl = ctrl->small_ip4ttl;
+	l3_exception_parsing_ctrl.bf.small_hop_limit = ctrl->small_ip6hoplimit;
 	
 	return hppe_l3_exception_parsing_ctrl_reg_set(dev_id, &l3_exception_parsing_ctrl);
 }
@@ -62,10 +62,10 @@ adpt_hppe_sec_l3_excep_ctrl_get(a_uint32_t dev_id, a_uint32_t excep_type, fal_l3
 
 	ctrl->cmd = l3_exception_cmd.bf.l3_excep_cmd;
 	ctrl->deacclr_en = l3_exception_cmd.bf.de_acce;
-	ctrl->l3_only_en = l3_only_ctrl.bf.excep_en;
-	ctrl->l2_only_en = l2_only_ctrl.bf.excep_en;
-	ctrl->l3_flow_en = l3_flow_ctrl.bf.excep_en;
-	ctrl->l2_flow_en = l2_flow_ctrl.bf.excep_en;
+	ctrl->l3route_only_en = l3_only_ctrl.bf.excep_en;
+	ctrl->l2fwd_only_en = l2_only_ctrl.bf.excep_en;
+	ctrl->l3flow_en = l3_flow_ctrl.bf.excep_en;
+	ctrl->l2flow_en = l2_flow_ctrl.bf.excep_en;
 	ctrl->multicast_en = multicast_ctrl.bf.excep_en;
 
 	return SW_OK;
@@ -84,8 +84,8 @@ adpt_hppe_sec_l3_excep_parser_ctrl_get(a_uint32_t dev_id, fal_l3_excep_parser_ct
 	if( rv != SW_OK )
 		return rv;
 
-	ctrl->small_ttl = l3_exception_parsing_ctrl.bf.small_ttl;
-	ctrl->small_hop_limit = l3_exception_parsing_ctrl.bf.small_hop_limit;
+	ctrl->small_ip4ttl = l3_exception_parsing_ctrl.bf.small_ttl;
+	ctrl->small_ip6hoplimit = l3_exception_parsing_ctrl.bf.small_hop_limit;
 
 	return SW_OK;
 }
@@ -142,10 +142,10 @@ adpt_hppe_sec_l3_excep_ctrl_set(a_uint32_t dev_id, a_uint32_t excep_type, fal_l3
 
 	l3_exception_cmd.bf.l3_excep_cmd= ctrl->cmd;
 	l3_exception_cmd.bf.de_acce= ctrl->deacclr_en;
-	l3_only_ctrl.bf.excep_en = ctrl->l3_only_en;
-	l2_only_ctrl.bf.excep_en = ctrl->l2_only_en;
-	l3_flow_ctrl.bf.excep_en = ctrl->l3_flow_en;
-	l2_flow_ctrl.bf.excep_en = ctrl->l2_flow_en;
+	l3_only_ctrl.bf.excep_en = ctrl->l3route_only_en;
+	l2_only_ctrl.bf.excep_en = ctrl->l2fwd_only_en;
+	l3_flow_ctrl.bf.excep_en = ctrl->l3flow_en;
+	l2_flow_ctrl.bf.excep_en = ctrl->l2flow_en;
 	multicast_ctrl.bf.excep_en = ctrl->multicast_en;
 
 	hppe_l3_exception_cmd_set(dev_id, excep_type, &l3_exception_cmd);

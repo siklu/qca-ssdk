@@ -369,6 +369,14 @@ _fal_qos_port_mode_pri_set(a_uint32_t dev_id, fal_port_t port_id,
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_qos_port_mode_pri_set)
+            return SW_NOT_SUPPORTED;
+        rv = p_adpt_api->adpt_qos_port_mode_pri_set(dev_id, port_id, mode, pri);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
@@ -386,6 +394,14 @@ _fal_qos_port_mode_pri_get(a_uint32_t dev_id, fal_port_t port_id,
 {
     sw_error_t rv;
     hsl_api_t *p_api;
+    adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_qos_port_mode_pri_get)
+            return SW_NOT_SUPPORTED;
+        rv = p_adpt_api->adpt_qos_port_mode_pri_get(dev_id, port_id, mode, pri);
+        return rv;
+    }
 
     SW_RTN_ON_NULL(p_api = hsl_api_ptr_get(dev_id));
 
