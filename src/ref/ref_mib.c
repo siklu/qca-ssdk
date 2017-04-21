@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -55,7 +55,7 @@ _qca_ar8327_sw_capture_port_counter(struct switch_dev *dev, int port)
     struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 
     memset(&mib_Info, 0, sizeof(mib_Info));
-    fal_get_mib_info(0, port, &mib_Info);
+    fal_get_mib_info(priv->device_id, port, &mib_Info);
     pos = port * QCA_MIB_ITEM_NUMBER;
     priv->mib_counters[pos++] += mib_Info.RxBroad;
     priv->mib_counters[pos++] += mib_Info.RxPause;
@@ -113,7 +113,7 @@ _qca_ar8327_sw_capture_port_rx_counter(struct switch_dev *dev, int port)
     struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 
     memset(&mib_Info, 0, sizeof(fal_mib_info_t));
-    fal_get_rx_mib_info(0, port, &mib_Info);
+    fal_get_rx_mib_info(priv->device_id, port, &mib_Info);
     pos = port * QCA_MIB_ITEM_NUMBER;
     priv->mib_counters[pos++] += mib_Info.RxBroad;
     priv->mib_counters[pos++] += mib_Info.RxPause;
@@ -151,7 +151,7 @@ _qca_ar8327_sw_capture_port_tx_counter(struct switch_dev *dev, int port)
     struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 
     memset(&mib_Info, 0, sizeof(fal_mib_info_t));
-    fal_get_tx_mib_info(0, port, &mib_Info);
+    fal_get_tx_mib_info(priv->device_id, port, &mib_Info);
     pos = port * QCA_MIB_ITEM_NUMBER + 19;
 
     priv->mib_counters[pos++] += mib_Info.TxBroad;
@@ -198,8 +198,8 @@ qca_ar8327_sw_set_reset_mibs(struct switch_dev *dev,
     memset(priv->mib_counters, '\0', len);
     for (i = 0; i < dev->ports; i++)
     {
-        fal_get_mib_info(0, i, &mib_Info);
-        fal_mib_port_flush_counters(0, i);
+        fal_get_mib_info(priv->device_id, i, &mib_Info);
+        fal_mib_port_flush_counters(priv->device_id, i);
     }
     mutex_unlock(&priv->mib_lock);
 
@@ -220,8 +220,8 @@ qca_ar8327_sw_set_port_reset_mib(struct switch_dev *dev,
 
     memset(priv->mib_counters + (val->port_vlan * QCA_MIB_ITEM_NUMBER), '\0', len);
 
-    fal_get_mib_info(0, val->port_vlan, &mib_Info);
-    fal_mib_port_flush_counters(0, val->port_vlan);
+    fal_get_mib_info(priv->device_id, val->port_vlan, &mib_Info);
+    fal_mib_port_flush_counters(priv->device_id, val->port_vlan);
     mutex_unlock(&priv->mib_lock);
 
     return 0;

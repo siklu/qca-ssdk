@@ -233,7 +233,7 @@ typedef struct
 typedef struct phy_identification {
 	a_uint16_t phy_addr;
 	a_uint32_t phy_id;
-	int (*init)(void);
+	int (*init)(a_uint32_t dev_id);
 } phy_identification_t;
 
 #if defined ATHENA

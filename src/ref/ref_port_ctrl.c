@@ -69,31 +69,31 @@ qca_ar8327_sw_get_port_link(struct switch_dev *dev, int port,
 	a_uint32_t ret;
 
 	mutex_lock(&priv->reg_mutex);
-	ret = fal_port_link_status_get(0, port, &status);
+	ret = fal_port_link_status_get(priv->device_id, port, &status);
 	if (ret){
 		mutex_unlock(&priv->reg_mutex);
 		return -1;
 	}
 
-	ret = fal_port_speed_get(0, port, &speed);
+	ret = fal_port_speed_get(priv->device_id, port, &speed);
 	if (ret){
 		mutex_unlock(&priv->reg_mutex);
 		return -1;
 	}
 
-	ret = fal_port_duplex_get(0, port, &duplex);
+	ret = fal_port_duplex_get(priv->device_id, port, &duplex);
 	if (ret){
 		mutex_unlock(&priv->reg_mutex);
 		return -1;
 	}
 
-	ret = fal_port_rxfc_status_get(0, port, &rx_fc);
+	ret = fal_port_rxfc_status_get(priv->device_id, port, &rx_fc);
 	if (ret){
 		mutex_unlock(&priv->reg_mutex);
 		return -1;
 	}
 
-	ret = fal_port_txfc_status_get(0, port, &tx_fc);
+	ret = fal_port_txfc_status_get(priv->device_id, port, &tx_fc);
 	if (ret){
 		mutex_unlock(&priv->reg_mutex);
 		return -1;
@@ -137,13 +137,13 @@ static int qca_switch_get_qm_status(struct switch_dev *dev, a_uint32_t port_id, 
 	{
 		if (port_id < 4) {
 			reg = 0x1D;
-			qca_switch_reg_write(0, 0x820, (a_uint8_t *)&reg, 4);
-			qca_switch_reg_read(0, 0x824, (a_uint8_t *)&qm_val, 4);
+			qca_switch_reg_write(priv->device_id, 0x820, (a_uint8_t *)&reg, 4);
+			qca_switch_reg_read(priv->device_id, 0x824, (a_uint8_t *)&qm_val, 4);
 			*qm_buffer_err = (qm_val >> (port_id * 8)) & 0xFF;
 		} else {
 			reg = 0x1E;
-			qca_switch_reg_write(0, 0x820, (a_uint8_t *)&reg, 4);
-			qca_switch_reg_read(0, 0x824, (a_uint8_t *)&qm_val, 4);
+			qca_switch_reg_write(priv->device_id, 0x820, (a_uint8_t *)&reg, 4);
+			qca_switch_reg_read(priv->device_id, 0x824, (a_uint8_t *)&qm_val, 4);
 			*qm_buffer_err = (qm_val >> ((port_id-4) * 8)) & 0xFF;
 		}
 	}
@@ -176,10 +176,10 @@ static int qca_switch_force_mac_1000M_full(struct switch_dev *dev, a_uint32_t po
 	if (priv->version == 0x14)
 	{
 		reg = AR8327_REG_PORT_STATUS(port_id);
-		qca_switch_reg_read(0, reg, (a_uint8_t *)&value, 4);
+		qca_switch_reg_read(priv->device_id, reg, (a_uint8_t *)&value, 4);
 		value &= ~(BIT(6) | BITS(0,2));
 		value |= AR8327_PORT_SPEED_1000M | BIT(6);
-		qca_switch_reg_write(0, reg, (a_uint8_t *)&value, 4);
+		qca_switch_reg_write(priv->device_id, reg, (a_uint8_t *)&value, 4);
 	}
 	if (priv->version == QCA_VER_AR8337 ||
 		priv->version == QCA_VER_AR8327)
@@ -207,10 +207,10 @@ static int qca_switch_force_mac_status(struct switch_dev *dev, a_uint32_t port_i
 		reset_control_assert(ess_mac_clock_disable[port_id -1]);
 		udelay(10);
 		reg = AR8327_REG_PORT_STATUS(port_id);
-		qca_switch_reg_read(0,reg,(a_uint8_t*)&value,4);
+		qca_switch_reg_read(priv->device_id,reg,(a_uint8_t*)&value,4);
 		value &= ~(BIT(6) | BITS(0,2));
 		value |= speed | (duplex?BIT(6):0);
-		qca_switch_reg_write(0,reg,(a_uint8_t*)&value,4);
+		qca_switch_reg_write(priv->device_id,reg,(a_uint8_t*)&value,4);
 		/*enable mac clock*/
 		reset_control_deassert(ess_mac_clock_disable[port_id -1]);
 #endif
@@ -258,7 +258,7 @@ qca_switch_get_mac_link(struct switch_dev *dev, a_uint32_t port_id, a_uint32_t *
 	if (priv->version == 0x14)
 	{
 		reg = AR8327_REG_PORT_STATUS(port_id);
-		qca_switch_reg_read(0,reg,(a_uint8_t*)&value,4);
+		qca_switch_reg_read(priv->device_id,reg,(a_uint8_t*)&value,4);
 		*link = (value>>8)&0x1;
 	}
 	if (priv->version == QCA_VER_AR8337 ||
@@ -281,29 +281,11 @@ qca_switch_get_mac_link(struct switch_dev *dev, a_uint32_t port_id, a_uint32_t *
 #define QM_NOT_EMPTY  1
 #define QM_EMPTY  0
 
-static a_uint32_t port_link_down[AR8327_NUM_PORTS] = {0, 0 ,0 ,0 , 0, 0, 0};
-
-static a_uint32_t port_link_up[AR8327_NUM_PORTS] = {0, 0 ,0 ,0 , 0, 0, 0};
-
-static a_uint32_t port_old_link[AR8327_NUM_PORTS] = {0, 0 ,0 ,0 , 0, 0, 0};
-static a_uint32_t port_old_speed[AR8327_NUM_PORTS] = {AR8327_PORT_SPEED_10M,
-	AR8327_PORT_SPEED_10M,
-	AR8327_PORT_SPEED_10M,
-	AR8327_PORT_SPEED_10M,
-	AR8327_PORT_SPEED_10M,
-	AR8327_PORT_SPEED_10M,
-	AR8327_PORT_SPEED_10M};
-
-static a_uint32_t port_old_duplex[AR8327_NUM_PORTS] = {0, 0 ,0 ,0 , 0, 0, 0};
-static a_uint32_t port_old_phy_status[AR8327_NUM_PORTS] = {0, 0 ,0 ,0 , 0, 0, 0};
-
-
-static a_uint32_t port_qm_buf[AR8327_NUM_PORTS] = {QM_EMPTY, QM_EMPTY ,QM_EMPTY ,QM_EMPTY , QM_EMPTY, QM_EMPTY, QM_EMPTY};
 
 static a_uint32_t phy_current_speed = 2;
 static a_uint32_t phy_current_duplex = 1;
 
-int qca_ar8327_sw_enable_vlan0(a_bool_t enable, a_uint8_t portmap);
+int qca_ar8327_sw_enable_vlan0(a_uint32_t dev_id, a_bool_t enable, a_uint8_t portmap);
 int qca_ar8327_vlan_recovery(struct switch_dev *dev)
 {
 	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
@@ -318,7 +300,7 @@ int qca_ar8327_vlan_recovery(struct switch_dev *dev)
 	if (!priv->init) {
 		/*Handle VLAN 0 entry*/
 		if (priv->vlan_id[0] == 0 && priv->vlan_table[0] == 0) {
-			qca_ar8327_sw_enable_vlan0(A_FALSE, 0);
+			qca_ar8327_sw_enable_vlan0(priv->device_id,A_FALSE, 0);
 		}
 
 		/* calculate the port destination masks and load vlans
@@ -355,7 +337,7 @@ int qca_ar8327_vlan_recovery(struct switch_dev *dev)
 
 		/*Hanlde VLAN 0 entry*/
 		if (priv->vlan_id[0] == 0 && priv->vlan_table[0]) {
-			qca_ar8327_sw_enable_vlan0(A_TRUE, priv->vlan_table[0]);
+			qca_ar8327_sw_enable_vlan0(priv->device_id,A_TRUE, priv->vlan_table[0]);
 		}
 
 	} else {
@@ -400,10 +382,10 @@ int qca_ar8327_vlan_recovery(struct switch_dev *dev)
 			egressMode = FAL_EG_UNTOUCHED;
 		}
 
-		fal_port_1qmode_set(0, i, ingressMode);
-		fal_port_egvlanmode_set(0, i, egressMode);
-		fal_port_default_cvid_set(0, i, pvid);
-		fal_portvlan_member_update(0, i, portmask[i]);
+		fal_port_1qmode_set(priv->device_id, i, ingressMode);
+		fal_port_egvlanmode_set(priv->device_id, i, egressMode);
+		fal_port_default_cvid_set(priv->device_id, i, pvid);
+		fal_portvlan_member_update(priv->device_id, i, portmask[i]);
 	}
 
 	mutex_unlock(&priv->reg_mutex);
@@ -429,33 +411,33 @@ int qca_qm_error_check(struct qca_phy_priv *priv)
 	}
 	if(priv->version==0x14)
 	{
-		qca_switch_reg_read(0, 0x24, (a_uint8_t*)&value, 4);
+		qca_switch_reg_read(priv->device_id, 0x24, (a_uint8_t*)&value, 4);
 		qm_err_int = value & BIT(14);	// b14-QM_ERR_INT
 
 		if(qm_err_int)
 			return 1;
 		value = 0;
-		qca_switch_reg_write(0, 0x820, (a_uint8_t*)&value, 4);
-		qca_switch_reg_read(0, 0x824, (a_uint8_t*)&value, 4);
+		qca_switch_reg_write(priv->device_id, 0x820, (a_uint8_t*)&value, 4);
+		qca_switch_reg_read(priv->device_id, 0x824, (a_uint8_t*)&value, 4);
 	}
 	return value;
 }
 
-void qca_ar8327_phy_linkdown(void);
+void qca_ar8327_phy_linkdown(a_uint32_t dev_id);
 int qca_ar8327_hw_init(struct qca_phy_priv *priv);
 
 int qca_qm_err_recovery(struct qca_phy_priv *priv)
 {
-	memset(port_link_down, 0, sizeof(port_link_down));
-	memset(port_link_up, 0, sizeof(port_link_up));
-	memset(port_old_link, 0, sizeof(port_old_link));
-	memset(port_old_speed, 0, sizeof(port_old_speed));
-	memset(port_old_duplex, 0, sizeof(port_old_duplex));
-	memset(port_old_phy_status, 0, sizeof(port_old_phy_status));
-	memset(port_qm_buf, 0, sizeof(port_qm_buf));
+	memset(priv->port_link_down, 0, sizeof(priv->port_link_down));
+	memset(priv->port_link_up, 0, sizeof(priv->port_link_up));
+	memset(priv->port_old_link, 0, sizeof(priv->port_old_link));
+	memset(priv->port_old_speed, 0, sizeof(priv->port_old_speed));
+	memset(priv->port_old_duplex, 0, sizeof(priv->port_old_duplex));
+	memset(priv->port_old_phy_status, 0, sizeof(priv->port_old_phy_status));
+	memset(priv->port_qm_buf, 0, sizeof(priv->port_qm_buf));
 
 	/* in soft reset recovery procedure */
-	qca_ar8327_phy_linkdown();
+	qca_ar8327_phy_linkdown(priv->device_id);
 
 	qca_ar8327_hw_init(priv);
 
@@ -488,7 +470,7 @@ qca_ar8327_sw_mac_polling_port_valid(struct switch_dev *dev, a_uint32_t port_id)
 	return A_TRUE;
 }
 void
-qca_phy_status_get(a_uint32_t port_id, a_uint32_t *speed_status, a_uint32_t *link_status, a_uint32_t *duplex_status)
+qca_phy_status_get(a_uint32_t dev_id, a_uint32_t port_id, a_uint32_t *speed_status, a_uint32_t *link_status, a_uint32_t *duplex_status)
 {
 	a_uint16_t port_phy_status;
 	a_uint32_t phy_addr;
@@ -497,7 +479,7 @@ qca_phy_status_get(a_uint32_t port_id, a_uint32_t *speed_status, a_uint32_t *lin
 	if (qca_ar8327_sw_rgmii_mode_valid(port_id) == A_TRUE)
 		phy_addr = 4;
 
-	qca_ar8327_phy_read(0, phy_addr, F1_PHY_SPEC_STATUS, &port_phy_status);
+	qca_ar8327_phy_read(dev_id, phy_addr, F1_PHY_SPEC_STATUS, &port_phy_status);
 	*speed_status = (a_uint32_t)((port_phy_status >> 14) & 0x03);
 	*link_status = (a_uint32_t)((port_phy_status & BIT(10)) >> 10);
 	*duplex_status = (a_uint32_t)((port_phy_status & BIT(13)) >> 13);
@@ -571,33 +553,33 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 			qca_switch_get_mac_link(dev, i, &link);
 		else
 		{
-			qca_phy_status_get(i, &speed, &link, &duplex);
+			qca_phy_status_get(priv->device_id,i, &speed, &link, &duplex);
 		}
-		if (link != port_old_link[i]) {
+		if (link != priv->port_old_link[i]) {
 			if (qca_ar8327_sw_rgmii_mode_valid(i) == A_FALSE)
 			{
-				qca_phy_status_get(i, &speed, &link, &duplex);
+				qca_phy_status_get(priv->device_id,i, &speed, &link, &duplex);
 			}
 			++link_cnt[i];
 			/* Up --> Down */
-			if ((port_old_link[i] == PORT_LINK_UP) && (link == PORT_LINK_DOWN)) {
+			if ((priv->port_old_link[i] == PORT_LINK_UP) && (link == PORT_LINK_DOWN)) {
 
 				if (qca_ar8327_sw_rgmii_mode_valid(i) == A_TRUE)
 				{
-					fal_port_rxmac_status_set(0, i, A_FALSE);
-					fal_port_txmac_status_set(0, i, A_FALSE);
+					fal_port_rxmac_status_set(priv->device_id, i, A_FALSE);
+					fal_port_txmac_status_set(priv->device_id, i, A_FALSE);
 				}
 				else
 				{
 					// a_uint32_t pstatus = 0;
-					fal_port_link_forcemode_set(0, i, A_TRUE);
+					fal_port_link_forcemode_set(priv->device_id, i, A_TRUE);
 					// below only for dess debug print
 					// qca_switch_reg_read(0, AR8327_REG_PORT_STATUS(i), (a_uint8_t *)&pstatus, 4);
 					// printk("%s, %d, port_id %d link down pstatus 0x%x\n",__FUNCTION__,__LINE__,i, pstatus);
 				}
-				port_link_down[i]=0;
+				priv->port_link_down[i]=0;
 				ssdk_port_link_notify(i, 0, 0, 0);
-				fal_fdb_del_by_port(0, i, 0);/*flush all dynamic fdb of this port*/
+				fal_fdb_del_by_port(priv->device_id, i, 0);/*flush all dynamic fdb of this port*/
 				if(priv->version != 0x14){
 					/* Check queue buffer */
 					a_uint16_t value = 0;
@@ -605,26 +587,26 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 					qca_switch_get_qm_status(dev, i, &qm_buffer_err);
 
 					if (qm_buffer_err) {
-						port_qm_buf[i] = QM_NOT_EMPTY;
+						priv->port_qm_buf[i] = QM_NOT_EMPTY;
 					}
 					else {
-						port_qm_buf[i] = QM_EMPTY;
+						priv->port_qm_buf[i] = QM_EMPTY;
 
 						/* Force MAC 1000M Full before auto negotiation */
 						qca_switch_force_mac_1000M_full(dev, i);
 						mdelay(10);
 						// printk("%s, %d, port %d link down\n",__FUNCTION__,__LINE__,i);
 					}
-					qca_ar8327_phy_dbg_read(0, i-1, 0, &value);
+					qca_ar8327_phy_dbg_read(priv->device_id, i-1, 0, &value);
 					value &= (~(1<<12));
-					qca_ar8327_phy_dbg_write(0, i-1, 0, value);
+					qca_ar8327_phy_dbg_write(priv->device_id, i-1, 0, value);
 				}
 			}
 			/* Down --> Up */
-			else if ((port_old_link[i] == PORT_LINK_DOWN) && (link == PORT_LINK_UP)) {
+			else if ((priv->port_old_link[i] == PORT_LINK_DOWN) && (link == PORT_LINK_UP)) {
 
-				if (port_link_up[i] < 1) {
-					++port_link_up[i];
+				if (priv->port_link_up[i] < 1) {
+					++(priv->port_link_up[i]);
 					qca_switch_get_qm_status(dev, i, &qm_buffer_err);
 					if (qm_buffer_err) {
 						if(priv->version != 0x14)
@@ -634,16 +616,16 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 				}
 				else{
 					//a_uint32_t pstatus = 0;
-					port_link_up[i]=0;
+					priv->port_link_up[i]=0;
 					qca_switch_force_mac_status(dev, i, speed, duplex);
 					udelay(100);
 					if (qca_ar8327_sw_rgmii_mode_valid(i) == A_FALSE) {
-						fal_port_link_forcemode_set(0, i, A_FALSE);
+						fal_port_link_forcemode_set(priv->device_id, i, A_FALSE);
 					}
 					else
 					{
-						fal_port_rxmac_status_set(0, i, A_TRUE);
-						fal_port_txmac_status_set(0, i, A_TRUE);
+						fal_port_rxmac_status_set(priv->device_id, i, A_TRUE);
+						fal_port_txmac_status_set(priv->device_id, i, A_TRUE);
 					}
 					udelay(100);
 					//qca_switch_reg_read(0, AR8327_REG_PORT_STATUS(i), (a_uint8_t *)&pstatus, 4);
@@ -652,31 +634,31 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 					if((speed == 0x01) && (priv->version != 0x14))/*PHY is link up 100M*/
 					{
 						a_uint16_t value = 0;
-						qca_ar8327_phy_dbg_read(0, i-1, 0, &value);
+						qca_ar8327_phy_dbg_read(priv->device_id, i-1, 0, &value);
 						value |= (1<<12);
-						qca_ar8327_phy_dbg_write(0, i-1, 0, value);
+						qca_ar8327_phy_dbg_write(priv->device_id, i-1, 0, value);
 					}
 				}
 			}
-			if ((port_link_down[i] == 0)
-				&& (port_link_up[i] == 0)){
+			if ((priv->port_link_down[i] == 0)
+				&& (priv->port_link_up[i] == 0)){
 				/* Save the current status */
-				port_old_speed[i] = speed;
-				port_old_link[i] = link;
-				port_old_duplex[i] = duplex;
-				port_old_phy_status[i] = port_phy_status[i];
+				priv->port_old_speed[i] = speed;
+				priv->port_old_link[i] = link;
+				priv->port_old_duplex[i] = duplex;
+				priv->port_old_phy_status[i] = port_phy_status[i];
 			}
 		}
 
-		if (port_qm_buf[i] == QM_NOT_EMPTY) {
+		if (priv->port_qm_buf[i] == QM_NOT_EMPTY) {
 			/* Check QM */
 			qca_switch_get_qm_status(dev, i, &qm_buffer_err);
 			if (qm_buffer_err) {
-				port_qm_buf[i] = QM_NOT_EMPTY;
+				priv->port_qm_buf[i] = QM_NOT_EMPTY;
 				++qm_err_cnt[i];
 			}
 			else {
-				port_qm_buf[i] = QM_EMPTY;
+				priv->port_qm_buf[i] = QM_EMPTY;
 				qm_err_cnt[i] = 0;
 
 				/* Force MAC 1000M Full before auto negotiation */
@@ -693,6 +675,7 @@ dess_rgmii_sw_mac_polling_task(struct switch_dev *dev)
 	a_uint32_t mac_mode;
 	a_uint16_t phy_spec_status, phy_link_status;
 	a_uint32_t speed, duplex;
+	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 
 	mac_mode = ssdk_dt_global_get_mac_mode(0);
 
@@ -701,7 +684,7 @@ dess_rgmii_sw_mac_polling_task(struct switch_dev *dev)
 		||(mac_mode == PORT_WRAPPER_SGMII0_RGMII4)
 		||(mac_mode == PORT_WRAPPER_SGMII1_RGMII4)
 		||(mac_mode == PORT_WRAPPER_SGMII4_RGMII4)) {
-		qca_ar8327_phy_read(0, 4, 0x11, &phy_spec_status);
+		qca_ar8327_phy_read(priv->device_id, 4, 0x11, &phy_spec_status);
 		phy_link_status = (a_uint16_t)((phy_spec_status & BIT(10)) >> 10);
 		if (phy_link_status == 1) {
 			speed = (a_uint32_t)((phy_spec_status >> 14) & 0x03);

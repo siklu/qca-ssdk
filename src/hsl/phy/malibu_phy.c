@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2015-2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -2410,7 +2410,7 @@ malibu_phy_hw_init(void)
 }
 
 
-static int malibu_phy_probe(struct phy_device *pdev)
+static int malibu_phy_probe(a_uint32_t dev_id, struct phy_device *pdev)
 {
 	int ret;
 	hsl_phy_ops_t malibu_phy_api_ops = { 0 };
@@ -2467,7 +2467,7 @@ static int malibu_phy_probe(struct phy_device *pdev)
 	malibu_phy_api_ops.phy_counter_set = malibu_phy_set_counter;
 	malibu_phy_api_ops.phy_counter_get = malibu_phy_get_counter;
 	malibu_phy_api_ops.phy_counter_show = malibu_phy_show_counter;
-	ret = hsl_phy_api_ops_register(&malibu_phy_api_ops);
+	ret = hsl_phy_api_ops_register(dev_id, &malibu_phy_api_ops);
 
 	if (ret == 0)
 		printk("qca probe malibu phy driver succeeded!\n");
@@ -2479,39 +2479,17 @@ static int malibu_phy_probe(struct phy_device *pdev)
 	return ret;
 }
 
-static void malibu_phy_remove(struct phy_device *pdev)
-{
-
-	hsl_phy_ops_t malibu_phy_api_ops;
-
-	hsl_phy_api_ops_unregister(&malibu_phy_api_ops);
-
-}
 
 /******************************************************************************
 *
 * malibu_phy_init -
 *
 */
-a_bool_t malibu_phy_register(void)
+
+
+int malibu_phy_init(a_uint32_t dev_id)
 {
-
-	static struct phy_driver qca_malibu_phy_driver = {
-		.name = "QCA Malibu",
-		.phy_id = 0x004DD0B0,
-		.phy_id_mask = 0xffffffff,
-		.probe = malibu_phy_probe,
-		.remove = malibu_phy_remove,
-		.features = PHY_BASIC_FEATURES,
-		.driver = {.owner = THIS_MODULE},
-	};
-
-	return phy_driver_register(&qca_malibu_phy_driver);
-}
-
-int malibu_phy_init(void)
-{
-	phy_api_ops_init(0);
-	return malibu_phy_probe((struct phy_device *)NULL);
+	phy_api_ops_init(dev_id);
+	return malibu_phy_probe(dev_id, (struct phy_device *)NULL);
 }
 

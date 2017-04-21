@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2015, 2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -637,7 +637,7 @@ extern "C"
   malibu_phy_get_phy_id(a_uint32_t dev_id, a_uint32_t phy_id,
 			a_uint16_t * org_id, a_uint16_t * rev_id);
 
-  int malibu_phy_init(void);
+  int malibu_phy_init(a_uint32_t dev_id);
 
 #ifdef __cplusplus
 }

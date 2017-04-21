@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -213,12 +213,12 @@ hsl_port_prop_cleanup_by_dev(a_uint32_t dev_id)
 
 
 sw_error_t
-hsl_port_prop_init(void)
+hsl_port_prop_init(a_uint32_t dev_id)
 {
-    a_uint32_t i;
+    if (dev_id >= SW_MAX_NR_DEV)
+    	return SW_BAD_VALUE;
 
-    for (i = 0; i < SW_MAX_NR_DEV; i++)
-        p_port_info[i] = NULL;
+    p_port_info[dev_id] = NULL;
 
     return SW_OK;
 }

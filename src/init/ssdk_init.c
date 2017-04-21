@@ -19,6 +19,7 @@
 #include "fal.h"
 #include "hsl.h"
 #include "hsl_dev.h"
+#include "hsl_phy.h"
 #include "ssdk_init.h"
 #include <linux/kconfig.h>
 #include <linux/version.h>
@@ -289,22 +290,22 @@ qca_ar8327_phy_fixup(struct qca_phy_priv *priv, int phy)
 	switch (priv->revision) {
 	case 1:
 		/* 100m waveform */
-		priv->phy_dbg_write(0, phy, 0, 0x02ea);
+		priv->phy_dbg_write(priv->device_id, phy, 0, 0x02ea);
 		/* turn on giga clock */
-		priv->phy_dbg_write(0, phy, 0x3d, 0x68a0);
+		priv->phy_dbg_write(priv->device_id, phy, 0x3d, 0x68a0);
 		break;
 
 	case 2:
-		priv->phy_mmd_write(0, phy, 0x7, 0x3c);
-		priv->phy_mmd_write(0, phy, 0x4007, 0x0);
+		priv->phy_mmd_write(priv->device_id, phy, 0x7, 0x3c);
+		priv->phy_mmd_write(priv->device_id, phy, 0x4007, 0x0);
 		/* fallthrough */
 	case 4:
-		priv->phy_mmd_write(0, phy, 0x3, 0x800d);
-		priv->phy_mmd_write(0, phy, 0x4003, 0x803f);
+		priv->phy_mmd_write(priv->device_id, phy, 0x3, 0x800d);
+		priv->phy_mmd_write(priv->device_id, phy, 0x4003, 0x803f);
 
-		priv->phy_dbg_write(0, phy, 0x3d, 0x6860);
-		priv->phy_dbg_write(0, phy, 0x5, 0x2c46);
-		priv->phy_dbg_write(0, phy, 0x3c, 0x6000);
+		priv->phy_dbg_write(priv->device_id, phy, 0x3d, 0x6860);
+		priv->phy_dbg_write(priv->device_id, phy, 0x5, 0x2c46);
+		priv->phy_dbg_write(priv->device_id, phy, 0x3c, 0x6000);
 		break;
 	}
 }
@@ -482,42 +483,42 @@ qca_switch_init(a_uint32_t dev_id)
 	return SW_OK;
 }
 
-void qca_ar8327_phy_linkdown(void)
+void qca_ar8327_phy_linkdown(a_uint32_t dev_id)
 {
 	int i;
 	a_uint16_t phy_val;
 
 	for (i = 0; i < AR8327_NUM_PHYS; i++) {
-		qca_ar8327_phy_write(0, i, 0x0, 0x0800);	// phy powerdown
+		qca_ar8327_phy_write(dev_id, i, 0x0, 0x0800);	// phy powerdown
 
-		qca_ar8327_phy_dbg_read(0, i, 0x3d, &phy_val);
+		qca_ar8327_phy_dbg_read(dev_id, i, 0x3d, &phy_val);
 		phy_val &= ~0x0040;
-		qca_ar8327_phy_dbg_write(0, i, 0x3d, phy_val);
+		qca_ar8327_phy_dbg_write(dev_id, i, 0x3d, phy_val);
 
 		/*PHY will stop the tx clock for a while when link is down
 			1. en_anychange  debug port 0xb bit13 = 0  //speed up link down tx_clk
 			2. sel_rst_80us  debug port 0xb bit10 = 0  //speed up speed mode change to 2'b10 tx_clk
 		*/
-		qca_ar8327_phy_dbg_read(0, i, 0xb, &phy_val);
+		qca_ar8327_phy_dbg_read(dev_id, i, 0xb, &phy_val);
 		phy_val &= ~0x2400;
-		qca_ar8327_phy_dbg_write(0, i, 0xb, phy_val);
+		qca_ar8327_phy_dbg_write(dev_id, i, 0xb, phy_val);
 	}
 }
 
 void
-qca_mac_disable(void)
+qca_mac_disable(a_uint32_t device_id)
 {
 	hsl_api_t *p_api;
 
-	p_api = hsl_api_ptr_get (0);
+	p_api = hsl_api_ptr_get (device_id);
 	if(p_api
 		&& p_api->interface_mac_pad_set
 		&& p_api->interface_mac_sgmii_set)
 	{
-		p_api->interface_mac_pad_set(0,0,0);
-		p_api->interface_mac_pad_set(0,5,0);
-		p_api->interface_mac_pad_set(0,6,0);
-		p_api->interface_mac_sgmii_set(0,AR8327_REG_PAD_SGMII_CTRL_HW_INIT);
+		p_api->interface_mac_pad_set(device_id,0,0);
+		p_api->interface_mac_pad_set(device_id,5,0);
+		p_api->interface_mac_pad_set(device_id,6,0);
+		p_api->interface_mac_sgmii_set(device_id,AR8327_REG_PAD_SGMII_CTRL_HW_INIT);
 	}
 	else
 	{
@@ -565,16 +566,16 @@ qca_ar8327_phy_enable(struct qca_phy_priv *priv)
 			qca_ar8327_phy_fixup(priv, i);
 
 		/* start autoneg*/
-		priv->phy_write(0, i, MII_ADVERTISE, ADVERTISE_ALL |
+		priv->phy_write(priv->device_id, i, MII_ADVERTISE, ADVERTISE_ALL |
 						     ADVERTISE_PAUSE_CAP | ADVERTISE_PAUSE_ASYM);
 		//phy reg 0x9, b10,1 = Prefer multi-port device (master)
-		priv->phy_write(0, i, MII_CTRL1000, (0x0400|ADVERTISE_1000FULL));
+		priv->phy_write(priv->device_id, i, MII_CTRL1000, (0x0400|ADVERTISE_1000FULL));
 
-		priv->phy_write(0, i, MII_BMCR, BMCR_RESET | BMCR_ANENABLE);
+		priv->phy_write(priv->device_id, i, MII_BMCR, BMCR_RESET | BMCR_ANENABLE);
 
-		priv->phy_dbg_read(0, i, 0, &value);
+		priv->phy_dbg_read(priv->device_id, i, 0, &value);
 		value &= (~(1<<12));
-		priv->phy_dbg_write(0, i, 0, value);
+		priv->phy_dbg_write(priv->device_id, i, 0, value);
 
 		msleep(100);
 	}
@@ -613,8 +614,8 @@ int qca_ar8327_hw_init(struct qca_phy_priv *priv)
 		return -EINVAL;
 
 	/*Before switch software reset, disable PHY and clear  MAC PAD*/
-	qca_ar8327_phy_linkdown();
-	qca_mac_disable();
+	qca_ar8327_phy_linkdown(priv->device_id);
+	qca_mac_disable(priv->device_id);
 	msleep(1000);
 
 	/*First software reset S17 chip*/
@@ -638,8 +639,8 @@ int qca_ar8327_hw_init(struct qca_phy_priv *priv)
 		priv->mii_write(reg, value);
 	}
 
-	qca_switch_init(0);
-	qca_port_isolate(0);
+	qca_switch_init(priv->device_id);
+	qca_port_isolate(priv->device_id);
 	qca_ar8327_phy_enable(priv);
 
 	return 0;
@@ -938,8 +939,8 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 	}
 
 	/*Before switch software reset, disable PHY and clear MAC PAD*/
-	qca_ar8327_phy_linkdown();
-	qca_mac_disable();
+	qca_ar8327_phy_linkdown(priv->device_id);
+	qca_mac_disable(priv->device_id);
 	udelay(10);
 
 	qca_ar8327_set_plat_data_cfg(priv, plat_data);
@@ -1507,20 +1508,20 @@ static struct phy_driver qca_phy_driver = {
 	.driver		= { .owner = THIS_MODULE },
 };
 
-static int ssdk_phy_id_get(ssdk_init_cfg *cfg)
+static int ssdk_phy_id_get(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 {
 	a_uint32_t phy_id = 0;
 	a_uint16_t org_id = 0, rev_id = 0;
 
-	cfg->reg_func.mdio_get(0, 0, 2, &org_id);
-	cfg->reg_func.mdio_get(0, 0, 3, &rev_id);
+	cfg->reg_func.mdio_get(dev_id, 0, 2, &org_id);
+	cfg->reg_func.mdio_get(dev_id, 0, 3, &rev_id);
 	phy_id = (org_id<<16) | rev_id;
 	cfg->phy_id = phy_id;
 	printk("PHY ID is 0x%x\n",cfg->phy_id);
 
 	return SW_OK;
 }
-int ssdk_phy_init(ssdk_init_cfg *cfg)
+int ssdk_phy_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 {
 
 	int size = sizeof(phy_array)/sizeof(phy_identification_t);
@@ -1529,7 +1530,7 @@ int ssdk_phy_init(ssdk_init_cfg *cfg)
 	for(i=0;i<size;i++)
 	{
 		if(phy_array[i].phy_id == cfg->phy_id)
-			return phy_array[i].init();
+			return phy_array[i].init(dev_id);
 	}
 
 	return SW_FAIL;
@@ -1907,7 +1908,7 @@ ssdk_init(a_uint32_t dev_id, ssdk_init_cfg * cfg)
 		printk("ssdk fal init failed: %d. \r\n", rv);
 
 	if (cfg->chip_type != CHIP_HPPE) {
-		rv = ssdk_phy_init(cfg);
+		rv = ssdk_phy_init(dev_id, cfg);
 		if (rv != SW_OK)
 			printk("ssdk phy init failed: %d. \r\n", rv);
 	}
@@ -4099,7 +4100,7 @@ static int __init regi_init(void)
 		goto out;
 
 	if(cfg.chip_type != CHIP_HPPE)
-		ssdk_phy_id_get(&cfg);
+		ssdk_phy_id_get(0, &cfg);
 
 
 	memset(&chip_spec_cfg, 0, sizeof(garuda_init_spec_cfg));

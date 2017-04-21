@@ -125,6 +125,10 @@ static struct mutex switch_mdio_lock;
 static int switch_chip_id = ISIS_CHIP_ID;
 static int switch_chip_reg = ISIS_CHIP_REG;
 
+static int ssdk_dev_id = 0;
+
+a_uint32_t ssdk_log_level = SSDK_LOG_LEVEL_DEFAULT;
+
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 struct ag71xx_mdio {
 	struct mii_bus		*mii_bus;
@@ -622,6 +626,116 @@ static int miibus_get(void)
 	return 0;
 }
 
+static ssize_t ssdk_dev_id_get(struct device *dev,
+		struct device_attribute *attr,
+		char *buf)
+{
+	ssize_t count;
+	a_uint32_t num;
+
+	num = (a_uint32_t)ssdk_dev_id;
+
+	count = snprintf(buf, (ssize_t)PAGE_SIZE, "%u", num);
+	return count;
+}
+
+static ssize_t ssdk_dev_id_set(struct device *dev,
+		struct device_attribute *attr,
+		const char *buf, size_t count)
+{
+	char num_buf[12];
+	a_uint32_t num;
+
+	if (count >= sizeof(num_buf)) return 0;
+	memcpy(num_buf, buf, count);
+	num_buf[count] = '\0';
+	sscanf(num_buf, "%u", &num);
+
+	ssdk_dev_id = num;
+
+	return count;
+}
+
+static ssize_t ssdk_log_level_get(struct device *dev,
+		struct device_attribute *attr,
+		char *buf)
+{
+	ssize_t count;
+	a_uint32_t num;
+
+	num = ssdk_log_level;
+
+	count = snprintf(buf, (ssize_t)PAGE_SIZE, "%u", num);
+	return count;
+}
+
+static ssize_t ssdk_log_level_set(struct device *dev,
+		struct device_attribute *attr,
+		const char *buf, size_t count)
+{
+	char num_buf[12];
+	a_uint32_t num;
+
+	if (count >= sizeof(num_buf))
+		return 0;
+	memcpy(num_buf, buf, count);
+	num_buf[count] = '\0';
+	sscanf(num_buf, "%u", &num);
+
+	ssdk_log_level = (a_uint32_t)num;
+
+	return count;
+}
+
+static const struct device_attribute ssdk_dev_id_attr =
+	__ATTR(dev_id, 0660, ssdk_dev_id_get, ssdk_dev_id_set);
+static const struct device_attribute ssdk_log_level_attr =
+	__ATTR(log_level, 0660, ssdk_log_level_get, ssdk_log_level_set);
+struct kobject *ssdk_sys = NULL;
+
+int ssdk_sysfs_init (void)
+{
+	int ret = 0;
+
+	/* create /sys/ssdk/ dir */
+	ssdk_sys = kobject_create_and_add("ssdk", NULL);
+	if (!ssdk_sys) {
+		printk("Failed to register SSDK sysfs\n");
+		return ret;
+	}
+
+	/* create /sys/ssdk/dev_id file */
+	ret = sysfs_create_file(ssdk_sys, &ssdk_dev_id_attr.attr);
+	if (ret) {
+		printk("Failed to register SSDK dev id SysFS file\n");
+		goto CLEANUP_1;
+	}
+
+	/* create /sys/ssdk/log_level file */
+	ret = sysfs_create_file(ssdk_sys, &ssdk_log_level_attr.attr);
+	if (ret) {
+		printk("Failed to register SSDK log level SysFS file\n");
+		goto CLEANUP_2;
+	}
+
+	return 0;
+
+CLEANUP_2:
+	sysfs_remove_file(ssdk_sys, &ssdk_dev_id_attr.attr);
+CLEANUP_1:
+	kobject_put(ssdk_sys);
+
+	return ret;
+}
+
+void ssdk_sysfs_exit (void)
+{
+	sysfs_remove_file(ssdk_sys, &ssdk_log_level_attr.attr);
+	sysfs_remove_file(ssdk_sys, &ssdk_dev_id_attr.attr);
+	kobject_put(ssdk_sys);
+}
+
+
 int
 ssdk_plat_init(ssdk_init_cfg *cfg)
 {
@@ -630,6 +744,8 @@ ssdk_plat_init(ssdk_init_cfg *cfg)
 	#endif
 	printk("ssdk_plat_init start\n");
 	mutex_init(&switch_mdio_lock);
+
+	ssdk_sysfs_init();
 
 	if(miibus_get())
 		return -ENODEV;
@@ -692,7 +808,9 @@ ssdk_plat_init(ssdk_init_cfg *cfg)
 void
 ssdk_plat_exit(void)
 {
-    printk("ssdk_plat_exit\n");
+	printk("ssdk_plat_exit\n");
+
+	ssdk_sysfs_exit();
 
 	if (ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
 		iounmap(qca_phy_priv_global->hw_addr);
