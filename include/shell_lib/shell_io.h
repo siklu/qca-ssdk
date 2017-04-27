@@ -423,6 +423,13 @@ sw_error_t
 cmd_data_check_servcode_config(char *info, fal_servcode_config_t *val, a_uint32_t size);
 #endif
 
+#ifdef IN_RSS_HASH
+sw_error_t
+cmd_data_check_rss_hash_mode(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size);
+sw_error_t
+cmd_data_check_rss_hash_config(char *info, fal_rss_hash_config_t *val, a_uint32_t size);
+#endif
+
 #ifdef IN_MIRROR
 sw_error_t
 cmd_data_check_mirr_analy_cfg(char *info, void *val, a_uint32_t size);

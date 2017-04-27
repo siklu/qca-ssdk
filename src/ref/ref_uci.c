@@ -4055,6 +4055,55 @@ parse_fdb_ptmaclimitctrl(struct switch_val *val)
 #endif
 #endif
 
+#ifdef IN_RSS_HASH
+static int
+parse_rsshash_config(struct switch_val *val)
+{
+	struct switch_ext *switch_ext_p, *ext_value_p;
+	int rv = 0;
+
+	switch_ext_p = val->value.ext_val;
+	while (switch_ext_p) {
+		ext_value_p = switch_ext_p;
+
+		if (!strcmp(ext_value_p->option_name, "name")) {
+			switch_ext_p = switch_ext_p->next;
+			continue;
+		} else if (!strcmp(ext_value_p->option_name, "hash_mode")) {
+			val_ptr[0] = (char*)ext_value_p->option_value;
+		} else if (!strcmp(ext_value_p->option_name, "hask_mask")) {
+			val_ptr[1] = (char*)ext_value_p->option_value;
+		} else if (!strcmp(ext_value_p->option_name, "hash_fragment_mode")) {
+			val_ptr[2] = (char*)ext_value_p->option_value;
+		} else if (!strcmp(ext_value_p->option_name, "hash_seed")) {
+			val_ptr[3] = (char*)ext_value_p->option_value;
+		} else if (!strcmp(ext_value_p->option_name, "hash_sip_mix")) {
+			val_ptr[4] = (char*)ext_value_p->option_value;
+		} else if (!strcmp(ext_value_p->option_name, "hash_dip_mix")) {
+			val_ptr[5] = (char*)ext_value_p->option_value;
+		} else if (!strcmp(ext_value_p->option_name, "hash_protocol_mix")) {
+			val_ptr[6] = (char*)ext_value_p->option_value;
+		} else if (!strcmp(ext_value_p->option_name, "hash_sport_mix")) {
+			val_ptr[7] = (char*)ext_value_p->option_value;
+		} else if (!strcmp(ext_value_p->option_name, "hash_dport_mix")) {
+			val_ptr[8] = (char*)ext_value_p->option_value;
+		} else if (!strcmp(ext_value_p->option_name, "hash_fin_inner")) {
+			val_ptr[9] = (char*)ext_value_p->option_value;
+		} else if (!strcmp(ext_value_p->option_name, "hash_fin_outer")) {
+			val_ptr[10] = (char*)ext_value_p->option_value;
+		}  else {
+			rv = -1;
+			break;
+		}
+
+		parameter_length++;
+		switch_ext_p = switch_ext_p->next;
+	}
+
+	return rv;
+}
+#endif
+
 #ifdef IN_IGMP
 static int
 parse_igmp_mode(struct switch_val *val)
@@ -10488,6 +10537,19 @@ parse_fdb(const char *command_name, struct switch_val *val)
 }
 #endif
 
+#ifdef IN_RSS_HASH
+static int
+parse_rsshash(const char *command_name, struct switch_val *val)
+{
+	int rv = -1;
+	if (!strcmp(command_name, "Config")) {
+		rv = parse_rsshash_config(val);
+	}
+
+	return rv;
+}
+#endif
+
 #ifdef IN_IGMP
 static int
 parse_igmp(const char *command_name, struct switch_val *val)
@@ -11266,6 +11328,10 @@ qca_ar8327_sw_switch_ext(struct switch_dev *dev,
 	} else if(!strcmp(module_name, "Fdb")) {
 #ifdef IN_FDB
 		rv = parse_fdb(command_name, val);
+#endif
+	} else if(!strcmp(module_name, "Rsshash")) {
+#ifdef IN_RSS_HASH
+		rv = parse_rsshash(command_name, val);
 #endif
 	} else if(!strcmp(module_name, "Igmp")) {
 #ifdef IN_IGMP
