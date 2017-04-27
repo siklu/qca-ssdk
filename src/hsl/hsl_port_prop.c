@@ -22,6 +22,8 @@
 #include "hsl.h"
 #include "hsl_dev.h"
 #include "hsl_port_prop.h"
+#include "hsl_phy.h"
+
 
 typedef struct
 {
@@ -148,7 +150,7 @@ hsl_port_prop_get_phyid(a_uint32_t dev_id, fal_port_t port_id,
         return SW_BAD_PARAM;
     }
 
-    *phy_id = p_port_info[dev_id]->phy_id[port_id];
+    *phy_id = qca_ssdk_port_to_phy_addr(dev_id, port_id);
 
     return SW_OK;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, 2016, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2014, 2016-2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -47,8 +47,8 @@ static a_uint32_t mdio_base_addr = 0xffffffff;
 
 uint32_t qca_ar8216_mii_read(int reg);
 void qca_ar8216_mii_write(int reg, uint32_t val);
-extern void ssdk_psgmii_self_test(a_bool_t enable, a_uint32_t times, a_uint32_t *result);
-extern void clear_self_test_config(void);
+extern void ssdk_psgmii_self_test(a_uint32_t dev_id, a_bool_t enable, a_uint32_t times, a_uint32_t *result);
+extern void clear_self_test_config(a_uint32_t dev_id);
 
 static sw_error_t
 _dess_mdio_reg_get(a_uint32_t dev_id, a_uint32_t reg_addr,
@@ -418,8 +418,8 @@ _dess_debug_psgmii_self_test(a_uint32_t dev_id, a_bool_t enable,
 					a_uint32_t times, a_uint32_t * result)
 {
 	sw_error_t rv = SW_OK;
-	ssdk_psgmii_self_test(enable, times, result);
-	clear_self_test_config();
+	ssdk_psgmii_self_test(dev_id, enable, times, result);
+	clear_self_test_config(dev_id);
 
 	return rv;
 }

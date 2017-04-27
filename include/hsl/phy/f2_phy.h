@@ -390,7 +390,7 @@ extern "C" {
     a_bool_t
     f2_phy_autoneg_status(a_uint32_t dev_id, a_uint32_t phy_id);
 
-    int f2_phy_init(a_uint32_t dev_id);
+	int f2_phy_init(a_uint32_t dev_id, a_uint32_t port_bmp);
 
 
 #ifdef __cplusplus

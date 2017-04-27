@@ -212,9 +212,7 @@ a_bool_t
 phy_addr_validation_check(a_uint32_t phy_addr)
 {
 
-	if (phy_addr  == SSDK_PHY_BCAST_ID)
-		return A_TRUE;
-	else if ((phy_addr > SSDK_PSGMII_ID) || (phy_addr < SSDK_PHY_MIN_ID))
+	if ((phy_addr > SSDK_PHY_BCAST_ID) || (phy_addr < SSDK_PHY_MIN_ID))
 		return A_FALSE;
 	else
 		return A_TRUE;
@@ -225,19 +223,13 @@ qca_ar8327_phy_read(a_uint32_t dev_id, a_uint32_t phy_addr,
                            a_uint32_t reg, a_uint16_t* data)
 {
 	struct mii_bus *bus = miibus;
-	int phy_dest_addr;
+
 	if (A_TRUE != phy_addr_validation_check (phy_addr))
 	{
 		return SW_BAD_PARAM;
 	}
-	if (phy_addr == SSDK_PSGMII_ID)
-		phy_dest_addr = qca_phy_priv_global->phy_address[phy_addr -1] + 1;
-	else if (phy_addr == SSDK_PHY_BCAST_ID)
-		phy_dest_addr = SSDK_PHY_BCAST_ID;
-	else
-		phy_dest_addr = qca_phy_priv_global->phy_address[phy_addr];
 
-	*data = mdiobus_read(bus, phy_dest_addr, reg);
+	*data = mdiobus_read(bus, phy_addr, reg);
 	return 0;
 }
 
@@ -246,19 +238,13 @@ qca_ar8327_phy_write(a_uint32_t dev_id, a_uint32_t phy_addr,
                             a_uint32_t reg, a_uint16_t data)
 {
 	struct mii_bus *bus = miibus;
-	int phy_dest_addr;
+
 	if (A_TRUE != phy_addr_validation_check (phy_addr))
 	{
 		return SW_BAD_PARAM;
 	}
-	if (phy_addr == SSDK_PSGMII_ID)
-		phy_dest_addr = qca_phy_priv_global->phy_address[phy_addr -1] + 1;
-	else if (phy_addr == SSDK_PHY_BCAST_ID)
-		phy_dest_addr = SSDK_PHY_BCAST_ID;
-	else
-		phy_dest_addr = qca_phy_priv_global->phy_address[phy_addr];
 
-	mdiobus_write(bus, phy_dest_addr, reg, data);
+	mdiobus_write(bus, phy_addr, reg, data);
 	return 0;
 }
 
@@ -267,20 +253,14 @@ qca_ar8327_phy_dbg_write(a_uint32_t dev_id, a_uint32_t phy_addr,
                                 a_uint16_t dbg_addr, a_uint16_t dbg_data)
 {
 	struct mii_bus *bus = miibus;
-	int phy_dest_addr;
+
 	if (A_TRUE != phy_addr_validation_check (phy_addr))
 	{
-		return ;
+		return;
 	}
-	if (phy_addr == SSDK_PSGMII_ID)
-		phy_dest_addr = qca_phy_priv_global->phy_address[phy_addr -1] + 1;
-	else if (phy_addr == SSDK_PHY_BCAST_ID)
-		phy_dest_addr = SSDK_PHY_BCAST_ID;
-	else
-		phy_dest_addr = qca_phy_priv_global->phy_address[phy_addr];
 
-	mdiobus_write(bus, phy_dest_addr, QCA_MII_DBG_ADDR, dbg_addr);
-	mdiobus_write(bus, phy_dest_addr, QCA_MII_DBG_DATA, dbg_data);
+	mdiobus_write(bus, phy_addr, QCA_MII_DBG_ADDR, dbg_addr);
+	mdiobus_write(bus, phy_addr, QCA_MII_DBG_DATA, dbg_data);
 }
 
 void
@@ -288,20 +268,14 @@ qca_ar8327_phy_dbg_read(a_uint32_t dev_id, a_uint32_t phy_addr,
 		                a_uint16_t dbg_addr, a_uint16_t *dbg_data)
 {
 	struct mii_bus *bus = miibus;
-	int phy_dest_addr;
+
 	if (A_TRUE != phy_addr_validation_check (phy_addr))
 	{
-		return ;
+		return;
 	}
-	if (phy_addr == SSDK_PSGMII_ID)
-		phy_dest_addr = qca_phy_priv_global->phy_address[phy_addr -1] + 1;
-	else if (phy_addr == SSDK_PHY_BCAST_ID)
-		phy_dest_addr = SSDK_PHY_BCAST_ID;
-	else
-		phy_dest_addr = qca_phy_priv_global->phy_address[phy_addr];
 
-	mdiobus_write(bus, phy_dest_addr, QCA_MII_DBG_ADDR, dbg_addr);
-	*dbg_data = mdiobus_read(bus, phy_dest_addr, QCA_MII_DBG_DATA);
+	mdiobus_write(bus, phy_addr, QCA_MII_DBG_ADDR, dbg_addr);
+	*dbg_data = mdiobus_read(bus, phy_addr, QCA_MII_DBG_DATA);
 }
 
 
@@ -310,20 +284,14 @@ qca_ar8327_mmd_write(a_uint32_t dev_id, a_uint32_t phy_addr,
                           a_uint16_t addr, a_uint16_t data)
 {
 	struct mii_bus *bus = miibus;
-	int phy_dest_addr;
+
 	if (A_TRUE != phy_addr_validation_check (phy_addr))
 	{
-		return ;
+		return;
 	}
-	if (phy_addr == SSDK_PSGMII_ID)
-		phy_dest_addr = qca_phy_priv_global->phy_address[phy_addr -1] + 1;
-	else if (phy_addr == SSDK_PHY_BCAST_ID)
-		phy_dest_addr = SSDK_PHY_BCAST_ID;
-	else
-		phy_dest_addr = qca_phy_priv_global->phy_address[phy_addr];
 
-	mdiobus_write(bus, phy_dest_addr, QCA_MII_MMD_ADDR, addr);
-	mdiobus_write(bus, phy_dest_addr, QCA_MII_MMD_DATA, data);
+	mdiobus_write(bus, phy_addr, QCA_MII_MMD_ADDR, addr);
+	mdiobus_write(bus, phy_addr, QCA_MII_MMD_DATA, data);
 }
 
 void qca_phy_mmd_write(u32 dev_id, u32 phy_id,

@@ -454,7 +454,7 @@ extern "C" {
     f1_phy_intr_status_get(a_uint32_t dev_id, a_uint32_t phy_id,
                            a_uint32_t * intr_status_flag);
 
-    int f1_phy_init(a_uint32_t dev_id);
+	int f1_phy_init(a_uint32_t dev_id, a_uint32_t port_bmp);
 
 #ifdef __cplusplus
 }

@@ -238,12 +238,6 @@ typedef struct
 		ssdk_dt_scheduler_cfg scheduler_cfg;
 	} ssdk_dt_cfg;
 
-typedef struct phy_identification {
-	a_uint16_t phy_addr;
-	a_uint32_t phy_id;
-	int (*init)(a_uint32_t dev_id);
-} phy_identification_t;
-
 #if defined ATHENA
 #define def_init_cfg  {.reg_mode = HSL_MDIO, .cpu_mode = HSL_CPU_2};
 #elif defined GARUDA
