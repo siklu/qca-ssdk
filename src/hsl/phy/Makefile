@@ -31,8 +31,11 @@ ifeq (TRUE, $(IN_MALIBU_PHY))
   SRC_LIST = malibu_phy.c
 endif
 
+ifeq (TRUE, $(IN_AQUANTIA_PHY))
+  SRC_LIST = aquantia_phy.c
+endif
 ifeq (ALL_CHIP, $(CHIP_TYPE))
-     SRC_LIST = f1_phy.c f2_phy.c malibu_phy.c
+     SRC_LIST = f1_phy.c f2_phy.c malibu_phy.c aquantia_phy.c
 endif
 
 ifeq (NONHK_CHIP, $(CHIP_TYPE))

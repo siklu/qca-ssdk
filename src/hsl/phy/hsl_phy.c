@@ -23,6 +23,10 @@
 #ifdef IN_MALIBU_PHY
 #include <malibu_phy.h>
 #endif
+#ifdef IN_AQUANTIA_PHY
+#include <aquantia_phy.h>
+#endif
+
 #include "ssdk_plat.h"
 
 a_uint32_t phy_address[SW_MAX_NR_DEV][SW_MAX_NR_PORT] = {0};
@@ -46,7 +50,11 @@ phy_driver_instance_t ssdk_phy_driver[] =
 	#else
 	{MALIBU_PHY_CHIP, {0}, NULL, NULL},
 	#endif
+	#ifdef IN_AQUANTIA_PHY
+	{AQUANTIA_PHY_CHIP, {0}, NULL, aquantia_phy_init},
+	#else
 	{AQUANTIA_PHY_CHIP, {0}, NULL, NULL},
+	#endif
 	{MAX_PHY_CHIP, {0}, NULL, NULL}
 };
 sw_error_t hsl_phy_api_ops_register(phy_type_t phy_type, hsl_phy_ops_t * phy_api_ops)
@@ -99,7 +107,7 @@ int ssdk_phy_driver_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 
 	int i = 0;
 	a_uint16_t org_id = 0, rev_id = 0;
-	a_uint32_t phy_id = 0;
+	a_uint32_t phy_id = 0, xgphy_id = 0;
 	phy_type_t phytype = MAX_PHY_CHIP;
 
 	for (i = 0; i < SW_MAX_NR_PORT; i++)
@@ -109,6 +117,9 @@ int ssdk_phy_driver_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 			cfg->reg_func.mdio_get(0, phy_address[dev_id][i], 2, &org_id);
 			cfg->reg_func.mdio_get(0, phy_address[dev_id][i], 3, &rev_id);
 			phy_id = (org_id<<16) | rev_id;
+			cfg->reg_func.mdio_get(0, phy_address[dev_id][i], ((1<<30) |(1<<16) |2), &org_id);
+			cfg->reg_func.mdio_get(0, phy_address[dev_id][i], ((1<<30) |(1<<16) |3), &rev_id);
+			xgphy_id = (org_id<<16) | rev_id;
 
 			if ((phy_id == F1V1_PHY) || (phy_id == F1V2_PHY) ||
 				(phy_id == F1V3_PHY) || (phy_id == F1V4_PHY))
@@ -117,7 +128,7 @@ int ssdk_phy_driver_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 				phytype = F2_PHY_CHIP;
 			else if ((phy_id == MALIBU2PORT_PHY) || (phy_id == MALIBU5PORT_PHY))
 				phytype = MALIBU_PHY_CHIP;
-			else if (phy_id == AQUANTIA_PHY)
+			else if (phy_id == AQUANTIA_PHY || xgphy_id == AQUANTIA_PHY)
 				phytype = AQUANTIA_PHY_CHIP;
 			else
 			{
