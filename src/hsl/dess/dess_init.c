@@ -182,14 +182,6 @@ dess_portproperty_init(a_uint32_t dev_id)
 
     return SW_OK;
 }
-/*linchen remove it??*/
-#if 0
-static sw_error_t
-dess_hw_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
-{
-    return SW_OK;
-}
-#endif
 #endif
 
 static sw_error_t
@@ -206,31 +198,9 @@ dess_dev_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
     HSL_REG_FIELD_GET(rv, dev_id, MASK_CTL, 0, DEVICE_ID,
                       (a_uint8_t *) (&entry), sizeof (a_uint32_t));
     SW_RTN_ON_ERROR(rv);
-/*linchen: force as dess*/
-#if 0
-    if (S17C_DEVICE_ID == entry)
-    {
-        pdev->nr_ports = 7;
-        pdev->nr_phy = 5;
-        pdev->cpu_port_nr = 0;
-        pdev->nr_vlans = 4096;
-        pdev->hw_vlan_query = A_TRUE;
-        pdev->nr_queue = 6;
-        pdev->cpu_mode = cpu_mode;
-    }
-    else
-#endif
+
     if (DESS_DEVICE_ID == entry)
     {
-	#if 0
-        pdev->nr_ports = 6;
-        pdev->nr_phy = 5;
-        pdev->cpu_port_nr = 0;
-        pdev->nr_vlans = 4096;
-        pdev->hw_vlan_query = A_TRUE;
-        pdev->nr_queue = 6;
-        pdev->cpu_mode = cpu_mode;
-	#endif
 	a_uint32_t i = 0, port_nr = 0, tmp = 0;
 	tmp = cfg->port_cfg.lan_bmp | cfg->port_cfg.wan_bmp;
 	for(i = 0; i < SW_MAX_NR_PORT; i++) {
@@ -315,7 +285,7 @@ dess_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
     {
         sw_error_t rv;
 
-        SW_RTN_ON_ERROR(hsl_port_prop_init(dev_id));/*linchen port property????*/
+        SW_RTN_ON_ERROR(hsl_port_prop_init(dev_id));
         SW_RTN_ON_ERROR(hsl_port_prop_init_by_dev(dev_id));
         SW_RTN_ON_ERROR(dess_portproperty_init(dev_id));
 
