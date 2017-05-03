@@ -34,6 +34,7 @@
 #include <linux/inetdevice.h>
 #include <linux/netdevice.h>
 #include <linux/phy.h>
+#include <linux/mdio.h>
 #include <linux/clk.h>
 #include <linux/delay.h>
 #include <linux/string.h>
@@ -2557,6 +2558,101 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 #endif
 #endif
 
+#ifdef CONFIG_MDIO
+static struct mdio_if_info ssdk_mdio_ctl;
+#endif
+static struct net_device *ssdk_miireg_netdev = NULL;
+
+static int ssdk_miireg_open(struct net_device *netdev)
+{
+	return 0;
+}
+static int ssdk_miireg_close(struct net_device *netdev)
+{
+	return 0;
+}
+
+static int ssdk_miireg_do_ioctl(struct net_device *netdev,
+			struct ifreq *ifr, int32_t cmd)
+{
+	struct mii_ioctl_data *mii_data = if_mii(ifr);
+	int ret = -EINVAL;
+
+#ifdef CONFIG_MDIO
+	ret = mdio_mii_ioctl(&ssdk_mdio_ctl, mii_data, cmd);
+#endif
+	return ret;
+}
+
+static const struct net_device_ops ssdk_netdev_ops = {
+	.ndo_open = &ssdk_miireg_open,
+	.ndo_stop = &ssdk_miireg_close,
+	.ndo_do_ioctl = &ssdk_miireg_do_ioctl,
+};
+
+#ifdef CONFIG_MDIO
+static int ssdk_miireg_ioctl_read(struct net_device *netdev, int phy_addr, int mmd, uint16_t addr)
+{
+	a_uint32_t reg = 0;
+	a_uint16_t val = 0;
+
+	if (MDIO_DEVAD_NONE == mmd) {
+		qca_ar8327_phy_read(0, phy_addr, addr, &val);
+		return (int)val;
+	}
+
+	reg = MII_ADDR_C45 | mmd << 16 | addr;
+	qca_ar8327_phy_read(0, phy_addr, reg, &val);
+
+	return (int)val;
+}
+
+static int ssdk_miireg_ioctl_write(struct net_device *netdev, int phy_addr, int mmd,
+				uint16_t addr, uint16_t value)
+{
+	a_uint32_t reg = 0;
+
+	if (MDIO_DEVAD_NONE == mmd) {
+		qca_ar8327_phy_write(0, phy_addr, addr, value);
+		return 0;
+	}
+
+	reg = MII_ADDR_C45 | mmd << 16 | addr;
+	qca_ar8327_phy_write(0, phy_addr, reg, value);
+
+	return 0;
+}
+#endif
+
+static void ssdk_netdev_setup(struct net_device *dev)
+{
+	dev->netdev_ops = &ssdk_netdev_ops;
+}
+static void ssdk_miireg_ioctrl_register(void)
+{
+#ifdef CONFIG_MDIO
+	ssdk_mdio_ctl.mdio_read = ssdk_miireg_ioctl_read;
+	ssdk_mdio_ctl.mdio_write = ssdk_miireg_ioctl_write;
+	ssdk_mdio_ctl.mode_support = MDIO_SUPPORTS_C45;
+#endif
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,18,0))
+	ssdk_miireg_netdev = alloc_netdev(100, "miireg", 0, ssdk_netdev_setup);
+#else
+	ssdk_miireg_netdev = alloc_netdev(100, "miireg", ssdk_netdev_setup);
+#endif
+	if (ssdk_miireg_netdev)
+		register_netdev(ssdk_miireg_netdev);
+}
+
+static void ssdk_miireg_ioctrl_unregister(void)
+{
+	if (ssdk_miireg_netdev) {
+		unregister_netdev(ssdk_miireg_netdev);
+		kfree(ssdk_miireg_netdev);
+	}
+}
+
 static void ssdk_driver_register(void)
 {
 #ifdef DESS
@@ -2587,6 +2683,8 @@ static void ssdk_driver_register(void)
 		ar7240_port_link_notify_register(ssdk_port_link_notify);
 #endif
 	}
+
+	ssdk_miireg_ioctrl_register();
 }
 
 static void ssdk_driver_unregister(void)
@@ -2608,6 +2706,8 @@ static void ssdk_driver_unregister(void)
 #endif
 #endif
 	}
+
+	ssdk_miireg_ioctrl_unregister();
 }
 
 static int chip_ver_get(ssdk_init_cfg* cfg)
