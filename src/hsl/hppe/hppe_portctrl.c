@@ -462,6 +462,34 @@ hppe_tdm_cfg_set(
 }
 
 sw_error_t
+hppe_drop_stat_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union drop_stat_u *value)
+{
+	return hppe_reg_tbl_get(
+				dev_id,
+				NSS_PRX_CSR_BASE_ADDR + DROP_STAT_ADDRESS + \
+				index * DROP_STAT_INC,
+				value->val,
+				3);
+}
+
+sw_error_t
+hppe_drop_stat_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union drop_stat_u *value)
+{
+	return hppe_reg_tbl_set(
+				dev_id,
+				NSS_PRX_CSR_BASE_ADDR + DROP_STAT_ADDRESS + \
+				index * DROP_STAT_INC,
+				value->val,
+				3);
+}
+
+sw_error_t
 hppe_mac_enable_txmac_en_get(
 		a_uint32_t dev_id,
 		a_uint32_t index,
@@ -2283,6 +2311,37 @@ hppe_mru_mtu_ctrl_tbl_mru_set(
 }
 
 sw_error_t
+hppe_mru_mtu_ctrl_tbl_src_profile_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union mru_mtu_ctrl_tbl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_mru_mtu_ctrl_tbl_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.src_profile;
+	return ret;
+}
+
+sw_error_t
+hppe_mru_mtu_ctrl_tbl_src_profile_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union mru_mtu_ctrl_tbl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_mru_mtu_ctrl_tbl_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.src_profile = value;
+	ret = hppe_mru_mtu_ctrl_tbl_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
 hppe_mc_mtu_ctrl_tbl_mtu_cmd_get(
 		a_uint32_t dev_id,
 		a_uint32_t index,
@@ -2642,5 +2701,69 @@ hppe_port_in_forward_source_filtering_bypass_set(
 		return ret;
 	reg_val.bf.source_filtering_bypass = value;
 	ret = hppe_port_in_forward_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_drop_stat_bytes_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint64_t *value)
+{
+	union drop_stat_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_drop_stat_get(dev_id, index, &reg_val);
+	*value = (a_uint64_t)reg_val.bf.bytes_1 << 32 | \
+		reg_val.bf.bytes_0;
+	return ret;
+}
+
+sw_error_t
+hppe_drop_stat_bytes_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint64_t value)
+{
+	union drop_stat_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_drop_stat_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.bytes_1 = value >> 32;
+	reg_val.bf.bytes_0 = value & (((a_uint64_t)1<<32)-1);
+	ret = hppe_drop_stat_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_drop_stat_pkts_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union drop_stat_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_drop_stat_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.pkts;
+	return ret;
+}
+
+sw_error_t
+hppe_drop_stat_pkts_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union drop_stat_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_drop_stat_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.pkts = value;
+	ret = hppe_drop_stat_set(dev_id, index, &reg_val);
 	return ret;
 }

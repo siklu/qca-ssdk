@@ -303,6 +303,45 @@ adpt_hppe_port_tdm_tick_cfg_set(a_uint32_t dev_id, a_uint32_t tick_index,
 	return hppe_tdm_cfg_set(dev_id, tick_index, &tdm_cfg);
 }
 
+sw_error_t
+adpt_hppe_bm_port_counter_get(a_uint32_t dev_id, fal_port_t port,
+			fal_bm_port_counter_t *counter)
+{
+	sw_error_t rv = SW_OK;
+	union port_cnt_u port_cnt;
+	union port_reacted_cnt_u reacted_cnt;
+	union drop_stat_u drop_stat;
+	a_uint32_t index = FAL_PORT_ID_VALUE(port);
+
+	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(counter);
+	memset(&port_cnt, 0, sizeof(port_cnt));
+	memset(&reacted_cnt, 0, sizeof(reacted_cnt));
+
+	rv = hppe_port_cnt_get(dev_id, index, &port_cnt);
+	if( rv != SW_OK )
+		return rv;
+	counter->used_counter = port_cnt.bf.port_cnt;
+
+	rv = hppe_port_reacted_cnt_get(dev_id, index, &reacted_cnt);
+	if( rv != SW_OK )
+		return rv;
+	counter->react_counter = reacted_cnt.bf.port_reacted_cnt;
+
+	rv = hppe_drop_stat_get(dev_id, index, &drop_stat);
+	if( rv != SW_OK )
+		return rv;
+	counter->drop_byte_counter = drop_stat.bf.bytes_0 | ((a_uint64_t)drop_stat.bf.bytes_1 << 32);
+	counter->drop_packet_counter = drop_stat.bf.pkts;
+	rv = hppe_drop_stat_get(dev_id, index + 15, &drop_stat);
+	if( rv != SW_OK )
+		return rv;
+	counter->fc_drop_byte_counter = drop_stat.bf.bytes_0 | ((a_uint64_t)drop_stat.bf.bytes_1 << 32);
+	counter->fc_drop_packet_counter = drop_stat.bf.pkts;
+
+	return SW_OK;
+}
+
 void adpt_hppe_bm_func_bitmap_init(a_uint32_t dev_id)
 {
 	adpt_api_t *p_adpt_api = NULL;
@@ -325,7 +364,8 @@ void adpt_hppe_bm_func_bitmap_init(a_uint32_t dev_id)
 						(1 << FUNC_BM_PORT_DYNAMIC_THRESH_SET) |
 						(1 << FUNC_PORT_BM_CTRL_SET) |
 						(1 << FUNC_PORT_TDM_CTRL_SET) |
-						(1 << FUNC_PORT_TDM_TICK_CFG_SET));
+						(1 << FUNC_PORT_TDM_TICK_CFG_SET) |
+						(1 << FUNC_BM_PORT_COUNTER_GET));
 	return;
 }
 
@@ -348,6 +388,7 @@ static void adpt_hppe_bm_func_unregister(a_uint32_t dev_id, adpt_api_t *p_adpt_a
 	p_adpt_api->adpt_port_bm_ctrl_set = NULL;
 	p_adpt_api->adpt_port_tdm_ctrl_set = NULL;
 	p_adpt_api->adpt_port_tdm_tick_cfg_set = NULL;
+	p_adpt_api->adpt_bm_port_counter_get = NULL;
 
 	return;
 }
@@ -392,6 +433,8 @@ sw_error_t adpt_hppe_bm_init(a_uint32_t dev_id)
 		p_adpt_api->adpt_port_tdm_ctrl_set = adpt_hppe_port_tdm_ctrl_set;
 	if (p_adpt_api->adpt_bm_func_bitmap & (1 << FUNC_PORT_TDM_TICK_CFG_SET))
 		p_adpt_api->adpt_port_tdm_tick_cfg_set = adpt_hppe_port_tdm_tick_cfg_set;
+	if (p_adpt_api->adpt_bm_func_bitmap & (1 << FUNC_BM_PORT_COUNTER_GET))
+		p_adpt_api->adpt_bm_port_counter_get = adpt_hppe_bm_port_counter_get;
 
 	return SW_OK;
 }

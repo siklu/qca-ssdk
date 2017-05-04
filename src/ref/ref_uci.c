@@ -9447,6 +9447,35 @@ parse_qm_enqueue(struct switch_val *val)
 	return rv;
 }
 
+static int
+parse_qm_srcprofile(struct switch_val *val)
+{
+	struct switch_ext *switch_ext_p, *ext_value_p;
+	int rv = 0;
+
+	switch_ext_p = val->value.ext_val;
+	while (switch_ext_p) {
+		ext_value_p = switch_ext_p;
+
+		if (!strcmp(ext_value_p->option_name, "name")) {
+			switch_ext_p = switch_ext_p->next;
+			continue;
+		} else if (!strcmp(ext_value_p->option_name, "port_id")) {
+			val_ptr[0] = (char*)ext_value_p->option_value;
+		} else if (!strcmp(ext_value_p->option_name, "sourceprofile")) {
+			val_ptr[1] = (char*)ext_value_p->option_value;
+		}  else {
+			rv = -1;
+			break;
+		}
+
+		parameter_length++;
+		switch_ext_p = switch_ext_p->next;
+	}
+
+	return rv;
+}
+
 #endif
 
 #ifdef IN_SERVCODE
@@ -10983,7 +11012,9 @@ parse_qm(const char *command_name, struct switch_val *val)
 		rv = parse_qm_cnt(val);
 	} else if (!strcmp(command_name, "Enqueue")) {
 		rv = parse_qm_enqueue(val);
-	} 
+	} else if (!strcmp(command_name, "Srcprofile")) {
+		rv = parse_qm_srcprofile(val);
+	}
 
 	return rv;
 }

@@ -48,6 +48,16 @@ typedef struct
 	a_uint32_t depth;
 } fal_port_tdm_ctrl_t;
 
+typedef struct
+{
+	a_uint64_t drop_byte_counter; /*drop byte due to overload*/
+	a_uint32_t drop_packet_counter; /*drop packet due to overload*/
+	a_uint64_t fc_drop_byte_counter; /*drop byte due to fc*/
+	a_uint32_t fc_drop_packet_counter; /*drop packet due to fc*/
+	a_uint32_t used_counter; /*total used buffer counter for the port*/
+	a_uint32_t react_counter; /*react used buffer counter for the port*/
+} fal_bm_port_counter_t;
+
 #define FAL_PORT_TDB_DIR_INGRESS	0
 #define FAL_PORT_TDB_DIR_EGRESS	1
 typedef struct
@@ -72,6 +82,7 @@ enum {
 	FUNC_PORT_BM_CTRL_SET,
 	FUNC_PORT_TDM_CTRL_SET,
 	FUNC_PORT_TDM_TICK_CFG_SET,
+	FUNC_BM_PORT_COUNTER_GET,
 };
 
 sw_error_t
@@ -119,6 +130,10 @@ fal_bm_port_dynamic_thresh_set(a_uint32_t dev_id, fal_port_t port,
 sw_error_t
 fal_bm_port_dynamic_thresh_get(a_uint32_t dev_id, fal_port_t port,
 			fal_bm_dynamic_cfg_t *cfg);
+
+sw_error_t
+fal_bm_port_counter_get(a_uint32_t dev_id, fal_port_t port,
+		fal_bm_port_counter_t *counter);
 
 
 #ifdef __cplusplus

@@ -123,6 +123,8 @@ enum {
 	FUNC_QUEUE_COUNTER_CTRL_SET,
 	FUNC_QM_ENQUEUE_CTRL_GET,
 	FUNC_QM_ENQUEUE_CTRL_SET,
+	FUNC_QM_PORT_SRCPROFILE_GET,
+	FUNC_QM_PORT_SRCPROFILE_SET,
 };
 
 sw_error_t
@@ -296,6 +298,19 @@ fal_qm_enqueue_ctrl_set(a_uint32_t dev_id, a_uint32_t queue_id, a_bool_t enable)
 
 sw_error_t
 fal_qm_enqueue_ctrl_get(a_uint32_t dev_id, a_uint32_t queue_id, a_bool_t *enable);
+
+sw_error_t
+fal_qm_port_source_profile_set(
+		a_uint32_t dev_id,
+		fal_port_t port,
+		a_uint32_t src_profile);
+
+sw_error_t
+fal_qm_port_source_profile_get(
+		a_uint32_t dev_id,
+		fal_port_t port,
+		a_uint32_t *src_profile);
+
 
 
 #ifdef __cplusplus

@@ -545,6 +545,35 @@ _fal_qm_enqueue_ctrl_get(a_uint32_t dev_id, a_uint32_t queue_id, a_bool_t *enabl
 	return rv;
 }
 
+sw_error_t
+_fal_qm_port_source_profile_set(a_uint32_t dev_id, fal_port_t port, a_uint32_t src_profile)
+{
+	adpt_api_t *p_api;
+	sw_error_t rv = SW_OK;
+
+	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+	if (NULL == p_api->adpt_qm_port_source_profile_set)
+		return SW_NOT_SUPPORTED;
+
+	rv = p_api->adpt_qm_port_source_profile_set(dev_id, port, src_profile);
+	return rv;
+}
+sw_error_t
+_fal_qm_port_source_profile_get(a_uint32_t dev_id, fal_port_t port, a_uint32_t *src_profile)
+{
+	adpt_api_t *p_api;
+	sw_error_t rv = SW_OK;
+
+	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+	if (NULL == p_api->adpt_qm_port_source_profile_get)
+		return SW_NOT_SUPPORTED;
+
+	rv = p_api->adpt_qm_port_source_profile_get(dev_id, port, src_profile);
+	return rv;
+}
+
 /*insert flag for inner fal, don't remove it*/
 
 sw_error_t
@@ -945,6 +974,31 @@ fal_qm_enqueue_ctrl_get(a_uint32_t dev_id, a_uint32_t queue_id, a_bool_t *enable
 	FAL_API_UNLOCK;
 	return rv;
 }
+
+sw_error_t
+fal_qm_port_source_profile_set(a_uint32_t dev_id, fal_port_t port, a_uint32_t src_profile)
+{
+	sw_error_t rv = SW_OK;
+
+	FAL_API_LOCK;
+	rv = _fal_qm_port_source_profile_set(dev_id, port, src_profile);
+	FAL_API_UNLOCK;
+	return rv;
+}
+sw_error_t
+fal_qm_port_source_profile_get(a_uint32_t dev_id, fal_port_t port, a_uint32_t *src_profile)
+{
+	sw_error_t rv = SW_OK;
+
+	FAL_API_LOCK;
+	rv = _fal_qm_port_source_profile_get(dev_id, port, src_profile);
+	FAL_API_UNLOCK;
+	return rv;
+}
+
+EXPORT_SYMBOL(fal_qm_port_source_profile_set);
+
+EXPORT_SYMBOL(fal_qm_port_source_profile_get);
 
 EXPORT_SYMBOL(fal_qm_enqueue_ctrl_set);
 

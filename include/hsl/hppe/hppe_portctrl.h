@@ -229,6 +229,18 @@ hppe_tdm_cfg_set(
 		union tdm_cfg_u *value);
 
 sw_error_t
+hppe_drop_stat_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union drop_stat_u *value);
+
+sw_error_t
+hppe_drop_stat_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union drop_stat_u *value);
+
+sw_error_t
 hppe_mac_enable_txmac_en_get(
 		a_uint32_t dev_id,
 		a_uint32_t index,
@@ -1093,6 +1105,30 @@ hppe_port_in_forward_source_filtering_bypass_get(
 
 sw_error_t
 hppe_port_in_forward_source_filtering_bypass_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_drop_stat_bytes_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint64_t *value);
+
+sw_error_t
+hppe_drop_stat_bytes_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint64_t value);
+
+sw_error_t
+hppe_drop_stat_pkts_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_drop_stat_pkts_set(
 		a_uint32_t dev_id,
 		a_uint32_t index,
 		a_uint32_t value);

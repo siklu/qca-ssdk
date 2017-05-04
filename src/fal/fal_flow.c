@@ -74,6 +74,23 @@ _fal_flow_entry_del(
 	return rv;
 }
 sw_error_t
+_fal_flow_entry_next(
+		a_uint32_t dev_id,
+		a_uint32_t next_mode,
+		fal_flow_entry_t *flow_entry)
+{
+	adpt_api_t *p_api;
+	sw_error_t rv = SW_OK;
+
+	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+	if (NULL == p_api->adpt_flow_entry_next)
+		return SW_NOT_SUPPORTED;
+
+	rv = p_api->adpt_flow_entry_next(dev_id, next_mode, flow_entry);
+	return rv;
+}
+sw_error_t
 _fal_flow_status_get(a_uint32_t dev_id, a_bool_t *enable)
 {
 	adpt_api_t *p_api;
@@ -288,6 +305,19 @@ fal_flow_entry_del(
 
 	FAL_API_LOCK;
 	rv = _fal_flow_entry_del(dev_id, del_mode, flow_entry);
+	FAL_API_UNLOCK;
+	return rv;
+}
+sw_error_t
+fal_flow_entry_next(
+		a_uint32_t dev_id,
+		a_uint32_t next_mode,
+		fal_flow_entry_t *flow_entry)
+{
+	sw_error_t rv = SW_OK;
+
+	FAL_API_LOCK;
+	rv = _fal_flow_entry_next(dev_id, next_mode, flow_entry);
 	FAL_API_UNLOCK;
 	return rv;
 }

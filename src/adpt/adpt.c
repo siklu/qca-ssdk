@@ -132,7 +132,8 @@ sw_error_t adpt_module_func_ctrl_set(a_uint32_t dev_id,
 	} else if (module == FAL_MODULE_FLOW) {
 		p_adpt_api->adpt_flow_func_bitmap = func_ctrl->bitmap[0];
 	} else if (module == FAL_MODULE_QM) {
-		p_adpt_api->adpt_qm_func_bitmap = func_ctrl->bitmap[0];
+		p_adpt_api->adpt_qm_func_bitmap[0] = func_ctrl->bitmap[0];
+		p_adpt_api->adpt_qm_func_bitmap[1] = func_ctrl->bitmap[1];
 	} else if (module == FAL_MODULE_QOS) {
 		p_adpt_api->adpt_qos_func_bitmap = func_ctrl->bitmap[0];
 	} else if (module == FAL_MODULE_BM) {
@@ -204,7 +205,8 @@ sw_error_t adpt_module_func_ctrl_get(a_uint32_t dev_id,
 	} else if (module == FAL_MODULE_FLOW) {
 		func_ctrl->bitmap[0] = p_adpt_api->adpt_flow_func_bitmap;
 	} else if (module == FAL_MODULE_QM) {
-		func_ctrl->bitmap[0] = p_adpt_api->adpt_qm_func_bitmap;
+		func_ctrl->bitmap[0] = p_adpt_api->adpt_qm_func_bitmap[0];
+		func_ctrl->bitmap[1] = p_adpt_api->adpt_qm_func_bitmap[1];
 	} else if (module == FAL_MODULE_QOS) {
 		func_ctrl->bitmap[0] = p_adpt_api->adpt_qos_func_bitmap;
 	} else if (module == FAL_MODULE_BM) {
@@ -307,7 +309,8 @@ sw_error_t adpt_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_FLOW);
 			SW_RTN_ON_ERROR(rv);
 
-			g_adpt_api[dev_id]->adpt_qm_func_bitmap = 0xffffffff;
+			g_adpt_api[dev_id]->adpt_qm_func_bitmap[0] = 0xffffffff;
+			g_adpt_api[dev_id]->adpt_qm_func_bitmap[1] = 0xffffffff;
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_QM);
 			SW_RTN_ON_ERROR(rv);
 
@@ -430,7 +433,8 @@ sw_error_t adpt_module_func_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_FLOW);
 			SW_RTN_ON_ERROR(rv);
 
-			g_adpt_api[dev_id]->adpt_qm_func_bitmap = 0;
+			g_adpt_api[dev_id]->adpt_qm_func_bitmap[0] = 0;
+			g_adpt_api[dev_id]->adpt_qm_func_bitmap[1] = 0;
 			adpt_hppe_qm_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_QM);
 			SW_RTN_ON_ERROR(rv);

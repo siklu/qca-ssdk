@@ -744,4 +744,34 @@ union tdm_cfg_u {
 	struct tdm_cfg bf;
 };
 
+/*[table] DROP_STAT*/
+#define DROP_STAT
+#define DROP_STAT_ADDRESS 0x3000
+#define DROP_STAT_NUM     30
+#define DROP_STAT_INC     0x10
+#define DROP_STAT_TYPE    REG_TYPE_RW
+#define DROP_STAT_DEFAULT 0x0
+	/*[field] PKTS*/
+	#define DROP_STAT_PKTS
+	#define DROP_STAT_PKTS_OFFSET  0
+	#define DROP_STAT_PKTS_LEN     32
+	#define DROP_STAT_PKTS_DEFAULT 0x0
+	/*[field] BYTES*/
+	#define DROP_STAT_BYTES
+	#define DROP_STAT_BYTES_OFFSET  32
+	#define DROP_STAT_BYTES_LEN     40
+	#define DROP_STAT_BYTES_DEFAULT 0x0
+
+struct drop_stat {
+	a_uint32_t  pkts:32;
+	a_uint32_t  bytes_0:32;
+	a_uint32_t  bytes_1:8;
+	a_uint32_t  _reserved0:24;
+};
+
+union drop_stat_u {
+	a_uint32_t val[3];
+	struct drop_stat bf;
+};
+
 #endif
