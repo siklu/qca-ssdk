@@ -270,13 +270,64 @@ extern "C" {
 		hsl_phy_counter_show  phy_counter_show;
 	} hsl_phy_ops_t;
 
-	sw_error_t hsl_phy_api_ops_register(a_uint32_t dev_id, hsl_phy_ops_t * phy_api_ops);
+typedef struct phy_driver_instance {
+	a_uint32_t phy_type;
+	a_uint32_t port_bmp[SW_MAX_NR_DEV];
+	hsl_phy_ops_t *phy_ops;
+	int (*init)(a_uint32_t dev_id, a_uint32_t portbmp);
+} phy_driver_instance_t;
 
-	sw_error_t hsl_phy_api_ops_unregister(a_uint32_t dev_id, hsl_phy_ops_t * phy_api_ops);
+typedef enum
+{
+	F1_PHY_CHIP = 0,
+	F2_PHY_CHIP,
+	MALIBU_PHY_CHIP,
+	AQUANTIA_PHY_CHIP,
+	MAX_PHY_CHIP,
+} phy_type_t;
 
-	hsl_phy_ops_t *hsl_phy_api_ops_get(a_uint32_t dev_id);
+#define MALIBU5PORT_PHY 0x004DD0B1
+#define MALIBU2PORT_PHY 0x004DD0B2
+#define F1V1_PHY 0x004DD033
+#define F1V2_PHY 0x004DD034
+#define F1V3_PHY 0x004DD035
+#define F1V4_PHY 0x004DD036
+#define F2V1_PHY 0x004DD042
+#define AQUANTIA_PHY 0x03a1b4e1
+#define PHY_805XV2 0x004DD082
+#define PHY_805XV1 0x004DD081
 
-	sw_error_t phy_api_ops_init(a_uint32_t dev_id);
+sw_error_t
+hsl_phy_api_ops_register(phy_type_t phy_type, hsl_phy_ops_t * phy_api_ops);
+
+sw_error_t
+hsl_phy_api_ops_unregister(phy_type_t phy_type, hsl_phy_ops_t * phy_api_ops);
+
+hsl_phy_ops_t *hsl_phy_api_ops_get(a_uint32_t dev_id, a_uint32_t port_id);
+
+sw_error_t phy_api_ops_init(phy_type_t phy_type);
+
+int ssdk_phy_driver_init(a_uint32_t dev_id, ssdk_init_cfg *cfg);
+
+void qca_ssdk_phy_address_init(void);
+
+void qca_ssdk_port_bmp_init(void);
+
+void qca_ssdk_phy_address_set(a_uint32_t dev_id, a_uint32_t i,
+				a_uint32_t value);
+
+a_uint32_t
+qca_ssdk_port_to_phy_addr(a_uint32_t dev_id, a_uint32_t port_id);
+
+void qca_ssdk_port_bmp_set(a_uint32_t dev_id, a_uint32_t value);
+
+a_uint32_t qca_ssdk_phy_type_port_bmp_get(a_uint32_t dev_id,
+				phy_type_t phy_type);
+
+a_uint32_t
+qca_ssdk_phy_addr_to_port(a_uint32_t dev_id, a_uint32_t phy_addr);
+
+sw_error_t ssdk_phy_driver_cleanup(void);
 
 #ifdef __cplusplus
 }

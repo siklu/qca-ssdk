@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2015-2016, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015-2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -43,7 +43,7 @@ _shiva_port_duplex_set(a_uint32_t dev_id, fal_port_t port_id,
         return SW_BAD_PARAM;
     }
 
-    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
     if (NULL == phy_drv->phy_duplex_set)
          return SW_NOT_SUPPORTED;
 
@@ -97,7 +97,7 @@ _shiva_port_duplex_get(a_uint32_t dev_id, fal_port_t port_id,
         return SW_BAD_PARAM;
     }
 
-    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
     if (NULL == phy_drv->phy_duplex_get)
          return SW_NOT_SUPPORTED;
 
@@ -122,7 +122,7 @@ _shiva_port_speed_set(a_uint32_t dev_id, fal_port_t port_id,
     {
         return SW_BAD_PARAM;
     }
-    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
     if (NULL == phy_drv->phy_speed_set)
          return SW_NOT_SUPPORTED;
 
@@ -154,7 +154,7 @@ _shiva_port_speed_get(a_uint32_t dev_id, fal_port_t port_id,
         return SW_BAD_PARAM;
     }
 
-    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
     if (NULL == phy_drv->phy_speed_get)
          return SW_NOT_SUPPORTED;
 
@@ -181,7 +181,7 @@ _shiva_port_autoneg_status_get(a_uint32_t dev_id, fal_port_t port_id,
         return SW_BAD_PARAM;
     }
 
-    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
     if (NULL == phy_drv->phy_autoneg_status_get)
          return SW_NOT_SUPPORTED;
 
@@ -207,7 +207,7 @@ _shiva_port_autoneg_enable(a_uint32_t dev_id, fal_port_t port_id)
         return SW_BAD_PARAM;
     }
 
-    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
     if (NULL == phy_drv->phy_autoneg_enable_set)
 	  return SW_NOT_SUPPORTED;
 
@@ -232,7 +232,7 @@ _shiva_port_autoneg_restart(a_uint32_t dev_id, fal_port_t port_id)
         return SW_BAD_PARAM;
     }
 
-    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
     if (NULL == phy_drv->phy_restart_autoneg)
          return SW_NOT_SUPPORTED;
 
@@ -258,7 +258,7 @@ _shiva_port_autoneg_adv_set(a_uint32_t dev_id, fal_port_t port_id,
         return SW_BAD_PARAM;
     }
 
-    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
     if (NULL == phy_drv->phy_autoneg_adv_set)
         return SW_NOT_SUPPORTED;
 
@@ -286,7 +286,7 @@ _shiva_port_autoneg_adv_get(a_uint32_t dev_id, fal_port_t port_id,
         return SW_BAD_PARAM;
     }
 
-    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
     if (NULL == phy_drv->phy_autoneg_adv_get)
         return SW_NOT_SUPPORTED;
 
@@ -527,7 +527,7 @@ _shiva_port_powersave_set(a_uint32_t dev_id, fal_port_t port_id,
         return SW_BAD_PARAM;
     }
 
-    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
     if (NULL == phy_drv->phy_powersave_set)
 	 return SW_NOT_SUPPORTED;
 
@@ -554,7 +554,7 @@ _shiva_port_powersave_get(a_uint32_t dev_id, fal_port_t port_id,
         return SW_BAD_PARAM;
     }
 
-    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
     if (NULL == phy_drv->phy_powersave_get)
 	 return SW_NOT_SUPPORTED;
 
@@ -581,7 +581,7 @@ _shiva_port_hibernate_set(a_uint32_t dev_id, fal_port_t port_id,
         return SW_BAD_PARAM;
     }
 
-    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
     if (NULL == phy_drv->phy_hibernation_set)
         return SW_NOT_SUPPORTED;
 
@@ -608,7 +608,7 @@ _shiva_port_hibernate_get(a_uint32_t dev_id, fal_port_t port_id,
         return SW_BAD_PARAM;
     }
 
-    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
     if (NULL == phy_drv->phy_hibernation_get)
         return SW_NOT_SUPPORTED;
 
@@ -635,7 +635,7 @@ _shiva_port_cdt(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t mdi_pair,
         return SW_BAD_PARAM;
     }
 
-    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
     if (NULL == phy_drv->phy_cdt)
         return SW_NOT_SUPPORTED;
 

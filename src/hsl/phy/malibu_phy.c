@@ -20,9 +20,16 @@
 #include "aos_timer.h"
 #include "hsl_phy.h"
 #include <linux/kconfig.h>
+#include <linux/version.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/phy.h>
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+#include <linux/switch.h>
+#else
+#include <net/switch.h>
+#endif
+#include "ssdk_plat.h"
 
 static a_uint16_t
 _phy_reg_read(a_uint32_t dev_id, a_uint32_t phy_addr, a_uint32_t reg)
@@ -2348,148 +2355,156 @@ malibu_phy_show_counter(a_uint32_t dev_id, a_uint32_t phy_id,
 
 /******************************************************************************
 *
-* malibu_phy_hw_register init to avoid packet loss
+* malibu_phy_hw_register init
 *
 */
 sw_error_t
-malibu_phy_hw_init(void)
+malibu_phy_hw_init(a_uint32_t dev_id, a_uint32_t port_bmp)
 {
-	a_uint16_t phy_data = 0;
-	a_uint32_t dev_id = 0;
-	a_uint32_t phy_id = 0;
-	a_uint16_t org_id =0, rev_id=0;
-	a_uint32_t malibu_id = 0;
-	a_uint16_t dac_value,led_status;
+	a_uint32_t port_id = 0, phy_addr = 0, phy_cnt = 0, first_phy_addr = 0;
+	a_uint16_t dac_value,led_status, phy_data;
 
-	malibu_phy_get_phy_id(0, 0, &org_id, &rev_id);
-	malibu_id = ((org_id << 16) |rev_id);
+	for (port_id = 0; port_id < SW_MAX_NR_PORT; port_id ++)
+	{
+		if (port_bmp & (0x1 << port_id))
+		{
+			phy_cnt ++;
+			phy_addr = qca_ssdk_port_to_phy_addr(dev_id, port_id);
+			if (phy_cnt == 1)
+			{
+				first_phy_addr = phy_addr;
+			}
+			/*enable phy power saving function by default */
+			malibu_phy_set_8023az(dev_id, phy_addr, A_TRUE);
+			malibu_phy_set_powersave(dev_id, phy_addr, A_TRUE);
+			malibu_phy_set_hibernate(dev_id, phy_addr, A_TRUE);
+			/*change malibu control_dac[2:0] of MMD7 0x801A bit[9:7] from 111 to 101*/
+			dac_value = malibu_phy_mmd_read(dev_id, phy_addr, MALIBU_PHY_MMD7_NUM,
+				MALIBU_PHY_MMD7_DAC_CTRL);
+			dac_value &= ~MALIBU_DAC_CTRL_MASK;
+			dac_value |= MALIBU_DAC_CTRL_VALUE;
+			malibu_phy_mmd_write(dev_id, phy_addr, MALIBU_PHY_MMD7_NUM,
+				MALIBU_PHY_MMD7_DAC_CTRL, dac_value);
+
+			/* add 10M and 100M link LED behavior for QFN board*/
+			led_status = malibu_phy_mmd_read(dev_id, phy_addr, MALIBU_PHY_MMD7_NUM,
+				MALIBU_PHY_MMD7_LED_1000_CTRL1);
+			led_status &= ~MALIBU_LED_1000_CTRL1_100_10_MASK;
+			led_status |= MALIBU_LED_1000_CTRL1_100_10_MASK;
+			malibu_phy_mmd_write(dev_id, phy_addr, MALIBU_PHY_MMD7_NUM,
+				MALIBU_PHY_MMD7_LED_1000_CTRL1, led_status);
+		}
+	}
 
 	/*workaround to enable AZ transmitting ability*/
-	malibu_phy_mmd_write(0, PSGMII_ID, MALIBU_PHY_MMD1_NUM,
+	malibu_phy_mmd_write(dev_id, first_phy_addr + 5, MALIBU_PHY_MMD1_NUM,
 			     MALIBU_PSGMII_MODE_CTRL, MALIBU_PHY_PSGMII_MODE_CTRL_ADJUST_VALUE);
 
-	if (malibu_id == MALIBU_1_1) {
-		phy_id = 0;
-	}
-	if (malibu_id == MALIBU_1_1_2PORT) {
-		phy_id = 3;
-	}
-	for (; phy_id < 5; phy_id++) {
-		/*enable phy power saving function by default */
-		malibu_phy_set_8023az(dev_id, phy_id, A_TRUE);
-		malibu_phy_set_powersave(dev_id, phy_id, A_TRUE);
-		malibu_phy_set_hibernate(dev_id, phy_id, A_TRUE);
-		/*change malibu control_dac[2:0] of MMD7 0x801A bit[9:7] from 111 to 101*/
-		dac_value = malibu_phy_mmd_read(dev_id, phy_id, MALIBU_PHY_MMD7_NUM,
-			MALIBU_PHY_MMD7_DAC_CTRL);
-		dac_value &= ~MALIBU_DAC_CTRL_MASK;
-		dac_value |= MALIBU_DAC_CTRL_VALUE;
-		malibu_phy_mmd_write(dev_id, phy_id, MALIBU_PHY_MMD7_NUM,
-			MALIBU_PHY_MMD7_DAC_CTRL, dac_value);
+	/* adjust psgmii serdes tx amp */
+	malibu_phy_reg_write(dev_id, first_phy_addr + 5, MALIBU_PSGMII_TX_DRIVER_1_CTRL,
+		MALIBU_PHY_PSGMII_REDUCE_SERDES_TX_AMP);
 
-		/* add 10M and 100M link LED behavior for QFN board*/
-		led_status = malibu_phy_mmd_read(dev_id, phy_id, MALIBU_PHY_MMD7_NUM,
-			MALIBU_PHY_MMD7_LED_1000_CTRL1);
-		led_status &= ~MALIBU_LED_1000_CTRL1_100_10_MASK;
-		led_status |= MALIBU_LED_1000_CTRL1_100_10_MASK;
-		malibu_phy_mmd_write(dev_id, phy_id, MALIBU_PHY_MMD7_NUM,
-			MALIBU_PHY_MMD7_LED_1000_CTRL1, led_status);
-	}
 	/* to avoid psgmii module goes into hibernation, work with psgmii self test*/
-	phy_data = malibu_phy_mmd_read(0, 4, MALIBU_PHY_MMD3_NUM,
+	phy_data = malibu_phy_mmd_read(dev_id, first_phy_addr + 4, MALIBU_PHY_MMD3_NUM,
 		MALIBU_PHY_MMD3_ADDR_REMOTE_LOOPBACK_CTRL);
 	phy_data &= (~(1<<1));
-	malibu_phy_mmd_write(0, 4, MALIBU_PHY_MMD3_NUM,
+	malibu_phy_mmd_write(dev_id, first_phy_addr + 4, MALIBU_PHY_MMD3_NUM,
 		MALIBU_PHY_MMD3_ADDR_REMOTE_LOOPBACK_CTRL, phy_data);
-
-	/* adjust psgmii serdes tx amp */
-	malibu_phy_reg_write(0, PSGMII_ID, MALIBU_PSGMII_TX_DRIVER_1_CTRL,
-		MALIBU_PHY_PSGMII_REDUCE_SERDES_TX_AMP);
 
 	return SW_OK;
 }
 
-
-static int malibu_phy_probe(a_uint32_t dev_id, struct phy_device *pdev)
+static int malibu_phy_api_ops_init(void)
 {
-	int ret;
-	hsl_phy_ops_t malibu_phy_api_ops = { 0 };
 
-	malibu_phy_api_ops.phy_hibernation_set = malibu_phy_set_hibernate;
-	malibu_phy_api_ops.phy_hibernation_get = malibu_phy_get_hibernate;
-	malibu_phy_api_ops.phy_speed_get = malibu_phy_get_speed;
-	malibu_phy_api_ops.phy_speed_set = malibu_phy_set_speed;
-	malibu_phy_api_ops.phy_duplex_get = malibu_phy_get_duplex;
-	malibu_phy_api_ops.phy_duplex_set = malibu_phy_set_duplex;
-	malibu_phy_api_ops.phy_autoneg_enable_set = malibu_phy_enable_autoneg;
-	malibu_phy_api_ops.phy_restart_autoneg = malibu_phy_restart_autoneg;
-	malibu_phy_api_ops.phy_autoneg_status_get = malibu_phy_autoneg_status;
-	malibu_phy_api_ops.phy_autoneg_adv_set = malibu_phy_set_autoneg_adv;
-	malibu_phy_api_ops.phy_autoneg_adv_get = malibu_phy_get_autoneg_adv;
-	malibu_phy_api_ops.phy_powersave_set = malibu_phy_set_powersave;
-	malibu_phy_api_ops.phy_powersave_get = malibu_phy_get_powersave;
-	malibu_phy_api_ops.phy_cdt = malibu_phy_cdt;
-	malibu_phy_api_ops.phy_link_status_get = malibu_phy_get_link_status;
-        malibu_phy_api_ops.phy_mdix_set = malibu_phy_set_mdix;
-	malibu_phy_api_ops.phy_mdix_get = malibu_phy_get_mdix;
-	malibu_phy_api_ops.phy_mdix_status_get = malibu_phy_get_mdix_status;
-	malibu_phy_api_ops.phy_8023az_set = malibu_phy_set_8023az;
-	malibu_phy_api_ops.phy_8023az_get = malibu_phy_get_8023az;
-	malibu_phy_api_ops.phy_local_loopback_set = malibu_phy_set_local_loopback;
-	malibu_phy_api_ops.phy_local_loopback_get = malibu_phy_get_local_loopback;
-	malibu_phy_api_ops.phy_remote_loopback_set = malibu_phy_set_remote_loopback;
-	malibu_phy_api_ops.phy_remote_loopback_get = malibu_phy_get_remote_loopback;
-	malibu_phy_api_ops.phy_combo_prefer_medium_set = malibu_phy_set_combo_prefer_medium;
-	malibu_phy_api_ops.phy_combo_prefer_medium_get = malibu_phy_get_combo_prefer_medium;
-	malibu_phy_api_ops.phy_combo_medium_status_get = malibu_phy_get_combo_current_medium_type;
-	malibu_phy_api_ops.phy_combo_fiber_mode_set = malibu_phy_set_combo_fiber_mode;
-	malibu_phy_api_ops.phy_combo_fiber_mode_get = malibu_phy_get_combo_fiber_mode;
-	malibu_phy_api_ops.phy_reset = malibu_phy_reset;
-	malibu_phy_api_ops.phy_power_off = malibu_phy_poweroff;
-	malibu_phy_api_ops.phy_power_on = 	malibu_phy_poweron;
-	malibu_phy_api_ops.phy_id_get = malibu_phy_get_phy_id;
-	malibu_phy_api_ops.phy_reg_write = malibu_phy_reg_write;
-	malibu_phy_api_ops.phy_reg_read = malibu_phy_reg_read;
-	malibu_phy_api_ops.phy_debug_write = malibu_phy_debug_write;
-	malibu_phy_api_ops.phy_debug_read = malibu_phy_debug_read;
-	malibu_phy_api_ops.phy_mmd_write = malibu_phy_mmd_write;
-	malibu_phy_api_ops.phy_mmd_read = malibu_phy_mmd_read;
-	malibu_phy_api_ops.phy_magic_frame_mac_set = malibu_phy_set_magic_frame_mac;
-	malibu_phy_api_ops.phy_magic_frame_mac_get = malibu_phy_get_magic_frame_mac;
-	malibu_phy_api_ops.phy_wol_status_set = malibu_phy_set_wol_status;
-	malibu_phy_api_ops.phy_wol_status_get = malibu_phy_get_wol_status;
-	malibu_phy_api_ops.phy_interface_mode_set = malibu_phy_interface_set_mode;
-	malibu_phy_api_ops.phy_interface_mode_get = malibu_phy_interface_get_mode;
-	malibu_phy_api_ops.phy_interface_mode_status_get = malibu_phy_interface_get_mode_status;
-	malibu_phy_api_ops.phy_intr_mask_set = malibu_phy_intr_mask_set;
-	malibu_phy_api_ops.phy_intr_mask_get = malibu_phy_intr_mask_get;
-	malibu_phy_api_ops.phy_intr_status_get = malibu_phy_intr_status_get;
-	malibu_phy_api_ops.phy_counter_set = malibu_phy_set_counter;
-	malibu_phy_api_ops.phy_counter_get = malibu_phy_get_counter;
-	malibu_phy_api_ops.phy_counter_show = malibu_phy_show_counter;
-	ret = hsl_phy_api_ops_register(dev_id, &malibu_phy_api_ops);
+	int ret;
+	hsl_phy_ops_t *malibu_phy_api_ops = NULL;
+
+	malibu_phy_api_ops = kzalloc(sizeof(hsl_phy_ops_t), GFP_KERNEL);
+	if (malibu_phy_api_ops == NULL) {
+		SSDK_ERROR("malibu phy ops kzalloc failed!\n");
+		return -ENOMEM;
+	}
+
+	phy_api_ops_init(MALIBU_PHY_CHIP);
+
+	malibu_phy_api_ops->phy_hibernation_set = malibu_phy_set_hibernate;
+	malibu_phy_api_ops->phy_hibernation_get = malibu_phy_get_hibernate;
+	malibu_phy_api_ops->phy_speed_get = malibu_phy_get_speed;
+	malibu_phy_api_ops->phy_speed_set = malibu_phy_set_speed;
+	malibu_phy_api_ops->phy_duplex_get = malibu_phy_get_duplex;
+	malibu_phy_api_ops->phy_duplex_set = malibu_phy_set_duplex;
+	malibu_phy_api_ops->phy_autoneg_enable_set = malibu_phy_enable_autoneg;
+	malibu_phy_api_ops->phy_restart_autoneg = malibu_phy_restart_autoneg;
+	malibu_phy_api_ops->phy_autoneg_status_get = malibu_phy_autoneg_status;
+	malibu_phy_api_ops->phy_autoneg_adv_set = malibu_phy_set_autoneg_adv;
+	malibu_phy_api_ops->phy_autoneg_adv_get = malibu_phy_get_autoneg_adv;
+	malibu_phy_api_ops->phy_powersave_set = malibu_phy_set_powersave;
+	malibu_phy_api_ops->phy_powersave_get = malibu_phy_get_powersave;
+	malibu_phy_api_ops->phy_cdt = malibu_phy_cdt;
+	malibu_phy_api_ops->phy_link_status_get = malibu_phy_get_link_status;
+	malibu_phy_api_ops->phy_mdix_set = malibu_phy_set_mdix;
+	malibu_phy_api_ops->phy_mdix_get = malibu_phy_get_mdix;
+	malibu_phy_api_ops->phy_mdix_status_get = malibu_phy_get_mdix_status;
+	malibu_phy_api_ops->phy_8023az_set = malibu_phy_set_8023az;
+	malibu_phy_api_ops->phy_8023az_get = malibu_phy_get_8023az;
+	malibu_phy_api_ops->phy_local_loopback_set = malibu_phy_set_local_loopback;
+	malibu_phy_api_ops->phy_local_loopback_get = malibu_phy_get_local_loopback;
+	malibu_phy_api_ops->phy_remote_loopback_set = malibu_phy_set_remote_loopback;
+	malibu_phy_api_ops->phy_remote_loopback_get = malibu_phy_get_remote_loopback;
+	malibu_phy_api_ops->phy_combo_prefer_medium_set = malibu_phy_set_combo_prefer_medium;
+	malibu_phy_api_ops->phy_combo_prefer_medium_get = malibu_phy_get_combo_prefer_medium;
+	malibu_phy_api_ops->phy_combo_medium_status_get = malibu_phy_get_combo_current_medium_type;
+	malibu_phy_api_ops->phy_combo_fiber_mode_set = malibu_phy_set_combo_fiber_mode;
+	malibu_phy_api_ops->phy_combo_fiber_mode_get = malibu_phy_get_combo_fiber_mode;
+	malibu_phy_api_ops->phy_reset = malibu_phy_reset;
+	malibu_phy_api_ops->phy_power_off = malibu_phy_poweroff;
+	malibu_phy_api_ops->phy_power_on = 	malibu_phy_poweron;
+	malibu_phy_api_ops->phy_id_get = malibu_phy_get_phy_id;
+	malibu_phy_api_ops->phy_reg_write = malibu_phy_reg_write;
+	malibu_phy_api_ops->phy_reg_read = malibu_phy_reg_read;
+	malibu_phy_api_ops->phy_debug_write = malibu_phy_debug_write;
+	malibu_phy_api_ops->phy_debug_read = malibu_phy_debug_read;
+	malibu_phy_api_ops->phy_mmd_write = malibu_phy_mmd_write;
+	malibu_phy_api_ops->phy_mmd_read = malibu_phy_mmd_read;
+	malibu_phy_api_ops->phy_magic_frame_mac_set = malibu_phy_set_magic_frame_mac;
+	malibu_phy_api_ops->phy_magic_frame_mac_get = malibu_phy_get_magic_frame_mac;
+	malibu_phy_api_ops->phy_wol_status_set = malibu_phy_set_wol_status;
+	malibu_phy_api_ops->phy_wol_status_get = malibu_phy_get_wol_status;
+	malibu_phy_api_ops->phy_interface_mode_set = malibu_phy_interface_set_mode;
+	malibu_phy_api_ops->phy_interface_mode_get = malibu_phy_interface_get_mode;
+	malibu_phy_api_ops->phy_interface_mode_status_get = malibu_phy_interface_get_mode_status;
+	malibu_phy_api_ops->phy_intr_mask_set = malibu_phy_intr_mask_set;
+	malibu_phy_api_ops->phy_intr_mask_get = malibu_phy_intr_mask_get;
+	malibu_phy_api_ops->phy_intr_status_get = malibu_phy_intr_status_get;
+	malibu_phy_api_ops->phy_counter_set = malibu_phy_set_counter;
+	malibu_phy_api_ops->phy_counter_get = malibu_phy_get_counter;
+	malibu_phy_api_ops->phy_counter_show = malibu_phy_show_counter;
+
+	ret = hsl_phy_api_ops_register(MALIBU_PHY_CHIP, malibu_phy_api_ops);
 
 	if (ret == 0)
-		printk("qca probe malibu phy driver succeeded!\n");
+		SSDK_INFO("qca probe malibu phy driver succeeded!\n");
 	else
-		printk("qca probe malibu phy driver failed! (code: %d)\n", ret);
-
-	malibu_phy_hw_init();
-
+		SSDK_ERROR("qca probe malibu phy driver failed! (code: %d)\n", ret);
 	return ret;
 }
-
 
 /******************************************************************************
 *
 * malibu_phy_init -
 *
 */
-
-
-int malibu_phy_init(a_uint32_t dev_id)
+int malibu_phy_init(a_uint32_t dev_id, a_uint32_t port_bmp)
 {
-	phy_api_ops_init(dev_id);
-	return malibu_phy_probe(dev_id, (struct phy_device *)NULL);
+	static a_uint32_t phy_ops_flag = 0;
+
+	if(phy_ops_flag == 0) {
+		malibu_phy_api_ops_init();
+		phy_ops_flag = 1;
+	}
+	malibu_phy_hw_init(dev_id, port_bmp);
+
+	return 0;
 }
 

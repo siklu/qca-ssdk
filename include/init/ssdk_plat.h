@@ -252,7 +252,6 @@ struct qca_phy_priv {
     a_uint16_t pvid[AR8327_NUM_PORTS];
 	u8 __iomem *hw_addr;
 	u8 __iomem *psgmii_hw_addr;
-	int phy_address[5];
 };
 
 struct ipq40xx_mdio_data {
