@@ -75,6 +75,10 @@ extern "C" {
 	typedef sw_error_t
 	(*uniphy_reg_get) (a_uint32_t dev_id, a_uint32_t index, a_uint32_t reg_addr, a_uint8_t *reg_data, a_uint32_t len);
 
+	typedef void (*mii_reg_set)(a_uint32_t reg, a_uint32_t val);
+
+	typedef a_uint32_t (*mii_reg_get)(a_uint32_t reg);
+
 enum ssdk_port_wrapper_cfg {
 	PORT_WRAPPER_PSGMII = 0,
 	PORT_WRAPPER_PSGMII_RGMII5,
@@ -104,6 +108,8 @@ enum ssdk_port_wrapper_cfg {
         psgmii_reg_get     psgmii_reg_get;
         uniphy_reg_set     uniphy_reg_set;
         uniphy_reg_get     uniphy_reg_get;
+	mii_reg_set	mii_reg_set;
+	mii_reg_get	mii_reg_get;
     } hsl_reg_func;
 
     typedef struct

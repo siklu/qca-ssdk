@@ -3818,6 +3818,8 @@ static void ssdk_cfg_default_init(ssdk_init_cfg *cfg)
 	cfg->reg_func.mdio_get = qca_ar8327_phy_read;
 	cfg->reg_func.header_reg_set = qca_switch_reg_write;
 	cfg->reg_func.header_reg_get = qca_switch_reg_read;
+	cfg->reg_func.mii_reg_set = qca_ar8216_mii_write;
+	cfg->reg_func.mii_reg_get = qca_ar8216_mii_read;
 	/*will delete later, if dts merged*/
 	cfg->port_cfg.cpu_bmp = 0x1;
 	cfg->port_cfg.lan_bmp = 0x1e;

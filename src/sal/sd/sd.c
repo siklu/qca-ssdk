@@ -29,6 +29,8 @@ psgmii_reg_set  ssdk_psgmii_reg_set = NULL;
 psgmii_reg_get  ssdk_psgmii_reg_get = NULL;
 uniphy_reg_set  ssdk_uniphy_reg_set = NULL;
 uniphy_reg_get  ssdk_uniphy_reg_get = NULL;
+mii_reg_set	ssdk_mii_reg_set = NULL;
+mii_reg_get	ssdk_mii_reg_get = NULL;
 
 
 sw_error_t
@@ -206,6 +208,28 @@ sd_reg_uniphy_get(a_uint32_t dev_id, a_uint32_t index, a_uint32_t reg_addr,
     return rv;
 }
 
+void
+sd_reg_mii_set(a_uint32_t reg, a_uint32_t val)
+{
+    if (NULL != ssdk_mii_reg_set)
+    {
+        ssdk_mii_reg_set(reg, val);
+    }
+}
+
+a_uint32_t
+sd_reg_mii_get(a_uint32_t reg)
+{
+    a_uint32_t value = 0;
+
+    if (NULL != ssdk_mii_reg_get)
+    {
+        value = ssdk_mii_reg_get(reg);
+    }
+
+    return value;
+}
+
 sw_error_t
 sd_init(a_uint32_t dev_id, ssdk_init_cfg * cfg)
 {
@@ -246,6 +270,16 @@ sd_init(a_uint32_t dev_id, ssdk_init_cfg * cfg)
     if (NULL != cfg->reg_func.uniphy_reg_get)
     {
         ssdk_uniphy_reg_get = cfg->reg_func.uniphy_reg_get;
+    }
+
+    if (NULL != cfg->reg_func.mii_reg_set)
+    {
+        ssdk_mii_reg_set = cfg->reg_func.mii_reg_set;
+    }
+
+    if (NULL != cfg->reg_func.mii_reg_get)
+    {
+        ssdk_mii_reg_get = cfg->reg_func.mii_reg_get;
     }
 
     return SW_OK;
