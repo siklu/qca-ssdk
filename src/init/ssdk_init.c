@@ -3295,7 +3295,7 @@ qca_hppe_qm_hw_init(void)
 	 */
 	queue_dst.service_code_en = A_TRUE;
 	queue_dst.service_code = 2;
-	fal_ucast_queue_base_profile_set(0, &queue_dst, 1, 0);
+	fal_ucast_queue_base_profile_set(0, &queue_dst, 8, 0);
 
 	queue_dst.service_code = 3;
 	fal_ucast_queue_base_profile_set(0, &queue_dst, 128, 0);
@@ -3313,6 +3313,56 @@ qca_hppe_qm_hw_init(void)
 		qbase = ssdk_dt_global.scheduler_cfg.pool[i].ucastq_start;
 		fal_ucast_queue_base_profile_set(0, &queue_dst, qbase, i);
 	}
+
+	/*
+	 * Enable PPE source profile 1 and map it to PPE queue 4
+	 */
+	memset(&queue_dst, 0, sizeof(queue_dst));
+	queue_dst.src_profile = 1;
+
+	/*
+	 * Enable service code mapping for profile 1
+	 */
+	queue_dst.service_code_en = A_TRUE;
+	for (i = 0; i < SSDK_MAX_SERVICE_CODE_NUM; i++) {
+		queue_dst.service_code = i;
+
+		if (i == 2) {
+			fal_ucast_queue_base_profile_set(0, &queue_dst, 8, 0);
+		} else if (i == 3 || i == 4) {
+			fal_ucast_queue_base_profile_set(0, &queue_dst, 128, 0);
+		} else {
+			fal_ucast_queue_base_profile_set(0, &queue_dst, 4, 0);
+		}
+	}
+	queue_dst.service_code_en = A_FALSE;
+	queue_dst.service_code = 0;
+
+	/*
+	 * Enable cpu code mapping for profile 1
+	 */
+	queue_dst.cpu_code_en = A_TRUE;
+	for (i = 0; i < SSDK_MAX_CPU_CODE_NUM; i++) {
+		queue_dst.cpu_code = i;
+		fal_ucast_queue_base_profile_set(0, &queue_dst, 4, 0);
+	}
+	queue_dst.cpu_code_en = A_FALSE;
+	queue_dst.cpu_code = 0;
+
+	/*
+	 * Enable destination port mappings for profile 1
+	 */
+	for (i = 0; i < SSDK_MAX_PORT_NUM; i++) {
+		queue_dst.dst_port = i;
+		qbase = ssdk_dt_global.scheduler_cfg.pool[i].ucastq_start;
+		fal_ucast_queue_base_profile_set(0, &queue_dst, qbase, i);
+	}
+
+	for (i = SSDK_MAX_PORT_NUM; i < SSDK_MAX_VIRTUAL_PORT_NUM; i++) {
+		queue_dst.dst_port = i;
+		fal_ucast_queue_base_profile_set(0, &queue_dst, 4, 0);
+	}
+	queue_dst.dst_port = 0;
 
 	/* queue ac*/
 	ac_ctrl.ac_en = 1;
@@ -3392,9 +3442,11 @@ qca_hppe_qos_scheduler_hw_init(void)
 
 	/* queue--edma ring mapping*/
 	memset(&queue_bmp, 0, sizeof(queue_bmp));
-	queue_bmp.bmp[0] = 1;
+	queue_bmp.bmp[0] = 0xF;
 	fal_edma_ring_queue_map_set(0, 0, &queue_bmp);
-	queue_bmp.bmp[0] = 2;
+	queue_bmp.bmp[0] = 0xF0;
+	fal_edma_ring_queue_map_set(0, 3, &queue_bmp);
+	queue_bmp.bmp[0] = 0xF00;
 	fal_edma_ring_queue_map_set(0, 1, &queue_bmp);
 	queue_bmp.bmp[0] = 0;
 	queue_bmp.bmp[4] = 0xFFFF;
