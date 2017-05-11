@@ -3099,6 +3099,15 @@ adpt_hppe_gcc_uniphy_clock_status_set(a_uint32_t dev_id, a_uint32_t port_id,
 	return;
 }
 
+void
+adpt_hppe_gcc_mac_clock_status_set(a_uint32_t dev_id, a_uint32_t port_id,
+				a_bool_t enable)
+{
+
+	qca_hppe_gcc_mac_port_clock_set(dev_id, port_id, enable);
+
+	return;
+}
 a_bool_t
 adpt_hppe_port_phy_status_change(struct qca_phy_priv *priv, a_uint32_t port_id,
 				struct port_phy_status phy_status)
@@ -3152,6 +3161,7 @@ qca_hppe_mac_sw_sync_task(struct qca_phy_priv *priv)
 			if (status == A_TRUE)
 			{
 				adpt_hppe_gcc_uniphy_clock_status_set(priv->device_id, port_id, A_FALSE);
+				adpt_hppe_gcc_mac_clock_status_set(priv->device_id, port_id, A_FALSE);
 				if ((a_uint32_t)phy_status.speed != priv->port_old_speed[port_id - 1])
 				{
 					/* configure gcc speed clock according to port current speed */
@@ -3180,6 +3190,7 @@ qca_hppe_mac_sw_sync_task(struct qca_phy_priv *priv)
 					adpt_hppe_port_txfc_status_set(priv->device_id, port_id, (a_bool_t)phy_status.rx_flowctrl);
 					priv->port_old_rx_flowctrl[port_id - 1] = phy_status.rx_flowctrl;
 				}
+				adpt_hppe_gcc_mac_clock_status_set(priv->device_id, port_id, A_TRUE);
 				adpt_hppe_gcc_uniphy_clock_status_set(priv->device_id, port_id, A_TRUE);
 				adpt_hppe_uniphy_port_adapter_reset(priv->device_id, port_id);
 			}

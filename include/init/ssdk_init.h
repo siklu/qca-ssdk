@@ -383,6 +383,9 @@ uint32_t
 qca_hppe_gcc_uniphy_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr,
 			a_uint8_t * reg_data, a_uint32_t len);
 
+void
+qca_hppe_gcc_mac_port_clock_set(a_uint32_t dev_id, a_uint32_t port_id, a_bool_t enable);
+
 #ifdef __cplusplus
 }
 #endif                          /* __cplusplus */

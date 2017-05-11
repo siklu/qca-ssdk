@@ -132,6 +132,7 @@ ssdk_dt_cfg ssdk_dt_global = {0};
 void __iomem *gcc_uniphy_base = NULL;
 void __iomem *gcc_hppe_clock_config1_base = NULL;
 void __iomem *gcc_hppe_clock_config2_base = NULL;
+void __iomem *gcc_hppe_clock_config3_base = NULL;
 
 a_uint32_t ssdk_dt_global_get_mac_mode(a_uint32_t index)
 {
@@ -3525,6 +3526,13 @@ qca_hppe_gcc_speed_clock_init(void)
 	}
 	printk("Get gcc hppe colck config2 address successfully!\n");
 
+	gcc_hppe_clock_config3_base = ioremap_nocache(0x01868240, 0x2c);
+	if (!gcc_hppe_clock_config3_base) {
+		printk("can't get gcc hppe colck config3 address!\n");
+		return -1;
+	}
+	printk("Get gcc hppe colck config3 address successfully!\n");
+
 	return 0;
 }
 
@@ -3593,6 +3601,38 @@ qca_hppe_gcc_speed_clock2_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr,
 
 	return 0;
 }
+uint32_t
+qca_hppe_gcc_mac_clock_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr,
+				a_uint8_t * reg_data, a_uint32_t len)
+{
+	if (len != sizeof (a_uint32_t))
+        return SW_BAD_LEN;
+
+	if ((reg_addr%4)!= 0)
+	return SW_BAD_PARAM;
+
+	writel(reg_data, gcc_hppe_clock_config3_base + reg_addr);
+
+	return 0;
+}
+
+uint32_t
+qca_hppe_gcc_mac_clock_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr,
+				a_uint8_t * reg_data, a_uint32_t len)
+{
+	uint32_t reg_val = 0;
+
+	if (len != sizeof (a_uint32_t))
+        return SW_BAD_LEN;
+
+	if ((reg_addr%4)!= 0)
+	return SW_BAD_PARAM;
+
+	reg_val = readl(gcc_hppe_clock_config3_base + reg_addr);
+	aos_mem_copy(reg_data, &reg_val, sizeof (a_uint32_t));
+
+	return 0;
+}
 
 uint32_t
 qca_hppe_gcc_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
@@ -3644,6 +3684,27 @@ qca_hppe_gcc_uniphy_port_clock_set(a_uint32_t dev_id, a_uint32_t uniphy_index,
 	}
 
 }
+
+void
+qca_hppe_gcc_mac_port_clock_set(a_uint32_t dev_id, a_uint32_t port_id, a_bool_t enable)
+{
+	a_uint32_t i, reg_value;
+
+	for (i = 0; i < 2; i++)
+	{
+		reg_value = 0;
+		qca_hppe_gcc_mac_clock_reg_read(dev_id, ((i * 4) + 0x8 * (port_id - 1)),
+				(a_uint8_t *)&reg_value, 4);
+		if (enable == A_TRUE)
+			reg_value |= 0x1;
+		else
+			reg_value &= ~0x1;
+		qca_hppe_gcc_mac_clock_reg_write(dev_id, ((i * 4)+ 0x8 * (port_id - 1)),
+				(a_uint8_t *)&reg_value, 4);
+	}
+
+}
+
 static sw_error_t
 qca_hppe_port_mux_set(fal_port_t port_id, a_uint32_t mode1, a_uint32_t mode2)
 {
