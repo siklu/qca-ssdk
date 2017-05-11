@@ -3306,6 +3306,9 @@ qca_hppe_qm_hw_init(void)
 	queue_dst.service_code = 5;
 	fal_ucast_queue_base_profile_set(0, &queue_dst, 0, 0);
 
+	queue_dst.service_code = 6;
+	fal_ucast_queue_base_profile_set(0, &queue_dst, 8, 0);
+
 	queue_dst.service_code_en = A_FALSE;
 	queue_dst.service_code = 0;
 	for(i = 0; i < SSDK_MAX_PORT_NUM; i++) {
@@ -3327,7 +3330,7 @@ qca_hppe_qm_hw_init(void)
 	for (i = 0; i < SSDK_MAX_SERVICE_CODE_NUM; i++) {
 		queue_dst.service_code = i;
 
-		if (i == 2) {
+		if (i == 2 || i == 6) {
 			fal_ucast_queue_base_profile_set(0, &queue_dst, 8, 0);
 		} else if (i == 3 || i == 4) {
 			fal_ucast_queue_base_profile_set(0, &queue_dst, 128, 0);
