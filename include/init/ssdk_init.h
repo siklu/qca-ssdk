@@ -24,7 +24,10 @@ extern "C" {
 #include "common/sw.h"
 #include "fal_led.h"
 
-#define SSDK_MAX_PORT_NUM 8
+#define SSDK_MAX_PORT_NUM		8
+#define SSDK_MAX_VIRTUAL_PORT_NUM	256
+#define SSDK_MAX_SERVICE_CODE_NUM	256
+#define SSDK_MAX_CPU_CODE_NUM		256
 #define SSDK_L0SCHEDULER_CFG_MAX	300
 #define SSDK_L0SCHEDULER_UCASTQ_CFG_MAX	256
 #define SSDK_L1SCHEDULER_CFG_MAX	64
