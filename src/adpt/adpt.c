@@ -147,6 +147,7 @@ sw_error_t adpt_module_func_ctrl_set(a_uint32_t dev_id,
 	} else if (module == FAL_MODULE_PORTCTRL) {
 		p_adpt_api->adpt_port_ctrl_func_bitmap[0] = func_ctrl->bitmap[0];
 		p_adpt_api->adpt_port_ctrl_func_bitmap[1] = func_ctrl->bitmap[1];
+		p_adpt_api->adpt_port_ctrl_func_bitmap[2] = func_ctrl->bitmap[2];
 	} else if (module == FAL_MODULE_SHAPER) {
 		p_adpt_api->adpt_shaper_func_bitmap = func_ctrl->bitmap[0];
 	} else if(module == FAL_MODULE_MIB){
@@ -220,6 +221,7 @@ sw_error_t adpt_module_func_ctrl_get(a_uint32_t dev_id,
 	} else if (module == FAL_MODULE_PORTCTRL) {
 		func_ctrl->bitmap[0] = p_adpt_api->adpt_port_ctrl_func_bitmap[0];
 		func_ctrl->bitmap[1] = p_adpt_api->adpt_port_ctrl_func_bitmap[1];
+		func_ctrl->bitmap[2] = p_adpt_api->adpt_port_ctrl_func_bitmap[2];
 	} else if (module == FAL_MODULE_SHAPER) {
 		func_ctrl->bitmap[0] = p_adpt_api->adpt_shaper_func_bitmap;
 	} else if(module == FAL_MODULE_MIB) {

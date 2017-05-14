@@ -666,9 +666,17 @@ cmd_data_check_fiber_mode(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
     if (cmd_str == NULL)
         return SW_BAD_PARAM;
     if (!strncasecmp(cmd_str, "100fx", 6))
-        *arg_val = PHY_FIBER_100FX;
+    {
+	*arg_val = PHY_FIBER_100FX;
+    }
     else if (!strncasecmp(cmd_str, "1000bx", 7))
-        *arg_val = PHY_FIBER_1000BX;
+    {
+	*arg_val = PHY_FIBER_1000BX;
+    }
+    else if (!strncasecmp(cmd_str, "10g_r", 7))
+    {
+	*arg_val = PHY_FIBER_10G_R;
+    }
     else
     {
         return SW_BAD_VALUE;
@@ -793,15 +801,45 @@ cmd_data_check_interface_mode(char *cmd_str, a_uint32_t * arg_val, a_uint32_t si
         return SW_BAD_PARAM;
 
     if (!strncasecmp(cmd_str, "psgmii_baset", 13))
-        *arg_val = PHY_PSGMII_BASET;
+     {
+	*arg_val = PHY_PSGMII_BASET;
+     }
     else if (!strncasecmp(cmd_str, "psgmii_bx1000", 14))
-        *arg_val = PHY_PSGMII_BX1000;
+    {
+	*arg_val = PHY_PSGMII_BX1000;
+    }
     else if (!strncasecmp(cmd_str, "psgmii_fx100", 13))
-        *arg_val = PHY_PSGMII_FX100;
+    {
+	*arg_val = PHY_PSGMII_FX100;
+    }
     else if (!strncasecmp(cmd_str, "psgmii_amdet", 13))
-        *arg_val = PHY_PSGMII_AMDET;
+    {
+	*arg_val = PHY_PSGMII_AMDET;
+    }
     else if (!strncasecmp(cmd_str, "sgmii_baset", 13))
-        *arg_val = PHY_SGMII_BASET;
+    {
+	*arg_val = PHY_SGMII_BASET;
+    }
+    else if (!strncasecmp(cmd_str, "qsgmii", 13))
+    {
+	*arg_val = PORT_QSGMII;
+    }
+    else if (!strncasecmp(cmd_str, "sgmii_plus", 13))
+    {
+	*arg_val = PORT_SGMII_PLUS;
+    }
+    else if (!strncasecmp(cmd_str, "usxgmii", 13))
+    {
+	*arg_val = PORT_USXGMII;
+    }
+    else if (!strncasecmp(cmd_str, "10gbase_r", 13))
+    {
+	*arg_val = PORT_10GBASE_R;
+    }
+    else if (!strncasecmp(cmd_str, "interfacemode_max", 20))
+    {
+	*arg_val = PORT_INTERFACE_MODE_MAX;
+    }
     else
     {
         return SW_BAD_VALUE;

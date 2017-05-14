@@ -133,6 +133,7 @@ void __iomem *gcc_uniphy_base = NULL;
 void __iomem *gcc_hppe_clock_config1_base = NULL;
 void __iomem *gcc_hppe_clock_config2_base = NULL;
 void __iomem *gcc_hppe_clock_config3_base = NULL;
+struct qca_phy_priv *qca_phy_priv_global;
 
 a_uint32_t ssdk_dt_global_get_mac_mode(a_uint32_t index)
 {
@@ -142,6 +143,25 @@ a_uint32_t ssdk_dt_global_get_mac_mode(a_uint32_t index)
 		return ssdk_dt_global.mac_mode1;
 	if (index == 2)
 		return ssdk_dt_global.mac_mode2;
+
+	return 0;
+}
+
+a_uint32_t ssdk_dt_global_set_mac_mode(a_uint32_t index, a_uint32_t mode)
+{
+	if (index == 0)
+	{
+		 ssdk_dt_global.mac_mode= mode;
+	}
+	if (index == 1)
+	{
+		 ssdk_dt_global.mac_mode1 = mode;
+	}
+	if (index == 2)
+	{
+		 ssdk_dt_global.mac_mode2 = mode;
+	}
+
 	return 0;
 }
 
@@ -153,6 +173,16 @@ qca_hppe_port_mac_type_get(a_uint32_t dev_id, a_uint32_t port_id)
 	if ((port_id < 1) || (port_id > 6))
 		return 0;
 	return hppe_port_type[port_id - 1];
+}
+
+a_uint32_t
+qca_hppe_port_mac_type_set(a_uint32_t dev_id, a_uint32_t port_id, a_uint32_t port_type)
+{
+	 if ((port_id < 1) || (port_id > 6))
+		 return 0;
+	hppe_port_type[port_id - 1] = port_type;
+
+	return 0;
 }
 
 static void
@@ -1300,16 +1330,17 @@ dess_rgmii_mac_work_stop(struct qca_phy_priv *priv)
 #endif
 
 void
-qca_mac_sw_sync_port_status_init(struct qca_phy_priv *priv)
+qca_mac_sw_sync_port_status_init(void)
 {
 	a_uint32_t port_id;
 
 	for (port_id = 1; port_id < AR8327_NUM_PORTS; port_id ++) {
-		priv->port_old_link[port_id - 1] = 0;
-		priv->port_old_speed[port_id - 1] = FAL_SPEED_BUTT;
-		priv->port_old_duplex[port_id - 1] = FAL_DUPLEX_BUTT;
-		priv->port_old_tx_flowctrl[port_id - 1] = 1;
-		priv->port_old_rx_flowctrl[port_id - 1] = 1;
+
+		qca_phy_priv_global->port_old_link[port_id - 1] = 0;
+		qca_phy_priv_global->port_old_speed[port_id - 1] = FAL_SPEED_BUTT;
+		qca_phy_priv_global->port_old_duplex[port_id - 1] = FAL_DUPLEX_BUTT;
+		qca_phy_priv_global->port_old_tx_flowctrl[port_id - 1] = 0;
+		qca_phy_priv_global->port_old_rx_flowctrl[port_id - 1] = 0;
 	}
 }
 void
@@ -1340,7 +1371,7 @@ qca_mac_sw_sync_work_start(struct qca_phy_priv *priv)
 	if (priv->version != QCA_VER_HPPE)
 		return 0;
 
-	qca_mac_sw_sync_port_status_init(priv);
+	qca_mac_sw_sync_port_status_init();
 
 	mutex_init(&priv->mac_sw_sync_lock);
 
@@ -1465,8 +1496,6 @@ qca_phy_config_init(struct phy_device *pdev)
 
 	return ret;
 }
-
-struct qca_phy_priv *qca_phy_priv_global;
 
 #if defined(DESS) || defined(HPPE)
 static int ssdk_switch_register(void)
@@ -4113,113 +4142,12 @@ qca_hppe_gcc_mac_port_clock_set(a_uint32_t dev_id, a_uint32_t port_id, a_bool_t 
 }
 
 static sw_error_t
-qca_hppe_port_mux_set(fal_port_t port_id, a_uint32_t mode1, a_uint32_t mode2)
-{
-	adpt_api_t *p_api;
-	a_uint32_t  mode = 0;
-	sw_error_t rv = SW_OK;
-
-	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(0));
-
-	if ((NULL == p_api->adpt_port_mac_mux_set) || (NULL == p_api->adpt_port_mac_speed_set) ||
-				(NULL == p_api->adpt_port_mac_duplex_set))
-		return SW_NOT_SUPPORTED;
-
-	if (hppe_port_type[port_id - 1] == PORT_GMAC_TYPE)
-	{
-		rv = p_api->adpt_port_mac_speed_set(0, port_id, FAL_SPEED_1000);
-		rv = p_api->adpt_port_mac_duplex_set(0, port_id, FAL_FULL_DUPLEX);
-	}
-	else if (hppe_port_type[port_id - 1] == PORT_XGMAC_TYPE)
-	{
-		if (port_id == HPPE_MUX_PORT1)
-			mode = mode1;
-		else if (port_id == HPPE_MUX_PORT2)
-			mode = mode2;
-		if (mode == PORT_WRAPPER_SGMII_PLUS)
-		{
-			rv = p_api->adpt_port_mac_speed_set(0, port_id, FAL_SPEED_2500);
-			rv = p_api->adpt_port_mac_duplex_set(0, port_id, FAL_FULL_DUPLEX);
-		}
-		else
-		{
-			rv = p_api->adpt_port_mac_speed_set(0, port_id, FAL_SPEED_10000);
-			rv = p_api->adpt_port_mac_duplex_set(0, port_id, FAL_FULL_DUPLEX);
-		}
-	}
-	if ((hppe_port_type[port_id - 1] == PORT_GMAC_TYPE) ||
-			(hppe_port_type[port_id - 1] == PORT_XGMAC_TYPE))
-		rv = p_api->adpt_port_mac_mux_set(0, port_id, hppe_port_type[port_id - 1]);
-
-	return rv;
-}
-
-static sw_error_t
-qca_hppe_port_mac_type_set(a_uint32_t port_id, a_uint32_t mode)
-{
-	sw_error_t rv = SW_OK;
-
-	switch (mode) {
-
-		case PORT_WRAPPER_PSGMII:
-		case PORT_WRAPPER_QSGMII:
-		case PORT_WRAPPER_SGMII0_RGMII4:
-		case PORT_WRAPPER_SGMII1_RGMII4:
-		case PORT_WRAPPER_SGMII4_RGMII4:
-			hppe_port_type[port_id - 1] = PORT_GMAC_TYPE;
-			break;
-		case PORT_WRAPPER_SGMII_PLUS:
-		case PORT_WRAPPER_USXGMII:
-		case PORT_WRAPPER_10GBASE_R:
-			hppe_port_type[port_id - 1] = PORT_XGMAC_TYPE;
-			break;
-	}
-	return rv;
-}
-static sw_error_t
-qca_hppe_port_mux_mac_type_init(a_uint32_t mode0, a_uint32_t mode1, a_uint32_t mode2)
-{
-	sw_error_t rv = SW_OK;
-	fal_port_t port_id;
-
-	switch (mode0) {
-		case PORT_WRAPPER_PSGMII:
-			for(port_id = 1; port_id < 6; port_id++) {
-				qca_hppe_port_mac_type_set(port_id, mode0);
-			}
-			break;
-		case PORT_WRAPPER_QSGMII:
-			for(port_id = 1; port_id < 5; port_id++) {
-				qca_hppe_port_mac_type_set(port_id, mode0);
-			}
-			break;
-		case PORT_WRAPPER_SGMII0_RGMII4:
-			qca_hppe_port_mac_type_set(1, mode0);
-			break;
-		case PORT_WRAPPER_SGMII1_RGMII4:
-			qca_hppe_port_mac_type_set(2, mode0);
-			break;
-		case PORT_WRAPPER_SGMII4_RGMII4:
-			qca_hppe_port_mac_type_set(5, mode0);
-			break;
-	}
-
-	qca_hppe_port_mac_type_set(5, mode1);
-	qca_hppe_port_mac_type_set(6, mode2);
-
-	for (port_id = 1; port_id < 7; port_id++) {
-		qca_hppe_port_mux_set(port_id,mode1, mode2);
-	}
-
-	return rv;
-}
-
-static sw_error_t
 qca_hppe_interface_mode_init(a_uint32_t mode0, a_uint32_t mode1, a_uint32_t mode2)
 {
 
 	adpt_api_t *p_api;
 	sw_error_t rv = SW_OK;
+	fal_port_t port_id;
 
 	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(0));
 
@@ -4227,10 +4155,20 @@ qca_hppe_interface_mode_init(a_uint32_t mode0, a_uint32_t mode1, a_uint32_t mode
 		return SW_NOT_SUPPORTED;
 
 	rv = p_api->adpt_uniphy_mode_set(0, HPPE_UNIPHY_INSTANCE0, mode0);
+
 	rv = p_api->adpt_uniphy_mode_set(0, HPPE_UNIPHY_INSTANCE1, mode1);
+
 	rv = p_api->adpt_uniphy_mode_set(0, HPPE_UNIPHY_INSTANCE2, mode2);
 
-	rv = qca_hppe_port_mux_mac_type_init(mode0, mode1, mode2);
+	for(port_id =1; port_id <=6; port_id++)
+	{
+		rv = p_api->adpt_port_mux_mac_type_set(0, port_id, mode0, mode1, mode2);
+		if(rv != SW_OK)
+		{
+			SSDK_ERROR("port_id:%d, mode0:%d, mode1:%d, mode2:%d\n", port_id, mode0, mode1, mode2);
+			break;
+		}
+	}
 
 	return rv;
 }

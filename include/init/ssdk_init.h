@@ -101,6 +101,9 @@ enum ssdk_port_wrapper_cfg {
 	PORT_WRAPPER_SGMII_PLUS,
 	PORT_WRAPPER_USXGMII,
 	PORT_WRAPPER_10GBASE_R,
+	PORT_WRAPPER_SGMII_CHANNEL0,
+	PORT_WRAPPER_SGMII_CHANNEL1,
+	PORT_WRAPPER_SGMII_CHANNEL4,
 	PORT_WRAPPER_MAX = 0xFF
 };
 
@@ -360,6 +363,7 @@ sw_error_t
 ssdk_hsl_access_mode_set(a_uint32_t dev_id, hsl_access_mode reg_mode);
 
 a_uint32_t ssdk_dt_global_get_mac_mode(a_uint32_t index);
+a_uint32_t ssdk_dt_global_set_mac_mode(a_uint32_t index, a_uint32_t mode);
 
 uint32_t
 qca_hppe_gcc_speed_clock1_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr,
@@ -380,6 +384,8 @@ qca_hppe_gcc_speed_clock2_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr,
 
 a_uint32_t
 qca_hppe_port_mac_type_get(a_uint32_t dev_id, a_uint32_t port_id);
+a_uint32_t
+qca_hppe_port_mac_type_set(a_uint32_t dev_id, a_uint32_t port_id, a_uint32_t port_type);
 
 void
 qca_hppe_gcc_uniphy_port_clock_set(a_uint32_t dev_id, a_uint32_t uniphy_index,
@@ -393,6 +399,9 @@ qca_hppe_gcc_uniphy_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr,
 
 void
 qca_hppe_gcc_mac_port_clock_set(a_uint32_t dev_id, a_uint32_t port_id, a_bool_t enable);
+
+void
+qca_mac_sw_sync_port_status_init(void);
 
 #ifdef __cplusplus
 }

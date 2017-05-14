@@ -1571,7 +1571,6 @@ _fal_port_interface_mode_set (a_uint32_t dev_id, fal_port_t port_id, fal_port_in
   sw_error_t rv;
   hsl_api_t *p_api;
     adpt_api_t *p_adpt_api;
-
     if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
         if (NULL == p_adpt_api->adpt_port_interface_mode_set)
             return SW_NOT_SUPPORTED;
@@ -3146,6 +3145,39 @@ fal_port_interface_mode_set (a_uint32_t dev_id, fal_port_t port_id, fal_port_int
 }
 
 /**
+ * @brief interface mode  on a particular port.
+ * @param[in] dev_id device id
+ * @return SW_OK or error code
+ */
+ static sw_error_t
+_fal_port_interface_mode_apply (a_uint32_t dev_id)
+{
+  sw_error_t rv = SW_OK;
+  adpt_api_t *p_adpt_api;
+
+    if((p_adpt_api = adpt_api_ptr_get(dev_id)) != NULL) {
+        if (NULL == p_adpt_api->adpt_port_interface_mode_apply)
+            return SW_NOT_SUPPORTED;
+
+        rv = p_adpt_api->adpt_port_interface_mode_apply(dev_id);
+        return rv;
+    }
+
+  return rv;
+}
+
+sw_error_t
+fal_port_interface_mode_apply (a_uint32_t dev_id)
+{
+  sw_error_t rv = SW_OK;
+
+  FAL_API_LOCK;
+  rv = _fal_port_interface_mode_apply (dev_id);
+  FAL_API_UNLOCK;
+  return rv;
+}
+
+/**
  * @brief interface mode on a particular port.
  * @param[in] dev_id device id
  * @param[in] port_id port id
@@ -3155,7 +3187,7 @@ fal_port_interface_mode_set (a_uint32_t dev_id, fal_port_t port_id, fal_port_int
 sw_error_t
 fal_port_interface_mode_get (a_uint32_t dev_id, fal_port_t port_id, fal_port_interface_mode_t * mode)
 {
-  sw_error_t rv;
+  sw_error_t rv = SW_OK;
 
   FAL_API_LOCK;
   rv = _fal_port_interface_mode_get (dev_id, port_id,mode);
@@ -3390,6 +3422,8 @@ EXPORT_SYMBOL(fal_port_phy_id_get );
 EXPORT_SYMBOL(fal_port_wol_status_set );
 EXPORT_SYMBOL(fal_port_wol_status_get );
 EXPORT_SYMBOL(fal_port_interface_mode_set);
+EXPORT_SYMBOL(fal_port_interface_mode_apply);
+
 EXPORT_SYMBOL(fal_port_interface_mode_get );
 EXPORT_SYMBOL(fal_port_interface_mode_status_get );
 EXPORT_SYMBOL(fal_port_source_filter_enable);
