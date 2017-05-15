@@ -643,6 +643,11 @@ int qca_ar8327_hw_init(struct qca_phy_priv *priv)
 		priv->mii_write(reg, value);
 	}
 
+	value = priv->mii_read(AR8327_REG_MODULE_EN);
+	value &= ~AR8327_REG_MODULE_EN_QM_ERR;
+	value &= ~AR8327_REG_MODULE_EN_LOOKUP_ERR;
+	priv->mii_write(AR8327_REG_MODULE_EN, value);
+
 	qca_switch_init(0);
 	qca_port_isolate(0);
 	qca_mac_enable_intr(priv);
@@ -935,9 +940,8 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 {
 	struct ar8327_platform_data *plat_data;
 	a_uint32_t i = 0;
-#ifndef BOARD_AR71XX
 	a_uint32_t value = 0;
-#endif
+
 	plat_data = priv->phy->dev.platform_data;
 	if (plat_data == NULL) {
 		return -EINVAL;
@@ -963,6 +967,11 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 	qca_switch_set_mac_force(priv);
 
 	qca_ar8327_set_pad_cfg(priv, plat_data);
+
+	value = priv->mii_read(AR8327_REG_MODULE_EN);
+	value &= ~AR8327_REG_MODULE_EN_QM_ERR;
+	value &= ~AR8327_REG_MODULE_EN_LOOKUP_ERR;
+	priv->mii_write(AR8327_REG_MODULE_EN, value);
 
 	qca_switch_init(0);
 
@@ -3878,10 +3887,7 @@ static void ssdk_cfg_default_init(ssdk_init_cfg *cfg)
 	cfg->reg_func.mdio_get = qca_ar8327_phy_read;
 	cfg->reg_func.header_reg_set = qca_switch_reg_write;
 	cfg->reg_func.header_reg_get = qca_switch_reg_read;
-	/*will delete later, if dts merged*/
-	cfg->port_cfg.cpu_bmp = 0x1;
-	cfg->port_cfg.lan_bmp = 0x1e;
-	cfg->port_cfg.wan_bmp = 0x20;
+
 }
 
 #ifdef IN_RFS
