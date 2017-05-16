@@ -3311,7 +3311,7 @@ qca_hppe_portvlan_hw_init(void)
 	return 0;
 }
 
-fal_port_scheduler_cfg_t port_scheduler_tbl[] = {
+fal_port_scheduler_cfg_t port_scheduler0_tbl[] = {
 	{0xee, 6, 0},
 	{0xde, 4, 5},
 	{0x9f, 0, 6},
@@ -3364,7 +3364,35 @@ fal_port_scheduler_cfg_t port_scheduler_tbl[] = {
 	{0xaf, 5, 4},
 };
 
-fal_port_tdm_tick_cfg_t port_tdm_tbl[] = {
+fal_port_scheduler_cfg_t port_scheduler1_tbl[] = {
+	{0x27, 5, 6},
+	{0x0f, 0, 5},
+	{0x0f, 2, 6},
+	{0x0f, 3, 5},
+	{0x4e, 6, 0},
+	{0x2e, 5, 6},
+	{0x0f, 1, 5},
+	{0x0f, 0, 6},
+	{0x0f, 3, 5},
+	{0x4d, 6, 1},
+	{0x2d, 5, 6},
+	{0x0f, 1, 5},
+	{0x0f, 2, 6},
+	{0x0f, 0, 5},
+	{0x4e, 6, 0},
+	{0x2e, 5, 6},
+	{0x0f, 1, 5},
+	{0x0f, 0, 6},
+	{0x0f, 3, 5},
+	{0x4b, 6, 2},
+	{0x2b, 5, 6},
+	{0x0f, 1, 5},
+	{0x0f, 2, 6},
+	{0x0f, 0, 5},
+	{0x47, 6, 3},
+};
+
+fal_port_tdm_tick_cfg_t port_tdm0_tbl[] = {
 	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
 	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
 	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
@@ -3467,13 +3495,114 @@ fal_port_tdm_tick_cfg_t port_tdm_tbl[] = {
 	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
 };
 
+fal_port_tdm_tick_cfg_t port_tdm1_tbl[] = {
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 1},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 3},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 2},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 4},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 4},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 1},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 3},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 2},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+};
+
 static int
 qca_hppe_tdm_hw_init(void)
 {
 	adpt_api_t *p_api;
 	a_uint32_t i = 0;
-	a_uint32_t num = sizeof(port_scheduler_tbl) / sizeof(fal_port_scheduler_cfg_t);
+	a_uint32_t num;
 	fal_port_tdm_ctrl_t tdm_ctrl;
+	fal_port_scheduler_cfg_t *scheduler_cfg;
+	fal_port_tdm_tick_cfg_t *bm_cfg;
 
 	p_api = adpt_api_ptr_get(0);
 	if (!p_api)
@@ -3483,18 +3612,39 @@ qca_hppe_tdm_hw_init(void)
 		!p_api->adpt_tdm_tick_num_set)
 		return SW_FAIL;
 
+	if (ssdk_dt_global.tm_tick_mode == 0) {
+		num = sizeof(port_scheduler0_tbl) / sizeof(fal_port_scheduler_cfg_t);
+		scheduler_cfg = port_scheduler0_tbl;
+	} else if (ssdk_dt_global.tm_tick_mode == 1) {
+		num = sizeof(port_scheduler1_tbl) / sizeof(fal_port_scheduler_cfg_t);
+		scheduler_cfg = port_scheduler1_tbl;
+	} else {
+		return SW_BAD_VALUE;
+	}
+
 	for (i = 0; i < num; i++) {
-		p_api->adpt_port_scheduler_cfg_set(0, i, &port_scheduler_tbl[i]);
+		p_api->adpt_port_scheduler_cfg_set(0, i, &scheduler_cfg[i]);
 	}
 	p_api->adpt_tdm_tick_num_set(0, num);
 
-	num = sizeof(port_tdm_tbl) / sizeof(fal_port_tdm_tick_cfg_t);
+	if (!p_api->adpt_port_tdm_tick_cfg_set ||
+		!p_api->adpt_port_tdm_ctrl_set)
+		return SW_FAIL;
+	if (ssdk_dt_global.bm_tick_mode == 0) {
+		num = sizeof(port_tdm0_tbl) / sizeof(fal_port_tdm_tick_cfg_t);
+		bm_cfg = port_tdm0_tbl;
+	} else if (ssdk_dt_global.bm_tick_mode == 1) {
+		num = sizeof(port_tdm1_tbl) / sizeof(fal_port_tdm_tick_cfg_t);
+		bm_cfg = port_tdm1_tbl;
+	} else {
+		return SW_BAD_VALUE;
+	}
 	for (i = 0; i < num; i++) {
-		p_api->adpt_port_tdm_tick_cfg_set(0, i, &port_tdm_tbl[i]);
+		p_api->adpt_port_tdm_tick_cfg_set(0, i, &bm_cfg[i]);
 	}
 	tdm_ctrl.enable = 1;
 	tdm_ctrl.offset = 0;
-	tdm_ctrl.depth = 100;
+	tdm_ctrl.depth = num;
 	p_api->adpt_port_tdm_ctrl_set(0, &tdm_ctrl);
 	SSDK_INFO("tdm setup num=%d\n", num);
 	return 0;
