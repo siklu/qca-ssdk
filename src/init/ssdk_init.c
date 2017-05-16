@@ -1185,11 +1185,13 @@ static int qca_link_polling_select(struct qca_phy_priv *priv)
 	const __be32 *link_polling_required, *link_intr_gpio;
 	a_int32_t len;
 
-	if(priv->version == QCA_VER_DESS)
+	if(priv->version == QCA_VER_DESS || priv->version == QCA_VER_HPPE)
 		np = of_find_node_by_name(NULL, "ess-switch");
-	else
+	else if(priv->version == QCA_VER_AR8337)
 		 /*ap148*/
 		np = priv->phy->dev.of_node;
+	else
+		SSDK_ERROR("cannot find np node!\n");
 	if(!np)
 	{
 		SSDK_ERROR("np is null !\n");
