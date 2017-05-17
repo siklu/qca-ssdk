@@ -1188,8 +1188,7 @@ static int qca_link_polling_select(struct qca_phy_priv *priv)
 
 	if(priv->version == QCA_VER_DESS || priv->version == QCA_VER_HPPE)
 		np = of_find_node_by_name(NULL, "ess-switch");
-	else if(priv->version == QCA_VER_AR8337)
-		 /*ap148*/
+	else if(priv->version == QCA_VER_AR8337 || priv->version == QCA_VER_AR8327)
 		np = priv->phy->dev.of_node;
 	else
 		SSDK_ERROR("cannot find np node!\n");
