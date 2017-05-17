@@ -3765,6 +3765,62 @@ qca_hppe_qos_scheduler_hw_init(void)
 }
 
 #ifdef HAWKEYE_CHIP
+void __iomem *gcc_ppeclock_base = NULL;
+static int
+qca_hppe_gcc_clock_init(void)
+{
+	a_uint32_t reg_val, i;
+
+	gcc_ppeclock_base = ioremap_nocache(0x01868000, 0x500);
+	if (!gcc_ppeclock_base) {
+		SSDK_ERROR("can't map gcc ppe clock address!\n");
+		return -1;
+	}
+	/*set clock src and div*/
+	reg_val = 3 | (1 << 5);
+	writel(reg_val, gcc_ppeclock_base + 0x84);
+	/*issue command*/
+	reg_val = readl(gcc_ppeclock_base + 0x80);
+	reg_val |= 1;
+	writel(reg_val, gcc_ppeclock_base + 0x80);
+	msleep(100);
+	reg_val = readl(gcc_ppeclock_base + 0x80);
+	reg_val |= 2;
+	writel(reg_val, gcc_ppeclock_base + 0x80);
+
+	/*set CBCR*/
+	for (i= 0; i < 4; i++) {
+		reg_val = readl(gcc_ppeclock_base + 0x190 + i*4);
+		reg_val |= 1;
+		writel(reg_val, gcc_ppeclock_base + 0x190 + i*4);
+	}
+
+	/*enable nss noc ppe*/
+	reg_val = readl(gcc_ppeclock_base + 0x300);
+	reg_val |= 1;
+	writel(reg_val, gcc_ppeclock_base + 0x300);
+
+	/*enable nss noc ppe config*/
+	reg_val = readl(gcc_ppeclock_base + 0x304);
+	reg_val |= 1;
+	writel(reg_val, gcc_ppeclock_base + 0x304);
+
+	/*enable crypto ppe*/
+	reg_val = readl(gcc_ppeclock_base + 0x310);
+	reg_val |= 1;
+	writel(reg_val, gcc_ppeclock_base + 0x310);
+
+	/*enable mac, ipe btq*/
+	for (i= 0; i < 8; i++) {
+		reg_val = readl(gcc_ppeclock_base + 0x320 + i*4);
+		reg_val |= 1;
+		writel(reg_val, gcc_ppeclock_base + 0x320 + i*4);
+	}
+
+	iounmap(gcc_ppeclock_base);
+	return 0;
+}
+
 static int
 qca_hppe_gcc_uniphy_init(void)
 {
@@ -4169,6 +4225,7 @@ qca_hppe_hw_init(ssdk_init_cfg *cfg)
 
 	qca_hppe_interface_mode_init(cfg->mac_mode, cfg->mac_mode1,
 				cfg->mac_mode2);
+	qca_hppe_gcc_clock_init();
 #else
 	qca_hppe_xgmac_hw_init();
 	SSDK_INFO("hppe xgmac init success\n");
