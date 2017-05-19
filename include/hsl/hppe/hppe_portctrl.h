@@ -37,6 +37,8 @@
 #define RX_FIFO_CFG_MAX_ENTRY	8
 #define TDM_CFG_MAX_ENTRY	128
 #define PORT_IN_FORWARD_MAX_ENTRY	8
+#define PORT_TX_COUNTER_TBL_REG_MAX_ENTRY	8
+#define VP_TX_COUNTER_TBL_REG_MAX_ENTRY	256
 
 sw_error_t
 hppe_mac_enable_get(
@@ -1108,6 +1110,117 @@ hppe_port_in_forward_source_filtering_bypass_set(
 		a_uint32_t dev_id,
 		a_uint32_t index,
 		a_uint32_t value);
+sw_error_t
+hppe_port_tx_counter_tbl_reg_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union port_tx_counter_tbl_reg_u *value);
+
+sw_error_t
+hppe_port_tx_counter_tbl_reg_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union port_tx_counter_tbl_reg_u *value);
+
+sw_error_t
+hppe_vp_tx_counter_tbl_reg_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union vp_tx_counter_tbl_reg_u *value);
+
+sw_error_t
+hppe_vp_tx_counter_tbl_reg_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union vp_tx_counter_tbl_reg_u *value);
+
+sw_error_t
+hppe_epe_dbg_in_cnt_reg_get(
+		a_uint32_t dev_id,
+		union epe_dbg_in_cnt_reg_u *value);
+
+sw_error_t
+hppe_epe_dbg_in_cnt_reg_set(
+		a_uint32_t dev_id,
+		union epe_dbg_in_cnt_reg_u *value);
+
+sw_error_t
+hppe_epe_dbg_out_cnt_reg_get(
+		a_uint32_t dev_id,
+		union epe_dbg_out_cnt_reg_u *value);
+
+sw_error_t
+hppe_epe_dbg_out_cnt_reg_set(
+		a_uint32_t dev_id,
+		union epe_dbg_out_cnt_reg_u *value);
+
+sw_error_t
+hppe_port_tx_counter_tbl_reg_tx_bytes_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint64_t *value);
+
+sw_error_t
+hppe_port_tx_counter_tbl_reg_tx_bytes_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint64_t value);
+
+sw_error_t
+hppe_port_tx_counter_tbl_reg_tx_packets_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_port_tx_counter_tbl_reg_tx_packets_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_vp_tx_counter_tbl_reg_tx_bytes_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint64_t *value);
+
+sw_error_t
+hppe_vp_tx_counter_tbl_reg_tx_bytes_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint64_t value);
+
+sw_error_t
+hppe_vp_tx_counter_tbl_reg_tx_packets_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_vp_tx_counter_tbl_reg_tx_packets_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_epe_dbg_in_cnt_reg_counter_get(
+		a_uint32_t dev_id,
+		unsigned int *value);
+
+sw_error_t
+hppe_epe_dbg_in_cnt_reg_counter_set(
+		a_uint32_t dev_id,
+		unsigned int value);
+
+sw_error_t
+hppe_epe_dbg_out_cnt_reg_counter_get(
+		a_uint32_t dev_id,
+		unsigned int *value);
+
+sw_error_t
+hppe_epe_dbg_out_cnt_reg_counter_set(
+		a_uint32_t dev_id,
+		unsigned int value);
 
 sw_error_t
 hppe_drop_stat_bytes_get(

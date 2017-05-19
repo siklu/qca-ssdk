@@ -854,6 +854,8 @@ typedef sw_error_t (*adpt_debug_port_counter_enable_func)(a_uint32_t dev_id,
 			fal_port_t port_id, fal_counter_en_t * cnt_en);
 typedef sw_error_t (*adpt_debug_port_counter_status_get_func)(a_uint32_t dev_id,
 			fal_port_t port_id, fal_counter_en_t * cnt_en);
+typedef sw_error_t (*adpt_debug_counter_get_func)(a_bool_t show_type);
+typedef sw_error_t (*adpt_debug_counter_set_func)(void);
 
 /* uniphy */
 typedef sw_error_t (*adpt_uniphy_mode_set_func)(a_uint32_t dev_id, a_uint32_t index, a_uint32_t mode);
@@ -1292,6 +1294,8 @@ typedef struct
 	/* misc */
 	adpt_debug_port_counter_enable_func adpt_debug_port_counter_enable;
 	adpt_debug_port_counter_status_get_func adpt_debug_port_counter_status_get;
+	adpt_debug_counter_set_func adpt_debug_counter_set;
+	adpt_debug_counter_get_func adpt_debug_counter_get;
 
 	/* uniphy */
 	adpt_uniphy_mode_set_func adpt_uniphy_mode_set;

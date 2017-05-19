@@ -94,6 +94,8 @@
 #endif
 #endif
 
+#include "adpt.h"
+
 static struct mii_bus *miibus = NULL;
 
 extern struct qca_phy_priv *qca_phy_priv_global;
@@ -679,10 +681,100 @@ static ssize_t ssdk_log_level_set(struct device *dev,
 	return count;
 }
 
+static ssize_t ssdk_packet_counter_get(struct device *dev,
+		struct device_attribute *attr,
+		char *buf)
+{
+	ssize_t count;
+	adpt_api_t *p_api;
+
+	p_api = adpt_api_ptr_get(0);
+	if (!p_api)
+	{
+		count = snprintf(buf, (ssize_t)PAGE_SIZE, "just support hppe");
+		return count;
+	}
+
+	count = snprintf(buf, (ssize_t)PAGE_SIZE, " ");
+
+	p_api->adpt_debug_counter_get(A_FALSE);
+
+	return count;
+}
+
+static ssize_t ssdk_packet_counter_set(struct device *dev,
+		struct device_attribute *attr,
+		const char *buf, size_t count)
+{
+	char num_buf[12];
+	adpt_api_t *p_api;
+
+	p_api = adpt_api_ptr_get(0);
+	if (!p_api)
+		return count;
+
+	p_api->adpt_debug_counter_set();
+
+	if (count >= sizeof(num_buf))
+		return 0;
+	memcpy(num_buf, buf, count);
+	num_buf[count] = '\0';
+
+
+	return count;
+}
+
+static ssize_t ssdk_byte_counter_get(struct device *dev,
+		struct device_attribute *attr,
+		char *buf)
+{
+	ssize_t count;
+	adpt_api_t *p_api;
+
+	p_api = adpt_api_ptr_get(0);
+	if (!p_api)
+	{
+		count = snprintf(buf, (ssize_t)PAGE_SIZE, "just support hppe");
+		return count;
+	}
+
+	count = snprintf(buf, (ssize_t)PAGE_SIZE, " ");
+
+	p_api->adpt_debug_counter_get(A_TRUE);
+
+	return count;
+}
+
+static ssize_t ssdk_byte_counter_set(struct device *dev,
+		struct device_attribute *attr,
+		const char *buf, size_t count)
+{
+	char num_buf[12];
+	adpt_api_t *p_api;
+
+	p_api = adpt_api_ptr_get(0);
+	if (!p_api)
+		return count;
+
+	p_api->adpt_debug_counter_set();
+
+	if (count >= sizeof(num_buf))
+		return 0;
+	memcpy(num_buf, buf, count);
+	num_buf[count] = '\0';
+
+
+	return count;
+}
+
 static const struct device_attribute ssdk_dev_id_attr =
 	__ATTR(dev_id, 0660, ssdk_dev_id_get, ssdk_dev_id_set);
 static const struct device_attribute ssdk_log_level_attr =
 	__ATTR(log_level, 0660, ssdk_log_level_get, ssdk_log_level_set);
+static const struct device_attribute ssdk_packet_counter_attr =
+	__ATTR(packet_counter, 0660, ssdk_packet_counter_get, ssdk_packet_counter_set);
+static const struct device_attribute ssdk_byte_counter_attr =
+	__ATTR(byte_counter, 0660, ssdk_byte_counter_get, ssdk_byte_counter_set);
 struct kobject *ssdk_sys = NULL;
 
 int ssdk_sysfs_init (void)
@@ -710,8 +802,28 @@ int ssdk_sysfs_init (void)
 		goto CLEANUP_2;
 	}
 
+	/* create /sys/ssdk/packet_counter file */
+	ret = sysfs_create_file(ssdk_sys, &ssdk_packet_counter_attr.attr);
+	if (ret) {
+		printk("Failed to register SSDK switch counter SysFS file\n");
+		goto CLEANUP_3;
+	}
+
+	/* create /sys/ssdk/byte_counter file */
+	ret = sysfs_create_file(ssdk_sys, &ssdk_byte_counter_attr.attr);
+	if (ret) {
+		printk("Failed to register SSDK switch counter bytes SysFS file\n");
+		goto CLEANUP_4;
+	}
+
+
+
 	return 0;
 
+CLEANUP_4:
+	sysfs_remove_file(ssdk_sys, &ssdk_packet_counter_attr.attr);
+CLEANUP_3:
+	sysfs_remove_file(ssdk_sys, &ssdk_log_level_attr.attr);
 CLEANUP_2:
 	sysfs_remove_file(ssdk_sys, &ssdk_dev_id_attr.attr);
 CLEANUP_1:
