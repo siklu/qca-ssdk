@@ -3132,9 +3132,9 @@ qca_hppe_mac_sw_sync_task(struct qca_phy_priv *priv)
 
 	portbmp[priv->device_id] = qca_ssdk_port_bmp_get(priv->device_id);
 
-	for (port_id = 0; port_id < SW_MAX_NR_DEV; port_id ++) {
+	for (port_id = 1; port_id < SW_MAX_NR_DEV; port_id ++) {
 
-		if(!(portbmp[priv->device_id] & (0x1 << i)))
+		if(!(portbmp[priv->device_id] & (0x1 << port_id)))
 			continue;
 
 		adpt_hppe_port_phy_status_get(priv->device_id, port_id, &phy_status);
@@ -3174,7 +3174,7 @@ qca_hppe_mac_sw_sync_task(struct qca_phy_priv *priv)
 					adpt_hppe_port_mac_speed_set(priv->device_id, port_id, phy_status.speed);
 					priv->port_old_speed[port_id - 1] = (a_uint32_t)phy_status.speed;
 				}
-				if ((a_uint32_t)phy_status.duplex != priv->hppe_port_duplex[port_id - 1])
+				if ((a_uint32_t)phy_status.duplex != priv->port_old_duplex[port_id - 1])
 				{
 					adpt_hppe_uniphy_duplex_set(priv->device_id, port_id, phy_status.duplex);
 					adpt_hppe_port_mac_duplex_set(priv->device_id, port_id, phy_status.duplex);

@@ -1303,6 +1303,19 @@ dess_rgmii_mac_work_stop(struct qca_phy_priv *priv)
 #endif
 
 void
+qca_mac_sw_sync_port_status_init(struct qca_phy_priv *priv)
+{
+	a_uint32_t port_id;
+
+	for (port_id = 1; port_id < AR8327_NUM_PORTS; port_id ++) {
+		priv->port_old_link[port_id - 1] = 0;
+		priv->port_old_speed[port_id - 1] = FAL_SPEED_BUTT;
+		priv->port_old_duplex[port_id - 1] = FAL_DUPLEX_BUTT;
+		priv->port_old_tx_flowctrl[port_id - 1] = 0;
+		priv->port_old_rx_flowctrl[port_id - 1] = 0;
+	}
+}
+void
 qca_mac_sw_sync_work_task(struct work_struct *work)
 {
 	adpt_api_t *p_adpt_api;
@@ -1329,6 +1342,8 @@ qca_mac_sw_sync_work_start(struct qca_phy_priv *priv)
 {
 	if (priv->version != QCA_VER_HPPE)
 		return -1;
+
+	qca_mac_sw_sync_port_status_init(priv);
 
 	mutex_init(&priv->mac_sw_sync_lock);
 
@@ -1463,7 +1478,6 @@ static int ssdk_switch_register(void)
 	struct qca_phy_priv *priv;
 	int ret = 0;
 	a_uint32_t chip_id = 0;
-
 	priv = qca_phy_priv_global;
 
 	priv->mii_read = qca_ar8216_mii_read;
@@ -1479,19 +1493,6 @@ static int ssdk_switch_register(void)
 		priv->revision = (chip_id & 0xff);
 		SSDK_INFO("Chip version 0x%02x%02x\n", priv->version, priv->revision);
 	}
-
-#ifdef HAWKEYE_CHIP
-	if (priv->version == QCA_VER_HPPE)
-	{
-		priv->port_old_link[AR8327_NUM_PORTS] = {0};
-		priv->port_old_speed[AR8327_NUM_PORTS] = {1000,
-				1000,1000,1000,1000,10000,1000};
-		priv->port_old_duplex[AR8327_NUM_PORTS] = {1,
-				1,1,1,1,1,1};
-		priv->port_old_tx_flowctrl[AR8327_NUM_PORTS] = {0};
-		priv->port_old_rx_flowctrl[AR8327_NUM_PORTS] = {0};
-	}
-#endif
 
 	mutex_init(&priv->reg_mutex);
 
@@ -3500,6 +3501,7 @@ qca_hppe_tdm_hw_init(void)
 	return 0;
 }
 
+#ifndef HAWKEYE_CHIP
 static int
 qca_hppe_xgmac_hw_init(void)
 {
@@ -3533,6 +3535,7 @@ qca_hppe_xgmac_hw_init(void)
 	return 0;
 }
 
+#endif
 static int
 qca_hppe_bm_hw_init(void)
 {
@@ -4124,9 +4127,11 @@ qca_hppe_flow_hw_init(void)
 static int
 qca_hppe_hw_init(ssdk_init_cfg *cfg)
 {
-	a_uint32_t val, i = 0;
+	a_uint32_t val;
 	void __iomem *ppe_gpio_base;
-
+	#ifndef HAWKEYE_CHIP
+	a_uint32_t i = 0;
+	#endif
 
 	qca_switch_init(0);
 
