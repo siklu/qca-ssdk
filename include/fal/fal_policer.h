@@ -36,8 +36,8 @@ typedef struct
 	a_uint32_t 	meter_mode;
 	a_uint32_t	meter_unit; /* 0:byte based; 1:packet based*/
 	a_uint32_t	cir;	/* committed information rate */
-	a_uint32_t	eir;	/* committed burst size */
-	a_uint32_t	cbs; /* excess information rate */
+	a_uint32_t	cbs;	/* committed burst size */
+	a_uint32_t	eir; /* excess information rate */
 	a_uint32_t	ebs; /* excess burst size */
 } fal_policer_config_t;
 
@@ -51,7 +51,7 @@ typedef struct
 	a_uint32_t yellow_drop_priority; /* yellow traffic internal drop priority value*/
 	a_uint32_t yellow_pcp; /* yellow traffic pcp value*/
 	a_uint32_t yellow_dei; /* yellow traffic dei value*/
-	fal_fwd_cmd_t red_action; /* red traffic drop or remark, 0 drop; 1 remark*/
+	fal_fwd_cmd_t red_action; /* red traffic drop or forward*/
 	a_bool_t red_priority_en; /* red traffic internal priority change enable*/
 	a_bool_t red_drop_priority_en; /* red traffic internal drop priority change enable*/
 	a_bool_t red_pcp_en; /* red traffic pcp change enable*/

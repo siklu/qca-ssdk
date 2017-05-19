@@ -568,15 +568,21 @@ adpt_hppe_port_policer_entry_set(a_uint32_t dev_id, fal_port_t port_id,
 
 	if(ADPT_HPPE_POLICER_METER_UNIT_BYTE == policer->meter_unit)
 	{
-		if ((policer->cir > BYTE_POLICER_MAX_RATE) || (policer->cir < BYTE_POLICER_MIN_RATE) ||
-				(policer->eir > BYTE_POLICER_MAX_RATE) || (policer->eir < BYTE_POLICER_MIN_RATE))
+		if ((policer->cir > BYTE_POLICER_MAX_RATE) || (policer->eir > BYTE_POLICER_MAX_RATE))
+			return SW_BAD_PARAM;
+		if ((policer->cir < BYTE_POLICER_MIN_RATE) && (policer->cir != 0))
+			return SW_BAD_PARAM;
+		if ((policer->eir < BYTE_POLICER_MIN_RATE) && (policer->eir != 0))
 			return SW_BAD_PARAM;
 	}
 
 	if(ADPT_HPPE_POLICER_METER_UNIT_FRAME == policer->meter_unit)
 	{
-		if ((policer->cir > FRAME_POLICER_MAX_RATE) || (policer->cir < FRAME_POLICER_MIN_RATE) ||
-				(policer->eir > FRAME_POLICER_MAX_RATE) || (policer->eir < FRAME_POLICER_MIN_RATE))
+		if ((policer->cir > FRAME_POLICER_MAX_RATE) || (policer->eir > FRAME_POLICER_MAX_RATE))
+			return SW_BAD_PARAM;
+		if ((policer->cir < FRAME_POLICER_MIN_RATE) && (policer->cir != 0))
+			return SW_BAD_PARAM;
+		if ((policer->eir < FRAME_POLICER_MIN_RATE) && (policer->eir != 0))
 			return SW_BAD_PARAM;
 	}
 
@@ -752,15 +758,21 @@ adpt_hppe_acl_policer_entry_set(a_uint32_t dev_id, a_uint32_t index,
 
 	if(ADPT_HPPE_POLICER_METER_UNIT_BYTE == policer->meter_unit)
 	{
-		if ((policer->cir > BYTE_POLICER_MAX_RATE) || (policer->cir < BYTE_POLICER_MIN_RATE) ||
-				(policer->eir > BYTE_POLICER_MAX_RATE) || (policer->eir < BYTE_POLICER_MIN_RATE))
+		if ((policer->cir > BYTE_POLICER_MAX_RATE) || (policer->eir > BYTE_POLICER_MAX_RATE))
+			return SW_BAD_PARAM;
+		if ((policer->cir < BYTE_POLICER_MIN_RATE) && (policer->cir != 0))
+			return SW_BAD_PARAM;
+		if ((policer->eir < BYTE_POLICER_MIN_RATE) && (policer->eir != 0))
 			return SW_BAD_PARAM;
 	}
 
 	if(ADPT_HPPE_POLICER_METER_UNIT_FRAME == policer->meter_unit)
 	{
-		if ((policer->cir > FRAME_POLICER_MAX_RATE) || (policer->cir < FRAME_POLICER_MIN_RATE) ||
-				(policer->eir > FRAME_POLICER_MAX_RATE) || (policer->eir < FRAME_POLICER_MIN_RATE))
+		if ((policer->cir > FRAME_POLICER_MAX_RATE) || (policer->eir > FRAME_POLICER_MAX_RATE))
+			return SW_BAD_PARAM;
+		if ((policer->cir < FRAME_POLICER_MIN_RATE) && (policer->cir != 0))
+			return SW_BAD_PARAM;
+		if ((policer->eir < FRAME_POLICER_MIN_RATE) && (policer->eir != 0))
 			return SW_BAD_PARAM;
 	}
 
