@@ -41,6 +41,7 @@
 #define FRAME_SHAPER_MIN_RATE 6
 
 
+
 static a_uint32_t hppe_shaper_token_unit[NR_ADPT_HPPE_SHAPER_METER_UNIT]
 	[NR_ADPT_HPPE_SHAPER_METER_TOKEN_UNIT] = {{2048 * 8,
 	512 * 8,128 * 8,32 * 8,8 * 8,2 * 8, 4, 1},
@@ -970,14 +971,20 @@ adpt_hppe_flow_shaper_set(a_uint32_t dev_id, a_uint32_t flow_id,
 
 	if(ADPT_HPPE_SHAPER_METER_UNIT_BYTE == shaper->meter_unit)
 	{
-		if ((shaper->cir > BYTE_SHAPER_MAX_RATE) || (shaper->cir < BYTE_SHAPER_MIN_RATE) ||
-				(shaper->eir > BYTE_SHAPER_MAX_RATE) || (shaper->eir < BYTE_SHAPER_MIN_RATE))
+		if ((shaper->cir > BYTE_SHAPER_MAX_RATE) || (shaper->eir > BYTE_SHAPER_MAX_RATE))
+			return SW_BAD_PARAM;
+		if ((shaper->cir < BYTE_SHAPER_MIN_RATE) && (shaper->cir != 0))
+			return SW_BAD_PARAM;
+		if ((shaper->eir < BYTE_SHAPER_MIN_RATE) && (shaper->eir != 0))
 			return SW_BAD_PARAM;
 	}
 	if(ADPT_HPPE_SHAPER_METER_UNIT_FRAME == shaper->meter_unit)
 	{
-		if ((shaper->cir > FRAME_SHAPER_MAX_RATE) || (shaper->cir < FRAME_SHAPER_MIN_RATE) ||
-				(shaper->eir > FRAME_SHAPER_MAX_RATE) || (shaper->eir < FRAME_SHAPER_MIN_RATE))
+		if ((shaper->cir > FRAME_SHAPER_MAX_RATE) || (shaper->eir > FRAME_SHAPER_MAX_RATE))
+			return SW_BAD_PARAM;
+		if ((shaper->cir < FRAME_SHAPER_MIN_RATE) && (shaper->cir != 0))
+			return SW_BAD_PARAM;
+		if ((shaper->eir < FRAME_SHAPER_MIN_RATE) && (shaper->eir != 0))
 			return SW_BAD_PARAM;
 	}
 
@@ -1074,12 +1081,16 @@ adpt_hppe_port_shaper_set(a_uint32_t dev_id, fal_port_t port_id,
 
 	if(ADPT_HPPE_SHAPER_METER_UNIT_BYTE == shaper->meter_unit)
 	{
-		if ((shaper->cir > BYTE_SHAPER_MAX_RATE) || (shaper->cir < BYTE_SHAPER_MIN_RATE))
+		if (shaper->cir > BYTE_SHAPER_MAX_RATE)
+			return SW_BAD_PARAM;
+		if ((shaper->cir < BYTE_SHAPER_MIN_RATE) && (shaper->cir != 0))
 			return SW_BAD_PARAM;
 	}
 	if(ADPT_HPPE_SHAPER_METER_UNIT_FRAME == shaper->meter_unit)
 	{
-		if ((shaper->cir > FRAME_SHAPER_MAX_RATE) || (shaper->cir < FRAME_SHAPER_MIN_RATE))
+		if (shaper->cir > FRAME_SHAPER_MAX_RATE)
+			return SW_BAD_PARAM;
+		if ((shaper->cir < FRAME_SHAPER_MIN_RATE) && (shaper->cir != 0))
 			return SW_BAD_PARAM;
 	}
 
@@ -1241,14 +1252,20 @@ adpt_hppe_queue_shaper_set(a_uint32_t dev_id,a_uint32_t queue_id,
 
 	if(ADPT_HPPE_SHAPER_METER_UNIT_BYTE == shaper->meter_unit)
 	{
-		if ((shaper->cir > BYTE_SHAPER_MAX_RATE) || (shaper->cir < BYTE_SHAPER_MIN_RATE) ||
-				(shaper->eir > BYTE_SHAPER_MAX_RATE) || (shaper->eir < BYTE_SHAPER_MIN_RATE))
+		if ((shaper->cir > BYTE_SHAPER_MAX_RATE) || (shaper->eir > BYTE_SHAPER_MAX_RATE))
+			return SW_BAD_PARAM;
+		if ((shaper->cir < BYTE_SHAPER_MIN_RATE) && (shaper->cir != 0))
+			return SW_BAD_PARAM;
+		if ((shaper->eir < BYTE_SHAPER_MIN_RATE) && (shaper->eir != 0))
 			return SW_BAD_PARAM;
 	}
 	if(ADPT_HPPE_SHAPER_METER_UNIT_FRAME == shaper->meter_unit)
 	{
-		if ((shaper->cir > FRAME_SHAPER_MAX_RATE) || (shaper->cir < FRAME_SHAPER_MIN_RATE) ||
-				(shaper->eir > FRAME_SHAPER_MAX_RATE) || (shaper->eir < FRAME_SHAPER_MIN_RATE))
+		if ((shaper->cir > FRAME_SHAPER_MAX_RATE) || (shaper->eir > FRAME_SHAPER_MAX_RATE))
+			return SW_BAD_PARAM;
+		if ((shaper->cir < FRAME_SHAPER_MIN_RATE) && (shaper->cir != 0))
+			return SW_BAD_PARAM;
+		if ((shaper->eir < FRAME_SHAPER_MIN_RATE) && (shaper->eir != 0))
 			return SW_BAD_PARAM;
 	}
 
