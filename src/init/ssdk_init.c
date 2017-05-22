@@ -2093,11 +2093,15 @@ ssdk_init(a_uint32_t dev_id, ssdk_init_cfg * cfg)
 	if (rv != SW_OK)
 		SSDK_ERROR("ssdk fal init failed: %d. \r\n", rv);
 
+#ifndef HAWKEYE_CHIP
 	if (cfg->chip_type != CHIP_HPPE) {
+#endif
 		rv = ssdk_phy_driver_init(dev_id, cfg);
 		if (rv != SW_OK)
 			SSDK_ERROR("ssdk phy init failed: %d. \r\n", rv);
+#ifndef HAWKEYE_CHIP
 	}
+#endif
 
 	return rv;
 }
