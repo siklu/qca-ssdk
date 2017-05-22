@@ -245,6 +245,8 @@ typedef struct
 		a_uint8_t *uniphy_access_mode;
 		hsl_reg_mode uniphy_reg_access_mode;
 		ssdk_dt_scheduler_cfg scheduler_cfg;
+		a_uint8_t bm_tick_mode;
+		a_uint8_t tm_tick_mode;
 	} ssdk_dt_cfg;
 
 #if defined ATHENA
