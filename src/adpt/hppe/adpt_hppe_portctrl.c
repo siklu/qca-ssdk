@@ -44,7 +44,7 @@ __adpt_hppe_port_phy_connected (a_uint32_t dev_id, fal_port_t port_id)
   if (0 == port_id)
       return A_FALSE;
   else
-      return hppe_mac_port_valid_check (port_id);
+      return hppe_mac_port_valid_check (dev_id, port_id);
 }
 
 static sw_error_t

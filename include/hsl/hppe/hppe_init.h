@@ -62,7 +62,7 @@ extern "C" {
 #define AQ_PHY_LINK_PARTNER_REG 0x70013
 
 sw_error_t hppe_init(a_uint32_t dev_id, ssdk_init_cfg *cfg);
-a_bool_t hppe_mac_port_valid_check(fal_port_t port_id);
+a_bool_t hppe_mac_port_valid_check(a_uint32_t dev_id, fal_port_t port_id);
 a_bool_t hppe_xgmac_port_check(fal_port_t port_id);
 sw_error_t hppe_cleanup(a_uint32_t dev_id);
 
