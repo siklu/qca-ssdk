@@ -531,7 +531,7 @@ static int miibus_get(void)
 		mdio_data = dev_get_drvdata(&mdio_plat->dev);
 		if (!mdio_data) {
                 	printk("cannot get mdio_data reference from device data\n");
-                	return 1;
+                	return 0;
         	}
 		miibus = mdio_data->mii_bus;
 	}
