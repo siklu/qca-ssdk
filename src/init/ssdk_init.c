@@ -3923,6 +3923,7 @@ qca_hppe_qos_scheduler_hw_init(void)
 
 #ifdef HAWKEYE_CHIP
 void __iomem *gcc_ppeclock_base = NULL;
+void __iomem *gcc_pll_base = NULL;
 static int
 qca_hppe_gcc_clock_init(void)
 {
@@ -3933,8 +3934,29 @@ qca_hppe_gcc_clock_init(void)
 		SSDK_ERROR("can't map gcc ppe clock address!\n");
 		return -1;
 	}
+	gcc_pll_base = ioremap_nocache(0x0009B780, 0x100);
+	if (!gcc_pll_base) {
+		SSDK_ERROR("can't map gcc ppe pll address!\n");
+		return -1;
+	}
+	reg_val = readl(gcc_pll_base + 4);
+	reg_val=(reg_val&0xfffffff0)|0x7;
+	writel(reg_val, gcc_pll_base + 0x4);
+	reg_val = readl(gcc_pll_base);
+	reg_val=reg_val | 0x40;
+	writel(reg_val, gcc_pll_base);
+	msleep(1);
+	reg_val=reg_val & (~0x40);
+	writel(reg_val, gcc_pll_base);
+	msleep(1);
+	writel(0xbf, gcc_pll_base);
+	reg_val = readl(gcc_pll_base);
+	msleep(1);
+	writel(0xff, gcc_pll_base);
+	reg_val = readl(gcc_pll_base);
+	msleep(1);
 	/*set clock src and div*/
-	reg_val = 3 | (1 << 5);
+	reg_val = 1 | (1 << 8);
 	writel(reg_val, gcc_ppeclock_base + 0x84);
 	/*issue command*/
 	reg_val = readl(gcc_ppeclock_base + 0x80);
@@ -3975,6 +3997,7 @@ qca_hppe_gcc_clock_init(void)
 	}
 
 	iounmap(gcc_ppeclock_base);
+	iounmap(gcc_pll_base);
 	return 0;
 }
 
@@ -4022,13 +4045,16 @@ uint32_t
 qca_hppe_gcc_speed_clock1_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr,
 				a_uint8_t * reg_data, a_uint32_t len)
 {
+	uint32_t reg_val = 0;
+
 	if (len != sizeof (a_uint32_t))
         return SW_BAD_LEN;
 
 	if ((reg_addr%4)!= 0)
 	return SW_BAD_PARAM;
 
-	writel(reg_data, gcc_hppe_clock_config1_base + reg_addr);
+	aos_mem_copy(&reg_val, reg_data, sizeof (a_uint32_t));
+	writel(reg_val, gcc_hppe_clock_config1_base + reg_addr);
 
 	return 0;
 }
@@ -4055,13 +4081,16 @@ uint32_t
 qca_hppe_gcc_speed_clock2_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr,
 				a_uint8_t * reg_data, a_uint32_t len)
 {
+	uint32_t reg_val = 0;
+
 	if (len != sizeof (a_uint32_t))
         return SW_BAD_LEN;
 
 	if ((reg_addr%4)!= 0)
 	return SW_BAD_PARAM;
 
-	writel(reg_data, gcc_hppe_clock_config2_base + reg_addr);
+	aos_mem_copy(&reg_val, reg_data, sizeof (a_uint32_t));
+	writel(reg_val, gcc_hppe_clock_config2_base + reg_addr);
 
 	return 0;
 }
@@ -4087,13 +4116,16 @@ uint32_t
 qca_hppe_gcc_mac_clock_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr,
 				a_uint8_t * reg_data, a_uint32_t len)
 {
+	uint32_t reg_val = 0;
+
 	if (len != sizeof (a_uint32_t))
         return SW_BAD_LEN;
 
 	if ((reg_addr%4)!= 0)
 	return SW_BAD_PARAM;
 
-	writel(reg_data, gcc_hppe_clock_config3_base + reg_addr);
+	aos_mem_copy(&reg_val, reg_data, sizeof (a_uint32_t));
+	writel(reg_val, gcc_hppe_clock_config3_base + reg_addr);
 
 	return 0;
 }
@@ -4119,13 +4151,16 @@ qca_hppe_gcc_mac_clock_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr,
 uint32_t
 qca_hppe_gcc_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
 {
+	uint32_t reg_val = 0;
+
 	if (len != sizeof (a_uint32_t))
         return SW_BAD_LEN;
 
 	if ((reg_addr%4)!= 0)
 	return SW_BAD_PARAM;
 
-	writel(reg_data, gcc_uniphy_base + reg_addr);
+	aos_mem_copy(&reg_val, reg_data, sizeof (a_uint32_t));
+	writel(reg_val, gcc_uniphy_base + reg_addr);
 
 	return 0;
 }
@@ -4378,13 +4413,14 @@ qca_hppe_hw_init(ssdk_init_cfg *cfg)
 	qca_hppe_flow_hw_init();
 
 #ifdef HAWKEYE_CHIP
+	qca_hppe_gcc_clock_init();
+
 	qca_hppe_gcc_uniphy_init();
 
 	qca_hppe_gcc_speed_clock_init();
 
 	qca_hppe_interface_mode_init(cfg->mac_mode, cfg->mac_mode1,
 				cfg->mac_mode2);
-	qca_hppe_gcc_clock_init();
 #else
 	qca_hppe_xgmac_hw_init();
 	SSDK_INFO("hppe xgmac init success\n");
