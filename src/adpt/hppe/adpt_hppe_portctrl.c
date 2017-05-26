@@ -2917,28 +2917,28 @@ adpt_hppe_port_speed_clock_apply(a_uint32_t port_id, a_uint32_t speed_clock1, a_
 	{
 		/* gcc port first clock Divider */
 		reg_value = 0;
-		qca_hppe_gcc_speed_clock1_reg_read(0, ((0x24 + i * 8) + 0x10 * (port_id - 1)),
+		qca_hppe_gcc_speed_clock1_reg_read(0, ((0x4 + i * 8) + 0x10 * (port_id - 1)),
 				(a_uint8_t *)&reg_value, 4);
 		reg_value &= ~0x71f;
 		reg_value |= speed_clock1;
-		qca_hppe_gcc_speed_clock1_reg_write(0, ((0x24 + i * 8) + 0x10 * (port_id - 1)),
+		qca_hppe_gcc_speed_clock1_reg_write(0, ((0x4 + i * 8) + 0x10 * (port_id - 1)),
 				(a_uint8_t *)&reg_value, 4);
 
 		/* gcc port second clock Divider */
 		reg_value = 0;
-		qca_hppe_gcc_speed_clock2_reg_read(0, ((0x00 + i * 4) + 0x10 * (port_id - 1)),
+		qca_hppe_gcc_speed_clock2_reg_read(0, ((0x0 + i * 4) + 0x10 * (port_id - 1)),
 				(a_uint8_t *)&reg_value, 4);
 		reg_value = ~0xf;
 		reg_value |= speed_clock2;
-		qca_hppe_gcc_speed_clock2_reg_write(0, ((0x00 + i * 4) + 0x10 * (port_id - 1)),
+		qca_hppe_gcc_speed_clock2_reg_write(0, ((0x0 + i * 4) + 0x10 * (port_id - 1)),
 				(a_uint8_t *)&reg_value, 4);
 		/* update above clock configure */
 		reg_value = 0;
-		qca_hppe_gcc_speed_clock1_reg_read(0, ((0x20 + i * 8) + 0x10 * (port_id - 1)),
+		qca_hppe_gcc_speed_clock1_reg_read(0, ((0x0 + i * 8) + 0x10 * (port_id - 1)),
 				(a_uint8_t *)&reg_value, 4);
 		reg_value &= ~0x1;
 		reg_value |= 0x1;
-		qca_hppe_gcc_speed_clock1_reg_write(0, ((0x20 + i * 8) + 0x10 * (port_id - 1)),
+		qca_hppe_gcc_speed_clock1_reg_write(0, ((0x0 + i * 8) + 0x10 * (port_id - 1)),
 				(a_uint8_t *)&reg_value, 4);
 	}
 
@@ -2975,27 +2975,42 @@ adpt_hppe_usxgmii_speed_clock_set(a_uint32_t port_id, fal_port_speed_t phy_speed
 
 	if (phy_speed == FAL_SPEED_100)
 	{
-		speed_clock1 = 0x109;
+		if (port_id == HPPE_MUX_PORT1)
+			speed_clock1 = 0x309;
+		else
+			speed_clock1 = 0x109;
 		speed_clock2 = 0x4;
 	}
 	else if (phy_speed == FAL_SPEED_1000)
 	{
-		speed_clock1 = 0x104;
+		if (port_id == HPPE_MUX_PORT1)
+			speed_clock1 = 0x304;
+		else
+			speed_clock1 = 0x104;
 		speed_clock2 = 0x0;
 	}
 	else if (phy_speed == FAL_SPEED_10000)
 	{
-		speed_clock1 = 0x101;
+		if (port_id == HPPE_MUX_PORT1)
+			speed_clock1 = 0x301;
+		else
+			speed_clock1 = 0x101;
 		speed_clock2 = 0x0;
 	}
 	else if (phy_speed == FAL_SPEED_2500)
 	{
-		speed_clock1 = 0x107;
+		if (port_id == HPPE_MUX_PORT1)
+			speed_clock1 = 0x307;
+		else
+			speed_clock1 = 0x107;
 		speed_clock2 = 0x0;
 	}
 	else if (phy_speed == FAL_SPEED_5000)
 	{
-		speed_clock1 = 0x103;
+		if (port_id == HPPE_MUX_PORT1)
+			speed_clock1 = 0x303;
+		else
+			speed_clock1 = 0x103;
 		speed_clock2 = 0x0;
 	}
 #if 0
@@ -3017,7 +3032,10 @@ adpt_hppe_sgmiiplus_speed_clock_set(a_uint32_t port_id, fal_port_speed_t phy_spe
 
 	if (phy_speed == FAL_SPEED_2500)
 	{
-		speed_clock1 = 0x101;
+		if (port_id == HPPE_MUX_PORT1)
+			speed_clock1 = 0x301;
+		else
+			speed_clock1 = 0x101;
 		speed_clock2 = 0x0;
 	}
 	adpt_hppe_port_speed_clock_apply(port_id, speed_clock1, speed_clock2);
@@ -3132,7 +3150,7 @@ qca_hppe_mac_sw_sync_task(struct qca_phy_priv *priv)
 
 	portbmp[priv->device_id] = qca_ssdk_port_bmp_get(priv->device_id);
 
-	for (port_id = 1; port_id < SW_MAX_NR_DEV; port_id ++) {
+	for (port_id = 1; port_id < SW_MAX_NR_PORT; port_id ++) {
 
 		if(!(portbmp[priv->device_id] & (0x1 << port_id)))
 			continue;
