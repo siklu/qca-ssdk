@@ -471,6 +471,7 @@ qca_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t uniphy_index,
 #ifdef HPPE
 	void __iomem *hppe_uniphy_base = NULL;
 	a_uint32_t reg_addr1, reg_addr2;
+	uint32_t reg_val = 0;
 
 	if (len != sizeof (a_uint32_t))
         return SW_BAD_LEN;
@@ -494,11 +495,13 @@ qca_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t uniphy_index,
 
 		reg_addr2 = reg_addr & HPPE_UNIPHY_INDIRECT_LOW_ADDR;
 		reg_addr = (HPPE_UNIPHY_INDIRECT_DATA << 10) | (reg_addr2 << 2);
-		writel(reg_data, hppe_uniphy_base + reg_addr);
+		aos_mem_copy(&reg_val, reg_data, sizeof (a_uint32_t));
+		writel(reg_val, hppe_uniphy_base + reg_addr);
 	}
 	else
 	{	// uniphy reg directly access
-		writel(reg_data, hppe_uniphy_base + reg_addr);
+		aos_mem_copy(&reg_val, reg_data, sizeof (a_uint32_t));
+		writel(reg_val, hppe_uniphy_base + reg_addr);
 	}
 #endif
 	return 0;
