@@ -196,6 +196,9 @@ __adpt_hppe_uniphy_usxgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	sr_mii_ctrl.bf.duplex_mode = 1;
 	hppe_sr_mii_ctrl_set(0, uniphy_index, &sr_mii_ctrl);
 
+	/*This hardcode will move to aq phy driver init when it's available*/
+	if (uniphy_index == HPPE_UNIPHY_INSTANCE2)
+		qca_ar8327_phy_write(0, 7, (1<<30) | (4<<16) | 0xc441, 8);
 	return rv;
 }
 
