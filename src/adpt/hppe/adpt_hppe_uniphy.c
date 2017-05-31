@@ -91,10 +91,10 @@ __adpt_hppe_gcc_uniphy_xpcs_reset(a_uint32_t dev_id, a_uint32_t uniphy_index, a_
 		(a_uint8_t *)&reg_value, 4);
 	if (enable == A_TRUE)
 		/*keep xpcs to reset */
-		reg_value |= 0x4;
+		reg_value = HPPE_GCC_UNIPHY_USXGMII_XPCS_RESET;
 	else
 		/*keep xpcs to reset release */
-		reg_value &= ~0x4;
+		reg_value = HPPE_GCC_UNIPHY_USXGMII_XPCS_RELEASE_RESET;
 	qca_hppe_gcc_uniphy_reg_write(0, 0x4 + (uniphy_index * HPPE_GCC_UNIPHY_REG_INC),
 		(a_uint8_t *)&reg_value, 4);
 
@@ -114,14 +114,15 @@ __adpt_hppe_gcc_uniphy_software_reset(a_uint32_t dev_id, a_uint32_t uniphy_index
 	if (uniphy_index == HPPE_UNIPHY_INSTANCE0)
 		reg_value |= HPPE_GCC_UNIPHY_PSGMII_SOFT_RESET;
 	else
-		reg_value |= HPPE_GCC_UNIPHY_USXGMII_SOFT_RESET;
+		reg_value = HPPE_GCC_UNIPHY_USXGMII_SOFT_RESET;
 	qca_hppe_gcc_uniphy_reg_write(0, 0x4 + (uniphy_index * HPPE_GCC_UNIPHY_REG_INC),
 		(a_uint8_t *)&reg_value, 4);
+	msleep(100);
 	/* release reset */
 	if (uniphy_index == HPPE_UNIPHY_INSTANCE0)
 		reg_value &= ~HPPE_GCC_UNIPHY_PSGMII_SOFT_RESET;
 	else
-		reg_value &= ~HPPE_GCC_UNIPHY_USXGMII_SOFT_RESET;
+		reg_value = HPPE_GCC_UNIPHY_USXGMII_XPCS_RESET;
 	qca_hppe_gcc_uniphy_reg_write(0, 0x4 + (uniphy_index * HPPE_GCC_UNIPHY_REG_INC),
 		(a_uint8_t *)&reg_value, 4);
 
@@ -162,6 +163,8 @@ __adpt_hppe_uniphy_usxgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 
 	/* configure uniphy usxgmii gcc software reset */
 	__adpt_hppe_gcc_uniphy_software_reset(dev_id, uniphy_index);
+
+	msleep(100);
 
 	/* wait calibration done to uniphy */
 	rv = __adpt_hppe_uniphy_calibration(dev_id, uniphy_index);

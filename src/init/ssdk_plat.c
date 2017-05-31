@@ -432,9 +432,6 @@ qca_uniphy_reg_read(a_uint32_t dev_id, a_uint32_t uniphy_index,
 	if (len != sizeof (a_uint32_t))
         return SW_BAD_LEN;
 
-	if ((reg_addr%4)!= 0)
-	return SW_BAD_PARAM;
-
 	if (HPPE_UNIPHY_INSTANCE0 == uniphy_index)
 		hppe_uniphy_base = hppe_uniphy_addr;
 	else if (HPPE_UNIPHY_INSTANCE1 == uniphy_index)
@@ -446,7 +443,7 @@ qca_uniphy_reg_read(a_uint32_t dev_id, a_uint32_t uniphy_index,
 	if ( reg_addr > HPPE_UNIPHY_MAX_DIRECT_ACCESS_REG)
 	{
 		// uniphy reg indireclty access
-		reg_addr1 = reg_addr & HPPE_UNIPHY_INDIRECT_HIGH_ADDR;
+		reg_addr1 = (reg_addr & 0xffffff) >> 8;
 		writel(reg_addr1, hppe_uniphy_base + HPPE_UNIPHY_INDIRECT_REG_ADDR);
 
 		reg_addr2 = reg_addr & HPPE_UNIPHY_INDIRECT_LOW_ADDR;
@@ -476,9 +473,6 @@ qca_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t uniphy_index,
 	if (len != sizeof (a_uint32_t))
         return SW_BAD_LEN;
 
-	if ((reg_addr%4)!= 0)
-	return SW_BAD_PARAM;
-
 	if (HPPE_UNIPHY_INSTANCE0 == uniphy_index)
 		hppe_uniphy_base = hppe_uniphy_addr;
 	else if (HPPE_UNIPHY_INSTANCE1 == uniphy_index)
@@ -490,7 +484,7 @@ qca_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t uniphy_index,
 	if ( reg_addr > HPPE_UNIPHY_MAX_DIRECT_ACCESS_REG)
 	{
 		// uniphy reg indireclty access
-		reg_addr1 = reg_addr & HPPE_UNIPHY_INDIRECT_HIGH_ADDR;
+		reg_addr1 = (reg_addr & 0xffffff) >> 8;
 		writel(reg_addr1, hppe_uniphy_base + HPPE_UNIPHY_INDIRECT_REG_ADDR);
 
 		reg_addr2 = reg_addr & HPPE_UNIPHY_INDIRECT_LOW_ADDR;
