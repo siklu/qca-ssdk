@@ -3177,6 +3177,11 @@ qca_hppe_portctrl_hw_init(void)
 		val = 0x1;
 		qca_switch_reg_write(0, 0x001034 + (addr_delta*i), (a_uint8_t *)&val, 4);
 	}
+	for (i = 0; i < 2; i++)
+	{
+		val = 0x00000081;
+		qca_switch_reg_write(0, 0x00003008 + (0x4000*i), (a_uint8_t *)&val, 4);
+	}
 
 #ifdef HAWKEYE_CHIP
 	for(i = 1; i < 7; i++) {
