@@ -2432,7 +2432,8 @@ adpt_hppe_port_mux_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t port_ty
 		{
 			mode = ssdk_dt_global_get_mac_mode(HPPE_UNIPHY_INSTANCE0);
 			mode1 = ssdk_dt_global_get_mac_mode(HPPE_UNIPHY_INSTANCE1);
-			if ((mode == PORT_WRAPPER_PSGMII) || (mode == PORT_WRAPPER_SGMII4_RGMII4))
+			if (((mode == PORT_WRAPPER_PSGMII) && (mode1 == PORT_WRAPPER_MAX)) ||
+				((mode == PORT_WRAPPER_SGMII4_RGMII4) && (mode1 == PORT_WRAPPER_MAX)))
 			{
 				port_mux_ctrl.bf.port5_pcs_sel = 1;
 				port_mux_ctrl.bf.port5_gmac_sel = 1;
@@ -2574,9 +2575,10 @@ __adpt_hppe_port_gphy_status_get(a_uint32_t dev_id, a_uint32_t port_id,
 {
 	sw_error_t rv = SW_OK;
 	a_uint32_t speed, duplex;
-	a_uint32_t mode0, reg_field = 0;
+	a_uint32_t mode0, mode1, reg_field = 0;
 
 	mode0 = ssdk_dt_global_get_mac_mode(HPPE_UNIPHY_INSTANCE0);
+	mode1 = ssdk_dt_global_get_mac_mode(HPPE_UNIPHY_INSTANCE1);
 
 	switch (port_id) {
 
@@ -2597,8 +2599,8 @@ __adpt_hppe_port_gphy_status_get(a_uint32_t dev_id, a_uint32_t port_id,
 			break;
 
 		case 5:
-			if ((mode0 == PORT_WRAPPER_PSGMII) ||
-				(mode0 == PORT_WRAPPER_SGMII4_RGMII4))
+			if (((mode0 == PORT_WRAPPER_PSGMII) && (mode1 == PORT_WRAPPER_MAX)) ||
+				((mode0 == PORT_WRAPPER_SGMII4_RGMII4) && (mode1 == PORT_WRAPPER_MAX)))
 				rv = hppe_port_phy_status_1_port5_0_phy_status_get(dev_id,&reg_field);
 			else
 				rv = hppe_port_phy_status_1_port5_1_phy_status_get(dev_id,&reg_field);
@@ -2716,7 +2718,7 @@ adpt_hppe_uniphy_usxgmii_port_reset(a_uint32_t dev_id, a_uint32_t uniphy_index,
 static void
 adpt_hppe_uniphy_port_adapter_reset(a_uint32_t dev_id, a_uint32_t port_id)
 {
-	a_uint32_t uniphy_index, mode;
+	a_uint32_t uniphy_index, mode, mode1;
 
 	if (port_id < HPPE_MUX_PORT1)
 	{
@@ -2729,7 +2731,9 @@ adpt_hppe_uniphy_port_adapter_reset(a_uint32_t dev_id, a_uint32_t port_id)
 		if (port_id == HPPE_MUX_PORT1)
 		{
 			mode = ssdk_dt_global_get_mac_mode(HPPE_UNIPHY_INSTANCE0);
-			if ((mode == PORT_WRAPPER_PSGMII) || (mode == PORT_WRAPPER_SGMII4_RGMII4))
+			mode1 = ssdk_dt_global_get_mac_mode(HPPE_UNIPHY_INSTANCE1);
+			if (((mode == PORT_WRAPPER_PSGMII) && (mode1 == PORT_WRAPPER_MAX)) ||
+				((mode == PORT_WRAPPER_SGMII4_RGMII4) && (mode1 == PORT_WRAPPER_MAX)))
 			{
 				uniphy_index = HPPE_UNIPHY_INSTANCE0;
 				adpt_hppe_uniphy_psgmii_port_reset(dev_id, uniphy_index,
@@ -2943,6 +2947,31 @@ adpt_hppe_port_speed_clock_apply(a_uint32_t port_id, a_uint32_t speed_clock1, a_
 	}
 
 }
+static void
+adpt_hppe_sgmii_speed_clock_set(a_uint32_t port_id, fal_port_speed_t phy_speed)
+{
+	a_uint32_t speed_clock1 = 0, speed_clock2 = 0;
+
+	if (phy_speed == FAL_SPEED_10)
+	{
+		speed_clock1 = SGMII_10M_CLOCK1;
+		speed_clock2 = SGMII_10M_CLOCK2;
+	}
+	else if (phy_speed == FAL_SPEED_100)
+	{
+		speed_clock1 = SGMII_100M_CLOCK1;
+		speed_clock2 = SGMII_100M_CLOCK2;
+	}
+	else if (phy_speed == FAL_SPEED_1000)
+	{
+		speed_clock1 = SGMII_1000M_CLOCK1;
+		speed_clock2 = SGMII_1000M_CLOCK2;
+	}
+
+	adpt_hppe_port_speed_clock_apply(port_id, speed_clock1, speed_clock2);
+
+}
+
 
 static void
 adpt_hppe_pqsgmii_speed_clock_set(a_uint32_t port_id, fal_port_speed_t phy_speed)
@@ -3046,7 +3075,7 @@ void
 adpt_hppe_gcc_port_speed_clock_set(a_uint32_t dev_id, a_uint32_t port_id,
 				fal_port_speed_t phy_speed)
 {
-	a_uint32_t  mode = 0, uniphy_index = 0;
+	a_uint32_t  mode = 0, uniphy_index = 0, mode1 = 0;
 
 	if (port_id < HPPE_MUX_PORT1)
 	{
@@ -3058,7 +3087,9 @@ adpt_hppe_gcc_port_speed_clock_set(a_uint32_t dev_id, a_uint32_t port_id,
 		{
 			uniphy_index = HPPE_UNIPHY_INSTANCE0;
 			mode = ssdk_dt_global_get_mac_mode(uniphy_index);
-			if ((mode == PORT_WRAPPER_PSGMII) || (mode == PORT_WRAPPER_SGMII4_RGMII4))
+			mode1 = ssdk_dt_global_get_mac_mode(HPPE_UNIPHY_INSTANCE1);
+			if (((mode == PORT_WRAPPER_PSGMII) && (mode1 == PORT_WRAPPER_MAX)) ||
+				((mode == PORT_WRAPPER_SGMII4_RGMII4) && (mode1 == PORT_WRAPPER_MAX)))
 			{
 				adpt_hppe_pqsgmii_speed_clock_set(port_id, phy_speed);
 				return;
@@ -3071,7 +3102,7 @@ adpt_hppe_gcc_port_speed_clock_set(a_uint32_t dev_id, a_uint32_t port_id,
 
 		mode = ssdk_dt_global_get_mac_mode(uniphy_index);
 		if (mode == PORT_WRAPPER_SGMII0_RGMII4)
-			adpt_hppe_pqsgmii_speed_clock_set(port_id, phy_speed);
+			adpt_hppe_sgmii_speed_clock_set(port_id, phy_speed);
 		else if (mode == PORT_WRAPPER_SGMII_PLUS)
 			adpt_hppe_sgmiiplus_speed_clock_set(port_id, phy_speed);
 		else if ((mode == PORT_WRAPPER_USXGMII) || (mode == PORT_WRAPPER_XFI))
@@ -3084,7 +3115,7 @@ void
 adpt_hppe_gcc_uniphy_clock_status_set(a_uint32_t dev_id, a_uint32_t port_id,
 				a_bool_t enable)
 {
-	a_uint32_t mode = 0, uniphy_index = 0;
+	a_uint32_t mode = 0, uniphy_index = 0, mode1 = 0;
 
 	if (port_id < HPPE_MUX_PORT1)
 	{
@@ -3098,7 +3129,9 @@ adpt_hppe_gcc_uniphy_clock_status_set(a_uint32_t dev_id, a_uint32_t port_id,
 		{
 			uniphy_index = HPPE_UNIPHY_INSTANCE0;
 			mode = ssdk_dt_global_get_mac_mode(uniphy_index);
-			if ((mode == PORT_WRAPPER_PSGMII) || (mode == PORT_WRAPPER_SGMII4_RGMII4))
+			mode1 = ssdk_dt_global_get_mac_mode(HPPE_UNIPHY_INSTANCE2);
+			if (((mode == PORT_WRAPPER_PSGMII) && (mode1 == PORT_WRAPPER_MAX)) ||
+				((mode == PORT_WRAPPER_SGMII4_RGMII4) && (mode1 == PORT_WRAPPER_MAX)))
 			{
 				qca_hppe_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
 				port_id, enable);
