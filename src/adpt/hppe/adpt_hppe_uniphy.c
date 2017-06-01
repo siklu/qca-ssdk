@@ -377,6 +377,15 @@ __adpt_hppe_uniphy_qsgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	memset(&uniphy_mode_ctrl, 0, sizeof(uniphy_mode_ctrl));
 	ADPT_DEV_ID_CHECK(dev_id);
 
+	/* configure malibu phy to qsgmii mode*/
+	qca_ar8327_phy_write(dev_id, MALIBU_PSGMII_PHY_ADDR - 1,
+		MALIBU_PHY_MODE_REG, MALIBU_PHY_QSGMII);
+	qca_ar8327_phy_write(dev_id, MALIBU_PSGMII_PHY_ADDR,
+		MALIBU_MODE_RESET_REG, MALIBU_MODE_CHANAGE_RESET);
+	msleep(10);
+	qca_ar8327_phy_write(dev_id, MALIBU_PSGMII_PHY_ADDR,
+		MALIBU_MODE_RESET_REG, MALIBU_MODE_RESET_DEFAULT_VALUE);
+
 	/* keep xpcs to reset status */
 	__adpt_hppe_gcc_uniphy_xpcs_reset(dev_id, uniphy_index, A_TRUE);
 

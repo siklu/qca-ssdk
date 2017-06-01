@@ -64,6 +64,13 @@ extern "C" {
 #define AQ_PHY_LINK_STATUS_REG 0x7c800
 #define AQ_PHY_LINK_PARTNER_REG 0x70013
 
+#define MALIBU_PHY_QSGMII 0x8504
+#define MALIBU_PHY_MODE_REG 0x1f
+#define MALIBU_PSGMII_PHY_ADDR 0x5
+#define MALIBU_MODE_CHANAGE_RESET 0x0
+#define MALIBU_MODE_RESET_DEFAULT_VALUE 0x5f
+#define MALIBU_MODE_RESET_REG 0x0
+
 sw_error_t hppe_init(a_uint32_t dev_id, ssdk_init_cfg *cfg);
 a_bool_t hppe_mac_port_valid_check(a_uint32_t dev_id, fal_port_t port_id);
 a_bool_t hppe_xgmac_port_check(fal_port_t port_id);
