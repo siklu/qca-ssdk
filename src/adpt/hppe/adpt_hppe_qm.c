@@ -522,8 +522,8 @@ adpt_hppe_ac_static_threshold_set(
 			ac_mul_queue_cfg_tbl.bf.ac_cfg_yel_resume_offset_1 = cfg->yel_resume_off >> 4;
 			ac_mul_queue_cfg_tbl.bf.ac_cfg_red_resume_offset = cfg->red_resume_off;
 			ac_mul_queue_cfg_tbl.bf.ac_cfg_gap_grn_red = cfg->red_max_off;
-			ac_mul_queue_cfg_tbl.bf.ac_cfg_gap_grn_yel_0 = cfg->yel_min_off;
-			ac_mul_queue_cfg_tbl.bf.ac_cfg_gap_grn_yel_1 = cfg->yel_min_off >> 5;
+			ac_mul_queue_cfg_tbl.bf.ac_cfg_gap_grn_yel_0 = cfg->yel_max_off;
+			ac_mul_queue_cfg_tbl.bf.ac_cfg_gap_grn_yel_1 = cfg->yel_max_off >> 5;
 			ac_mul_queue_cfg_tbl.bf.ac_cfg_shared_ceiling = cfg->green_max;
 			return hppe_ac_mul_queue_cfg_tbl_set(dev_id,
 					obj->obj_id -UCAST_QUEUE_ID_MAX,
