@@ -271,6 +271,85 @@ _fal_get_tx_xgmib_info(a_uint32_t dev_id, fal_port_t port_id,
         return rv;
 }
 
+static fal_mib_counter_t *g_mibcounter[SW_MAX_NR_DEV];
+
+sw_error_t
+fal_mib_counter_alloc(a_uint32_t dev_id, a_uint64_t **p_mibcounter)
+{
+	*p_mibcounter = kzalloc(SW_MAX_NR_PORT * sizeof(fal_mib_counter_t),
+			GFP_KERNEL);
+
+	if(NULL == *p_mibcounter)
+		return SW_OUT_OF_MEM;
+
+	g_mibcounter[dev_id] = (fal_mib_counter_t*)*p_mibcounter;
+
+	return SW_OK;
+}
+
+static void _fal_rx_mib_update(a_uint32_t dev_id, fal_port_t port_id,
+                 fal_mib_info_t * mib_Info)
+{
+	if(NULL == g_mibcounter[dev_id])
+		return;
+
+	g_mibcounter[dev_id][port_id].RxBroad += mib_Info->RxBroad;
+	g_mibcounter[dev_id][port_id].RxPause += mib_Info->RxPause;
+	g_mibcounter[dev_id][port_id].RxMulti += mib_Info->RxMulti;
+	g_mibcounter[dev_id][port_id].RxFcsErr += mib_Info->RxFcsErr;
+	g_mibcounter[dev_id][port_id].RxAllignErr += mib_Info->RxAllignErr;
+	g_mibcounter[dev_id][port_id].RxRunt += mib_Info->RxRunt;
+	g_mibcounter[dev_id][port_id].RxFragment += mib_Info->RxFragment;
+	g_mibcounter[dev_id][port_id].Rx64Byte += mib_Info->Rx64Byte;
+	g_mibcounter[dev_id][port_id].Rx128Byte += mib_Info->Rx128Byte;
+	g_mibcounter[dev_id][port_id].Rx256Byte += mib_Info->Rx256Byte;
+	g_mibcounter[dev_id][port_id].Rx512Byte += mib_Info->Rx512Byte;
+	g_mibcounter[dev_id][port_id].Rx1024Byte += mib_Info->Rx1024Byte;
+	g_mibcounter[dev_id][port_id].Rx1518Byte += mib_Info->Rx1518Byte;
+	g_mibcounter[dev_id][port_id].RxMaxByte += mib_Info->RxMaxByte;
+	g_mibcounter[dev_id][port_id].RxTooLong += mib_Info->RxTooLong;
+	g_mibcounter[dev_id][port_id].RxGoodByte +=
+		(((u64)mib_Info->RxGoodByte_hi) << 32) | mib_Info->RxGoodByte_lo;
+	g_mibcounter[dev_id][port_id].RxBadByte +=
+		(((u64)mib_Info->RxBadByte_hi) << 32) | mib_Info->RxBadByte_lo;
+	g_mibcounter[dev_id][port_id].RxOverFlow += mib_Info->RxOverFlow;
+	g_mibcounter[dev_id][port_id].Filtered += mib_Info->Filtered;
+	g_mibcounter[dev_id][port_id].RxUniCast += mib_Info->RxUniCast;
+
+	return;
+}
+
+static void _fal_tx_mib_update(a_uint32_t dev_id, fal_port_t port_id,
+                 fal_mib_info_t * mib_Info)
+{
+	if(NULL == g_mibcounter[dev_id])
+		return;
+
+	g_mibcounter[dev_id][port_id].TxBroad += mib_Info->TxBroad;
+	g_mibcounter[dev_id][port_id].TxPause += mib_Info->TxPause;
+	g_mibcounter[dev_id][port_id].TxMulti += mib_Info->TxMulti;
+	g_mibcounter[dev_id][port_id].TxUnderRun += mib_Info->TxUnderRun;
+	g_mibcounter[dev_id][port_id].Tx64Byte += mib_Info->Tx64Byte;
+	g_mibcounter[dev_id][port_id].Tx128Byte += mib_Info->Tx128Byte;
+	g_mibcounter[dev_id][port_id].Tx256Byte += mib_Info->Tx256Byte;
+	g_mibcounter[dev_id][port_id].Tx512Byte += mib_Info->Tx512Byte;
+	g_mibcounter[dev_id][port_id].Tx1024Byte += mib_Info->Tx1024Byte;
+	g_mibcounter[dev_id][port_id].Tx1518Byte += mib_Info->Tx1518Byte;
+	g_mibcounter[dev_id][port_id].TxMaxByte += mib_Info->TxMaxByte;
+	g_mibcounter[dev_id][port_id].TxOverSize += mib_Info->TxOverSize;
+	g_mibcounter[dev_id][port_id].TxByte +=
+		(((u64)mib_Info->TxByte_hi) << 32) | mib_Info->TxByte_lo;
+	g_mibcounter[dev_id][port_id].TxCollision += mib_Info->TxCollision;
+	g_mibcounter[dev_id][port_id].TxAbortCol += mib_Info->TxAbortCol;
+	g_mibcounter[dev_id][port_id].TxMultiCol += mib_Info->TxMultiCol;
+	g_mibcounter[dev_id][port_id].TxSingalCol += mib_Info->TxSingalCol;
+	g_mibcounter[dev_id][port_id].TxExcDefer += mib_Info->TxExcDefer;
+	g_mibcounter[dev_id][port_id].TxDefer += mib_Info->TxDefer;
+	g_mibcounter[dev_id][port_id].TxLateCol += mib_Info->TxLateCol;
+	g_mibcounter[dev_id][port_id].TxUniCast += mib_Info->TxUniCast;
+
+	return;
+}
 
 /*insert flag for inner fal, don't remove it*/
 /**
@@ -288,8 +367,70 @@ fal_get_mib_info(a_uint32_t dev_id, fal_port_t port_id,
 
     FAL_API_LOCK;
     rv = _fal_get_mib_info(dev_id, port_id, mib_Info);
+    _fal_rx_mib_update(dev_id, port_id, mib_Info);
+    _fal_tx_mib_update(dev_id, port_id, mib_Info);
     FAL_API_UNLOCK;
     return rv;
+}
+
+sw_error_t
+fal_mib_counter_get(a_uint32_t dev_id, fal_port_t port_id,
+				fal_mib_counter_t *mib_counter)
+{
+	sw_error_t rv;
+	fal_mib_info_t mib_info;
+
+	if(NULL == g_mibcounter[dev_id])
+		return SW_BAD_PTR;
+
+	rv = fal_get_mib_info(dev_id, port_id, &mib_info);
+
+	if(rv != SW_OK)
+		return rv;
+
+	mib_counter->RxBroad     = g_mibcounter[dev_id][port_id].RxBroad;
+	mib_counter->RxPause     = g_mibcounter[dev_id][port_id].RxPause;
+	mib_counter->RxMulti     = g_mibcounter[dev_id][port_id].RxMulti;
+	mib_counter->RxFcsErr    = g_mibcounter[dev_id][port_id].RxFcsErr;
+	mib_counter->RxAllignErr = g_mibcounter[dev_id][port_id].RxAllignErr;
+	mib_counter->RxRunt      = g_mibcounter[dev_id][port_id].RxRunt;
+	mib_counter->RxFragment  = g_mibcounter[dev_id][port_id].RxFragment ;
+	mib_counter->Rx64Byte    = g_mibcounter[dev_id][port_id].Rx64Byte ;
+	mib_counter->Rx128Byte   = g_mibcounter[dev_id][port_id].Rx128Byte;
+	mib_counter->Rx256Byte   = g_mibcounter[dev_id][port_id].Rx256Byte;
+	mib_counter->Rx512Byte   = g_mibcounter[dev_id][port_id].Rx512Byte;
+	mib_counter->Rx1024Byte  = g_mibcounter[dev_id][port_id].Rx1024Byte;
+	mib_counter->Rx1518Byte  = g_mibcounter[dev_id][port_id].Rx1518Byte;
+	mib_counter->RxMaxByte   = g_mibcounter[dev_id][port_id].RxMaxByte;
+	mib_counter->RxTooLong   = g_mibcounter[dev_id][port_id].RxTooLong;
+	mib_counter->RxGoodByte  = g_mibcounter[dev_id][port_id].RxGoodByte;
+	mib_counter->RxBadByte   = g_mibcounter[dev_id][port_id].RxBadByte;
+	mib_counter->RxOverFlow  = g_mibcounter[dev_id][port_id].RxOverFlow;
+	mib_counter->Filtered    = g_mibcounter[dev_id][port_id].Filtered;
+	mib_counter->TxBroad     = g_mibcounter[dev_id][port_id].TxBroad;
+	mib_counter->TxPause     = g_mibcounter[dev_id][port_id].TxPause;
+	mib_counter->TxMulti     = g_mibcounter[dev_id][port_id].TxMulti;
+	mib_counter->TxUnderRun  = g_mibcounter[dev_id][port_id].TxUnderRun;
+	mib_counter->Tx64Byte    = g_mibcounter[dev_id][port_id].Tx64Byte;
+	mib_counter->Tx128Byte   = g_mibcounter[dev_id][port_id].Tx128Byte;
+	mib_counter->Tx256Byte   = g_mibcounter[dev_id][port_id].Tx256Byte;
+	mib_counter->Tx512Byte   = g_mibcounter[dev_id][port_id].Tx512Byte;
+	mib_counter->Tx1024Byte  = g_mibcounter[dev_id][port_id].Tx1024Byte;
+	mib_counter->Tx1518Byte  = g_mibcounter[dev_id][port_id].Tx1518Byte;
+	mib_counter->TxMaxByte   = g_mibcounter[dev_id][port_id].TxMaxByte;
+	mib_counter->TxOverSize  = g_mibcounter[dev_id][port_id].TxOverSize;
+	mib_counter->TxByte      = g_mibcounter[dev_id][port_id].TxByte;
+	mib_counter->TxCollision = g_mibcounter[dev_id][port_id].TxCollision;
+	mib_counter->TxAbortCol  = g_mibcounter[dev_id][port_id].TxAbortCol;
+	mib_counter->TxMultiCol  = g_mibcounter[dev_id][port_id].TxMultiCol;
+	mib_counter->TxSingalCol = g_mibcounter[dev_id][port_id].TxSingalCol;
+	mib_counter->TxExcDefer  = g_mibcounter[dev_id][port_id].TxExcDefer;
+	mib_counter->TxDefer     = g_mibcounter[dev_id][port_id].TxDefer;
+	mib_counter->TxLateCol   = g_mibcounter[dev_id][port_id].TxLateCol;
+	mib_counter->RxUniCast   = g_mibcounter[dev_id][port_id].RxUniCast;
+	mib_counter->TxUniCast   = g_mibcounter[dev_id][port_id].TxUniCast;
+
+	return SW_OK;
 }
 
 /**
@@ -307,7 +448,9 @@ fal_get_rx_mib_info(a_uint32_t dev_id, fal_port_t port_id,
 
     FAL_API_LOCK;
     rv = _fal_get_rx_mib_info(dev_id, port_id, mib_Info);
+    _fal_rx_mib_update(dev_id, port_id, mib_Info);
     FAL_API_UNLOCK;
+
     return rv;
 }
 
@@ -326,7 +469,9 @@ fal_get_tx_mib_info(a_uint32_t dev_id, fal_port_t port_id,
 
     FAL_API_LOCK;
     rv = _fal_get_tx_mib_info(dev_id, port_id, mib_Info);
+    _fal_tx_mib_update(dev_id, port_id, mib_Info);
     FAL_API_UNLOCK;
+
     return rv;
 }
 
@@ -483,6 +628,8 @@ EXPORT_SYMBOL(fal_mib_status_get);
 EXPORT_SYMBOL(fal_mib_port_flush_counters);
 EXPORT_SYMBOL(fal_mib_cpukeep_set);
 EXPORT_SYMBOL(fal_mib_cpukeep_get);
+EXPORT_SYMBOL(fal_mib_counter_get);
+
 /*insert flag for outter fal, don't remove it*/
 /**
  * @}

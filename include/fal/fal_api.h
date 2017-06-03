@@ -939,7 +939,8 @@ extern "C" {
     SW_API_DEF(SW_API_PT_MIB_FLUSH_COUNTERS, fal_mib_port_flush_counters), \
     SW_API_DEF(SW_API_MIB_CPU_KEEP_SET, fal_mib_cpukeep_set), \
     SW_API_DEF(SW_API_MIB_CPU_KEEP_GET, fal_mib_cpukeep_get),\
-    SW_API_DEF(SW_API_PT_XGMIB_GET, fal_get_xgmib_info),
+    SW_API_DEF(SW_API_PT_XGMIB_GET, fal_get_xgmib_info),\
+    SW_API_DEF(SW_API_PT_MIB_COUNTER_GET, fal_mib_counter_get),
 
 #define MIB_API_PARAM \
     SW_API_DESC(SW_API_PT_MIB_GET)  \
@@ -948,7 +949,8 @@ extern "C" {
     SW_API_DESC(SW_API_MIB_STATUS_GET) \
     SW_API_DESC(SW_API_PT_MIB_FLUSH_COUNTERS) \
     SW_API_DESC(SW_API_MIB_CPU_KEEP_SET) \
-    SW_API_DESC(SW_API_MIB_CPU_KEEP_GET)
+    SW_API_DESC(SW_API_MIB_CPU_KEEP_GET) \
+    SW_API_DESC(SW_API_PT_MIB_COUNTER_GET)
 #else
 #define MIB_API
 #define MIB_API_PARAM
