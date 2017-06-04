@@ -521,7 +521,7 @@ adpt_hppe_uniphy_mode_set(a_uint32_t dev_id, a_uint32_t index, a_uint32_t mode)
 			rv = __adpt_hppe_uniphy_sgmiiplus_mode_set(dev_id, index);
 			break;
 
-		case PORT_WRAPPER_XFI:
+		case PORT_WRAPPER_10GBASE_R:
 			rv = __adpt_hppe_uniphy_10g_r_mode_set(dev_id, index);
 			break;
 

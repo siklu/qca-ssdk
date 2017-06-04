@@ -2633,7 +2633,9 @@ adpt_hppe_port_phy_status_get(a_uint32_t dev_id, a_uint32_t port_id,
 	mode1 = ssdk_dt_global_get_mac_mode(HPPE_UNIPHY_INSTANCE1);
 	mode2 = ssdk_dt_global_get_mac_mode(HPPE_UNIPHY_INSTANCE2);
 
-	if ((port_id == HPPE_MUX_PORT1) && (mode1 == PORT_WRAPPER_USXGMII))
+	if ((port_id == HPPE_MUX_PORT1) &&
+	    ((mode1 == PORT_WRAPPER_USXGMII) ||
+	    (mode1 == PORT_WRAPPER_10GBASE_R)))
 	{
 		phy_status->tx_flowctrl = 1;
 		phy_status->rx_flowctrl = 1;
@@ -3117,7 +3119,7 @@ adpt_hppe_gcc_port_speed_clock_set(a_uint32_t dev_id, a_uint32_t port_id,
 			adpt_hppe_sgmii_speed_clock_set(port_id, phy_speed);
 		else if (mode == PORT_WRAPPER_SGMII_PLUS)
 			adpt_hppe_sgmiiplus_speed_clock_set(port_id, phy_speed);
-		else if ((mode == PORT_WRAPPER_USXGMII) || (mode == PORT_WRAPPER_XFI))
+		else if ((mode == PORT_WRAPPER_USXGMII) || (mode == PORT_WRAPPER_10GBASE_R))
 			adpt_hppe_usxgmii_speed_clock_set(port_id, phy_speed);
 	}
 	return;

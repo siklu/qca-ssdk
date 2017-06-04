@@ -4285,7 +4285,7 @@ qca_hppe_port_mac_type_set(a_uint32_t port_id, a_uint32_t mode)
 			break;
 		case PORT_WRAPPER_SGMII_PLUS:
 		case PORT_WRAPPER_USXGMII:
-		case PORT_WRAPPER_XFI:
+		case PORT_WRAPPER_10GBASE_R:
 			hppe_port_type[port_id - 1] = HPPE_PORT_XGMAC_TYPE;
 			break;
 	}
