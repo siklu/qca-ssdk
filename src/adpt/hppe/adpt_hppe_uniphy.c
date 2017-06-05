@@ -292,6 +292,9 @@ __adpt_hppe_uniphy_sgmiiplus_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index
 	/* wait uniphy calibration done */
 	rv = __adpt_hppe_uniphy_calibration(dev_id, uniphy_index);
 
+	/* enable instance clock */
+	qca_hppe_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
+				1, A_TRUE);
 	return rv;
 }
 
