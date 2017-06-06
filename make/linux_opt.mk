@@ -367,6 +367,30 @@ ifeq (KSLIB, $(MODULE_TYPE))
 
   endif
 
+  ifeq (4_1, $(OS_VER))
+                MODULE_CFLAG += -DKVER34
+                MODULE_CFLAG += -DKVER32
+            MODULE_CFLAG += -DLNX26_22
+	    ifeq ($(ARCH), arm64)
+	    KCONF_FILE = $(SYS_PATH)/source/include/linux/kconfig.h
+            MODULE_INC += -I$(SYS_PATH) \
+                  -I$(TOOL_PATH)/../lib/gcc/$(TARGET_NAME)/$(GCC_VERSION)/include/ \
+                  -I$(SYS_PATH)/include \
+              -I$(SYS_PATH)/source/include \
+	      -I$(SYS_PATH)/source/arch/arm64/mach-msm/include \
+              -I$(SYS_PATH)/arch/arm64/mach-msm/include \
+              -I$(SYS_PATH)/source/arch/arm64/include \
+              -I$(SYS_PATH)/arch/arm64/include \
+              -I$(SYS_PATH)/source/arch/arm64/include/asm \
+              -I$(SYS_PATH)/arch/arm64/include/generated \
+              -I$(SYS_PATH)/include/generated/uapi \
+              -I$(SYS_PATH)/include/uapi \
+              -I$(SYS_PATH)/arch/arm64/include/uapi \
+              -I$(SYS_PATH)/source/arch/arm64/include/asm/mach \
+	      -include $(KCONF_FILE)
+	    endif
+  endif
+
   ifeq (3_14, $(OS_VER))
 		MODULE_CFLAG += -DKVER34
 		MODULE_CFLAG += -DKVER32

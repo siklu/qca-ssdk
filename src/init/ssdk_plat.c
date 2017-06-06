@@ -47,7 +47,7 @@
 #ifdef IN_MALIBU_PHY
 #include <malibu_phy.h>
 #endif
-#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,1,0))
 #include <linux/switch.h>
 #include <linux/of.h>
 #include <linux/of_platform.h>
@@ -545,6 +545,7 @@ static int miibus_get(void)
 		printk("cannot get mii bus reference from device data\n");
 		return 1;
 	}
+
 	#else
 	struct ag71xx_mdio *am;
 	struct device_node *mdio_node = NULL;
