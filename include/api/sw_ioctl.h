@@ -434,6 +434,7 @@ extern "C" {
 #define SW_API_MIB_CPU_KEEP_SET       (4+ SW_API_MIB_OFFSET)
 #define SW_API_MIB_CPU_KEEP_GET       (5+ SW_API_MIB_OFFSET)
 #define SW_API_PT_XGMIB_GET           (6+ SW_API_MIB_OFFSET)
+#define SW_API_PT_MIB_COUNTER_GET     (7+ SW_API_MIB_OFFSET)
 
     /*misc*/
 #define SW_API_MISC_OFFSET            1200

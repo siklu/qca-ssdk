@@ -78,6 +78,55 @@ extern "C" {
         a_uint32_t RxJumboFcsErr;	/* add for  Hawkeye*/
         a_uint32_t RxJumboAligenErr;		/* add for Hawkeye*/
     } fal_mib_info_t;
+
+/*define structure for software with 64bit*/
+typedef struct
+{
+	a_uint64_t RxBroad;
+	a_uint64_t RxPause;
+	a_uint64_t RxMulti;
+	a_uint64_t RxFcsErr;
+	a_uint64_t RxAllignErr;
+	a_uint64_t RxRunt;
+	a_uint64_t RxFragment;
+	a_uint64_t Rx64Byte;
+	a_uint64_t Rx128Byte;
+	a_uint64_t Rx256Byte;
+	a_uint64_t Rx512Byte;
+	a_uint64_t Rx1024Byte;
+	a_uint64_t Rx1518Byte;
+	a_uint64_t RxMaxByte;
+	a_uint64_t RxTooLong;
+	a_uint64_t RxGoodByte;
+	a_uint64_t RxBadByte;
+	a_uint64_t RxOverFlow;		/* no this counter for Hawkeye*/
+	a_uint64_t Filtered;			/*no this counter for Hawkeye*/
+	a_uint64_t TxBroad;
+	a_uint64_t TxPause;
+	a_uint64_t TxMulti;
+	a_uint64_t TxUnderRun;
+	a_uint64_t Tx64Byte;
+	a_uint64_t Tx128Byte;
+	a_uint64_t Tx256Byte;
+	a_uint64_t Tx512Byte;
+	a_uint64_t Tx1024Byte;
+	a_uint64_t Tx1518Byte;
+	a_uint64_t TxMaxByte;
+	a_uint64_t TxOverSize;	/*no this counter for Hawkeye*/
+	a_uint64_t TxByte;
+	a_uint64_t TxCollision;
+	a_uint64_t TxAbortCol;
+	a_uint64_t TxMultiCol;
+	a_uint64_t TxSingalCol;
+	a_uint64_t TxExcDefer;
+	a_uint64_t TxDefer;
+	a_uint64_t TxLateCol;
+	a_uint64_t RxUniCast;
+	a_uint64_t TxUniCast;
+	a_uint64_t RxJumboFcsErr;	/* add for  Hawkeye*/
+	a_uint64_t RxJumboAligenErr;	/* add for Hawkeye*/
+} fal_mib_counter_t;
+
 enum
 {
 	/*mib*/
@@ -184,6 +233,14 @@ fal_mib_cpukeep_set(a_uint32_t dev_id, a_bool_t  enable);
 
 sw_error_t
 fal_mib_cpukeep_get(a_uint32_t dev_id, a_bool_t * enable);
+
+sw_error_t
+fal_mib_counter_alloc(a_uint32_t dev_id, a_uint64_t **p_mibcounter);
+
+sw_error_t
+fal_mib_counter_get(a_uint32_t dev_id, fal_port_t port_id,
+				fal_mib_counter_t *mib_counter);
+
 
 #ifdef __cplusplus
 }

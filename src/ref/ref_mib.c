@@ -50,57 +50,11 @@
 int
 _qca_ar8327_sw_capture_port_counter(struct switch_dev *dev, int port)
 {
-    int pos = 0;
     fal_mib_info_t  mib_Info;
     struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 
     memset(&mib_Info, 0, sizeof(mib_Info));
     fal_get_mib_info(priv->device_id, port, &mib_Info);
-    pos = port * QCA_MIB_ITEM_NUMBER;
-    priv->mib_counters[pos++] += mib_Info.RxBroad;
-    priv->mib_counters[pos++] += mib_Info.RxPause;
-    priv->mib_counters[pos++] += mib_Info.RxMulti;
-    priv->mib_counters[pos++] += mib_Info.RxFcsErr;
-    priv->mib_counters[pos++] += mib_Info.RxAllignErr;
-    priv->mib_counters[pos++] += mib_Info.RxRunt;
-    priv->mib_counters[pos++] += mib_Info.RxFragment;
-    priv->mib_counters[pos++] += mib_Info.Rx64Byte;
-    priv->mib_counters[pos++] += mib_Info.Rx128Byte;
-    priv->mib_counters[pos++] += mib_Info.Rx256Byte;
-    priv->mib_counters[pos++] += mib_Info.Rx512Byte;
-    priv->mib_counters[pos++] += mib_Info.Rx1024Byte;
-    priv->mib_counters[pos++] += mib_Info.Rx1518Byte;
-    priv->mib_counters[pos++] += mib_Info.RxMaxByte;
-    priv->mib_counters[pos++] += mib_Info.RxTooLong;
-    priv->mib_counters[pos] += mib_Info.RxGoodByte_lo;
-    priv->mib_counters[pos++] += (((u64)mib_Info.RxGoodByte_hi) << 32);
-    priv->mib_counters[pos] += mib_Info.RxBadByte_lo;
-    priv->mib_counters[pos++] += (((u64)mib_Info.RxBadByte_hi) << 32);
-    priv->mib_counters[pos++] += mib_Info.RxOverFlow;
-    priv->mib_counters[pos++] += mib_Info.Filtered;
-    priv->mib_counters[pos++] += mib_Info.TxBroad;
-    priv->mib_counters[pos++] += mib_Info.TxPause;
-    priv->mib_counters[pos++] += mib_Info.TxMulti;
-    priv->mib_counters[pos++] += mib_Info.TxUnderRun;
-    priv->mib_counters[pos++] += mib_Info.Tx64Byte;
-    priv->mib_counters[pos++] += mib_Info.Tx128Byte;
-    priv->mib_counters[pos++] += mib_Info.Tx256Byte;
-    priv->mib_counters[pos++] += mib_Info.Tx512Byte;
-    priv->mib_counters[pos++] += mib_Info.Tx1024Byte;
-    priv->mib_counters[pos++] += mib_Info.Tx1518Byte;
-    priv->mib_counters[pos++] += mib_Info.TxMaxByte;
-    priv->mib_counters[pos++] += mib_Info.TxOverSize;
-    priv->mib_counters[pos] += mib_Info.TxByte_lo;
-    priv->mib_counters[pos++] += (((u64)mib_Info.TxByte_hi) << 32);
-    priv->mib_counters[pos++] += mib_Info.TxCollision;
-    priv->mib_counters[pos++] += mib_Info.TxAbortCol;
-    priv->mib_counters[pos++] += mib_Info.TxMultiCol;
-    priv->mib_counters[pos++] += mib_Info.TxSingalCol;
-    priv->mib_counters[pos++] += mib_Info.TxExcDefer;
-    priv->mib_counters[pos++] += mib_Info.TxDefer;
-    priv->mib_counters[pos++] += mib_Info.TxLateCol;
-    priv->mib_counters[pos++] += mib_Info.RxUniCast;
-    priv->mib_counters[pos++] += mib_Info.TxUniCast;
 
     return 0;
 }
@@ -108,76 +62,22 @@ _qca_ar8327_sw_capture_port_counter(struct switch_dev *dev, int port)
 int
 _qca_ar8327_sw_capture_port_rx_counter(struct switch_dev *dev, int port)
 {
-    int pos = 0;
     fal_mib_info_t  mib_Info;
     struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 
     memset(&mib_Info, 0, sizeof(fal_mib_info_t));
     fal_get_rx_mib_info(priv->device_id, port, &mib_Info);
-    pos = port * QCA_MIB_ITEM_NUMBER;
-    priv->mib_counters[pos++] += mib_Info.RxBroad;
-    priv->mib_counters[pos++] += mib_Info.RxPause;
-    priv->mib_counters[pos++] += mib_Info.RxMulti;
-    priv->mib_counters[pos++] += mib_Info.RxFcsErr;
-    priv->mib_counters[pos++] += mib_Info.RxAllignErr;
-    priv->mib_counters[pos++] += mib_Info.RxRunt;
-    priv->mib_counters[pos++] += mib_Info.RxFragment;
-    priv->mib_counters[pos++] += mib_Info.Rx64Byte;
-    priv->mib_counters[pos++] += mib_Info.Rx128Byte;
-    priv->mib_counters[pos++] += mib_Info.Rx256Byte;
-    priv->mib_counters[pos++] += mib_Info.Rx512Byte;
-    priv->mib_counters[pos++] += mib_Info.Rx1024Byte;
-    priv->mib_counters[pos++] += mib_Info.Rx1518Byte;
-    priv->mib_counters[pos++] += mib_Info.RxMaxByte;
-    priv->mib_counters[pos++] += mib_Info.RxTooLong;
-    priv->mib_counters[pos] += mib_Info.RxGoodByte_lo;
-    priv->mib_counters[pos++] += (((u64)mib_Info.RxGoodByte_hi) << 32);
-    priv->mib_counters[pos] += mib_Info.RxBadByte_lo;
-    priv->mib_counters[pos++] += (((u64)mib_Info.RxBadByte_hi) << 32);
-    priv->mib_counters[pos++] += mib_Info.RxOverFlow;
-    priv->mib_counters[pos++] += mib_Info.Filtered;
-
-    pos = pos + 20;
-    priv->mib_counters[pos++] += mib_Info.RxUniCast;
-
     return 0;
 }
 
 int
 _qca_ar8327_sw_capture_port_tx_counter(struct switch_dev *dev, int port)
 {
-    int pos = 0;
     fal_mib_info_t  mib_Info;
     struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 
     memset(&mib_Info, 0, sizeof(fal_mib_info_t));
     fal_get_tx_mib_info(priv->device_id, port, &mib_Info);
-    pos = port * QCA_MIB_ITEM_NUMBER + 19;
-
-    priv->mib_counters[pos++] += mib_Info.TxBroad;
-    priv->mib_counters[pos++] += mib_Info.TxPause;
-    priv->mib_counters[pos++] += mib_Info.TxMulti;
-    priv->mib_counters[pos++] += mib_Info.TxUnderRun;
-    priv->mib_counters[pos++] += mib_Info.Tx64Byte;
-    priv->mib_counters[pos++] += mib_Info.Tx128Byte;
-    priv->mib_counters[pos++] += mib_Info.Tx256Byte;
-    priv->mib_counters[pos++] += mib_Info.Tx512Byte;
-    priv->mib_counters[pos++] += mib_Info.Tx1024Byte;
-    priv->mib_counters[pos++] += mib_Info.Tx1518Byte;
-    priv->mib_counters[pos++] += mib_Info.TxMaxByte;
-    priv->mib_counters[pos++] += mib_Info.TxOverSize;
-    priv->mib_counters[pos] += mib_Info.TxByte_lo;
-    priv->mib_counters[pos++] += (((u64)mib_Info.TxByte_hi) << 32);
-    priv->mib_counters[pos++] += mib_Info.TxCollision;
-    priv->mib_counters[pos++] += mib_Info.TxAbortCol;
-    priv->mib_counters[pos++] += mib_Info.TxMultiCol;
-    priv->mib_counters[pos++] += mib_Info.TxSingalCol;
-    priv->mib_counters[pos++] += mib_Info.TxExcDefer;
-    priv->mib_counters[pos++] += mib_Info.TxDefer;
-    priv->mib_counters[pos++] += mib_Info.TxLateCol;
-
-    pos++;
-    priv->mib_counters[pos++] += mib_Info.TxUniCast;
 
     return 0;
 }
@@ -245,7 +145,7 @@ qca_ar8327_sw_get_port_mib(struct switch_dev *dev,
 
     mutex_lock(&priv->mib_lock);
     _qca_ar8327_sw_capture_port_counter(dev, port);
-    pos = port * QCA_MIB_ITEM_NUMBER;
+    pos = port * (sizeof(fal_mib_counter_t)/sizeof(a_uint64_t));
     len += snprintf(buf + len, sizeof(priv->buf) - len,
                             "Port %d MIB counters\n",
                             port);

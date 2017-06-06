@@ -1118,10 +1118,10 @@ int
 qca_phy_mib_work_start(struct qca_phy_priv *priv)
 {
 	mutex_init(&priv->mib_lock);
-	priv->mib_counters = kzalloc(priv->sw_dev.ports * QCA_MIB_ITEM_NUMBER *
-	      sizeof(*priv->mib_counters), GFP_KERNEL);
-	if (!priv->mib_counters)
+	if(SW_OK != fal_mib_counter_alloc(priv->device_id, &priv->mib_counters)){
+		SSDK_ERROR("Memory allocation fail\n");
 		return -ENOMEM;
+	}
 
 	INIT_DELAYED_WORK(&priv->mib_dwork, qca_phy_mib_work_task);
 #ifndef SSDK_MIB_CHANGE_WQ
