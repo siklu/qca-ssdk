@@ -52,25 +52,12 @@ sw_error_t
 adpt_hppe_mib_cpukeep_set(a_uint32_t dev_id, a_bool_t  enable)
 {
 	a_uint32_t port_id = 0;
-	union mmc_control_u mmc_control;
 
-	memset(&mmc_control, 0, sizeof(mmc_control));
 	ADPT_DEV_ID_CHECK(dev_id);
 
 	for (port_id = 0; port_id < 6; port_id++) {
 
 		hppe_mac_mib_ctrl_mib_rd_clr_set(dev_id, port_id, (a_uint32_t)(!enable));
-	}
-
-	for (port_id = 0; port_id < 2; port_id++) {
-		/*configure the xgmac ports*/
-		hppe_mmc_control_get(dev_id, port_id, &mmc_control);
-		if(A_TRUE == enable)
-			mmc_control.bf.rstonrd = 0;
-		else
-			mmc_control.bf.rstonrd = 1;
-
-		hppe_mmc_control_set(dev_id, port_id, &mmc_control);
 	}
 
 	return SW_OK;
