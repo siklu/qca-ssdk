@@ -173,6 +173,10 @@ ifeq (TRUE, $(IN_POLICER))
   MODULE_CFLAG += -DIN_POLICER
 endif
 
+ifeq (TRUE, $(HAWKEYE_CHIP))
+  MODULE_CFLAG += -DHAWKEYE_CHIP
+endif
+
 ifneq (TRUE, $(FAL))
   MODULE_CFLAG += -DHSL_STANDALONG
 endif
