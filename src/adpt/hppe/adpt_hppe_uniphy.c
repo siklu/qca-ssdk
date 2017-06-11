@@ -23,10 +23,12 @@
 #include "hppe_init.h"
 #include "ssdk_init.h"
 #include "adpt.h"
+#include "hppe_reg_access.h"
 
 #ifdef HAWKEYE_CHIP
 extern void adpt_hppe_gcc_port_speed_clock_set(a_uint32_t dev_id,
 				a_uint32_t port_id, fal_port_speed_t phy_speed);
+
 static sw_error_t
 __adpt_hppe_uniphy_10g_r_linkup(a_uint32_t dev_id, a_uint32_t uniphy_index)
 {
@@ -144,6 +146,16 @@ __adpt_hppe_uniphy_usxgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	memset(&vr_mii_an_ctrl, 0, sizeof(vr_mii_an_ctrl));
 	memset(&sr_mii_ctrl, 0, sizeof(sr_mii_ctrl));
 	ADPT_DEV_ID_CHECK(dev_id);
+
+	hppe_uniphy_reg_set(dev_id, UNIPHY_MISC2_REG_OFFSET,
+		uniphy_index, UNIPHY_MISC2_REG_VALUE);
+	/*reset uniphy*/
+	hppe_uniphy_reg_set(dev_id, UNIPHY_PLL_RESET_REG_OFFSET,
+		uniphy_index, UNIPHY_PLL_RESET_REG_VALUE);
+	msleep(500);
+	hppe_uniphy_reg_set(dev_id, UNIPHY_PLL_RESET_REG_OFFSET,
+		uniphy_index, UNIPHY_PLL_RESET_REG_DEFAULT_VALUE);
+	msleep(500);
 
 	/* disable instance clock */
 	qca_hppe_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
@@ -267,6 +279,16 @@ __adpt_hppe_uniphy_sgmiiplus_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index
 	memset(&uniphy_mode_ctrl, 0, sizeof(uniphy_mode_ctrl));
 	ADPT_DEV_ID_CHECK(dev_id);
 
+	hppe_uniphy_reg_set(dev_id, UNIPHY_MISC2_REG_OFFSET,
+		uniphy_index, UNIPHY_MISC2_REG_SGMII_PLUS_MODE);
+	/*reset uniphy*/
+	hppe_uniphy_reg_set(dev_id, UNIPHY_PLL_RESET_REG_OFFSET,
+		uniphy_index, UNIPHY_PLL_RESET_REG_VALUE);
+	msleep(500);
+	hppe_uniphy_reg_set(dev_id, UNIPHY_PLL_RESET_REG_OFFSET,
+		uniphy_index, UNIPHY_PLL_RESET_REG_DEFAULT_VALUE);
+	msleep(500);
+
 	/* keep xpcs to reset status */
 	__adpt_hppe_gcc_uniphy_xpcs_reset(dev_id, uniphy_index, A_TRUE);
 
@@ -308,6 +330,17 @@ __adpt_hppe_uniphy_sgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index, a_
 
 	memset(&uniphy_mode_ctrl, 0, sizeof(uniphy_mode_ctrl));
 	ADPT_DEV_ID_CHECK(dev_id);
+
+	/*set the PHY mode to SGMII*/
+	hppe_uniphy_reg_set(dev_id, UNIPHY_MISC2_REG_OFFSET,
+		uniphy_index, UNIPHY_MISC2_REG_SGMII_MODE);
+	/*reset uniphy*/
+	hppe_uniphy_reg_set(dev_id, UNIPHY_PLL_RESET_REG_OFFSET,
+		uniphy_index, UNIPHY_PLL_RESET_REG_VALUE);
+	msleep(500);
+	hppe_uniphy_reg_set(dev_id, UNIPHY_PLL_RESET_REG_OFFSET,
+		uniphy_index, UNIPHY_PLL_RESET_REG_DEFAULT_VALUE);
+	msleep(500);
 
 	/* keep xpcs to reset status */
 	__adpt_hppe_gcc_uniphy_xpcs_reset(dev_id, uniphy_index, A_TRUE);
