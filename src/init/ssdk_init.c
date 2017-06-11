@@ -1341,7 +1341,7 @@ int
 qca_mac_sw_sync_work_start(struct qca_phy_priv *priv)
 {
 	if (priv->version != QCA_VER_HPPE)
-		return -1;
+		return 0;
 
 	qca_mac_sw_sync_port_status_init(priv);
 
