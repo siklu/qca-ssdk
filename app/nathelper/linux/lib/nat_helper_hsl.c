@@ -271,10 +271,15 @@ if_mac_cleanup(void)
 	return 0;
 }
 
+#define MACADDR_LEN	6
 a_int32_t
 if_mac_add(a_uint8_t *mac, a_uint32_t vid, uint32_t ipv6)
 {
     a_uint8_t i = 0;
+    a_uint8_t zero_mac[MACADDR_LEN] = {0};
+
+    if (!memcmp(mac, zero_mac, MACADDR_LEN))
+        return 0;
 
     for(i = 0; i < if_mac_count; i++)
     {
