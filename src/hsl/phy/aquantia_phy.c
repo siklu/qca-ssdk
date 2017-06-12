@@ -23,6 +23,7 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/phy.h>
+#include "ssdk_plat.h"
 
 /* #define aquantia_phy_reg_read _phy_reg_read  */
 /* #define aquantia_phy_reg_write _phy_reg_write */
@@ -572,6 +573,10 @@ aquantia_phy_set_autoneg_adv(a_uint32_t dev_id, a_uint32_t phy_id,
 		phy_data |= AQUANTIA_ADVERTISE_1000FULL;
 	if (autoneg & FAL_PHY_ADV_1000T_FD)
 		phy_data |= AQUANTIA_ADVERTISE_1000FULL;
+	if (autoneg & FAL_PHY_ADV_2500T_FD)
+		phy_data |= AQUANTIA_ADVERTISE_2500FULL;
+	if (autoneg & FAL_PHY_ADV_5000T_FD)
+		phy_data |= AQUANTIA_ADVERTISE_5000FULL;
 	aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_VENDOR_PROVISION1, phy_data);
 
@@ -580,10 +585,6 @@ aquantia_phy_set_autoneg_adv(a_uint32_t dev_id, a_uint32_t phy_id,
 	phy_data &= ~AQUANTIA_ADVERTISE_GIGA_PLUS_ALL;
 	if (autoneg & FAL_PHY_ADV_10000T_FD)
 		phy_data |= AQUANTIA_ADVERTISE_10000FULL;
-	if (autoneg & FAL_PHY_ADV_5000T_FD)
-		phy_data |= AQUANTIA_ADVERTISE_5000FULL;
-	if (autoneg & FAL_PHY_ADV_2500T_FD)
-		phy_data |= AQUANTIA_ADVERTISE_2500FULL;
 	phy_data = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_10GBASS_T_CONTROL_REGISTER,phy_data);
 
@@ -622,19 +623,15 @@ aquantia_phy_get_autoneg_adv(a_uint32_t dev_id, a_uint32_t phy_id,
 		AQUANTIA_AUTONEG_VENDOR_PROVISION1);
 	if (phy_data & AQUANTIA_ADVERTISE_1000FULL)
 		*autoneg |= FAL_PHY_ADV_1000T_FD;
-	if (phy_data & AQUANTIA_ADVERTISE_1000HALF)
-		*autoneg |= FAL_PHY_ADV_1000T_FD;
+	if (phy_data & AQUANTIA_ADVERTISE_2500FULL)
+		*autoneg |= FAL_PHY_ADV_2500T_FD;
+	if (phy_data & AQUANTIA_ADVERTISE_5000FULL)
+		*autoneg |= FAL_PHY_ADV_5000T_FD;
 
 	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_10GBASS_T_CONTROL_REGISTER);
 	if (phy_data & AQUANTIA_ADVERTISE_10000FULL)
 		*autoneg |= FAL_PHY_ADV_10000T_FD;
-
-	if (phy_data & AQUANTIA_ADVERTISE_5000FULL)
-		*autoneg |= FAL_PHY_ADV_5000T_FD;
-
-	if (phy_data & AQUANTIA_ADVERTISE_2500FULL)
-			*autoneg |= FAL_PHY_ADV_2500T_FD;
 
 	return SW_OK;
 }
@@ -721,14 +718,14 @@ static sw_error_t _aquantia_phy_set_100speed(a_uint32_t dev_id, a_uint32_t phy_i
 	aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_ADVERTISEMENT_REGISTER, phy_data);
 
-	/*disable 1000M speed*/
+	/*disable 1000M, 2500M, 5000M speed*/
 	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_VENDOR_PROVISION1);
 	phy_data &= ~(AQUANTIA_ADVERTISE_GIGA_ALL);
 	aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_VENDOR_PROVISION1, phy_data);
 
-	/*disable 10000M 2500M 5000M speed*/
+	/*disable 10000M speed*/
 	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_10GBASS_T_CONTROL_REGISTER);
 	phy_data &= ~(AQUANTIA_ADVERTISE_GIGA_PLUS_ALL);
@@ -738,15 +735,28 @@ static sw_error_t _aquantia_phy_set_100speed(a_uint32_t dev_id, a_uint32_t phy_i
 	return SW_OK;
 }
 
-static sw_error_t _aquantia_phy_set_1000speed(a_uint32_t dev_id, a_uint32_t phy_id, fal_port_duplex_t duplex)
+static sw_error_t _aquantia_phy_set_giga_speed(a_uint32_t dev_id, a_uint32_t phy_id, fal_port_speed_t speed)
 {
 	a_uint16_t phy_data = 0;
 
-	/*set 1000M */
+	/*set 1000M and disable 2500M, 5000M */
 	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_VENDOR_PROVISION1);
 	phy_data &= ~(AQUANTIA_ADVERTISE_GIGA_ALL);
-	phy_data |= AQUANTIA_ADVERTISE_1000FULL;
+	switch(speed)
+	{
+		case FAL_SPEED_1000:
+			phy_data |= AQUANTIA_ADVERTISE_1000FULL;
+			break;
+		case FAL_SPEED_2500:
+			phy_data |= AQUANTIA_ADVERTISE_2500FULL;
+			break;
+		case FAL_SPEED_5000:
+			phy_data |= AQUANTIA_ADVERTISE_5000FULL;
+			break;
+		default:
+			return SW_FAIL;
+	}
 	aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_VENDOR_PROVISION1, phy_data);
 
@@ -757,7 +767,7 @@ static sw_error_t _aquantia_phy_set_1000speed(a_uint32_t dev_id, a_uint32_t phy_
 	aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_ADVERTISEMENT_REGISTER, phy_data);
 
-	/*disable 10000M 2500M 5000M speed*/
+	/*disable 10000M speed*/
 	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_10GBASS_T_CONTROL_REGISTER);
 	phy_data &= ~(AQUANTIA_ADVERTISE_GIGA_PLUS_ALL);
@@ -767,7 +777,7 @@ static sw_error_t _aquantia_phy_set_1000speed(a_uint32_t dev_id, a_uint32_t phy_
 	return SW_OK;
 }
 
-static sw_error_t _aquantia_phy_set_gplus_speed(a_uint32_t dev_id, a_uint32_t phy_id,  fal_port_speed_t speed)
+static sw_error_t _aquantia_phy_set_10g_speed(a_uint32_t dev_id, a_uint32_t phy_id)
 {
 	a_uint16_t phy_data = 0;
 
@@ -775,12 +785,7 @@ static sw_error_t _aquantia_phy_set_gplus_speed(a_uint32_t dev_id, a_uint32_t ph
 	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_10GBASS_T_CONTROL_REGISTER);
 	phy_data &= ~(AQUANTIA_ADVERTISE_GIGA_PLUS_ALL);
-	if(speed == FAL_SPEED_2500)
-		phy_data |= AQUANTIA_ADVERTISE_2500FULL;
-	else if(speed == FAL_SPEED_5000)
-		phy_data |= AQUANTIA_ADVERTISE_5000FULL;
-	else
-		phy_data |= AQUANTIA_ADVERTISE_10000FULL;
+	phy_data |= AQUANTIA_ADVERTISE_10000FULL;
 	aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_10GBASS_T_CONTROL_REGISTER, phy_data);
 
@@ -791,7 +796,7 @@ static sw_error_t _aquantia_phy_set_gplus_speed(a_uint32_t dev_id, a_uint32_t ph
 	aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_ADVERTISEMENT_REGISTER, phy_data);
 
-	/*disable 1000M speed*/
+	/*disable 1000M 2500M 5000M speed*/
 	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_VENDOR_PROVISION1);
 	phy_data &= ~(AQUANTIA_ADVERTISE_GIGA_ALL);
@@ -812,11 +817,11 @@ aquantia_phy_set_speed(a_uint32_t dev_id, a_uint32_t phy_id,
 		if (FAL_SPEED_100 == speed) {
 			_aquantia_phy_set_100speed(dev_id, phy_id, FAL_FULL_DUPLEX);
 		}
-		else if(FAL_SPEED_1000 == speed){
-			_aquantia_phy_set_1000speed(dev_id, phy_id, FAL_FULL_DUPLEX);
+		else if(FAL_SPEED_2500 == speed ||FAL_SPEED_5000 == speed || FAL_SPEED_1000 == speed){
+			_aquantia_phy_set_giga_speed(dev_id, phy_id, speed);
 		}
-		else if(FAL_SPEED_2500 == speed ||FAL_SPEED_5000 == speed || FAL_SPEED_10000 == speed){
-				_aquantia_phy_set_gplus_speed(dev_id, phy_id, speed);
+		else if(FAL_SPEED_10000 == speed){
+				_aquantia_phy_set_10g_speed(dev_id, phy_id);
 		}
 		else{
 			return SW_BAD_PARAM;
@@ -965,76 +970,91 @@ aquantia_phy_intr_mask_get(a_uint32_t dev_id, a_uint32_t phy_id,
 *
 */
 sw_error_t
-aquantia_phy_hw_init(a_uint32_t dev_id)
+aquantia_phy_hw_init(a_uint32_t dev_id,  a_uint32_t port_bmp)
 {
 	a_uint16_t phy_data = 0;
-	a_uint32_t phy_id = 4;
-	/*set auto neg of aq*/
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_PHY_XS_REGISTERS,
-		AQUANTIA_PHY_XS_USX_TRANSMIT);
-	phy_data |= AQUANTIA_PHY_USX_AUTONEG_ENABLE;
-	aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_PHY_XS_REGISTERS,
-		AQUANTIA_PHY_XS_USX_TRANSMIT,phy_data);
+	a_uint32_t port_id = 0, phy_addr = 0;
 
-	/*config interrupt of aq*/
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_AUTONEG_TRANSMIT_VENDOR_INTR_MASK);
-	phy_data |= AQUANTIA_INTR_LINK_STATUS_CHANGE;
-	aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_AUTONEG_TRANSMIT_VENDOR_INTR_MASK, phy_data);
+	for (port_id = 0; port_id < SW_MAX_NR_PORT; port_id ++)
+	{
+		if (port_bmp & (0x1 << port_id))
+		{
+			phy_addr = qca_ssdk_port_to_phy_addr(dev_id, port_id);
+			/*set auto neg of aq*/
+			phy_data = aquantia_phy_reg_read(dev_id, phy_addr, AQUANTIA_MMD_PHY_XS_REGISTERS,
+				AQUANTIA_PHY_XS_USX_TRANSMIT);
+			phy_data |= AQUANTIA_PHY_USX_AUTONEG_ENABLE;
+			aquantia_phy_reg_write(dev_id, phy_addr, AQUANTIA_MMD_PHY_XS_REGISTERS,
+				AQUANTIA_PHY_XS_USX_TRANSMIT,phy_data);
 
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
-		AQUANTIA_GLOBAL_INTR_STANDARD_MASK);
-	phy_data |= AQUANTIA_ALL_VENDOR_ALARMS_INTERRUPT_MASK;
-	aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
-		AQUANTIA_GLOBAL_INTR_STANDARD_MASK, phy_data);
+			/*config interrupt of aq*/
+			phy_data = aquantia_phy_reg_read(dev_id, phy_addr, AQUANTIA_MMD_AUTONEG,
+				AQUANTIA_AUTONEG_TRANSMIT_VENDOR_INTR_MASK);
+			phy_data |= AQUANTIA_INTR_LINK_STATUS_CHANGE;
+			aquantia_phy_reg_write(dev_id, phy_addr, AQUANTIA_MMD_AUTONEG,
+				AQUANTIA_AUTONEG_TRANSMIT_VENDOR_INTR_MASK, phy_data);
 
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
-		AQUANTIA_GLOBAL_INTR_VENDOR_MASK);
-	phy_data |= AQUANTIA_AUTO_AND_ALARMS_INTR_MASK;
-	aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
-		AQUANTIA_GLOBAL_INTR_VENDOR_MASK, phy_data);
+			phy_data = aquantia_phy_reg_read(dev_id, phy_addr, AQUANTIA_MMD_GLOABLE_REGISTERS,
+				AQUANTIA_GLOBAL_INTR_STANDARD_MASK);
+			phy_data |= AQUANTIA_ALL_VENDOR_ALARMS_INTERRUPT_MASK;
+			aquantia_phy_reg_write(dev_id, phy_addr, AQUANTIA_MMD_GLOABLE_REGISTERS,
+				AQUANTIA_GLOBAL_INTR_STANDARD_MASK, phy_data);
+
+			phy_data = aquantia_phy_reg_read(dev_id, phy_addr, AQUANTIA_MMD_GLOABLE_REGISTERS,
+				AQUANTIA_GLOBAL_INTR_VENDOR_MASK);
+			phy_data |= AQUANTIA_AUTO_AND_ALARMS_INTR_MASK;
+			aquantia_phy_reg_write(dev_id, phy_addr, AQUANTIA_MMD_GLOABLE_REGISTERS,
+				AQUANTIA_GLOBAL_INTR_VENDOR_MASK, phy_data);
+		}
+	}
 
 	return SW_OK;
 }
 
-static int aquantia_phy_probe(a_uint32_t dev_id, struct phy_device *pdev)
+static int aquantia_phy_api_ops_init(void)
 {
 	int ret;
-	hsl_phy_ops_t aquantia_phy_api_ops = { 0 };
+	hsl_phy_ops_t *aquantia_phy_api_ops = NULL;
 
-	aquantia_phy_api_ops.phy_speed_get = aquantia_phy_get_speed;
-	aquantia_phy_api_ops.phy_speed_set = aquantia_phy_set_speed;
-	aquantia_phy_api_ops.phy_duplex_get = aquantia_phy_get_duplex;
-	aquantia_phy_api_ops.phy_duplex_set = aquantia_phy_set_duplex;
-	aquantia_phy_api_ops.phy_autoneg_enable_set = aquantia_phy_enable_autoneg;
-	aquantia_phy_api_ops.phy_restart_autoneg = aquantia_phy_restart_autoneg;
-	aquantia_phy_api_ops.phy_autoneg_status_get = aquantia_phy_autoneg_status;
-	aquantia_phy_api_ops.phy_autoneg_adv_set = aquantia_phy_set_autoneg_adv;
-	aquantia_phy_api_ops.phy_autoneg_adv_get = aquantia_phy_get_autoneg_adv;
-	aquantia_phy_api_ops.phy_powersave_set = aquantia_phy_set_powersave;
-	aquantia_phy_api_ops.phy_powersave_get = aquantia_phy_get_powersave;
-	aquantia_phy_api_ops.phy_cdt = aquantia_phy_cdt;
-	aquantia_phy_api_ops.phy_link_status_get = aquantia_phy_get_link_status;
-        aquantia_phy_api_ops.phy_mdix_set = aquantia_phy_set_mdix;
-	aquantia_phy_api_ops.phy_mdix_get = aquantia_phy_get_mdix;
-	aquantia_phy_api_ops.phy_mdix_status_get = aquantia_phy_get_mdix_status;
-	aquantia_phy_api_ops.phy_local_loopback_set = aquantia_phy_set_local_loopback;
-	aquantia_phy_api_ops.phy_local_loopback_get = aquantia_phy_get_local_loopback;
-	aquantia_phy_api_ops.phy_remote_loopback_set = aquantia_phy_set_remote_loopback;
-	aquantia_phy_api_ops.phy_remote_loopback_get = aquantia_phy_get_remote_loopback;
-	aquantia_phy_api_ops.phy_reset = aquantia_phy_reset;
-	aquantia_phy_api_ops.phy_wol_status_set = aquantia_phy_set_wol_status;
-	aquantia_phy_api_ops.phy_wol_status_get = aquantia_phy_get_wol_status;
-	aquantia_phy_api_ops.phy_intr_mask_set = aquantia_phy_intr_mask_set;
-	aquantia_phy_api_ops.phy_intr_mask_get = aquantia_phy_intr_mask_get;
-	ret = hsl_phy_api_ops_register(dev_id, &aquantia_phy_api_ops);
+	aquantia_phy_api_ops = kzalloc(sizeof(hsl_phy_ops_t), GFP_KERNEL);
+	if (aquantia_phy_api_ops == NULL) {
+		SSDK_ERROR("aquantia phy ops kzalloc failed!\n");
+		return -ENOMEM;
+	}
 
+	phy_api_ops_init(AQUANTIA_PHY_CHIP);
+
+	aquantia_phy_api_ops->phy_speed_get = aquantia_phy_get_speed;
+	aquantia_phy_api_ops->phy_speed_set = aquantia_phy_set_speed;
+	aquantia_phy_api_ops->phy_duplex_get = aquantia_phy_get_duplex;
+	aquantia_phy_api_ops->phy_duplex_set = aquantia_phy_set_duplex;
+	aquantia_phy_api_ops->phy_autoneg_enable_set = aquantia_phy_enable_autoneg;
+	aquantia_phy_api_ops->phy_restart_autoneg = aquantia_phy_restart_autoneg;
+	aquantia_phy_api_ops->phy_autoneg_status_get = aquantia_phy_autoneg_status;
+	aquantia_phy_api_ops->phy_autoneg_adv_set = aquantia_phy_set_autoneg_adv;
+	aquantia_phy_api_ops->phy_autoneg_adv_get = aquantia_phy_get_autoneg_adv;
+	aquantia_phy_api_ops->phy_powersave_set = aquantia_phy_set_powersave;
+	aquantia_phy_api_ops->phy_powersave_get = aquantia_phy_get_powersave;
+	aquantia_phy_api_ops->phy_cdt = aquantia_phy_cdt;
+	aquantia_phy_api_ops->phy_link_status_get = aquantia_phy_get_link_status;
+	aquantia_phy_api_ops->phy_mdix_set = aquantia_phy_set_mdix;
+	aquantia_phy_api_ops->phy_mdix_get = aquantia_phy_get_mdix;
+	aquantia_phy_api_ops->phy_mdix_status_get = aquantia_phy_get_mdix_status;
+	aquantia_phy_api_ops->phy_local_loopback_set = aquantia_phy_set_local_loopback;
+	aquantia_phy_api_ops->phy_local_loopback_get = aquantia_phy_get_local_loopback;
+	aquantia_phy_api_ops->phy_remote_loopback_set = aquantia_phy_set_remote_loopback;
+	aquantia_phy_api_ops->phy_remote_loopback_get = aquantia_phy_get_remote_loopback;
+	aquantia_phy_api_ops->phy_reset = aquantia_phy_reset;
+	aquantia_phy_api_ops->phy_wol_status_set = aquantia_phy_set_wol_status;
+	aquantia_phy_api_ops->phy_wol_status_get = aquantia_phy_get_wol_status;
+	aquantia_phy_api_ops->phy_intr_mask_set = aquantia_phy_intr_mask_set;
+	aquantia_phy_api_ops->phy_intr_mask_get = aquantia_phy_intr_mask_get;
+
+	ret = hsl_phy_api_ops_register(AQUANTIA_PHY_CHIP, aquantia_phy_api_ops);
 	if (ret == 0)
-		printk("qca probe aquantia phy driver succeeded!\n");
+		SSDK_INFO("qca probe aquantia phy driver succeeded!\n");
 	else
-		printk("qca probe aquantia phy driver failed! (code: %d)\n", ret);
-	aquantia_phy_hw_init(dev_id);
+		SSDK_ERROR("qca probe aquantia phy driver failed! (code: %d)\n", ret);
 
 	return ret;
 }
@@ -1046,8 +1066,15 @@ static int aquantia_phy_probe(a_uint32_t dev_id, struct phy_device *pdev)
 */
 int aquantia_phy_init(a_uint32_t dev_id, a_uint32_t port_bmp)
 {
-	printk("aquantia_phy_init\n");
-	phy_api_ops_init(dev_id);
-	return aquantia_phy_probe(dev_id, (struct phy_device *)NULL);
+	static a_uint32_t phy_ops_flag = 0;
+
+	if(phy_ops_flag == 0) {
+		aquantia_phy_api_ops_init();
+		phy_ops_flag = 1;
+	}
+	aquantia_phy_hw_init(dev_id, port_bmp);
+
+	return 0;
+
 }
 
