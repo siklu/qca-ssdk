@@ -439,6 +439,8 @@ qca_uniphy_reg_read(a_uint32_t dev_id, a_uint32_t uniphy_index,
 
 	else if (HPPE_UNIPHY_INSTANCE2 == uniphy_index)
 		hppe_uniphy_base = hppe_uniphy_addr + HPPE_UNIPHY_BASE2;
+	else
+		return SW_BAD_PARAM;
 
 	if ( reg_addr > HPPE_UNIPHY_MAX_DIRECT_ACCESS_REG)
 	{
@@ -480,6 +482,8 @@ qca_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t uniphy_index,
 
 	else if (HPPE_UNIPHY_INSTANCE2 == uniphy_index)
 		hppe_uniphy_base = hppe_uniphy_addr + HPPE_UNIPHY_BASE2;
+	else
+		return SW_BAD_PARAM;
 
 	if ( reg_addr > HPPE_UNIPHY_MAX_DIRECT_ACCESS_REG)
 	{
