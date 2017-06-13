@@ -664,6 +664,15 @@ sw_error_t aquantia_phy_restart_autoneg(a_uint32_t dev_id, a_uint32_t phy_id)
 {
 	a_uint16_t phy_data = 0;
 
+	phy_data = aquantia_phy_reg_read(dev_id, phy_id,
+		AQUANTIA_MMD_PHY_XS_REGISTERS,
+		AQUANTIA_PHY_XS_USX_TRANSMIT);
+	if (!(phy_data & AQUANTIA_PHY_USX_AUTONEG_ENABLE))
+		aquantia_phy_reg_write(dev_id, phy_id,
+		AQUANTIA_MMD_PHY_XS_REGISTERS,
+		AQUANTIA_PHY_XS_USX_TRANSMIT,
+		phy_data | AQUANTIA_PHY_USX_AUTONEG_ENABLE);
+
 	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_STANDARD_CONTROL1);
 	phy_data |= AQUANTIA_CTRL_AUTONEGOTIATION_ENABLE;
