@@ -4380,7 +4380,6 @@ static int
 qca_hppe_hw_init(ssdk_init_cfg *cfg)
 {
 	a_uint32_t val;
-	void __iomem *ppe_gpio_base;
 	void __iomem *ppe_gcc_base;
 	#ifndef HAWKEYE_CHIP
 	a_uint32_t i = 0;
@@ -4401,17 +4400,6 @@ qca_hppe_hw_init(ssdk_init_cfg *cfg)
 	iounmap(ppe_gcc_base);
 	SSDK_INFO("ppe reset successfully!\n");
 
-	/*fixme*/
-	ppe_gpio_base = ioremap_nocache(0x01008000, 0x100);
-	if (!ppe_gpio_base) {
-		SSDK_ERROR("can't get gpio address!\n");
-		return -1;
-	}
-	/* RUMI specific GPIO configuration for enabling XGMAC */
-	writel(0x201, ppe_gpio_base + 0);
-	writel(0x2, ppe_gpio_base + 4);
-	iounmap(ppe_gpio_base);
-	SSDK_INFO("set gpio to enable XGMAC successfully!\n");
 	val = 0x3b;
 	qca_switch_reg_write(0, 0x000010, (a_uint8_t *)&val, 4);
 	val = 0;
