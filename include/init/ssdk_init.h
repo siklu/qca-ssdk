@@ -32,6 +32,9 @@ extern "C" {
 #define SSDK_L0SCHEDULER_UCASTQ_CFG_MAX	256
 #define SSDK_L1SCHEDULER_CFG_MAX	64
 
+#define PORT_GMAC_TYPE	1
+#define PORT_XGMAC_TYPE	2
+
     typedef enum {
         HSL_MDIO = 1,
         HSL_HEADER,
