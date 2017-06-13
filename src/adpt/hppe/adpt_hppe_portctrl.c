@@ -197,10 +197,16 @@ __adpt_xgmac_port_rx_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t 
 	memset(&xgmac_rx_enable, 0, sizeof(xgmac_rx_enable));
 	port_id = HPPE_TO_XGMAC_PORT_ID(port_id);
 	rv |=  hppe_mac_rx_configuration_get(dev_id, port_id,  &xgmac_rx_enable);
+
+	xgmac_rx_enable.bf.acs = 1;
+	xgmac_rx_enable.bf.cst = 1;
 	if (A_TRUE == enable)
-		 xgmac_rx_enable.bf.re = 1;
-	if (A_FALSE == enable)
-		 xgmac_rx_enable.bf.re= 0;
+	{
+		xgmac_rx_enable.bf.re = 1;
+	}
+	else {
+		xgmac_rx_enable.bf.re = 0;
+	}
 	rv |= hppe_mac_rx_configuration_set(dev_id, port_id, &xgmac_rx_enable);
 
 	return rv;
@@ -2317,14 +2323,9 @@ __adpt_hppe_xgmac_speed_set(a_uint32_t dev_id, a_uint32_t port_id, fal_port_spee
 		{
 			mode = ssdk_dt_global_get_mac_mode(HPPE_UNIPHY_INSTANCE2);
 		}
-		if (mode == PORT_WRAPPER_USXGMII)
+		if ((mode == PORT_WRAPPER_USXGMII) || (mode == PORT_WRAPPER_10GBASE_R))
 		{
 			mac_tx_configuration.bf.uss= 1;
-			mac_tx_configuration.bf.ss= 0;
-		}
-		else
-		{
-			mac_tx_configuration.bf.uss= 0;
 			mac_tx_configuration.bf.ss= 0;
 		}
 	}
