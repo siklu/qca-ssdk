@@ -3139,7 +3139,7 @@ adpt_hppe_gcc_uniphy_clock_status_set(a_uint32_t dev_id, a_uint32_t port_id,
 		{
 			uniphy_index = HPPE_UNIPHY_INSTANCE0;
 			mode = ssdk_dt_global_get_mac_mode(uniphy_index);
-			mode1 = ssdk_dt_global_get_mac_mode(HPPE_UNIPHY_INSTANCE2);
+			mode1 = ssdk_dt_global_get_mac_mode(HPPE_UNIPHY_INSTANCE1);
 			if (((mode == PORT_WRAPPER_PSGMII) && (mode1 == PORT_WRAPPER_MAX)) ||
 				((mode == PORT_WRAPPER_SGMII4_RGMII4) && (mode1 == PORT_WRAPPER_MAX)))
 			{
@@ -3153,9 +3153,8 @@ adpt_hppe_gcc_uniphy_clock_status_set(a_uint32_t dev_id, a_uint32_t port_id,
 		else
 			uniphy_index = HPPE_UNIPHY_INSTANCE2;
 
-		port_id = port_id - 4;
 		qca_hppe_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
-				port_id, enable);
+				1, enable);
 	}
 	return;
 }
