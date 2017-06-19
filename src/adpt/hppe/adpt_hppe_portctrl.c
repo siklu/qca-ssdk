@@ -2963,20 +2963,30 @@ adpt_hppe_sgmii_speed_clock_set(a_uint32_t port_id, fal_port_speed_t phy_speed)
 {
 	a_uint32_t speed_clock1 = 0, speed_clock2 = 0;
 
-	if (phy_speed == FAL_SPEED_10)
-	{
-		speed_clock1 = SGMII_10M_CLOCK1;
-		speed_clock2 = SGMII_10M_CLOCK2;
-	}
-	else if (phy_speed == FAL_SPEED_100)
-	{
-		speed_clock1 = SGMII_100M_CLOCK1;
-		speed_clock2 = SGMII_100M_CLOCK2;
-	}
-	else if (phy_speed == FAL_SPEED_1000)
-	{
-		speed_clock1 = SGMII_1000M_CLOCK1;
-		speed_clock2 = SGMII_1000M_CLOCK2;
+	switch (phy_speed) {
+		case FAL_SPEED_10:
+			if (port_id == HPPE_MUX_PORT1)
+				speed_clock1 = SGMII_10M_SOURCE2_CLOCK1;
+			else
+				speed_clock1 = SGMII_10M_SOURCE1_CLOCK1;
+			speed_clock2 = SGMII_10M_CLOCK2;
+			break;
+		case FAL_SPEED_100:
+			if (port_id == HPPE_MUX_PORT1)
+				speed_clock1 = SGMII_100M_SOURCE2_CLOCK1;
+			else
+				speed_clock1 = SGMII_100M_SOURCE1_CLOCK1;
+			speed_clock2 = SGMII_100M_CLOCK2;
+			break;
+		case FAL_SPEED_1000:
+			if (port_id == HPPE_MUX_PORT1)
+				speed_clock1 = SGMII_1000M_SOURCE2_CLOCK1;
+			else
+				speed_clock1 = SGMII_1000M_SOURCE1_CLOCK1;
+			speed_clock2 = SGMII_1000M_CLOCK2;
+			break;
+		default:
+			break;
 	}
 
 	adpt_hppe_port_speed_clock_apply(port_id, speed_clock1, speed_clock2);
