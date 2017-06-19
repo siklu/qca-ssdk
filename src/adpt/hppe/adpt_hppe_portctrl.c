@@ -2613,8 +2613,9 @@ __adpt_hppe_port_gphy_status_get(a_uint32_t dev_id, a_uint32_t port_id,
 	duplex = (reg_field >> 5) & 0x1;
 	__adpt_hppe_phy_status_convert(speed, duplex, phy_status);
 
-	phy_status->tx_flowctrl = (reg_field >> 3) & 0x1;
-	phy_status->rx_flowctrl = (reg_field >> 4) & 0x1;
+	/* phy flowctrl status is reversed to port flowctrl status */
+	phy_status->rx_flowctrl = (reg_field >> 3) & 0x1;
+	phy_status->tx_flowctrl = (reg_field >> 4) & 0x1;
 	phy_status->link_status = (reg_field >> 7) & 0x1;
 
 	return rv;

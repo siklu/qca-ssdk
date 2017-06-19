@@ -1311,8 +1311,8 @@ qca_mac_sw_sync_port_status_init(struct qca_phy_priv *priv)
 		priv->port_old_link[port_id - 1] = 0;
 		priv->port_old_speed[port_id - 1] = FAL_SPEED_BUTT;
 		priv->port_old_duplex[port_id - 1] = FAL_DUPLEX_BUTT;
-		priv->port_old_tx_flowctrl[port_id - 1] = 0;
-		priv->port_old_rx_flowctrl[port_id - 1] = 0;
+		priv->port_old_tx_flowctrl[port_id - 1] = 1;
+		priv->port_old_rx_flowctrl[port_id - 1] = 1;
 	}
 }
 void
