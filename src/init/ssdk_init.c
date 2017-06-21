@@ -3185,7 +3185,7 @@ qca_hppe_portctrl_hw_init(void)
 
 #ifdef HAWKEYE_CHIP
 	for(i = 1; i < 7; i++) {
-		hppe_port_type[i - 1] = HPPE_PORT_GMAC_TYPE;
+		hppe_port_type[i - 1] = PORT_GMAC_TYPE;
 		fal_port_txmac_status_set (0, i, A_FALSE);
 		fal_port_rxmac_status_set (0, i, A_FALSE);
 		fal_port_rxfc_status_set(0, i, A_TRUE);
@@ -3194,7 +3194,7 @@ qca_hppe_portctrl_hw_init(void)
 	}
 
 	for(i = 5; i < 7; i++) {
-		hppe_port_type[i - 1] = HPPE_PORT_XGMAC_TYPE;
+		hppe_port_type[i - 1] = PORT_XGMAC_TYPE;
 		fal_port_txmac_status_set (0, i, A_FALSE);
 		fal_port_rxmac_status_set (0, i, A_FALSE);
 		fal_port_rxfc_status_set(0, i, A_TRUE);
@@ -4134,12 +4134,12 @@ qca_hppe_port_mux_set(fal_port_t port_id, a_uint32_t mode1, a_uint32_t mode2)
 				(NULL == p_api->adpt_port_mac_duplex_set))
 		return SW_NOT_SUPPORTED;
 
-	if (hppe_port_type[port_id - 1] == HPPE_PORT_GMAC_TYPE)
+	if (hppe_port_type[port_id - 1] == PORT_GMAC_TYPE)
 	{
 		rv = p_api->adpt_port_mac_speed_set(0, port_id, FAL_SPEED_1000);
 		rv = p_api->adpt_port_mac_duplex_set(0, port_id, FAL_FULL_DUPLEX);
 	}
-	else if (hppe_port_type[port_id - 1] == HPPE_PORT_XGMAC_TYPE)
+	else if (hppe_port_type[port_id - 1] == PORT_XGMAC_TYPE)
 	{
 		if (port_id == HPPE_MUX_PORT1)
 			mode = mode1;
@@ -4156,8 +4156,8 @@ qca_hppe_port_mux_set(fal_port_t port_id, a_uint32_t mode1, a_uint32_t mode2)
 			rv = p_api->adpt_port_mac_duplex_set(0, port_id, FAL_FULL_DUPLEX);
 		}
 	}
-	if ((hppe_port_type[port_id - 1] == HPPE_PORT_GMAC_TYPE) ||
-			(hppe_port_type[port_id - 1] == HPPE_PORT_XGMAC_TYPE))
+	if ((hppe_port_type[port_id - 1] == PORT_GMAC_TYPE) ||
+			(hppe_port_type[port_id - 1] == PORT_XGMAC_TYPE))
 		rv = p_api->adpt_port_mac_mux_set(0, port_id, hppe_port_type[port_id - 1]);
 
 	return rv;
@@ -4175,12 +4175,12 @@ qca_hppe_port_mac_type_set(a_uint32_t port_id, a_uint32_t mode)
 		case PORT_WRAPPER_SGMII0_RGMII4:
 		case PORT_WRAPPER_SGMII1_RGMII4:
 		case PORT_WRAPPER_SGMII4_RGMII4:
-			hppe_port_type[port_id - 1] = HPPE_PORT_GMAC_TYPE;
+			hppe_port_type[port_id - 1] = PORT_GMAC_TYPE;
 			break;
 		case PORT_WRAPPER_SGMII_PLUS:
 		case PORT_WRAPPER_USXGMII:
 		case PORT_WRAPPER_10GBASE_R:
-			hppe_port_type[port_id - 1] = HPPE_PORT_XGMAC_TYPE;
+			hppe_port_type[port_id - 1] = PORT_XGMAC_TYPE;
 			break;
 	}
 	return rv;
@@ -4329,10 +4329,10 @@ qca_hppe_hw_init(ssdk_init_cfg *cfg)
 	SSDK_INFO("hppe xgmac init success\n");
 
 	for(i = 0; i < 4; i++) {
-		hppe_port_type[i] = HPPE_PORT_GMAC_TYPE;
+		hppe_port_type[i] = PORT_GMAC_TYPE;
 	}
 	for(i = 4; i < 6; i++) {
-		hppe_port_type[i] = HPPE_PORT_XGMAC_TYPE;
+		hppe_port_type[i] = PORT_XGMAC_TYPE;
 	}
 
 	ssdk_dt_global.mac_mode = PORT_WRAPPER_QSGMII;

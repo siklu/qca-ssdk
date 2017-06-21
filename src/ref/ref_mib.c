@@ -127,6 +127,178 @@ qca_ar8327_sw_set_port_reset_mib(struct switch_dev *dev,
     return 0;
 }
 
+
+static int qca_ar8327_sw_print_xgport_mib(struct switch_dev *dev,
+	const struct switch_attr *attr, struct switch_val *val)
+{
+	int port = 0;
+	int len = 0;
+	fal_xgmib_info_t xgmib_info;
+
+	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
+	char *buf = (char *)(priv->buf);
+
+	port = val->port_vlan;
+	if (port >= dev->ports)
+	    return -EINVAL;
+
+	fal_get_xgmib_info(priv->device_id, port, &xgmib_info);
+
+	mutex_lock(&priv->mib_lock);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"XG Port %d MIB counters\n",
+	port);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "RxFrame", xgmib_info.RxFrame);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "RxByte", xgmib_info.RxByte);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "RxByteGood", xgmib_info.RxByteGood);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "RxBroadGood", xgmib_info.RxBroadGood);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "RxMultiGood", xgmib_info.RxMultiGood);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "RxFcsErr", xgmib_info.RxFcsErr);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "RxRunt", xgmib_info.RxRunt);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "RxJabberError", xgmib_info.RxJabberError);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "RxUndersizeGood", xgmib_info.RxUndersizeGood);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "RxOversizeGood", xgmib_info.RxOversizeGood);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "Rx64Byte", xgmib_info.Rx64Byte);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "Rx128Byte", xgmib_info.Rx128Byte);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "Rx256Byte", xgmib_info.Rx256Byte);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "Rx512Byte", xgmib_info.Rx512Byte);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "Rx1024Byte", xgmib_info.Rx1024Byte);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "RxMaxByte", xgmib_info.RxMaxByte);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "RxUnicastGood", xgmib_info.RxUnicastGood);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "RxLengthError", xgmib_info.RxLengthError);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "RxOutOfRangeError", xgmib_info.RxOutOfRangeError);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "RxPause", xgmib_info.RxPause);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "RxOverFlow", xgmib_info.RxOverFlow);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "RxVLANFrameGoodBad", xgmib_info.RxVLANFrameGoodBad);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "RxWatchDogError", xgmib_info.RxWatchDogError);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "RxLPIUsec", xgmib_info.RxLPIUsec);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "RxLPITran", xgmib_info.RxLPITran);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "RxDropFrameGoodBad", xgmib_info.RxDropFrameGoodBad);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "RxDropByteGoodBad", xgmib_info.RxDropByteGoodBad);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "TxByte", xgmib_info.TxByte);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "TxFrame", xgmib_info.TxFrame);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "TxBroadGood", xgmib_info.TxBroadGood);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "TxMultiGood", xgmib_info.TxMultiGood);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "Tx64Byte", xgmib_info.Tx64Byte);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "Tx128Byte", xgmib_info.Tx128Byte);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "Tx256Byte", xgmib_info.Tx256Byte);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "Tx512Byte", xgmib_info.Tx512Byte);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "Tx1024Byte", xgmib_info.Tx1024Byte);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "TxMaxByte", xgmib_info.TxMaxByte);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "TxUnicast", xgmib_info.TxUnicast);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "TxMulti", xgmib_info.TxMulti);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "TxBroad", xgmib_info.TxBroad);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "TxUnderFlowError", xgmib_info.TxUnderFlowError);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "TxByteGood", xgmib_info.TxByteGood);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "TxByteGood", xgmib_info.TxByteGood);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "TxPause", xgmib_info.TxPause);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "TxVLANFrameGood", xgmib_info.TxVLANFrameGood);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "TxLPIUsec", xgmib_info.TxLPIUsec);
+
+	len += snprintf(buf + len, sizeof(priv->buf) - len,
+	"%-18s: %llu\n", "TxLPITran", xgmib_info.TxLPITran);
+
+	mutex_unlock(&priv->mib_lock);
+
+	val->value.s = buf;
+	val->len = len;
+
+	return 0;
+}
+
 int
 qca_ar8327_sw_get_port_mib(struct switch_dev *dev,
 		       						const struct switch_attr *attr,
@@ -142,6 +314,13 @@ qca_ar8327_sw_get_port_mib(struct switch_dev *dev,
     port = val->port_vlan;
     if (port >= dev->ports)
         return -EINVAL;
+
+    if (priv->version == QCA_VER_HPPE &&
+        qca_hppe_port_mac_type_get(priv->device_id, port) == PORT_XGMAC_TYPE)
+    {
+        qca_ar8327_sw_print_xgport_mib(dev, attr, val);
+        return 0;
+    }
 
     mutex_lock(&priv->mib_lock);
     _qca_ar8327_sw_capture_port_counter(dev, port);

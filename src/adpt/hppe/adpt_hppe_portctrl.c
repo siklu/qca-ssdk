@@ -543,9 +543,9 @@ adpt_hppe_port_rxmac_status_get(a_uint32_t dev_id, fal_port_t port_id,
 	ADPT_NULL_POINT_CHECK(enable);
 
 	port_mac_type = qca_hppe_port_mac_type_get(dev_id, port_id);
-	if (port_mac_type == HPPE_PORT_XGMAC_TYPE)
+	if (port_mac_type == PORT_XGMAC_TYPE)
 		__adpt_xgmac_port_rx_status_get( dev_id, port_id, &port_rxmac_status);
-	else if (port_mac_type == HPPE_PORT_GMAC_TYPE)
+	else if (port_mac_type == PORT_GMAC_TYPE)
 		 __adpt_gmac_port_rx_status_get( dev_id, port_id, &port_rxmac_status);
 	else
 		return SW_BAD_VALUE;
@@ -598,9 +598,9 @@ adpt_hppe_port_txmac_status_set(a_uint32_t dev_id, fal_port_t port_id,
 	ADPT_DEV_ID_CHECK(dev_id);
 
 	port_mac_type =qca_hppe_port_mac_type_get(dev_id, port_id);
-	if (port_mac_type == HPPE_PORT_XGMAC_TYPE)
+	if (port_mac_type == PORT_XGMAC_TYPE)
 		__adpt_xgmac_port_tx_status_set( dev_id, port_id, enable);
-	else if (port_mac_type == HPPE_PORT_GMAC_TYPE)
+	else if (port_mac_type == PORT_GMAC_TYPE)
 		__adpt_gmac_port_tx_status_set( dev_id, port_id, enable);
 	else
 		return SW_BAD_VALUE;
@@ -807,9 +807,9 @@ adpt_hppe_port_max_frame_size_set(a_uint32_t dev_id, fal_port_t port_id,
 	rv |= adpt_hppe_port_mru_set( dev_id, port_id, &mru_ctrl);
 
 	port_mac_type =qca_hppe_port_mac_type_get(dev_id, port_id);
-	if (port_mac_type == HPPE_PORT_XGMAC_TYPE)
+	if (port_mac_type == PORT_XGMAC_TYPE)
 		rv |= __adpt_xgmac_port_max_frame_size_set( dev_id, port_id, max_frame);
-	else if (port_mac_type == HPPE_PORT_GMAC_TYPE)
+	else if (port_mac_type == PORT_GMAC_TYPE)
 	{
 		/*for gmac, rxtoolong have counters when package length is longer than jumbo size and shorter than max frame size,
 		   when package length is longer than max frame size, the rxbadbyte have counters.*/
@@ -863,9 +863,9 @@ adpt_hppe_port_rxfc_status_get(a_uint32_t dev_id, fal_port_t port_id,
 	ADPT_NULL_POINT_CHECK(enable);
 
 	port_mac_type =qca_hppe_port_mac_type_get(dev_id, port_id);
-	if (port_mac_type == HPPE_PORT_XGMAC_TYPE)
+	if (port_mac_type == PORT_XGMAC_TYPE)
 		__adpt_xgmac_port_rxfc_status_get( dev_id, port_id, &rxfc_status);
-	else if (port_mac_type == HPPE_PORT_GMAC_TYPE)
+	else if (port_mac_type == PORT_GMAC_TYPE)
 		__adpt_gmac_port_rxfc_status_get( dev_id, port_id, &rxfc_status);
 	else
 		return SW_BAD_VALUE;
@@ -888,9 +888,9 @@ adpt_hppe_port_txfc_status_get(a_uint32_t dev_id, fal_port_t port_id,
 	ADPT_NULL_POINT_CHECK(enable);
 
 	port_mac_type =qca_hppe_port_mac_type_get(dev_id, port_id);
-	if (port_mac_type == HPPE_PORT_XGMAC_TYPE)
+	if (port_mac_type == PORT_XGMAC_TYPE)
 		__adpt_xgmac_port_txfc_status_get( dev_id, port_id, &txfc_status);
-	else if (port_mac_type == HPPE_PORT_GMAC_TYPE)
+	else if (port_mac_type == PORT_GMAC_TYPE)
 		__adpt_gmac_port_txfc_status_get( dev_id, port_id, &txfc_status);
 	else
 		return SW_BAD_VALUE;
@@ -973,9 +973,9 @@ adpt_hppe_port_txmac_status_get(a_uint32_t dev_id, fal_port_t port_id,
 	ADPT_NULL_POINT_CHECK(enable);
 
 	port_mac_type =qca_hppe_port_mac_type_get(dev_id, port_id);
-	if (port_mac_type == HPPE_PORT_XGMAC_TYPE)
+	if (port_mac_type == PORT_XGMAC_TYPE)
 		__adpt_xgmac_port_tx_status_get( dev_id, port_id, &port_txmac_status);
-	else if (port_mac_type == HPPE_PORT_GMAC_TYPE)
+	else if (port_mac_type == PORT_GMAC_TYPE)
 		__adpt_gmac_port_tx_status_get( dev_id, port_id, &port_txmac_status);
 	else
 		return SW_BAD_VALUE;
@@ -1076,9 +1076,9 @@ adpt_hppe_port_mac_loopback_set(a_uint32_t dev_id, fal_port_t port_id,
 
 	ADPT_DEV_ID_CHECK(dev_id);
 	port_mac_type = qca_hppe_port_mac_type_get(dev_id, port_id);
-	if (port_mac_type == HPPE_PORT_XGMAC_TYPE)
+	if (port_mac_type == PORT_XGMAC_TYPE)
 		rv = __adpt_hppe_port_xgmac_loopback_set( dev_id, port_id, enable);
-	else if(port_mac_type == HPPE_PORT_GMAC_TYPE)
+	else if(port_mac_type == PORT_GMAC_TYPE)
 		rv = __adpt_hppe_port_gmac_loopback_set( dev_id, port_id, enable);
 	else
 		return SW_BAD_VALUE;
@@ -1497,9 +1497,9 @@ adpt_hppe_port_max_frame_size_get(a_uint32_t dev_id, fal_port_t port_id,
 	ADPT_NULL_POINT_CHECK(max_frame);
 
 	port_mac_type =qca_hppe_port_mac_type_get(dev_id, port_id);
-	if (port_mac_type == HPPE_PORT_XGMAC_TYPE)
+	if (port_mac_type == PORT_XGMAC_TYPE)
 		rv = __adpt_xgmac_port_max_frame_size_get( dev_id, port_id, max_frame);
-	else if (port_mac_type == HPPE_PORT_GMAC_TYPE)
+	else if (port_mac_type == PORT_GMAC_TYPE)
 		rv = __adpt_gmac_port_max_frame_size_get( dev_id, port_id, max_frame);
 	else
 		return SW_BAD_VALUE;
@@ -1573,9 +1573,9 @@ adpt_hppe_port_txfc_status_set(a_uint32_t dev_id, fal_port_t port_id,
 	ADPT_DEV_ID_CHECK(dev_id);
 
 	port_mac_type =qca_hppe_port_mac_type_get(dev_id, port_id);
-	if (port_mac_type == HPPE_PORT_XGMAC_TYPE)
+	if (port_mac_type == PORT_XGMAC_TYPE)
 		__adpt_xgmac_port_txfc_status_set( dev_id, port_id, enable);
-	else if (port_mac_type == HPPE_PORT_GMAC_TYPE)
+	else if (port_mac_type == PORT_GMAC_TYPE)
 		__adpt_gmac_port_txfc_status_set( dev_id, port_id, enable);
 	else
 		return SW_BAD_VALUE;
@@ -1752,9 +1752,9 @@ adpt_hppe_port_rxmac_status_set(a_uint32_t dev_id, fal_port_t port_id,
 	ADPT_DEV_ID_CHECK(dev_id);
 
 	port_mac_type =qca_hppe_port_mac_type_get(dev_id, port_id);
-	if (port_mac_type == HPPE_PORT_XGMAC_TYPE)
+	if (port_mac_type == PORT_XGMAC_TYPE)
 		__adpt_xgmac_port_rx_status_set(dev_id, port_id, enable);
-	else if (port_mac_type == HPPE_PORT_GMAC_TYPE)
+	else if (port_mac_type == PORT_GMAC_TYPE)
 		__adpt_gmac_port_rx_status_set(dev_id, port_id, enable);
 	else
 		return SW_BAD_VALUE;
@@ -1831,9 +1831,9 @@ adpt_hppe_port_mac_loopback_get(a_uint32_t dev_id, fal_port_t port_id,
 	ADPT_NULL_POINT_CHECK(enable);
 
 	port_mac_type = qca_hppe_port_mac_type_get(dev_id, port_id);
-	if (port_mac_type == HPPE_PORT_XGMAC_TYPE)
+	if (port_mac_type == PORT_XGMAC_TYPE)
 		rv = __adpt_hppe_port_xgmac_loopback_get( dev_id, port_id, enable);
-	else if (port_mac_type == HPPE_PORT_GMAC_TYPE)
+	else if (port_mac_type == PORT_GMAC_TYPE)
 		rv = __adpt_hppe_port_gmac_loopback_get( dev_id, port_id, enable);
 	else
 		return SW_BAD_VALUE;
@@ -2072,9 +2072,9 @@ adpt_hppe_port_rxfc_status_set(a_uint32_t dev_id, fal_port_t port_id,
 	ADPT_DEV_ID_CHECK(dev_id);
 
 	port_mac_type =qca_hppe_port_mac_type_get(dev_id, port_id);
-	if(port_mac_type == HPPE_PORT_XGMAC_TYPE)
+	if(port_mac_type == PORT_XGMAC_TYPE)
 		__adpt_xgmac_port_rxfc_status_set( dev_id, port_id, enable);
-	else if (port_mac_type == HPPE_PORT_GMAC_TYPE)
+	else if (port_mac_type == PORT_GMAC_TYPE)
 		__adpt_gmac_port_rxfc_status_set( dev_id, port_id, enable);
 	else
 		return SW_BAD_VALUE;
@@ -2395,11 +2395,11 @@ adpt_hppe_port_mac_duplex_set(a_uint32_t dev_id, a_uint32_t port_id, fal_port_du
 	a_uint32_t port_mac_type;
 
 	port_mac_type = qca_hppe_port_mac_type_get(dev_id, port_id);
-	if (port_mac_type == HPPE_PORT_XGMAC_TYPE)
+	if (port_mac_type == PORT_XGMAC_TYPE)
 	{
 		return rv;
 	}
-	else if (port_mac_type == HPPE_PORT_GMAC_TYPE)
+	else if (port_mac_type == PORT_GMAC_TYPE)
 	{
 		rv = __adpt_hppe_gmac_duplex_set(dev_id, port_id, duplex);
 	}
@@ -2426,7 +2426,7 @@ adpt_hppe_port_mux_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t port_ty
 
 	if (port_id == HPPE_MUX_PORT1)
 	{
-		if (port_type == HPPE_PORT_GMAC_TYPE)
+		if (port_type == PORT_GMAC_TYPE)
 		{
 			mode = ssdk_dt_global_get_mac_mode(HPPE_UNIPHY_INSTANCE0);
 			mode1 = ssdk_dt_global_get_mac_mode(HPPE_UNIPHY_INSTANCE1);
@@ -2442,7 +2442,7 @@ adpt_hppe_port_mux_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t port_ty
 				port_mux_ctrl.bf.port5_gmac_sel = 1;
 			}
 		}
-		else if (port_type == HPPE_PORT_XGMAC_TYPE)
+		else if (port_type == PORT_XGMAC_TYPE)
 		{
 			port_mux_ctrl.bf.port5_pcs_sel = 2;
 			port_mux_ctrl.bf.port5_gmac_sel = 0;
@@ -2450,12 +2450,12 @@ adpt_hppe_port_mux_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t port_ty
 	}
 	else if (port_id == HPPE_MUX_PORT2)
 	{
-		if (port_type == HPPE_PORT_GMAC_TYPE)
+		if (port_type == PORT_GMAC_TYPE)
 		{
 			port_mux_ctrl.bf.port6_pcs_sel = 1;
 			port_mux_ctrl.bf.port6_gmac_sel = 1;
 		}
-		else if (port_type == HPPE_PORT_XGMAC_TYPE)
+		else if (port_type == PORT_XGMAC_TYPE)
 		{
 			port_mux_ctrl.bf.port6_pcs_sel = 1;
 			port_mux_ctrl.bf.port6_gmac_sel = 0;
@@ -2477,12 +2477,12 @@ adpt_hppe_port_mac_speed_set(a_uint32_t dev_id, a_uint32_t port_id,
 	a_uint32_t port_mac_type;
 
 	port_mac_type = qca_hppe_port_mac_type_get(dev_id, port_id);
-	if (port_mac_type == HPPE_PORT_XGMAC_TYPE)
+	if (port_mac_type == PORT_XGMAC_TYPE)
 	{
 		rv = __adpt_hppe_xgmac_speed_set(dev_id, port_id, speed);
 
 	}
-	else if (port_mac_type == HPPE_PORT_GMAC_TYPE)
+	else if (port_mac_type == PORT_GMAC_TYPE)
 	{
 		rv = __adpt_hppe_gmac_speed_set(dev_id, port_id, speed);
 	}
