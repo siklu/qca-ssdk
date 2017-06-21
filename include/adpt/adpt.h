@@ -110,6 +110,10 @@ typedef sw_error_t (*adpt_fdb_del_all_func)(a_uint32_t dev_id, a_uint32_t flag);
 typedef sw_error_t (*adpt_fdb_age_ctrl_get_func)(a_uint32_t dev_id, a_bool_t * enable);
 typedef sw_error_t (*adpt_fdb_port_maclimit_ctrl_set_func)(a_uint32_t dev_id, fal_port_t port_id, fal_maclimit_ctrl_t * maclimit_ctrl);
 typedef sw_error_t (*adpt_fdb_port_maclimit_ctrl_get_func)(a_uint32_t dev_id, fal_port_t port_id, fal_maclimit_ctrl_t * maclimit_ctrl);
+typedef sw_error_t (*adpt_fdb_port_promisc_mode_set_func)(a_uint32_t dev_id,
+			fal_port_t port_id, a_bool_t enable);
+typedef sw_error_t (*adpt_fdb_port_promisc_mode_get_func)(a_uint32_t dev_id,
+			fal_port_t port_id, a_bool_t *enable);
 
 typedef sw_error_t (*adpt_mib_cpukeep_get_func)(a_uint32_t dev_id, a_bool_t * enable);
 typedef sw_error_t (*adpt_mib_cpukeep_set_func)(a_uint32_t dev_id, a_bool_t  enable);
@@ -287,6 +291,8 @@ typedef sw_error_t (*adpt_port_mac_speed_set_func)(a_uint32_t dev_id, fal_port_t
 typedef sw_error_t (*adpt_port_mac_duplex_set_func)(a_uint32_t dev_id, fal_port_t port_id,
 				fal_port_duplex_t duplex);
 typedef sw_error_t (*adpt_port_polling_sw_sync_func)(struct qca_phy_priv *priv);
+typedef sw_error_t (*adpt_port_bridge_txmac_set_func)(a_uint32_t dev_id,
+		fal_port_t port_id, a_bool_t enable);
 
 // mirror
 typedef sw_error_t (*adpt_mirr_port_in_set_func)(a_uint32_t dev_id, fal_port_t port_id,
@@ -895,6 +901,8 @@ typedef struct
 	adpt_fdb_age_ctrl_get_func adpt_fdb_age_ctrl_get;
 	adpt_fdb_port_maclimit_ctrl_set_func adpt_fdb_port_maclimit_ctrl_set;
 	adpt_fdb_port_maclimit_ctrl_get_func adpt_fdb_port_maclimit_ctrl_get;
+	adpt_fdb_port_promisc_mode_set_func adpt_fdb_port_promisc_mode_set;
+	adpt_fdb_port_promisc_mode_get_func adpt_fdb_port_promisc_mode_get;
 	/*mib*/
 	a_uint32_t adpt_mib_func_bitmap;
 	adpt_mib_cpukeep_get_func adpt_mib_cpukeep_get;
@@ -998,6 +1006,7 @@ typedef struct
 	adpt_port_mac_speed_set_func adpt_port_mac_speed_set;
 	adpt_port_mac_duplex_set_func adpt_port_mac_duplex_set;
 	adpt_port_polling_sw_sync_func adpt_port_polling_sw_sync_set;
+	adpt_port_bridge_txmac_set_func adpt_port_bridge_txmac_set;
 
 // mirror
 	a_uint32_t adpt_mirror_func_bitmap;

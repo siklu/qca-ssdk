@@ -1246,6 +1246,43 @@ adpt_hppe_fdb_age_ctrl_get(a_uint32_t dev_id, a_bool_t * enable)
 	return SW_OK;
 }
 
+sw_error_t
+adpt_hppe_fdb_port_promisc_mode_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+{
+	sw_error_t rv = SW_OK;
+	union port_bridge_ctrl_u port_bridge_ctrl = {0};
+
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	rv = hppe_port_bridge_ctrl_get(dev_id, port_id, &port_bridge_ctrl);
+
+	if( rv != SW_OK )
+		return rv;
+
+	port_bridge_ctrl.bf.promisc_en = enable;
+
+	return hppe_port_bridge_ctrl_set(dev_id, port_id, &port_bridge_ctrl);
+}
+
+sw_error_t
+adpt_hppe_fdb_port_promisc_mode_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable)
+{
+	sw_error_t rv = SW_OK;
+	union port_bridge_ctrl_u port_bridge_ctrl = {0};
+
+	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(enable);
+
+	rv = hppe_port_bridge_ctrl_get(dev_id, port_id, &port_bridge_ctrl);
+
+	if( rv != SW_OK )
+		return rv;
+
+	*enable = port_bridge_ctrl.bf.promisc_en;
+
+	return SW_OK;
+}
+
 void adpt_hppe_fdb_func_bitmap_init(a_uint32_t dev_id)
 {
 	adpt_api_t *p_adpt_api = NULL;
@@ -1407,6 +1444,9 @@ sw_error_t adpt_hppe_fdb_init(a_uint32_t dev_id)
 		p_adpt_api->adpt_fdb_port_maclimit_ctrl_set = adpt_hppe_fdb_port_maclimit_ctrl_set;
 	if (p_adpt_api->adpt_fdb_func_bitmap & (1 << FUNC_FDB_PORT_MACLIMIT_CTRL_GET))
 		p_adpt_api->adpt_fdb_port_maclimit_ctrl_get = adpt_hppe_fdb_port_maclimit_ctrl_get;
+
+	p_adpt_api->adpt_fdb_port_promisc_mode_set = adpt_hppe_fdb_port_promisc_mode_set;
+	p_adpt_api->adpt_fdb_port_promisc_mode_get = adpt_hppe_fdb_port_promisc_mode_get;
 
 	return SW_OK;
 }
