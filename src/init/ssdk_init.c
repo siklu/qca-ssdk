@@ -4279,8 +4279,6 @@ qca_hppe_hw_init(ssdk_init_cfg *cfg)
 	a_uint32_t i = 0;
 	#endif
 
-	qca_switch_init(0);
-
 	/* reset ppe */
 	ppe_gcc_base = ioremap_nocache(GCC_NSS_PPE_RESET_ADDR, 0x100);
 	if (!ppe_gcc_base) {
@@ -4293,6 +4291,8 @@ qca_hppe_hw_init(ssdk_init_cfg *cfg)
 	msleep(100);
 	iounmap(ppe_gcc_base);
 	SSDK_INFO("ppe reset successfully!\n");
+
+	qca_switch_init(0);
 
 	val = 0x3b;
 	qca_switch_reg_write(0, 0x000010, (a_uint8_t *)&val, 4);
