@@ -2519,7 +2519,7 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg, a_uint32_t num, a_uint32_t *dev_id)
 	struct device_node *psgmii_node = NULL;
 	struct device_node *child = NULL;
 	ssdk_dt_cfg *ssdk_dt_priv = NULL;
-	a_uint32_t len = 0, i = 0;
+	a_uint32_t len = 0, i = 0, mode = 0;
 	const __be32 *reg_cfg, *led_source, *device_id;
 	const __be32 *led_number;
 	a_uint8_t *led_str;
@@ -2598,6 +2598,9 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg, a_uint32_t num, a_uint32_t *dev_id)
 
 	SSDK_INFO("switchreg_base_addr: 0x%x\n", ssdk_dt_priv->switchreg_base_addr);
 	SSDK_INFO("switchreg_size: 0x%x\n", ssdk_dt_priv->switchreg_size);
+
+	if (!of_property_read_u32(switch_node, "tm_tick_mode", &mode))
+		ssdk_dt_priv->tm_tick_mode = mode;
 
 	psgmii_node = of_find_node_by_name(NULL, "ess-psgmii");
 	if (!psgmii_node) {
@@ -3464,31 +3467,31 @@ fal_port_scheduler_cfg_t port_scheduler0_tbl[] = {
 };
 
 fal_port_scheduler_cfg_t port_scheduler1_tbl[] = {
-	{0x27, 5, 6},
-	{0x0f, 0, 5},
-	{0x0f, 2, 6},
-	{0x0f, 3, 5},
-	{0x4e, 6, 0},
-	{0x2e, 5, 6},
-	{0x0f, 1, 5},
-	{0x0f, 0, 6},
-	{0x0f, 3, 5},
-	{0x4d, 6, 1},
-	{0x2d, 5, 6},
-	{0x0f, 1, 5},
-	{0x0f, 2, 6},
-	{0x0f, 0, 5},
-	{0x4e, 6, 0},
-	{0x2e, 5, 6},
-	{0x0f, 1, 5},
-	{0x0f, 0, 6},
-	{0x0f, 3, 5},
-	{0x4b, 6, 2},
-	{0x2b, 5, 6},
-	{0x0f, 1, 5},
-	{0x0f, 2, 6},
-	{0x0f, 0, 5},
-	{0x47, 6, 3},
+	{0x30, 5, 6},
+	{0x30, 4, 0},
+	{0x30, 5, 6},
+	{0x11, 0, 5},
+	{0x50, 6, 0},
+	{0x30, 5, 6},
+	{0x21, 0, 4},
+	{0x21, 5, 6},
+	{0x30, 4, 0},
+	{0x50, 6, 5},
+	{0x11, 0, 6},
+	{0x30, 5, 0},
+	{0x30, 4, 6},
+	{0x11, 0, 5},
+	{0x50, 6, 0},
+	{0x30, 5, 6},
+	{0x11, 0, 5},
+	{0x11, 4, 6},
+	{0x30, 5, 0},
+	{0x50, 6, 5},
+	{0x11, 0, 6},
+	{0x30, 5, 0},
+	{0x30, 4, 6},
+	{0x11, 0, 5},
+	{0x50, 6, 0},
 };
 
 fal_port_tdm_tick_cfg_t port_tdm0_tbl[] = {
