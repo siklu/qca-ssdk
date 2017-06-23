@@ -104,9 +104,6 @@
 #endif
 
 #if defined(HPPE)
-#include "hppe_reg_access.h"
-#include "hppe_fdb_reg.h"
-#include "hppe_fdb.h"
 #include "hppe_init.h"
 #endif
 
@@ -3137,28 +3134,31 @@ static int qca_hppe_vsi_hw_init(void)
 
 static int qca_hppe_fdb_hw_init(void)
 {
-	union port_bridge_ctrl_u value = {0};
 	a_uint32_t port = 0;
+	adpt_api_t *p_api;
 
-	for(port = 0; port < 7; port++)
+	p_api = adpt_api_ptr_get(0);
+	if (!p_api)
+		return SW_FAIL;
+
+	if (!p_api->adpt_port_bridge_txmac_set ||
+		!p_api->adpt_fdb_port_promisc_mode_set)
+		return SW_FAIL;
+
+	for(port = 0; port < SSDK_MAX_PORT_NUM; port++)
 	{
-		value.bf.new_addr_lrn_en = 1;
-		value.bf.new_addr_fwd_cmd = 0;
-		value.bf.station_move_lrn_en = 1;
-		value.bf.station_move_fwd_cmd = 0;
-		value.bf.port_isolation_bitmap = 0x7f;
-		value.bf.txmac_en = 1;
-		value.bf.promisc_en = 1;
-
-		hppe_port_bridge_ctrl_set(0, port, &value);
+		fal_fdb_port_learning_ctrl_set(0, port, A_TRUE, FAL_MAC_FRWRD);
+		fal_fdb_port_stamove_ctrl_set(0, port, A_TRUE, FAL_MAC_FRWRD);
+		fal_portvlan_member_update(0, port, 0x7f);
+		if (port == SSDK_PORT_CPU)
+			p_api->adpt_port_bridge_txmac_set(0, port, A_TRUE);
+		else
+			p_api->adpt_port_bridge_txmac_set(0, port, A_FALSE);
+		p_api->adpt_fdb_port_promisc_mode_set(0, port, A_TRUE);
 	}
 
-	value.bf.txmac_en = 0;
-	//hppe_port_bridge_ctrl_set(0, 0, &value);
-	hppe_port_bridge_ctrl_set(0, 7, &value);
-
-	hppe_l2_global_conf_age_en_set(0, 1);
-	hppe_l2_global_conf_lrn_en_set(0, 1);
+	fal_fdb_aging_ctrl_set(0, A_TRUE);
+	fal_fdb_learning_ctrl_set(0, A_TRUE);
 
 	return 0;
 }
@@ -3167,16 +3167,7 @@ static int
 qca_hppe_portctrl_hw_init(void)
 {
 	a_uint32_t i = 0, val;
-	a_uint32_t addr_delta = 0x200;
 
-	for(i = 0; i < 6; i++) {
-		val = 0x73;
-		qca_switch_reg_write(0, 0x001000 + (addr_delta*i), (a_uint8_t *)&val, 4);
-		val = 0x2;
-		qca_switch_reg_write(0, 0x001004 + (addr_delta*i), (a_uint8_t *)&val, 4);
-		val = 0x1;
-		qca_switch_reg_write(0, 0x001034 + (addr_delta*i), (a_uint8_t *)&val, 4);
-	}
 	for (i = 0; i < 2; i++)
 	{
 		val = 0x00000081;

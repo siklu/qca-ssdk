@@ -2244,8 +2244,7 @@ adpt_hppe_port_source_filter_set(a_uint32_t dev_id,
 
 	return hppe_port_in_forward_set(dev_id, port_id, &port_in_forward);
 }
-#ifdef HAWKEYE_CHIP
-static sw_error_t
+sw_error_t
 adpt_hppe_port_bridge_txmac_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
 	sw_error_t rv = SW_OK;
@@ -2265,7 +2264,6 @@ adpt_hppe_port_bridge_txmac_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t 
 
 	return hppe_port_bridge_ctrl_set(dev_id, port_id, &port_bridge_ctrl);
 }
-#endif
 static sw_error_t
 __adpt_hppe_gmac_speed_set(a_uint32_t dev_id, a_uint32_t port_id, fal_port_speed_t speed)
 {
@@ -3716,6 +3714,8 @@ sw_error_t adpt_hppe_port_ctrl_init(a_uint32_t dev_id)
 	p_adpt_api->adpt_port_mac_duplex_set = adpt_hppe_port_mac_duplex_set;
 	p_adpt_api->adpt_port_polling_sw_sync_set = qca_hppe_mac_sw_sync_task;
 #endif
+	p_adpt_api->adpt_port_bridge_txmac_set = adpt_hppe_port_bridge_txmac_set;
+
 	return SW_OK;
 }
 
