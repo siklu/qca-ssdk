@@ -3009,20 +3009,10 @@ adpt_hppe_port_phy_status_get(a_uint32_t dev_id, a_uint32_t port_id,
 	mode1 = ssdk_dt_global_get_mac_mode(HPPE_UNIPHY_INSTANCE1);
 	mode2 = ssdk_dt_global_get_mac_mode(HPPE_UNIPHY_INSTANCE2);
 
-	if (((port_id == HPPE_MUX_PORT1) && (mode1 == PORT_WRAPPER_SGMII_PLUS))
-				|| ((port_id == HPPE_MUX_PORT2) &&
-				(mode2 == PORT_WRAPPER_SGMII_PLUS)))
-	{
-		phy_status->tx_flowctrl = 1;
-		phy_status->rx_flowctrl = 1;
-		phy_status->speed = FAL_SPEED_2500;
-		phy_status->duplex = FAL_FULL_DUPLEX;
-		phy_status->link_status = PORT_LINK_UP;
-		return rv;
-	}
-
-	if (((port_id == HPPE_MUX_PORT1) && (mode1 == PORT_WRAPPER_USXGMII)) ||
-		((port_id == HPPE_MUX_PORT2) && (mode2 == PORT_WRAPPER_USXGMII)))
+	if (((port_id == HPPE_MUX_PORT1) && ((mode1 == PORT_WRAPPER_USXGMII) ||
+				(mode1 == PORT_WRAPPER_SGMII_PLUS))) ||
+		((port_id == HPPE_MUX_PORT2) && ((mode2 == PORT_WRAPPER_USXGMII) ||
+				(mode2 == PORT_WRAPPER_SGMII_PLUS))))
 	{
 		rv = _adpt_hppe_port_xgphy_status_get(dev_id, port_id, phy_status);
 		return rv;
