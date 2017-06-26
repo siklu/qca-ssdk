@@ -1710,8 +1710,8 @@ static int ssdk_probe(struct platform_device *pdev)
 	ess_mac_clock_disable[4] = devm_reset_control_get(&pdev->dev, "ess_mac5_clk_dis");
 
 	if (IS_ERR(ess_rst)) {
-		SSDK_ERROR("ess rst fail!\n");
-		return -1;
+		SSDK_INFO("ess_rst doesn't exist!\n");
+		return 0;
 	}
 	if (!ess_mac_clock_disable[0]) {
 		SSDK_ERROR("ess_mac1_clock_disable fail!\n");
@@ -2478,7 +2478,7 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 
 	ssdk_dt_global.ess_clk = of_clk_get_by_name(switch_node, "ess_clk");
 	if (IS_ERR(ssdk_dt_global.ess_clk))
-		SSDK_INFO("Getting ess_clk failed!\n");
+		SSDK_INFO("ess_clk doesn't exist!\n");
 
 	SSDK_INFO("switchreg_base_addr: 0x%x\n", ssdk_dt_global.switchreg_base_addr);
 	SSDK_INFO("switchreg_size: 0x%x\n", ssdk_dt_global.switchreg_size);
