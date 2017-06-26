@@ -131,14 +131,23 @@ _fal_bm_port_static_thresh_get(a_uint32_t dev_id, fal_port_t port,
 			fal_bm_static_cfg_t *cfg)
 {
 	adpt_api_t *p_api;
+	hsl_api_t *p_hsl_api;
 	sw_error_t rv = SW_OK;
 
-	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+	if((p_api = adpt_api_ptr_get(dev_id)) != NULL) {
+		if (NULL == p_api->adpt_bm_port_static_thresh_get)
+			return SW_NOT_SUPPORTED;
 
-	if (NULL == p_api->adpt_bm_port_static_thresh_get)
+		rv = p_api->adpt_bm_port_static_thresh_get(dev_id, port, cfg);
+		return rv;
+	}
+
+	SW_RTN_ON_NULL(p_hsl_api = hsl_api_ptr_get(dev_id));
+
+	if (NULL == p_hsl_api->port_static_thresh_get)
 		return SW_NOT_SUPPORTED;
 
-	rv = p_api->adpt_bm_port_static_thresh_get(dev_id, port, cfg);
+	rv = p_hsl_api->port_static_thresh_get(dev_id, port, cfg);
 	return rv;
 }
 sw_error_t
@@ -161,14 +170,23 @@ _fal_bm_port_static_thresh_set(a_uint32_t dev_id, fal_port_t port,
 			fal_bm_static_cfg_t *cfg)
 {
 	adpt_api_t *p_api;
+	hsl_api_t *p_hsl_api;
 	sw_error_t rv = SW_OK;
 
-	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+	if((p_api = adpt_api_ptr_get(dev_id)) != NULL) {
+		if (NULL == p_api->adpt_bm_port_static_thresh_set)
+			return SW_NOT_SUPPORTED;
 
-	if (NULL == p_api->adpt_bm_port_static_thresh_set)
+		rv = p_api->adpt_bm_port_static_thresh_set(dev_id, port, cfg);
+		return rv;
+	}
+
+	SW_RTN_ON_NULL(p_hsl_api = hsl_api_ptr_get(dev_id));
+
+	if (NULL == p_hsl_api->port_static_thresh_set)
 		return SW_NOT_SUPPORTED;
 
-	rv = p_api->adpt_bm_port_static_thresh_set(dev_id, port, cfg);
+	rv = p_hsl_api->port_static_thresh_set(dev_id, port, cfg);
 	return rv;
 }
 sw_error_t
