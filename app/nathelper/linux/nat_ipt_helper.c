@@ -756,5 +756,6 @@ nat_ipt_helper_exit(void)
 {
     nat_ipt_sockopts_restore();
     nat_ipt_data_cleanup();
+    nat_hw_flush();
 }
 
