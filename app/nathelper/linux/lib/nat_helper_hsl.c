@@ -661,9 +661,19 @@ napt_hw_mode_init(void)
 void
 napt_hw_mode_cleanup(void)
 {
-	if (!DESS_CHIP(nat_chip_ver))
+	a_uint32_t entry;
+	sw_error_t rv;
+	if (!DESS_CHIP(nat_chip_ver)) {
 		IP_ROUTE_STATUS_SET(0, A_FALSE);
-    ACL_STATUS_SET(0, A_FALSE);
+		entry = 0;
+	} else {
+		HSL_REG_ENTRY_GET(rv, 0, NAT_CTRL, 0,
+                      		(a_uint8_t *) (&entry), sizeof (a_uint32_t));
+		SW_SET_REG_BY_FIELD(NAT_CTRL, NAT_EN, 0, entry);
+	}
+	HSL_REG_ENTRY_SET(rv, 0, NAT_CTRL, 0,
+                      (a_uint8_t *) (&entry), sizeof (a_uint32_t));
+	ACL_STATUS_SET(0, A_FALSE);
 }
 
 a_int32_t
