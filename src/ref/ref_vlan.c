@@ -237,7 +237,7 @@ qca_ar8327_sw_set_ports(struct switch_dev *dev, struct switch_val *val)
 {
     struct qca_phy_priv *priv = qca_phy_priv_get(dev);
     a_uint8_t *vt = &priv->vlan_table[val->port_vlan];
-    int i, j;
+    int i;
 
 #ifdef BOARD_AR71XX
 	if(SSDK_CURRENT_CHIP_TYPE == CHIP_SHIVA) {
@@ -339,27 +339,14 @@ qca_ar8327_sw_hw_apply(struct switch_dev *dev)
 
         if (priv->vlan) {
             pvid = priv->vlan_id[priv->pvid[i]];
-            if (priv->vlan_tagged[priv->pvid[i]] & (1 << i)) {
-                egressMode = FAL_EG_TAGGED;
-            } else {
-                egressMode = FAL_EG_UNTAGGED;
-            }
 
             ingressMode = FAL_1Q_SECURE;
         } else {
-            pvid = i;
-            egressMode = FAL_EG_UNTOUCHED;
+            pvid = 0;
             ingressMode = FAL_1Q_DISABLE;
         }
 
-        /*If VLAN 0 existes, change member port
-           *egress mode as UNTOUCHED*/
-        if (priv->vlan_id[0] == 0 &&
-              priv->vlan_table[0] &&
-              ((0x1 << i) & priv->vlan_table[0]) &&
-              priv->vlan) {
-            egressMode = FAL_EG_UNTOUCHED;
-        }
+	egressMode = FAL_EG_UNTOUCHED;
 
         fal_port_1qmode_set(0, i, ingressMode);
         fal_port_egvlanmode_set(0, i, egressMode);
