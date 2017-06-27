@@ -98,8 +98,8 @@
 
 static struct mii_bus *miibus = NULL;
 
-extern struct qca_phy_priv *qca_phy_priv_global;
-extern ssdk_dt_cfg ssdk_dt_global;
+extern struct qca_phy_priv **qca_phy_priv_global;
+extern ssdk_dt_global_t ssdk_dt_global;
 extern ssdk_chip_type SSDK_CURRENT_CHIP_TYPE;
 void __iomem *hppe_uniphy_addr = NULL;
 
@@ -140,17 +140,17 @@ struct ag71xx_mdio {
 #endif
 
 #ifdef BOARD_AR71XX
-static uint32_t switch_chip_id_adjuest(void)
+static uint32_t switch_chip_id_adjuest(a_uint32_t dev_id)
 {
 	uint32_t chip_version = 0;
-	chip_version = (qca_ar8216_mii_read(0)&0xff00)>>8;
+	chip_version = (qca_ar8216_mii_read(dev_id, 0)&0xff00)>>8;
 	if((chip_version !=0) && (chip_version !=0xff))
 		return 0;
 
 	switch_chip_id = SHIVA_CHIP_ID;
 	switch_chip_reg = SHIVA_CHIP_REG;
 
-	chip_version = (qca_ar8216_mii_read(0)&0xff00)>>8;
+	chip_version = (qca_ar8216_mii_read(dev_id, 0)&0xff00)>>8;
 	printk("chip_version:0x%x\n", chip_version);
 	return 1;
 }
@@ -170,7 +170,7 @@ split_addr(uint32_t regaddr, uint16_t *r1, uint16_t *r2, uint16_t *page)
 }
 
 a_uint32_t
-qca_ar8216_mii_read(a_uint32_t reg)
+qca_ar8216_mii_read(a_uint32_t dev_id, a_uint32_t reg)
 {
         struct mii_bus *bus = miibus;
         uint16_t r1, r2, page;
@@ -187,7 +187,7 @@ qca_ar8216_mii_read(a_uint32_t reg)
 }
 
 void
-qca_ar8216_mii_write(a_uint32_t reg, a_uint32_t val)
+qca_ar8216_mii_write(a_uint32_t dev_id, a_uint32_t reg, a_uint32_t val)
 {
         struct mii_bus *bus = miibus;
         uint16_t r1, r2, r3;
@@ -361,7 +361,7 @@ qca_switch_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data
 	if ((reg_addr%4)!= 0)
 	return SW_BAD_PARAM;
 
-	reg_val = readl(qca_phy_priv_global->hw_addr + reg_addr);
+	reg_val = readl(qca_phy_priv_global[dev_id]->hw_addr + reg_addr);
 
 	aos_mem_copy(reg_data, &reg_val, sizeof (a_uint32_t));
 	return 0;
@@ -378,7 +378,7 @@ qca_switch_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_dat
 	return SW_BAD_PARAM;
 
 	aos_mem_copy(&reg_val, reg_data, sizeof (a_uint32_t));
-	writel(reg_val, qca_phy_priv_global->hw_addr + reg_addr);
+	writel(reg_val, qca_phy_priv_global[dev_id]->hw_addr + reg_addr);
 	return 0;
 }
 
@@ -393,10 +393,10 @@ qca_psgmii_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data
 	if((reg_addr%4)!=0)
 	return SW_BAD_PARAM;
 
-	if (qca_phy_priv_global->psgmii_hw_addr == NULL)
+	if (qca_phy_priv_global[dev_id]->psgmii_hw_addr == NULL)
 		return SW_NOT_SUPPORTED;
 
-	reg_val = readl(qca_phy_priv_global->psgmii_hw_addr + reg_addr);
+	reg_val = readl(qca_phy_priv_global[dev_id]->psgmii_hw_addr + reg_addr);
 
 	aos_mem_copy(reg_data, &reg_val, sizeof (a_uint32_t));
 	return 0;
@@ -412,11 +412,11 @@ qca_psgmii_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_dat
 	if((reg_addr%4)!=0)
 	return SW_BAD_PARAM;
 
-	if (qca_phy_priv_global->psgmii_hw_addr == NULL)
+	if (qca_phy_priv_global[dev_id]->psgmii_hw_addr == NULL)
 		return SW_NOT_SUPPORTED;
 
 	aos_mem_copy(&reg_val, reg_data, sizeof (a_uint32_t));
-	writel(reg_val, qca_phy_priv_global->psgmii_hw_addr + reg_addr);
+	writel(reg_val, qca_phy_priv_global[dev_id]->psgmii_hw_addr + reg_addr);
 	return 0;
 }
 
@@ -505,7 +505,7 @@ qca_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t uniphy_index,
 	return 0;
 }
 
-static int miibus_get(void)
+static int miibus_get(a_uint32_t dev_id)
 {
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 	#ifndef BOARD_AR71XX
@@ -513,7 +513,7 @@ static int miibus_get(void)
 	struct platform_device *mdio_plat = NULL;
 	struct ipq40xx_mdio_data *mdio_data = NULL;
 
-	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS)
+	if(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->switch_reg_access_mode == HSL_REG_LOCAL_BUS)
 		mdio_node = of_find_compatible_node(NULL, NULL, "qcom,ipq40xx-mdio");
 	else
 		mdio_node = of_find_compatible_node(NULL, NULL, "virtual,mdio-gpio");
@@ -529,7 +529,7 @@ static int miibus_get(void)
 		return 1;
 	}
 
-	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS)
+	if(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->switch_reg_access_mode == HSL_REG_LOCAL_BUS)
 	{
 		mdio_data = dev_get_drvdata(&mdio_plat->dev);
 		if (!mdio_data) {
@@ -571,7 +571,7 @@ static int miibus_get(void)
 		printk("cannot get mii bus reference from device data\n");
 		return 1;
 	}
-	switch_chip_id_adjuest();
+	switch_chip_id_adjuest(dev_id);
 	#endif
 #else
 #ifdef BOARD_AR71XX
@@ -596,7 +596,7 @@ static int miibus_get(void)
 #endif
 
 #ifdef BOARD_AR71XX
-	if(switch_chip_id_adjuest()) {
+	if(switch_chip_id_adjuest(dev_id)) {
 
 		snprintf(busid, MII_BUS_ID_SIZE, "%s.%d",
 		IPQ806X_MDIO_BUS_NAME, MDIO_BUS_1);
@@ -609,7 +609,7 @@ static int miibus_get(void)
 
 		am = dev_get_drvdata(miidev);
 		miibus = am->mii_bus;
-		printk("chip_version:0x%x\n", (qca_ar8216_mii_read(0)&0xff00)>>8);
+		printk("chip_version:0x%x\n", (qca_ar8216_mii_read(dev_id, 0)&0xff00)>>8);
 	}
 #endif
 
@@ -819,7 +819,6 @@ int ssdk_sysfs_init (void)
 	}
 
 
-
 	return 0;
 
 CLEANUP_4:
@@ -838,12 +837,14 @@ void ssdk_sysfs_exit (void)
 {
 	sysfs_remove_file(ssdk_sys, &ssdk_log_level_attr.attr);
 	sysfs_remove_file(ssdk_sys, &ssdk_dev_id_attr.attr);
+	sysfs_remove_file(ssdk_sys, &ssdk_packet_counter_attr.attr);
+	sysfs_remove_file(ssdk_sys, &ssdk_byte_counter_attr.attr);
 	kobject_put(ssdk_sys);
 }
 
 
 int
-ssdk_plat_init(ssdk_init_cfg *cfg)
+ssdk_plat_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 {
 	#ifdef BOARD_AR71XX
 	int rv = 0;
@@ -851,17 +852,15 @@ ssdk_plat_init(ssdk_init_cfg *cfg)
 	printk("ssdk_plat_init start\n");
 	mutex_init(&switch_mdio_lock);
 
-	ssdk_sysfs_init();
-
-	if(miibus_get())
+	if(miibus_get(dev_id))
 		return -ENODEV;
 
 
 	#if defined(DESS) || defined(HPPE)
 
-	if(ssdk_dt_global.uniphy_reg_access_mode == HSL_REG_LOCAL_BUS) {
-		hppe_uniphy_addr = ioremap_nocache(ssdk_dt_global.uniphyreg_base_addr,
-					ssdk_dt_global.uniphyreg_size);
+	if(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->uniphy_reg_access_mode == HSL_REG_LOCAL_BUS) {
+		hppe_uniphy_addr = ioremap_nocache(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->uniphyreg_base_addr,
+					ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->uniphyreg_size);
 		if (!hppe_uniphy_addr) {
 			printk("%s ioremap fail.", __func__);
 			cfg->reg_func.uniphy_reg_set = NULL;
@@ -871,33 +870,33 @@ ssdk_plat_init(ssdk_init_cfg *cfg)
 		cfg->reg_func.uniphy_reg_set = qca_uniphy_reg_write;
 		cfg->reg_func.uniphy_reg_get = qca_uniphy_reg_read;
 	}
-	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
-		qca_phy_priv_global->hw_addr = ioremap_nocache(ssdk_dt_global.switchreg_base_addr,
-					ssdk_dt_global.switchreg_size);
-		if (!qca_phy_priv_global->hw_addr) {
+	if(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
+		qca_phy_priv_global[dev_id]->hw_addr = ioremap_nocache(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->switchreg_base_addr,
+					ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->switchreg_size);
+		if (!qca_phy_priv_global[dev_id]->hw_addr) {
 			printk("%s ioremap fail.", __func__);
 			return -1;
 		}
 
-		if (!ssdk_dt_global.ess_clk || IS_ERR(ssdk_dt_global.ess_clk))
+		if (!ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->ess_clk || IS_ERR(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->ess_clk))
 			return 0;
 		/* Enable ess clock here */
 		printk("enable ess clk\n");
-		clk_prepare_enable(ssdk_dt_global.ess_clk);
+		clk_prepare_enable(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->ess_clk);
 
 		cfg->reg_mode = HSL_HEADER;
 	}
 
-	if(ssdk_dt_global.psgmii_reg_access_mode == HSL_REG_LOCAL_BUS) {
-		if (!request_mem_region(ssdk_dt_global.psgmiireg_base_addr,
-				ssdk_dt_global.psgmiireg_size, "psgmii_mem")) {
+	if(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->psgmii_reg_access_mode == HSL_REG_LOCAL_BUS) {
+		if (!request_mem_region(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->psgmiireg_base_addr,
+				ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->psgmiireg_size, "psgmii_mem")) {
 			printk("%s Unable to request psgmii resource.", __func__);
 			return -1;
 		}
 
-		qca_phy_priv_global->psgmii_hw_addr = ioremap_nocache(ssdk_dt_global.psgmiireg_base_addr,
-				ssdk_dt_global.psgmiireg_size);
-		if (!qca_phy_priv_global->psgmii_hw_addr) {
+		qca_phy_priv_global[dev_id]->psgmii_hw_addr = ioremap_nocache(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->psgmiireg_base_addr,
+				ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->psgmiireg_size);
+		if (!qca_phy_priv_global[dev_id]->psgmii_hw_addr) {
 			printk("%s ioremap fail.", __func__);
 			cfg->reg_func.psgmii_reg_set = NULL;
 			cfg->reg_func.psgmii_reg_get = NULL;
@@ -909,7 +908,7 @@ ssdk_plat_init(ssdk_init_cfg *cfg)
 	}
 	#endif
 
-	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_MDIO) {
+	if(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->switch_reg_access_mode == HSL_REG_MDIO) {
 		cfg->reg_mode = HSL_MDIO;
 	} else
 		return 0;
@@ -918,19 +917,17 @@ ssdk_plat_init(ssdk_init_cfg *cfg)
 }
 
 void
-ssdk_plat_exit(void)
+ssdk_plat_exit(a_uint32_t dev_id)
 {
 	printk("ssdk_plat_exit\n");
 
-	ssdk_sysfs_exit();
-
-	if (ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
-		iounmap(qca_phy_priv_global->hw_addr);
-		iounmap(qca_phy_priv_global->psgmii_hw_addr);
-		release_mem_region(ssdk_dt_global.switchreg_base_addr,
-					ssdk_dt_global.switchreg_size);
-		release_mem_region(ssdk_dt_global.psgmiireg_base_addr,
-					ssdk_dt_global.psgmiireg_size);
+	if (ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
+		iounmap(qca_phy_priv_global[dev_id]->hw_addr);
+		iounmap(qca_phy_priv_global[dev_id]->psgmii_hw_addr);
+		release_mem_region(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->switchreg_base_addr,
+					ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->switchreg_size);
+		release_mem_region(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->psgmiireg_base_addr,
+					ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->psgmiireg_size);
 	}
 
 }

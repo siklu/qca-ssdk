@@ -108,12 +108,12 @@ qca_ar8327_sw_reset_switch(struct switch_dev *dev)
 	rv += qca_ar8327_sw_hw_apply(dev);
 	priv->init = false;
 
-	mac_mode = ssdk_dt_global_get_mac_mode(0);
+	mac_mode = ssdk_dt_global_get_mac_mode(priv->device_id, 0);
 	/* set mac5 flowcontol force for RGMII */
 	if ((mac_mode == PORT_WRAPPER_SGMII0_RGMII5)
 		||(mac_mode == PORT_WRAPPER_SGMII1_RGMII5)) {
-		fal_port_flowctrl_forcemode_set(0, 5, A_TRUE);
-		fal_port_flowctrl_set(0, 5, A_TRUE);
+		fal_port_flowctrl_forcemode_set(priv->device_id, 5, A_TRUE);
+		fal_port_flowctrl_set(priv->device_id, 5, A_TRUE);
 	}
 	/* set mac4 flowcontol force for RGMII */
 	if ((mac_mode == PORT_WRAPPER_SGMII0_RGMII4)

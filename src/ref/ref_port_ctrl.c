@@ -152,13 +152,13 @@ static int qca_switch_get_qm_status(struct switch_dev *dev, a_uint32_t port_id, 
 	{
 		if (port_id < 4) {
 			reg = 0x1D;
-			priv->mii_write(0x820, reg);
-			qm_val = priv->mii_read(0x824);
+			priv->mii_write(priv->device_id, 0x820, reg);
+			qm_val = priv->mii_read(priv->device_id, 0x824);
 			*qm_buffer_err = (qm_val >> (port_id * 8)) & 0xFF;
 		} else {
 			reg = 0x1E;
-			priv->mii_write(0x820, reg);
-			qm_val = priv->mii_read(0x824);
+			priv->mii_write(priv->device_id, 0x820, reg);
+			qm_val = priv->mii_read(priv->device_id, 0x824);
 			*qm_buffer_err = (qm_val >> ((port_id-4) * 8)) & 0xFF;
 		}
 	}
@@ -185,10 +185,10 @@ static int qca_switch_force_mac_1000M_full(struct switch_dev *dev, a_uint32_t po
 		priv->version == QCA_VER_AR8327)
 	{
 		reg = AR8327_REG_PORT_STATUS(port_id);
-		value = priv->mii_read(reg);
+		value = priv->mii_read(priv->device_id, reg);
 		value &= ~(BIT(6) | BITS(0,2));
 		value |= AR8327_PORT_SPEED_1000M | BIT(6);
-		priv->mii_write(reg, value);
+		priv->mii_write(priv->device_id, reg, value);
 	}
 	return 0;
 }
@@ -219,21 +219,21 @@ static int qca_switch_force_mac_status(struct switch_dev *dev, a_uint32_t port_i
 	priv->version == QCA_VER_AR8327)
 	{
 		reg = AR8327_REG_PORT_STATUS(port_id);
-		value = priv->mii_read(reg);
+		value = priv->mii_read(priv->device_id, reg);
 		value &= ~(BIT(6) | BITS(0,2));
 		value |= speed | (duplex?BIT(6):0);
-		priv->mii_write(reg,value);
+		priv->mii_write(priv->device_id, reg,value);
 	}
 
 	return 0;
 }
 
 a_bool_t
-qca_ar8327_sw_rgmii_mode_valid(a_uint32_t port_id)
+qca_ar8327_sw_rgmii_mode_valid(a_uint32_t dev_id, a_uint32_t port_id)
 {
 	a_uint32_t rgmii_mode;
 
-	rgmii_mode = ssdk_dt_global_get_mac_mode(0);
+	rgmii_mode = ssdk_dt_global_get_mac_mode(dev_id, 0);
 
 	if(((rgmii_mode == PORT_WRAPPER_SGMII0_RGMII5) ||
 		(rgmii_mode == PORT_WRAPPER_SGMII1_RGMII5)) && (port_id == 5))
@@ -265,7 +265,7 @@ qca_switch_get_mac_link(struct switch_dev *dev, a_uint32_t port_id, a_uint32_t *
 	priv->version == QCA_VER_AR8327)
 	{
 		reg = AR8327_REG_PORT_STATUS(port_id);
-		value = priv->mii_read(reg);
+		value = priv->mii_read(priv->device_id, reg);
 		*link = (value>>8)&0x1;
 	}
 
@@ -325,13 +325,13 @@ int qca_ar8327_vlan_recovery(struct switch_dev *dev)
 					else
 						val |= (0x3) << ((i << 1) + 4);	// not member.
 				}
-				priv->mii_write(reg, val);
+				priv->mii_write(priv->device_id, reg, val);
 
 				/* reg 0x614 VLAN_TABLE_FUNC1_OFFSET*/
 				reg = 0x614;
 				val = 0x80000002;	// load en entry
 				val |= priv->vlan_id[j] << 16;
-				priv->mii_write(reg, val);
+				priv->mii_write(priv->device_id, reg, val);
 			}
 		}
 
@@ -400,14 +400,14 @@ int qca_qm_error_check(struct qca_phy_priv *priv)
 	if (priv->version == QCA_VER_AR8337 ||
 		priv->version == QCA_VER_AR8327)
 	{
-		value = priv->mii_read(0x24);
+		value = priv->mii_read(priv->device_id, 0x24);
 		qm_err_int = value & BIT(14);	// b14-QM_ERR_INT
 
 		if(qm_err_int)
 			return 1;
 
-		priv->mii_write(0x820, 0x0);
-		value = priv->mii_read(0x824);
+		priv->mii_write(priv->device_id, 0x820, 0x0);
+		value = priv->mii_read(priv->device_id, 0x824);
 	}
 	if(priv->version==0x14)
 	{
@@ -452,8 +452,9 @@ a_bool_t
 qca_ar8327_sw_mac_polling_port_valid(struct switch_dev *dev, a_uint32_t port_id)
 {
 	a_uint32_t mac_mode;
+	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 
-	mac_mode = ssdk_dt_global_get_mac_mode(0);
+	mac_mode = ssdk_dt_global_get_mac_mode(priv->device_id, 0);
 
 	if( port_id >= AR8327_NUM_PORTS-1 || port_id < 1)
 		return A_FALSE;
@@ -476,7 +477,7 @@ qca_phy_status_get(a_uint32_t dev_id, a_uint32_t port_id, a_uint32_t *speed_stat
 	a_uint32_t phy_addr;
 
 	phy_addr = port_id -1;
-	if (qca_ar8327_sw_rgmii_mode_valid(port_id) == A_TRUE)
+	if (qca_ar8327_sw_rgmii_mode_valid(dev_id, port_id) == A_TRUE)
 		phy_addr = 4;
 
 	qca_ar8327_phy_read(dev_id, phy_addr, F1_PHY_SPEC_STATUS, &port_phy_status);
@@ -518,7 +519,7 @@ void
 qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 {
 	static int task_count = 0;
-	a_uint32_t i;
+	a_uint32_t i, dev_id = 0;
 	a_uint32_t value;
 	a_uint32_t link = 0, speed = 0, duplex = 0;
 	a_uint32_t qm_buffer_err = 0;
@@ -528,6 +529,7 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 	static a_uint32_t link_cnt[AR8327_NUM_PORTS] = {0,0,0,0,0,0,0};
 
 	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
+	dev_id = priv->device_id;
 
 	/*Only valid for S17c chip*/
 	if (priv->version != QCA_VER_AR8337 &&
@@ -549,34 +551,34 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 		if(qca_ar8327_sw_mac_polling_port_valid(dev, i) == A_FALSE)
 			continue;
 
-		if (qca_ar8327_sw_rgmii_mode_valid(i) == A_FALSE)
+		if (qca_ar8327_sw_rgmii_mode_valid(dev_id, i) == A_FALSE)
 			qca_switch_get_mac_link(dev, i, &link);
 		else
 		{
-			qca_phy_status_get(priv->device_id,i, &speed, &link, &duplex);
+			qca_phy_status_get(dev_id, i, &speed, &link, &duplex);
 		}
 		if (link != priv->port_old_link[i]) {
-			if (qca_ar8327_sw_rgmii_mode_valid(i) == A_FALSE)
+			if (qca_ar8327_sw_rgmii_mode_valid(dev_id, i) == A_FALSE)
 			{
-				qca_phy_status_get(priv->device_id,i, &speed, &link, &duplex);
+				qca_phy_status_get(dev_id, i, &speed, &link, &duplex);
 			}
 			++link_cnt[i];
 			/* Up --> Down */
 			if ((priv->port_old_link[i] == PORT_LINK_UP) && (link == PORT_LINK_DOWN)) {
 
-				if (qca_ar8327_sw_rgmii_mode_valid(i) == A_TRUE)
+				if (qca_ar8327_sw_rgmii_mode_valid(dev_id, i) == A_TRUE)
 				{
-					fal_port_rxmac_status_set(priv->device_id, i, A_FALSE);
-					fal_port_txmac_status_set(priv->device_id, i, A_FALSE);
+					fal_port_rxmac_status_set(dev_id, i, A_FALSE);
+					fal_port_txmac_status_set(dev_id, i, A_FALSE);
 				}
 				else
 				{
-					fal_port_link_forcemode_set(priv->device_id, i, A_TRUE);
+					fal_port_link_forcemode_set(dev_id, i, A_TRUE);
 					SSDK_DEBUG("%s, %d, port_id %d link down\n",__FUNCTION__,__LINE__,i);
 				}
 				priv->port_link_down[i]=0;
 				ssdk_port_link_notify(i, 0, 0, 0);
-				fal_fdb_del_by_port(priv->device_id, i, 0);/*flush all dynamic fdb of this port*/
+				fal_fdb_del_by_port(dev_id, i, 0);/*flush all dynamic fdb of this port*/
 				if(priv->version != 0x14){
 					/* Check queue buffer */
 					a_uint16_t value = 0;
@@ -594,9 +596,9 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 						mdelay(10);
 						SSDK_DEBUG("%s, %d, port %d link down\n",__FUNCTION__,__LINE__,i);
 					}
-					qca_ar8327_phy_dbg_read(priv->device_id, i-1, 0, &value);
+					qca_ar8327_phy_dbg_read(dev_id, i-1, 0, &value);
 					value &= (~(1<<12));
-					qca_ar8327_phy_dbg_write(priv->device_id, i-1, 0, value);
+					qca_ar8327_phy_dbg_write(dev_id, i-1, 0, value);
 				}
 			}
 			/* Down --> Up */
@@ -617,13 +619,13 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 					priv->port_link_up[i]=0;
 					qca_switch_force_mac_status(dev, i, speed, duplex);
 					udelay(100);
-					if (qca_ar8327_sw_rgmii_mode_valid(i) == A_FALSE) {
-						fal_port_link_forcemode_set(priv->device_id, i, A_FALSE);
+					if (qca_ar8327_sw_rgmii_mode_valid(dev_id, i) == A_FALSE) {
+						fal_port_link_forcemode_set(dev_id, i, A_FALSE);
 					}
 					else
 					{
-						fal_port_rxmac_status_set(priv->device_id, i, A_TRUE);
-						fal_port_txmac_status_set(priv->device_id, i, A_TRUE);
+						fal_port_rxmac_status_set(dev_id, i, A_TRUE);
+						fal_port_txmac_status_set(dev_id, i, A_TRUE);
 					}
 					udelay(100);
 					SSDK_DEBUG("%s, %d, port %d link up speed %d, duplex %d\n",__FUNCTION__,__LINE__,i, speed, duplex);
@@ -631,9 +633,9 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 					if((speed == 0x01) && (priv->version != 0x14))/*PHY is link up 100M*/
 					{
 						a_uint16_t value = 0;
-						qca_ar8327_phy_dbg_read(priv->device_id, i-1, 0, &value);
+						qca_ar8327_phy_dbg_read(dev_id, i-1, 0, &value);
 						value |= (1<<12);
-						qca_ar8327_phy_dbg_write(priv->device_id, i-1, 0, value);
+						qca_ar8327_phy_dbg_write(dev_id, i-1, 0, value);
 					}
 				}
 			}
@@ -674,7 +676,7 @@ dess_rgmii_sw_mac_polling_task(struct switch_dev *dev)
 	a_uint32_t speed, duplex;
 	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 
-	mac_mode = ssdk_dt_global_get_mac_mode(0);
+	mac_mode = ssdk_dt_global_get_mac_mode(priv->device_id, 0);
 
 	if ((mac_mode == PORT_WRAPPER_SGMII0_RGMII5)
 		||(mac_mode == PORT_WRAPPER_SGMII1_RGMII5)

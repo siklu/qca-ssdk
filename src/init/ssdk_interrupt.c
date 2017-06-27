@@ -67,8 +67,8 @@ static int qca_phy_disable_intr(struct qca_phy_priv *priv)
 	for(phy_number = 0; phy_number < 5;  phy_number++)
 	{
 		value = 0;
-		priv->phy_write(0,phy_number, INTERRUPT_ENABLE_REGISTER, value);
-		priv->phy_read(0,phy_number, INTERRUPT_STATUS_REGISTER, &value);
+		priv->phy_write(priv->device_id, phy_number, INTERRUPT_ENABLE_REGISTER, value);
+		priv->phy_read(priv->device_id, phy_number, INTERRUPT_STATUS_REGISTER, &value);
 	}
 
 	return 0;
@@ -78,11 +78,11 @@ static int qca_mac_disable_intr(struct qca_phy_priv *priv)
 {
 	a_uint8_t data;
 
-	fal_reg_get(0, GBL_INT_MASK1_OFFSET, (a_uint8_t *)&data, 4);
+	fal_reg_get(priv->device_id, GBL_INT_MASK1_OFFSET, (a_uint8_t *)&data, 4);
 	if (data )
 	{
 		data = 0;
-		fal_reg_set(0, GBL_INT_MASK1_OFFSET,(a_uint8_t *)&data, 4);
+		fal_reg_set(priv->device_id, GBL_INT_MASK1_OFFSET,(a_uint8_t *)&data, 4);
 	}
 	/*fal_reg_get(0, 0x20, (a_uint8_t *)&data, 4);
 	 if (data )
@@ -95,8 +95,8 @@ static int qca_mac_disable_intr(struct qca_phy_priv *priv)
 	fal_reg_set(0, 0x28,(a_uint8_t *)&data, 4);
    */
 
-	fal_reg_get(0, GBL_INT_STATUS1_OFFSET, (a_uint8_t *)&data, 4);
-	fal_reg_set(0, GBL_INT_STATUS1_OFFSET,(a_uint8_t *)&data, 4);
+	fal_reg_get(priv->device_id, GBL_INT_STATUS1_OFFSET, (a_uint8_t *)&data, 4);
+	fal_reg_set(priv->device_id, GBL_INT_STATUS1_OFFSET,(a_uint8_t *)&data, 4);
 
 	return 0;
 }
@@ -108,11 +108,11 @@ static int qca_phy_enable_intr(struct qca_phy_priv *priv)
 
 	for(phy_number = 0;  phy_number < 5; phy_number++)
 	{
-		priv->phy_read(0, phy_number, INTERRUPT_STATUS_REGISTER, &value);
+		priv->phy_read(priv->device_id, phy_number, INTERRUPT_STATUS_REGISTER, &value);
 		/*enable link change intr*/
 		if( !priv->link_polling_required)
 			value = 0xc00;
-		priv->phy_write(0,phy_number, INTERRUPT_ENABLE_REGISTER, value);
+		priv->phy_write(priv->device_id,phy_number, INTERRUPT_ENABLE_REGISTER, value);
 	}
 
 	return 0;
@@ -125,7 +125,7 @@ int qca_mac_enable_intr(struct qca_phy_priv *priv)
 	/*enable link change intr*/
 	if( !priv->link_polling_required)
 		data = 0x8000;
-	fal_reg_set(0, GBL_INT_MASK1_OFFSET, (a_uint8_t *)&data, 4);
+	fal_reg_set(priv->device_id, GBL_INT_MASK1_OFFSET, (a_uint8_t *)&data, 4);
 
 	return 0;
 }
@@ -135,7 +135,7 @@ static int qca_phy_clean_intr(struct qca_phy_priv *priv)
 	a_uint16_t value;
 
 	for(phy_number = 0; phy_number < 5; phy_number++)
-		priv->phy_read(0, phy_number, INTERRUPT_STATUS_REGISTER, &value);
+		priv->phy_read(priv->device_id, phy_number, INTERRUPT_STATUS_REGISTER, &value);
 
 	return 0;
 }
@@ -144,8 +144,8 @@ static int qca_mac_clean_intr(struct qca_phy_priv *priv)
 {
 	a_uint32_t data;
 
-	fal_reg_get(0, GBL_INT_STATUS1_OFFSET, (a_uint8_t *) &data, 4);
-	fal_reg_set(0,  GBL_INT_STATUS1_OFFSET, (a_uint8_t *)&data, 4);
+	fal_reg_get(priv->device_id, GBL_INT_STATUS1_OFFSET, (a_uint8_t *) &data, 4);
+	fal_reg_set(priv->device_id,  GBL_INT_STATUS1_OFFSET, (a_uint8_t *)&data, 4);
 
 	return 0;
 }

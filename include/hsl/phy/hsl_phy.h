@@ -310,9 +310,9 @@ sw_error_t phy_api_ops_init(phy_type_t phy_type);
 
 int ssdk_phy_driver_init(a_uint32_t dev_id, ssdk_init_cfg *cfg);
 
-void qca_ssdk_phy_address_init(void);
+void qca_ssdk_phy_address_init(a_uint32_t dev_id);
 
-void qca_ssdk_port_bmp_init(void);
+void qca_ssdk_port_bmp_init(a_uint32_t dev_id);
 
 void qca_ssdk_phy_address_set(a_uint32_t dev_id, a_uint32_t i,
 				a_uint32_t value);

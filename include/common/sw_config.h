@@ -21,7 +21,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define SW_MAX_NR_DEV      2
+#define SW_MAX_NR_DEV      3
 #define SW_MAX_NR_PORT     32
 
 #ifdef HSL_STANDALONG

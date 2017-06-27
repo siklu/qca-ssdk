@@ -54,10 +54,10 @@ extern "C" {
 		a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len);
 
 	void
-	sd_reg_mii_set(a_uint32_t reg, a_uint32_t val);
+	sd_reg_mii_set(a_uint32_t dev_id, a_uint32_t reg, a_uint32_t val);
 
 	a_uint32_t
-	sd_reg_mii_get(a_uint32_t reg);
+	sd_reg_mii_get(a_uint32_t dev_id, a_uint32_t reg);
 
     sw_error_t sd_init(a_uint32_t dev_id, ssdk_init_cfg * cfg);
 

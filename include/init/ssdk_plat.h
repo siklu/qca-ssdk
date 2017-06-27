@@ -224,8 +224,8 @@ struct qca_phy_priv {
 	struct switch_dev sw_dev;
     a_uint8_t version;
 	a_uint8_t revision;
-	a_uint32_t (*mii_read)(a_uint32_t reg);
-	void (*mii_write)(a_uint32_t reg, a_uint32_t val);
+	a_uint32_t (*mii_read)(a_uint32_t dev_id, a_uint32_t reg);
+	void (*mii_write)(a_uint32_t dev_id, a_uint32_t reg, a_uint32_t val);
     void (*phy_dbg_write)(a_uint32_t dev_id, a_uint32_t phy_addr,
                         a_uint16_t dbg_addr, a_uint16_t dbg_data);
 	void (*phy_dbg_read)(a_uint32_t dev_id, a_uint32_t phy_addr,
@@ -238,6 +238,8 @@ struct qca_phy_priv {
                            a_uint32_t reg, a_uint16_t* data);
 
 	bool init;
+	a_bool_t qca_ssdk_sw_dev_registered;
+	a_bool_t ess_switch_flag;
 	struct mutex reg_mutex;
 	struct mutex mib_lock;
 	struct delayed_work mib_dwork;
@@ -256,6 +258,8 @@ struct qca_phy_priv {
 	struct work_struct	 intr_workqueue;
 	/*qm_err_check end*/
 	a_uint8_t device_id;
+	struct device_node *of_node;
+	struct mii_bus miibus;
 	/*dess_rgmii_mac*/
 	struct mutex rgmii_lock;
 	struct delayed_work rgmii_dwork;
@@ -293,9 +297,9 @@ struct ipq40xx_mdio_data {
 
 
 a_uint32_t
-qca_ar8216_mii_read(a_uint32_t reg);
+qca_ar8216_mii_read(a_uint32_t dev_id, a_uint32_t reg);
 void
-qca_ar8216_mii_write(a_uint32_t reg, a_uint32_t val);
+qca_ar8216_mii_write(a_uint32_t dev_id, a_uint32_t reg, a_uint32_t val);
 sw_error_t
 qca_ar8327_phy_read(a_uint32_t dev_id, a_uint32_t phy_addr,
 			a_uint32_t reg, a_uint16_t* data);
@@ -352,7 +356,10 @@ sw_error_t
 qca_uniphy_reg_read(a_uint32_t dev_id, a_uint32_t uniphy_index,
 				a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len);
 
-int ssdk_plat_init(ssdk_init_cfg *cfg);
-void ssdk_plat_exit(void);
+int ssdk_sysfs_init (void);
+void ssdk_sysfs_exit (void);
+
+int ssdk_plat_init(ssdk_init_cfg *cfg, a_uint32_t dev_id);
+void ssdk_plat_exit(a_uint32_t dev_id);
 
 #endif
