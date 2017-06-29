@@ -2357,7 +2357,8 @@ sw_error_t
 malibu_phy_hw_init(a_uint32_t dev_id, a_uint32_t port_bmp)
 {
 	a_uint32_t port_id = 0, phy_addr = 0, phy_cnt = 0, first_phy_addr = 0;
-	a_uint16_t dac_value,led_status, phy_data;
+	a_uint16_t dac_value,led_status, phy_data, org_id = 0, rev_id = 0;
+	a_uint32_t phy_id = 0;
 
 	for (port_id = 0; port_id < SW_MAX_NR_PORT; port_id ++)
 	{
@@ -2368,6 +2369,11 @@ malibu_phy_hw_init(a_uint32_t dev_id, a_uint32_t port_bmp)
 			if (phy_cnt == 1)
 			{
 				first_phy_addr = phy_addr;
+				malibu_phy_get_phy_id(dev_id, first_phy_addr, &org_id, &rev_id);
+				phy_id = (org_id << MALIBU_ORG_ID_OFFSET_LEN) | rev_id;
+				/* software get 8072 phy chip's firstly address to init phy chip*/
+				if ((phy_id == MALIBU_1_1_2PORT) && (first_phy_addr >= 0x3))
+					first_phy_addr = first_phy_addr - 0x3;
 			}
 			/*enable phy power saving function by default */
 			malibu_phy_set_8023az(dev_id, phy_addr, A_TRUE);
