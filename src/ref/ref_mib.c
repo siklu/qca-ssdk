@@ -35,10 +35,7 @@
 #include <linux/types.h>
 //#include <asm/mach-types.h>
 #include <generated/autoconf.h>
-#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-#include <linux/switch.h>
-#else
-#include <net/switch.h>
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,14,0))
 #include <linux/ar8216_platform.h>
 #endif
 #include <linux/delay.h>
@@ -47,6 +44,7 @@
 #include "ssdk_plat.h"
 #include "ref_vlan.h"
 
+#if defined(IN_SWCONFIG)
 int
 _qca_ar8327_sw_capture_port_counter(struct switch_dev *dev, int port)
 {
@@ -55,29 +53,6 @@ _qca_ar8327_sw_capture_port_counter(struct switch_dev *dev, int port)
 
     memset(&mib_Info, 0, sizeof(mib_Info));
     fal_get_mib_info(priv->device_id, port, &mib_Info);
-
-    return 0;
-}
-
-int
-_qca_ar8327_sw_capture_port_rx_counter(struct switch_dev *dev, int port)
-{
-    fal_mib_info_t  mib_Info;
-    struct qca_phy_priv *priv = qca_phy_priv_get(dev);
-
-    memset(&mib_Info, 0, sizeof(fal_mib_info_t));
-    fal_get_rx_mib_info(priv->device_id, port, &mib_Info);
-    return 0;
-}
-
-int
-_qca_ar8327_sw_capture_port_tx_counter(struct switch_dev *dev, int port)
-{
-    fal_mib_info_t  mib_Info;
-    struct qca_phy_priv *priv = qca_phy_priv_get(dev);
-
-    memset(&mib_Info, 0, sizeof(fal_mib_info_t));
-    fal_get_tx_mib_info(priv->device_id, port, &mib_Info);
 
     return 0;
 }
@@ -500,20 +475,41 @@ qca_ar8327_sw_get_port_mib(struct switch_dev *dev,
 
     return 0;
 }
+#endif
+
+int
+_qca_ar8327_sw_capture_port_tx_counter(struct qca_phy_priv *priv, int port)
+{
+    fal_mib_info_t  mib_Info;
+
+    memset(&mib_Info, 0, sizeof(fal_mib_info_t));
+    fal_get_tx_mib_info(priv->device_id, port, &mib_Info);
+
+    return 0;
+}
+
+int
+_qca_ar8327_sw_capture_port_rx_counter(struct qca_phy_priv *priv, int port)
+{
+    fal_mib_info_t  mib_Info;
+
+    memset(&mib_Info, 0, sizeof(fal_mib_info_t));
+    fal_get_rx_mib_info(priv->device_id, port, &mib_Info);
+    return 0;
+}
 
 void
-qca_ar8327_sw_mib_task(struct switch_dev *dev)
+qca_ar8327_sw_mib_task(struct qca_phy_priv *priv)
 {
 	static int loop = 0;
-	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 
 	mutex_lock(&priv->reg_mutex);
 	if ((loop % 2) == 0)
-		_qca_ar8327_sw_capture_port_rx_counter(dev, loop/2);
+		_qca_ar8327_sw_capture_port_rx_counter(priv, loop/2);
 	else
-		_qca_ar8327_sw_capture_port_tx_counter(dev, loop/2);
+		_qca_ar8327_sw_capture_port_tx_counter(priv, loop/2);
 
-	if(++loop == (2 * (dev->ports))) {
+	if(++loop == (2 * (priv->ports))) {
 		loop = 0;
 	}
 
@@ -521,5 +517,3 @@ qca_ar8327_sw_mib_task(struct switch_dev *dev)
 
 	return;
 }
-
-

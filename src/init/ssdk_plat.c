@@ -48,17 +48,14 @@
 #include <malibu_phy.h>
 #endif
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,1,0))
-#include <linux/switch.h>
 #include <linux/of.h>
 #include <linux/of_platform.h>
 #elif defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-#include <linux/switch.h>
 #include <linux/of.h>
 #include <drivers/leds/leds-ipq40xx.h>
 #include <linux/of_platform.h>
 #include <linux/reset.h>
 #else
-#include <net/switch.h>
 #include <linux/ar8216_platform.h>
 #include <drivers/net/phy/ar8216.h>
 #include <drivers/net/ethernet/atheros/ag71xx/ag71xx.h>

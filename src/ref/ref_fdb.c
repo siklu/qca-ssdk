@@ -43,8 +43,10 @@
 #include <linux/netdevice.h>
 #include "ssdk_plat.h"
 #include "ref_vlan.h"
+#include "ref_fdb.h"
 
 
+#if defined(IN_SWCONFIG)
 int
 qca_ar8327_sw_atu_flush(struct switch_dev *dev,
 				const struct switch_attr *attr,
@@ -102,6 +104,7 @@ qca_ar8327_sw_atu_dump(struct switch_dev *dev,
 
 	return 0;
 }
+#endif
 
 #define MAX_PORT 6
 /*

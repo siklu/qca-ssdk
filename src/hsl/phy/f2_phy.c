@@ -26,11 +26,6 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/phy.h>
-#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-#include <linux/switch.h>
-#else
-#include <net/switch.h>
-#endif
 #include "ssdk_plat.h"
 
 static a_uint16_t

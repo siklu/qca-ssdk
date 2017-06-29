@@ -36,10 +36,8 @@
 //#include <asm/mach-types.h>
 #include <generated/autoconf.h>
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-#include <linux/switch.h>
 #include <linux/reset.h>
 #else
-#include <net/switch.h>
 #include <linux/ar8216_platform.h>
 #endif
 #include <linux/delay.h>
@@ -55,6 +53,7 @@
 extern struct reset_control *ess_mac_clock_disable[5];
 #endif
 
+#if defined(IN_SWCONFIG)
 int
 qca_ar8327_sw_get_port_link(struct switch_dev *dev, int port,
 			                        struct switch_port_link *link)
@@ -122,12 +121,12 @@ qca_ar8327_sw_get_port_link(struct switch_dev *dev, int port,
 
 	return 0;
 }
+#endif
 
-static int qca_switch_get_qm_status(struct switch_dev *dev, a_uint32_t port_id, a_uint32_t *qm_buffer_err)
+static int qca_switch_get_qm_status(struct qca_phy_priv *priv, a_uint32_t port_id, a_uint32_t *qm_buffer_err)
 {
 	a_uint32_t reg = 0;
 	a_uint32_t qm_val = 0;
-	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 
 	if (port_id < 0 || port_id > 6) {
 		*qm_buffer_err = 0;
@@ -166,10 +165,9 @@ static int qca_switch_get_qm_status(struct switch_dev *dev, a_uint32_t port_id, 
 	return 0;
 }
 
-static int qca_switch_force_mac_1000M_full(struct switch_dev *dev, a_uint32_t port_id)
+static int qca_switch_force_mac_1000M_full(struct qca_phy_priv *priv, a_uint32_t port_id)
 {
 	a_uint32_t reg, value = 0;
-	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 
 	if (port_id < 0 || port_id > 6)
 		return -1;
@@ -193,10 +191,9 @@ static int qca_switch_force_mac_1000M_full(struct switch_dev *dev, a_uint32_t po
 	return 0;
 }
 
-static int qca_switch_force_mac_status(struct switch_dev *dev, a_uint32_t port_id,a_uint32_t speed,a_uint32_t duplex)
+static int qca_switch_force_mac_status(struct qca_phy_priv *priv, a_uint32_t port_id,a_uint32_t speed,a_uint32_t duplex)
 {
 	a_uint32_t reg, value = 0;
-	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 
 	if (port_id < 1 || port_id > 5)
 		return -1;
@@ -248,10 +245,9 @@ qca_ar8327_sw_rgmii_mode_valid(a_uint32_t dev_id, a_uint32_t port_id)
 }
 
 static int
-qca_switch_get_mac_link(struct switch_dev *dev, a_uint32_t port_id, a_uint32_t *link)
+qca_switch_get_mac_link(struct qca_phy_priv *priv, a_uint32_t port_id, a_uint32_t *link)
 {
 	a_uint32_t reg, value = 0;
-	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 
 	if (port_id < 0 || port_id > 6)
 		return -1;
@@ -286,9 +282,8 @@ static a_uint32_t phy_current_speed = 2;
 static a_uint32_t phy_current_duplex = 1;
 
 int qca_ar8327_sw_enable_vlan0(a_uint32_t dev_id, a_bool_t enable, a_uint8_t portmap);
-int qca_ar8327_vlan_recovery(struct switch_dev *dev)
+int qca_ar8327_vlan_recovery(struct qca_phy_priv *priv)
 {
-	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 	fal_pbmp_t portmask[AR8327_NUM_PORTS];
 	int i, j;
 	a_uint32_t reg, val;
@@ -316,7 +311,7 @@ int qca_ar8327_vlan_recovery(struct switch_dev *dev)
 				/* reg 0x610 VLAN_TABLE_FUNC0_OFFSET*/
 				reg = 0x610;
 				val = 0x00180000;
-				for (i = 0; i < dev->ports; ++i) {
+				for (i = 0; i < priv->ports; ++i) {
 					mask = (1 << i);
 					if (mask & priv->vlan_table[j])
 					{
@@ -343,7 +338,7 @@ int qca_ar8327_vlan_recovery(struct switch_dev *dev)
 	} else {
 		/* vlan disabled:
 		 * isolate all ports, but connect them to the cpu port */
-		for (i = 0; i < dev->ports; i++) {
+		for (i = 0; i < priv->ports; i++) {
 			if (i == AR8327_PORT_CPU)
 				continue;
 
@@ -353,7 +348,7 @@ int qca_ar8327_vlan_recovery(struct switch_dev *dev)
 	}
 
 	/* update the port destination mask registers and tag settings */
-	for (i = 0; i < dev->ports; i++) {
+	for (i = 0; i < priv->ports; i++) {
 		int pvid;
 		fal_pt_1qmode_t ingressMode;
 		fal_pt_1q_egmode_t egressMode;
@@ -441,7 +436,7 @@ int qca_qm_err_recovery(struct qca_phy_priv *priv)
 
 	qca_ar8327_hw_init(priv);
 
-	qca_ar8327_vlan_recovery(&priv->sw_dev);
+	qca_ar8327_vlan_recovery(priv);
 
 	/*To add customerized recovery codes*/
 
@@ -449,10 +444,9 @@ int qca_qm_err_recovery(struct qca_phy_priv *priv)
 }
 
 a_bool_t
-qca_ar8327_sw_mac_polling_port_valid(struct switch_dev *dev, a_uint32_t port_id)
+qca_ar8327_sw_mac_polling_port_valid(struct qca_phy_priv *priv, a_uint32_t port_id)
 {
 	a_uint32_t mac_mode;
-	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 
 	mac_mode = ssdk_dt_global_get_mac_mode(priv->device_id, 0);
 
@@ -516,7 +510,7 @@ EXPORT_SYMBOL(ssdk_port_link_notify_unregister);
 
 
 void
-qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
+qca_ar8327_sw_mac_polling_task(struct qca_phy_priv *priv)
 {
 	static int task_count = 0;
 	a_uint32_t i, dev_id = 0;
@@ -528,7 +522,6 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 
 	static a_uint32_t link_cnt[AR8327_NUM_PORTS] = {0,0,0,0,0,0,0};
 
-	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 	dev_id = priv->device_id;
 
 	/*Only valid for S17c chip*/
@@ -548,11 +541,11 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 	++task_count;
 
 	for (i = 1; i < AR8327_NUM_PORTS-1; i++) {
-		if(qca_ar8327_sw_mac_polling_port_valid(dev, i) == A_FALSE)
+		if(qca_ar8327_sw_mac_polling_port_valid(priv, i) == A_FALSE)
 			continue;
 
 		if (qca_ar8327_sw_rgmii_mode_valid(dev_id, i) == A_FALSE)
-			qca_switch_get_mac_link(dev, i, &link);
+			qca_switch_get_mac_link(priv, i, &link);
 		else
 		{
 			qca_phy_status_get(dev_id, i, &speed, &link, &duplex);
@@ -583,7 +576,7 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 					/* Check queue buffer */
 					a_uint16_t value = 0;
 					qm_err_cnt[i] = 0;
-					qca_switch_get_qm_status(dev, i, &qm_buffer_err);
+					qca_switch_get_qm_status(priv, i, &qm_buffer_err);
 
 					if (qm_buffer_err) {
 						priv->port_qm_buf[i] = QM_NOT_EMPTY;
@@ -592,7 +585,7 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 						priv->port_qm_buf[i] = QM_EMPTY;
 
 						/* Force MAC 1000M Full before auto negotiation */
-						qca_switch_force_mac_1000M_full(dev, i);
+						qca_switch_force_mac_1000M_full(priv, i);
 						mdelay(10);
 						SSDK_DEBUG("%s, %d, port %d link down\n",__FUNCTION__,__LINE__,i);
 					}
@@ -606,7 +599,7 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 
 				if (priv->port_link_up[i] < 1) {
 					++(priv->port_link_up[i]);
-					qca_switch_get_qm_status(dev, i, &qm_buffer_err);
+					qca_switch_get_qm_status(priv, i, &qm_buffer_err);
 					if (qm_buffer_err) {
 						if(priv->version != 0x14)
 								qca_qm_err_recovery(priv);
@@ -617,7 +610,7 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 				if(priv->port_link_up[i] >=1)
 				{
 					priv->port_link_up[i]=0;
-					qca_switch_force_mac_status(dev, i, speed, duplex);
+					qca_switch_force_mac_status(priv, i, speed, duplex);
 					udelay(100);
 					if (qca_ar8327_sw_rgmii_mode_valid(dev_id, i) == A_FALSE) {
 						fal_port_link_forcemode_set(dev_id, i, A_FALSE);
@@ -651,7 +644,7 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 
 		if (priv->port_qm_buf[i] == QM_NOT_EMPTY) {
 			/* Check QM */
-			qca_switch_get_qm_status(dev, i, &qm_buffer_err);
+			qca_switch_get_qm_status(priv, i, &qm_buffer_err);
 			if (qm_buffer_err) {
 				priv->port_qm_buf[i] = QM_NOT_EMPTY;
 				++qm_err_cnt[i];
@@ -661,7 +654,7 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 				qm_err_cnt[i] = 0;
 
 				/* Force MAC 1000M Full before auto negotiation */
-				qca_switch_force_mac_1000M_full(dev, i);
+				qca_switch_force_mac_1000M_full(priv, i);
 			}
 		}
 	}
@@ -669,12 +662,11 @@ qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
 }
 
 void
-dess_rgmii_sw_mac_polling_task(struct switch_dev *dev)
+dess_rgmii_sw_mac_polling_task(struct qca_phy_priv *priv)
 {
 	a_uint32_t mac_mode;
 	a_uint16_t phy_spec_status, phy_link_status;
 	a_uint32_t speed, duplex;
-	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 
 	mac_mode = ssdk_dt_global_get_mac_mode(priv->device_id, 0);
 
@@ -691,12 +683,12 @@ dess_rgmii_sw_mac_polling_task(struct switch_dev *dev)
 			if ((speed != phy_current_speed) || (duplex != phy_current_duplex)) {
 				if ((mac_mode == PORT_WRAPPER_SGMII0_RGMII5)
 				||(mac_mode == PORT_WRAPPER_SGMII1_RGMII5))
-				qca_switch_force_mac_status(dev, 5,speed,duplex);
+				qca_switch_force_mac_status(priv, 5,speed,duplex);
 
 				if ((mac_mode == PORT_WRAPPER_SGMII0_RGMII4)
 				||(mac_mode == PORT_WRAPPER_SGMII1_RGMII4)
 				||(mac_mode == PORT_WRAPPER_SGMII4_RGMII4))
-				qca_switch_force_mac_status(dev, 4,speed,duplex);
+				qca_switch_force_mac_status(priv, 4,speed,duplex);
 			}
 			phy_current_speed = speed;
 			phy_current_duplex = duplex;

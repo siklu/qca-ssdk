@@ -41,6 +41,14 @@
 #include <linux/string.h>
 #include <linux/gpio.h>
 
+#if defined(IN_SWCONFIG)
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+#include <linux/switch.h>
+#else
+#include <net/switch.h>
+#endif
+#endif
+
 #if defined(ISIS) ||defined(ISISC) ||defined(GARUDA)
 #include <f1_phy.h>
 #endif
@@ -51,7 +59,6 @@
 #include <malibu_phy.h>
 #endif
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,1,0))
-#include <linux/switch.h>
 #include <linux/of.h>
 #include <linux/reset.h>
 #ifdef BOARD_AR71XX
@@ -61,13 +68,11 @@
 #include "drivers/net/ethernet/atheros/ag71xx/ag71xx.h"
 #endif
 #elif defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-#include <linux/switch.h>
 #include <linux/of.h>
 #include <drivers/leds/leds-ipq40xx.h>
 #include <linux/of_platform.h>
 #include <linux/reset.h>
 #else
-#include <net/switch.h>
 #include <linux/ar8216_platform.h>
 #include <drivers/net/phy/ar8216.h>
 #include <drivers/net/ethernet/atheros/ag71xx/ag71xx.h>
@@ -122,6 +127,9 @@ struct notifier_block ssdk_dev_notifier;
 
 extern ssdk_chip_type SSDK_CURRENT_CHIP_TYPE;
 extern a_uint32_t hsl_dev_wan_port_get(a_uint32_t dev_id);
+extern void dess_rgmii_sw_mac_polling_task(struct qca_phy_priv *priv);
+extern void qca_ar8327_sw_mac_polling_task(struct qca_phy_priv *priv);
+extern void qca_ar8327_sw_mib_task(struct qca_phy_priv *priv);
 
 //#define PSGMII_DEBUG
 
@@ -186,42 +194,6 @@ qca_hppe_port_mac_type_set(a_uint32_t dev_id, a_uint32_t port_id, a_uint32_t por
 	hppe_port_type[port_id - 1] = port_type;
 
 	return 0;
-}
-
-static void
-qca_phy_read_port_link(struct qca_phy_priv *priv, int port,
-		      struct switch_port_link *port_link)
-{
-	a_uint32_t port_status, port_speed;
-
-	memset(port_link, 0, sizeof(*port_link));
-
-	port_status = priv->mii_read(priv->device_id, AR8327_REG_PORT_STATUS(port));
-
-    port_link->link = 1;
-    port_link->aneg = !!(port_status & AR8327_PORT_STATUS_LINK_AUTO);
-	if (port_link->aneg) {
-		port_link->link = !!(port_status & AR8327_PORT_STATUS_LINK_UP);
-		if (port_link->link == 0) {
-			return;
-        }
-	}
-
-	port_speed = (port_status & AR8327_PORT_STATUS_SPEED) >>
-		            AR8327_PORT_STATUS_SPEED_S;
-    if(port_speed == AR8327_PORT_SPEED_10M) {
-        port_link->speed = SWITCH_PORT_SPEED_10;
-    } else if(port_speed == AR8327_PORT_SPEED_100M) {
-        port_link->speed = SWITCH_PORT_SPEED_100;
-    } else if(port_speed == AR8327_PORT_SPEED_1000M) {
-        port_link->speed = SWITCH_PORT_SPEED_1000;
-    } else {
-        port_link->speed = SWITCH_PORT_SPEED_UNKNOWN;
-    }
-
-	port_link->duplex = !!(port_status & AR8327_PORT_STATUS_DUPLEX);
-	port_link->tx_flow = !!(port_status & AR8327_PORT_STATUS_TXFLOW);
-	port_link->rx_flow = !!(port_status & AR8327_PORT_STATUS_RXFLOW);
 }
 
 #ifndef BOARD_AR71XX
@@ -1014,6 +986,8 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 	return 0;
 }
 #endif
+
+#if defined(IN_SWCONFIG)
 #ifndef BOARD_AR71XX
 static int
 qca_ar8327_sw_get_reg_val(struct switch_dev *dev,
@@ -1123,13 +1097,14 @@ const struct switch_dev_ops qca_ar8327_sw_ops = {
 	.set_reg_val = qca_ar8327_sw_set_reg_val,
 #endif
 };
+#endif
 
 #define SSDK_MIB_CHANGE_WQ
 
 static int
 qca_phy_mib_task(struct qca_phy_priv *priv)
 {
-	qca_ar8327_sw_mib_task(&priv->sw_dev);
+	qca_ar8327_sw_mib_task(priv);
 	return 0;
 }
 
@@ -1194,7 +1169,7 @@ qm_err_check_work_task_polling(struct work_struct *work)
 
 	mutex_lock(&priv->qm_lock);
 
-	qca_ar8327_sw_mac_polling_task(&priv->sw_dev);
+	qca_ar8327_sw_mac_polling_task(priv);
 
 	mutex_unlock(&priv->qm_lock);
 
@@ -1316,7 +1291,7 @@ dess_rgmii_mac_work_task(struct work_struct *work)
 
 	mutex_lock(&priv->rgmii_lock);
 
-	dess_rgmii_sw_mac_polling_task(&priv->sw_dev);
+	dess_rgmii_sw_mac_polling_task(priv);
 
 	mutex_unlock(&priv->rgmii_lock);
 
@@ -1428,11 +1403,33 @@ qca_phy_id_chip(struct qca_phy_priv *priv)
 	}
 }
 
+#if defined(IN_SWCONFIG)
+static int qca_switchdev_register(struct qca_phy_priv *priv)
+{
+	struct switch_dev *sw_dev;
+	int ret = SW_OK;
+	sw_dev = &priv->sw_dev;
+
+	sw_dev->ops = &qca_ar8327_sw_ops;
+	sw_dev->name = "QCA AR8327 AR8337";
+	sw_dev->alias = "QCA AR8327 AR8337";
+	sw_dev->vlans = AR8327_MAX_VLANS;
+	sw_dev->ports = AR8327_NUM_PORTS;
+
+	ret = register_switch(sw_dev, NULL);
+	if (ret != SW_OK) {
+		SSDK_ERROR("register_switch failed for %s\n", sw_dev->name);
+		return ret;
+	}
+
+	return ret;
+}
+#endif
+
 static int
 qca_phy_config_init(struct phy_device *pdev)
 {
 	struct qca_phy_priv *priv = pdev->priv;
-	struct switch_dev *sw_dev;
 	int ret = 0;
 
 	if (pdev->addr != 0) {
@@ -1462,6 +1459,7 @@ qca_phy_config_init(struct phy_device *pdev)
 	priv->phy_dbg_write = qca_ar8327_phy_dbg_write;
 	priv->phy_dbg_read = qca_ar8327_phy_dbg_read;
 	priv->phy_mmd_write = qca_ar8327_mmd_write;
+	priv->ports = AR8327_NUM_PORTS;
 
 	ret = qca_link_polling_select(priv);
 	if(ret)
@@ -1470,16 +1468,12 @@ qca_phy_config_init(struct phy_device *pdev)
 	pdev->supported |= SUPPORTED_1000baseT_Full;
 	pdev->advertising |= ADVERTISED_1000baseT_Full;
 
-	sw_dev = &priv->sw_dev;
-	sw_dev->ops = &qca_ar8327_sw_ops;
-	sw_dev->name = "QCA AR8327 AR8337";
-	sw_dev->vlans = AR8327_MAX_VLANS;
-	sw_dev->ports = AR8327_NUM_PORTS;
-
-	ret = register_switch(&priv->sw_dev, pdev->attached_dev);
-	if (ret != 0) {
-	        return ret;
+#if defined(IN_SWCONFIG)
+	ret = qca_switchdev_register(priv);
+	if (ret != SW_OK) {
+		return ret;
 	}
+#endif
 	priv->qca_ssdk_sw_dev_registered = A_TRUE;
 
 	ret = qca_ar8327_hw_init(priv);
@@ -1495,7 +1489,7 @@ qca_phy_config_init(struct phy_device *pdev)
 		ret = qm_err_check_work_start(priv);
 		if (ret != 0)
 		{
-			SSDK_ERROR("qm_err_check_work_start failed for %s\n", sw_dev->name);
+			SSDK_ERROR("qm_err_check_work_start failed for chip 0x%02x%02x\n", priv->version, priv->revision);
 			return ret;
 		}
 	}
@@ -1514,7 +1508,6 @@ qca_phy_config_init(struct phy_device *pdev)
 #if defined(DESS) || defined(HPPE) || defined (ISISC) || defined (ISIS)
 static int ssdk_switch_register(a_uint32_t dev_id)
 {
-	struct switch_dev *sw_dev;
 	struct qca_phy_priv *priv;
 	int ret = 0;
 	a_uint32_t chip_id = 0;
@@ -1527,6 +1520,7 @@ static int ssdk_switch_register(a_uint32_t dev_id)
 	priv->phy_dbg_write = qca_ar8327_phy_dbg_write;
 	priv->phy_dbg_read = qca_ar8327_phy_dbg_read;
 	priv->phy_mmd_write = qca_ar8327_mmd_write;
+	priv->ports = AR8327_NUM_PORTS;
 
 	if (fal_reg_get(dev_id, 0, (a_uint8_t *)&chip_id, 4) == SW_OK) {
 		priv->version = ((chip_id >> 8) & 0xff);
@@ -1536,24 +1530,17 @@ static int ssdk_switch_register(a_uint32_t dev_id)
 
 	mutex_init(&priv->reg_mutex);
 
-	sw_dev = &priv->sw_dev;
-
-	sw_dev->ops = &qca_ar8327_sw_ops;
-	sw_dev->name = "QCA AR8327 AR8337";
-	sw_dev->alias = "QCA AR8327 AR8337";
-	sw_dev->vlans = AR8327_MAX_VLANS;
-	sw_dev->ports = AR8327_NUM_PORTS;
-
-	ret = register_switch(sw_dev, NULL);
-	if (ret != 0) {
-			SSDK_ERROR("register_switch failed for %s\n", sw_dev->name);
-			return ret;
+#if defined(IN_SWCONFIG)
+	ret = qca_switchdev_register(priv);
+	if (ret != SW_OK) {
+		return ret;
 	}
+#endif
 
 	priv->qca_ssdk_sw_dev_registered = A_TRUE;
 	ret = qca_phy_mib_work_start(qca_phy_priv_global[dev_id]);
 	if (ret != 0) {
-			SSDK_ERROR("qca_phy_mib_work_start failed for %s\n", sw_dev->name);
+			SSDK_ERROR("qca_phy_mib_work_start failed for chip 0x%02x%02x\n", priv->version, priv->revision);
 			return ret;
 	}
 	ret = qca_link_polling_select(priv);
@@ -1565,7 +1552,7 @@ static int ssdk_switch_register(a_uint32_t dev_id)
 		ret = qm_err_check_work_start(priv);
 		if (ret != 0)
 		{
-			SSDK_ERROR("qm_err_check_work_start failed for %s\n", sw_dev->name);
+			SSDK_ERROR("qm_err_check_work_start failed for chip 0x%02x%02x\n", priv->version, priv->revision);
 			return ret;
 		}
 	}
@@ -1590,7 +1577,7 @@ static int ssdk_switch_register(a_uint32_t dev_id)
 		||(ssdk_dt_global.mac_mode == PORT_WRAPPER_SGMII4_RGMII4)) {
 		ret = dess_rgmii_mac_work_start(priv);
 		if (ret != 0) {
-			SSDK_ERROR("dess_rgmii_mac_work_start failed for %s\n", sw_dev->name);
+			SSDK_ERROR("dess_rgmii_mac_work_start failed for chip 0x%02x%02x\n", priv->version, priv->revision);
 			return ret;
 		}
 	}
@@ -1600,7 +1587,7 @@ static int ssdk_switch_register(a_uint32_t dev_id)
 	#ifdef HAWKEYE_CHIP
 	ret = qca_mac_sw_sync_work_start(priv);
 	if (ret != 0) {
-			printk("qca_mac_sw_sync_work_start failed for %s\n", sw_dev->name);
+			printk("qca_mac_sw_sync_work_start failed for chip 0x%02x%02x\n", priv->version, priv->revision);
 			return ret;
 	}
 	#endif
@@ -1619,7 +1606,10 @@ static int ssdk_switch_unregister(a_uint32_t dev_id)
 	qca_mac_sw_sync_work_stop(qca_phy_priv_global[dev_id]);
 	#endif
 	#endif
+
+	#if defined(IN_SWCONFIG)
 	unregister_switch(&qca_phy_priv_global[dev_id]->sw_dev);
+	#endif
 	return 0;
 }
 #endif
@@ -1628,7 +1618,8 @@ static int
 qca_phy_read_status(struct phy_device *pdev)
 {
 	struct qca_phy_priv *priv = pdev->priv;
-	struct switch_port_link port_link;
+	a_uint32_t port_status;
+	a_uint32_t port_speed;
 	int ret = 0;
 
 	if (pdev->addr != 0) {
@@ -1639,24 +1630,36 @@ qca_phy_read_status(struct phy_device *pdev)
 	}
 
 	mutex_lock(&priv->reg_mutex);
-	qca_phy_read_port_link(priv, pdev->addr, &port_link);
+	port_status = priv->mii_read(priv->device_id, AR8327_REG_PORT_STATUS(pdev->addr));
 	mutex_unlock(&priv->reg_mutex);
 
-	pdev->link = !!port_link.link;
-	if (pdev->link == 0)
-		return 0;
-
-	if(port_link.speed == SWITCH_PORT_SPEED_10) {
-		pdev->speed = SPEED_10;
-	} else if (port_link.speed == SWITCH_PORT_SPEED_100) {
-		pdev->speed = SPEED_100;
-	} else if (port_link.speed == SWITCH_PORT_SPEED_1000) {
-		pdev->speed = SPEED_1000;
-	} else {
-		pdev->speed = 0;
+	pdev->link = 1;
+	if (port_status & AR8327_PORT_STATUS_LINK_AUTO) {
+		pdev->link = !!(port_status & AR8327_PORT_STATUS_LINK_UP);
+		if (pdev->link == 0) {
+			return ret;
+		}
 	}
 
-	if(port_link.duplex) {
+	port_speed = (port_status & AR8327_PORT_STATUS_SPEED) >>
+		            AR8327_PORT_STATUS_SPEED_S;
+
+	switch (port_speed) {
+		case AR8327_PORT_SPEED_10M:
+			pdev->speed = SPEED_10;
+			break;
+		case AR8327_PORT_SPEED_100M:
+			pdev->speed = SPEED_100;
+			break;
+		case AR8327_PORT_SPEED_1000M:
+			pdev->speed = SPEED_1000;
+			break;
+		default:
+			pdev->speed = 0;
+			break;
+	}
+
+	if(port_status & AR8327_PORT_STATUS_DUPLEX) {
 		pdev->duplex = DUPLEX_FULL;
 	} else {
 		pdev->duplex = DUPLEX_HALF;
@@ -1703,10 +1706,13 @@ qca_phy_remove(struct phy_device *pdev)
 {
 	struct qca_phy_priv *priv = pdev->priv;
 
-	if ((pdev->addr == 0) && priv && (priv->sw_dev.name != NULL)) {
+	if ((pdev->addr == 0) && priv && (priv->ports != 0)) {
 		qca_phy_mib_work_stop(priv);
 		qm_err_check_work_stop(priv);
-		unregister_switch(&priv->sw_dev);
+#if defined(IN_SWCONFIG)
+		if (priv->sw_dev.name != NULL)
+			unregister_switch(&priv->sw_dev);
+#endif
 	}
 
 	if (priv) {
@@ -2444,7 +2450,11 @@ static int ssdk_dt_parse_phy_addr(struct device_node *switch_node, a_uint32_t de
 	int rv = SW_OK;
 
 	phy_mp = of_get_property(switch_node, "qca,port_phyaddr_map", &len);
-	if (!phy_mp || len < (2 * sizeof(*phy_mp))) {
+	if (!phy_mp) {
+		SSDK_INFO("port_phyaddr_map doesn't exist!\n");
+		return SW_NOT_FOUND;
+	}
+	else if (len < (2 * sizeof(*phy_mp))) {
 		SSDK_ERROR("len:%d < 2 * sizeof(*phy_mp):%d\n", len, 2 * sizeof(*phy_mp));
 		return -EINVAL;
 	}
@@ -2562,7 +2572,7 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg, a_uint32_t num, a_uint32_t *dev_id)
 
 	ssdk_dt_priv->ess_clk = of_clk_get_by_name(switch_node, "ess_clk");
 	if (IS_ERR(ssdk_dt_priv->ess_clk))
-		SSDK_INFO("Getting ess_clk failed!\n");
+		SSDK_INFO("ess_clk doesn't exist!\n");
 
 	SSDK_INFO("switch_access_mode: %s\n", ssdk_dt_priv->reg_access_mode);
 	if(!strcmp(ssdk_dt_priv->reg_access_mode, "local bus"))
@@ -2756,6 +2766,7 @@ static void ssdk_miireg_ioctrl_unregister(void)
 	if (ssdk_miireg_netdev) {
 		unregister_netdev(ssdk_miireg_netdev);
 		kfree(ssdk_miireg_netdev);
+		ssdk_miireg_netdev = NULL;
 	}
 }
 
@@ -2778,11 +2789,12 @@ static void ssdk_driver_register(a_uint32_t dev_id)
 		}
 
 		SSDK_INFO("Register QCA PHY driver\n");
-#ifndef BOARD_AR71XX
 		phy_driver_register(&qca_phy_driver);
-#else
-		phy_driver_register(&qca_phy_driver);
+#ifdef BOARD_AR71XX
+#if defined(IN_SWCONFIG)
 		ssdk_uci_takeover_init();
+#endif
+
 #ifdef CONFIG_AR8216_PHY
 		ar8327_port_link_notify_register(ssdk_port_link_notify);
 #endif
@@ -2794,11 +2806,9 @@ static void ssdk_driver_register(a_uint32_t dev_id)
 static void ssdk_driver_unregister(a_uint32_t dev_id)
 {
 	if(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->switch_reg_access_mode == HSL_REG_MDIO && ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->ess_switch_flag == A_FALSE) {
-#ifndef BOARD_AR71XX
 		phy_driver_unregister(&qca_phy_driver);
-#endif
 
-	#ifdef BOARD_AR71XX
+	#if defined(BOARD_AR71XX) && defined(IN_SWCONFIG)
 		ssdk_uci_takeover_exit();
 	#endif
 	}
@@ -4736,11 +4746,6 @@ static int __init regi_init(void)
 				break;
 
 			case CHIP_SHIVA:
-			#if defined(SHIVA)
-				/* need to do special init for S27 here*/
-			#endif
-				break;
-
 			case CHIP_ATHENA:
 			case CHIP_GARUDA:
 			case CHIP_HORUS:

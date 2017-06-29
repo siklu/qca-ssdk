@@ -39,16 +39,13 @@
 #include <dess/dess_reg.h>
 #endif
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,1,0))
-#include <linux/switch.h>
 #include <linux/of.h>
 #elif defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-#include <linux/switch.h>
 #include <linux/of.h>
 #include <drivers/leds/leds-ipq40xx.h>
 #include <linux/of_platform.h>
 #include <linux/reset.h>
 #else
-#include <net/switch.h>
 #include <linux/ar8216_platform.h>
 #endif
 #include "ssdk_plat.h"
@@ -58,6 +55,8 @@
 /*phy interrupt enable and status register*/
 #define INTERRUPT_ENABLE_REGISTER  0X12
 #define INTERRUPT_STATUS_REGISTER 0X13
+
+extern void qca_ar8327_sw_mac_polling_task(struct qca_phy_priv *priv);
 
 static int qca_phy_disable_intr(struct qca_phy_priv *priv)
 {
@@ -155,7 +154,7 @@ qca_link_change_task(struct qca_phy_priv *priv)
 {
 	SSDK_DEBUG("qca_link_change_task is running\n");
 	mutex_lock(&priv->qm_lock);
-	qca_ar8327_sw_mac_polling_task(&priv->sw_dev);
+	qca_ar8327_sw_mac_polling_task(priv);
 	mutex_unlock(&priv->qm_lock);
 }
 
@@ -182,9 +181,9 @@ qca_intr_workqueue_task(struct work_struct *work)
 	enable_irq(priv->link_interrupt_no);
 }
 
- static irqreturn_t  qca_link_intr_handle(int irq, void *sw_dev_t)
+ static irqreturn_t  qca_link_intr_handle(int irq, void *phy_priv)
  {
-	struct qca_phy_priv *priv = container_of(sw_dev_t, struct qca_phy_priv,  sw_dev);
+	struct qca_phy_priv *priv = (struct qca_phy_priv *)phy_priv;
 
 	 disable_irq_nosync(irq);
 	 schedule_work(&priv->intr_workqueue);
@@ -195,12 +194,16 @@ qca_intr_workqueue_task(struct work_struct *work)
 
  int qca_intr_init(struct qca_phy_priv *priv)
 {
+	#define SWITCH_DEVNAME "switch%d"
+	char devname[IFNAMSIZ];
+	snprintf(devname, IFNAMSIZ, SWITCH_DEVNAME, priv->device_id);
+
 	SSDK_DEBUG("start to  init the interrupt!\n");
 	mutex_init(&priv->qm_lock);
 	INIT_WORK(&priv->intr_workqueue, qca_intr_workqueue_task);
 	qca_phy_disable_intr(priv);
 	qca_mac_disable_intr(priv);
-	if(request_irq(priv->link_interrupt_no, qca_link_intr_handle, priv->interrupt_flag, priv->sw_dev.devname, &(priv->sw_dev)))
+	if(request_irq(priv->link_interrupt_no, qca_link_intr_handle, priv->interrupt_flag, devname, priv))
 		return -1;
 	qca_phy_enable_intr(priv);
 	qca_mac_enable_intr(priv);

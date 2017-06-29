@@ -36,10 +36,7 @@
 #include <linux/types.h>
 //#include <asm/mach-types.h>
 #include <generated/autoconf.h>
-#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-#include <linux/switch.h>
-#else
-#include <net/switch.h>
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,14,0))
 #include <linux/ar8216_platform.h>
 #endif
 #include <linux/delay.h>
@@ -113,6 +110,7 @@ qca_ar8327_sw_enable_vlan0(a_uint32_t dev_id, a_bool_t enable, a_uint8_t portmap
     return 0;
 }
 
+#if defined(IN_SWCONFIG)
 int
 qca_ar8327_sw_set_vlan(struct switch_dev *dev,
                        const struct switch_attr *attr,
@@ -360,5 +358,6 @@ qca_ar8327_sw_hw_apply(struct switch_dev *dev)
 
     return 0;
 }
+#endif
 
 

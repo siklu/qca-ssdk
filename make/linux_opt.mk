@@ -1,6 +1,10 @@
 MODULE_CFLAG :=
 LOCAL_CFLAGS :=
 
+ifeq (TRUE, $(SWCONFIG))
+  MODULE_CFLAG += -DIN_SWCONFIG
+endif
+
 ifeq (TRUE, $(IN_ACL))
   MODULE_CFLAG += -DIN_ACL
 endif

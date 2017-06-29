@@ -21,10 +21,13 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/phy.h>
+
+#if defined(IN_SWCONFIG)
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 #include <linux/switch.h>
 #else
 #include <net/switch.h>
+#endif
 #endif
 
 #ifndef BIT
@@ -221,7 +224,9 @@ extern a_uint32_t ssdk_log_level;
 
 struct qca_phy_priv {
 	struct phy_device *phy;
+#if defined(IN_SWCONFIG)
 	struct switch_dev sw_dev;
+#endif
     a_uint8_t version;
 	a_uint8_t revision;
 	a_uint32_t (*mii_read)(a_uint32_t dev_id, a_uint32_t reg);
@@ -282,6 +287,7 @@ struct qca_phy_priv {
     a_uint8_t  vlan_table[AR8327_MAX_VLANS];
     a_uint8_t  vlan_tagged[AR8327_MAX_VLANS];
     a_uint16_t pvid[AR8327_NUM_PORTS];
+    a_uint32_t ports;
 	u8 __iomem *hw_addr;
 	u8 __iomem *psgmii_hw_addr;
 };
@@ -292,8 +298,10 @@ struct ipq40xx_mdio_data {
         int phy_irq[PHY_MAX_ADDR];
 };
 
+#if defined(IN_SWCONFIG)
 #define qca_phy_priv_get(_dev) \
 		container_of(_dev, struct qca_phy_priv, sw_dev)
+#endif
 
 
 a_uint32_t
