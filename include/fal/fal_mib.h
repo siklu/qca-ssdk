@@ -151,7 +151,7 @@ typedef struct
 	a_uint64_t	RxBroadGood;
 	a_uint64_t	RxMultiGood;
 	a_uint64_t	RxFcsErr;
-	a_uint64_t	RxRunt;
+	a_uint64_t	RxRuntErr ;
 	a_uint64_t	RxJabberError;
 	a_uint64_t	RxUndersizeGood;
 	a_uint64_t	RxOversizeGood;

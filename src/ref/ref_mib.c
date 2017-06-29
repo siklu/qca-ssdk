@@ -169,7 +169,7 @@ static int qca_ar8327_sw_print_xgport_mib(struct switch_dev *dev,
 	"%-18s: %llu\n", "RxFcsErr", xgmib_info.RxFcsErr);
 
 	len += snprintf(buf + len, sizeof(priv->buf) - len,
-	"%-18s: %llu\n", "RxRunt", xgmib_info.RxRunt);
+	"%-18s: %llu\n", "RxRuntErr", xgmib_info.RxRuntErr );
 
 	len += snprintf(buf + len, sizeof(priv->buf) - len,
 	"%-18s: %llu\n", "RxJabberError", xgmib_info.RxJabberError);
