@@ -4546,7 +4546,7 @@ static int ssdk_dev_event(struct notifier_block *this, unsigned long event, void
 				if(qca_phy_priv_global->version== QCA_VER_HPPE)
 				{
 					port_id = dev->name[eth_num] - '0' +1;
-					fal_port_max_frame_size_set(dev_id, port_id, dev->mtu);
+					fal_port_max_frame_size_set(dev_id, port_id, dev->mtu + 18);
 				}
 				else
 					fal_frame_max_size_set(0, dev->mtu + 18);
