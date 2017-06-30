@@ -244,6 +244,7 @@ typedef struct
 		hsl_reg_mode psgmii_reg_access_mode;
 		struct clk *ess_clk;
 		struct clk *cmnblk_clk;
+		ssdk_port_cfg   port_cfg;
 		a_uint32_t      mac_mode;
 		a_uint32_t      mac_mode1;
 		a_uint32_t      mac_mode2;

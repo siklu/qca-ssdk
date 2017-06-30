@@ -2541,6 +2541,11 @@ static void ssdk_dt_parse_port_bmp(a_uint32_t dev_id,ssdk_init_cfg *cfg,
 		SSDK_ERROR("port_bmp doesn't exist!\n");
 		return;
 	}
+
+	ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->port_cfg.cpu_bmp = cfg->port_cfg.cpu_bmp;
+	ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->port_cfg.lan_bmp = cfg->port_cfg.lan_bmp;
+	ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->port_cfg.wan_bmp = cfg->port_cfg.wan_bmp;
+
 	portbmp = cfg->port_cfg.lan_bmp | cfg->port_cfg.wan_bmp;
 	qca_ssdk_port_bmp_set(dev_id, portbmp);
 

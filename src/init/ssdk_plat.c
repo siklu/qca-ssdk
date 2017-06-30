@@ -800,6 +800,112 @@ static ssize_t ssdk_byte_counter_set(struct device *dev,
 	return count;
 }
 
+void ssdk_dts_port_scheduler_dump(a_uint32_t dev_id)
+{
+	a_uint32_t i;
+	ssdk_dt_portscheduler_cfg *portscheduler_cfg;
+	a_uint8_t srcmsg[7][16];
+	printk("===============================port_scheduler_resource===========================\n");
+	printk("portid     ucastq     mcastq     10sp     10cdrr     10edrr     11cdrr     11edrr\n");
+	for (i = 0; i < SSDK_MAX_PORT_NUM; i++)
+	{
+		portscheduler_cfg = &ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->scheduler_cfg.pool[i];
+		snprintf(srcmsg[0], sizeof(srcmsg[0]), "<%d %d>", portscheduler_cfg->ucastq_start,
+				portscheduler_cfg->ucastq_end);
+		snprintf(srcmsg[1], sizeof(srcmsg[1]), "<%d %d>", portscheduler_cfg->mcastq_start,
+				portscheduler_cfg->mcastq_end);
+		snprintf(srcmsg[2], sizeof(srcmsg[2]), "<%d %d>", portscheduler_cfg->l0sp_start,
+				portscheduler_cfg->l0sp_end);
+		snprintf(srcmsg[3], sizeof(srcmsg[3]), "<%d %d>", portscheduler_cfg->l0cdrr_start,
+				portscheduler_cfg->l0cdrr_end);
+		snprintf(srcmsg[4], sizeof(srcmsg[4]), "<%d %d>", portscheduler_cfg->l0edrr_start,
+				portscheduler_cfg->l0edrr_end);
+		snprintf(srcmsg[5], sizeof(srcmsg[5]), "<%d %d>", portscheduler_cfg->l1cdrr_start,
+				portscheduler_cfg->l1cdrr_end);
+		snprintf(srcmsg[6], sizeof(srcmsg[6]), "<%d %d>", portscheduler_cfg->l1edrr_start,
+				portscheduler_cfg->l1edrr_end);
+		printk("%6d%11s%11s%9s%11s%11s%11s%11s\n", i, srcmsg[0], srcmsg[1], srcmsg[2], srcmsg[3],
+				srcmsg[4], srcmsg[5], srcmsg[6]);
+	}
+}
+
+void ssdk_dts_l0scheduler_dump(a_uint32_t dev_id)
+{
+	a_uint32_t i;
+	ssdk_dt_l0scheduler_cfg *scheduler_cfg;
+	printk("==========================l0scheduler_cfg===========================\n");
+	printk("queue     portid     cpri     cdrr_id     epri     edrr_id     sp_id\n");
+	for (i = 0; i < SSDK_L0SCHEDULER_CFG_MAX; i++)
+	{
+		scheduler_cfg = &ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->scheduler_cfg.l0cfg[i];
+		if (scheduler_cfg->valid == 1)
+			printk("%5d%11d%9d%12d%9d%12d%10d\n", i, scheduler_cfg->port_id,
+				scheduler_cfg->cpri, scheduler_cfg->cdrr_id, scheduler_cfg->epri,
+				scheduler_cfg->edrr_id, scheduler_cfg->sp_id);
+	}
+}
+
+void ssdk_dts_l1scheduler_dump(a_uint32_t dev_id)
+{
+	a_uint32_t i;
+	ssdk_dt_l1scheduler_cfg *scheduler_cfg;
+	printk("=====================l1scheduler_cfg=====================\n");
+	printk("flow     portid     cpri     cdrr_id     epri     edrr_id\n");
+	for (i = 0; i < SSDK_L1SCHEDULER_CFG_MAX; i++)
+	{
+		scheduler_cfg = &ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->scheduler_cfg.l1cfg[i];
+		if (scheduler_cfg->valid == 1)
+			printk("%4d%11d%9d%12d%9d%12d\n", i, scheduler_cfg->port_id,
+				scheduler_cfg->cpri, scheduler_cfg->cdrr_id,
+				scheduler_cfg->epri, scheduler_cfg->edrr_id);
+	}
+}
+
+static ssize_t ssdk_dts_dump(struct device *dev,
+		struct device_attribute *attr,
+		char *buf)
+{
+	ssize_t count;
+	a_uint32_t dev_id;
+	ssdk_dt_cfg *dt_cfg;
+
+	count = snprintf(buf, (ssize_t)PAGE_SIZE, " ");
+
+	for (dev_id = 0; dev_id < ssdk_dt_global.num_devices; dev_id ++)
+	{
+		dt_cfg = ssdk_dt_global.ssdk_dt_switch_nodes[dev_id];
+		printk("=======================================================\n");
+		printk("ess-switch\n");
+		printk("        reg = <0x%x 0x%x>\n", dt_cfg->switchreg_base_addr, dt_cfg->switchreg_size);
+		printk("        switch_access_mode = <%s>\n", dt_cfg->reg_access_mode);
+		printk("        switch_cpu_bmp = <0x%x>\n", dt_cfg->port_cfg.cpu_bmp);
+		printk("        switch_lan_bmp = <0x%x>\n", dt_cfg->port_cfg.lan_bmp);
+		printk("        switch_wan_bmp = <0x%x>\n", dt_cfg->port_cfg.wan_bmp);
+		printk("        switch_mac_mode = <0x%x>\n", dt_cfg->mac_mode);
+		printk("        switch_mac_mode1 = <0x%x>\n", dt_cfg->mac_mode1);
+		printk("        switch_mac_mode2 = <0x%x>\n", dt_cfg->mac_mode2);
+		printk("        bm_tick_mode = <0x%x>\n", dt_cfg->bm_tick_mode);
+		printk("        tm_tick_mode = <0x%x>\n", dt_cfg->tm_tick_mode);
+
+		printk("ess-psgmii\n");
+		printk("        reg = <0x%x 0x%x>\n", dt_cfg->psgmiireg_base_addr, dt_cfg->psgmiireg_size);
+		printk("        psgmii_access_mode = <%s>\n", dt_cfg->psgmii_reg_access_str);
+
+		printk("ess-uniphy\n");
+		printk("        reg = <0x%x 0x%x>\n", dt_cfg->uniphyreg_base_addr, dt_cfg->uniphyreg_size);
+		printk("        uniphy_access_mode = <%s>\n", dt_cfg->uniphy_access_mode);
+
+		printk("\n");
+		ssdk_dts_port_scheduler_dump(dev_id);
+		printk("\n");
+		ssdk_dts_l0scheduler_dump(dev_id);
+		printk("\n");
+		ssdk_dts_l1scheduler_dump(dev_id);
+	}
+
+	return count;
+}
+
 static const struct device_attribute ssdk_dev_id_attr =
 	__ATTR(dev_id, 0660, ssdk_dev_id_get, ssdk_dev_id_set);
 static const struct device_attribute ssdk_log_level_attr =
@@ -808,6 +914,8 @@ static const struct device_attribute ssdk_packet_counter_attr =
 	__ATTR(packet_counter, 0660, ssdk_packet_counter_get, ssdk_packet_counter_set);
 static const struct device_attribute ssdk_byte_counter_attr =
 	__ATTR(byte_counter, 0660, ssdk_byte_counter_get, ssdk_byte_counter_set);
+static const struct device_attribute ssdk_dts_dump_attr =
+	__ATTR(dts_dump, 0660, ssdk_dts_dump, NULL);
 struct kobject *ssdk_sys = NULL;
 
 int ssdk_sysfs_init (void)
@@ -849,9 +957,17 @@ int ssdk_sysfs_init (void)
 		goto CLEANUP_4;
 	}
 
+	/* create /sys/ssdk/dts_dump file */
+	ret = sysfs_create_file(ssdk_sys, &ssdk_dts_dump_attr.attr);
+	if (ret) {
+		printk("Failed to register SSDK switch show dts SysFS file\n");
+		goto CLEANUP_5;
+	}
 
 	return 0;
 
+CLEANUP_5:
+	sysfs_remove_file(ssdk_sys, &ssdk_dts_dump_attr.attr);
 CLEANUP_4:
 	sysfs_remove_file(ssdk_sys, &ssdk_packet_counter_attr.attr);
 CLEANUP_3:
@@ -866,10 +982,11 @@ CLEANUP_1:
 
 void ssdk_sysfs_exit (void)
 {
+	sysfs_remove_file(ssdk_sys, &ssdk_dts_dump_attr.attr);
+	sysfs_remove_file(ssdk_sys, &ssdk_byte_counter_attr.attr);
+	sysfs_remove_file(ssdk_sys, &ssdk_packet_counter_attr.attr);
 	sysfs_remove_file(ssdk_sys, &ssdk_log_level_attr.attr);
 	sysfs_remove_file(ssdk_sys, &ssdk_dev_id_attr.attr);
-	sysfs_remove_file(ssdk_sys, &ssdk_packet_counter_attr.attr);
-	sysfs_remove_file(ssdk_sys, &ssdk_byte_counter_attr.attr);
 	kobject_put(ssdk_sys);
 }
 
