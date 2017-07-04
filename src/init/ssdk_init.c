@@ -4524,8 +4524,6 @@ static int ssdk_dev_event(struct notifier_block *this, unsigned long event, void
 #else
 	struct net_device *dev = (struct net_device *)ptr;
 #endif
-	a_uint32_t port_id, eth_num = 3, dev_id = 0;
-
 	switch (event) {
 #ifdef IN_RFS
 #if defined(CONFIG_RFS_ACCEL)
@@ -4543,13 +4541,11 @@ static int ssdk_dev_event(struct notifier_block *this, unsigned long event, void
 #endif
 		case NETDEV_CHANGEMTU:
 			if(dev->type == ARPHRD_ETHER) {
-				if(qca_phy_priv_global->version== QCA_VER_HPPE)
-				{
-					port_id = dev->name[eth_num] - '0' +1;
-					fal_port_max_frame_size_set(dev_id, port_id, dev->mtu + 18);
-				}
-				else
+				if(qca_phy_priv_global->version == QCA_VER_DESS ||
+				   qca_phy_priv_global->version == QCA_VER_AR8327 ||
+				   qca_phy_priv_global->version == QCA_VER_AR8337){
 					fal_frame_max_size_set(0, dev->mtu + 18);
+				}
 			}
 			break;
 	}
