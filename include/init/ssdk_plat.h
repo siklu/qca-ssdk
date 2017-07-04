@@ -264,7 +264,6 @@ struct qca_phy_priv {
 	/*qm_err_check end*/
 	a_uint8_t device_id;
 	struct device_node *of_node;
-	struct mii_bus miibus;
 	/*dess_rgmii_mac*/
 	struct mutex rgmii_lock;
 	struct delayed_work rgmii_dwork;
@@ -273,6 +272,7 @@ struct qca_phy_priv {
 	struct mutex mac_sw_sync_lock;
 	struct delayed_work mac_sw_sync_dwork;
 	/*hppe_mac_sw_sync end*/
+	struct mii_bus *miibus;
 
 	u64 *mib_counters;
 	/* dump buf */

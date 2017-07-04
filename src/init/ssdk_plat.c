@@ -49,9 +49,11 @@
 #endif
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,1,0))
 #include <linux/of.h>
+#include <linux/of_mdio.h>
 #include <linux/of_platform.h>
 #elif defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 #include <linux/of.h>
+#include <linux/of_mdio.h>
 #include <drivers/leds/leds-ipq40xx.h>
 #include <linux/of_platform.h>
 #include <linux/reset.h>
@@ -173,6 +175,9 @@ qca_ar8216_mii_read(a_uint32_t dev_id, a_uint32_t reg)
         uint16_t r1, r2, page;
         uint16_t lo, hi;
 
+	if (!bus)
+		bus = qca_phy_priv_global[dev_id]->miibus;
+
         split_addr((uint32_t) reg, &r1, &r2, &page);
         mutex_lock(&switch_mdio_lock);
         mdiobus_write(bus, switch_chip_id, switch_chip_reg, page);
@@ -189,6 +194,9 @@ qca_ar8216_mii_write(a_uint32_t dev_id, a_uint32_t reg, a_uint32_t val)
         struct mii_bus *bus = miibus;
         uint16_t r1, r2, r3;
         uint16_t lo, hi;
+
+	if (!bus)
+		bus = qca_phy_priv_global[dev_id]->miibus;
 
         split_addr((a_uint32_t) reg, &r1, &r2, &r3);
         lo = val & 0xffff;
@@ -223,6 +231,9 @@ qca_ar8327_phy_read(a_uint32_t dev_id, a_uint32_t phy_addr,
 {
 	struct mii_bus *bus = miibus;
 
+	if (!bus)
+		bus = qca_phy_priv_global[dev_id]->miibus;
+
 	if (A_TRUE != phy_addr_validation_check (phy_addr))
 	{
 		return SW_BAD_PARAM;
@@ -237,6 +248,9 @@ qca_ar8327_phy_write(a_uint32_t dev_id, a_uint32_t phy_addr,
                             a_uint32_t reg, a_uint16_t data)
 {
 	struct mii_bus *bus = miibus;
+
+	if (!bus)
+		bus = qca_phy_priv_global[dev_id]->miibus;
 
 	if (A_TRUE != phy_addr_validation_check (phy_addr))
 	{
@@ -253,6 +267,9 @@ qca_ar8327_phy_dbg_write(a_uint32_t dev_id, a_uint32_t phy_addr,
 {
 	struct mii_bus *bus = miibus;
 
+	if (!bus)
+		bus = qca_phy_priv_global[dev_id]->miibus;
+
 	if (A_TRUE != phy_addr_validation_check (phy_addr))
 	{
 		return;
@@ -267,6 +284,9 @@ qca_ar8327_phy_dbg_read(a_uint32_t dev_id, a_uint32_t phy_addr,
 		                a_uint16_t dbg_addr, a_uint16_t *dbg_data)
 {
 	struct mii_bus *bus = miibus;
+
+	if (!bus)
+		bus = qca_phy_priv_global[dev_id]->miibus;
 
 	if (A_TRUE != phy_addr_validation_check (phy_addr))
 	{
@@ -283,6 +303,9 @@ qca_ar8327_mmd_write(a_uint32_t dev_id, a_uint32_t phy_addr,
                           a_uint16_t addr, a_uint16_t data)
 {
 	struct mii_bus *bus = miibus;
+
+	if (!bus)
+		bus = qca_phy_priv_global[dev_id]->miibus;
 
 	if (A_TRUE != phy_addr_validation_check (phy_addr))
 	{
@@ -507,8 +530,20 @@ static int miibus_get(a_uint32_t dev_id)
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 	#ifndef BOARD_AR71XX
 	struct device_node *mdio_node = NULL;
+	struct device_node *switch_node = NULL;
 	struct platform_device *mdio_plat = NULL;
 	struct ipq40xx_mdio_data *mdio_data = NULL;
+	struct qca_phy_priv *priv;
+
+	priv = qca_phy_priv_global[dev_id];
+	switch_node = qca_phy_priv_global[dev_id]->of_node;
+	if (priv && switch_node) {
+		mdio_node = of_parse_phandle(switch_node, "mdio-bus", 0);
+		if (mdio_node) {
+			priv->miibus = of_mdio_find_bus(mdio_node);
+			return 0;
+		}
+	}
 
 	if(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->switch_reg_access_mode == HSL_REG_LOCAL_BUS)
 		mdio_node = of_find_compatible_node(NULL, NULL, "qcom,ipq40xx-mdio");
