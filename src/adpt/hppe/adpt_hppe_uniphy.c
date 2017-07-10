@@ -506,14 +506,17 @@ adpt_hppe_uniphy_mode_set(a_uint32_t dev_id, a_uint32_t index, a_uint32_t mode)
 			break;
 
 		case PORT_WRAPPER_SGMII0_RGMII4:
+		case PORT_WRAPPER_SGMII_CHANNEL0:
 			rv = __adpt_hppe_uniphy_sgmii_mode_set(dev_id, index, 0);
 			break;
 
 		case PORT_WRAPPER_SGMII1_RGMII4:
+		case PORT_WRAPPER_SGMII_CHANNEL1:
 			rv = __adpt_hppe_uniphy_sgmii_mode_set(dev_id, index, 1);
 			break;
 
 		case PORT_WRAPPER_SGMII4_RGMII4:
+		case PORT_WRAPPER_SGMII_CHANNEL4:
 			rv = __adpt_hppe_uniphy_sgmii_mode_set(dev_id, index, 4);
 			break;
 

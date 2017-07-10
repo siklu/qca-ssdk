@@ -534,6 +534,8 @@ typedef sw_error_t
   typedef sw_error_t
     (*hsl_port_interface_mode_get) (a_uint32_t dev_id, fal_port_t port_id,
 			      fal_port_interface_mode_t * mode);
+    typedef sw_error_t
+    (*hsl_port_interface_mode_apply) (a_uint32_t dev_id);
 
   typedef sw_error_t
     (*hsl_port_interface_mode_status_get) (a_uint32_t dev_id, fal_port_t port_id,
@@ -2135,6 +2137,7 @@ typedef sw_error_t
     hsl_port_magic_frame_mac_get port_magic_frame_mac_get;
     hsl_port_interface_mode_set port_interface_mode_set;
     hsl_port_interface_mode_get port_interface_mode_get;
+    hsl_port_interface_mode_apply port_interface_mode_apply;
     hsl_port_interface_mode_status_get port_interface_mode_status_get;
     hsl_port_counter_set port_counter_set;
     hsl_port_counter_get port_counter_get;

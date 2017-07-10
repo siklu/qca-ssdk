@@ -93,6 +93,7 @@ extern "C" {
     SW_API_DEF(SW_API_PT_WOL_STATUS_SET, fal_port_wol_status_set), \
     SW_API_DEF(SW_API_PT_WOL_STATUS_GET, fal_port_wol_status_get), \
     SW_API_DEF(SW_API_PT_INTERFACE_MODE_SET, fal_port_interface_mode_set), \
+    SW_API_DEF(SW_API_PT_INTERFACE_MODE_APPLY, fal_port_interface_mode_apply), \
     SW_API_DEF(SW_API_PT_INTERFACE_MODE_GET, fal_port_interface_mode_get), \
     SW_API_DEF(SW_API_PT_INTERFACE_MODE_STATUS_GET, fal_port_interface_mode_status_get), \
     SW_API_DEF(SW_API_DEBUG_PHYCOUNTER_SET, fal_debug_phycounter_set), \
@@ -178,6 +179,7 @@ extern "C" {
     SW_API_DESC(SW_API_PT_WOL_STATUS_GET) \
     SW_API_DESC(SW_API_PT_INTERFACE_MODE_SET) \
     SW_API_DESC(SW_API_PT_INTERFACE_MODE_GET) \
+    SW_API_DESC(SW_API_PT_INTERFACE_MODE_APPLY) \
     SW_API_DESC(SW_API_PT_INTERFACE_MODE_STATUS_GET) \
     SW_API_DESC(SW_API_DEBUG_PHYCOUNTER_SET) \
     SW_API_DESC(SW_API_DEBUG_PHYCOUNTER_GET) \
