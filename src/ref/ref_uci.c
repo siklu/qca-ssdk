@@ -11000,9 +11000,9 @@ parse_qm(const char *command_name, struct switch_val *val)
 		rv = parse_qm_acprebuffer(val);
 	} else if (!strcmp(command_name, "Acqgroup")) {
 		rv = parse_qm_acqgroup(val);
-	} else if (!strcmp(command_name, "Acsthresh")) {
+	} else if (!strcmp(command_name, "Acstaticthresh")) {
 		rv = parse_qm_acsthresh(val);
-	} else if (!strcmp(command_name, "Acdthresh")) {
+	} else if (!strcmp(command_name, "Acdynamicthresh")) {
 		rv = parse_qm_acdthresh(val);
 	} else if (!strcmp(command_name, "Acgroupbuff")) {
 		rv = parse_qm_acgbuff(val);
