@@ -1067,6 +1067,14 @@ typedef sw_error_t
 				       a_uint32_t * tbl_id,
 				       a_bool_t * enable);
 
+  typedef sw_error_t
+    (*hsl_port_static_thresh_get)(a_uint32_t dev_id, fal_port_t port,
+                                       fal_bm_static_cfg_t *cfg);
+
+  typedef sw_error_t
+    (*hsl_port_static_thresh_set)(a_uint32_t dev_id, fal_port_t port,
+                                       fal_bm_static_cfg_t *cfg);
+
   /* Rate */
 #define RATE_FUNC_PROTOTYPE_DEF
   typedef sw_error_t
@@ -2281,6 +2289,8 @@ typedef sw_error_t
 
     hsl_qos_queue_remark_table_set qos_queue_remark_table_set;
     hsl_qos_queue_remark_table_get qos_queue_remark_table_get;
+    hsl_port_static_thresh_get port_static_thresh_get;
+    hsl_port_static_thresh_set port_static_thresh_set;
 
     /* Rate */
     hsl_storm_ctrl_frame_set storm_ctrl_frame_set;
