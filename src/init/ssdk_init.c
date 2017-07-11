@@ -20,6 +20,7 @@
 #include "hsl.h"
 #include "hsl_dev.h"
 #include "ssdk_init.h"
+#include "ssdk_interrupt.h"
 #include <linux/kconfig.h>
 #include <linux/version.h>
 #include <linux/kernel.h>
@@ -122,6 +123,7 @@ struct notifier_block ssdk_dev_notifier;
 
 extern ssdk_chip_type SSDK_CURRENT_CHIP_TYPE;
 extern a_uint32_t hsl_dev_wan_port_get(a_uint32_t dev_id);
+
 //#define PSGMII_DEBUG
 
 #define QCA_QM_WORK_DELAY	100
@@ -643,6 +645,7 @@ int qca_ar8327_hw_init(struct qca_phy_priv *priv)
 
 	qca_switch_init(0);
 	qca_port_isolate(0);
+	qca_mac_enable_intr(priv);
 	qca_ar8327_phy_enable(priv);
 
 	return 0;
@@ -1150,7 +1153,7 @@ qca_phy_mib_work_stop(struct qca_phy_priv *priv)
 }
 
 #define SSDK_QM_CHANGE_WQ
-extern int qca_intr_init(struct qca_phy_priv * priv);
+
 static void
 qm_err_check_work_task_polling(struct work_struct *work)
 {

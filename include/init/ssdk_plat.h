@@ -14,6 +14,15 @@
 
 #ifndef __SSDK_PLAT_H
 #define __SSDK_PLAT_H
+#include <linux/kconfig.h>
+#include <linux/version.h>
+#include <linux/kernel.h>
+#include <linux/phy.h>
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+#include <linux/switch.h>
+#else
+#include <net/switch.h>
+#endif
 
 #ifndef BIT
 #define BIT(_n)			(1UL << (_n))
