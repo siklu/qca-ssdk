@@ -3574,41 +3574,6 @@ qca_hppe_tdm_hw_init(void)
 	return 0;
 }
 
-#ifndef HAWKEYE_CHIP
-static int
-qca_hppe_xgmac_hw_init(void)
-{
-	a_uint32_t val = 0, i = 0;
-	a_uint32_t xgmac_addr_delta = 0x4000;
-
-	val = 0x15;
-	qca_switch_reg_write(0, 0x00000010, (a_uint8_t *)&val, 4);
-
-	for (i = 0; i < 2; i ++)
-	{
-		val = 0x80010001;
-		qca_switch_reg_write(0, 0x00003000 + (xgmac_addr_delta*i), (a_uint8_t *)&val, 4);
-		val = 0x271c00c7;
-		qca_switch_reg_write(0, 0x00003004 + (xgmac_addr_delta*i), (a_uint8_t *)&val, 4);
-		val = 0x00000001;
-		qca_switch_reg_write(0, 0x00003008 + (xgmac_addr_delta*i), (a_uint8_t *)&val, 4);
-		val = 0x00000001;
-		qca_switch_reg_write(0, 0x00003090 + (xgmac_addr_delta*i), (a_uint8_t *)&val, 4);
-		val = 0xffff0002;
-		qca_switch_reg_write(0, 0x00003070 + (xgmac_addr_delta*i), (a_uint8_t *)&val, 4);
-		val = 0x40000;
-		qca_switch_reg_write(0, 0x00003050 + (xgmac_addr_delta*i), (a_uint8_t *)&val, 4);
-	}
-
-	val = 0x0;
-	qca_switch_reg_write(0, 0x00001800, (a_uint8_t *)&val, 4);
-	val = 0x0;
-	qca_switch_reg_write(0, 0x00001a00, (a_uint8_t *)&val, 4);
-
-	return 0;
-}
-
-#endif
 static int
 qca_hppe_bm_hw_init(void)
 {
@@ -4244,7 +4209,6 @@ qca_hppe_hw_init(ssdk_init_cfg *cfg)
 	qca_hppe_shaper_hw_init();
 	qca_hppe_flow_hw_init();
 
-#ifdef HAWKEYE_CHIP
 	qca_hppe_gcc_clock_init();
 
 	qca_hppe_gcc_uniphy_init();
@@ -4253,21 +4217,6 @@ qca_hppe_hw_init(ssdk_init_cfg *cfg)
 
 	qca_hppe_interface_mode_init(cfg->mac_mode, cfg->mac_mode1,
 				cfg->mac_mode2);
-#else
-	qca_hppe_xgmac_hw_init();
-	SSDK_INFO("hppe xgmac init success\n");
-
-	for(i = 0; i < 4; i++) {
-		hppe_port_type[i] = PORT_GMAC_TYPE;
-	}
-	for(i = 4; i < 6; i++) {
-		hppe_port_type[i] = PORT_XGMAC_TYPE;
-	}
-
-	ssdk_dt_global.mac_mode = PORT_WRAPPER_QSGMII;
-	ssdk_dt_global.mac_mode1 = PORT_WRAPPER_USXGMII;
-	ssdk_dt_global.mac_mode2 = PORT_WRAPPER_USXGMII;
-#endif
 	return 0;
 }
 #endif
