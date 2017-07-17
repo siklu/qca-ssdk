@@ -118,7 +118,7 @@ static int qca_phy_enable_intr(struct qca_phy_priv *priv)
 	return 0;
 }
 
-static int qca_mac_enable_intr(struct qca_phy_priv *priv)
+int qca_mac_enable_intr(struct qca_phy_priv *priv)
 {
 	a_uint32_t data = 0;
 
