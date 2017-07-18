@@ -184,6 +184,13 @@ enum {
 #define QCA_PHY_MIB_WORK_DELAY	120000
 #define QCA_MIB_ITEM_NUMBER	41
 
+#define SSDK_PORT1	1
+#define SSDK_PORT2	2
+#define SSDK_PORT3	3
+#define SSDK_PORT4	4
+#define SSDK_PORT5	5
+#define SSDK_PORT6 	6
+
 #define SSDK_GLOBAL_INT0_ACL_INI_INT        (1<<29)
 #define SSDK_GLOBAL_INT0_LOOKUP_INI_INT     (1<<28)
 #define SSDK_GLOBAL_INT0_QM_INI_INT         (1<<27)

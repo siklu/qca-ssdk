@@ -243,6 +243,7 @@ typedef struct
 		hsl_reg_mode switch_reg_access_mode;
 		hsl_reg_mode psgmii_reg_access_mode;
 		struct clk *ess_clk;
+		struct clk *cmnblk_clk;
 		a_uint32_t      mac_mode;
 		a_uint32_t      mac_mode1;
 		a_uint32_t      mac_mode2;
@@ -396,18 +397,12 @@ qca_hppe_port_mac_type_get(a_uint32_t dev_id, a_uint32_t port_id);
 a_uint32_t
 qca_hppe_port_mac_type_set(a_uint32_t dev_id, a_uint32_t port_id, a_uint32_t port_type);
 
-void
-qca_hppe_gcc_uniphy_port_clock_set(a_uint32_t dev_id, a_uint32_t uniphy_index,
-			a_uint32_t port_id, a_bool_t enable);
 uint32_t
 qca_hppe_gcc_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr,
 			a_uint8_t * reg_data, a_uint32_t len);
 uint32_t
 qca_hppe_gcc_uniphy_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr,
 			a_uint8_t * reg_data, a_uint32_t len);
-
-void
-qca_hppe_gcc_mac_port_clock_set(a_uint32_t dev_id, a_uint32_t port_id, a_bool_t enable);
 
 void
 qca_mac_sw_sync_port_status_init(a_uint32_t dev_id);

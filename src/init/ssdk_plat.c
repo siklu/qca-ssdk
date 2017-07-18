@@ -61,6 +61,7 @@
 #include <drivers/net/ethernet/atheros/ag71xx/ag71xx.h>
 #endif
 #include "ssdk_plat.h"
+#include "ssdk_clk.h"
 #include "ref_vlan.h"
 #include "ref_fdb.h"
 #include "ref_mib.h"
@@ -852,9 +853,6 @@ ssdk_plat_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 	if(miibus_get(dev_id))
 		return -ENODEV;
 
-
-	#if defined(DESS) || defined(HPPE)
-
 	if(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->uniphy_reg_access_mode == HSL_REG_LOCAL_BUS) {
 		hppe_uniphy_addr = ioremap_nocache(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->uniphyreg_base_addr,
 					ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->uniphyreg_size);
@@ -875,11 +873,16 @@ ssdk_plat_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 			return -1;
 		}
 
-		if (!ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->ess_clk || IS_ERR(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->ess_clk))
+		if (!IS_ERR(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->ess_clk)) {
+			/* Enable ess clock here */
+			printk("enable ess clk\n");
+			clk_prepare_enable(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->ess_clk);
+		} else if (!IS_ERR(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->cmnblk_clk)) {
+#if defined(HPPE)
+			ssdk_ppe_clock_init();
+#endif
 			return 0;
-		/* Enable ess clock here */
-		printk("enable ess clk\n");
-		clk_prepare_enable(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->ess_clk);
+		}
 
 		cfg->reg_mode = HSL_HEADER;
 	}
@@ -903,7 +906,6 @@ ssdk_plat_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 		cfg->reg_func.psgmii_reg_set = qca_psgmii_reg_write;
 		cfg->reg_func.psgmii_reg_get = qca_psgmii_reg_read;
 	}
-	#endif
 
 	if(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->switch_reg_access_mode == HSL_REG_MDIO) {
 		cfg->reg_mode = HSL_MDIO;

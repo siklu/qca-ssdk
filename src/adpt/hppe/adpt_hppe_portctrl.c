@@ -35,7 +35,7 @@
 #include "hsl_phy.h"
 #include "hppe_init.h"
 #include "ssdk_init.h"
-#include "ssdk_plat.h"
+#include "ssdk_clk.h"
 
 #define PORT0 0
 #define PORT1 1
@@ -3292,174 +3292,100 @@ adpt_hppe_uniphy_autoneg_status_check(a_uint32_t dev_id, a_uint32_t port_id)
 	}
 	return;
 }
+
 static void
-adpt_hppe_port_speed_clock_apply(a_uint32_t port_id, a_uint32_t speed_clock1, a_uint32_t speed_clock2)
+adpt_hppe_sgmii_speed_clock_set(
+	a_uint32_t dev_id,
+	a_uint32_t port_id,
+	fal_port_speed_t phy_speed)
 {
-	a_uint32_t i, reg_value;
-
-	for (i =0; i < 2; i++)
-	{
-		/* gcc port first clock Divider */
-		reg_value = 0;
-		qca_hppe_gcc_speed_clock1_reg_read(0, ((0x4 + i * 8) + 0x10 * (port_id - 1)),
-				(a_uint8_t *)&reg_value, 4);
-		reg_value &= ~0x71f;
-		reg_value |= speed_clock1;
-		qca_hppe_gcc_speed_clock1_reg_write(0, ((0x4 + i * 8) + 0x10 * (port_id - 1)),
-				(a_uint8_t *)&reg_value, 4);
-
-		/* gcc port second clock Divider */
-		reg_value = 0;
-		qca_hppe_gcc_speed_clock2_reg_read(0, ((0x0 + i * 4) + 0x10 * (port_id - 1)),
-				(a_uint8_t *)&reg_value, 4);
-		reg_value = ~0xf;
-		reg_value |= speed_clock2;
-		qca_hppe_gcc_speed_clock2_reg_write(0, ((0x0 + i * 4) + 0x10 * (port_id - 1)),
-				(a_uint8_t *)&reg_value, 4);
-		/* update above clock configure */
-		reg_value = 0;
-		qca_hppe_gcc_speed_clock1_reg_read(0, ((0x0 + i * 8) + 0x10 * (port_id - 1)),
-				(a_uint8_t *)&reg_value, 4);
-		reg_value &= ~0x1;
-		reg_value |= 0x1;
-		qca_hppe_gcc_speed_clock1_reg_write(0, ((0x0 + i * 8) + 0x10 * (port_id - 1)),
-				(a_uint8_t *)&reg_value, 4);
-	}
-
-}
-static void
-adpt_hppe_sgmii_speed_clock_set(a_uint32_t port_id, fal_port_speed_t phy_speed)
-{
-	a_uint32_t speed_clock1 = 0, speed_clock2 = 0;
-
 	switch (phy_speed) {
 		case FAL_SPEED_10:
-			if (port_id == HPPE_MUX_PORT1)
-				speed_clock1 = SGMII_10M_SOURCE2_CLOCK1;
-			else
-				speed_clock1 = SGMII_10M_SOURCE1_CLOCK1;
-			speed_clock2 = SGMII_10M_CLOCK2;
+			ssdk_port_speed_clock_set(dev_id,
+					port_id, SGMII_SPEED_10M_CLK);
 			break;
 		case FAL_SPEED_100:
-			if (port_id == HPPE_MUX_PORT1)
-				speed_clock1 = SGMII_100M_SOURCE2_CLOCK1;
-			else
-				speed_clock1 = SGMII_100M_SOURCE1_CLOCK1;
-			speed_clock2 = SGMII_100M_CLOCK2;
+			ssdk_port_speed_clock_set(dev_id,
+					port_id, SGMII_SPEED_100M_CLK);
 			break;
 		case FAL_SPEED_1000:
-			if (port_id == HPPE_MUX_PORT1)
-				speed_clock1 = SGMII_1000M_SOURCE2_CLOCK1;
-			else
-				speed_clock1 = SGMII_1000M_SOURCE1_CLOCK1;
-			speed_clock2 = SGMII_1000M_CLOCK2;
+			ssdk_port_speed_clock_set(dev_id,
+					port_id, SGMII_SPEED_1000M_CLK);
+			break;
+		default:
+			break;
+               }
+}
+static void
+adpt_hppe_pqsgmii_speed_clock_set(
+	a_uint32_t dev_id,
+	a_uint32_t port_id,
+	fal_port_speed_t phy_speed)
+{
+	switch (phy_speed) {
+		case FAL_SPEED_10:
+			ssdk_port_speed_clock_set(dev_id,
+					port_id, PQSGMII_SPEED_10M_CLK);
+			break;
+		case FAL_SPEED_100:
+			ssdk_port_speed_clock_set(dev_id,
+					port_id, PQSGMII_SPEED_100M_CLK);
+			break;
+		case FAL_SPEED_1000:
+			ssdk_port_speed_clock_set(dev_id,
+					port_id, PQSGMII_SPEED_1000M_CLK);
 			break;
 		default:
 			break;
 	}
-
-	adpt_hppe_port_speed_clock_apply(port_id, speed_clock1, speed_clock2);
-
 }
 
-
 static void
-adpt_hppe_pqsgmii_speed_clock_set(a_uint32_t port_id, fal_port_speed_t phy_speed)
+adpt_hppe_usxgmii_speed_clock_set(
+	a_uint32_t dev_id,
+	a_uint32_t port_id,
+	fal_port_speed_t phy_speed)
 {
-	a_uint32_t speed_clock1 = 0, speed_clock2 = 0;
-
-	if (phy_speed == FAL_SPEED_10)
-	{
-		speed_clock1 = 0x109;
-		speed_clock2 = 0x9;
-	}
-	else if (phy_speed == FAL_SPEED_100)
-	{
-		speed_clock1 = 0x109;
-		speed_clock2 = 0x0;
-	}
-	else if (phy_speed == FAL_SPEED_1000)
-	{
-		speed_clock1 = 0x101;
-		speed_clock2 = 0x0;
-	}
-
-	adpt_hppe_port_speed_clock_apply(port_id, speed_clock1, speed_clock2);
-
-}
-static void
-adpt_hppe_usxgmii_speed_clock_set(a_uint32_t port_id, fal_port_speed_t phy_speed)
-{
-	a_uint32_t speed_clock1 = 0, speed_clock2 = 0;
-
-	if (phy_speed == FAL_SPEED_100)
-	{
-		if (port_id == HPPE_MUX_PORT1)
-			speed_clock1 = 0x309;
-		else
-			speed_clock1 = 0x109;
-		speed_clock2 = 0x4;
-	}
-	else if (phy_speed == FAL_SPEED_1000)
-	{
-		if (port_id == HPPE_MUX_PORT1)
-			speed_clock1 = 0x304;
-		else
-			speed_clock1 = 0x104;
-		speed_clock2 = 0x0;
-	}
-	else if (phy_speed == FAL_SPEED_10000)
-	{
-		if (port_id == HPPE_MUX_PORT1)
-			speed_clock1 = 0x301;
-		else
-			speed_clock1 = 0x101;
-		speed_clock2 = 0x0;
-	}
-	else if (phy_speed == FAL_SPEED_2500)
-	{
-		if (port_id == HPPE_MUX_PORT1)
-			speed_clock1 = 0x307;
-		else
-			speed_clock1 = 0x107;
-		speed_clock2 = 0x0;
-	}
-	else if (phy_speed == FAL_SPEED_5000)
-	{
-		if (port_id == HPPE_MUX_PORT1)
-			speed_clock1 = 0x303;
-		else
-			speed_clock1 = 0x103;
-		speed_clock2 = 0x0;
-	}
-#if 0
-	else if (phy_speed == FAL_SPEED_10)
-	{
-		speed_clock1 = 0x118;
-		speed_clock2 = 0x9;
-	}
-#endif
-
-	adpt_hppe_port_speed_clock_apply(port_id, speed_clock1, speed_clock2);
+	switch (phy_speed) {
+		case FAL_SPEED_10:
+			ssdk_port_speed_clock_set(dev_id,
+					port_id, USXGMII_SPEED_10M_CLK);
+			break;
+		case FAL_SPEED_100:
+			ssdk_port_speed_clock_set(dev_id,
+					port_id, USXGMII_SPEED_100M_CLK);
+			break;
+		case FAL_SPEED_1000:
+			ssdk_port_speed_clock_set(dev_id,
+					port_id, USXGMII_SPEED_1000M_CLK);
+			break;
+		case FAL_SPEED_2500:
+			ssdk_port_speed_clock_set(dev_id,
+					port_id, USXGMII_SPEED_2500M_CLK);
+			break;
+		case FAL_SPEED_5000:
+			ssdk_port_speed_clock_set(dev_id,
+					port_id, USXGMII_SPEED_5000M_CLK);
+			break;
+		case FAL_SPEED_10000:
+			ssdk_port_speed_clock_set(dev_id,
+					port_id, USXGMII_SPEED_10000M_CLK);
+			break;
+		default:
+			break;
+               }
 
 }
 
 static void
-adpt_hppe_sgmiiplus_speed_clock_set(a_uint32_t port_id, fal_port_speed_t phy_speed)
+adpt_hppe_sgmiiplus_speed_clock_set(
+	a_uint32_t dev_id,
+	a_uint32_t port_id,
+	fal_port_speed_t phy_speed)
 {
-	a_uint32_t speed_clock1 = 0, speed_clock2 = 0;
-
-	if (phy_speed == FAL_SPEED_2500)
-	{
-		if (port_id == HPPE_MUX_PORT1)
-			speed_clock1 = 0x301;
-		else
-			speed_clock1 = 0x101;
-		speed_clock2 = 0x0;
-	}
-	adpt_hppe_port_speed_clock_apply(port_id, speed_clock1, speed_clock2);
-
+               ssdk_port_speed_clock_set(dev_id, port_id, SGMII_PLUS_SPEED_2500M_CLK);
 }
+
 
 void
 adpt_hppe_gcc_port_speed_clock_set(a_uint32_t dev_id, a_uint32_t port_id,
@@ -3469,7 +3395,7 @@ adpt_hppe_gcc_port_speed_clock_set(a_uint32_t dev_id, a_uint32_t port_id,
 
 	if (port_id < HPPE_MUX_PORT1)
 	{
-		adpt_hppe_pqsgmii_speed_clock_set(port_id, phy_speed);
+		adpt_hppe_pqsgmii_speed_clock_set(dev_id, port_id, phy_speed);
 	}
 	else
 	{
@@ -3481,7 +3407,7 @@ adpt_hppe_gcc_port_speed_clock_set(a_uint32_t dev_id, a_uint32_t port_id,
 			if (((mode == PORT_WRAPPER_PSGMII) && (mode1 == PORT_WRAPPER_MAX)) ||
 				((mode == PORT_WRAPPER_SGMII4_RGMII4) && (mode1 == PORT_WRAPPER_MAX)))
 			{
-				adpt_hppe_pqsgmii_speed_clock_set(port_id, phy_speed);
+				adpt_hppe_pqsgmii_speed_clock_set(dev_id, port_id, phy_speed);
 				return;
 			}
 		}
@@ -3492,11 +3418,11 @@ adpt_hppe_gcc_port_speed_clock_set(a_uint32_t dev_id, a_uint32_t port_id,
 
 		mode = ssdk_dt_global_get_mac_mode(dev_id, uniphy_index);
 		if (mode == PORT_WRAPPER_SGMII0_RGMII4)
-			adpt_hppe_sgmii_speed_clock_set(port_id, phy_speed);
+			adpt_hppe_sgmii_speed_clock_set(dev_id, port_id, phy_speed);
 		else if (mode == PORT_WRAPPER_SGMII_PLUS)
-			adpt_hppe_sgmiiplus_speed_clock_set(port_id, phy_speed);
+			adpt_hppe_sgmiiplus_speed_clock_set(dev_id, port_id, phy_speed);
 		else if ((mode == PORT_WRAPPER_USXGMII) || (mode == PORT_WRAPPER_10GBASE_R))
-			adpt_hppe_usxgmii_speed_clock_set(port_id, phy_speed);
+			adpt_hppe_usxgmii_speed_clock_set(dev_id,port_id, phy_speed);
 	}
 	return;
 }
@@ -3510,7 +3436,7 @@ adpt_hppe_gcc_uniphy_clock_status_set(a_uint32_t dev_id, a_uint32_t port_id,
 	if (port_id < HPPE_MUX_PORT1)
 	{
 		uniphy_index = HPPE_UNIPHY_INSTANCE0;
-		qca_hppe_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
+		qca_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
 				port_id, enable);
 	}
 	else
@@ -3523,7 +3449,7 @@ adpt_hppe_gcc_uniphy_clock_status_set(a_uint32_t dev_id, a_uint32_t port_id,
 			if (((mode == PORT_WRAPPER_PSGMII) && (mode1 == PORT_WRAPPER_MAX)) ||
 				((mode == PORT_WRAPPER_SGMII4_RGMII4) && (mode1 == PORT_WRAPPER_MAX)))
 			{
-				qca_hppe_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
+				qca_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
 				port_id, enable);
 				return;
 			}
@@ -3533,7 +3459,7 @@ adpt_hppe_gcc_uniphy_clock_status_set(a_uint32_t dev_id, a_uint32_t port_id,
 		else
 			uniphy_index = HPPE_UNIPHY_INSTANCE2;
 
-		qca_hppe_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
+		qca_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
 				1, enable);
 	}
 	return;
@@ -3544,7 +3470,7 @@ adpt_hppe_gcc_mac_clock_status_set(a_uint32_t dev_id, a_uint32_t port_id,
 				a_bool_t enable)
 {
 
-	qca_hppe_gcc_mac_port_clock_set(dev_id, port_id, enable);
+	qca_gcc_mac_port_clock_set(dev_id, port_id, enable);
 
 	return;
 }
