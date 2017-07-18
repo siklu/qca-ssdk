@@ -744,4 +744,138 @@ union tdm_cfg_u {
 	struct tdm_cfg bf;
 };
 
+/*[table] DROP_STAT*/
+#define DROP_STAT
+#define DROP_STAT_ADDRESS 0x3000
+#define DROP_STAT_NUM     30
+#define DROP_STAT_INC     0x10
+#define DROP_STAT_TYPE    REG_TYPE_RW
+#define DROP_STAT_DEFAULT 0x0
+	/*[field] PKTS*/
+	#define DROP_STAT_PKTS
+	#define DROP_STAT_PKTS_OFFSET  0
+	#define DROP_STAT_PKTS_LEN     32
+	#define DROP_STAT_PKTS_DEFAULT 0x0
+	/*[field] BYTES*/
+	#define DROP_STAT_BYTES
+	#define DROP_STAT_BYTES_OFFSET  32
+	#define DROP_STAT_BYTES_LEN     40
+	#define DROP_STAT_BYTES_DEFAULT 0x0
+
+struct drop_stat {
+	a_uint32_t  pkts:32;
+	a_uint32_t  bytes_0:32;
+	a_uint32_t  bytes_1:8;
+	a_uint32_t  _reserved0:24;
+};
+
+union drop_stat_u {
+	a_uint32_t val[3];
+	struct drop_stat bf;
+};
+
+/*[register] PORT_TX_COUNTER_TBL_REG*/
+#define PORT_TX_COUNTER_TBL_REG
+#define PORT_TX_COUNTER_TBL_REG_ADDRESS 0x900
+#define PORT_TX_COUNTER_TBL_REG_NUM     8
+#define PORT_TX_COUNTER_TBL_REG_INC     0x10
+#define PORT_TX_COUNTER_TBL_REG_TYPE    REG_TYPE_RW
+#define PORT_TX_COUNTER_TBL_REG_DEFAULT 0x0
+	/*[field] TX_PACKETS*/
+	#define PORT_TX_COUNTER_TBL_REG_TX_PACKETS
+	#define PORT_TX_COUNTER_TBL_REG_TX_PACKETS_OFFSET  0
+	#define PORT_TX_COUNTER_TBL_REG_TX_PACKETS_LEN     32
+	#define PORT_TX_COUNTER_TBL_REG_TX_PACKETS_DEFAULT 0x0
+	/*[field] TX_BYTES*/
+	#define PORT_TX_COUNTER_TBL_REG_TX_BYTES
+	#define PORT_TX_COUNTER_TBL_REG_TX_BYTES_OFFSET  32
+	#define PORT_TX_COUNTER_TBL_REG_TX_BYTES_LEN     40
+	#define PORT_TX_COUNTER_TBL_REG_TX_BYTES_DEFAULT 0x0
+
+struct port_tx_counter_tbl_reg {
+	a_uint32_t  tx_packets:32;
+	a_uint32_t  tx_bytes_0:32;
+	a_uint32_t  tx_bytes_1:8;
+	a_uint32_t  _reserved0:24;
+};
+
+union port_tx_counter_tbl_reg_u {
+	a_uint32_t val[3];
+	struct port_tx_counter_tbl_reg bf;
+};
+
+/*[register] VP_TX_COUNTER_TBL_REG*/
+#define VP_TX_COUNTER_TBL_REG
+#define VP_TX_COUNTER_TBL_REG_ADDRESS 0x1000
+#define VP_TX_COUNTER_TBL_REG_NUM     256
+#define VP_TX_COUNTER_TBL_REG_INC     0x10
+#define VP_TX_COUNTER_TBL_REG_TYPE    REG_TYPE_RW
+#define VP_TX_COUNTER_TBL_REG_DEFAULT 0x0
+	/*[field] TX_PACKETS*/
+	#define VP_TX_COUNTER_TBL_REG_TX_PACKETS
+	#define VP_TX_COUNTER_TBL_REG_TX_PACKETS_OFFSET  0
+	#define VP_TX_COUNTER_TBL_REG_TX_PACKETS_LEN     32
+	#define VP_TX_COUNTER_TBL_REG_TX_PACKETS_DEFAULT 0x0
+	/*[field] TX_BYTES*/
+	#define VP_TX_COUNTER_TBL_REG_TX_BYTES
+	#define VP_TX_COUNTER_TBL_REG_TX_BYTES_OFFSET  32
+	#define VP_TX_COUNTER_TBL_REG_TX_BYTES_LEN     40
+	#define VP_TX_COUNTER_TBL_REG_TX_BYTES_DEFAULT 0x0
+
+struct vp_tx_counter_tbl_reg {
+	a_uint32_t  tx_packets:32;
+	a_uint32_t  tx_bytes_0:32;
+	a_uint32_t  tx_bytes_1:8;
+	a_uint32_t  _reserved0:24;
+};
+
+union vp_tx_counter_tbl_reg_u {
+	a_uint32_t val[3];
+	struct vp_tx_counter_tbl_reg bf;
+};
+
+/*[register] EPE_DBG_IN_CNT_REG*/
+#define EPE_DBG_IN_CNT_REG
+#define EPE_DBG_IN_CNT_REG_ADDRESS 0x6054
+#define EPE_DBG_IN_CNT_REG_NUM     1
+#define EPE_DBG_IN_CNT_REG_INC     0x4
+#define EPE_DBG_IN_CNT_REG_TYPE    REG_TYPE_RW
+#define EPE_DBG_IN_CNT_REG_DEFAULT 0x0
+	/*[field] COUNTER*/
+	#define EPE_DBG_IN_CNT_REG_COUNTER
+	#define EPE_DBG_IN_CNT_REG_COUNTER_OFFSET  0
+	#define EPE_DBG_IN_CNT_REG_COUNTER_LEN     32
+	#define EPE_DBG_IN_CNT_REG_COUNTER_DEFAULT 0x0
+
+struct epe_dbg_in_cnt_reg {
+	a_uint32_t  counter:32;
+};
+
+union epe_dbg_in_cnt_reg_u {
+	a_uint32_t val;
+	struct epe_dbg_in_cnt_reg bf;
+};
+
+/*[register] EPE_DBG_OUT_CNT_REG*/
+#define EPE_DBG_OUT_CNT_REG
+#define EPE_DBG_OUT_CNT_REG_ADDRESS 0x6070
+#define EPE_DBG_OUT_CNT_REG_NUM     1
+#define EPE_DBG_OUT_CNT_REG_INC     0x4
+#define EPE_DBG_OUT_CNT_REG_TYPE    REG_TYPE_RW
+#define EPE_DBG_OUT_CNT_REG_DEFAULT 0x0
+	/*[field] COUNTER*/
+	#define EPE_DBG_OUT_CNT_REG_COUNTER
+	#define EPE_DBG_OUT_CNT_REG_COUNTER_OFFSET  0
+	#define EPE_DBG_OUT_CNT_REG_COUNTER_LEN     32
+	#define EPE_DBG_OUT_CNT_REG_COUNTER_DEFAULT 0x0
+
+struct epe_dbg_out_cnt_reg {
+	a_uint32_t  counter:32;
+};
+
+union epe_dbg_out_cnt_reg_u {
+	a_uint32_t val;
+	struct epe_dbg_out_cnt_reg bf;
+};
+
 #endif

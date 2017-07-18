@@ -20,32 +20,33 @@
 #include <linux/platform_device.h>
 #include <linux/types.h>
 #include <generated/autoconf.h>
-#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-#include <linux/switch.h>
-#else
-#include <net/switch.h>
-#include <linux/ar8216_platform.h>
-#endif
 #include <linux/delay.h>
 #include <linux/phy.h>
 #include <linux/netdevice.h>
 #include <linux/string.h>
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-#include <linux/switch.h>
 #include <linux/of.h>
 #else
-#include <net/switch.h>
 #include <linux/ar8216_platform.h>
 #endif
 #include "sw.h"
 #include "ssdk_init.h"
 #include "ssdk_plat.h"
 
+#if defined(IN_SWCONFIG)
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+ #include <linux/switch.h>
+#else
+#include <net/switch.h>
+#endif
+#endif
 
 
 #ifdef BOARD_AR71XX
 
+#if defined(IN_SWCONFIG)
 struct switch_dev *old_sw_dev = NULL;
+#endif
 struct net_device	  *sw_attach_dev = NULL;
 struct qca_phy_priv qca_priv;
 
@@ -127,12 +128,14 @@ ssdk_uci_sw_set_ports(struct switch_val *val)
 int ssdk_uci_takeover_init()
 {
 	struct qca_phy_priv *priv = &qca_priv;
+#if defined(IN_SWCONFIG)
 	struct switch_dev tmp_dev;
-	struct net_device *tmp_net = NULL;
 	struct switch_dev *sdev = NULL;
+#endif
+	struct net_device *tmp_net = NULL;
 
 	/*only for s27*/
-	if((qca_ar8216_mii_read(0)&0xff00)>>8 != 0x02)
+	if((qca_ar8216_mii_read(0, 0)&0xff00)>>8 != 0x02)
 		return 0;
 
 	memset(&qca_priv, 0, sizeof(qca_priv));
@@ -144,6 +147,8 @@ int ssdk_uci_takeover_init()
 	priv->phy_dbg_write = qca_ar8327_phy_dbg_write;
 	priv->phy_dbg_read = qca_ar8327_phy_dbg_read;
 	priv->phy_mmd_write = qca_ar8327_mmd_write;
+
+#if defined(IN_SWCONFIG)
 	priv->sw_dev.ops = &qca_ar8327_sw_ops;
 	priv->sw_dev.name = "QCA AR8327 AR8337";
 	priv->sw_dev.vlans = AR8327_MAX_VLANS;
@@ -183,6 +188,7 @@ int ssdk_uci_takeover_init()
 	}
 	/*anyway should unregister the temp switch dev*/
 	unregister_switch(&tmp_dev);
+#endif
 	if(sw_attach_dev) {
 		qca_phy_mib_work_start(&qca_priv);
 	}

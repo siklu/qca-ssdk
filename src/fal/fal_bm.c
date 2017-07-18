@@ -218,6 +218,22 @@ _fal_port_bm_ctrl_set(a_uint32_t dev_id, fal_port_t port, a_bool_t enable)
 	rv = p_api->adpt_port_bm_ctrl_set(dev_id, port, enable);
 	return rv;
 }
+
+sw_error_t
+_fal_bm_port_counter_get(a_uint32_t dev_id, fal_port_t port,
+			fal_bm_port_counter_t *counter)
+{
+	adpt_api_t *p_api;
+	sw_error_t rv = SW_OK;
+
+	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+	if (NULL == p_api->adpt_bm_port_counter_get)
+		return SW_NOT_SUPPORTED;
+
+	rv = p_api->adpt_bm_port_counter_get(dev_id, port, counter);
+	return rv;
+}
 /*insert flag for inner fal, don't remove it*/
 
 sw_error_t
@@ -351,6 +367,18 @@ fal_port_bm_ctrl_set(a_uint32_t dev_id, fal_port_t port, a_bool_t enable)
 	return rv;
 }
 
+sw_error_t
+fal_bm_port_counter_get(a_uint32_t dev_id, fal_port_t port,
+			fal_bm_port_counter_t *counter)
+{
+	sw_error_t rv = SW_OK;
+
+	FAL_API_LOCK;
+	rv = _fal_bm_port_counter_get(dev_id, port, counter);
+	FAL_API_UNLOCK;
+	return rv;
+}
+
 EXPORT_SYMBOL(fal_port_bm_ctrl_set);
 
 EXPORT_SYMBOL(fal_port_bm_ctrl_get);
@@ -374,5 +402,7 @@ EXPORT_SYMBOL(fal_bm_port_static_thresh_get);
 EXPORT_SYMBOL(fal_bm_port_dynamic_thresh_set);
 
 EXPORT_SYMBOL(fal_bm_port_dynamic_thresh_get);
+
+EXPORT_SYMBOL(fal_bm_port_counter_get);
 
 /*insert flag for outter fal, don't remove it*/

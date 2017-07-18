@@ -55,7 +55,7 @@ extern "C" {
 typedef struct {
 	a_uint8_t pcp_group; /* 0: group 0 1: group 1 */
 	a_uint8_t dscp_group;
-	a_int8_t flow_group;
+	a_uint8_t flow_group;
 } fal_qos_group_t;
 
 typedef struct {

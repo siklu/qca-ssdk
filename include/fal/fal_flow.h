@@ -147,6 +147,7 @@ enum  {
 	FUNC_FLOW_ENTRY_ADD,
 	FUNC_FLOW_GLOBAL_CFG_GET,
 	FUNC_FLOW_GLOBAL_CFG_SET,
+	FUNC_FLOW_ENTRY_NEXT
 };
 
 sw_error_t
@@ -191,6 +192,12 @@ sw_error_t
 fal_flow_entry_get(
 		a_uint32_t dev_id,
 		a_uint32_t get_mode,
+		fal_flow_entry_t *flow_entry);
+
+sw_error_t
+fal_flow_entry_next(
+		a_uint32_t dev_id,
+		a_uint32_t next_mode,
 		fal_flow_entry_t *flow_entry);
 
 sw_error_t

@@ -14,14 +14,20 @@
 
 #ifndef __SSDK_PLAT_H
 #define __SSDK_PLAT_H
+
+#include "common/sw.h"
 #include <linux/kconfig.h>
 #include <linux/version.h>
 #include <linux/kernel.h>
+#include <linux/module.h>
 #include <linux/phy.h>
+
+#if defined(IN_SWCONFIG)
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 #include <linux/switch.h>
 #else
 #include <net/switch.h>
+#endif
 #endif
 
 #ifndef BIT
@@ -144,6 +150,7 @@
 #define SSDK_PSGMII_ID 5
 #define SSDK_PHY_BCAST_ID 0x1f
 #define SSDK_PHY_MIN_ID 0x0
+#define SSDK_PORT_CPU	0
 
 #define SSDK_PORT0_FC_THRESH_ON_DFLT	0x60
 #define SSDK_PORT0_FC_THRESH_OFF_DFLT	0x90
@@ -153,11 +160,29 @@
 #define AR8327_NUM_PORTS	7
 #define AR8327_MAX_VLANS  128
 
+#define MII_PHYADDR_C45	(1<<30)
+
 enum {
     AR8327_PORT_SPEED_10M = 0,
     AR8327_PORT_SPEED_100M = 1,
     AR8327_PORT_SPEED_1000M = 2,
     AR8327_PORT_SPEED_NONE = 3,
+};
+
+enum qca_port_speed {
+	QCA_SWITCH_PORT_SPEED_UNKNOWN = 0,
+	QCA_SWITCH_PORT_SPEED_10 = 10,
+	QCA_SWITCH_PORT_SPEED_100 = 100,
+	QCA_SWITCH_PORT_SPEED_1000 = 1000,
+};
+
+struct qca_port_link {
+	bool link;
+	bool aneg;
+	bool duplex;
+	bool rx_flow;
+	bool tx_flow;
+	enum qca_port_speed speed;
 };
 
 enum {
@@ -192,14 +217,36 @@ enum {
 			SSDK_GLOBAL_INT0_HARDWARE_INI_DONE	\
 			)
 
+#define SSDK_LOG_LEVEL_ERROR    0
+#define SSDK_LOG_LEVEL_WARN     1
+#define SSDK_LOG_LEVEL_INFO     2
+#define SSDK_LOG_LEVEL_DEBUG    3
+#define SSDK_LOG_LEVEL_DEFAULT  SSDK_LOG_LEVEL_INFO
+
+extern a_uint32_t ssdk_log_level;
+
+#define __SSDK_LOG_FUN(lev, fmt, ...) \
+	do { \
+		if (SSDK_LOG_LEVEL_##lev <= ssdk_log_level) { \
+			printk("%s[%u]:"#lev":", __FUNCTION__, __LINE__); \
+			printk(fmt, ##__VA_ARGS__); \
+		} \
+	} while(0)
+
+#define SSDK_ERROR(fmt, ...) __SSDK_LOG_FUN(ERROR, fmt, ##__VA_ARGS__)
+#define SSDK_WARN(fmt, ...)  __SSDK_LOG_FUN(WARN, fmt, ##__VA_ARGS__)
+#define SSDK_INFO(fmt, ...)  __SSDK_LOG_FUN(INFO, fmt, ##__VA_ARGS__)
+#define SSDK_DEBUG(fmt, ...) __SSDK_LOG_FUN(DEBUG, fmt, ##__VA_ARGS__)
 
 struct qca_phy_priv {
 	struct phy_device *phy;
+#if defined(IN_SWCONFIG)
 	struct switch_dev sw_dev;
+#endif
     a_uint8_t version;
 	a_uint8_t revision;
-	a_uint32_t (*mii_read)(a_uint32_t reg);
-	void (*mii_write)(a_uint32_t reg, a_uint32_t val);
+	a_uint32_t (*mii_read)(a_uint32_t dev_id, a_uint32_t reg);
+	void (*mii_write)(a_uint32_t dev_id, a_uint32_t reg, a_uint32_t val);
     void (*phy_dbg_write)(a_uint32_t dev_id, a_uint32_t phy_addr,
                         a_uint16_t dbg_addr, a_uint16_t dbg_data);
 	void (*phy_dbg_read)(a_uint32_t dev_id, a_uint32_t phy_addr,
@@ -211,19 +258,40 @@ struct qca_phy_priv {
     sw_error_t (*phy_read)(a_uint32_t dev_id, a_uint32_t phy_addr,
                            a_uint32_t reg, a_uint16_t* data);
 	bool init;
+	a_bool_t qca_ssdk_sw_dev_registered;
+	a_bool_t ess_switch_flag;
+	const char *name;
+	char devname[IFNAMSIZ];
 	struct mutex reg_mutex;
 	struct mutex mib_lock;
 	struct delayed_work mib_dwork;
 	/*qm_err_check*/
 	struct mutex 	qm_lock;
 	struct delayed_work qm_dwork;
+	a_uint32_t port_link_down[AR8327_NUM_PORTS];
+	a_uint32_t port_link_up[AR8327_NUM_PORTS];
+	a_uint32_t port_old_link[AR8327_NUM_PORTS];
+	a_uint32_t port_old_speed[AR8327_NUM_PORTS];
+	a_uint32_t port_old_duplex[AR8327_NUM_PORTS];
+	a_uint32_t port_old_phy_status[AR8327_NUM_PORTS];
+	a_uint32_t port_qm_buf[AR8327_NUM_PORTS];
+	a_uint32_t port_old_tx_flowctrl[AR8327_NUM_PORTS];
+	a_uint32_t port_old_rx_flowctrl[AR8327_NUM_PORTS];
 	struct delayed_work qm_dwork_polling;
 	struct work_struct	 intr_workqueue;
 	/*qm_err_check end*/
+	a_uint8_t device_id;
+	struct device_node *of_node;
 	/*dess_rgmii_mac*/
 	struct mutex rgmii_lock;
 	struct delayed_work rgmii_dwork;
 	/*dess_rgmii_mac end*/
+	/*hppe_mac_sw_sync*/
+	struct mutex mac_sw_sync_lock;
+	struct delayed_work mac_sw_sync_dwork;
+	/*hppe_mac_sw_sync end*/
+	struct mii_bus *miibus;
+
 	u64 *mib_counters;
 	/* dump buf */
 	a_uint8_t  buf[2048];
@@ -237,9 +305,9 @@ struct qca_phy_priv {
     a_uint8_t  vlan_table[AR8327_MAX_VLANS];
     a_uint8_t  vlan_tagged[AR8327_MAX_VLANS];
     a_uint16_t pvid[AR8327_NUM_PORTS];
+    a_uint32_t ports;
 	u8 __iomem *hw_addr;
 	u8 __iomem *psgmii_hw_addr;
-	int phy_address[5];
 };
 
 struct ipq40xx_mdio_data {
@@ -248,14 +316,16 @@ struct ipq40xx_mdio_data {
         int phy_irq[PHY_MAX_ADDR];
 };
 
+#if defined(IN_SWCONFIG)
 #define qca_phy_priv_get(_dev) \
 		container_of(_dev, struct qca_phy_priv, sw_dev)
+#endif
 
 
 a_uint32_t
-qca_ar8216_mii_read(a_uint32_t reg);
+qca_ar8216_mii_read(a_uint32_t dev_id, a_uint32_t reg);
 void
-qca_ar8216_mii_write(a_uint32_t reg, a_uint32_t val);
+qca_ar8216_mii_write(a_uint32_t dev_id, a_uint32_t reg, a_uint32_t val);
 sw_error_t
 qca_ar8327_phy_read(a_uint32_t dev_id, a_uint32_t phy_addr,
 			a_uint32_t reg, a_uint16_t* data);
@@ -281,6 +351,14 @@ qca_phy_mmd_read(u32 dev_id, u32 phy_id,
 		u16 mmd_num, u16 reg_id);
 
 sw_error_t
+qca_xgphy_read(a_uint32_t dev_id, a_uint32_t phy_addr,
+                           a_uint32_t reg, a_uint16_t* data);
+
+sw_error_t
+qca_xgphy_write(a_uint32_t dev_id, a_uint32_t phy_addr,
+                           a_uint32_t reg, a_uint16_t data);
+
+sw_error_t
 qca_switch_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr,
 			a_uint8_t * reg_data, a_uint32_t len);
 
@@ -296,7 +374,18 @@ sw_error_t
 qca_psgmii_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr,
 			a_uint8_t * reg_data, a_uint32_t len);
 
-int ssdk_plat_init(ssdk_init_cfg *cfg);
-void ssdk_plat_exit(void);
+sw_error_t
+qca_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t uniphy_index,
+				a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len);
+
+sw_error_t
+qca_uniphy_reg_read(a_uint32_t dev_id, a_uint32_t uniphy_index,
+				a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len);
+
+int ssdk_sysfs_init (void);
+void ssdk_sysfs_exit (void);
+
+int ssdk_plat_init(ssdk_init_cfg *cfg, a_uint32_t dev_id);
+void ssdk_plat_exit(a_uint32_t dev_id);
 
 #endif

@@ -64,6 +64,7 @@
 #include "ssdk_init.h"
 #include "shell.h"
 #include "shell_io.h"
+#include "shell_sw.h"
 #include <linux/kconfig.h>
 #include <linux/version.h>
 #include <linux/kernel.h>
@@ -4052,6 +4053,55 @@ parse_fdb_ptmaclimitctrl(struct switch_val *val)
 	return rv;
 }
 #endif
+#endif
+
+#ifdef IN_RSS_HASH
+static int
+parse_rsshash_config(struct switch_val *val)
+{
+	struct switch_ext *switch_ext_p, *ext_value_p;
+	int rv = 0;
+
+	switch_ext_p = val->value.ext_val;
+	while (switch_ext_p) {
+		ext_value_p = switch_ext_p;
+
+		if (!strcmp(ext_value_p->option_name, "name")) {
+			switch_ext_p = switch_ext_p->next;
+			continue;
+		} else if (!strcmp(ext_value_p->option_name, "hash_mode")) {
+			val_ptr[0] = (char*)ext_value_p->option_value;
+		} else if (!strcmp(ext_value_p->option_name, "hask_mask")) {
+			val_ptr[1] = (char*)ext_value_p->option_value;
+		} else if (!strcmp(ext_value_p->option_name, "hash_fragment_mode")) {
+			val_ptr[2] = (char*)ext_value_p->option_value;
+		} else if (!strcmp(ext_value_p->option_name, "hash_seed")) {
+			val_ptr[3] = (char*)ext_value_p->option_value;
+		} else if (!strcmp(ext_value_p->option_name, "hash_sip_mix")) {
+			val_ptr[4] = (char*)ext_value_p->option_value;
+		} else if (!strcmp(ext_value_p->option_name, "hash_dip_mix")) {
+			val_ptr[5] = (char*)ext_value_p->option_value;
+		} else if (!strcmp(ext_value_p->option_name, "hash_protocol_mix")) {
+			val_ptr[6] = (char*)ext_value_p->option_value;
+		} else if (!strcmp(ext_value_p->option_name, "hash_sport_mix")) {
+			val_ptr[7] = (char*)ext_value_p->option_value;
+		} else if (!strcmp(ext_value_p->option_name, "hash_dport_mix")) {
+			val_ptr[8] = (char*)ext_value_p->option_value;
+		} else if (!strcmp(ext_value_p->option_name, "hash_fin_inner")) {
+			val_ptr[9] = (char*)ext_value_p->option_value;
+		} else if (!strcmp(ext_value_p->option_name, "hash_fin_outer")) {
+			val_ptr[10] = (char*)ext_value_p->option_value;
+		}  else {
+			rv = -1;
+			break;
+		}
+
+		parameter_length++;
+		switch_ext_p = switch_ext_p->next;
+	}
+
+	return rv;
+}
 #endif
 
 #ifdef IN_IGMP
@@ -9397,6 +9447,35 @@ parse_qm_enqueue(struct switch_val *val)
 	return rv;
 }
 
+static int
+parse_qm_srcprofile(struct switch_val *val)
+{
+	struct switch_ext *switch_ext_p, *ext_value_p;
+	int rv = 0;
+
+	switch_ext_p = val->value.ext_val;
+	while (switch_ext_p) {
+		ext_value_p = switch_ext_p;
+
+		if (!strcmp(ext_value_p->option_name, "name")) {
+			switch_ext_p = switch_ext_p->next;
+			continue;
+		} else if (!strcmp(ext_value_p->option_name, "port_id")) {
+			val_ptr[0] = (char*)ext_value_p->option_value;
+		} else if (!strcmp(ext_value_p->option_name, "sourceprofile")) {
+			val_ptr[1] = (char*)ext_value_p->option_value;
+		}  else {
+			rv = -1;
+			break;
+		}
+
+		parameter_length++;
+		switch_ext_p = switch_ext_p->next;
+	}
+
+	return rv;
+}
+
 #endif
 
 #ifdef IN_SERVCODE
@@ -10487,6 +10566,19 @@ parse_fdb(const char *command_name, struct switch_val *val)
 }
 #endif
 
+#ifdef IN_RSS_HASH
+static int
+parse_rsshash(const char *command_name, struct switch_val *val)
+{
+	int rv = -1;
+	if (!strcmp(command_name, "Config")) {
+		rv = parse_rsshash_config(val);
+	}
+
+	return rv;
+}
+#endif
+
 #ifdef IN_IGMP
 static int
 parse_igmp(const char *command_name, struct switch_val *val)
@@ -10908,9 +11000,9 @@ parse_qm(const char *command_name, struct switch_val *val)
 		rv = parse_qm_acprebuffer(val);
 	} else if (!strcmp(command_name, "Acqgroup")) {
 		rv = parse_qm_acqgroup(val);
-	} else if (!strcmp(command_name, "Acsthresh")) {
+	} else if (!strcmp(command_name, "Acstaticthresh")) {
 		rv = parse_qm_acsthresh(val);
-	} else if (!strcmp(command_name, "Acdthresh")) {
+	} else if (!strcmp(command_name, "Acdynamicthresh")) {
 		rv = parse_qm_acdthresh(val);
 	} else if (!strcmp(command_name, "Acgroupbuff")) {
 		rv = parse_qm_acgbuff(val);
@@ -10920,7 +11012,9 @@ parse_qm(const char *command_name, struct switch_val *val)
 		rv = parse_qm_cnt(val);
 	} else if (!strcmp(command_name, "Enqueue")) {
 		rv = parse_qm_enqueue(val);
-	} 
+	} else if (!strcmp(command_name, "Srcprofile")) {
+		rv = parse_qm_srcprofile(val);
+	}
 
 	return rv;
 }
@@ -11216,6 +11310,7 @@ qca_ar8327_sw_switch_ext(struct switch_dev *dev,
 			 	struct switch_val *val) 
 {
 	struct switch_ext *switch_ext_p, *ext_value_p;
+	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
 	unsigned int i = 0;
 	int rv = -1;
 	switch_ext_p = val->value.ext_val;
@@ -11264,6 +11359,10 @@ qca_ar8327_sw_switch_ext(struct switch_dev *dev,
 	} else if(!strcmp(module_name, "Fdb")) {
 #ifdef IN_FDB
 		rv = parse_fdb(command_name, val);
+#endif
+	} else if(!strcmp(module_name, "Rsshash")) {
+#ifdef IN_RSS_HASH
+		rv = parse_rsshash(command_name, val);
 #endif
 	} else if(!strcmp(module_name, "Igmp")) {
 #ifdef IN_IGMP
@@ -11362,6 +11461,7 @@ qca_ar8327_sw_switch_ext(struct switch_dev *dev,
 		printk("command_line:%s\n", whole_command_line);
 #endif
 	}
+	uci_set_devid(priv->device_id);
 	set_talk_mode(0);
 	rv = cmd_run_one(whole_command_line);
 	set_talk_mode(1);

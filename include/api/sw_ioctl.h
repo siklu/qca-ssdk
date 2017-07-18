@@ -105,6 +105,7 @@ extern "C" {
 #define SW_API_DEBUG_PHYCOUNTER_SET  (71 + SW_API_PORT_OFFSET)
 #define SW_API_DEBUG_PHYCOUNTER_GET  (72 + SW_API_PORT_OFFSET)
 #define SW_API_DEBUG_PHYCOUNTER_SHOW  (73 + SW_API_PORT_OFFSET)
+#define SW_API_PT_INTERFACE_MODE_APPLY  (74 + SW_API_PORT_OFFSET)
 
     /*vlan*/
 #define SW_API_VLAN_OFFSET         110
@@ -434,6 +435,7 @@ extern "C" {
 #define SW_API_MIB_CPU_KEEP_SET       (4+ SW_API_MIB_OFFSET)
 #define SW_API_MIB_CPU_KEEP_GET       (5+ SW_API_MIB_OFFSET)
 #define SW_API_PT_XGMIB_GET           (6+ SW_API_MIB_OFFSET)
+#define SW_API_PT_MIB_COUNTER_GET     (7+ SW_API_MIB_OFFSET)
 
     /*misc*/
 #define SW_API_MISC_OFFSET            1200
@@ -760,6 +762,8 @@ extern "C" {
 #define SW_API_QUEUE_CNT_CLEANUP         (28 + SW_API_QM_OFFSET)
 #define SW_API_QM_ENQUEUE_CTRL_SET         (29 + SW_API_QM_OFFSET)
 #define SW_API_QM_ENQUEUE_CTRL_GET         (30 + SW_API_QM_OFFSET)
+#define SW_API_QM_SOURCE_PROFILE_SET         (31 + SW_API_QM_OFFSET)
+#define SW_API_QM_SOURCE_PROFILE_GET         (32 + SW_API_QM_OFFSET)
 
 /* flow */
 #define SW_API_FLOW_OFFSET            2200
@@ -774,6 +778,7 @@ extern "C" {
 #define SW_API_FLOW_ENTRY_GET         (8  + SW_API_FLOW_OFFSET)
 #define SW_API_FLOW_GLOBAL_CFG_GET         (9  + SW_API_FLOW_OFFSET)
 #define SW_API_FLOW_GLOBAL_CFG_SET         (10  + SW_API_FLOW_OFFSET)
+#define SW_API_FLOWENTRY_NEXT         (11  + SW_API_FLOW_OFFSET)
 
 #define SW_API_FLOW_HOST_ADD         (20  + SW_API_FLOW_OFFSET)
 #define SW_API_FLOW_HOST_DEL         (21  + SW_API_FLOW_OFFSET)
@@ -854,6 +859,7 @@ extern "C" {
 #define SW_API_BM_STATIC_THRESH_GET         (9  + SW_API_BM_OFFSET)
 #define SW_API_BM_DYNAMIC_THRESH_SET         (10  + SW_API_BM_OFFSET)
 #define SW_API_BM_DYNAMIC_THRESH_GET         (11  + SW_API_BM_OFFSET)
+#define SW_API_BM_PORT_COUNTER_GET         (12  + SW_API_BM_OFFSET)
 
     /*debug*/
 #define SW_API_DEBUG_OFFSET        10000
@@ -871,6 +877,8 @@ extern "C" {
 #define SW_API_DBG_REG_DUMP          		(11  + SW_API_DEBUG_OFFSET)
 #define SW_API_DBG_PSGMII_SELF_TEST          		(12  + SW_API_DEBUG_OFFSET)
 #define SW_API_PHY_DUMP             (13  + SW_API_DEBUG_OFFSET)
+#define SW_API_UNIPHY_REG_GET             (20  + SW_API_DEBUG_OFFSET)
+#define SW_API_UNIPHY_REG_SET             (21  + SW_API_DEBUG_OFFSET)
 
 #define SW_API_MAX                 0xffff
 

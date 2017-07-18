@@ -39,6 +39,9 @@ ifeq (NONHK_CHIP, $(CHIP_TYPE))
      SRC_LIST = f1_phy.c f2_phy.c malibu_phy.c
 endif
 
+ifeq (TRUE, $(IN_AQUANTIA_PHY))
+    SRC_LIST += aquantia_phy.c
+endif
 SRC_LIST += hsl_phy.c
 
 ifeq (linux, $(OS))

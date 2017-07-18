@@ -19,6 +19,7 @@
 #include "fal.h"
 #include "hsl.h"
 #include "hsl_dev.h"
+#include "hsl_phy.h"
 #include "ssdk_init.h"
 #include "ssdk_interrupt.h"
 #include <linux/kconfig.h>
@@ -34,10 +35,19 @@
 #include <linux/inetdevice.h>
 #include <linux/netdevice.h>
 #include <linux/phy.h>
+#include <linux/mdio.h>
 #include <linux/clk.h>
 #include <linux/delay.h>
 #include <linux/string.h>
 #include <linux/gpio.h>
+
+#if defined(IN_SWCONFIG)
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+#include <linux/switch.h>
+#else
+#include <net/switch.h>
+#endif
+#endif
 
 #if defined(ISIS) ||defined(ISISC) ||defined(GARUDA)
 #include <f1_phy.h>
@@ -48,8 +58,7 @@
 #ifdef IN_MALIBU_PHY
 #include <malibu_phy.h>
 #endif
-#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
-#include <linux/switch.h>
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,1,0))
 #include <linux/of.h>
 #include <linux/reset.h>
 #ifdef BOARD_AR71XX
@@ -59,13 +68,11 @@
 #include "drivers/net/ethernet/atheros/ag71xx/ag71xx.h"
 #endif
 #elif defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-#include <linux/switch.h>
 #include <linux/of.h>
 #include <drivers/leds/leds-ipq40xx.h>
 #include <linux/of_platform.h>
 #include <linux/reset.h>
 #else
-#include <net/switch.h>
 #include <linux/ar8216_platform.h>
 #include <drivers/net/phy/ar8216.h>
 #include <drivers/net/ethernet/atheros/ag71xx/ag71xx.h>
@@ -103,9 +110,6 @@
 #endif
 
 #if defined(HPPE)
-#include "hppe_reg_access.h"
-#include "hppe_fdb_reg.h"
-#include "hppe_fdb.h"
 #include "hppe_init.h"
 #endif
 
@@ -129,21 +133,45 @@ extern a_uint32_t hsl_dev_wan_port_get(a_uint32_t dev_id);
 #define QCA_QM_WORK_DELAY	100
 #define QCA_QM_ITEM_NUMBER 41
 #define QCA_RGMII_WORK_DELAY	1000
+#define QCA_MAC_SW_SYNC_WORK_DELAY	1000
 
-ssdk_dt_cfg ssdk_dt_global = {0};
-void __iomem *hppe_uniphy_addr = NULL;
+#define SWCONFIG_DEVNAME       "switch%d"
+
+static bool qca_dess_rfs_registered = false;
+ssdk_dt_global_t ssdk_dt_global = {0};
 void __iomem *gcc_uniphy_base = NULL;
 void __iomem *gcc_hppe_clock_config1_base = NULL;
 void __iomem *gcc_hppe_clock_config2_base = NULL;
+void __iomem *gcc_hppe_clock_config3_base = NULL;
+struct qca_phy_priv **qca_phy_priv_global;
 
-a_uint32_t ssdk_dt_global_get_mac_mode(a_uint32_t index)
+a_uint32_t ssdk_dt_global_get_mac_mode(a_uint32_t dev_id, a_uint32_t index)
 {
 	if (index == 0)
-		return ssdk_dt_global.mac_mode;
+		return ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->mac_mode;
 	if (index == 1)
-		return ssdk_dt_global.mac_mode1;
+		return ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->mac_mode1;
 	if (index == 2)
-		return ssdk_dt_global.mac_mode2;
+		return ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->mac_mode2;
+
+	return 0;
+}
+
+a_uint32_t ssdk_dt_global_set_mac_mode(a_uint32_t dev_id, a_uint32_t index, a_uint32_t mode)
+{
+	if (index == 0)
+	{
+		 ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->mac_mode= mode;
+	}
+	if (index == 1)
+	{
+		 ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->mac_mode1 = mode;
+	}
+	if (index == 2)
+	{
+		 ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->mac_mode2 = mode;
+	}
+
 	return 0;
 }
 
@@ -156,32 +184,26 @@ qca_hppe_port_mac_type_get(a_uint32_t dev_id, a_uint32_t port_id)
 		return 0;
 	return hppe_port_type[port_id - 1];
 }
-phy_identification_t phy_array[] =
+
+a_uint32_t
+qca_hppe_port_mac_type_set(a_uint32_t dev_id, a_uint32_t port_id, a_uint32_t port_type)
 {
-	#ifdef IN_MALIBU_PHY
-	{0x0, 0x004DD0B1, malibu_phy_init},
-	{0x0, 0x004DD0B2, malibu_phy_init},
-	#endif
-	#if defined(ISIS) ||defined(ISISC) ||defined(GARUDA)
-	{0x0, 0x004DD036, f1_phy_init},
-	{0x0, 0x004DD033, f1_phy_init},
-	{0x0, 0x004DD034, f1_phy_init},
-	{0x0, 0x004DD035, f1_phy_init},
-	#endif
-	#if defined(ATHENA) ||defined(SHIVA) ||defined(HORUS)
-	{0x0, 0x004DD042, f2_phy_init}
-	#endif
-};
+	 if ((port_id < 1) || (port_id > 6))
+		 return 0;
+	hppe_port_type[port_id - 1] = port_type;
+
+	return 0;
+}
 
 static void
 qca_phy_read_port_link(struct qca_phy_priv *priv, int port,
-		      struct switch_port_link *port_link)
+		      struct qca_port_link *port_link)
 {
 	a_uint32_t port_status, port_speed;
 
 	memset(port_link, 0, sizeof(*port_link));
 
-	port_status = priv->mii_read(AR8327_REG_PORT_STATUS(port));
+	port_status = priv->mii_read(priv->device_id, AR8327_REG_PORT_STATUS(port));
 
     port_link->link = 1;
     port_link->aneg = !!(port_status & AR8327_PORT_STATUS_LINK_AUTO);
@@ -195,13 +217,13 @@ qca_phy_read_port_link(struct qca_phy_priv *priv, int port,
 	port_speed = (port_status & AR8327_PORT_STATUS_SPEED) >>
 		            AR8327_PORT_STATUS_SPEED_S;
     if(port_speed == AR8327_PORT_SPEED_10M) {
-        port_link->speed = SWITCH_PORT_SPEED_10;
+        port_link->speed = QCA_SWITCH_PORT_SPEED_10;
     } else if(port_speed == AR8327_PORT_SPEED_100M) {
-        port_link->speed = SWITCH_PORT_SPEED_100;
+        port_link->speed = QCA_SWITCH_PORT_SPEED_100;
     } else if(port_speed == AR8327_PORT_SPEED_1000M) {
-        port_link->speed = SWITCH_PORT_SPEED_1000;
+        port_link->speed = QCA_SWITCH_PORT_SPEED_1000;
     } else {
-        port_link->speed = SWITCH_PORT_SPEED_UNKNOWN;
+        port_link->speed = QCA_SWITCH_PORT_SPEED_UNKNOWN;
     }
 
 	port_link->duplex = !!(port_status & AR8327_PORT_STATUS_DUPLEX);
@@ -217,7 +239,11 @@ ssdk_phy_rgmii_set(struct qca_phy_priv *priv)
 	struct device_node *np = NULL;
 	u32 rgmii_en = 0, tx_delay = 0, rx_delay = 0;
 
-	np = priv->phy->dev.of_node;
+	if (priv->ess_switch_flag == A_TRUE)
+		np = priv->of_node;
+	else
+		np = priv->phy->dev.of_node;
+
 	if (!np)
 		return;
 
@@ -294,22 +320,22 @@ qca_ar8327_phy_fixup(struct qca_phy_priv *priv, int phy)
 	switch (priv->revision) {
 	case 1:
 		/* 100m waveform */
-		priv->phy_dbg_write(0, phy, 0, 0x02ea);
+		priv->phy_dbg_write(priv->device_id, phy, 0, 0x02ea);
 		/* turn on giga clock */
-		priv->phy_dbg_write(0, phy, 0x3d, 0x68a0);
+		priv->phy_dbg_write(priv->device_id, phy, 0x3d, 0x68a0);
 		break;
 
 	case 2:
-		priv->phy_mmd_write(0, phy, 0x7, 0x3c);
-		priv->phy_mmd_write(0, phy, 0x4007, 0x0);
+		priv->phy_mmd_write(priv->device_id, phy, 0x7, 0x3c);
+		priv->phy_mmd_write(priv->device_id, phy, 0x4007, 0x0);
 		/* fallthrough */
 	case 4:
-		priv->phy_mmd_write(0, phy, 0x3, 0x800d);
-		priv->phy_mmd_write(0, phy, 0x4003, 0x803f);
+		priv->phy_mmd_write(priv->device_id, phy, 0x3, 0x800d);
+		priv->phy_mmd_write(priv->device_id, phy, 0x4003, 0x803f);
 
-		priv->phy_dbg_write(0, phy, 0x3d, 0x6860);
-		priv->phy_dbg_write(0, phy, 0x5, 0x2c46);
-		priv->phy_dbg_write(0, phy, 0x3c, 0x6000);
+		priv->phy_dbg_write(priv->device_id, phy, 0x3d, 0x6860);
+		priv->phy_dbg_write(priv->device_id, phy, 0x5, 0x2c46);
+		priv->phy_dbg_write(priv->device_id, phy, 0x3c, 0x6000);
 		break;
 	}
 }
@@ -487,46 +513,46 @@ qca_switch_init(a_uint32_t dev_id)
 	return SW_OK;
 }
 
-void qca_ar8327_phy_linkdown(void)
+void qca_ar8327_phy_linkdown(a_uint32_t dev_id)
 {
 	int i;
 	a_uint16_t phy_val;
 
 	for (i = 0; i < AR8327_NUM_PHYS; i++) {
-		qca_ar8327_phy_write(0, i, 0x0, 0x0800);	// phy powerdown
+		qca_ar8327_phy_write(dev_id, i, 0x0, 0x0800);	// phy powerdown
 
-		qca_ar8327_phy_dbg_read(0, i, 0x3d, &phy_val);
+		qca_ar8327_phy_dbg_read(dev_id, i, 0x3d, &phy_val);
 		phy_val &= ~0x0040;
-		qca_ar8327_phy_dbg_write(0, i, 0x3d, phy_val);
+		qca_ar8327_phy_dbg_write(dev_id, i, 0x3d, phy_val);
 
 		/*PHY will stop the tx clock for a while when link is down
 			1. en_anychange  debug port 0xb bit13 = 0  //speed up link down tx_clk
 			2. sel_rst_80us  debug port 0xb bit10 = 0  //speed up speed mode change to 2'b10 tx_clk
 		*/
-		qca_ar8327_phy_dbg_read(0, i, 0xb, &phy_val);
+		qca_ar8327_phy_dbg_read(dev_id, i, 0xb, &phy_val);
 		phy_val &= ~0x2400;
-		qca_ar8327_phy_dbg_write(0, i, 0xb, phy_val);
+		qca_ar8327_phy_dbg_write(dev_id, i, 0xb, phy_val);
 	}
 }
 
 void
-qca_mac_disable(void)
+qca_mac_disable(a_uint32_t device_id)
 {
 	hsl_api_t *p_api;
 
-	p_api = hsl_api_ptr_get (0);
+	p_api = hsl_api_ptr_get (device_id);
 	if(p_api
 		&& p_api->interface_mac_pad_set
 		&& p_api->interface_mac_sgmii_set)
 	{
-		p_api->interface_mac_pad_set(0,0,0);
-		p_api->interface_mac_pad_set(0,5,0);
-		p_api->interface_mac_pad_set(0,6,0);
-		p_api->interface_mac_sgmii_set(0,AR8327_REG_PAD_SGMII_CTRL_HW_INIT);
+		p_api->interface_mac_pad_set(device_id,0,0);
+		p_api->interface_mac_pad_set(device_id,5,0);
+		p_api->interface_mac_pad_set(device_id,6,0);
+		p_api->interface_mac_sgmii_set(device_id,AR8327_REG_PAD_SGMII_CTRL_HW_INIT);
 	}
 	else
 	{
-		printk("API not support \n");
+		SSDK_ERROR("API not support \n");
 	}
 }
 
@@ -534,24 +560,24 @@ static void qca_switch_set_mac_force(struct qca_phy_priv *priv)
 {
 	a_uint32_t value, value0, i;
 	if (priv == NULL || (priv->mii_read == NULL) || (priv->mii_write == NULL)) {
-		printk("In qca_switch_set_mac_force, private data is NULL!\r\n");
+		SSDK_ERROR("In qca_switch_set_mac_force, private data is NULL!\r\n");
 		return;
 	}
 
 	for (i=0; i < AR8327_NUM_PORTS; ++i) {
 		/* b3:2=0,Tx/Rx Mac disable,
 		 b9=0,LINK_EN disable */
-		value0 = priv->mii_read(AR8327_REG_PORT_STATUS(i));
+		value0 = priv->mii_read(priv->device_id, AR8327_REG_PORT_STATUS(i));
 		value = value0 & ~(AR8327_PORT_STATUS_LINK_AUTO |
 						AR8327_PORT_STATUS_TXMAC |
 						AR8327_PORT_STATUS_RXMAC);
-		priv->mii_write(AR8327_REG_PORT_STATUS(i), value);
+		priv->mii_write(priv->device_id, AR8327_REG_PORT_STATUS(i), value);
 
 		/* Force speed to 1000M Full */
-		value = priv->mii_read(AR8327_REG_PORT_STATUS(i));
+		value = priv->mii_read(priv->device_id, AR8327_REG_PORT_STATUS(i));
 		value &= ~(AR8327_PORT_STATUS_DUPLEX | AR8327_PORT_STATUS_SPEED);
 		value |= AR8327_PORT_SPEED_1000M | AR8327_PORT_STATUS_DUPLEX;
-		priv->mii_write(AR8327_REG_PORT_STATUS(i), value);
+		priv->mii_write(priv->device_id, AR8327_REG_PORT_STATUS(i), value);
 	}
 	return;
 }
@@ -570,16 +596,16 @@ qca_ar8327_phy_enable(struct qca_phy_priv *priv)
 			qca_ar8327_phy_fixup(priv, i);
 
 		/* start autoneg*/
-		priv->phy_write(0, i, MII_ADVERTISE, ADVERTISE_ALL |
+		priv->phy_write(priv->device_id, i, MII_ADVERTISE, ADVERTISE_ALL |
 						     ADVERTISE_PAUSE_CAP | ADVERTISE_PAUSE_ASYM);
 		//phy reg 0x9, b10,1 = Prefer multi-port device (master)
-		priv->phy_write(0, i, MII_CTRL1000, (0x0400|ADVERTISE_1000FULL));
+		priv->phy_write(priv->device_id, i, MII_CTRL1000, (0x0400|ADVERTISE_1000FULL));
 
-		priv->phy_write(0, i, MII_BMCR, BMCR_RESET | BMCR_ANENABLE);
+		priv->phy_write(priv->device_id, i, MII_BMCR, BMCR_RESET | BMCR_ANENABLE);
 
-		priv->phy_dbg_read(0, i, 0, &value);
+		priv->phy_dbg_read(priv->device_id, i, 0, &value);
 		value &= (~(1<<12));
-		priv->phy_dbg_write(0, i, 0, value);
+		priv->phy_dbg_write(priv->device_id, i, 0, value);
 
 		msleep(100);
 	}
@@ -588,17 +614,17 @@ void qca_ar8327_sw_soft_reset(struct qca_phy_priv *priv)
 {
 	a_uint32_t value = 0;
 
-	value = priv->mii_read(AR8327_REG_CTRL);
+	value = priv->mii_read(priv->device_id, AR8327_REG_CTRL);
 	value |= 0x80000000;
-	priv->mii_write(AR8327_REG_CTRL, value);
+	priv->mii_write(priv->device_id, AR8327_REG_CTRL, value);
 	/*Need wait reset done*/
 	do {
 		udelay(10);
-		value = priv->mii_read(AR8327_REG_CTRL);
+		value = priv->mii_read(priv->device_id, AR8327_REG_CTRL);
 	} while(value & AR8327_CTRL_RESET);
 	do {
 		udelay(10);
-		value = priv->mii_read(0x20);
+		value = priv->mii_read(priv->device_id, 0x20);
 	} while ((value & SSDK_GLOBAL_INITIALIZED_STATUS) !=
 			SSDK_GLOBAL_INITIALIZED_STATUS);
 
@@ -613,13 +639,17 @@ int qca_ar8327_hw_init(struct qca_phy_priv *priv)
 	a_uint32_t reg, value, i;
 	a_int32_t len;
 
-	np = priv->phy->dev.of_node;
+	if (priv->ess_switch_flag == A_TRUE)
+		np = priv->of_node;
+	else
+		np = priv->phy->dev.of_node;
+
 	if(!np)
 		return -EINVAL;
 
 	/*Before switch software reset, disable PHY and clear  MAC PAD*/
-	qca_ar8327_phy_linkdown();
-	qca_mac_disable();
+	qca_ar8327_phy_linkdown(priv->device_id);
+	qca_mac_disable(priv->device_id);
 	msleep(1000);
 
 	/*First software reset S17 chip*/
@@ -631,7 +661,7 @@ int qca_ar8327_hw_init(struct qca_phy_priv *priv)
 	/* Configure switch register from DT information */
 	paddr = of_get_property(np, "qca,ar8327-initvals", &len);
 	if (!paddr || len < (2 * sizeof(*paddr))) {
-		printk("len:%d < 2 * sizeof(*paddr):%d\n", len, 2 * sizeof(*paddr));
+		SSDK_ERROR("len:%d < 2 * sizeof(*paddr):%d\n", len, 2 * sizeof(*paddr));
 		return -EINVAL;
 	}
 
@@ -640,16 +670,16 @@ int qca_ar8327_hw_init(struct qca_phy_priv *priv)
 	for (i = 0; i < len - 1; i += 2) {
 		reg = be32_to_cpup(paddr + i);
 		value = be32_to_cpup(paddr + i + 1);
-		priv->mii_write(reg, value);
+		priv->mii_write(priv->device_id, reg, value);
 	}
 
-	value = priv->mii_read(AR8327_REG_MODULE_EN);
+	value = priv->mii_read(priv->device_id, AR8327_REG_MODULE_EN);
 	value &= ~AR8327_REG_MODULE_EN_QM_ERR;
 	value &= ~AR8327_REG_MODULE_EN_LOOKUP_ERR;
-	priv->mii_write(AR8327_REG_MODULE_EN, value);
+	priv->mii_write(priv->device_id, AR8327_REG_MODULE_EN, value);
 
-	qca_switch_init(0);
-	qca_port_isolate(0);
+	qca_switch_init(priv->device_id);
+	qca_port_isolate(priv->device_id);
 	qca_mac_enable_intr(priv);
 	qca_ar8327_phy_enable(priv);
 
@@ -747,7 +777,7 @@ qca_ar8327_get_pwr_sel(struct qca_phy_priv *priv,
 		return 0;
 	}
 
-	value = priv->mii_read(AR8327_REG_PAD_MAC_PWR_SEL);
+	value = priv->mii_read(priv->device_id, AR8327_REG_PAD_MAC_PWR_SEL);
 
 	cfg = plat_data->pad0_cfg;
 
@@ -787,10 +817,10 @@ qca_ar8327_set_led_cfg(struct qca_phy_priv *priv,
 		else
 			new_pos &= ~AR8327_POS_LED_OPEN_EN;
 
-		priv->mii_write(AR8327_REG_LED_CTRL_0, led_cfg->led_ctrl0);
-		priv->mii_write(AR8327_REG_LED_CTRL_1, led_cfg->led_ctrl1);
-		priv->mii_write(AR8327_REG_LED_CTRL_2, led_cfg->led_ctrl2);
-		priv->mii_write(AR8327_REG_LED_CTRL_3, led_cfg->led_ctrl3);
+		priv->mii_write(priv->device_id, AR8327_REG_LED_CTRL_0, led_cfg->led_ctrl0);
+		priv->mii_write(priv->device_id, AR8327_REG_LED_CTRL_1, led_cfg->led_ctrl1);
+		priv->mii_write(priv->device_id, AR8327_REG_LED_CTRL_2, led_cfg->led_ctrl2);
+		priv->mii_write(priv->device_id, AR8327_REG_LED_CTRL_3, led_cfg->led_ctrl3);
 
 		if (new_pos != pos) {
 			new_pos |= AR8327_POS_POWER_ON_SEL;
@@ -807,7 +837,7 @@ qca_ar8327_set_sgmii_cfg(struct qca_phy_priv *priv,
 	a_uint32_t value = 0;
 
 	/*configure the SGMII*/
-	value = priv->mii_read(AR8327_REG_PAD_SGMII_CTRL);
+	value = priv->mii_read(priv->device_id, AR8327_REG_PAD_SGMII_CTRL);
 	value &= ~(AR8327_PAD_SGMII_CTRL_MODE_CTRL);
 	value |= ((plat_data->sgmii_cfg->sgmii_mode) <<
           AR8327_PAD_SGMII_CTRL_MODE_CTRL_S);
@@ -823,7 +853,7 @@ qca_ar8327_set_sgmii_cfg(struct qca_phy_priv *priv,
 	}
 	value |= AR8327_PAD_SGMII_CTRL_EN_SD;
 
-	priv->mii_write(AR8327_REG_PAD_SGMII_CTRL, value);
+	priv->mii_write(priv->device_id, AR8327_REG_PAD_SGMII_CTRL, value);
 
 	if (plat_data->sgmii_cfg->serdes_aen) {
 		*new_pos &= ~AR8327_POS_SERDES_AEN;
@@ -840,7 +870,7 @@ qca_ar8327_set_plat_data_cfg(struct qca_phy_priv *priv,
 {
 	a_uint32_t pos, new_pos;
 
-	pos = priv->mii_read(AR8327_REG_POS);
+	pos = priv->mii_read(priv->device_id, AR8327_REG_POS);
 
 	new_pos = qca_ar8327_set_led_cfg(priv, plat_data, pos);
 
@@ -851,7 +881,7 @@ qca_ar8327_set_plat_data_cfg(struct qca_phy_priv *priv,
 	}
 #endif
 
-	priv->mii_write(AR8327_REG_POS, new_pos);
+	priv->mii_write(priv->device_id, AR8327_REG_POS, new_pos);
 
 	return 0;
 }
@@ -863,19 +893,19 @@ qca_ar8327_set_pad_cfg(struct qca_phy_priv *priv,
 	a_uint32_t pad0 = 0, pad5 = 0, pad6 = 0;
 
 	pad0 = qca_ar8327_get_pad_cfg(plat_data->pad0_cfg);
-	priv->mii_write(AR8327_REG_PAD0_CTRL, pad0);
+	priv->mii_write(priv->device_id, AR8327_REG_PAD0_CTRL, pad0);
 
 	pad5 = qca_ar8327_get_pad_cfg(plat_data->pad5_cfg);
 	if(priv->version == QCA_VER_AR8337) {
 	        pad5 |= AR8327_PAD_CTRL_RGMII_RXCLK_DELAY_EN;
 	}
-	priv->mii_write(AR8327_REG_PAD5_CTRL, pad5);
+	priv->mii_write(priv->device_id, AR8327_REG_PAD5_CTRL, pad5);
 
 	pad6 = qca_ar8327_get_pad_cfg(plat_data->pad6_cfg);
 	if(plat_data->pad5_cfg &&
 		(plat_data->pad5_cfg->mode == AR8327_PAD_PHY_RGMII))
 		pad6 |= AR8327_PAD_CTRL_PHYX_RGMII_EN;
-	priv->mii_write(AR8327_REG_PAD6_CTRL, pad6);
+	priv->mii_write(priv->device_id, AR8327_REG_PAD6_CTRL, pad6);
 
 	return 0;
 }
@@ -911,14 +941,14 @@ qca_ar8327_port_init(struct qca_phy_priv *priv, a_uint32_t port)
 	}
 
 	/*disable mac at first*/
-	fal_port_rxmac_status_set(0, port, A_FALSE);
-	fal_port_txmac_status_set(0, port, A_FALSE);
+	fal_port_rxmac_status_set(priv->device_id, port, A_FALSE);
+	fal_port_txmac_status_set(priv->device_id, port, A_FALSE);
 	value = port_cfg->duplex ? FAL_FULL_DUPLEX : FAL_HALF_DUPLEX;
-	fal_port_duplex_set(0, port, value);
+	fal_port_duplex_set(priv->device_id, port, value);
 	value = port_cfg->txpause ? A_TRUE : A_FALSE;
-	fal_port_txfc_status_set(0, port, value);
+	fal_port_txfc_status_set(priv->device_id, port, value);
 	value = port_cfg->rxpause ? A_TRUE : A_FALSE;
-	fal_port_rxfc_status_set(0, port, value);
+	fal_port_rxfc_status_set(priv->device_id, port, value);
 	if(port_cfg->speed == AR8327_PORT_SPEED_10) {
 		value = FAL_SPEED_10;
 	} else if(port_cfg->speed == AR8327_PORT_SPEED_100) {
@@ -928,11 +958,11 @@ qca_ar8327_port_init(struct qca_phy_priv *priv, a_uint32_t port)
 	} else {
 		value = FAL_SPEED_1000;
 	}
-	fal_port_speed_set(0, port, value);
+	fal_port_speed_set(priv->device_id, port, value);
 	/*enable mac at last*/
 	udelay(800);
-	fal_port_rxmac_status_set(0, port, A_TRUE);
-	fal_port_txmac_status_set(0, port, A_TRUE);
+	fal_port_rxmac_status_set(priv->device_id, port, A_TRUE);
+	fal_port_txmac_status_set(priv->device_id, port, A_TRUE);
 }
 
 int
@@ -948,14 +978,14 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 	}
 
 	/*Before switch software reset, disable PHY and clear MAC PAD*/
-	qca_ar8327_phy_linkdown();
-	qca_mac_disable();
+	qca_ar8327_phy_linkdown(priv->device_id);
+	qca_mac_disable(priv->device_id);
 	udelay(10);
 
 	qca_ar8327_set_plat_data_cfg(priv, plat_data);
 
 	/*mac reset*/
-	priv->mii_write(AR8327_REG_MAC_SFT_RST, 0x3fff);
+	priv->mii_write(priv->device_id, AR8327_REG_MAC_SFT_RST, 0x3fff);
 
 	msleep(100);
 
@@ -968,16 +998,16 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 
 	qca_ar8327_set_pad_cfg(priv, plat_data);
 
-	value = priv->mii_read(AR8327_REG_MODULE_EN);
+	value = priv->mii_read(priv->device_id, AR8327_REG_MODULE_EN);
 	value &= ~AR8327_REG_MODULE_EN_QM_ERR;
 	value &= ~AR8327_REG_MODULE_EN_LOOKUP_ERR;
-	priv->mii_write(AR8327_REG_MODULE_EN, value);
+	priv->mii_write(priv->device_id, AR8327_REG_MODULE_EN, value);
 
-	qca_switch_init(0);
+	qca_switch_init(priv->device_id);
 
 #ifndef BOARD_AR71XX
 	value = qca_ar8327_get_pwr_sel(priv, plat_data);
-	priv->mii_write(AR8327_REG_PAD_MAC_PWR_SEL, value);
+	priv->mii_write(priv->device_id, AR8327_REG_PAD_MAC_PWR_SEL, value);
 #endif
 
 	msleep(1000);
@@ -991,6 +1021,8 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 	return 0;
 }
 #endif
+
+#if defined(IN_SWCONFIG)
 #ifndef BOARD_AR71XX
 static int
 qca_ar8327_sw_get_reg_val(struct switch_dev *dev,
@@ -1100,13 +1132,18 @@ const struct switch_dev_ops qca_ar8327_sw_ops = {
 	.set_reg_val = qca_ar8327_sw_set_reg_val,
 #endif
 };
+#endif
 
 #define SSDK_MIB_CHANGE_WQ
 
 static int
 qca_phy_mib_task(struct qca_phy_priv *priv)
 {
+#if defined(IN_SWCONFIG)
 	qca_ar8327_sw_mib_task(&priv->sw_dev);
+#else
+	qca_ar8327_sw_mib_task(priv);
+#endif
 	return 0;
 }
 
@@ -1134,10 +1171,10 @@ int
 qca_phy_mib_work_start(struct qca_phy_priv *priv)
 {
 	mutex_init(&priv->mib_lock);
-	priv->mib_counters = kzalloc(priv->sw_dev.ports * QCA_MIB_ITEM_NUMBER *
-	      sizeof(*priv->mib_counters), GFP_KERNEL);
-	if (!priv->mib_counters)
+	if(SW_OK != fal_mib_counter_alloc(priv->device_id, &priv->mib_counters)){
+		SSDK_ERROR("Memory allocation fail\n");
 		return -ENOMEM;
+	}
 
 	INIT_DELAYED_WORK(&priv->mib_dwork, qca_phy_mib_work_task);
 #ifndef SSDK_MIB_CHANGE_WQ
@@ -1171,7 +1208,11 @@ qm_err_check_work_task_polling(struct work_struct *work)
 
 	mutex_lock(&priv->qm_lock);
 
+#if defined(IN_SWCONFIG)
 	qca_ar8327_sw_mac_polling_task(&priv->sw_dev);
+#else
+	qca_ar8327_sw_mac_polling_task(priv);
+#endif
 
 	mutex_unlock(&priv->qm_lock);
 
@@ -1192,14 +1233,14 @@ static int config_gpio(a_uint32_t  gpio_num)
 	{
 		error = gpio_request_one(gpio_num, GPIOF_IN, "linkchange");
 		if (error < 0) {
-			printk("gpio request faild \n");
+			SSDK_ERROR("gpio request faild \n");
 			return -1;
 		}
 		gpio_set_debounce(gpio_num, 60000);
 	}
 	else
 	{
-		printk("gpio is invalid\n");
+		SSDK_ERROR("gpio is invalid\n");
 		return -1;
 	}
 
@@ -1211,21 +1252,23 @@ static int qca_link_polling_select(struct qca_phy_priv *priv)
 	const __be32 *link_polling_required, *link_intr_gpio;
 	a_int32_t len;
 
-	if(priv->version == QCA_VER_DESS)
-		np = of_find_node_by_name(NULL, "ess-switch");
-	else
-		 /*ap148*/
+	if (priv->ess_switch_flag == A_TRUE)
+		np = priv->of_node;
+	else if(priv->version == QCA_VER_AR8337 || priv->version == QCA_VER_AR8327)
 		np = priv->phy->dev.of_node;
+	else
+		SSDK_ERROR("cannot find np node!\n");
+
 	if(!np)
 	{
-		printk("np is null !\n");
+		SSDK_ERROR("np is null !\n");
 		return -1;
 	}
 
 	link_polling_required = of_get_property(np, "link-polling-required", &len);
 	if (!link_polling_required )
 	{
-		printk("cannot find link-polling-required node\n");
+		SSDK_ERROR("cannot find link-polling-required node\n");
 		return -1;
 	}
 	priv->link_polling_required  = be32_to_cpup(link_polling_required);
@@ -1234,13 +1277,13 @@ static int qca_link_polling_select(struct qca_phy_priv *priv)
 		link_intr_gpio = of_get_property(np, "link-intr-gpio", &len);
 		if (!link_intr_gpio )
 		{
-			printk("cannot find link-intr-gpio node\n");
+			SSDK_ERROR("cannot find link-intr-gpio node\n");
 			return -1;
 		}
 		if(config_gpio(be32_to_cpup(link_intr_gpio)))
 			return -1;
 		priv->link_interrupt_no = gpio_to_irq (be32_to_cpup(link_intr_gpio));
-		printk("the interrupt number is:%x\n",priv->link_interrupt_no);
+		SSDK_INFO("the interrupt number is:%x\n",priv->link_interrupt_no);
 	}
 
 	return 0;
@@ -1291,7 +1334,11 @@ dess_rgmii_mac_work_task(struct work_struct *work)
 
 	mutex_lock(&priv->rgmii_lock);
 
+#if defined(IN_SWCONFIG)
 	dess_rgmii_sw_mac_polling_task(&priv->sw_dev);
+#else
+	dess_rgmii_sw_mac_polling_task(priv);
+#endif
 
 	mutex_unlock(&priv->rgmii_lock);
 
@@ -1316,12 +1363,76 @@ dess_rgmii_mac_work_stop(struct qca_phy_priv *priv)
 	cancel_delayed_work_sync(&priv->rgmii_dwork);
 }
 #endif
+
+void
+qca_mac_sw_sync_port_status_init(a_uint32_t dev_id)
+{
+	a_uint32_t port_id;
+
+	for (port_id = 1; port_id < AR8327_NUM_PORTS; port_id ++) {
+
+		qca_phy_priv_global[dev_id]->port_old_link[port_id - 1] = 0;
+		qca_phy_priv_global[dev_id]->port_old_speed[port_id - 1] = FAL_SPEED_BUTT;
+		qca_phy_priv_global[dev_id]->port_old_duplex[port_id - 1] = FAL_DUPLEX_BUTT;
+		qca_phy_priv_global[dev_id]->port_old_tx_flowctrl[port_id - 1] = 0;
+		qca_phy_priv_global[dev_id]->port_old_rx_flowctrl[port_id - 1] = 0;
+	}
+}
+void
+qca_mac_sw_sync_work_task(struct work_struct *work)
+{
+	adpt_api_t *p_adpt_api;
+
+	struct qca_phy_priv *priv = container_of(work, struct qca_phy_priv,
+					mac_sw_sync_dwork.work);
+
+	mutex_lock(&priv->mac_sw_sync_lock);
+
+	 if((p_adpt_api = adpt_api_ptr_get(priv->device_id)) != NULL) {
+		if (NULL == p_adpt_api->adpt_port_polling_sw_sync_set)
+			return;
+		p_adpt_api->adpt_port_polling_sw_sync_set(priv);
+	}
+
+	mutex_unlock(&priv->mac_sw_sync_lock);
+
+	schedule_delayed_work(&priv->mac_sw_sync_dwork,
+					msecs_to_jiffies(QCA_MAC_SW_SYNC_WORK_DELAY));
+}
+
+int
+qca_mac_sw_sync_work_start(struct qca_phy_priv *priv)
+{
+	if (priv->version != QCA_VER_HPPE)
+		return 0;
+
+	qca_mac_sw_sync_port_status_init(priv->device_id);
+
+	mutex_init(&priv->mac_sw_sync_lock);
+
+	INIT_DELAYED_WORK(&priv->mac_sw_sync_dwork,
+					qca_mac_sw_sync_work_task);
+	schedule_delayed_work(&priv->mac_sw_sync_dwork,
+					msecs_to_jiffies(QCA_MAC_SW_SYNC_WORK_DELAY));
+
+	return 0;
+}
+
+void
+qca_mac_sw_sync_work_stop(struct qca_phy_priv *priv)
+{
+	if (priv->version != QCA_VER_HPPE)
+		return;
+
+	cancel_delayed_work_sync(&priv->mac_sw_sync_dwork);
+}
+
 int
 qca_phy_id_chip(struct qca_phy_priv *priv)
 {
 	a_uint32_t value, version;
 
-	value = qca_ar8216_mii_read(AR8327_REG_CTRL);
+	value = qca_ar8216_mii_read(priv->device_id, AR8327_REG_CTRL);
 	version = value & (AR8327_CTRL_REVISION |
                 AR8327_CTRL_VERSION);
 	priv->version = (version & AR8327_CTRL_VERSION) >>
@@ -1334,7 +1445,7 @@ qca_phy_id_chip(struct qca_phy_priv *priv)
 		return 0;
 
     } else {
-		printk("unsupported QCA device\n");
+		SSDK_ERROR("unsupported QCA device\n");
 		return -ENODEV;
 	}
 }
@@ -1343,7 +1454,9 @@ static int
 qca_phy_config_init(struct phy_device *pdev)
 {
 	struct qca_phy_priv *priv = pdev->priv;
+#if defined(IN_SWCONFIG)
 	struct switch_dev *sw_dev;
+#endif
 	int ret = 0;
 
 	if (pdev->addr != 0) {
@@ -1373,6 +1486,9 @@ qca_phy_config_init(struct phy_device *pdev)
 	priv->phy_dbg_write = qca_ar8327_phy_dbg_write;
 	priv->phy_dbg_read = qca_ar8327_phy_dbg_read;
 	priv->phy_mmd_write = qca_ar8327_mmd_write;
+	priv->name = "QCA AR8327 AR8337";
+	priv->ports = AR8327_NUM_PORTS;
+	snprintf(priv->devname, IFNAMSIZ, SWCONFIG_DEVNAME, priv->device_id);
 
 	ret = qca_link_polling_select(priv);
 	if(ret)
@@ -1381,6 +1497,7 @@ qca_phy_config_init(struct phy_device *pdev)
 	pdev->supported |= SUPPORTED_1000baseT_Full;
 	pdev->advertising |= ADVERTISED_1000baseT_Full;
 
+#if defined(IN_SWCONFIG)
 	sw_dev = &priv->sw_dev;
 	sw_dev->ops = &qca_ar8327_sw_ops;
 	sw_dev->name = "QCA AR8327 AR8337";
@@ -1391,6 +1508,8 @@ qca_phy_config_init(struct phy_device *pdev)
 	if (ret != 0) {
 	        return ret;
 	}
+#endif
+	priv->qca_ssdk_sw_dev_registered = A_TRUE;
 
 	ret = qca_ar8327_hw_init(priv);
 	if (ret != 0) {
@@ -1401,37 +1520,36 @@ qca_phy_config_init(struct phy_device *pdev)
 
 	if(priv->link_polling_required)
 	{
-		printk("polling is selected\n");
+		SSDK_INFO("polling is selected\n");
 		ret = qm_err_check_work_start(priv);
 		if (ret != 0)
 		{
-			printk("qm_err_check_work_start failed for %s\n", sw_dev->name);
+			SSDK_ERROR("qm_err_check_work_start failed for %s\n", priv->name);
 			return ret;
 		}
 	}
 	else
 	{
-		printk("interrupt is selected\n");
+		SSDK_INFO("interrupt is selected\n");
 		priv->interrupt_flag = IRQF_TRIGGER_LOW;
 		ret = qca_intr_init(priv);
 		if(ret)
-			printk("the interrupt init faild !\n");
+			SSDK_ERROR("the interrupt init faild !\n");
 	}
 
 	return ret;
 }
 
-struct qca_phy_priv *qca_phy_priv_global;
-
-#if defined(DESS) || defined(HPPE)
-static int ssdk_switch_register(void)
+#if defined(DESS) || defined(HPPE) || defined (ISISC) || defined (ISIS)
+static int ssdk_switch_register(a_uint32_t dev_id)
 {
+#if defined(IN_SWCONFIG)
 	struct switch_dev *sw_dev;
+#endif
 	struct qca_phy_priv *priv;
 	int ret = 0;
 	a_uint32_t chip_id = 0;
-
-	priv = qca_phy_priv_global;
+	priv = qca_phy_priv_global[dev_id];
 
 	priv->mii_read = qca_ar8216_mii_read;
 	priv->mii_write = qca_ar8216_mii_write;
@@ -1440,15 +1558,19 @@ static int ssdk_switch_register(void)
 	priv->phy_dbg_write = qca_ar8327_phy_dbg_write;
 	priv->phy_dbg_read = qca_ar8327_phy_dbg_read;
 	priv->phy_mmd_write = qca_ar8327_mmd_write;
+	priv->ports = AR8327_NUM_PORTS;
+	priv->name = "QCA AR8327 AR8337";
+	snprintf(priv->devname, IFNAMSIZ, SWCONFIG_DEVNAME, dev_id);
 
-	if (fal_reg_get(0, 0, (a_uint8_t *)&chip_id, 4) == SW_OK) {
+	if (fal_reg_get(dev_id, 0, (a_uint8_t *)&chip_id, 4) == SW_OK) {
 		priv->version = ((chip_id >> 8) & 0xff);
 		priv->revision = (chip_id & 0xff);
-		printk("Chip version 0x%02x%02x\n", priv->version, priv->revision);
+		SSDK_INFO("Chip version 0x%02x%02x\n", priv->version, priv->revision);
 	}
 
 	mutex_init(&priv->reg_mutex);
 
+#if defined(IN_SWCONFIG)
 	sw_dev = &priv->sw_dev;
 
 	sw_dev->ops = &qca_ar8327_sw_ops;
@@ -1459,13 +1581,15 @@ static int ssdk_switch_register(void)
 
 	ret = register_switch(sw_dev, NULL);
 	if (ret != 0) {
-			printk("register_switch failed for %s\n", sw_dev->name);
+			SSDK_ERROR("register_switch failed for %s\n", sw_dev->name);
 			return ret;
 	}
+#endif
 
-	ret = qca_phy_mib_work_start(qca_phy_priv_global);
+	priv->qca_ssdk_sw_dev_registered = A_TRUE;
+	ret = qca_phy_mib_work_start(qca_phy_priv_global[dev_id]);
 	if (ret != 0) {
-			printk("qca_phy_mib_work_start failed for %s\n", sw_dev->name);
+			SSDK_ERROR("qca_phy_mib_work_start failed for %s\n", priv->name);
 			return ret;
 	}
 	ret = qca_link_polling_select(priv);
@@ -1473,22 +1597,22 @@ static int ssdk_switch_register(void)
 		priv->link_polling_required = 1;
 	if(priv->link_polling_required)
 	{
-		printk("polling is selected\n");
+		SSDK_INFO("polling is selected\n");
 		ret = qm_err_check_work_start(priv);
 		if (ret != 0)
 		{
-			printk("qm_err_check_work_start failed for %s\n", sw_dev->name);
+			SSDK_ERROR("qm_err_check_work_start failed for %s\n", priv->name);
 			return ret;
 		}
 	}
 	else
 	{
-		printk("interrupt is selected\n");
+		SSDK_INFO("interrupt is selected\n");
 		priv->interrupt_flag = IRQF_TRIGGER_MASK;
 		ret = qca_intr_init(priv);
 		if(ret)
 		{
-			printk("the interrupt init faild !\n");
+			SSDK_ERROR("the interrupt init faild !\n");
 			return ret;
 		}
 	}
@@ -1502,9 +1626,18 @@ static int ssdk_switch_register(void)
 		||(ssdk_dt_global.mac_mode == PORT_WRAPPER_SGMII4_RGMII4)) {
 		ret = dess_rgmii_mac_work_start(priv);
 		if (ret != 0) {
-			printk("dess_rgmii_mac_work_start failed for %s\n", sw_dev->name);
+			SSDK_ERROR("dess_rgmii_mac_work_start failed for %s\n", priv->name);
 			return ret;
 		}
+	}
+	#endif
+	#endif
+	#ifdef HPPE
+	#ifdef HAWKEYE_CHIP
+	ret = qca_mac_sw_sync_work_start(priv);
+	if (ret != 0) {
+			printk("qca_mac_sw_sync_work_start failed for %s\n", priv->name);
+			return ret;
 	}
 	#endif
 	#endif
@@ -1513,11 +1646,19 @@ static int ssdk_switch_register(void)
 
 }
 
-static int ssdk_switch_unregister(void)
+static int ssdk_switch_unregister(a_uint32_t dev_id)
 {
-	qca_phy_mib_work_stop(qca_phy_priv_global);
-	qm_err_check_work_stop(qca_phy_priv_global);
-	unregister_switch(&qca_phy_priv_global->sw_dev);
+	qca_phy_mib_work_stop(qca_phy_priv_global[dev_id]);
+	qm_err_check_work_stop(qca_phy_priv_global[dev_id]);
+	#ifdef HPPE
+	#ifdef HAWKEYE_CHIP
+	qca_mac_sw_sync_work_stop(qca_phy_priv_global[dev_id]);
+	#endif
+	#endif
+
+	#if defined(IN_SWCONFIG)
+	unregister_switch(&qca_phy_priv_global[dev_id]->sw_dev);
+	#endif
 	return 0;
 }
 #endif
@@ -1526,7 +1667,7 @@ static int
 qca_phy_read_status(struct phy_device *pdev)
 {
 	struct qca_phy_priv *priv = pdev->priv;
-	struct switch_port_link port_link;
+	struct qca_port_link port_link;
 	int ret = 0;
 
 	if (pdev->addr != 0) {
@@ -1544,11 +1685,11 @@ qca_phy_read_status(struct phy_device *pdev)
 	if (pdev->link == 0)
 		return 0;
 
-	if(port_link.speed == SWITCH_PORT_SPEED_10) {
+	if(port_link.speed == QCA_SWITCH_PORT_SPEED_10) {
 		pdev->speed = SPEED_10;
-	} else if (port_link.speed == SWITCH_PORT_SPEED_100) {
+	} else if (port_link.speed == QCA_SWITCH_PORT_SPEED_100) {
 		pdev->speed = SPEED_100;
-	} else if (port_link.speed == SWITCH_PORT_SPEED_1000) {
+	} else if (port_link.speed == QCA_SWITCH_PORT_SPEED_1000) {
 		pdev->speed = SPEED_1000;
 	} else {
 		pdev->speed = 0;
@@ -1601,10 +1742,13 @@ qca_phy_remove(struct phy_device *pdev)
 {
 	struct qca_phy_priv *priv = pdev->priv;
 
-	if ((pdev->addr == 0) && priv && (priv->sw_dev.name != NULL)) {
+	if ((pdev->addr == 0) && priv && (priv->name != NULL)) {
 		qca_phy_mib_work_stop(priv);
 		qm_err_check_work_stop(priv);
-		unregister_switch(&priv->sw_dev);
+#if defined(IN_SWCONFIG)
+		if (priv->sw_dev.name != NULL)
+			unregister_switch(&priv->sw_dev);
+#endif
 	}
 
 	if (priv) {
@@ -1624,34 +1768,6 @@ static struct phy_driver qca_phy_driver = {
 	.features	= PHY_BASIC_FEATURES,
 	.driver		= { .owner = THIS_MODULE },
 };
-
-static int ssdk_phy_id_get(ssdk_init_cfg *cfg)
-{
-	a_uint32_t phy_id = 0;
-	a_uint16_t org_id = 0, rev_id = 0;
-
-	cfg->reg_func.mdio_get(0, 0, 2, &org_id);
-	cfg->reg_func.mdio_get(0, 0, 3, &rev_id);
-	phy_id = (org_id<<16) | rev_id;
-	cfg->phy_id = phy_id;
-	printk("PHY ID is 0x%x\n",cfg->phy_id);
-
-	return SW_OK;
-}
-int ssdk_phy_init(ssdk_init_cfg *cfg)
-{
-
-	int size = sizeof(phy_array)/sizeof(phy_identification_t);
-	int i = 0;
-
-	for(i=0;i<size;i++)
-	{
-		if(phy_array[i].phy_id == cfg->phy_id)
-			return phy_array[i].init();
-	}
-
-	return SW_FAIL;
-}
 
 #ifndef BOARD_AR71XX
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
@@ -1680,27 +1796,27 @@ static int ssdk_probe(struct platform_device *pdev)
 	ess_mac_clock_disable[4] = devm_reset_control_get(&pdev->dev, "ess_mac5_clk_dis");
 
 	if (IS_ERR(ess_rst)) {
-		printk("ess rst fail!\n");
-		return -1;
+		SSDK_INFO("ess_rst doesn't exist!\n");
+		return 0;
 	}
 	if (!ess_mac_clock_disable[0]) {
-		printk("ess_mac1_clock_disable fail!\n");
+		SSDK_ERROR("ess_mac1_clock_disable fail!\n");
 		return -1;
 	}
 	if (!ess_mac_clock_disable[1]) {
-		printk("ess_mac2_clock_disable fail!\n");
+		SSDK_ERROR("ess_mac2_clock_disable fail!\n");
 		return -1;
 	}
 	if (!ess_mac_clock_disable[2]) {
-		printk("ess_mac3_clock_disable fail!\n");
+		SSDK_ERROR("ess_mac3_clock_disable fail!\n");
 		return -1;
 	}
 	if (!ess_mac_clock_disable[3]) {
-		printk("ess_mac4_clock_disable fail!\n");
+		SSDK_ERROR("ess_mac4_clock_disable fail!\n");
 		return -1;
 	}
 	if (!ess_mac_clock_disable[4]) {
-		printk("ess_mac5_clock_disable fail!\n");
+		SSDK_ERROR("ess_mac5_clock_disable fail!\n");
 		return -1;
 	}
 
@@ -1708,7 +1824,7 @@ static int ssdk_probe(struct platform_device *pdev)
 	mdelay(10);
 	reset_control_deassert(ess_rst);
 	mdelay(100);
-	printk("reset ok in probe!\n");
+	SSDK_INFO("reset ok in probe!\n");
 	return 0;
 }
 
@@ -1729,22 +1845,25 @@ static struct platform_driver ssdk_driver = {
 #endif
 #ifdef DESS
 static u32 phy_t_status = 0;
-void ssdk_malibu_psgmii_and_dakota_dess_reset(void)
+void ssdk_malibu_psgmii_and_dakota_dess_reset(a_uint32_t dev_id, a_uint32_t first_phy_addr)
 {
 #ifndef BOARD_AR71XX
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0))
 	int m = 0, n = 0;
+	a_uint32_t psgmii_phy_addr;
+
+	psgmii_phy_addr = first_phy_addr + 5;
 
 	/*reset Malibu PSGMII and Dakota ESS start*/
-	qca_ar8327_phy_write(0, 5, 0x0, 0x005b);/*fix phy psgmii RX 20bit*/
-	qca_ar8327_phy_write(0, 5, 0x0, 0x001b);/*reset phy psgmii*/
-	qca_ar8327_phy_write(0, 5, 0x0, 0x005b);/*release reset phy psgmii*/
+	qca_ar8327_phy_write(dev_id, psgmii_phy_addr, 0x0, 0x005b);/*fix phy psgmii RX 20bit*/
+	qca_ar8327_phy_write(dev_id, psgmii_phy_addr, 0x0, 0x001b);/*reset phy psgmii*/
+	qca_ar8327_phy_write(dev_id, psgmii_phy_addr, 0x0, 0x005b);/*release reset phy psgmii*/
 	/* mdelay(100); this 100ms be replaced with below malibu psgmii calibration process*/
 	/*check malibu psgmii calibration done start*/
 	n = 0;
 	while (n < 100) {
 		u16 status;
-		status = qca_phy_mmd_read(0, 5, 1, 0x28);
+		status = qca_phy_mmd_read(dev_id, psgmii_phy_addr, 1, 0x28);
 		if (status & BIT(0))
 			break;
 		mdelay(10);
@@ -1752,18 +1871,18 @@ void ssdk_malibu_psgmii_and_dakota_dess_reset(void)
 	}
 #ifdef PSGMII_DEBUG
 	if (n >= 100)
-		printk("MALIBU PSGMII PLL_VCO_CALIB NOT READY\n");
+		SSDK_INFO("MALIBU PSGMII PLL_VCO_CALIB NOT READY\n");
 #endif
 	mdelay(50);
 	/*check malibu psgmii calibration done end..*/
-	qca_ar8327_phy_write(0, 5, 0x1a, 0x2230);/*freeze phy psgmii RX CDR*/
+	qca_ar8327_phy_write(dev_id, psgmii_phy_addr, 0x1a, 0x2230);/*freeze phy psgmii RX CDR*/
 
 	ssdk_ess_reset();
 	/*check dakota psgmii calibration done start*/
 	m = 0;
 	while (m < 100) {
 		u32 status = 0;
-		qca_psgmii_reg_read(0, 0xa0, (a_uint8_t *)&status, 4);
+		qca_psgmii_reg_read(dev_id, 0xa0, (a_uint8_t *)&status, 4);
 		if (status & BIT(0))
 			break;
 		mdelay(10);
@@ -1771,12 +1890,12 @@ void ssdk_malibu_psgmii_and_dakota_dess_reset(void)
 	}
 #ifdef PSGMII_DEBUG
 	if (m >= 100)
-		printk("DAKOTA PSGMII PLL_VCO_CALIB NOT READY\n");
+		SSDK_INFO("DAKOTA PSGMII PLL_VCO_CALIB NOT READY\n");
 #endif
 	mdelay(50);
 	/*check dakota psgmii calibration done end..*/
-	qca_ar8327_phy_write(0, 5, 0x1a, 0x3230);/*relesae phy psgmii RX CDR*/
-	qca_ar8327_phy_write(0, 5, 0x0, 0x005f);/*release phy psgmii RX 20bit*/
+	qca_ar8327_phy_write(dev_id, psgmii_phy_addr, 0x1a, 0x3230);/*relesae phy psgmii RX CDR*/
+	qca_ar8327_phy_write(dev_id, psgmii_phy_addr, 0x0, 0x005f);/*release phy psgmii RX 20bit*/
 	mdelay(200);
 #endif
 #endif
@@ -1784,31 +1903,31 @@ void ssdk_malibu_psgmii_and_dakota_dess_reset(void)
 	return;
 }
 
-static void ssdk_psgmii_phy_testing_printf(int phy, u32 tx_ok, u32 rx_ok,
+static void ssdk_psgmii_phy_testing_printf(a_uint32_t phy, u32 tx_ok, u32 rx_ok,
 				u32 tx_counter_error, u32 rx_counter_error)
 {
-	printk("tx_ok = 0x%x, rx_ok = 0x%x, tx_counter_error = 0x%x, rx_counter_error = 0x%x\n",
+	SSDK_INFO("tx_ok = 0x%x, rx_ok = 0x%x, tx_counter_error = 0x%x, rx_counter_error = 0x%x\n",
 			tx_ok, rx_ok, tx_counter_error, rx_counter_error);
 	if (tx_ok== 0x3000 && tx_counter_error == 0)
-		printk("PHY %d single PSGMII test pass\n", phy);
+		SSDK_INFO("PHY %d single PSGMII test pass\n", phy);
 	else
-		printk("PHY %d single PSGMII test fail\n", phy);
+		SSDK_ERROR("PHY %d single PSGMII test fail\n", phy);
 	return;
 
 }
-static void ssdk_psgmii_all_phy_testing_printf(int phy, u32 tx_ok, u32 rx_ok,
+static void ssdk_psgmii_all_phy_testing_printf(a_uint32_t phy, u32 tx_ok, u32 rx_ok,
 				u32 tx_counter_error, u32 rx_counter_error)
 {
-	printk("tx_ok = 0x%x, rx_ok = 0x%x, tx_counter_error = 0x%x, rx_counter_error = 0x%x\n",
+	SSDK_INFO("tx_ok = 0x%x, rx_ok = 0x%x, tx_counter_error = 0x%x, rx_counter_error = 0x%x\n",
 			tx_ok, rx_ok, tx_counter_error, rx_counter_error);
 	if (tx_ok== 0x3000 && tx_counter_error == 0)
-		printk("PHY %d all PSGMII test pass\n", phy);
+		SSDK_INFO("PHY %d all PSGMII test pass\n", phy);
 	else
-		printk("PHY %d all PSGMII test fail\n", phy);
+		SSDK_ERROR("PHY %d all PSGMII test fail\n", phy);
 	return;
 
 }
-void ssdk_psgmii_single_phy_testing(int phy, a_bool_t enable)
+void ssdk_psgmii_single_phy_testing(a_uint32_t dev_id, a_uint32_t phy, a_bool_t enable)
 {
 	int j = 0;
 
@@ -1817,12 +1936,12 @@ void ssdk_psgmii_single_phy_testing(int phy, a_bool_t enable)
 	u32 tx_counter_ok_high16;
 	u32 rx_counter_ok_high16;
 	u32 tx_ok, rx_ok;
-	qca_ar8327_phy_write(0, phy, 0x0, 0x9000);
-	qca_ar8327_phy_write(0, phy, 0x0, 0x4140);
+	qca_ar8327_phy_write(dev_id, phy, 0x0, 0x9000);
+	qca_ar8327_phy_write(dev_id, phy, 0x0, 0x4140);
 	j = 0;
 	while (j < 100) {
 		u16 status = 0;
-		qca_ar8327_phy_read(0, phy, 0x11, &status);
+		qca_ar8327_phy_read(dev_id, phy, 0x11, &status);
 		if (status & (1 << 10))
 			break;
 		mdelay(10);
@@ -1833,20 +1952,20 @@ void ssdk_psgmii_single_phy_testing(int phy, a_bool_t enable)
 		mdelay(300);
 
 	/*enable check*/
-	qca_phy_mmd_write(0, phy, 7, 0x8029, 0x0000);
-	qca_phy_mmd_write(0, phy, 7, 0x8029, 0x0003);
+	qca_phy_mmd_write(dev_id, phy, 7, 0x8029, 0x0000);
+	qca_phy_mmd_write(dev_id, phy, 7, 0x8029, 0x0003);
 
 	/*start traffic*/
-	qca_phy_mmd_write(0, phy, 7, 0x8020, 0xa000);
+	qca_phy_mmd_write(dev_id, phy, 7, 0x8020, 0xa000);
 	mdelay(200);
 
 	/*check counter*/
-	tx_counter_ok = qca_phy_mmd_read(0, phy, 7, 0x802e);
-	tx_counter_ok_high16 = qca_phy_mmd_read(0, phy, 7, 0x802d);
-	tx_counter_error = qca_phy_mmd_read(0, phy, 7, 0x802f);
-	rx_counter_ok = qca_phy_mmd_read(0, phy, 7, 0x802b);
-	rx_counter_ok_high16 = qca_phy_mmd_read(0, phy, 7, 0x802a);
-	rx_counter_error = qca_phy_mmd_read(0, phy, 7, 0x802c);
+	tx_counter_ok = qca_phy_mmd_read(dev_id, phy, 7, 0x802e);
+	tx_counter_ok_high16 = qca_phy_mmd_read(dev_id, phy, 7, 0x802d);
+	tx_counter_error = qca_phy_mmd_read(dev_id, phy, 7, 0x802f);
+	rx_counter_ok = qca_phy_mmd_read(dev_id, phy, 7, 0x802b);
+	rx_counter_ok_high16 = qca_phy_mmd_read(dev_id, phy, 7, 0x802a);
+	rx_counter_error = qca_phy_mmd_read(dev_id, phy, 7, 0x802c);
 	tx_ok = tx_counter_ok + (tx_counter_ok_high16<<16);
 	rx_ok = rx_counter_ok + (rx_counter_ok_high16<<16);
 	if (tx_ok== 0x3000 && tx_counter_error == 0) {
@@ -1860,20 +1979,20 @@ void ssdk_psgmii_single_phy_testing(int phy, a_bool_t enable)
 		ssdk_psgmii_phy_testing_printf(phy, tx_ok, rx_ok,
 				tx_counter_error, rx_counter_error);
 
-	qca_ar8327_phy_write(0, phy, 0x0, 0x1840);
+	qca_ar8327_phy_write(dev_id, phy, 0x0, 0x1840);
 }
 
-void ssdk_psgmii_all_phy_testing(a_bool_t enable)
+void ssdk_psgmii_all_phy_testing(a_uint32_t dev_id, a_uint32_t first_phy_addr, a_bool_t enable)
 {
-	int phy = 0, j = 0;
-
-	qca_ar8327_phy_write(0, 0x1f, 0x0, 0x9000);
-	qca_ar8327_phy_write(0, 0x1f, 0x0, 0x4140);
+	int j = 0;
+	a_uint32_t phy = 0;
+	qca_ar8327_phy_write(dev_id, 0x1f, 0x0, 0x9000);
+	qca_ar8327_phy_write(dev_id, 0x1f, 0x0, 0x4140);
 	j = 0;
 	while (j < 100) {
-		for (phy = 0; phy < 5; phy++) {
+		for (phy = first_phy_addr; phy < first_phy_addr + 5; phy++) {
 			u16 status = 0;
-			qca_ar8327_phy_read(0, phy, 0x11, &status);
+			qca_ar8327_phy_read(dev_id, phy, 0x11, &status);
 			if (!(status & (1 << 10)))
 				break;
 		}
@@ -1888,25 +2007,25 @@ void ssdk_psgmii_all_phy_testing(a_bool_t enable)
 		mdelay(300);
 
 	/*enable check*/
-	qca_phy_mmd_write(0, 0x1f, 7, 0x8029, 0x0000);
-	qca_phy_mmd_write(0, 0x1f, 7, 0x8029, 0x0003);
+	qca_phy_mmd_write(dev_id, 0x1f, 7, 0x8029, 0x0000);
+	qca_phy_mmd_write(dev_id, 0x1f, 7, 0x8029, 0x0003);
 
 	/*start traffic*/
-	qca_phy_mmd_write(0, 0x1f, 7, 0x8020, 0xa000);
+	qca_phy_mmd_write(dev_id, 0x1f, 7, 0x8020, 0xa000);
 	mdelay(200);
-	for (phy = 0; phy < 5; phy++) {
+	for (phy = first_phy_addr; phy < first_phy_addr + 5; phy++) {
 		u32 tx_counter_ok, tx_counter_error;
 		u32 rx_counter_ok, rx_counter_error;
 		u32 tx_counter_ok_high16;
 		u32 rx_counter_ok_high16;
 		u32 tx_ok, rx_ok;
 		/*check counter*/
-		tx_counter_ok = qca_phy_mmd_read(0, phy, 7, 0x802e);
-		tx_counter_ok_high16 = qca_phy_mmd_read(0, phy, 7, 0x802d);
-		tx_counter_error = qca_phy_mmd_read(0, phy, 7, 0x802f);
-		rx_counter_ok = qca_phy_mmd_read(0, phy, 7, 0x802b);
-		rx_counter_ok_high16 = qca_phy_mmd_read(0, phy, 7, 0x802a);
-		rx_counter_error = qca_phy_mmd_read(0, phy, 7, 0x802c);
+		tx_counter_ok = qca_phy_mmd_read(dev_id, phy, 7, 0x802e);
+		tx_counter_ok_high16 = qca_phy_mmd_read(dev_id, phy, 7, 0x802d);
+		tx_counter_error = qca_phy_mmd_read(dev_id, phy, 7, 0x802f);
+		rx_counter_ok = qca_phy_mmd_read(dev_id, phy, 7, 0x802b);
+		rx_counter_ok_high16 = qca_phy_mmd_read(dev_id, phy, 7, 0x802a);
+		rx_counter_error = qca_phy_mmd_read(dev_id, phy, 7, 0x802c);
 		tx_ok = tx_counter_ok + (tx_counter_ok_high16<<16);
 		rx_ok = rx_counter_ok + (rx_counter_ok_high16<<16);
 		if (tx_ok== 0x3000 && tx_counter_error == 0) {
@@ -1922,49 +2041,63 @@ void ssdk_psgmii_all_phy_testing(a_bool_t enable)
 					tx_counter_error, rx_counter_error);
 		}
 	if (enable == A_TRUE)
-		printk("PHY final test result: 0x%x \r\n",phy_t_status);
+		SSDK_INFO("PHY final test result: 0x%x \r\n",phy_t_status);
 
 }
-void ssdk_psgmii_self_test(a_bool_t enable, a_uint32_t times, a_uint32_t *result)
+void ssdk_psgmii_self_test(a_uint32_t dev_id, a_bool_t enable, a_uint32_t times,
+				a_uint32_t *result)
 {
-	int i = 0, phy = 0;
+	int i = 0;
 	u32 value = 0;
+	a_uint32_t port_bmp[SW_MAX_NR_DEV] = {0};
+	a_uint32_t port_id = 0, first_phy_addr = 0, phy = 0;
 
-	if (enable == A_FALSE) {
-		ssdk_malibu_psgmii_and_dakota_dess_reset();
+	port_bmp[dev_id] = qca_ssdk_phy_type_port_bmp_get(dev_id, MALIBU_PHY_CHIP);
+
+	for (port_id = 0; port_id < SW_MAX_NR_PORT; port_id ++)
+	{
+		if (port_bmp[dev_id] & (0x1 << port_id))
+		{
+			first_phy_addr = qca_ssdk_port_to_phy_addr(dev_id, port_id);
+				break;
+		}
 	}
 
-	qca_ar8327_phy_write(0, 4, 0x1f, 0x8500);/*switch to access MII reg for copper*/
-	for(phy = 0; phy < 5; phy++) {
+	if (enable == A_FALSE) {
+		ssdk_malibu_psgmii_and_dakota_dess_reset(dev_id, first_phy_addr);
+	}
+
+	qca_ar8327_phy_write(dev_id, first_phy_addr + 4, 0x1f, 0x8500);/*switch to access MII reg for copper*/
+	for(phy = first_phy_addr; phy < first_phy_addr + 5; phy++) {
 		/*enable phy mdio broadcast write*/
-		qca_phy_mmd_write(0, phy, 7, 0x8028, 0x801f);
+		qca_phy_mmd_write(dev_id, phy, 7, 0x8028, 0x801f);
 	}
 
 	/* force no link by power down */
-	qca_ar8327_phy_write(0, 0x1f, 0x0, 0x1840);
+	qca_ar8327_phy_write(dev_id, 0x1f, 0x0, 0x1840);
 
 	/*packet number*/
-	qca_phy_mmd_write(0, 0x1f, 7, 0x8021, 0x3000);
-	qca_phy_mmd_write(0, 0x1f, 7, 0x8062, 0x05e0);
+	qca_phy_mmd_write(dev_id, 0x1f, 7, 0x8021, 0x3000);
+	qca_phy_mmd_write(dev_id, 0x1f, 7, 0x8062, 0x05e0);
 
 	/*fix mdi status */
-	qca_ar8327_phy_write(0, 0x1f, 0x10, 0x6800);
+	qca_ar8327_phy_write(dev_id, 0x1f, 0x10, 0x6800);
 
 	for(i = 0; i < times; i++) {
 		phy_t_status = 0;
 
 		for(phy = 0; phy < 5; phy++) {
-			value = readl(qca_phy_priv_global->hw_addr + 0x66c + phy * 0xc);
-			writel((value|(1<<21)), (qca_phy_priv_global->hw_addr + 0x66c + phy * 0xc));
+			value = readl(qca_phy_priv_global[dev_id]->hw_addr + 0x66c + phy * 0xc);
+			writel((value|(1<<21)), (qca_phy_priv_global[dev_id]->hw_addr + 0x66c + phy * 0xc));
 		}
 
-		for (phy = 0; phy < 5; phy++) {
-			ssdk_psgmii_single_phy_testing(phy, enable);
+		for (phy = first_phy_addr; phy < first_phy_addr + 5; phy++) {
+			ssdk_psgmii_single_phy_testing(dev_id, phy, enable);
 		}
-		ssdk_psgmii_all_phy_testing(enable);
+		ssdk_psgmii_all_phy_testing(dev_id, first_phy_addr, enable);
 		if (enable == A_FALSE) {
 			if (phy_t_status) {
-				ssdk_malibu_psgmii_and_dakota_dess_reset();
+				ssdk_malibu_psgmii_and_dakota_dess_reset(dev_id, first_phy_addr);
 			}
 			else
 			{
@@ -1976,42 +2109,61 @@ void ssdk_psgmii_self_test(a_bool_t enable, a_uint32_t times, a_uint32_t *result
 	*result = phy_t_status;
 #ifdef PSGMII_DEBUG
 	if (i>=100)
-		printk("PSGMII cannot recover\n");
+		SSDK_ERROR("PSGMII cannot recover\n");
 	else
-		printk("PSGMII recovered after %d times reset\n",i);
+		SSDK_INFO("PSGMII recovered after %d times reset\n",i);
 #endif
 	/*configuration recover*/
 	/*packet number*/
-	qca_phy_mmd_write(0, 0x1f, 7, 0x8021, 0x0);
+	qca_phy_mmd_write(dev_id, 0x1f, 7, 0x8021, 0x0);
 	/*disable check*/
-	qca_phy_mmd_write(0, 0x1f, 7, 0x8029, 0x0);
+	qca_phy_mmd_write(dev_id, 0x1f, 7, 0x8029, 0x0);
 	/*disable traffic*/
-	qca_phy_mmd_write(0, 0x1f, 7, 0x8020, 0x0);
+	qca_phy_mmd_write(dev_id, 0x1f, 7, 0x8020, 0x0);
 }
 
 
-void clear_self_test_config(void)
+void clear_self_test_config(a_uint32_t dev_id)
 {
-	int phy = 0;
 	u32 value = 0;
+	a_uint32_t port_bmp[SW_MAX_NR_DEV] = {0};
+	a_uint32_t port_id = 0, first_phy_addr = 0, phy = 0;
+
+
+	port_bmp[dev_id] = qca_ssdk_phy_type_port_bmp_get(dev_id, MALIBU_PHY_CHIP);
+
+	for (port_id = 0; port_id < SW_MAX_NR_PORT; port_id ++)
+	{
+		if (port_bmp[dev_id] & (0x1 << port_id))
+		{
+			first_phy_addr = qca_ssdk_port_to_phy_addr(dev_id, port_id);
+				break;
+		}
+	}
+
 	/* disable EEE */
-/*	qca_phy_mmd_write(0, 0x1f, 0x7,  0x3c, 0x0); */
+	/* qca_phy_mmd_write(0, 0x1f, 0x7,  0x3c, 0x0); */
 
 	/*disable phy internal loopback*/
-	qca_ar8327_phy_write(0, 0x1f, 0x10, 0x6860);
-	qca_ar8327_phy_write(0, 0x1f, 0x0, 0x9040);
+	qca_ar8327_phy_write(dev_id, 0x1f, 0x10, 0x6860);
+	qca_ar8327_phy_write(dev_id, 0x1f, 0x0, 0x9040);
 
 	for(phy = 0; phy < 5; phy++)
 	{
 		/*disable mac loop back*/
-		value = readl(qca_phy_priv_global->hw_addr+0x66c+phy*0xc);
-		writel((value&(~(1<<21))), (qca_phy_priv_global->hw_addr+0x66c+phy*0xc));
+		value = readl(qca_phy_priv_global[dev_id]->hw_addr+0x66c+phy*0xc);
+		writel((value&(~(1<<21))), (qca_phy_priv_global[dev_id]->hw_addr+0x66c+phy*0xc));
+	}
+
+	for(phy = first_phy_addr; phy < first_phy_addr + 5; phy++)
+	{
 		/*diable phy mdio broadcast write*/
-		qca_phy_mmd_write(0, phy, 7, 0x8028, 0x001f);
+		qca_phy_mmd_write(dev_id, phy, 7, 0x8028, 0x001f);
+
 	}
 
 	/* clear fdb entry */
-	fal_fdb_entry_flush(0,1);
+	fal_fdb_entry_flush(dev_id,1);
 }
 #endif
 
@@ -2022,13 +2174,17 @@ ssdk_init(a_uint32_t dev_id, ssdk_init_cfg * cfg)
 
 	rv = fal_init(dev_id, cfg);
 	if (rv != SW_OK)
-		printk("ssdk fal init failed: %d. \r\n", rv);
+		SSDK_ERROR("ssdk fal init failed: %d. \r\n", rv);
 
+#ifndef HAWKEYE_CHIP
 	if (cfg->chip_type != CHIP_HPPE) {
-		rv = ssdk_phy_init(cfg);
+#endif
+		rv = ssdk_phy_driver_init(dev_id, cfg);
 		if (rv != SW_OK)
-			printk("ssdk phy init failed: %d. \r\n", rv);
+			SSDK_ERROR("ssdk phy init failed: %d. \r\n", rv);
+#ifndef HAWKEYE_CHIP
 	}
+#endif
 
 	return rv;
 }
@@ -2039,6 +2195,7 @@ ssdk_cleanup(void)
 	sw_error_t rv;
 
 	rv = fal_cleanup();
+	rv = ssdk_phy_driver_cleanup();
 
 	return rv;
 }
@@ -2052,59 +2209,58 @@ ssdk_hsl_access_mode_set(a_uint32_t dev_id, hsl_access_mode reg_mode)
     return rv;
 }
 
-void switch_cpuport_setup(void)
+void switch_cpuport_setup(a_uint32_t dev_id)
 {
 	#ifdef IN_PORTCONTROL
 	//According to HW suggestion, enable CPU port flow control for Dakota
-	fal_port_flowctrl_forcemode_set(0, 0, A_TRUE);
-	fal_port_flowctrl_set(0, 0, A_TRUE);
-
-	fal_port_duplex_set(0, 0, FAL_FULL_DUPLEX);
-	fal_port_speed_set(0, 0, FAL_SPEED_1000);
+	fal_port_flowctrl_forcemode_set(dev_id, 0, A_TRUE);
+	fal_port_flowctrl_set(dev_id, 0, A_TRUE);
+	fal_port_duplex_set(dev_id, 0, FAL_FULL_DUPLEX);
+	fal_port_speed_set(dev_id, 0, FAL_SPEED_1000);
 	udelay(10);
-	fal_port_txmac_status_set(0, 0, A_TRUE);
-	fal_port_rxmac_status_set(0, 0, A_TRUE);
+	fal_port_txmac_status_set(dev_id, 0, A_TRUE);
+	fal_port_rxmac_status_set(dev_id, 0, A_TRUE);
 	#endif
 }
 
 #ifndef BOARD_AR71XX
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-static void ssdk_dt_parse_mac_mode(ssdk_init_cfg *cfg, struct device_node *switch_node)
+static void ssdk_dt_parse_mac_mode(ssdk_init_cfg *cfg, struct device_node *switch_node, a_uint32_t dev_id)
 {
 	const __be32 *mac_mode;
 	a_uint32_t len = 0;
 
 	mac_mode = of_get_property(switch_node, "switch_mac_mode", &len);
 	if (!mac_mode)
-		printk("mac mode doesn't exit!\n");
+		SSDK_INFO("mac mode doesn't exit!\n");
 	else {
 		cfg->mac_mode = be32_to_cpup(mac_mode);
-		printk("mac mode = 0x%x\n", be32_to_cpup(mac_mode));
-		ssdk_dt_global.mac_mode = cfg->mac_mode;
+		SSDK_INFO("mac mode = 0x%x\n", be32_to_cpup(mac_mode));
+		ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->mac_mode = cfg->mac_mode;
 	}
 
 	mac_mode = of_get_property(switch_node, "switch_mac_mode1", &len);
 	if(!mac_mode)
-		printk("mac mode1 doesn't exit!\n");
+		SSDK_INFO("mac mode1 doesn't exit!\n");
 	else {
 		cfg->mac_mode1 = be32_to_cpup(mac_mode);
-		printk("mac mode1 = 0x%x\n", be32_to_cpup(mac_mode));
-		ssdk_dt_global.mac_mode1 = cfg->mac_mode1;
+		SSDK_INFO("mac mode1 = 0x%x\n", be32_to_cpup(mac_mode));
+		ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->mac_mode1 = cfg->mac_mode1;
 	}
 
 	mac_mode = of_get_property(switch_node, "switch_mac_mode2", &len);
 	if(!mac_mode)
-		printk("mac mode2 doesn't exit!\n");
+		SSDK_INFO("mac mode2 doesn't exit!\n");
 	else {
 		cfg->mac_mode2 = be32_to_cpup(mac_mode);
-		printk("mac mode2 = 0x%x\n", be32_to_cpup(mac_mode));
-		ssdk_dt_global.mac_mode2 = cfg->mac_mode2;
+		SSDK_INFO("mac mode2 = 0x%x\n", be32_to_cpup(mac_mode));
+		ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->mac_mode2 = cfg->mac_mode2;
 	}
 
 	return;
 }
 
-static void ssdk_dt_parse_uniphy(void)
+static void ssdk_dt_parse_uniphy(a_uint32_t dev_id)
 {
 	struct device_node *uniphy_node = NULL;
 	a_uint32_t len = 0;
@@ -2113,47 +2269,316 @@ static void ssdk_dt_parse_uniphy(void)
 	/* read uniphy register base and address space */
 	uniphy_node = of_find_node_by_name(NULL, "ess-uniphy");
 	if (!uniphy_node)
-		printk("ess-uniphy DT doesn't exist!\n");
+		SSDK_INFO("ess-uniphy DT doesn't exist!\n");
 	else {
-		printk("ess-uniphy DT exist!\n");
+		SSDK_INFO("ess-uniphy DT exist!\n");
 		reg_cfg = of_get_property(uniphy_node, "reg", &len);
 		if(!reg_cfg)
-			printk("uniphy reg address doesn't exist!\n");
+			SSDK_INFO("uniphy reg address doesn't exist!\n");
 		else {
-			ssdk_dt_global.uniphyreg_base_addr = be32_to_cpup(reg_cfg);
-			ssdk_dt_global.uniphyreg_size = be32_to_cpup(reg_cfg + 1);
+			ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->uniphyreg_base_addr = be32_to_cpup(reg_cfg);
+			ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->uniphyreg_size = be32_to_cpup(reg_cfg + 1);
 		}
-		if (of_property_read_string(uniphy_node, "uniphy_access_mode", (const char **)&ssdk_dt_global.uniphy_access_mode))
-			printk("uniphy access mode doesn't exist!\n");
+		if (of_property_read_string(uniphy_node, "uniphy_access_mode", (const char **)&ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->uniphy_access_mode))
+			SSDK_INFO("uniphy access mode doesn't exist!\n");
 		else {
-			if(!strcmp(ssdk_dt_global.uniphy_access_mode, "local bus"))
-				ssdk_dt_global.uniphy_reg_access_mode = HSL_REG_LOCAL_BUS;
+			if(!strcmp(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->uniphy_access_mode, "local bus"))
+				ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->uniphy_reg_access_mode = HSL_REG_LOCAL_BUS;
 		}
 	}
 
 	return;
 }
-static int ssdk_dt_parse(ssdk_init_cfg *cfg)
+
+static void ssdk_dt_parse_l1_scheduler_cfg(
+	struct device_node *port_node,
+	a_uint32_t port_id, a_uint32_t dev_id)
 {
-	struct device_node *switch_node = NULL,*mdio_node = NULL;
+	struct device_node *scheduler_node;
+	struct device_node *child;
+	ssdk_dt_scheduler_cfg *cfg = &(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->scheduler_cfg);
+	a_uint32_t tmp_cfg[4];
+	const __be32 *paddr;
+	a_uint32_t len, i, sp_id;
+
+	scheduler_node = of_find_node_by_name(port_node, "l1scheduler");
+	if (!scheduler_node) {
+		SSDK_ERROR("cannot find l1scheduler node for port\n");
+		return;
+	}
+	for_each_available_child_of_node(scheduler_node, child) {
+		paddr = of_get_property(child, "sp", &len);
+		len /= sizeof(a_uint32_t);
+		if (!paddr) {
+			SSDK_ERROR("error reading sp property\n");
+			return;
+		}
+		if (of_property_read_u32_array(child,
+				"cfg", tmp_cfg, 4)) {
+			SSDK_ERROR("error reading cfg property!\n");
+			return;
+		}
+		for (i = 0; i < len; i++) {
+			sp_id = be32_to_cpup(paddr+i);
+			if (sp_id >= SSDK_L1SCHEDULER_CFG_MAX) {
+				SSDK_ERROR("Invalid parameter for sp(%d)\n",
+					sp_id);
+				return;
+			}
+			cfg->l1cfg[sp_id].valid = 1;
+			cfg->l1cfg[sp_id].port_id = port_id;
+			cfg->l1cfg[sp_id].cpri = tmp_cfg[0];
+			cfg->l1cfg[sp_id].cdrr_id = tmp_cfg[1];
+			cfg->l1cfg[sp_id].epri = tmp_cfg[2];
+			cfg->l1cfg[sp_id].edrr_id = tmp_cfg[3];
+		}
+	}
+}
+
+static void ssdk_dt_parse_l0_scheduler_cfg(
+	struct device_node *port_node,
+	a_uint32_t port_id, a_uint32_t dev_id)
+{
+	struct device_node *scheduler_node;
+	struct device_node *child;
+	ssdk_dt_scheduler_cfg *cfg = &(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->scheduler_cfg);
+	a_uint32_t tmp_cfg[5];
+	const __be32 *paddr;
+	a_uint32_t len, i, queue_id;
+
+	scheduler_node = of_find_node_by_name(port_node, "l0scheduler");
+	if (!scheduler_node) {
+		SSDK_ERROR("cannot find l0scheduler node for port\n");
+		return;
+	}
+	for_each_available_child_of_node(scheduler_node, child) {
+		paddr = of_get_property(child, "ucast_queue", &len);
+		len /= sizeof(a_uint32_t);
+		if (!paddr) {
+			SSDK_ERROR("error reading ucast_queue property\n");
+			return;
+		}
+		if (of_property_read_u32_array(child,
+				"cfg", tmp_cfg, 5)) {
+			SSDK_ERROR("error reading cfg property!\n");
+			return;
+		}
+		for (i = 0; i < len; i++) {
+			queue_id = be32_to_cpup(paddr+i);
+			if (queue_id >= SSDK_L0SCHEDULER_UCASTQ_CFG_MAX) {
+				SSDK_ERROR("Invalid parameter for Uqueue(%d)\n",
+					queue_id);
+				return;
+			}
+			cfg->l0cfg[queue_id].valid = 1;
+			cfg->l0cfg[queue_id].port_id = port_id;
+			cfg->l0cfg[queue_id].sp_id = tmp_cfg[0];
+			cfg->l0cfg[queue_id].cpri = tmp_cfg[1];
+			cfg->l0cfg[queue_id].cdrr_id = tmp_cfg[2];
+			cfg->l0cfg[queue_id].epri = tmp_cfg[3];
+			cfg->l0cfg[queue_id].edrr_id = tmp_cfg[4];
+		}
+		paddr = of_get_property(child, "mcast_queue", &len);
+		len /= sizeof(a_uint32_t);
+		if (!paddr) {
+			SSDK_ERROR("error reading Mcast_queue property\n");
+			return;
+		}
+		for (i = 0; i < len; i++) {
+			queue_id = be32_to_cpup(paddr+i);
+			if (queue_id >= SSDK_L0SCHEDULER_CFG_MAX) {
+				SSDK_ERROR("Invalid parameter for Mqueue(%d)\n",
+					queue_id);
+				return;
+			}
+			cfg->l0cfg[queue_id].valid = 1;
+			cfg->l0cfg[queue_id].port_id = port_id;
+			cfg->l0cfg[queue_id].sp_id = tmp_cfg[0];
+			cfg->l0cfg[queue_id].cpri = tmp_cfg[1];
+			cfg->l0cfg[queue_id].cdrr_id = tmp_cfg[2];
+			cfg->l0cfg[queue_id].epri = tmp_cfg[3];
+			cfg->l0cfg[queue_id].edrr_id = tmp_cfg[4];
+		}
+	}
+}
+
+static void ssdk_dt_parse_scheduler_resource(
+	struct device_node *port_node,
+	a_uint32_t dev_id, a_uint32_t port_id)
+{
+	a_uint32_t uq[2], mq[2], l0sp[2], l0cdrr[2];
+	a_uint32_t l0edrr[2], l1cdrr[2], l1edrr[2];
+	ssdk_dt_scheduler_cfg *cfg = &(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->scheduler_cfg);
+
+	if (of_property_read_u32_array(port_node, "ucast_queue", uq, 2)
+		|| of_property_read_u32_array(port_node, "mcast_queue", mq, 2)
+		|| of_property_read_u32_array(port_node, "l0sp", l0sp, 2)
+		|| of_property_read_u32_array(port_node, "l0cdrr", l0cdrr, 2)
+		|| of_property_read_u32_array(port_node, "l0edrr", l0edrr, 2)
+		|| of_property_read_u32_array(port_node, "l1cdrr", l1cdrr, 2)
+		|| of_property_read_u32_array(port_node, "l1edrr", l1edrr, 2)){
+		SSDK_ERROR("error reading port resource scheduler properties\n");
+		return;
+	}
+	cfg->pool[port_id].ucastq_start = uq[0];
+	cfg->pool[port_id].ucastq_end = uq[1];
+	cfg->pool[port_id].mcastq_start = mq[0];
+	cfg->pool[port_id].mcastq_end = mq[1];
+	cfg->pool[port_id].l0sp_start = l0sp[0];
+	cfg->pool[port_id].l0sp_end = l0sp[1];
+	cfg->pool[port_id].l0cdrr_start = l0cdrr[0];
+	cfg->pool[port_id].l0cdrr_end = l0cdrr[1];
+	cfg->pool[port_id].l0edrr_start = l0edrr[0];
+	cfg->pool[port_id].l0edrr_end = l0edrr[1];
+	cfg->pool[port_id].l1cdrr_start = l1cdrr[0];
+	cfg->pool[port_id].l1cdrr_end = l1cdrr[1];
+	cfg->pool[port_id].l1edrr_start = l1edrr[0];
+	cfg->pool[port_id].l1edrr_end = l1edrr[1];
+}
+
+static void ssdk_dt_parse_scheduler_cfg(struct device_node *switch_node, a_uint32_t dev_id)
+{
+	struct device_node *scheduler_node;
+	struct device_node *child;
+	a_uint32_t port_id;
+
+	scheduler_node = of_find_node_by_name(switch_node, "port_scheduler_resource");
+	if (!scheduler_node) {
+		SSDK_ERROR("cannot find port_scheduler_resource node\n");
+		return;
+	}
+	for_each_available_child_of_node(scheduler_node, child) {
+		if (of_property_read_u32(child, "port_id", &port_id)) {
+			SSDK_ERROR("error reading for port_id property!\n");
+			return;
+		}
+		if (port_id >= SSDK_MAX_PORT_NUM) {
+			SSDK_ERROR("invalid parameter for port_id(%d)!\n", port_id);
+			return;
+		}
+		ssdk_dt_parse_scheduler_resource(child, dev_id, port_id);
+	}
+
+	scheduler_node = of_find_node_by_name(switch_node, "port_scheduler_config");
+	if (!scheduler_node) {
+		SSDK_ERROR("cannot find port_scheduler_config node\n");
+		return ;
+	}
+	for_each_available_child_of_node(scheduler_node, child) {
+		if (of_property_read_u32(child, "port_id", &port_id)) {
+			SSDK_ERROR("error reading for port_id property!\n");
+			return;
+		}
+		if (port_id >= SSDK_MAX_PORT_NUM) {
+			SSDK_ERROR("invalid parameter for port_id(%d)!\n", port_id);
+			return;
+		}
+		ssdk_dt_parse_l1_scheduler_cfg(child, port_id, dev_id);
+		ssdk_dt_parse_l0_scheduler_cfg(child, port_id, dev_id);
+	}
+}
+
+static int ssdk_dt_parse_phy_addr(struct device_node *switch_node, a_uint32_t dev_id)
+{
+	a_uint32_t phy_id, phy_addr;
+	a_uint32_t len = 0, i = 0;
+	const __be32 *phy_mp;
+	int rv = SW_OK;
+
+	phy_mp = of_get_property(switch_node, "qca,port_phyaddr_map", &len);
+	if (!phy_mp || len < (2 * sizeof(*phy_mp))) {
+		SSDK_ERROR("len:%d < 2 * sizeof(*phy_mp):%d\n", len, 2 * sizeof(*phy_mp));
+		return -EINVAL;
+	}
+
+	len /= sizeof(*phy_mp);
+
+	for (i = 0; i < len - 1; i += 2) {
+		phy_id = be32_to_cpup(phy_mp + i);
+		phy_addr = be32_to_cpup(phy_mp + i + 1);
+		qca_ssdk_phy_address_set(dev_id, phy_id, phy_addr);
+	}
+
+	return rv;
+}
+
+static void ssdk_dt_parse_mdio(struct device_node *switch_node, a_uint32_t dev_id)
+{
+	struct device_node *mdio_node = NULL;
+	struct device_node *child = NULL;
+	a_uint32_t len = 0, i = 1;
+	const __be32 *phy_addr;
+
+	/* prefer to get phy addr from ess-switch node */
+	if (SW_OK == ssdk_dt_parse_phy_addr(switch_node, dev_id))
+		return;
+
+	mdio_node = of_find_node_by_name(NULL, "mdio");
+
+	if (!mdio_node) {
+		SSDK_INFO("mdio DT doesn't exist!\n");
+	}
+	else {
+		SSDK_INFO("mdio DT exist!\n");
+		for_each_available_child_of_node(mdio_node, child) {
+			phy_addr = of_get_property(child, "reg", &len);
+			if (phy_addr)
+				qca_ssdk_phy_address_set(dev_id, i, be32_to_cpup(phy_addr));
+			i++;
+			if (i >= SW_MAX_NR_PORT)
+				break;
+		}
+	}
+	return;
+}
+
+static void ssdk_dt_parse_port_bmp(a_uint32_t dev_id,ssdk_init_cfg *cfg,
+				struct device_node *switch_node)
+{
+	a_uint32_t portbmp = 0;
+
+	if (of_property_read_u32(switch_node, "switch_cpu_bmp", &cfg->port_cfg.cpu_bmp)
+		|| of_property_read_u32(switch_node, "switch_lan_bmp", &cfg->port_cfg.lan_bmp)
+		|| of_property_read_u32(switch_node, "switch_wan_bmp", &cfg->port_cfg.wan_bmp)) {
+		SSDK_ERROR("port_bmp doesn't exist!\n");
+		return;
+	}
+	portbmp = cfg->port_cfg.lan_bmp | cfg->port_cfg.wan_bmp;
+	qca_ssdk_port_bmp_set(dev_id, portbmp);
+
+	return;
+}
+
+static int ssdk_dt_parse(ssdk_init_cfg *cfg, a_uint32_t num, a_uint32_t *dev_id)
+{
+	struct device_node *switch_node = NULL;
+	struct device_node *switch_instance = NULL;
 	struct device_node *psgmii_node = NULL;
 	struct device_node *child = NULL;
-	a_uint32_t len = 0,i = 0,j = 0;
-	const __be32 *reg_cfg,*led_source,*phy_addr;
+	ssdk_dt_cfg *ssdk_dt_priv = NULL;
+	a_uint32_t len = 0, i = 0;
+	const __be32 *reg_cfg, *led_source, *device_id;
 	const __be32 *led_number;
 	a_uint8_t *led_str;
 	a_uint8_t *status_value;
+	char ess_switch_name[64] = {0};
 
+	if (num == 0)
+		snprintf(ess_switch_name, sizeof(ess_switch_name), "ess-switch");
+	else
+		snprintf(ess_switch_name, sizeof(ess_switch_name), "ess-switch%d", num);
 
 	/*
-	 * Get reference to ESS SWITCH device node
+	 * Get reference to ESS SWITCH device node from ess-instance node firstly.
 	 */
-	switch_node = of_find_node_by_name(NULL, "ess-switch");
+	switch_instance = of_find_node_by_name(NULL, "ess-instance");
+	switch_node = of_find_node_by_name(switch_instance, ess_switch_name);
 	if (!switch_node) {
-		printk("cannot find ess-switch node\n");
+		SSDK_ERROR("cannot find ess-switch node\n");
 		return SW_BAD_PARAM;
 	}
-	printk("ess-switch DT exist!\n");
+
+	SSDK_INFO("ess-switch DT exist!\n");
 
 	if (!of_property_read_string(switch_node, "status", (const char **)&status_value))
 	{
@@ -2161,65 +2586,74 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 			return SW_DISABLE;
 	}
 
+	device_id = of_get_property(switch_node, "device_id", &len);
+	if(!device_id)
+		*dev_id = 0;
+	else
+		*dev_id = be32_to_cpup(device_id);
+
+	ssdk_dt_priv = ssdk_dt_global.ssdk_dt_switch_nodes[*dev_id];
+	ssdk_dt_priv->device_id = *dev_id;
+	ssdk_dt_priv->ess_switch_flag = A_TRUE;
+	ssdk_dt_priv->of_node = switch_node;
+
+	if (of_property_read_string(switch_node, "switch_access_mode", (const char **)&ssdk_dt_priv->reg_access_mode)) {
+		SSDK_ERROR("%s: error reading device node properties for switch_access_mode\n", switch_node->name);
+		return SW_BAD_PARAM;
+	}
+
+	ssdk_dt_priv->ess_clk = of_clk_get_by_name(switch_node, "ess_clk");
+	if (IS_ERR(ssdk_dt_priv->ess_clk))
+		SSDK_INFO("Getting ess_clk failed!\n");
+
+	SSDK_INFO("switch_access_mode: %s\n", ssdk_dt_priv->reg_access_mode);
+	if(!strcmp(ssdk_dt_priv->reg_access_mode, "local bus"))
+		ssdk_dt_priv->switch_reg_access_mode = HSL_REG_LOCAL_BUS;
+	else if(!strcmp(ssdk_dt_priv->reg_access_mode, "mdio"))
+		ssdk_dt_priv->switch_reg_access_mode = HSL_REG_MDIO;
+	else
+		ssdk_dt_priv->switch_reg_access_mode = HSL_REG_MDIO;
+
+	ssdk_dt_parse_mac_mode(cfg, switch_node, *dev_id);
+
+	ssdk_dt_parse_uniphy(*dev_id);
+
+	ssdk_dt_parse_scheduler_cfg(switch_node, *dev_id);
+
+	ssdk_dt_parse_mdio(switch_node, *dev_id);
+
+	ssdk_dt_parse_port_bmp(*dev_id, cfg, switch_node);
+
 	reg_cfg = of_get_property(switch_node, "reg", &len);
 	if(!reg_cfg) {
-		printk("%s: error reading device node properties for reg\n", switch_node->name);
+		SSDK_ERROR("%s: error reading device node properties for reg\n", switch_node->name);
 		return SW_BAD_PARAM;
 	}
+	ssdk_dt_priv->switchreg_base_addr = be32_to_cpup(reg_cfg);
+	ssdk_dt_priv->switchreg_size = be32_to_cpup(reg_cfg + 1);
 
-	ssdk_dt_global.switchreg_base_addr = be32_to_cpup(reg_cfg);
-	ssdk_dt_global.switchreg_size = be32_to_cpup(reg_cfg + 1);
-
-	if (of_property_read_string(switch_node, "switch_access_mode", (const char **)&ssdk_dt_global.reg_access_mode)) {
-		printk("%s: error reading device node properties for switch_access_mode\n", switch_node->name);
-		return SW_BAD_PARAM;
-	}
-
-	ssdk_dt_global.ess_clk = of_clk_get_by_name(switch_node, "ess_clk");
-	if (IS_ERR(ssdk_dt_global.ess_clk))
-		printk("Getting ess_clk failed!\n");
-
-	printk("switchreg_base_addr: 0x%x\n", ssdk_dt_global.switchreg_base_addr);
-	printk("switchreg_size: 0x%x\n", ssdk_dt_global.switchreg_size);
-	printk("switch_access_mode: %s\n", ssdk_dt_global.reg_access_mode);
-	if(!strcmp(ssdk_dt_global.reg_access_mode, "local bus"))
-		ssdk_dt_global.switch_reg_access_mode = HSL_REG_LOCAL_BUS;
-	else if(!strcmp(ssdk_dt_global.reg_access_mode, "mdio"))
-		ssdk_dt_global.switch_reg_access_mode = HSL_REG_MDIO;
-	else
-		ssdk_dt_global.switch_reg_access_mode = HSL_REG_MDIO;
-
-	ssdk_dt_parse_mac_mode(cfg, switch_node);
-
-	ssdk_dt_parse_uniphy();
-
-	if (of_property_read_u32(switch_node, "switch_cpu_bmp", &cfg->port_cfg.cpu_bmp)
-		|| of_property_read_u32(switch_node, "switch_lan_bmp", &cfg->port_cfg.lan_bmp)
-		|| of_property_read_u32(switch_node, "switch_wan_bmp", &cfg->port_cfg.wan_bmp)) {
-		printk("%s: error reading device node port properties\n", switch_node->name);
-		return SW_BAD_PARAM;
-	}
-	printk("wan bmp:0x%x\n", cfg->port_cfg.wan_bmp);
+	SSDK_INFO("switchreg_base_addr: 0x%x\n", ssdk_dt_priv->switchreg_base_addr);
+	SSDK_INFO("switchreg_size: 0x%x\n", ssdk_dt_priv->switchreg_size);
 
 	psgmii_node = of_find_node_by_name(NULL, "ess-psgmii");
 	if (!psgmii_node) {
 		return SW_BAD_PARAM;
 	}
-	printk("ess-psgmii DT exist!\n");
+	SSDK_INFO("ess-psgmii DT exist!\n");
 	reg_cfg = of_get_property(psgmii_node, "reg", &len);
 	if(!reg_cfg) {
-		printk("%s: error reading device node properties for reg\n", psgmii_node->name);
+		SSDK_ERROR("%s: error reading device node properties for reg\n", psgmii_node->name);
 		return SW_BAD_PARAM;
 	}
 
-	ssdk_dt_global.psgmiireg_base_addr = be32_to_cpup(reg_cfg);
-	ssdk_dt_global.psgmiireg_size = be32_to_cpup(reg_cfg + 1);
-	if (of_property_read_string(psgmii_node, "psgmii_access_mode", (const char **)&ssdk_dt_global.psgmii_reg_access_str)) {
-		printk("%s: error reading device node properties for psmgii_access_mode\n", psgmii_node->name);
+	ssdk_dt_priv->psgmiireg_base_addr = be32_to_cpup(reg_cfg);
+	ssdk_dt_priv->psgmiireg_size = be32_to_cpup(reg_cfg + 1);
+	if (of_property_read_string(psgmii_node, "psgmii_access_mode", (const char **)&ssdk_dt_priv->psgmii_reg_access_str)) {
+		SSDK_INFO("%s: error reading device node properties for psmgii_access_mode\n", psgmii_node->name);
 		return SW_BAD_PARAM;
 	}
-	if(!strcmp(ssdk_dt_global.psgmii_reg_access_str, "local bus"))
-		ssdk_dt_global.psgmii_reg_access_mode = HSL_REG_LOCAL_BUS;
+	if(!strcmp(ssdk_dt_priv->psgmii_reg_access_str, "local bus"))
+		ssdk_dt_priv->psgmii_reg_access_mode = HSL_REG_LOCAL_BUS;
 
 	for_each_available_child_of_node(switch_node, child) {
 
@@ -2262,33 +2696,115 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg)
 		i++;
 	}
 	cfg->led_source_num = i;
-	printk("current dts led_source_num is %d\n",cfg->led_source_num);
+	SSDK_INFO("current dts led_source_num is %d\n",cfg->led_source_num);
 
-	mdio_node = of_find_node_by_name(NULL, "mdio");
-	if (!mdio_node) {
-		printk("cannot find mdio node\n");
-		return SW_BAD_PARAM;
-	}
-	printk("mdio DT exist!\n");
-
-	for_each_available_child_of_node(mdio_node, child) {
-
-		phy_addr = of_get_property(child, "reg", &len);
-		if (phy_addr)
-			qca_phy_priv_global->phy_address[j] = be32_to_cpup(phy_addr);
-		j++;
-		if (j >= 5)
-			break;
-	}
 	return SW_OK;
 }
+
 #endif
 #endif
 
-static void ssdk_driver_register(void)
+#ifdef CONFIG_MDIO
+static struct mdio_if_info ssdk_mdio_ctl;
+#endif
+static struct net_device *ssdk_miireg_netdev = NULL;
+
+static int ssdk_miireg_open(struct net_device *netdev)
+{
+	return 0;
+}
+static int ssdk_miireg_close(struct net_device *netdev)
+{
+	return 0;
+}
+
+static int ssdk_miireg_do_ioctl(struct net_device *netdev,
+			struct ifreq *ifr, int32_t cmd)
+{
+	struct mii_ioctl_data *mii_data = if_mii(ifr);
+	int ret = -EINVAL;
+
+#ifdef CONFIG_MDIO
+	ret = mdio_mii_ioctl(&ssdk_mdio_ctl, mii_data, cmd);
+#endif
+	return ret;
+}
+
+static const struct net_device_ops ssdk_netdev_ops = {
+	.ndo_open = &ssdk_miireg_open,
+	.ndo_stop = &ssdk_miireg_close,
+	.ndo_do_ioctl = &ssdk_miireg_do_ioctl,
+};
+
+#ifdef CONFIG_MDIO
+static int ssdk_miireg_ioctl_read(struct net_device *netdev, int phy_addr, int mmd, uint16_t addr)
+{
+	a_uint32_t reg = 0;
+	a_uint16_t val = 0;
+
+	if (MDIO_DEVAD_NONE == mmd) {
+		qca_ar8327_phy_read(0, phy_addr, addr, &val);
+		return (int)val;
+	}
+
+	reg = MII_ADDR_C45 | mmd << 16 | addr;
+	qca_ar8327_phy_read(0, phy_addr, reg, &val);
+
+	return (int)val;
+}
+
+static int ssdk_miireg_ioctl_write(struct net_device *netdev, int phy_addr, int mmd,
+				uint16_t addr, uint16_t value)
+{
+	a_uint32_t reg = 0;
+
+	if (MDIO_DEVAD_NONE == mmd) {
+		qca_ar8327_phy_write(0, phy_addr, addr, value);
+		return 0;
+	}
+
+	reg = MII_ADDR_C45 | mmd << 16 | addr;
+	qca_ar8327_phy_write(0, phy_addr, reg, value);
+
+	return 0;
+}
+#endif
+
+static void ssdk_netdev_setup(struct net_device *dev)
+{
+	dev->netdev_ops = &ssdk_netdev_ops;
+}
+static void ssdk_miireg_ioctrl_register(void)
+{
+	if (ssdk_miireg_netdev)
+		return;
+#ifdef CONFIG_MDIO
+	ssdk_mdio_ctl.mdio_read = ssdk_miireg_ioctl_read;
+	ssdk_mdio_ctl.mdio_write = ssdk_miireg_ioctl_write;
+	ssdk_mdio_ctl.mode_support = MDIO_SUPPORTS_C45;
+#endif
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,18,0))
+	ssdk_miireg_netdev = alloc_netdev(100, "miireg", 0, ssdk_netdev_setup);
+#else
+	ssdk_miireg_netdev = alloc_netdev(100, "miireg", ssdk_netdev_setup);
+#endif
+	if (ssdk_miireg_netdev)
+		register_netdev(ssdk_miireg_netdev);
+}
+
+static void ssdk_miireg_ioctrl_unregister(void)
+{
+	if (ssdk_miireg_netdev) {
+		unregister_netdev(ssdk_miireg_netdev);
+		kfree(ssdk_miireg_netdev);
+	}
+}
+
+static void ssdk_driver_register(a_uint32_t dev_id)
 {
 #ifdef DESS
-	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
+	if(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
 #ifndef BOARD_AR71XX
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 		platform_driver_register(&ssdk_driver);
@@ -2297,13 +2813,13 @@ static void ssdk_driver_register(void)
 	}
 #endif
 
-	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_MDIO) {
+	if(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->switch_reg_access_mode == HSL_REG_MDIO && ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->ess_switch_flag == A_FALSE) {
 		if(driver_find(qca_phy_driver.name, &mdio_bus_type)){
-			printk("QCA PHY driver had been Registered\n");
+			SSDK_ERROR("QCA PHY driver had been Registered\n");
 			return;
 		}
 
-		printk("Register QCA PHY driver\n");
+		SSDK_INFO("Register QCA PHY driver\n");
 #ifndef BOARD_AR71XX
 		phy_driver_register(&qca_phy_driver);
 #else
@@ -2317,9 +2833,9 @@ static void ssdk_driver_register(void)
 	}
 }
 
-static void ssdk_driver_unregister(void)
+static void ssdk_driver_unregister(a_uint32_t dev_id)
 {
-	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_MDIO) {
+	if(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->switch_reg_access_mode == HSL_REG_MDIO && ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->ess_switch_flag == A_FALSE) {
 #ifndef BOARD_AR71XX
 		phy_driver_unregister(&qca_phy_driver);
 #endif
@@ -2329,7 +2845,7 @@ static void ssdk_driver_unregister(void)
 	#endif
 	}
 
-	if (ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
+	if (ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
 #ifndef BOARD_AR71XX
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 		platform_driver_unregister(&ssdk_driver);
@@ -2338,15 +2854,17 @@ static void ssdk_driver_unregister(void)
 	}
 }
 
-static int chip_ver_get(ssdk_init_cfg* cfg)
+static int chip_ver_get(a_uint32_t dev_id, ssdk_init_cfg* cfg)
 {
 	int rv = 0;
 	a_uint8_t chip_ver = 0;
-	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_MDIO)
-		chip_ver = (qca_ar8216_mii_read(0)&0xff00)>>8;
+	if(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->switch_reg_access_mode == HSL_REG_MDIO)
+	{
+		chip_ver = (qca_ar8216_mii_read(dev_id, 0)&0xff00)>>8;
+	}
 	else {
 		a_uint32_t reg_val = 0;
-		qca_switch_reg_read(0,0,(a_uint8_t *)&reg_val, 4);
+		qca_switch_reg_read(dev_id,0,(a_uint8_t *)&reg_val, 4);
 		chip_ver = (reg_val&0xff00)>>8;
 	}
 
@@ -2367,7 +2885,7 @@ static int chip_ver_get(ssdk_init_cfg* cfg)
 }
 
 #ifdef DESS
-static int ssdk_flow_default_act_init(void)
+static int ssdk_flow_default_act_init(a_uint32_t dev_id)
 {
 	a_uint32_t vrf_id = 0;
 	fal_flow_type_t type = 0;
@@ -2376,7 +2894,7 @@ static int ssdk_flow_default_act_init(void)
 		for(type = FAL_FLOW_LAN_TO_LAN; type <= FAL_FLOW_WAN_TO_WAN; type++)
 		{
 			#ifdef IN_IP
-			fal_default_flow_cmd_set(0, vrf_id, type, FAL_DEFAULT_FLOW_ADMIT_ALL);
+			fal_default_flow_cmd_set(dev_id, vrf_id, type, FAL_DEFAULT_FLOW_ADMIT_ALL);
 			#endif
 		}
 	}
@@ -2489,7 +3007,7 @@ static int ssdk_dess_led_init(ssdk_init_cfg *cfg)
 	return 0;
 }
 
-static int ssdk_dess_mac_mode_init(a_uint32_t mac_mode)
+static int ssdk_dess_mac_mode_init(a_uint32_t dev_id, a_uint32_t mac_mode)
 {
 	a_uint32_t reg_value;
 	u8  __iomem      *gcc_addr = NULL;
@@ -2497,10 +3015,10 @@ static int ssdk_dess_mac_mode_init(a_uint32_t mac_mode)
 	switch(mac_mode) {
 		case PORT_WRAPPER_PSGMII:
 			reg_value = 0x2200;
-			qca_psgmii_reg_write(0, DESS_PSGMII_MODE_CONTROL,
+			qca_psgmii_reg_write(dev_id, DESS_PSGMII_MODE_CONTROL,
 								(a_uint8_t *)&reg_value, 4);
 			reg_value = 0x8380;
-			qca_psgmii_reg_write(0, DESS_PSGMIIPHY_TX_CONTROL,
+			qca_psgmii_reg_write(dev_id, DESS_PSGMIIPHY_TX_CONTROL,
 								(a_uint8_t *)&reg_value, 4);
 			break;
 		case PORT_WRAPPER_SGMII0_RGMII5:
@@ -2514,7 +3032,7 @@ static int ssdk_dess_mac_mode_init(a_uint32_t mac_mode)
 				||(mac_mode == PORT_WRAPPER_SGMII0_RGMII4)) {
 				/*PSGMII channnel 0 as SGMII*/
 				reg_value = 0x2001;
-				fal_psgmii_reg_set(0, 0x1b4,
+				fal_psgmii_reg_set(dev_id, 0x1b4,
 								(a_uint8_t *)&reg_value, 4);
 				udelay(1000);
 			}
@@ -2522,30 +3040,30 @@ static int ssdk_dess_mac_mode_init(a_uint32_t mac_mode)
 				||(mac_mode == PORT_WRAPPER_SGMII1_RGMII4)) {
 				/*PSGMII channnel 1 as SGMII*/
 				reg_value = 0x2003;
-				fal_psgmii_reg_set(0, 0x1b4,
+				fal_psgmii_reg_set(dev_id, 0x1b4,
 								(a_uint8_t *)&reg_value, 4);
 				udelay(1000);
 			}
 			if ((mac_mode == PORT_WRAPPER_SGMII4_RGMII4)) {
 				/*PSGMII channnel 4 as SGMII*/
 				reg_value = 0x2005;
-				fal_psgmii_reg_set(0, 0x1b4,
+				fal_psgmii_reg_set(dev_id, 0x1b4,
 								(a_uint8_t *)&reg_value, 4);
 				udelay(1000);
 			}
 
 			/*clock gen 1*/
 			reg_value = 0xea6;
-			fal_psgmii_reg_set(0, 0x13c,
+			fal_psgmii_reg_set(dev_id, 0x13c,
 							(a_uint8_t *)&reg_value, 4);
 			mdelay(10);
 			/*softreset psgmii, fixme*/
 			gcc_addr = ioremap_nocache(0x1812000, 0x200);
 			if (!gcc_addr) {
-				printk("gcc map fail!\n");
+				SSDK_ERROR("gcc map fail!\n");
 				return 0;
 			} else {
-				printk("gcc map success!\n");
+				SSDK_INFO("gcc map success!\n");
 				writel(0x20, gcc_addr+0xc);
 				mdelay(10);
 				writel(0x0, gcc_addr+0xc);
@@ -2554,15 +3072,15 @@ static int ssdk_dess_mac_mode_init(a_uint32_t mac_mode)
 			}
 			/*relock pll*/
 			reg_value = 0x2803;
-			fal_psgmii_reg_set(0, DESS_PSGMII_PLL_VCO_RELATED_CONTROL_1,
+			fal_psgmii_reg_set(dev_id, DESS_PSGMII_PLL_VCO_RELATED_CONTROL_1,
 							(a_uint8_t *)&reg_value, 4);
 			udelay(1000);
 			reg_value = 0x4ADA;
-			fal_psgmii_reg_set(0, DESS_PSGMII_VCO_CALIBRATION_CONTROL_1,
+			fal_psgmii_reg_set(dev_id, DESS_PSGMII_VCO_CALIBRATION_CONTROL_1,
 							(a_uint8_t *)&reg_value, 4);
 			udelay(1000);
 			reg_value = 0xADA;
-			fal_psgmii_reg_set(0, DESS_PSGMII_VCO_CALIBRATION_CONTROL_1,
+			fal_psgmii_reg_set(dev_id, DESS_PSGMII_VCO_CALIBRATION_CONTROL_1,
 							(a_uint8_t *)&reg_value, 4);
 			udelay(1000);
 
@@ -2571,16 +3089,16 @@ static int ssdk_dess_mac_mode_init(a_uint32_t mac_mode)
 				||(mac_mode == PORT_WRAPPER_SGMII0_RGMII4)) {
 			/*PSGMII channnel 0 as SGMII*/
 			reg_value = 0x2001;
-			fal_psgmii_reg_set(0, 0x1b4,
+			fal_psgmii_reg_set(dev_id, 0x1b4,
 								(a_uint8_t *)&reg_value, 4);
 			udelay(1000);
 			/* restart channel 0 autoneg*/
 			reg_value = 0xc4;
-			fal_psgmii_reg_set(0, 0x1c8,
+			fal_psgmii_reg_set(dev_id, 0x1c8,
 							(a_uint8_t *)&reg_value, 4);
 			mdelay(10);
 			reg_value = 0x44;
-			fal_psgmii_reg_set(0, 0x1c8,
+			fal_psgmii_reg_set(dev_id, 0x1c8,
 							(a_uint8_t *)&reg_value, 4);
 			mdelay(10);
 			}
@@ -2590,16 +3108,16 @@ static int ssdk_dess_mac_mode_init(a_uint32_t mac_mode)
 
 			/*PSGMII channnel 1 as SGMII*/
 			reg_value = 0x2003;
-			fal_psgmii_reg_set(0, 0x1b4,
+			fal_psgmii_reg_set(dev_id, 0x1b4,
 							(a_uint8_t *)&reg_value, 4);
 			udelay(1000);
 			/* restart channel 1 autoneg*/
 			reg_value = 0xc4;
-			fal_psgmii_reg_set(0, 0x1e0,
+			fal_psgmii_reg_set(dev_id, 0x1e0,
 							(a_uint8_t *)&reg_value, 4);
 			mdelay(10);
 			reg_value = 0x44;
-			fal_psgmii_reg_set(0, 0x1e0,
+			fal_psgmii_reg_set(dev_id, 0x1e0,
 							(a_uint8_t *)&reg_value, 4);
 			mdelay(10);
 
@@ -2608,23 +3126,23 @@ static int ssdk_dess_mac_mode_init(a_uint32_t mac_mode)
 			if ((mac_mode == PORT_WRAPPER_SGMII4_RGMII4)) {
 			/*PSGMII channnel 4 as SGMII*/
 			reg_value = 0x2005;
-			fal_psgmii_reg_set(0, 0x1b4,
+			fal_psgmii_reg_set(dev_id, 0x1b4,
 							(a_uint8_t *)&reg_value, 4);
 			udelay(1000);
 			/* restart channel 4 autoneg*/
 			reg_value = 0xc4;
-			fal_psgmii_reg_set(0, 0x228,
+			fal_psgmii_reg_set(dev_id, 0x228,
 							(a_uint8_t *)&reg_value, 4);
 			mdelay(10);
 			reg_value = 0x44;
-			fal_psgmii_reg_set(0, 0x228,
+			fal_psgmii_reg_set(dev_id, 0x228,
 							(a_uint8_t *)&reg_value, 4);
 			mdelay(10);
 			}
 
 		  	/* config RGMII*/
 			reg_value = 0x400;
-			fal_reg_set(0, 0x4, (a_uint8_t *)&reg_value, 4);
+			fal_reg_set(dev_id, 0x4, (a_uint8_t *)&reg_value, 4);
 			/* config mac5 RGMII*/
 			if ((mac_mode == PORT_WRAPPER_SGMII0_RGMII5)
 				||(mac_mode == PORT_WRAPPER_SGMII1_RGMII5)) {
@@ -2632,27 +3150,27 @@ static int ssdk_dess_mac_mode_init(a_uint32_t mac_mode)
 				qca_ar8327_phy_dbg_write(0, 4, 0xb, 0xbc40);
 				qca_ar8327_phy_dbg_write(0, 4, 0x0, 0x82ee);
 				reg_value = 0x72;
-				qca_switch_reg_write(0, 0x90, (a_uint8_t *)&reg_value, 4);
+				qca_switch_reg_write(dev_id, 0x90, (a_uint8_t *)&reg_value, 4);
 			}
 			/* config mac4 RGMII*/
 			if ((mac_mode == PORT_WRAPPER_SGMII0_RGMII4)
 				||(mac_mode == PORT_WRAPPER_SGMII1_RGMII4)
 				||(mac_mode == PORT_WRAPPER_SGMII4_RGMII4)) {
-				qca_ar8327_phy_dbg_write(0, 4, 0x5, 0x2d47);
-				qca_ar8327_phy_dbg_write(0, 4, 0xb, 0xbc40);
-				qca_ar8327_phy_dbg_write(0, 4, 0x0, 0x82ee);
+				qca_ar8327_phy_dbg_write(dev_id, 4, 0x5, 0x2d47);
+				qca_ar8327_phy_dbg_write(dev_id, 4, 0xb, 0xbc40);
+				qca_ar8327_phy_dbg_write(dev_id, 4, 0x0, 0x82ee);
 				reg_value = 0x72;
-				qca_switch_reg_write(0, 0x8c, (a_uint8_t *)&reg_value, 4);
+				qca_switch_reg_write(dev_id, 0x8c, (a_uint8_t *)&reg_value, 4);
 			}
 			break;
 		case PORT_WRAPPER_PSGMII_RMII0_RMII1:
 		case PORT_WRAPPER_PSGMII_RMII0:
 		case PORT_WRAPPER_PSGMII_RMII1:
 			reg_value = 0x2200;
-			qca_psgmii_reg_write(0, DESS_PSGMII_MODE_CONTROL,
+			qca_psgmii_reg_write(dev_id, DESS_PSGMII_MODE_CONTROL,
 				(a_uint8_t *)&reg_value, 4);
 			reg_value = 0x8380;
-			qca_psgmii_reg_write(0, DESS_PSGMIIPHY_TX_CONTROL,
+			qca_psgmii_reg_write(dev_id, DESS_PSGMIIPHY_TX_CONTROL,
 					(a_uint8_t *)&reg_value, 4);
 			/*switch RMII clock source to gcc_ess_clk,ESS_RGMII_CTRL:0x0C000004,dakota rmii1/rmii0 master mode*/
 			if(mac_mode== PORT_WRAPPER_PSGMII_RMII0_RMII1)
@@ -2661,35 +3179,35 @@ static int ssdk_dess_mac_mode_init(a_uint32_t mac_mode)
 				reg_value = 0x1000000;
 			if(mac_mode== PORT_WRAPPER_PSGMII_RMII1)
 				reg_value = 0x2000000;
-			qca_switch_reg_write(0, 0x4, (a_uint8_t *)&reg_value, 4);
+			qca_switch_reg_write(dev_id, 0x4, (a_uint8_t *)&reg_value, 4);
 			/*enable RMII MAC5 100M/full*/
 			if(mac_mode == PORT_WRAPPER_PSGMII_RMII0_RMII1 || mac_mode == PORT_WRAPPER_PSGMII_RMII0)
 			{
 				reg_value = 0x7d;
-				qca_switch_reg_write(0, 0x90, (a_uint8_t *)&reg_value, 4);
+				qca_switch_reg_write(dev_id, 0x90, (a_uint8_t *)&reg_value, 4);
 			}
 
 			/*enable RMII MAC4 100M/full*/
 			if(mac_mode == PORT_WRAPPER_PSGMII_RMII0_RMII1 || mac_mode == PORT_WRAPPER_PSGMII_RMII1)
 			{
 				reg_value = 0x7d;
-				qca_switch_reg_write(0, 0x8C, (a_uint8_t *)&reg_value, 4);
+				qca_switch_reg_write(dev_id, 0x8C, (a_uint8_t *)&reg_value, 4);
 			}
 			/*set QM CONTROL REGISTER FLOW_DROP_CNT as max*/
 			reg_value = 0x7f007f;
-			qca_switch_reg_write(0, 0x808, (a_uint8_t *)&reg_value, 4);
+			qca_switch_reg_write(dev_id, 0x808, (a_uint8_t *)&reg_value, 4);
 
 			/*relock PSGMII PLL*/
 			reg_value = 0x2803;
-			fal_psgmii_reg_set(0, DESS_PSGMII_PLL_VCO_RELATED_CONTROL_1,
+			fal_psgmii_reg_set(dev_id, DESS_PSGMII_PLL_VCO_RELATED_CONTROL_1,
 							(a_uint8_t *)&reg_value, 4);
 			udelay(1000);
 			reg_value = 0x4ADA;
-			fal_psgmii_reg_set(0, DESS_PSGMII_VCO_CALIBRATION_CONTROL_1,
+			fal_psgmii_reg_set(dev_id, DESS_PSGMII_VCO_CALIBRATION_CONTROL_1,
 							(a_uint8_t *)&reg_value, 4);
 			udelay(1000);
 			reg_value = 0xADA;
-			fal_psgmii_reg_set(0, DESS_PSGMII_VCO_CALIBRATION_CONTROL_1,
+			fal_psgmii_reg_set(dev_id, DESS_PSGMII_VCO_CALIBRATION_CONTROL_1,
 							(a_uint8_t *)&reg_value, 4);
 			udelay(1000);
 			break;
@@ -2699,43 +3217,43 @@ static int ssdk_dess_mac_mode_init(a_uint32_t mac_mode)
 }
 
 static int
-qca_dess_hw_init(ssdk_init_cfg *cfg)
+qca_dess_hw_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 {
 	a_uint32_t reg_value = 0;
 	hsl_api_t *p_api;
 
-	qca_switch_init(0);
+	qca_switch_init(dev_id);
 	ssdk_portvlan_init(cfg->port_cfg.cpu_bmp, cfg->port_cfg.lan_bmp, cfg->port_cfg.wan_bmp);
 
 	#ifdef IN_PORTVLAN
-	fal_port_rxhdr_mode_set(0, 0, FAL_ALL_TYPE_FRAME_EN);
+	fal_port_rxhdr_mode_set(dev_id, 0, FAL_ALL_TYPE_FRAME_EN);
 	#endif
 	#ifdef IN_IP
-	fal_ip_route_status_set(0, A_TRUE);
+	fal_ip_route_status_set(dev_id, A_TRUE);
 	#endif
 
-	ssdk_flow_default_act_init();
+	ssdk_flow_default_act_init(dev_id);
 
 	/*set normal hash and disable nat/napt*/
-	qca_switch_reg_read(0, 0x0e38, (a_uint8_t *)&reg_value, 4);
+	qca_switch_reg_read(dev_id, 0x0e38, (a_uint8_t *)&reg_value, 4);
 	reg_value = (reg_value|0x1000000|0x8);
 	reg_value &= ~2;
-	qca_switch_reg_write(0, 0x0e38, (a_uint8_t *)&reg_value, 4);
+	qca_switch_reg_write(dev_id, 0x0e38, (a_uint8_t *)&reg_value, 4);
 	#ifdef IN_IP
-	fal_ip_vrf_base_addr_set(0, 0, 0);
+	fal_ip_vrf_base_addr_set(dev_id, 0, 0);
 	#endif
 
-	p_api = hsl_api_ptr_get (0);
+	p_api = hsl_api_ptr_get (dev_id);
 	if (p_api && p_api->port_flowctrl_thresh_set)
-		p_api->port_flowctrl_thresh_set(0, 0, SSDK_PORT0_FC_THRESH_ON_DFLT,
+		p_api->port_flowctrl_thresh_set(dev_id, 0, SSDK_PORT0_FC_THRESH_ON_DFLT,
 							SSDK_PORT0_FC_THRESH_OFF_DFLT);
 
 	if (p_api && p_api->ip_glb_lock_time_set)
-		p_api->ip_glb_lock_time_set(0, FAL_GLB_LOCK_TIME_100US);
+		p_api->ip_glb_lock_time_set(dev_id, FAL_GLB_LOCK_TIME_100US);
 
 
 	/*config psgmii,sgmii or rgmii mode for Dakota*/
-	ssdk_dess_mac_mode_init(cfg->mac_mode);
+	ssdk_dess_mac_mode_init(dev_id, cfg->mac_mode);
 
 	/*add BGA Board led contorl*/
 	ssdk_dess_led_init(cfg);
@@ -2745,105 +3263,70 @@ qca_dess_hw_init(ssdk_init_cfg *cfg)
 #endif
 
 #ifdef HPPE
-static int qca_hppe_vsi_hw_init(void)
+static int qca_hppe_vsi_hw_init(a_uint32_t dev_id)
 {
-	return ppe_vsi_init(0);
-#if 0
-#ifdef ESS_ONLY_FPGA
-	a_uint32_t port_default_vsi[6] = {2, 2, 2, 2, 3, 3};
-#else
-	a_uint32_t port_default_vsi[6] = {0, 1, 2, 3, 4, 5};
-#endif
-	a_uint32_t port_id = 0;
-
-	fal_vsi_newaddr_lrn_t newaddr_lrn = {0};
-	fal_vsi_stamove_t stamove = {0};
-	fal_vsi_member_t member = {0};
-	newaddr_lrn.action = 0;
-	newaddr_lrn.lrn_en = 1;
-	stamove.action = 0;
-	stamove.stamove_en = 1;
-
-	for(port_id = 1; port_id <= 6; port_id++)/*clean vsi table as zero*/
-		fal_vsi_member_set(0, port_default_vsi[port_id-1], &member);
-
-	for(port_id = 1; port_id <= 6; port_id++)
-	{
-		fal_vsi_newaddr_lrn_set(0, port_default_vsi[port_id-1], &newaddr_lrn);
-		fal_vsi_stamove_set(0, port_default_vsi[port_id-1], &stamove);
-		fal_port_vsi_set(0, port_id, port_default_vsi[port_id-1]);
-		fal_vsi_member_get(0, port_default_vsi[port_id-1], &member);
-		member.member_ports |= ((1<<port_id)|0x1);
-		member.bc_ports |= ((1<<port_id)|0x1);
-		member.umc_ports |= ((1<<port_id)|0x1);
-		member.uuc_ports |= ((1<<port_id)|0x1);
-		fal_vsi_member_set(0, port_default_vsi[port_id-1], &member);
-	}
-
-	return 0;
-#endif
+	return ppe_vsi_init(dev_id);
 }
 
-static int qca_hppe_fdb_hw_init(void)
+static int qca_hppe_fdb_hw_init(a_uint32_t dev_id)
 {
-	union port_bridge_ctrl_u value = {0};
 	a_uint32_t port = 0;
+	adpt_api_t *p_api;
 
-	for(port = 0; port < 7; port++)
+	p_api = adpt_api_ptr_get(dev_id);
+	if (!p_api)
+		return SW_FAIL;
+
+	if (!p_api->adpt_port_bridge_txmac_set ||
+		!p_api->adpt_fdb_port_promisc_mode_set)
+		return SW_FAIL;
+
+	for(port = 0; port < SSDK_MAX_PORT_NUM; port++)
 	{
-		value.bf.new_addr_lrn_en = 1;
-		value.bf.new_addr_fwd_cmd = 0;
-		value.bf.station_move_lrn_en = 1;
-		value.bf.station_move_fwd_cmd = 0;
-		value.bf.port_isolation_bitmap = 0x7f;
-		value.bf.txmac_en = 1;
-		value.bf.promisc_en = 1;
-
-		hppe_port_bridge_ctrl_set(0, port, &value);
+		fal_fdb_port_learning_ctrl_set(dev_id, port, A_TRUE, FAL_MAC_FRWRD);
+		fal_fdb_port_stamove_ctrl_set(dev_id, port, A_TRUE, FAL_MAC_FRWRD);
+		fal_portvlan_member_update(dev_id, port, 0x7f);
+		if (port == SSDK_PORT_CPU)
+			p_api->adpt_port_bridge_txmac_set(dev_id, port, A_TRUE);
+		else
+			p_api->adpt_port_bridge_txmac_set(dev_id, port, A_FALSE);
+		p_api->adpt_fdb_port_promisc_mode_set(dev_id, port, A_TRUE);
 	}
 
-	value.bf.txmac_en = 0;
-	//hppe_port_bridge_ctrl_set(0, 0, &value);
-	hppe_port_bridge_ctrl_set(0, 7, &value);
-
-	hppe_l2_global_conf_age_en_set(0, 1);
-	hppe_l2_global_conf_lrn_en_set(0, 1);
+	fal_fdb_aging_ctrl_set(dev_id, A_TRUE);
+	fal_fdb_learning_ctrl_set(dev_id, A_TRUE);
 
 	return 0;
 }
 
 static int
-qca_hppe_portctrl_hw_init(void)
+qca_hppe_portctrl_hw_init(a_uint32_t dev_id)
 {
 	a_uint32_t i = 0, val;
-	a_uint32_t addr_delta = 0x200;
 
-	for(i = 0; i < 6; i++) {
-		val = 0x73;
-		qca_switch_reg_write(0, 0x001000 + (addr_delta*i), (a_uint8_t *)&val, 4);
-		val = 0x2;
-		qca_switch_reg_write(0, 0x001004 + (addr_delta*i), (a_uint8_t *)&val, 4);
-		val = 0x1;
-		qca_switch_reg_write(0, 0x001034 + (addr_delta*i), (a_uint8_t *)&val, 4);
+	for (i = 0; i < 2; i++)
+	{
+		val = 0x00000081;
+		qca_switch_reg_write(dev_id, 0x00003008 + (0x4000*i), (a_uint8_t *)&val, 4);
 	}
 
 #ifdef HAWKEYE_CHIP
 	for(i = 1; i < 7; i++) {
-		hppe_port_type[i - 1] = HPPE_PORT_GMAC_TYPE;
-		fal_port_txmac_status_set (0, i, A_FALSE);
-		fal_port_rxmac_status_set (0, i, A_FALSE);
-		fal_port_rxfc_status_set(0, i, A_TRUE);
-		fal_port_txfc_status_set(0, i, A_TRUE);
-		fal_port_max_frame_size_set(0, i, 1518);
+		hppe_port_type[i - 1] = PORT_GMAC_TYPE;
+		fal_port_txmac_status_set (dev_id, i, A_FALSE);
+		fal_port_rxmac_status_set (dev_id, i, A_FALSE);
+		fal_port_rxfc_status_set(dev_id, i, A_TRUE);
+		fal_port_txfc_status_set(dev_id, i, A_TRUE);
+		fal_port_max_frame_size_set(dev_id, i, 1518);
 	}
 
 	for(i = 5; i < 7; i++) {
-		hppe_port_type[i - 1] = HPPE_PORT_XGMAC_TYPE;
-		fal_port_txmac_status_set (0, i, A_FALSE);
-		fal_port_rxmac_status_set (0, i, A_FALSE);
-		fal_port_rxfc_status_set(0, i, A_TRUE);
-		fal_port_txfc_status_set(0, i, A_TRUE);
-		fal_port_max_frame_size_set(0, i, 1518);
+		hppe_port_type[i - 1] = PORT_XGMAC_TYPE;
+		fal_port_txmac_status_set (dev_id, i, A_FALSE);
+		fal_port_rxmac_status_set (dev_id, i, A_FALSE);
+		fal_port_rxfc_status_set(dev_id, i, A_TRUE);
+		fal_port_txfc_status_set(dev_id, i, A_TRUE);
+		fal_port_max_frame_size_set(dev_id, i, 1518);
 	}
 
 	for(i = 1; i < 7; i++) {
@@ -2854,22 +3337,22 @@ qca_hppe_portctrl_hw_init(void)
 }
 
 static int
-qca_hppe_policer_hw_init(void)
+qca_hppe_policer_hw_init(a_uint32_t dev_id)
 {
 	a_uint32_t i = 0;
 
-	fal_policer_timeslot_set(0, 600);
+	fal_policer_timeslot_set(dev_id, 600);
 
 	for(i = 0; i < 8; i ++)
 	{
-		fal_port_policer_compensation_byte_set(0, i, 4);
+		fal_port_policer_compensation_byte_set(dev_id, i, 4);
 	}
 
 	return 0;
 }
 
 static int
-qca_hppe_shaper_hw_init(void)
+qca_hppe_shaper_hw_init(a_uint32_t dev_id)
 {
 	fal_shaper_token_number_t port_token_number, queue_token_number;
 	fal_shaper_token_number_t flow_token_number;
@@ -2888,29 +3371,29 @@ qca_hppe_shaper_hw_init(void)
 
 	for(i = 0; i < 8; i ++)
 	{
-		fal_port_shaper_token_number_set(0, i, &port_token_number);
+		fal_port_shaper_token_number_set(dev_id, i, &port_token_number);
 	}
 
 	for(i = 0; i < 300; i ++)
 	{
-		fal_queue_shaper_token_number_set(0, i, &queue_token_number);
+		fal_queue_shaper_token_number_set(dev_id, i, &queue_token_number);
 	}
 
 	for(i = 0; i < 64; i ++)
 	{
-		fal_flow_shaper_token_number_set(0, i, &flow_token_number);
+		fal_flow_shaper_token_number_set(dev_id, i, &flow_token_number);
 	}
 
-	fal_port_shaper_timeslot_set(0, 8);
-	fal_flow_shaper_timeslot_set(0, 64);
-	fal_queue_shaper_timeslot_set(0, 300);
-	fal_shaper_ipg_preamble_length_set(0, 20);
+	fal_port_shaper_timeslot_set(dev_id, 8);
+	fal_flow_shaper_timeslot_set(dev_id, 64);
+	fal_queue_shaper_timeslot_set(dev_id, 300);
+	fal_shaper_ipg_preamble_length_set(dev_id, 20);
 
 	return 0;
 }
 
 static int
-qca_hppe_portvlan_hw_init(void)
+qca_hppe_portvlan_hw_init(a_uint32_t dev_id)
 {
 	a_uint32_t port_id = 0, vsi_idx = 0;
 	fal_global_qinq_mode_t global_qinq_mode;
@@ -2922,50 +3405,50 @@ qca_hppe_portvlan_hw_init(void)
 	global_qinq_mode.mask = 0x3;
 	global_qinq_mode.ingress_mode = FAL_QINQ_CTAG_MODE;
 	global_qinq_mode.egress_mode = FAL_QINQ_CTAG_MODE;
-	fal_global_qinq_mode_set(0, &global_qinq_mode);
+	fal_global_qinq_mode_set(dev_id, &global_qinq_mode);
 
 	/* configure port0 - port7 ingress/egress QinQ role as edge/edge */
 	port_qinq_role.mask = 0x3;
 	port_qinq_role.ingress_port_role = FAL_QINQ_CORE_PORT;
 	port_qinq_role.egress_port_role = FAL_QINQ_CORE_PORT;
-	fal_port_qinq_mode_set(0, 0, &port_qinq_role);
+	fal_port_qinq_mode_set(dev_id, 0, &port_qinq_role);
 	port_qinq_role.mask = 0x3;
 	port_qinq_role.ingress_port_role = FAL_QINQ_EDGE_PORT;
 	port_qinq_role.egress_port_role = FAL_QINQ_EDGE_PORT;
 	for (port_id = 1; port_id < 8; port_id++)
-		fal_port_qinq_mode_set(0, port_id, &port_qinq_role);
+		fal_port_qinq_mode_set(dev_id, port_id, &port_qinq_role);
 
 	/* configure ingress and egress stpid/ctpid as 0x88a8/0x8100 */
 	in_eg_tpid.mask = 0x3;
 	in_eg_tpid.ctpid = FAL_DEF_VLAN_CTPID;
 	in_eg_tpid.stpid = FAL_DEF_VLAN_STPID;
-	fal_ingress_tpid_set(0, &in_eg_tpid);
-	fal_egress_tpid_set(0, &in_eg_tpid);
+	fal_ingress_tpid_set(dev_id, &in_eg_tpid);
+	fal_egress_tpid_set(dev_id, &in_eg_tpid);
 
 	/* configure port0 - port7 ingress vlan translation mismatched command as forward*/
 	for (port_id = 0; port_id < 8; port_id++)
-		fal_port_vlan_xlt_miss_cmd_set(0, port_id, FAL_MAC_FRWRD);
+		fal_port_vlan_xlt_miss_cmd_set(dev_id, port_id, FAL_MAC_FRWRD);
 
 	/* configure port0 - port7 stag/ctag egress mode as unmodified/unmodified */
 	vlantag_eg_mode.mask = 0x3;
 	vlantag_eg_mode.stag_mode = FAL_EG_UNMODIFIED;
 	vlantag_eg_mode.ctag_mode = FAL_EG_UNMODIFIED;
 	for (port_id = 0; port_id < 8; port_id++)
-		fal_port_vlantag_egmode_set(0, port_id, &vlantag_eg_mode);
+		fal_port_vlantag_egmode_set(dev_id, port_id, &vlantag_eg_mode);
 
 	/* configure the port0 - port7 of vsi0 - vsi31 to unmodified */
 	for (vsi_idx = 0; vsi_idx < 32; vsi_idx++)
 		for (port_id = 0; port_id < 8; port_id++)
-			fal_port_vsi_egmode_set(0, vsi_idx, port_id, FAL_EG_UNMODIFIED);
+			fal_port_vsi_egmode_set(dev_id, vsi_idx, port_id, FAL_EG_UNMODIFIED);
 
 	/* configure port0 - port7 vsi tag mode control to enable */
 	for (port_id = 0; port_id < 8; port_id++)
-		fal_port_vlantag_vsi_egmode_enable(0, port_id, A_TRUE);
+		fal_port_vlantag_vsi_egmode_enable(dev_id, port_id, A_TRUE);
 
 	return 0;
 }
 
-fal_port_scheduler_cfg_t port_scheduler_tbl[] = {
+fal_port_scheduler_cfg_t port_scheduler0_tbl[] = {
 	{0xee, 6, 0},
 	{0xde, 4, 5},
 	{0x9f, 0, 6},
@@ -3018,65 +3501,103 @@ fal_port_scheduler_cfg_t port_scheduler_tbl[] = {
 	{0xaf, 5, 4},
 };
 
-fal_port_tdm_tick_cfg_t port_tdm_tbl[] = {
-	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
-	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+fal_port_scheduler_cfg_t port_scheduler1_tbl[] = {
+	{0x27, 5, 6},
+	{0x0f, 0, 5},
+	{0x0f, 2, 6},
+	{0x0f, 3, 5},
+	{0x4e, 6, 0},
+	{0x2e, 5, 6},
+	{0x0f, 1, 5},
+	{0x0f, 0, 6},
+	{0x0f, 3, 5},
+	{0x4d, 6, 1},
+	{0x2d, 5, 6},
+	{0x0f, 1, 5},
+	{0x0f, 2, 6},
+	{0x0f, 0, 5},
+	{0x4e, 6, 0},
+	{0x2e, 5, 6},
+	{0x0f, 1, 5},
+	{0x0f, 0, 6},
+	{0x0f, 3, 5},
+	{0x4b, 6, 2},
+	{0x2b, 5, 6},
+	{0x0f, 1, 5},
+	{0x0f, 2, 6},
+	{0x0f, 0, 5},
+	{0x47, 6, 3},
+};
+
+fal_port_tdm_tick_cfg_t port_tdm0_tbl[] = {
 	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
-	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
-	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
-	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
-	{1, FAL_PORT_TDB_DIR_INGRESS, 1},
-	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
-	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
 	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
-	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
-	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 1},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
 	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
 	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
 	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
 	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
 	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
 	{1, FAL_PORT_TDB_DIR_EGRESS, 3},
-	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
-	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
-	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
-	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
-	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
-	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
-	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
-	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
-	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
-	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
-	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
-	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
-	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
-	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
-	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
-	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
-	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
-	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
 	{1, FAL_PORT_TDB_DIR_INGRESS, 2},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
 	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
 	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
 	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
 	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
 	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
 	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
 	{1, FAL_PORT_TDB_DIR_EGRESS, 4},
 	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
 	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
-	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
-	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
 	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
-	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
-	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
-	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
 	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 4},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
 	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
 	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
 	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
 	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
 	{1, FAL_PORT_TDB_DIR_EGRESS, 1},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
 	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
 	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
 	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
@@ -3089,47 +3610,35 @@ fal_port_tdm_tick_cfg_t port_tdm_tbl[] = {
 	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
 	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
 	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
-	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
-	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
 	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
 	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
 	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
 	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
-	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
-	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
 	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
-	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
-	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
-	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
-	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
-	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
-	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
-	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
-	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
 	{1, FAL_PORT_TDB_DIR_EGRESS, 2},
-	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
 	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
 	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
 	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
-	{1, FAL_PORT_TDB_DIR_INGRESS, 4},
-	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
 	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
-	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
-	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
 	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
 	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
-	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
 };
 
 static int
-qca_hppe_tdm_hw_init(void)
+qca_hppe_tdm_hw_init(a_uint32_t dev_id)
 {
 	adpt_api_t *p_api;
 	a_uint32_t i = 0;
-	a_uint32_t num = sizeof(port_scheduler_tbl) / sizeof(fal_port_scheduler_cfg_t);
+	a_uint32_t num;
 	fal_port_tdm_ctrl_t tdm_ctrl;
+	fal_port_scheduler_cfg_t *scheduler_cfg;
+	fal_port_tdm_tick_cfg_t *bm_cfg;
 
-	p_api = adpt_api_ptr_get(0);
+	p_api = adpt_api_ptr_get(dev_id);
 	if (!p_api)
 		return SW_FAIL;
 
@@ -3137,58 +3646,43 @@ qca_hppe_tdm_hw_init(void)
 		!p_api->adpt_tdm_tick_num_set)
 		return SW_FAIL;
 
+	if (ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->tm_tick_mode == 0) {
+		num = sizeof(port_scheduler0_tbl) / sizeof(fal_port_scheduler_cfg_t);
+		scheduler_cfg = port_scheduler0_tbl;
+	} else if (ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->tm_tick_mode == 1) {
+		num = sizeof(port_scheduler1_tbl) / sizeof(fal_port_scheduler_cfg_t);
+		scheduler_cfg = port_scheduler1_tbl;
+	} else {
+		return SW_BAD_VALUE;
+	}
+
 	for (i = 0; i < num; i++) {
-		p_api->adpt_port_scheduler_cfg_set(0, i, &port_scheduler_tbl[i]);
+		p_api->adpt_port_scheduler_cfg_set(0, i, &scheduler_cfg[i]);
 	}
 	p_api->adpt_tdm_tick_num_set(0, num);
 
-	num = sizeof(port_tdm_tbl) / sizeof(fal_port_tdm_tick_cfg_t);
+	if (!p_api->adpt_port_tdm_tick_cfg_set ||
+		!p_api->adpt_port_tdm_ctrl_set)
+		return SW_FAIL;
+	if (ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->bm_tick_mode == 0) {
+		num = sizeof(port_tdm0_tbl) / sizeof(fal_port_tdm_tick_cfg_t);
+		bm_cfg = port_tdm0_tbl;
+	} else {
+		return SW_BAD_VALUE;
+	}
 	for (i = 0; i < num; i++) {
-		p_api->adpt_port_tdm_tick_cfg_set(0, i, &port_tdm_tbl[i]);
+		p_api->adpt_port_tdm_tick_cfg_set(0, i, &bm_cfg[i]);
 	}
 	tdm_ctrl.enable = 1;
 	tdm_ctrl.offset = 0;
-	tdm_ctrl.depth = 100;
+	tdm_ctrl.depth = num;
 	p_api->adpt_port_tdm_ctrl_set(0, &tdm_ctrl);
-	printk("tdm setup num=%d\n", num);
+	SSDK_INFO("tdm setup num=%d\n", num);
 	return 0;
 }
 
 static int
-qca_hppe_xgmac_hw_init(void)
-{
-	a_uint32_t val = 0, i = 0;
-	a_uint32_t xgmac_addr_delta = 0x4000;
-
-	val = 0x15;
-	qca_switch_reg_write(0, 0x00000010, (a_uint8_t *)&val, 4);
-
-	for (i = 0; i < 2; i ++)
-	{
-		val = 0x80010001;
-		qca_switch_reg_write(0, 0x00003000 + (xgmac_addr_delta*i), (a_uint8_t *)&val, 4);
-		val = 0x271c00c7;
-		qca_switch_reg_write(0, 0x00003004 + (xgmac_addr_delta*i), (a_uint8_t *)&val, 4);
-		val = 0x00000001;
-		qca_switch_reg_write(0, 0x00003008 + (xgmac_addr_delta*i), (a_uint8_t *)&val, 4);
-		val = 0x00000001;
-		qca_switch_reg_write(0, 0x00003090 + (xgmac_addr_delta*i), (a_uint8_t *)&val, 4);
-		val = 0x00000002;
-		qca_switch_reg_write(0, 0x00003070 + (xgmac_addr_delta*i), (a_uint8_t *)&val, 4);
-		val = 0x40000;
-		qca_switch_reg_write(0, 0x00003050 + (xgmac_addr_delta*i), (a_uint8_t *)&val, 4);
-	}
-
-	val = 0x0;
-	qca_switch_reg_write(0, 0x00001800, (a_uint8_t *)&val, 4);
-	val = 0x0;
-	qca_switch_reg_write(0, 0x00001a00, (a_uint8_t *)&val, 4);
-
-	return 0;
-}
-
-static int
-qca_hppe_bm_hw_init(void)
+qca_hppe_bm_hw_init(a_uint32_t dev_id)
 {
 	a_uint32_t i = 0;
 	fal_bm_dynamic_cfg_t cfg;
@@ -3200,15 +3694,15 @@ qca_hppe_bm_hw_init(void)
 		fal_port_bufgroup_map_set(0, i, 0);
 	}
 
-	fal_bm_bufgroup_buffer_set(0, 0, 1600);
+	fal_bm_bufgroup_buffer_set(dev_id, 0, 1600);
 
 	/* set reserved buffer */
-	fal_bm_port_reserved_buffer_set(0, 0, 0, 52);
+	fal_bm_port_reserved_buffer_set(dev_id, 0, 0, 52);
 	for (i = 1; i < 8; i++)
-		fal_bm_port_reserved_buffer_set(0, i, 0, 18);
+		fal_bm_port_reserved_buffer_set(dev_id, i, 0, 18);
 	for (i = 8; i < 14; i++)
-		fal_bm_port_reserved_buffer_set(0, i, 0, 163);
-	fal_bm_port_reserved_buffer_set(0, 14, 0, 40);
+		fal_bm_port_reserved_buffer_set(dev_id, i, 0, 163);
+	fal_bm_port_reserved_buffer_set(dev_id, 14, 0, 40);
 
 	memset(&cfg, 0, sizeof(cfg));
 	cfg.resume_min_thresh = 0;
@@ -3216,47 +3710,101 @@ qca_hppe_bm_hw_init(void)
 	cfg.weight= 4;
 	cfg.shared_ceiling = 250;
 	for (i = 0; i < 15; i++)
-		fal_bm_port_dynamic_thresh_set(0, i, &cfg);
+		fal_bm_port_dynamic_thresh_set(dev_id, i, &cfg);
 	return 0;
 }
 
 static int
-qca_hppe_qm_hw_init(void)
+qca_hppe_qm_hw_init(a_uint32_t dev_id)
 {
-	a_uint32_t i, queue_base = 200;
+	a_uint32_t i;
 	fal_ucast_queue_dest_t queue_dst;
 	fal_ac_obj_t obj;
 	fal_ac_ctrl_t ac_ctrl;
 	fal_ac_group_buffer_t group_buff;
 	fal_ac_dynamic_threshold_t  dthresh_cfg;
 	fal_ac_static_threshold_t sthresh_cfg;
+	a_uint32_t qbase = 0;
 
 	memset(&queue_dst, 0, sizeof(queue_dst));
-	fal_ucast_queue_base_profile_set(0, &queue_dst, 0, 0);
+
 	/*
 	 * Redirect service code 2 to queue 1
 	 * TODO: keep sync with  NSS
 	 */
 	queue_dst.service_code_en = A_TRUE;
 	queue_dst.service_code = 2;
-	fal_ucast_queue_base_profile_set(0, &queue_dst, 1, 0);
+	fal_ucast_queue_base_profile_set(dev_id, &queue_dst, 8, 0);
 
 	queue_dst.service_code = 3;
-	fal_ucast_queue_base_profile_set(0, &queue_dst, 128, 0);
+	fal_ucast_queue_base_profile_set(dev_id, &queue_dst, 128, 0);
 
 	queue_dst.service_code = 4;
-	fal_ucast_queue_base_profile_set(0, &queue_dst, 128, 0);
+	fal_ucast_queue_base_profile_set(dev_id, &queue_dst, 128, 0);
 
 	queue_dst.service_code = 5;
-	fal_ucast_queue_base_profile_set(0, &queue_dst, 0, 0);
+	fal_ucast_queue_base_profile_set(dev_id, &queue_dst, 0, 0);
+
+	queue_dst.service_code = 6;
+	fal_ucast_queue_base_profile_set(dev_id, &queue_dst, 8, 0);
 
 	queue_dst.service_code_en = A_FALSE;
 	queue_dst.service_code = 0;
-	for(i = 1; i < 8; i++) {
+	for(i = 0; i < SSDK_MAX_PORT_NUM; i++) {
 		queue_dst.dst_port = i;
-		fal_ucast_queue_base_profile_set(0, &queue_dst,
-						queue_base + (i-1) * 8, i);
+		qbase = ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->scheduler_cfg.pool[i].ucastq_start;
+		fal_ucast_queue_base_profile_set(dev_id, &queue_dst, qbase, i);
 	}
+
+	/*
+	 * Enable PPE source profile 1 and map it to PPE queue 4
+	 */
+	memset(&queue_dst, 0, sizeof(queue_dst));
+	queue_dst.src_profile = 1;
+
+	/*
+	 * Enable service code mapping for profile 1
+	 */
+	queue_dst.service_code_en = A_TRUE;
+	for (i = 0; i < SSDK_MAX_SERVICE_CODE_NUM; i++) {
+		queue_dst.service_code = i;
+
+		if (i == 2 || i == 6) {
+			fal_ucast_queue_base_profile_set(dev_id, &queue_dst, 8, 0);
+		} else if (i == 3 || i == 4) {
+			fal_ucast_queue_base_profile_set(dev_id, &queue_dst, 128, 0);
+		} else {
+			fal_ucast_queue_base_profile_set(dev_id, &queue_dst, 4, 0);
+		}
+	}
+	queue_dst.service_code_en = A_FALSE;
+	queue_dst.service_code = 0;
+
+	/*
+	 * Enable cpu code mapping for profile 1
+	 */
+	queue_dst.cpu_code_en = A_TRUE;
+	for (i = 0; i < SSDK_MAX_CPU_CODE_NUM; i++) {
+		queue_dst.cpu_code = i;
+		fal_ucast_queue_base_profile_set(dev_id, &queue_dst, 4, 0);
+	}
+	queue_dst.cpu_code_en = A_FALSE;
+	queue_dst.cpu_code = 0;
+
+	/*
+	 * Enable destination port mappings for profile 1
+	 */
+	for (i = 0; i < SSDK_MAX_PORT_NUM; i++) {
+		queue_dst.dst_port = i;
+		qbase = ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->scheduler_cfg.pool[i].ucastq_start;
+		fal_ucast_queue_base_profile_set(dev_id, &queue_dst, qbase, i);
+	}
+
+	for (i = SSDK_MAX_PORT_NUM; i < SSDK_MAX_VIRTUAL_PORT_NUM; i++) {
+		queue_dst.dst_port = i;
+		fal_ucast_queue_base_profile_set(dev_id, &queue_dst, 4, 0);
+	}
+	queue_dst.dst_port = 0;
 
 	/* queue ac*/
 	ac_ctrl.ac_en = 1;
@@ -3293,91 +3841,65 @@ qca_hppe_qm_hw_init(void)
 }
 
 static int
-qca_hppe_qos_scheduler_hw_init(void)
+qca_hppe_qos_scheduler_hw_init(a_uint32_t dev_id)
 {
-	a_uint32_t i = 0, j = 0;
+	a_uint32_t i = 0;
 	fal_qos_scheduler_cfg_t cfg;
 	fal_queue_bmp_t queue_bmp;
 	fal_qos_group_t group_sel;
 	fal_qos_pri_precedence_t pri_pre;
+	ssdk_dt_scheduler_cfg *dt_cfg = &(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->scheduler_cfg);
 
 	memset(&cfg, 0, sizeof(cfg));
 
 	/* L1 shceduler */
-	for (i = 0; i < 8; i++) {
-		cfg.sp_id = i;
-		cfg.c_pri = 0;
-		cfg.e_pri = 0;
-		cfg.c_drr_id = i;
-		cfg.e_drr_id = i;
-		cfg.c_drr_wt = 1;
-		cfg.e_drr_wt = 1;
-		fal_queue_scheduler_set(0, i, 1, i, &cfg);
+	for (i = 0; i < SSDK_L1SCHEDULER_CFG_MAX; i++) {
+		if (dt_cfg->l1cfg[i].valid) {
+			cfg.sp_id = dt_cfg->l1cfg[i].port_id;
+			cfg.c_pri = dt_cfg->l1cfg[i].cpri;
+			cfg.e_pri = dt_cfg->l1cfg[i].epri;
+			cfg.c_drr_id = dt_cfg->l1cfg[i].cdrr_id;
+			cfg.e_drr_id = dt_cfg->l1cfg[i].edrr_id;
+			cfg.c_drr_wt = 1;
+			cfg.e_drr_wt = 1;
+			fal_queue_scheduler_set(dev_id, i, 1,
+					dt_cfg->l1cfg[i].port_id, &cfg);
+		}
 	}
 
 	/* L0 shceduler */
-	/* cpu port unicast queue: 0 ~ 199 */
-	cfg.sp_id = 0;
-	cfg.c_drr_wt = 2;
-	cfg.e_drr_wt = 2;
-	for (i = 0; i < 200; i++) {
-		cfg.c_pri = i % 8;
-		cfg.e_pri = i % 8;
-		cfg.c_drr_id = i % 8;
-		cfg.e_drr_id = i % 8;
-		fal_queue_scheduler_set(0, i, 0, 0, &cfg);
-	}
-	/* cpu port multicast queue: 256 ~ 271 */
-	cfg.c_drr_wt = 1;
-	cfg.e_drr_wt = 1;
-	for (i = 256; i < 272; i++) {
-		cfg.c_pri = i % 8;
-		cfg.e_pri = i % 8;
-		cfg.c_drr_id = i % 8;
-		cfg.e_drr_id = i % 8;
-		fal_queue_scheduler_set(0, i, 0, 0, &cfg);
-	}
-	/* port 1~7 unicast queue: 200 ~ 255  */
-	/* port 1~7 multicast queue: 272 ~ 299  */
-	for (j = 1; j < 8; j++) {
-		cfg.sp_id = j;
-		cfg.c_drr_wt = 2;
-		cfg.e_drr_wt = 2;
-		for (i = 0; i < 8; i++) {
-			cfg.c_pri = i;
-			cfg.e_pri = i;
-			cfg.c_drr_id = i + 8 * j;
-			cfg.e_drr_id = i + 8 * j;
-			fal_queue_scheduler_set(0, 200 + i + (j-1)*8, 0, j, &cfg);
-		}
-
-		cfg.c_drr_wt = 1;
-		cfg.e_drr_wt = 1;
-		for (i = 0; i < 4; i++) {
-			cfg.c_pri = i;
-			cfg.e_pri = i;
-			cfg.c_drr_id = i + 8 * j;
-			cfg.e_drr_id = i + 8 * j;
-			fal_queue_scheduler_set(0,272 + i + (j-1)*4, 0, j, &cfg);
+	for (i = 0; i < SSDK_L0SCHEDULER_CFG_MAX; i++) {
+		if (dt_cfg->l0cfg[i].valid) {
+			cfg.sp_id = dt_cfg->l0cfg[i].sp_id;
+			cfg.c_pri = dt_cfg->l0cfg[i].cpri;
+			cfg.e_pri = dt_cfg->l0cfg[i].epri;
+			cfg.c_drr_id = dt_cfg->l0cfg[i].cdrr_id;
+			cfg.e_drr_id = dt_cfg->l0cfg[i].edrr_id;
+			cfg.c_drr_wt = 1;
+			cfg.e_drr_wt = 1;
+			fal_queue_scheduler_set(dev_id, i,
+					0, dt_cfg->l0cfg[i].port_id, &cfg);
 		}
 	}
 
 	/* queue--edma ring mapping*/
 	memset(&queue_bmp, 0, sizeof(queue_bmp));
-	queue_bmp.bmp[0] = 1;
-	fal_edma_ring_queue_map_set(0, 0, &queue_bmp);
-	queue_bmp.bmp[0] = 2;
-	fal_edma_ring_queue_map_set(0, 1, &queue_bmp);
+	queue_bmp.bmp[0] = 0xF;
+	fal_edma_ring_queue_map_set(dev_id, 0, &queue_bmp);
+	queue_bmp.bmp[0] = 0xF0;
+	fal_edma_ring_queue_map_set(dev_id, 3, &queue_bmp);
+	queue_bmp.bmp[0] = 0xF00;
+	fal_edma_ring_queue_map_set(dev_id, 1, &queue_bmp);
 	queue_bmp.bmp[0] = 0;
 	queue_bmp.bmp[4] = 0xFFFF;
-	fal_edma_ring_queue_map_set(0, 2, &queue_bmp);
+	fal_edma_ring_queue_map_set(dev_id, 2, &queue_bmp);
 
 	/* chose qos group 0 */
 	group_sel.dscp_group = 0;
 	group_sel.flow_group = 0;
 	group_sel.pcp_group = 0;
 	for (i = 0; i < 8; i++)
-		fal_qos_port_group_get(0, i, &group_sel);
+		fal_qos_port_group_get(dev_id, i, &group_sel);
 	/* qos precedence */
 	pri_pre.flow_pri = 4;
 	pri_pre.acl_pri = 2;
@@ -3385,21 +3907,100 @@ qca_hppe_qos_scheduler_hw_init(void)
 	pri_pre.pcp_pri = 0;
 	pri_pre.preheader_pri = 3;
 	for (i = 0; i < 8; i++)
-		fal_qos_port_pri_precedence_set(0, i, &pri_pre);
+		fal_qos_port_pri_precedence_set(dev_id, i, &pri_pre);
 
 	return 0;
 }
 
 #ifdef HAWKEYE_CHIP
+void __iomem *gcc_ppeclock_base = NULL;
+void __iomem *gcc_pll_base = NULL;
+static int
+qca_hppe_gcc_clock_init(void)
+{
+	a_uint32_t reg_val, i;
+
+	gcc_ppeclock_base = ioremap_nocache(0x01868000, 0x500);
+	if (!gcc_ppeclock_base) {
+		SSDK_ERROR("can't map gcc ppe clock address!\n");
+		return -1;
+	}
+	gcc_pll_base = ioremap_nocache(0x0009B780, 0x100);
+	if (!gcc_pll_base) {
+		SSDK_ERROR("can't map gcc ppe pll address!\n");
+		return -1;
+	}
+	reg_val = readl(gcc_pll_base + 4);
+	reg_val=(reg_val&0xfffffff0)|0x7;
+	writel(reg_val, gcc_pll_base + 0x4);
+	reg_val = readl(gcc_pll_base);
+	reg_val=reg_val | 0x40;
+	writel(reg_val, gcc_pll_base);
+	msleep(1);
+	reg_val=reg_val & (~0x40);
+	writel(reg_val, gcc_pll_base);
+	msleep(1);
+	writel(0xbf, gcc_pll_base);
+	reg_val = readl(gcc_pll_base);
+	msleep(1);
+	writel(0xff, gcc_pll_base);
+	reg_val = readl(gcc_pll_base);
+	msleep(1);
+	/*set clock src and div*/
+	reg_val = 1 | (1 << 8);
+	writel(reg_val, gcc_ppeclock_base + 0x84);
+	/*issue command*/
+	reg_val = readl(gcc_ppeclock_base + 0x80);
+	reg_val |= 1;
+	writel(reg_val, gcc_ppeclock_base + 0x80);
+	msleep(100);
+	reg_val = readl(gcc_ppeclock_base + 0x80);
+	reg_val |= 2;
+	writel(reg_val, gcc_ppeclock_base + 0x80);
+
+	/*set CBCR*/
+	for (i= 0; i < 4; i++) {
+		reg_val = readl(gcc_ppeclock_base + 0x190 + i*4);
+		reg_val |= 1;
+		writel(reg_val, gcc_ppeclock_base + 0x190 + i*4);
+	}
+
+	/*enable nss noc ppe*/
+	reg_val = readl(gcc_ppeclock_base + 0x300);
+	reg_val |= 1;
+	writel(reg_val, gcc_ppeclock_base + 0x300);
+
+	/*enable nss noc ppe config*/
+	reg_val = readl(gcc_ppeclock_base + 0x304);
+	reg_val |= 1;
+	writel(reg_val, gcc_ppeclock_base + 0x304);
+
+	/*enable crypto ppe*/
+	reg_val = readl(gcc_ppeclock_base + 0x310);
+	reg_val |= 1;
+	writel(reg_val, gcc_ppeclock_base + 0x310);
+
+	/*enable mac, ipe btq*/
+	for (i= 0; i < 8; i++) {
+		reg_val = readl(gcc_ppeclock_base + 0x320 + i*4);
+		reg_val |= 1;
+		writel(reg_val, gcc_ppeclock_base + 0x320 + i*4);
+	}
+
+	iounmap(gcc_ppeclock_base);
+	iounmap(gcc_pll_base);
+	return 0;
+}
+
 static int
 qca_hppe_gcc_uniphy_init(void)
 {
 	gcc_uniphy_base = ioremap_nocache(0x01856000, 0x280);
 	if (!gcc_uniphy_base) {
-		printk("can't get gcc uniphy address!\n");
+		SSDK_ERROR("can't get gcc uniphy address!\n");
 		return -1;
 	}
-	printk("Get gcc uniphy address successfully!\n");
+	SSDK_INFO("Get gcc uniphy address successfully!\n");
 
 	return 0;
 }
@@ -3409,17 +4010,24 @@ qca_hppe_gcc_speed_clock_init(void)
 {
 	gcc_hppe_clock_config1_base = ioremap_nocache(0x01868020, 0x5c);
 	if (!gcc_hppe_clock_config1_base) {
-		printk("can't get gcc hppe colck config1 address!\n");
+		SSDK_ERROR("can't get gcc hppe colck config1 address!\n");
 		return -1;
 	}
-	printk("Get gcc hppe colck config1 address successfully!\n");
+	SSDK_INFO("Get gcc hppe colck config1 address successfully!\n");
 
 	gcc_hppe_clock_config2_base = ioremap_nocache(0x01868400, 0x60);
 	if (!gcc_hppe_clock_config2_base) {
-		printk("can't get gcc hppe colck config2 address!\n");
+		SSDK_ERROR("can't get gcc hppe colck config2 address!\n");
 		return -1;
 	}
-	printk("Get gcc hppe colck config2 address successfully!\n");
+	SSDK_INFO("Get gcc hppe colck config2 address successfully!\n");
+
+	gcc_hppe_clock_config3_base = ioremap_nocache(0x01868240, 0x2c);
+	if (!gcc_hppe_clock_config3_base) {
+		printk("can't get gcc hppe colck config3 address!\n");
+		return -1;
+	}
+	printk("Get gcc hppe colck config3 address successfully!\n");
 
 	return 0;
 }
@@ -3428,13 +4036,16 @@ uint32_t
 qca_hppe_gcc_speed_clock1_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr,
 				a_uint8_t * reg_data, a_uint32_t len)
 {
+	uint32_t reg_val = 0;
+
 	if (len != sizeof (a_uint32_t))
         return SW_BAD_LEN;
 
 	if ((reg_addr%4)!= 0)
 	return SW_BAD_PARAM;
 
-	writel(reg_data, gcc_hppe_clock_config1_base + reg_addr);
+	aos_mem_copy(&reg_val, reg_data, sizeof (a_uint32_t));
+	writel(reg_val, gcc_hppe_clock_config1_base + reg_addr);
 
 	return 0;
 }
@@ -3461,13 +4072,16 @@ uint32_t
 qca_hppe_gcc_speed_clock2_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr,
 				a_uint8_t * reg_data, a_uint32_t len)
 {
+	uint32_t reg_val = 0;
+
 	if (len != sizeof (a_uint32_t))
         return SW_BAD_LEN;
 
 	if ((reg_addr%4)!= 0)
 	return SW_BAD_PARAM;
 
-	writel(reg_data, gcc_hppe_clock_config2_base + reg_addr);
+	aos_mem_copy(&reg_val, reg_data, sizeof (a_uint32_t));
+	writel(reg_val, gcc_hppe_clock_config2_base + reg_addr);
 
 	return 0;
 }
@@ -3489,17 +4103,55 @@ qca_hppe_gcc_speed_clock2_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr,
 
 	return 0;
 }
-
 uint32_t
-qca_hppe_gcc_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
+qca_hppe_gcc_mac_clock_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr,
+				a_uint8_t * reg_data, a_uint32_t len)
 {
+	uint32_t reg_val = 0;
+
 	if (len != sizeof (a_uint32_t))
         return SW_BAD_LEN;
 
 	if ((reg_addr%4)!= 0)
 	return SW_BAD_PARAM;
 
-	writel(reg_data, gcc_uniphy_base + reg_addr);
+	aos_mem_copy(&reg_val, reg_data, sizeof (a_uint32_t));
+	writel(reg_val, gcc_hppe_clock_config3_base + reg_addr);
+
+	return 0;
+}
+
+uint32_t
+qca_hppe_gcc_mac_clock_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr,
+				a_uint8_t * reg_data, a_uint32_t len)
+{
+	uint32_t reg_val = 0;
+
+	if (len != sizeof (a_uint32_t))
+        return SW_BAD_LEN;
+
+	if ((reg_addr%4)!= 0)
+	return SW_BAD_PARAM;
+
+	reg_val = readl(gcc_hppe_clock_config3_base + reg_addr);
+	aos_mem_copy(reg_data, &reg_val, sizeof (a_uint32_t));
+
+	return 0;
+}
+
+uint32_t
+qca_hppe_gcc_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
+{
+	uint32_t reg_val = 0;
+
+	if (len != sizeof (a_uint32_t))
+        return SW_BAD_LEN;
+
+	if ((reg_addr%4)!= 0)
+	return SW_BAD_PARAM;
+
+	aos_mem_copy(&reg_val, reg_data, sizeof (a_uint32_t));
+	writel(reg_val, gcc_uniphy_base + reg_addr);
 
 	return 0;
 }
@@ -3529,254 +4181,73 @@ qca_hppe_gcc_uniphy_port_clock_set(a_uint32_t dev_id, a_uint32_t uniphy_index,
 	for (i = 0; i < 2; i++)
 	{
 		reg_value = 0;
-		qca_hppe_gcc_uniphy_reg_read(0, (((0x10 + i * 4) + 0x8 * (port_id - 1))
+		qca_hppe_gcc_uniphy_reg_read(dev_id, (((0x10 + i * 4) + 0x8 * (port_id - 1))
 				+ (uniphy_index * HPPE_GCC_UNIPHY_REG_INC)), (a_uint8_t *)&reg_value, 4);
 		if (enable == A_TRUE)
 			reg_value |= 0x1;
 		else
 			reg_value &= ~0x1;
-		qca_hppe_gcc_uniphy_reg_write(0, (((0x10 + i * 4)+ 0x8 * (port_id - 1))
+		qca_hppe_gcc_uniphy_reg_write(dev_id, (((0x10 + i * 4)+ 0x8 * (port_id - 1))
 				+ (uniphy_index * HPPE_GCC_UNIPHY_REG_INC)), (a_uint8_t *)&reg_value, 4);
 	}
 
 }
-sw_error_t
-qca_hppe_xgphy_read(a_uint32_t dev_id, a_uint32_t phy_addr,
-                           a_uint32_t reg, a_uint16_t* data)
+
+void
+qca_hppe_gcc_mac_port_clock_set(a_uint32_t dev_id, a_uint32_t port_id, a_bool_t enable)
 {
-	struct mii_bus *bus = miibus;
-	int phy_dest_addr;
+	a_uint32_t i, reg_value;
 
-	phy_dest_addr = phy_address[phy_addr];
-	reg = MII_PHYADDR_C45 | reg;
-	*data = mdiobus_read(bus, phy_dest_addr, reg);
-
-	return 0;
-}
-sw_error_t
-qca_hppe_xgphy_write(a_uint32_t dev_id, a_uint32_t phy_addr,
-                            a_uint32_t reg, a_uint16_t data)
-{
-	struct mii_bus *bus = miibus;
-	int phy_dest_addr;
-
-	phy_dest_addr = phy_address[phy_addr];
-	reg = MII_PHYADDR_C45 | reg;
-	mdiobus_write(bus, phy_dest_addr, reg, data);
-
-	return 0;
-}
-static sw_error_t
-qca_hppe_port_mux_set(fal_port_t port_id, a_uint32_t mode1, a_uint32_t mode2)
-{
-	adpt_api_t *p_api;
-	a_uint32_t  mode;
-	sw_error_t rv = SW_OK;
-
-	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(0));
-
-	if ((NULL == p_api->adpt_port_mac_mux_set) || (NULL == p_api->adpt_port_mac_speed_set) ||
-				(NULL == p_api->adpt_port_mac_duplex_set))
-		return SW_NOT_SUPPORTED;
-
-	if (hppe_port_type[port_id - 1] == HPPE_PORT_GMAC_TYPE)
+	for (i = 0; i < 2; i++)
 	{
-		rv = p_api->adpt_port_mac_speed_set(0, port_id, FAL_SPEED_1000);
-		rv = p_api->adpt_port_mac_duplex_set(0, port_id, FAL_FULL_DUPLEX);
-	}
-	else if (hppe_port_type[port_id - 1] == HPPE_PORT_XGMAC_TYPE)
-	{
-		if (port_id == HPPE_MUX_PORT1)
-			mode = mode1;
-		else if (port_id == HPPE_MUX_PORT2)
-			mode = mode2;
-		if (mode == PORT_WRAPPER_SGMII_PLUS)
-		{
-			rv = p_api->adpt_port_mac_speed_set(0, port_id, FAL_SPEED_2500);
-			rv = p_api->adpt_port_mac_duplex_set(0, port_id, FAL_FULL_DUPLEX);
-		}
+		reg_value = 0;
+		qca_hppe_gcc_mac_clock_reg_read(dev_id, ((i * 4) + 0x8 * (port_id - 1)),
+				(a_uint8_t *)&reg_value, 4);
+		if (enable == A_TRUE)
+			reg_value |= 0x1;
 		else
-		{
-			rv = p_api->adpt_port_mac_speed_set(0, port_id, FAL_SPEED_10000);
-			rv = p_api->adpt_port_mac_duplex_set(0, port_id, FAL_FULL_DUPLEX);
-		}
+			reg_value &= ~0x1;
+		qca_hppe_gcc_mac_clock_reg_write(dev_id, ((i * 4)+ 0x8 * (port_id - 1)),
+				(a_uint8_t *)&reg_value, 4);
 	}
-	if ((hppe_port_type[port_id - 1] == HPPE_PORT_GMAC_TYPE) ||
-			(hppe_port_type[port_id - 1] == HPPE_PORT_XGMAC_TYPE))
-		rv = p_api->adpt_port_mac_mux_set(0, port_id, hppe_port_type[port_id - 1]);
 
-	return rv;
 }
 
 static sw_error_t
-qca_hppe_port_mac_type_set(a_uint32_t port_id, a_uint32_t mode)
+qca_hppe_interface_mode_init(a_uint32_t dev_id, a_uint32_t mode0, a_uint32_t mode1, a_uint32_t mode2)
 {
-	sw_error_t rv = SW_OK;
 
-	switch (mode) {
-
-		case PORT_WRAPPER_PSGMII:
-		case PORT_WRAPPER_QSGMII:
-		case PORT_WRAPPER_SGMII0_RGMII4:
-		case PORT_WRAPPER_SGMII1_RGMII4:
-		case PORT_WRAPPER_SGMII4_RGMII4:
-			hppe_port_type[port_id - 1] = HPPE_PORT_GMAC_TYPE;
-			break;
-		case PORT_WRAPPER_SGMII_PLUS:
-		case PORT_WRAPPER_USXGMII:
-		case PORT_WRAPPER_XFI:
-			hppe_port_type[port_id -1] = HPPE_PORT_XGMAC_TYPE;
-			break;
-	}
-	return rv;
-}
-static sw_error_t
-qca_hppe_port_mux_mac_type_init(a_uint32_t mode0, a_uint32_t mode1, a_uint32_t mode2)
-{
-	a_uint32_t  mode;
+	adpt_api_t *p_api;
 	sw_error_t rv = SW_OK;
 	fal_port_t port_id;
 
-	switch (mode0) {
-		case PORT_WRAPPER_PSGMII:
-			for(port_id = 1; port_id < 6; port_id++) {
-				qca_hppe_port_mac_type_set(port_id, mode0);
-			}
-			break;
-		case PORT_WRAPPER_QSGMII:
-			for(port_id = 1; port_id < 5; port_id++) {
-				qca_hppe_port_mac_type_set(port_id, mode0);
-			}
-			break;
-		case PORT_WRAPPER_SGMII0_RGMII4:
-			qca_hppe_port_mac_type_set(1, mode0);
-			break;
-		case PORT_WRAPPER_SGMII1_RGMII4:
-			qca_hppe_port_mac_type_set(2, mode0);
-			break;
-		case PORT_WRAPPER_SGMII4_RGMII4:
-			qca_hppe_port_mac_type_set(5, mode0);
-			break;
-	}
-
-	qca_hppe_port_mac_type_set(5, mode1);
-	qca_hppe_port_mac_type_set(6, mode2);
-
-	for (port_id = 1; port_id < 7; port_id++) {
-		qca_hppe_port_mux_set(port_id,mode1, mode2);
-	}
-
-	return rv;
-}
-
-static sw_error_t
-qca_hppe_interface_mode_init(a_uint32_t mode0, a_uint32_t mode1, a_uint32_t mode2)
-{
-
-	adpt_api_t *p_api;
-	sw_error_t rv = SW_OK;
-
-	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(0));
+	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
 
 	if (NULL == p_api->adpt_uniphy_mode_set)
 		return SW_NOT_SUPPORTED;
 
-	rv = p_api->adpt_uniphy_mode_set(0, HPPE_UNIPHY_INSTANCE0, mode0);
-	rv = p_api->adpt_uniphy_mode_set(0, HPPE_UNIPHY_INSTANCE1, mode1);
-	rv = p_api->adpt_uniphy_mode_set(0, HPPE_UNIPHY_INSTANCE2, mode2);
+	rv = p_api->adpt_uniphy_mode_set(dev_id, HPPE_UNIPHY_INSTANCE0, mode0);
 
-	rv = qca_hppe_port_mux_mac_type_init(mode0, mode1, mode2);
+	rv = p_api->adpt_uniphy_mode_set(dev_id, HPPE_UNIPHY_INSTANCE1, mode1);
+
+	rv = p_api->adpt_uniphy_mode_set(dev_id, HPPE_UNIPHY_INSTANCE2, mode2);
+
+	for(port_id =1; port_id <=6; port_id++)
+	{
+		rv = p_api->adpt_port_mux_mac_type_set(dev_id, port_id, mode0, mode1, mode2);
+		if(rv != SW_OK)
+		{
+			SSDK_ERROR("port_id:%d, mode0:%d, mode1:%d, mode2:%d\n", port_id, mode0, mode1, mode2);
+			break;
+		}
+	}
 
 	return rv;
 }
 #endif
 
-uint32_t
-qca_hppe_uniphy_reg_read(a_uint32_t dev_id, a_uint32_t uniphy_index,
-				a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
-{
-	uint32_t reg_val = 0;
-	void __iomem *hppe_uniphy_base = NULL;
-	a_uint32_t reg_addr1, reg_addr2;
-
-	if (len != sizeof (a_uint32_t))
-        return SW_BAD_LEN;
-
-	if ((reg_addr%4)!= 0)
-	return SW_BAD_PARAM;
-
-	if (HPPE_UNIPHY_INSTANCE0 == uniphy_index)
-		hppe_uniphy_base = hppe_uniphy_addr;
-	else if (HPPE_UNIPHY_INSTANCE1 == uniphy_index)
-		hppe_uniphy_base = hppe_uniphy_addr + HPPE_UNIPHY_BASE1;
-	else if (HPPE_UNIPHY_INSTANCE2 == uniphy_index)
-		hppe_uniphy_base = hppe_uniphy_addr + HPPE_UNIPHY_BASE2;
-	else
-		return SW_BAD_PARAM;
-
-	if ( reg_addr > HPPE_UNIPHY_MAX_DIRECT_ACCESS_REG)
-	{
-		// uniphy reg indireclty access
-		reg_addr1 = reg_addr & HPPE_UNIPHY_INDIRECT_HIGH_ADDR;
-		writel(reg_addr1, hppe_uniphy_base + HPPE_UNIPHY_INDIRECT_REG_ADDR);
-
-		reg_addr2 = reg_addr & HPPE_UNIPHY_INDIRECT_LOW_ADDR;
-		reg_addr = (HPPE_UNIPHY_INDIRECT_DATA << 10) | (reg_addr2 << 2);
-
-		reg_val = readl(hppe_uniphy_base + reg_addr);
-		aos_mem_copy(reg_data, &reg_val, sizeof (a_uint32_t));
-	}
-	else
-	{	// uniphy reg directly access
-		reg_val = readl(hppe_uniphy_base + reg_addr);
-		aos_mem_copy(reg_data, &reg_val, sizeof (a_uint32_t));
-	}
-
-	return 0;
-}
-
-uint32_t
-qca_hppe_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t uniphy_index,
-				a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
-{
-	void __iomem *hppe_uniphy_base = NULL;
-	a_uint32_t reg_addr1, reg_addr2;
-
-	if (len != sizeof (a_uint32_t))
-        return SW_BAD_LEN;
-
-	if ((reg_addr%4)!= 0)
-	return SW_BAD_PARAM;
-
-	if (HPPE_UNIPHY_INSTANCE0 == uniphy_index)
-		hppe_uniphy_base = hppe_uniphy_addr;
-	else if (HPPE_UNIPHY_INSTANCE1 == uniphy_index)
-		hppe_uniphy_base = hppe_uniphy_addr + HPPE_UNIPHY_BASE1;
-	else if (HPPE_UNIPHY_INSTANCE2 == uniphy_index)
-		hppe_uniphy_base = hppe_uniphy_addr + HPPE_UNIPHY_BASE2;
-	else
-		return SW_BAD_PARAM;
-
-	if ( reg_addr > HPPE_UNIPHY_MAX_DIRECT_ACCESS_REG)
-	{
-		// uniphy reg indireclty access
-		reg_addr1 = reg_addr & HPPE_UNIPHY_INDIRECT_HIGH_ADDR;
-		writel(reg_addr1, hppe_uniphy_base + HPPE_UNIPHY_INDIRECT_REG_ADDR);
-
-		reg_addr2 = reg_addr & HPPE_UNIPHY_INDIRECT_LOW_ADDR;
-		reg_addr = (HPPE_UNIPHY_INDIRECT_DATA << 10) | (reg_addr2 << 2);
-		writel(reg_data, hppe_uniphy_base + reg_addr);
-	}
-	else
-	{	// uniphy reg directly access
-		writel(reg_data, hppe_uniphy_base + reg_addr);
-	}
-
-	return 0;
-}
-
 static sw_error_t
-qca_hppe_flow_hw_init(void)
+qca_hppe_flow_hw_init(a_uint32_t dev_id)
 {
 	fal_flow_direction_t dir, dir_max;
 	fal_flow_mgmt_t mgmt;
@@ -3787,93 +4258,72 @@ qca_hppe_flow_hw_init(void)
 
 	/*set redirect to cpu for multicast flow*/
 	for (dir = FAL_FLOW_LAN_TO_LAN_DIR; dir <= dir_max; dir++) {
-		rv = fal_flow_mgmt_get(0, FAL_FLOW_MCAST, dir, &mgmt);
+		rv = fal_flow_mgmt_get(dev_id, FAL_FLOW_MCAST, dir, &mgmt);
 		if (rv)
 			return rv;
 		mgmt.miss_action = FAL_MAC_RDT_TO_CPU;
-		rv = fal_flow_mgmt_set(0, FAL_FLOW_MCAST, dir, &mgmt);
+		rv = fal_flow_mgmt_set(dev_id, FAL_FLOW_MCAST, dir, &mgmt);
 		if (rv)
 			return rv;
 	}
 	return SW_OK;
 }
 
+#define GCC_NSS_PPE_RESET_ADDR  0x01868014
+#define GCC_NSS_PPE_RESET_VAL           0xf0000
 static int
-qca_hppe_hw_init(ssdk_init_cfg *cfg)
+qca_hppe_hw_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 {
-	a_uint32_t val, i = 0;
-	void __iomem *ppe_gpio_base;
+	a_uint32_t val;
+	void __iomem *ppe_gcc_base;
+	#ifndef HAWKEYE_CHIP
+	a_uint32_t i = 0;
+	#endif
 
-
-	qca_switch_init(0);
-
-	/*fixme*/
-	ppe_gpio_base = ioremap_nocache(0x01008000, 0x100);
-	if (!ppe_gpio_base) {
-		printk("can't get gpio address!\n");
+	/* reset ppe */
+	ppe_gcc_base = ioremap_nocache(GCC_NSS_PPE_RESET_ADDR, 0x100);
+	if (!ppe_gcc_base) {
+		SSDK_ERROR("can't get gcc ppe reset address!\n");
 		return -1;
 	}
-	/* RUMI specific GPIO configuration for enabling XGMAC */
-	writel(0x201, ppe_gpio_base + 0);
-	writel(0x2, ppe_gpio_base + 4);
-	iounmap(ppe_gpio_base);
-	printk("set gpio to enable XGMAC successfully!\n");
+	writel(GCC_NSS_PPE_RESET_VAL, ppe_gcc_base);
+	msleep(100);
+	writel(0, ppe_gcc_base);
+	msleep(100);
+	iounmap(ppe_gcc_base);
+	SSDK_INFO("ppe reset successfully!\n");
+
+	qca_switch_init(dev_id);
+
 	val = 0x3b;
-	qca_switch_reg_write(0, 0x000010, (a_uint8_t *)&val, 4);
+	qca_switch_reg_write(dev_id, 0x000010, (a_uint8_t *)&val, 4);
 	val = 0;
-	qca_switch_reg_write(0, 0x000008, (a_uint8_t *)&val, 4);
+	qca_switch_reg_write(dev_id, 0x000008, (a_uint8_t *)&val, 4);
 
-	qca_hppe_bm_hw_init();
-	qca_hppe_qm_hw_init();
-	qca_hppe_qos_scheduler_hw_init();
-	qca_hppe_tdm_hw_init();
+	qca_hppe_bm_hw_init(dev_id);
+	qca_hppe_qm_hw_init(dev_id);
+	qca_hppe_qos_scheduler_hw_init(dev_id);
+	qca_hppe_tdm_hw_init(dev_id);
 
-	qca_hppe_fdb_hw_init();
-	qca_hppe_vsi_hw_init();
-	qca_hppe_portvlan_hw_init();
+	qca_hppe_fdb_hw_init(dev_id);
+	qca_hppe_vsi_hw_init(dev_id);
+	qca_hppe_portvlan_hw_init(dev_id);
 
-	qca_hppe_portctrl_hw_init();
+	qca_hppe_portctrl_hw_init(dev_id);
 
-	qca_hppe_policer_hw_init();
+	qca_hppe_policer_hw_init(dev_id);
 
-	qca_hppe_shaper_hw_init();
-	qca_hppe_flow_hw_init();
+	qca_hppe_shaper_hw_init(dev_id);
+	qca_hppe_flow_hw_init(dev_id);
 
-#ifdef HAWKEYE_CHIP
+	qca_hppe_gcc_clock_init();
+
 	qca_hppe_gcc_uniphy_init();
 
 	qca_hppe_gcc_speed_clock_init();
 
-	qca_hppe_interface_mode_init(cfg->mac_mode, cfg->mac_mode1,
+	qca_hppe_interface_mode_init(dev_id, cfg->mac_mode, cfg->mac_mode1,
 				cfg->mac_mode2);
-#else
-#ifndef ESS_ONLY_FPGA
-	qca_hppe_xgmac_hw_init();
-	printk("hppe xgmac init success\n");
-
-	for(i = 0; i < 4; i++) {
-		hppe_port_type[i] = HPPE_PORT_GMAC_TYPE;
-	}
-	for(i = 4; i < 6; i++) {
-		hppe_port_type[i] = HPPE_PORT_XGMAC_TYPE;
-	}
-
-	ssdk_dt_global.mac_mode = PORT_WRAPPER_QSGMII;
-	ssdk_dt_global.mac_mode1 = PORT_WRAPPER_USXGMII;
-	ssdk_dt_global.mac_mode2 = PORT_WRAPPER_USXGMII;
-
-#else
-
-	for(i = 0; i < 5; i++) {
-		hppe_port_type[i] = HPPE_PORT_GMAC_TYPE;
-	}
-	hppe_port_type[i] = HPPE_PORT_XGMAC_TYPE;
-
-	ssdk_dt_global.mac_mode = PORT_WRAPPER_PSGMII;
-	ssdk_dt_global.mac_mode1 = PORT_WRAPPER_MAX;
-	ssdk_dt_global.mac_mode2 = PORT_WRAPPER_USXGMII;
-#endif
-#endif
 	return 0;
 }
 #endif
@@ -3887,7 +4337,8 @@ static void ssdk_cfg_default_init(ssdk_init_cfg *cfg)
 	cfg->reg_func.mdio_get = qca_ar8327_phy_read;
 	cfg->reg_func.header_reg_set = qca_switch_reg_write;
 	cfg->reg_func.header_reg_get = qca_switch_reg_read;
-
+	cfg->reg_func.mii_reg_set = qca_ar8216_mii_write;
+	cfg->reg_func.mii_reg_get = qca_ar8216_mii_read;
 }
 
 #ifdef IN_RFS
@@ -3927,7 +4378,7 @@ void ssdk_intf_set(struct net_device *dev, char op)
 	a_uint32_t tmp_vid = 0xffffffff;
 	fal_intf_mac_entry_t intf_entry;
 	a_uint32_t wan_port = 0;
-	sw_error_t rv;
+	sw_error_t rv = 0;
 	static fal_intf_mac_entry_t if_mac_entry[8] = {{0}};
 	int index = 0xffffffff;
 	/*get mac*/
@@ -4067,7 +4518,6 @@ static int ssdk_dev_event(struct notifier_block *this, unsigned long event, void
 #else
 	struct net_device *dev = (struct net_device *)ptr;
 #endif
-
 	switch (event) {
 #ifdef IN_RFS
 #if defined(CONFIG_RFS_ACCEL)
@@ -4083,154 +4533,25 @@ static int ssdk_dev_event(struct notifier_block *this, unsigned long event, void
 			break;
 #endif
 #endif
-
 		case NETDEV_CHANGEMTU:
 			if(dev->type == ARPHRD_ETHER) {
-				fal_frame_max_size_set(0, dev->mtu + 18);
+				if(qca_phy_priv_global[0]->version == QCA_VER_DESS ||
+				   qca_phy_priv_global[0]->version == QCA_VER_AR8327 ||
+				   qca_phy_priv_global[0]->version == QCA_VER_AR8337){
+					fal_frame_max_size_set(0, dev->mtu + 18);
+				}
 			}
 			break;
-                }
+	}
+
 	return NOTIFY_DONE;
 }
-//#endif
 
-static int __init regi_init(void)
+#ifdef DESS
+static void qca_dess_rfs_remove(void)
 {
-	ssdk_init_cfg cfg;
-	int rv = 0, cnt = 0;
-	garuda_init_spec_cfg chip_spec_cfg;
-	#ifdef DESS
-	a_uint32_t psgmii_result = 0;
-	#endif
-	ssdk_dt_global.switch_reg_access_mode = HSL_REG_MDIO;
-	ssdk_dt_global.psgmii_reg_access_mode = HSL_REG_MDIO;
-
-	qca_phy_priv_global = kzalloc(sizeof(struct qca_phy_priv), GFP_KERNEL);
-	if (qca_phy_priv_global == NULL) {
-		return -ENOMEM;
-	}
-	for (cnt = 0; cnt < 5; cnt ++)
-		qca_phy_priv_global->phy_address[cnt] = cnt;
-
-	ssdk_cfg_default_init(&cfg);
-
-	#ifndef BOARD_AR71XX
-	#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-	if(SW_DISABLE == ssdk_dt_parse(&cfg)) {
-		printk("ess-switch status value is disabled\n");
-		return SW_OK;
-	}
-	#endif
-	#endif
-
-	rv = ssdk_plat_init(&cfg);
-	if(rv)
-		goto out;
-
-	ssdk_driver_register();
-
-	rv = chip_ver_get(&cfg);
-	if(rv)
-		goto out;
-
-	if(cfg.chip_type != CHIP_HPPE)
-		ssdk_phy_id_get(&cfg);
-
-
-	memset(&chip_spec_cfg, 0, sizeof(garuda_init_spec_cfg));
-	cfg.chip_spec_cfg = &chip_spec_cfg;
-
-	rv = ssdk_init(0, &cfg);
-	if(rv)
-		goto out;
-
-	ssdk_dev_notifier.notifier_call = ssdk_dev_event;
-	ssdk_dev_notifier.priority = 1;
-	register_netdevice_notifier(&ssdk_dev_notifier);
-
-	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
-		#if defined(HPPE)
-		if(cfg.chip_type == CHIP_HPPE)
-		{
-			printk("Initializing HPPE!!\n");
-			qca_hppe_hw_init(&cfg);
-			printk("Initializing HPPE Done!!\n");
-		}
-		#endif
-		#if defined(DESS)
-		if(cfg.chip_type == CHIP_DESS)
-		{
-			/*Do Malibu self test to fix packet drop issue firstly*/
-			if ((cfg.chip_type == CHIP_DESS) && (ssdk_dt_global.mac_mode == PORT_WRAPPER_PSGMII)) {
-				ssdk_psgmii_self_test(A_FALSE, 100, &psgmii_result);
-				clear_self_test_config();
-			}
-
-			qca_dess_hw_init(&cfg);
-
-			#if defined (CONFIG_NF_FLOW_COOKIE)
-			#ifdef IN_NAT
-			#ifdef IN_SFE
-			sfe_register_flow_cookie_cb(ssdk_flow_cookie_set);
-			#endif
-			#endif
-			#endif
-
-			#ifdef IN_RFS
-			memset(&rfs_dev, 0, sizeof(rfs_dev));
-			rfs_dev.name = NULL;
-			#ifdef IN_FDB
-			rfs_dev.mac_rule_cb = ssdk_rfs_mac_rule_set;
-			#endif
-			#ifdef IN_IP
-			rfs_dev.ip4_rule_cb = ssdk_rfs_ip4_rule_set;
-			rfs_dev.ip6_rule_cb = ssdk_rfs_ip6_rule_set;
-			#endif
-			rfs_ess_device_register(&rfs_dev);
-			#if defined(CONFIG_RFS_ACCEL)
-			#endif
-			ssdk_inet_notifier.notifier_call = ssdk_inet_event;
-			ssdk_inet_notifier.priority = 1;
-			register_inetaddr_notifier(&ssdk_inet_notifier);
-			#endif
-
-			/* Setup Cpu port for Dakota platform. */
-			switch_cpuport_setup();
-		}
-		#endif
-		rv = ssdk_switch_register();
-	}
-
-out:
-	fal_module_func_init(0, &cfg);
-	if (rv == 0)
-		printk("qca-ssdk module init succeeded!\n");
-	else {
-		if (rv == -ENODEV) {
-			rv = 0;
-			printk("qca-ssdk module init, no device found!\n");
-		} else
-			printk("qca-ssdk module init failed! (code: %d)\n", rv);
-	}
-
-	return rv;
-}
-
-static void __exit
-regi_exit(void)
-{
-	sw_error_t rv=ssdk_cleanup();
-
-	if (rv == 0)
-		printk("qca-ssdk module exit  done!\n");
-	else
-		printk("qca-ssdk module exit failed! (code: %d)\n", rv);
-
-	kfree(qca_phy_priv_global);
-
-	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS){
-		#ifdef DESS
-		ssdk_switch_unregister();
+	/* ssdk_dt_global->switch_reg_access_mode == HSL_REG_LOCAL_BUS */
+	if(qca_dess_rfs_registered){
 		#if defined (CONFIG_NF_FLOW_COOKIE)
 		#ifdef IN_NAT
 		#ifdef IN_SFE
@@ -4242,16 +4563,286 @@ regi_exit(void)
 		rfs_ess_device_unregister(&rfs_dev);
 		unregister_inetaddr_notifier(&ssdk_inet_notifier);
 		#if defined(CONFIG_RFS_ACCEL)
-		unregister_netdevice_notifier(&ssdk_dev_notifier);
 		#endif
 		#endif
-		#endif
-
+		qca_dess_rfs_registered = false;
 	}
 
-	ssdk_plat_exit();
+}
 
-	ssdk_driver_unregister();
+static void qca_dess_rfs_init(void)
+{
+	if (!qca_dess_rfs_registered) {
+		#if defined (CONFIG_NF_FLOW_COOKIE)
+		#ifdef IN_NAT
+		#ifdef IN_SFE
+		sfe_register_flow_cookie_cb(ssdk_flow_cookie_set);
+		#endif
+		#endif
+		#endif
+
+		#ifdef IN_RFS
+		memset(&rfs_dev, 0, sizeof(rfs_dev));
+		rfs_dev.name = NULL;
+		#ifdef IN_FDB
+		rfs_dev.mac_rule_cb = ssdk_rfs_mac_rule_set;
+		#endif
+		#ifdef IN_IP
+		rfs_dev.ip4_rule_cb = ssdk_rfs_ip4_rule_set;
+		rfs_dev.ip6_rule_cb = ssdk_rfs_ip6_rule_set;
+		#endif
+		rfs_ess_device_register(&rfs_dev);
+		#if defined(CONFIG_RFS_ACCEL)
+		#endif
+		ssdk_inet_notifier.notifier_call = ssdk_inet_event;
+		ssdk_inet_notifier.priority = 1;
+		register_inetaddr_notifier(&ssdk_inet_notifier);
+		#endif
+		qca_dess_rfs_registered = true;
+	}
+}
+#endif
+
+static a_uint32_t ssdk_get_switch_nums(void)
+{
+	struct device_node *switch_instance = NULL;
+	a_uint32_t len = 0;
+	const __be32 *num_devices;
+
+	switch_instance = of_find_node_by_name(NULL, "ess-instance");
+	if (!switch_instance) {
+		return 1;
+	}
+	else {
+		num_devices = of_get_property(switch_instance, "num_devices", &len);
+		if (!num_devices)
+			return 1;
+		else
+			return be32_to_cpup(num_devices);
+	}
+}
+
+static void ssdk_free_priv(void)
+{
+	a_uint32_t dev_id;
+	for (dev_id = 0; dev_id < ssdk_dt_global.num_devices; dev_id++) {
+		if (qca_phy_priv_global[dev_id])
+			kfree(qca_phy_priv_global[dev_id]);
+		if (ssdk_dt_global.ssdk_dt_switch_nodes[dev_id])
+			kfree(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]);
+
+		qca_phy_priv_global[dev_id] = NULL;
+		ssdk_dt_global.ssdk_dt_switch_nodes[dev_id] = NULL;
+	}
+
+	if (ssdk_dt_global.ssdk_dt_switch_nodes)
+		kfree(ssdk_dt_global.ssdk_dt_switch_nodes);
+	if (qca_phy_priv_global)
+		kfree(qca_phy_priv_global);
+
+	ssdk_dt_global.ssdk_dt_switch_nodes = NULL;
+	qca_phy_priv_global = NULL;
+
+	ssdk_dt_global.num_devices = 0;
+}
+
+static int ssdk_alloc_priv(void)
+{
+	int rev = SW_OK;
+	a_uint32_t dev_id;
+	ssdk_dt_global.num_devices = ssdk_get_switch_nums();
+	SSDK_INFO("ess-switch dts node number: %d\n", ssdk_dt_global.num_devices);
+
+	ssdk_dt_global.ssdk_dt_switch_nodes = kzalloc(ssdk_dt_global.num_devices * sizeof(ssdk_dt_cfg *), GFP_KERNEL);
+	if (ssdk_dt_global.ssdk_dt_switch_nodes == NULL) {
+		return -ENOMEM;
+	}
+
+	qca_phy_priv_global = kzalloc(ssdk_dt_global.num_devices * sizeof(struct qca_phy_priv *), GFP_KERNEL);
+	if (qca_phy_priv_global == NULL) {
+		return -ENOMEM;
+	}
+
+	for (dev_id = 0; dev_id < ssdk_dt_global.num_devices; dev_id++) {
+		ssdk_dt_global.ssdk_dt_switch_nodes[dev_id] = kzalloc(sizeof(ssdk_dt_cfg), GFP_KERNEL);
+		if (ssdk_dt_global.ssdk_dt_switch_nodes[dev_id] == NULL) {
+			return -ENOMEM;
+		}
+		ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->switch_reg_access_mode = HSL_REG_MDIO;
+		ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->psgmii_reg_access_mode = HSL_REG_MDIO;
+		ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->ess_switch_flag = A_FALSE;
+
+		qca_phy_priv_global[dev_id] = kzalloc(sizeof(struct qca_phy_priv), GFP_KERNEL);
+		if (qca_phy_priv_global[dev_id] == NULL) {
+			return -ENOMEM;
+		}
+		qca_phy_priv_global[dev_id]->qca_ssdk_sw_dev_registered = A_FALSE;
+		qca_phy_priv_global[dev_id]->ess_switch_flag = A_FALSE;
+	}
+
+	return rev;
+}
+
+static int __init regi_init(void)
+{
+	a_uint32_t num = 0, dev_id = 0;
+	ssdk_init_cfg cfg;
+	garuda_init_spec_cfg chip_spec_cfg;
+	#ifdef DESS
+	a_uint32_t psgmii_result = 0;
+	#endif
+	int rv = 0;
+
+	rv = ssdk_alloc_priv();
+	if (rv)
+		goto out;
+
+	for (num = 0; num < ssdk_dt_global.num_devices; num++) {
+		ssdk_cfg_default_init(&cfg);
+		qca_ssdk_phy_address_init(num);
+		qca_ssdk_port_bmp_init(num);
+
+		#ifndef BOARD_AR71XX
+		#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+		if(SW_DISABLE == ssdk_dt_parse(&cfg, num, &dev_id)) {
+			SSDK_INFO("ess-switch node is unavalilable\n");
+			continue;
+		}
+		#endif
+		#endif
+
+		/* device id is the array index */
+		qca_phy_priv_global[dev_id]->device_id = ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->device_id;
+		qca_phy_priv_global[dev_id]->ess_switch_flag = ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->ess_switch_flag;
+		qca_phy_priv_global[dev_id]->of_node = ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->of_node;
+
+		rv = ssdk_plat_init(&cfg, dev_id);
+		SW_CNTU_ON_ERROR_AND_COND1_OR_GOTO_OUT(rv, -ENODEV);
+
+		ssdk_driver_register(dev_id);
+
+		rv = chip_ver_get(dev_id, &cfg);
+		SW_CNTU_ON_ERROR_AND_COND1_OR_GOTO_OUT(rv, -ENODEV);
+
+		ssdk_miireg_ioctrl_register();
+
+		memset(&chip_spec_cfg, 0, sizeof(garuda_init_spec_cfg));
+		cfg.chip_spec_cfg = &chip_spec_cfg;
+
+		rv = ssdk_init(dev_id, &cfg);
+		SW_CNTU_ON_ERROR_AND_COND1_OR_GOTO_OUT(rv, -ENODEV);
+
+
+		switch (cfg.chip_type)
+		{
+			case CHIP_ISIS:
+			case CHIP_ISISC:
+			#if defined (ISISC) || defined (ISIS)
+				if (ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->ess_switch_flag == A_TRUE) {
+					SSDK_INFO("Initializing ISISC!!\n");
+					rv = ssdk_switch_register(dev_id);
+					SW_CNTU_ON_ERROR_AND_COND1_OR_GOTO_OUT(rv, -ENODEV);
+					rv = qca_ar8327_hw_init(qca_phy_priv_global[dev_id]);
+					SSDK_INFO("Initializing ISISC Done!!\n");
+				}
+			#endif
+				break;
+			case CHIP_HPPE:
+			#if defined(HPPE)
+				SSDK_INFO("Initializing HPPE!!\n");
+				qca_hppe_hw_init(&cfg, dev_id);
+				rv = ssdk_switch_register(dev_id);
+				SW_CNTU_ON_ERROR_AND_COND1_OR_GOTO_OUT(rv, -ENODEV);
+				SSDK_INFO("Initializing HPPE Done!!\n");
+			#endif
+				break;
+
+			case CHIP_DESS:
+			#if defined(DESS)
+				SSDK_INFO("Initializing DESS!!\n");
+				/*Do Malibu self test to fix packet drop issue firstly*/
+				if (ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->mac_mode == PORT_WRAPPER_PSGMII) {
+					ssdk_psgmii_self_test(dev_id, A_FALSE, 100, &psgmii_result);
+					clear_self_test_config(dev_id);
+				}
+
+				qca_dess_hw_init(&cfg, dev_id);
+				qca_dess_rfs_init();
+
+				/* Setup Cpu port for Dakota platform. */
+				switch_cpuport_setup(dev_id);
+				rv = ssdk_switch_register(dev_id);
+				SW_CNTU_ON_ERROR_AND_COND1_OR_GOTO_OUT(rv, -ENODEV);
+				SSDK_INFO("Initializing DESS Done!!\n");
+			#endif
+				break;
+
+			case CHIP_SHIVA:
+			#if defined(SHIVA)
+				/* need to do special init for S27 here*/
+			#endif
+				break;
+
+			case CHIP_ATHENA:
+			case CHIP_GARUDA:
+			case CHIP_HORUS:
+			case CHIP_UNSPECIFIED:
+				break;
+		}
+
+			fal_module_func_init(dev_id, &cfg);
+	}
+
+	ssdk_sysfs_init();
+
+	/* register the notifier later should be ok */
+	ssdk_dev_notifier.notifier_call = ssdk_dev_event;
+	ssdk_dev_notifier.priority = 1;
+	register_netdevice_notifier(&ssdk_dev_notifier);
+
+out:
+	if (rv == 0)
+		SSDK_INFO("qca-ssdk module init succeeded!\n");
+	else {
+		if (rv == -ENODEV) {
+			rv = 0;
+			SSDK_INFO("qca-ssdk module init, no device found!\n");
+		} else {
+			SSDK_INFO("qca-ssdk module init failed! (code: %d)\n", rv);
+			ssdk_free_priv();
+		}
+	}
+
+	return rv;
+}
+
+static void __exit
+regi_exit(void)
+{
+	a_uint32_t dev_id;
+	sw_error_t rv=ssdk_cleanup();
+
+	if (rv == 0)
+		SSDK_INFO("qca-ssdk module exit  done!\n");
+	else
+		SSDK_ERROR("qca-ssdk module exit failed! (code: %d)\n", rv);
+
+	#ifdef DESS
+	qca_dess_rfs_remove();
+	#endif
+
+	ssdk_sysfs_exit();
+	ssdk_miireg_ioctrl_unregister();
+	for (dev_id = 0; dev_id < ssdk_dt_global.num_devices; dev_id++) {
+		ssdk_plat_exit(dev_id);
+		ssdk_driver_unregister(dev_id);
+		if (qca_phy_priv_global[dev_id]->qca_ssdk_sw_dev_registered == A_TRUE)
+			ssdk_switch_unregister(dev_id);
+	}
+
+	unregister_netdevice_notifier(&ssdk_dev_notifier);
+
+	ssdk_free_priv();
 }
 
 module_init(regi_init);

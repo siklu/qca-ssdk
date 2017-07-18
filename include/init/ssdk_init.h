@@ -24,7 +24,16 @@ extern "C" {
 #include "common/sw.h"
 #include "fal_led.h"
 
-#define SSDK_MAX_PORT_NUM 7
+#define SSDK_MAX_PORT_NUM		8
+#define SSDK_MAX_VIRTUAL_PORT_NUM	256
+#define SSDK_MAX_SERVICE_CODE_NUM	256
+#define SSDK_MAX_CPU_CODE_NUM		256
+#define SSDK_L0SCHEDULER_CFG_MAX	300
+#define SSDK_L0SCHEDULER_UCASTQ_CFG_MAX	256
+#define SSDK_L1SCHEDULER_CFG_MAX	64
+
+#define PORT_GMAC_TYPE	1
+#define PORT_XGMAC_TYPE	2
 
     typedef enum {
         HSL_MDIO = 1,
@@ -66,11 +75,15 @@ extern "C" {
     typedef sw_error_t
     (*psgmii_reg_get) (a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t *reg_data, a_uint32_t len);
 
-    typedef sw_error_t
-    (*uniphy_reg_set) (a_uint32_t dev_id, a_uint32_t index, a_uint32_t reg_addr, a_uint8_t *reg_data, a_uint32_t len);
+	typedef sw_error_t
+	(*uniphy_reg_set) (a_uint32_t dev_id, a_uint32_t index, a_uint32_t reg_addr, a_uint8_t *reg_data, a_uint32_t len);
 
-    typedef sw_error_t
-    (*uniphy_reg_get) (a_uint32_t dev_id, a_uint32_t index, a_uint32_t reg_addr, a_uint8_t *reg_data, a_uint32_t len);
+	typedef sw_error_t
+	(*uniphy_reg_get) (a_uint32_t dev_id, a_uint32_t index, a_uint32_t reg_addr, a_uint8_t *reg_data, a_uint32_t len);
+
+	typedef void (*mii_reg_set)(a_uint32_t dev_id, a_uint32_t reg, a_uint32_t val);
+
+	typedef a_uint32_t (*mii_reg_get)(a_uint32_t dev_id, a_uint32_t reg);
 
 enum ssdk_port_wrapper_cfg {
 	PORT_WRAPPER_PSGMII = 0,
@@ -87,7 +100,10 @@ enum ssdk_port_wrapper_cfg {
 	PORT_WRAPPER_QSGMII,
 	PORT_WRAPPER_SGMII_PLUS,
 	PORT_WRAPPER_USXGMII,
-	PORT_WRAPPER_XFI,
+	PORT_WRAPPER_10GBASE_R,
+	PORT_WRAPPER_SGMII_CHANNEL0,
+	PORT_WRAPPER_SGMII_CHANNEL1,
+	PORT_WRAPPER_SGMII_CHANNEL4,
 	PORT_WRAPPER_MAX = 0xFF
 };
 
@@ -101,6 +117,8 @@ enum ssdk_port_wrapper_cfg {
         psgmii_reg_get     psgmii_reg_get;
         uniphy_reg_set     uniphy_reg_set;
         uniphy_reg_get     uniphy_reg_get;
+	mii_reg_set	mii_reg_set;
+	mii_reg_get	mii_reg_get;
     } hsl_reg_func;
 
     typedef struct
@@ -172,6 +190,48 @@ typedef struct
 	a_uint32_t      mac_mode2;
 } ssdk_init_cfg;
 
+	typedef struct {
+		a_uint16_t ucastq_start;
+		a_uint16_t ucastq_end;
+		a_uint16_t mcastq_start;
+		a_uint16_t mcastq_end;
+		a_uint8_t l0sp_start;
+		a_uint8_t l0sp_end;
+		a_uint8_t l0cdrr_start;
+		a_uint8_t l0cdrr_end;
+		a_uint8_t l0edrr_start;
+		a_uint8_t l0edrr_end;
+		a_uint8_t l1cdrr_start;
+		a_uint8_t l1cdrr_end;
+		a_uint8_t l1edrr_start;
+		a_uint8_t l1edrr_end;
+	} ssdk_dt_portscheduler_cfg;
+
+	typedef struct {
+		a_uint8_t valid;
+		a_uint8_t port_id;
+		a_uint8_t cpri;
+		a_uint8_t cdrr_id;
+		a_uint8_t epri;
+		a_uint8_t edrr_id;
+		a_uint8_t sp_id;
+	} ssdk_dt_l0scheduler_cfg;
+
+	typedef struct {
+		a_uint8_t valid;
+		a_uint8_t port_id;
+		a_uint8_t cpri;
+		a_uint8_t cdrr_id;
+		a_uint8_t epri;
+		a_uint8_t edrr_id;
+	} ssdk_dt_l1scheduler_cfg;
+
+	typedef struct {
+		ssdk_dt_portscheduler_cfg pool[SSDK_MAX_PORT_NUM];
+		ssdk_dt_l0scheduler_cfg l0cfg[SSDK_L0SCHEDULER_CFG_MAX];
+		ssdk_dt_l1scheduler_cfg l1cfg[SSDK_L1SCHEDULER_CFG_MAX];
+	} ssdk_dt_scheduler_cfg;
+
 	typedef struct
 	{
 		a_uint32_t switchreg_base_addr;
@@ -190,13 +250,19 @@ typedef struct
 		a_uint32_t uniphyreg_size;
 		a_uint8_t *uniphy_access_mode;
 		hsl_reg_mode uniphy_reg_access_mode;
+		ssdk_dt_scheduler_cfg scheduler_cfg;
+		a_uint8_t bm_tick_mode;
+		a_uint8_t tm_tick_mode;
+		a_bool_t ess_switch_flag;
+		a_uint32_t device_id;
+		struct device_node *of_node;
 	} ssdk_dt_cfg;
 
-typedef struct phy_identification {
-	a_uint16_t phy_addr;
-	a_uint32_t phy_id;
-	int (*init)(void);
-} phy_identification_t;
+	typedef struct
+	{
+		a_uint32_t num_devices;
+		ssdk_dt_cfg **ssdk_dt_switch_nodes;
+	} ssdk_dt_global_t;
 
 #if defined ATHENA
 #define def_init_cfg  {.reg_mode = HSL_MDIO, .cpu_mode = HSL_CPU_2};
@@ -305,7 +371,8 @@ ssdk_init(a_uint32_t dev_id, ssdk_init_cfg *cfg);
 sw_error_t
 ssdk_hsl_access_mode_set(a_uint32_t dev_id, hsl_access_mode reg_mode);
 
-a_uint32_t ssdk_dt_global_get_mac_mode(a_uint32_t index);
+a_uint32_t ssdk_dt_global_get_mac_mode(a_uint32_t dev_id, a_uint32_t index);
+a_uint32_t ssdk_dt_global_set_mac_mode(a_uint32_t dev_id, a_uint32_t index, a_uint32_t mode);
 
 uint32_t
 qca_hppe_gcc_speed_clock1_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr,
@@ -323,23 +390,11 @@ uint32_t
 qca_hppe_gcc_speed_clock2_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr,
 				a_uint8_t * reg_data, a_uint32_t len);
 
-uint32_t
-qca_hppe_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t uniphy_index,
-				a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len);
-
-uint32_t
-qca_hppe_uniphy_reg_read(a_uint32_t dev_id, a_uint32_t uniphy_index,
-				a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len);
-sw_error_t
-qca_hppe_xgphy_read(a_uint32_t dev_id, a_uint32_t phy_addr,
-                           a_uint32_t reg, a_uint16_t* data);
-
-sw_error_t
-qca_hppe_xgphy_write(a_uint32_t dev_id, a_uint32_t phy_addr,
-                           a_uint32_t reg, a_uint16_t data);
 
 a_uint32_t
 qca_hppe_port_mac_type_get(a_uint32_t dev_id, a_uint32_t port_id);
+a_uint32_t
+qca_hppe_port_mac_type_set(a_uint32_t dev_id, a_uint32_t port_id, a_uint32_t port_type);
 
 void
 qca_hppe_gcc_uniphy_port_clock_set(a_uint32_t dev_id, a_uint32_t uniphy_index,
@@ -351,6 +406,11 @@ uint32_t
 qca_hppe_gcc_uniphy_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr,
 			a_uint8_t * reg_data, a_uint32_t len);
 
+void
+qca_hppe_gcc_mac_port_clock_set(a_uint32_t dev_id, a_uint32_t port_id, a_bool_t enable);
+
+void
+qca_mac_sw_sync_port_status_init(a_uint32_t dev_id);
 
 #ifdef __cplusplus
 }

@@ -135,6 +135,7 @@ static sw_data_type_t sw_data_type[] =
 	#endif
 	#ifdef IN_MIB
     SW_TYPE_DEF(SW_MIB, NULL, NULL),
+    SW_TYPE_DEF(SW_MIB_CNTR, NULL, NULL),
     SW_TYPE_DEF(SW_XGMIB, NULL, NULL),
 	#endif
 	#ifdef IN_VLAN
@@ -337,6 +338,10 @@ static sw_data_type_t sw_data_type[] =
   #endif
     #ifdef IN_SERVCODE
     SW_TYPE_DEF(SW_SERVCODE_CONFIG, (param_check_t)cmd_data_check_servcode_config, NULL),
+    #endif
+    #ifdef IN_RSS_HASH
+    SW_TYPE_DEF(SW_RSS_HASH_MODE, (param_check_t)cmd_data_check_rss_hash_mode, NULL),
+    SW_TYPE_DEF(SW_RSS_HASH_CONFIG, (param_check_t)cmd_data_check_rss_hash_config, NULL),
     #endif
     #ifdef IN_MIRROR
     SW_TYPE_DEF(SW_MIRR_DIRECTION, cmd_data_check_mirr_direction, NULL),
@@ -661,9 +666,17 @@ cmd_data_check_fiber_mode(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
     if (cmd_str == NULL)
         return SW_BAD_PARAM;
     if (!strncasecmp(cmd_str, "100fx", 6))
-        *arg_val = PHY_FIBER_100FX;
+    {
+	*arg_val = PHY_FIBER_100FX;
+    }
     else if (!strncasecmp(cmd_str, "1000bx", 7))
-        *arg_val = PHY_FIBER_1000BX;
+    {
+	*arg_val = PHY_FIBER_1000BX;
+    }
+    else if (!strncasecmp(cmd_str, "10g_r", 7))
+    {
+	*arg_val = PHY_FIBER_10G_R;
+    }
     else
     {
         return SW_BAD_VALUE;
@@ -703,7 +716,7 @@ cmd_data_check_mtu_entry(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("mtu_action", "0");
+        cmd = get_sub_cmd("mtu_action", "forward");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -716,7 +729,7 @@ cmd_data_check_mtu_entry(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint32(cmd, (a_uint32_t *)&(entry.action), sizeof (a_uint32_t));
+            rv = cmd_data_check_maccmd(cmd, &(entry.action), sizeof (a_uint32_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
@@ -756,7 +769,7 @@ cmd_data_check_mru_entry(char *cmd_str, void * val, a_uint32_t size)
 
     do
     {
-        cmd = get_sub_cmd("mru_action", "0");
+        cmd = get_sub_cmd("mru_action", "forward");
         SW_RTN_ON_NULL_PARAM(cmd);
 
         if (!strncasecmp(cmd, "quit", 4))
@@ -769,7 +782,7 @@ cmd_data_check_mru_entry(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint32(cmd, (a_uint32_t *)&(entry.action), sizeof (a_uint32_t));
+            rv = cmd_data_check_maccmd(cmd, &(entry.action), sizeof (a_uint32_t));
         }
     }
     while (talk_mode && (SW_OK != rv));
@@ -788,15 +801,45 @@ cmd_data_check_interface_mode(char *cmd_str, a_uint32_t * arg_val, a_uint32_t si
         return SW_BAD_PARAM;
 
     if (!strncasecmp(cmd_str, "psgmii_baset", 13))
-        *arg_val = PHY_PSGMII_BASET;
+     {
+	*arg_val = PHY_PSGMII_BASET;
+     }
     else if (!strncasecmp(cmd_str, "psgmii_bx1000", 14))
-        *arg_val = PHY_PSGMII_BX1000;
+    {
+	*arg_val = PHY_PSGMII_BX1000;
+    }
     else if (!strncasecmp(cmd_str, "psgmii_fx100", 13))
-        *arg_val = PHY_PSGMII_FX100;
+    {
+	*arg_val = PHY_PSGMII_FX100;
+    }
     else if (!strncasecmp(cmd_str, "psgmii_amdet", 13))
-        *arg_val = PHY_PSGMII_AMDET;
+    {
+	*arg_val = PHY_PSGMII_AMDET;
+    }
     else if (!strncasecmp(cmd_str, "sgmii_baset", 13))
-        *arg_val = PHY_SGMII_BASET;
+    {
+	*arg_val = PHY_SGMII_BASET;
+    }
+    else if (!strncasecmp(cmd_str, "qsgmii", 13))
+    {
+	*arg_val = PORT_QSGMII;
+    }
+    else if (!strncasecmp(cmd_str, "sgmii_plus", 13))
+    {
+	*arg_val = PORT_SGMII_PLUS;
+    }
+    else if (!strncasecmp(cmd_str, "usxgmii", 13))
+    {
+	*arg_val = PORT_USXGMII;
+    }
+    else if (!strncasecmp(cmd_str, "10gbase_r", 13))
+    {
+	*arg_val = PORT_10GBASE_R;
+    }
+    else if (!strncasecmp(cmd_str, "interfacemode_max", 20))
+    {
+	*arg_val = PORT_INTERFACE_MODE_MAX;
+    }
     else
     {
         return SW_BAD_VALUE;
@@ -1631,7 +1674,7 @@ cmd_data_check_ring_queue(char *cmd_str, void * val, a_uint32_t size)
         }
 
     }
-    while ((talk_mode && (SW_OK != rv)) || (i++ < 10));
+    while ((talk_mode && (SW_OK != rv)) || (++i < 10));
 
     *(fal_queue_bmp_t *)val = entry;
     return SW_OK;
@@ -6263,6 +6306,7 @@ sw_error_t
 cmd_data_check_l3_parser(char *cmd_str, void * val, a_uint32_t size)
 {
     char *cmd;
+    a_uint32_t tmp;
     sw_error_t rv;
     fal_l3_excep_parser_ctrl entry;
 
@@ -6283,8 +6327,10 @@ cmd_data_check_l3_parser(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, (a_uint32_t *)&(entry.small_ip4ttl),
-                                       sizeof (a_uint8_t));
+            rv = cmd_data_check_uint8(cmd, &tmp,
+                                       sizeof (a_uint32_t));
+            if (!rv)
+                entry.small_ip4ttl = tmp;
         }
 
     }
@@ -6305,8 +6351,10 @@ cmd_data_check_l3_parser(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, (a_uint32_t *)&(entry.small_ip6hoplimit),
-                                       sizeof (a_uint8_t));
+            rv = cmd_data_check_uint8(cmd, &tmp,
+                                       sizeof (a_uint32_t));
+            if (!rv)
+                entry.small_ip6hoplimit = tmp;
         }
 
     }
@@ -7394,6 +7442,7 @@ sw_error_t
 cmd_data_check_ip_global(char *cmd_str, void * val, a_uint32_t size)
 {
     char *cmd;
+    a_uint32_t tmp;
     sw_error_t rv;
     fal_ip_global_cfg_t entry;
 
@@ -7634,8 +7683,10 @@ cmd_data_check_ip_global(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, (a_uint32_t *)&(entry.hash_mode_0),
-                                       sizeof (a_uint8_t));
+            rv = cmd_data_check_uint8(cmd, &tmp,
+                                       sizeof (a_uint32_t));
+            if (!rv)
+                entry.hash_mode_0 = tmp;
         }
 
     }
@@ -7656,8 +7707,10 @@ cmd_data_check_ip_global(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, (a_uint32_t *)&(entry.hash_mode_1),
-                                       sizeof (a_uint8_t));
+            rv = cmd_data_check_uint8(cmd, &tmp,
+                                       sizeof (a_uint32_t));
+            if (!rv)
+                entry.hash_mode_1 = tmp;
         }
 
     }
@@ -9096,6 +9149,7 @@ sw_error_t
 cmd_data_check_flow_global(char *cmd_str, void * val, a_uint32_t size)
 {
     char *cmd;
+    a_uint32_t tmp;
     sw_error_t rv;
     fal_flow_global_cfg_t entry;
 
@@ -9292,8 +9346,10 @@ cmd_data_check_flow_global(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, (a_uint32_t *)&(entry.hash_mode_0),
-                                       sizeof (a_uint8_t));
+            rv = cmd_data_check_uint8(cmd, &tmp,
+                                       sizeof (a_uint32_t));
+            if (!rv)
+                 entry.hash_mode_0 = tmp;
         }
 
     }
@@ -9314,8 +9370,10 @@ cmd_data_check_flow_global(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, (a_uint32_t *)&(entry.hash_mode_1),
-                                       sizeof (a_uint8_t));
+            rv = cmd_data_check_uint8(cmd, &tmp,
+                                       sizeof (a_uint32_t));
+            if (!rv)
+                entry.hash_mode_1 = tmp;
         }
 
     }
@@ -9881,6 +9939,7 @@ sw_error_t
 cmd_data_check_flow_ctrl(char *cmd_str, void * val, a_uint32_t size)
 {
     char *cmd;
+    a_uint32_t tmp;
     sw_error_t rv;
     fal_flow_mgmt_t entry;
 
@@ -9983,7 +10042,9 @@ cmd_data_check_flow_ctrl(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint8(cmd, (a_uint32_t *)&(entry.key_sel), sizeof (a_uint8_t));
+            rv = cmd_data_check_uint8(cmd, &tmp, sizeof (a_uint32_t));
+            if (!rv)
+                entry.key_sel = tmp;
         }
     }
     while (talk_mode && (SW_OK != rv));
@@ -9996,6 +10057,7 @@ sw_error_t
 cmd_data_check_flow_age(char *cmd_str, void * val, a_uint32_t size)
 {
 	char *cmd;
+    a_uint32_t tmp;
     sw_error_t rv;
     fal_flow_age_timer_t entry;
 
@@ -10016,7 +10078,9 @@ cmd_data_check_flow_age(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint16(cmd, (a_uint32_t *)&(entry.age_time), sizeof (a_uint16_t));
+            rv = cmd_data_check_uint16(cmd, &tmp, sizeof (a_uint32_t));
+            if (!rv)
+                entry.age_time = tmp;
         }
     }
     while (talk_mode && (SW_OK != rv));
@@ -10036,7 +10100,9 @@ cmd_data_check_flow_age(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint16(cmd, (a_uint32_t *)&(entry.unit), sizeof (a_uint16_t));
+            rv = cmd_data_check_uint16(cmd, &tmp, sizeof (a_uint32_t));
+            if (!rv)
+                entry.unit = tmp;
         }
     }
     while (talk_mode && (SW_OK != rv));
@@ -10592,6 +10658,7 @@ sw_error_t
 cmd_data_check_ac_dynamic_thresh(char *cmd_str, void * val, a_uint32_t size)
 {
     char *cmd;
+    a_uint32_t tmp;
     sw_error_t rv;
     fal_ac_dynamic_threshold_t entry;
 
@@ -10833,7 +10900,9 @@ cmd_data_check_ac_dynamic_thresh(char *cmd_str, void * val, a_uint32_t size)
         }
         else
         {
-            rv = cmd_data_check_uint16(cmd, (a_uint32_t *)&(entry.ceiling), sizeof (a_uint16_t));
+            rv = cmd_data_check_uint16(cmd, &tmp, sizeof (a_uint32_t));
+            if (!rv)
+                entry.ceiling = tmp;
         }
     }
     while (talk_mode && (SW_OK != rv));
@@ -12468,6 +12537,248 @@ cmd_data_check_servcode_config(char *info, fal_servcode_config_t *val, a_uint32_
 		else
 		{
 			rv = cmd_data_check_uint32(cmd, &entry.offset_sel, sizeof (a_uint32_t));
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	*val = entry;
+	return SW_OK;
+}
+#endif
+
+#ifdef IN_RSS_HASH
+sw_error_t
+cmd_data_check_rss_hash_mode(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
+{
+    if (cmd_str == NULL)
+        return SW_BAD_PARAM;
+
+    if (!strcasecmp(cmd_str, "ipv4v6"))
+    {
+        *arg_val = FAL_RSS_HASH_IPV4V6;
+    }
+    else if (!strcasecmp(cmd_str, "ipv4"))
+    {
+        *arg_val = FAL_RSS_HASH_IPV4ONLY;
+    }
+    else if (!strcasecmp(cmd_str, "ipv6"))
+    {
+        *arg_val = FAL_RSS_HASH_IPV6ONLY;
+    }
+    else
+    {
+        return SW_BAD_VALUE;
+    }
+
+    return SW_OK;
+}
+
+sw_error_t
+cmd_data_check_rss_hash_config(char *info, fal_rss_hash_config_t *val, a_uint32_t size)
+{
+	char *cmd = NULL;
+	sw_error_t rv;
+	fal_rss_hash_config_t entry;
+
+	memset(&entry, 0, sizeof (fal_rss_hash_config_t));
+
+	do
+	{
+		cmd = get_sub_cmd("hash_mask", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_uint32(cmd, &entry.hash_mask, sizeof (a_uint32_t));
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("hash_fragment_mode", "no");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_confirm(cmd, A_FALSE, &entry.hash_fragment_mode,
+					sizeof (a_bool_t));
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("hash_seed", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_uint32(cmd, &entry.hash_seed, sizeof (a_uint32_t));
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("hash_sip_mix", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_uint32(cmd, &entry.hash_sip_mix, sizeof (a_uint32_t));
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("hash_dip_mix", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_uint32(cmd, &entry.hash_dip_mix, sizeof (a_uint32_t));
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("hash_protocol_mix", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_uint32(cmd, (a_uint32_t *)&(entry.hash_protocol_mix), sizeof (a_uint32_t));
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("hash_sport_mix", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_uint32(cmd, (a_uint32_t *)&(entry.hash_sport_mix), sizeof (a_uint32_t));
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("hash_dport_mix", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_uint32(cmd, (a_uint32_t *)&(entry.hash_dport_mix), sizeof (a_uint32_t));
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("hash_fin_inner", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_uint32(cmd, &entry.hash_fin_inner, sizeof (a_uint32_t));
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("hash_fin_outer", "0");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_uint32(cmd, &entry.hash_fin_outer, sizeof (a_uint32_t));
 		}
 	}
 	while (talk_mode && (SW_OK != rv));

@@ -33,6 +33,17 @@
 #define VR_MII_AN_CTRL_MAX_ENTRY	3
 #define VR_MII_AN_INTR_STS_MAX_ENTRY	3
 
+#define UNIPHY_PLL_CONTROL_VCO_RELATED_SELECTION_MAX_ENTRY	3
+#define UNIPHY_TX_AC_JTAG_MUX_DRIVER_SELECTION_MAX_ENTRY	3
+#define UNIPHY_RESISTOR_CALIBRATION_1_MAX_ENTRY	3
+#define UNIPHY_PLL_VCO_RELATED_CONTROL_1_MAX_ENTRY	3
+#define UNIPHY_RX_AFE_2_MAX_ENTRY	3
+#define BANDGAP_IP_MBIAS_2_MAX_ENTRY	4
+#define LDO_0P9V_RELATED_1_MAX_ENTRY	4
+#define OTP_VTT_LDO_RELATED_MAX_ENTRY	4
+#define OTP_TEMPERATURE_COMPENSATE_1_MAX_ENTRY	4
+#define PLL_VCO_RELATED_CONTROL_1_MAX_ENTRY	4
+#define PLL_CONTROL_VCO_RELATED_SELECTION_2_MAX_ENTRY	4
 
 sw_error_t
 hppe_uniphy_offset_calib_4_get(
@@ -1494,6 +1505,894 @@ hppe_vr_mii_an_intr_sts_cl37_ancmplt_intr_get(
 
 sw_error_t
 hppe_vr_mii_an_intr_sts_cl37_ancmplt_intr_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_uniphy_pll_control_vco_related_selection_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union uniphy_pll_control_vco_related_selection_u *value);
+
+sw_error_t
+hppe_uniphy_pll_control_vco_related_selection_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union uniphy_pll_control_vco_related_selection_u *value);
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union uniphy_tx_ac_jtag_mux_driver_selection_u *value);
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union uniphy_tx_ac_jtag_mux_driver_selection_u *value);
+
+sw_error_t
+hppe_uniphy_resistor_calibration_1_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union uniphy_resistor_calibration_1_u *value);
+
+sw_error_t
+hppe_uniphy_resistor_calibration_1_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union uniphy_resistor_calibration_1_u *value);
+
+sw_error_t
+hppe_uniphy_pll_vco_related_control_1_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union uniphy_pll_vco_related_control_1_u *value);
+
+sw_error_t
+hppe_uniphy_pll_vco_related_control_1_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union uniphy_pll_vco_related_control_1_u *value);
+
+sw_error_t
+hppe_uniphy_rx_afe_2_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union uniphy_rx_afe_2_u *value);
+
+sw_error_t
+hppe_uniphy_rx_afe_2_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union uniphy_rx_afe_2_u *value);
+
+sw_error_t
+hppe_bandgap_ip_mbias_2_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union bandgap_ip_mbias_2_u *value);
+
+sw_error_t
+hppe_bandgap_ip_mbias_2_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union bandgap_ip_mbias_2_u *value);
+
+sw_error_t
+hppe_ldo_0p9v_related_1_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union ldo_0p9v_related_1_u *value);
+
+sw_error_t
+hppe_ldo_0p9v_related_1_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union ldo_0p9v_related_1_u *value);
+
+sw_error_t
+hppe_otp_vtt_ldo_related_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union otp_vtt_ldo_related_u *value);
+
+sw_error_t
+hppe_otp_vtt_ldo_related_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union otp_vtt_ldo_related_u *value);
+
+sw_error_t
+hppe_otp_temperature_compensate_1_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union otp_temperature_compensate_1_u *value);
+
+sw_error_t
+hppe_otp_temperature_compensate_1_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union otp_temperature_compensate_1_u *value);
+
+sw_error_t
+hppe_pll_vco_related_control_1_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union pll_vco_related_control_1_u *value);
+
+sw_error_t
+hppe_pll_vco_related_control_1_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union pll_vco_related_control_1_u *value);
+
+sw_error_t
+hppe_pll_control_vco_related_selection_2_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union pll_control_vco_related_selection_2_u *value);
+
+sw_error_t
+hppe_pll_control_vco_related_selection_2_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union pll_control_vco_related_selection_2_u *value);
+
+sw_error_t
+hppe_uniphy_pll_control_vco_related_selection_mmd1_reg_src_uphy_pll_vco_gain_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_uniphy_pll_control_vco_related_selection_mmd1_reg_src_uphy_pll_vco_gain_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_uniphy_pll_control_vco_related_selection_mmd1_reg_src_uphy_pll_vco_temp_cmp_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_uniphy_pll_control_vco_related_selection_mmd1_reg_src_uphy_pll_vco_temp_cmp_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_uniphy_pll_control_vco_related_selection_mmd1_reg_src_uphy_pll_lpf_c2_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_uniphy_pll_control_vco_related_selection_mmd1_reg_src_uphy_pll_lpf_c2_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_uniphy_pll_control_vco_related_selection_mmd1_reg_src_uphy_pll_vco_amp_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_uniphy_pll_control_vco_related_selection_mmd1_reg_src_uphy_pll_vco_amp_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_uniphy_pll_control_vco_related_selection_mmd1_reg_src_uphy_pll_lpf_dc_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_uniphy_pll_control_vco_related_selection_mmd1_reg_src_uphy_pll_lpf_dc_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_uniphy_pll_control_vco_related_selection_mmd1_reg_src_uphy_pll_cp_sel_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_uniphy_pll_control_vco_related_selection_mmd1_reg_src_uphy_pll_cp_sel_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_uniphy_pll_control_vco_related_selection_mmd1_reg_src_uphy_pll_lpf_res_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_uniphy_pll_control_vco_related_selection_mmd1_reg_src_uphy_pll_lpf_res_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_mmd1_reg_src_uphy_tx_vcm_delta_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_mmd1_reg_src_uphy_tx_vcm_delta_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_mmd1_reg_src_uphy_tx_emp_lsb_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_mmd1_reg_src_uphy_tx_emp_lsb_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_mmd1_reg_src_uphy_tx_emp_lvl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_mmd1_reg_src_uphy_tx_emp_lvl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_mmd1_reg_src_uphy_tx_acjtag_beacon_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_mmd1_reg_src_uphy_tx_acjtag_beacon_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_mmd1_reg_src_uphy_tx_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_mmd1_reg_src_uphy_tx_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_mmd1_reg_src_uphy_txd_bit_width_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_mmd1_reg_src_uphy_txd_bit_width_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_mmd1_reg_src_uphy_tx_rescal_code_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_mmd1_reg_src_uphy_tx_rescal_code_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_mmd1_reg_src_uphy_tx_amp_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_uniphy_tx_ac_jtag_mux_driver_selection_mmd1_reg_src_uphy_tx_amp_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_uniphy_resistor_calibration_1_mmd1_reg_disable_load_res_txrx_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_uniphy_resistor_calibration_1_mmd1_reg_disable_load_res_txrx_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_uniphy_resistor_calibration_1_mmd1_reg_calib_tx_reg_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_uniphy_resistor_calibration_1_mmd1_reg_calib_tx_reg_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_uniphy_resistor_calibration_1_mmd1_reg_calib_rx_reg_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_uniphy_resistor_calibration_1_mmd1_reg_calib_rx_reg_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_uniphy_resistor_calibration_1_mmd1_reg_vref_lvl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_uniphy_resistor_calibration_1_mmd1_reg_vref_lvl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_uniphy_pll_vco_related_control_1_miireg_uphy_pll_lckdt_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_uniphy_pll_vco_related_control_1_miireg_uphy_pll_lckdt_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_uniphy_pll_vco_related_control_1_miireg_autoload_sel_pll_vco_calib_ready_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_uniphy_pll_vco_related_control_1_miireg_autoload_sel_pll_vco_calib_ready_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_uniphy_pll_vco_related_control_1_miireg_reg_uphy_pll_vco_calib_ready_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_uniphy_pll_vco_related_control_1_miireg_reg_uphy_pll_vco_calib_ready_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_uniphy_pll_vco_related_control_1_miireg_reg_uphy_pll_vco_temp_cmp_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_uniphy_pll_vco_related_control_1_miireg_reg_uphy_pll_vco_temp_cmp_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_uniphy_pll_vco_related_control_1_miireg_reg_uphy_pll_vco_amp_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_uniphy_pll_vco_related_control_1_miireg_reg_uphy_pll_vco_amp_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_uniphy_pll_vco_related_control_1_miireg_reg_uphy_pll_vco_gain_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_uniphy_pll_vco_related_control_1_miireg_reg_uphy_pll_vco_gain_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_uniphy_rx_afe_2_miireg_reg_uphy_rx_afe_res1_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_uniphy_rx_afe_2_miireg_reg_uphy_rx_afe_res1_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_uniphy_rx_afe_2_miireg_reg_uphy_rx_afe_cap1_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_uniphy_rx_afe_2_miireg_reg_uphy_rx_afe_cap1_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_uniphy_rx_afe_2_miireg_reg_uphy_rx_rescal_code_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_uniphy_rx_afe_2_miireg_reg_uphy_rx_rescal_code_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_bandgap_ip_mbias_2_cmn_mmd1_reg_mbias_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_bandgap_ip_mbias_2_cmn_mmd1_reg_mbias_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_bandgap_ip_mbias_2_cmn_mmd1_reg_cmn_icc_rescode_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_bandgap_ip_mbias_2_cmn_mmd1_reg_cmn_icc_rescode_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_bandgap_ip_mbias_2_cmn_mmd1_reg_cmn_bg_rsv_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_bandgap_ip_mbias_2_cmn_mmd1_reg_cmn_bg_rsv_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_ldo_ocp_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_ldo_ocp_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_ldo_int_load_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_ldo_int_load_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_ldo_int_res_ctrl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_ldo_int_res_ctrl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_ldo_vout_ctrl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_ldo_vout_ctrl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_ldo_ocp_current_sel_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_ldo_ocp_current_sel_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_vtt_ldo_biasgen_sel_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_vtt_ldo_biasgen_sel_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_ldo_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_ldo_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_ldo_comp_current_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_ldo_comp_current_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_ldo_bias_ctrl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_ldo_0p9v_related_1_cmn_mmd1_reg_cmn_ldo_bias_ctrl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_otp_vtt_ldo_related_cmn_mmd1_reg_cmn_ana_isolation_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_otp_vtt_ldo_related_cmn_mmd1_reg_cmn_ana_isolation_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_otp_vtt_ldo_related_cmn_mmd1_reg_cmn_vtt_ldo_ocp_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_otp_vtt_ldo_related_cmn_mmd1_reg_cmn_vtt_ldo_ocp_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_otp_vtt_ldo_related_cmn_mmd1_reg_cmn_vtt_ldo_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_otp_vtt_ldo_related_cmn_mmd1_reg_cmn_vtt_ldo_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_otp_vtt_ldo_related_cmn_mmd1_reg_cmn_vtt_ldo_bias_ctrl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_otp_vtt_ldo_related_cmn_mmd1_reg_cmn_vtt_ldo_bias_ctrl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_otp_vtt_ldo_related_cmn_mmd1_reg_cmn_vtt_ldo_rsv_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_otp_vtt_ldo_related_cmn_mmd1_reg_cmn_vtt_ldo_rsv_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_otp_vtt_ldo_related_cmn_mmd1_reg_cmn_vtt_ldo_ocp_current_sel_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_otp_vtt_ldo_related_cmn_mmd1_reg_cmn_vtt_ldo_ocp_current_sel_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_otp_vtt_ldo_related_cmn_mmd1_reg_cmn_vtt_ldo_int_load_ctrl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_otp_vtt_ldo_related_cmn_mmd1_reg_cmn_vtt_ldo_int_load_ctrl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_otp_temperature_compensate_1_cmn_mmd1_reg_uphy_ictat100u_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_otp_temperature_compensate_1_cmn_mmd1_reg_uphy_ictat100u_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_otp_temperature_compensate_1_cmn_mmd1_reg_cmn_pll_ictat100u_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_otp_temperature_compensate_1_cmn_mmd1_reg_cmn_pll_ictat100u_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_otp_temperature_compensate_1_cmn_mmd1_reg_uphy_ictat100u_ctrl1_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_otp_temperature_compensate_1_cmn_mmd1_reg_uphy_ictat100u_ctrl1_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_otp_temperature_compensate_1_cmn_mmd1_reg_uphy_ictat100u_ctrl2_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_otp_temperature_compensate_1_cmn_mmd1_reg_uphy_ictat100u_ctrl2_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_otp_temperature_compensate_1_cmn_mmd1_reg_uphy_ictat100u_ctrl0_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_otp_temperature_compensate_1_cmn_mmd1_reg_uphy_ictat100u_ctrl0_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_pll_vco_related_control_1_cmn_mii_reg_reg_cmn_pll_vco_calib_ready_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_pll_vco_related_control_1_cmn_mii_reg_reg_cmn_pll_vco_calib_ready_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_pll_vco_related_control_1_cmn_mii_reg_reg_cmn_pll_vco_temp_cmp_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_pll_vco_related_control_1_cmn_mii_reg_reg_cmn_pll_vco_temp_cmp_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_pll_vco_related_control_1_cmn_mii_reg_cmn_pll_lckdt_en_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_pll_vco_related_control_1_cmn_mii_reg_cmn_pll_lckdt_en_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_pll_vco_related_control_1_cmn_mii_reg_reg_cmn_pll_vco_amp_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_pll_vco_related_control_1_cmn_mii_reg_reg_cmn_pll_vco_amp_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_pll_vco_related_control_1_cmn_mii_reg_autoload_sel_pll_vco_calib_ready_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_pll_vco_related_control_1_cmn_mii_reg_autoload_sel_pll_vco_calib_ready_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_pll_control_vco_related_selection_2_cmn_mmd1_reg_src_cmn_pll_vco_calib_ready_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_pll_control_vco_related_selection_2_cmn_mmd1_reg_src_cmn_pll_vco_calib_ready_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_pll_control_vco_related_selection_2_cmn_mmd1_reg_src_cmn_pll_vco_temp_cmp_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_pll_control_vco_related_selection_2_cmn_mmd1_reg_src_cmn_pll_vco_temp_cmp_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_pll_control_vco_related_selection_2_cmn_mmd1_reg_src_cmn_pll_vco_amp_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_pll_control_vco_related_selection_2_cmn_mmd1_reg_src_cmn_pll_vco_amp_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_pll_control_vco_related_selection_2_cmn_mmd1_reg_src_cmn_pll_vco_calib_start_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_pll_control_vco_related_selection_2_cmn_mmd1_reg_src_cmn_pll_vco_calib_start_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_pll_control_vco_related_selection_2_cmn_mmd1_reg_src_cmn_pll_vco_calib_code_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_pll_control_vco_related_selection_2_cmn_mmd1_reg_src_cmn_pll_vco_calib_code_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_pll_control_vco_related_selection_2_cmn_mmd1_reg_src_cmn_pll_fbclk_div_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_pll_control_vco_related_selection_2_cmn_mmd1_reg_src_cmn_pll_fbclk_div_set(
 		a_uint32_t dev_id,
 		a_uint32_t index,
 		a_uint32_t value);

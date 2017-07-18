@@ -115,6 +115,7 @@ sw_error_t
 hsl_dev_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 {
     sw_error_t rv = SW_OK;
+    static int dev_init = 0;
 
     if (SW_MAX_NR_DEV <= dev_id)
     {
@@ -123,15 +124,18 @@ hsl_dev_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 
     aos_mem_set(&dev_table[dev_id], 0, sizeof (hsl_dev_t));
 
-    SW_RTN_ON_ERROR(sd_init(dev_id,cfg));
+    if (!dev_init) {
+        SW_RTN_ON_ERROR(sd_init(dev_id,cfg));
 
 #ifdef UK_IF
-    SW_RTN_ON_ERROR(sw_uk_init(cfg->nl_prot));
+        SW_RTN_ON_ERROR(sw_uk_init(cfg->nl_prot));
 #endif
 
 #if defined API_LOCK
-    SW_RTN_ON_ERROR(hsl_api_lock_init());
+        SW_RTN_ON_ERROR(hsl_api_lock_init());
 #endif
+        dev_init = 1;
+    }
     rv = hsl_set_current_chip_type(cfg->chip_type);
     SW_RTN_ON_ERROR(rv);
 

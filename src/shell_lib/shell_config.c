@@ -1229,6 +1229,7 @@ struct sub_cmd_des_t g_qm_des[] =
     {"cnt", "cleanup", SW_API_QUEUE_CNT_CLEANUP, NULL},
     {"cnt", "set", SW_API_QUEUE_CNT_CLEANUP, NULL},
     {"enqueue", "set", SW_API_QM_ENQUEUE_CTRL_SET, NULL},
+    {"srcprofile", "set", SW_API_QM_SOURCE_PROFILE_SET, NULL},
     {NULL, NULL, (int)NULL, NULL},/*end of desc*/
 
 };

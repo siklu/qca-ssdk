@@ -1059,6 +1059,46 @@ adpt_hppe_flow_entry_get(
 }
 
 sw_error_t
+adpt_hppe_flow_entry_next(
+		a_uint32_t dev_id,
+		a_uint32_t next_mode,
+		fal_flow_entry_t *flow_entry)
+{
+	a_uint32_t i = 0, step = 0;
+	sw_error_t rv = SW_OK;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(flow_entry);
+
+	if (FAL_NEXT_ENTRY_FIRST_ID == flow_entry->entry_id)
+		i = 0;
+
+	if (next_mode == FAL_FLOW_IP4_3TUPLE_ADDR ||
+		next_mode == FAL_FLOW_IP4_5TUPLE_ADDR) {
+		if (FAL_NEXT_ENTRY_FIRST_ID != flow_entry->entry_id)
+			i = flow_entry->entry_id + 1;
+		step = 1;
+	} else if (next_mode == FAL_FLOW_IP6_5TUPLE_ADDR ||
+		 next_mode == FAL_FLOW_IP6_3TUPLE_ADDR) {
+		if (FAL_NEXT_ENTRY_FIRST_ID != flow_entry->entry_id)
+			i = (flow_entry->entry_id & ~1) + 2;
+		step = 2;
+	}
+	for (; i < IN_FLOW_TBL_MAX_ENTRY;) {
+		flow_entry->entry_type = next_mode;
+		flow_entry->entry_id = i;
+		rv = adpt_hppe_flow_entry_get(dev_id, 1, flow_entry);
+		if (!rv) {
+			return rv;
+		}
+		i += step;
+	}
+
+	return SW_FAIL;
+
+}
+
+sw_error_t
 adpt_hppe_flow_entry_del(
 		a_uint32_t dev_id,
 		a_uint32_t del_mode,
@@ -1689,6 +1729,7 @@ static void adpt_hppe_flow_func_unregister(a_uint32_t dev_id, adpt_api_t *p_adpt
 	p_adpt_api->adpt_flow_entry_add = NULL;
 	p_adpt_api->adpt_flow_global_cfg_get = NULL;
 	p_adpt_api->adpt_flow_global_cfg_set = NULL;
+	p_adpt_api->adpt_flow_entry_next = NULL;
 
 	return;
 }
@@ -1732,6 +1773,8 @@ sw_error_t adpt_hppe_flow_init(a_uint32_t dev_id)
 		p_adpt_api->adpt_flow_global_cfg_get = adpt_hppe_flow_global_cfg_get;
 	if (p_adpt_api->adpt_flow_func_bitmap & (1 << FUNC_FLOW_GLOBAL_CFG_SET))
 		p_adpt_api->adpt_flow_global_cfg_set = adpt_hppe_flow_global_cfg_set;
+	if (p_adpt_api->adpt_flow_func_bitmap & (1 << FUNC_FLOW_ENTRY_NEXT))
+		p_adpt_api->adpt_flow_entry_next = adpt_hppe_flow_entry_next;
 
 	return SW_OK;
 }

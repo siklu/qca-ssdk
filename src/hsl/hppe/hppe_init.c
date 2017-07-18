@@ -22,51 +22,20 @@
 #include "hsl_dev.h"
 #include "hsl_port_prop.h"
 #include "sd.h"
+#include "hsl_phy.h"
 
 
 static ssdk_init_cfg * hppe_cfg[SW_MAX_NR_DEV] = { 0 };
 
-enum hppe_port_wrapper_cfg {
-	HPPE_PORT_SGMII = 0,
-	HPPE_PORT_QSGMII_2GMAC,
-	HPPE_PORT_PSGMII,
-	HPPE_PORT_PSGMII_SGMII,
-	HPPE_PORT_QSGMII_2SGMIIPLUS,
-	HPPE_PORT_QSGMII_3GMAC_2SGMIIPLUS,
-	HPPE_PORT_XFI,
-	HPPE_PORT_2XFI,
-	HPPE_PORT_2XFI_SGMII,
-	HPPE_PORT_QSGMII_2XFI,
-	HPPE_PORT_WRAPPER_MAX
-};
-
-
-a_uint32_t hppe_pbmp[HPPE_PORT_WRAPPER_MAX] = {
-	(1<<1), /*HPPE_PORT_SGMIII*/
-	((1<<1) | (1<<2)), /*HPPE_PORT_QSGMII_2GMAC*/
-	((1<<1) | (1<<2) | (1<<3) | (1<<4) | (1<<5)), /*HPPE_PORT_PSGMII*/
-	((1<<1) | (1<<2) | (1<<3) | (1<<4) | (1<<5) |(1<<6)), /*HPPE_PORT_PSGMII_SGMII*/
-	((1<<1) | (1<<2) | (1<<3) | (1<<4) | (1<<5) |(1<<6)), /*HPPE_PORT_QSGMII_2SGMIIPLUS*/
-	((1<<1) | (1<<2) | (1<<3) | (1<<4) | (1<<5)), /*HPPE_PORT_QSGMII_3GMAC_2SGMIIPLUS*/
-	(1<<1), /*HPPE_PORT_XFI*/
-	((1<<1) | (1<<2)), /*HPPE_PORT_2XFI*/
-	((1<<1) | (1<<2) | (1<<3)), /*HPPE_PORT_2XFI_SGMII*/
-	((1<<1) | (1<<2) | (1<<3) | (1<<4) | (1<<5) |(1<<6)), /*HPPE_PORT_QSGMII_2XFI*/
-	};
-
-enum hppe_port_wrapper_cfg hppe_get_port_config(void)
+a_bool_t hppe_xgmac_port_check(fal_port_t port_id)
 {
-	return hppe_cfg[0]->mac_mode;
+	return ((port_id == 5) ||( port_id == 6));
 }
-
-a_bool_t hppe_mac_port_valid_check(fal_port_t port_id)
+a_bool_t hppe_mac_port_valid_check(a_uint32_t dev_id, fal_port_t port_id)
 {
 	a_uint32_t bitmap = 0;
-	enum hppe_port_wrapper_cfg cfg;
 
-//	cfg = hppe_get_port_config();
-	cfg = HPPE_PORT_PSGMII;
-	bitmap = hppe_pbmp[cfg];
+	bitmap = qca_ssdk_port_bmp_get(dev_id);
 
 	return SW_IS_PBMP_MEMBER(bitmap, port_id);
 
@@ -77,16 +46,13 @@ hppe_portproperty_init(a_uint32_t dev_id)
 	hsl_port_prop_t p_type;
 	hsl_dev_t *pdev = NULL;
 	fal_port_t port_id;
-	enum hppe_port_wrapper_cfg cfg;
 	a_uint32_t bitmap = 0;
 
 	pdev = hsl_dev_ptr_get(dev_id);
 	if (pdev == NULL)
 		return SW_NOT_INITIALIZED;
 
-//	cfg = hppe_get_port_config();
-	cfg = HPPE_PORT_PSGMII;
-	bitmap = hppe_pbmp[cfg];
+	bitmap = qca_ssdk_port_bmp_get(dev_id);
 
 	/* for port property set, SSDK should not generate some limitations */
 	for (port_id = 0; port_id < pdev->nr_ports; port_id++)
@@ -223,7 +189,7 @@ sw_error_t hppe_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 	{
 		hsl_api_t *p_api;
 
-		SW_RTN_ON_ERROR(hsl_port_prop_init());
+		SW_RTN_ON_ERROR(hsl_port_prop_init(dev_id));
 		SW_RTN_ON_ERROR(hsl_port_prop_init_by_dev(dev_id));
 		SW_RTN_ON_ERROR(hppe_portproperty_init(dev_id));
 
@@ -233,6 +199,8 @@ sw_error_t hppe_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 		p_api->reg_set = sd_reg_hdr_set;
 		p_api->phy_get = sd_reg_mdio_get;
 		p_api->phy_set = sd_reg_mdio_set;
+		p_api->uniphy_reg_get = sd_reg_uniphy_get;
+		p_api->uniphy_reg_set = sd_reg_uniphy_set;
 
 	}
 #endif

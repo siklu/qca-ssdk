@@ -93,6 +93,7 @@ extern "C" {
     SW_API_DEF(SW_API_PT_WOL_STATUS_SET, fal_port_wol_status_set), \
     SW_API_DEF(SW_API_PT_WOL_STATUS_GET, fal_port_wol_status_get), \
     SW_API_DEF(SW_API_PT_INTERFACE_MODE_SET, fal_port_interface_mode_set), \
+    SW_API_DEF(SW_API_PT_INTERFACE_MODE_APPLY, fal_port_interface_mode_apply), \
     SW_API_DEF(SW_API_PT_INTERFACE_MODE_GET, fal_port_interface_mode_get), \
     SW_API_DEF(SW_API_PT_INTERFACE_MODE_STATUS_GET, fal_port_interface_mode_status_get), \
     SW_API_DEF(SW_API_DEBUG_PHYCOUNTER_SET, fal_debug_phycounter_set), \
@@ -178,6 +179,7 @@ extern "C" {
     SW_API_DESC(SW_API_PT_WOL_STATUS_GET) \
     SW_API_DESC(SW_API_PT_INTERFACE_MODE_SET) \
     SW_API_DESC(SW_API_PT_INTERFACE_MODE_GET) \
+    SW_API_DESC(SW_API_PT_INTERFACE_MODE_APPLY) \
     SW_API_DESC(SW_API_PT_INTERFACE_MODE_STATUS_GET) \
     SW_API_DESC(SW_API_DEBUG_PHYCOUNTER_SET) \
     SW_API_DESC(SW_API_DEBUG_PHYCOUNTER_GET) \
@@ -939,7 +941,8 @@ extern "C" {
     SW_API_DEF(SW_API_PT_MIB_FLUSH_COUNTERS, fal_mib_port_flush_counters), \
     SW_API_DEF(SW_API_MIB_CPU_KEEP_SET, fal_mib_cpukeep_set), \
     SW_API_DEF(SW_API_MIB_CPU_KEEP_GET, fal_mib_cpukeep_get),\
-    SW_API_DEF(SW_API_PT_XGMIB_GET, fal_get_xgmib_info),
+    SW_API_DEF(SW_API_PT_XGMIB_GET, fal_get_xgmib_info),\
+    SW_API_DEF(SW_API_PT_MIB_COUNTER_GET, fal_mib_counter_get),
 
 #define MIB_API_PARAM \
     SW_API_DESC(SW_API_PT_MIB_GET)  \
@@ -948,7 +951,8 @@ extern "C" {
     SW_API_DESC(SW_API_MIB_STATUS_GET) \
     SW_API_DESC(SW_API_PT_MIB_FLUSH_COUNTERS) \
     SW_API_DESC(SW_API_MIB_CPU_KEEP_SET) \
-    SW_API_DESC(SW_API_MIB_CPU_KEEP_GET)
+    SW_API_DESC(SW_API_MIB_CPU_KEEP_GET) \
+    SW_API_DESC(SW_API_PT_MIB_COUNTER_GET)
 #else
 #define MIB_API
 #define MIB_API_PARAM
@@ -1394,7 +1398,8 @@ extern "C" {
     SW_API_DEF(SW_API_FLOW_GLOBAL_CFG_SET, fal_flow_global_cfg_set), \
     SW_API_DEF(SW_API_FLOW_HOST_ADD, fal_flow_host_add), \
     SW_API_DEF(SW_API_FLOW_HOST_GET, fal_flow_host_get), \
-    SW_API_DEF(SW_API_FLOW_HOST_DEL, fal_flow_host_del),
+    SW_API_DEF(SW_API_FLOW_HOST_DEL, fal_flow_host_del), \
+    SW_API_DEF(SW_API_FLOWENTRY_NEXT, fal_flow_entry_next),
 
 #define FLOW_API_PARAM \
     SW_API_DESC(SW_API_FLOW_STATUS_SET) \
@@ -1410,7 +1415,8 @@ extern "C" {
     SW_API_DESC(SW_API_FLOW_GLOBAL_CFG_SET) \
     SW_API_DESC(SW_API_FLOW_HOST_ADD) \
     SW_API_DESC(SW_API_FLOW_HOST_GET) \
-    SW_API_DESC(SW_API_FLOW_HOST_DEL)
+    SW_API_DESC(SW_API_FLOW_HOST_DEL) \
+    SW_API_DESC(SW_API_FLOWENTRY_NEXT)
 #else
 #define FLOW_API
 #define FLOW_API_PARAM
@@ -1630,7 +1636,9 @@ extern "C" {
     SW_API_DEF(SW_API_QUEUE_CNT_GET, fal_queue_counter_get), \
     SW_API_DEF(SW_API_QUEUE_CNT_CLEANUP, fal_queue_counter_cleanup), \
     SW_API_DEF(SW_API_QM_ENQUEUE_CTRL_SET, fal_qm_enqueue_ctrl_set), \
-    SW_API_DEF(SW_API_QM_ENQUEUE_CTRL_GET, fal_qm_enqueue_ctrl_get),
+    SW_API_DEF(SW_API_QM_ENQUEUE_CTRL_GET, fal_qm_enqueue_ctrl_get), \
+    SW_API_DEF(SW_API_QM_SOURCE_PROFILE_SET, fal_qm_port_source_profile_set), \
+    SW_API_DEF(SW_API_QM_SOURCE_PROFILE_GET, fal_qm_port_source_profile_get),
 
 #define QM_API_PARAM \
     SW_API_DESC(SW_API_UCAST_QUEUE_BASE_PROFILE_SET) \
@@ -1663,7 +1671,9 @@ extern "C" {
     SW_API_DESC(SW_API_QUEUE_CNT_GET) \
     SW_API_DESC(SW_API_QUEUE_CNT_CLEANUP) \
     SW_API_DESC(SW_API_QM_ENQUEUE_CTRL_SET) \
-    SW_API_DESC(SW_API_QM_ENQUEUE_CTRL_GET)
+    SW_API_DESC(SW_API_QM_ENQUEUE_CTRL_GET) \
+    SW_API_DESC(SW_API_QM_SOURCE_PROFILE_SET) \
+    SW_API_DESC(SW_API_QM_SOURCE_PROFILE_GET)
 
 #else
 #define QM_API
@@ -1726,7 +1736,8 @@ extern "C" {
     SW_API_DEF(SW_API_BM_STATIC_THRESH_SET, fal_bm_port_static_thresh_set), \
     SW_API_DEF(SW_API_BM_STATIC_THRESH_GET, fal_bm_port_static_thresh_get), \
     SW_API_DEF(SW_API_BM_DYNAMIC_THRESH_SET, fal_bm_port_dynamic_thresh_set), \
-    SW_API_DEF(SW_API_BM_DYNAMIC_THRESH_GET, fal_bm_port_dynamic_thresh_get),
+    SW_API_DEF(SW_API_BM_DYNAMIC_THRESH_GET, fal_bm_port_dynamic_thresh_get), \
+    SW_API_DEF(SW_API_BM_PORT_COUNTER_GET, fal_bm_port_counter_get),
 
 #define BM_API_PARAM \
     SW_API_DESC(SW_API_BM_CTRL_SET) \
@@ -1740,7 +1751,8 @@ extern "C" {
     SW_API_DESC(SW_API_BM_STATIC_THRESH_SET) \
     SW_API_DESC(SW_API_BM_STATIC_THRESH_GET) \
     SW_API_DESC(SW_API_BM_DYNAMIC_THRESH_SET) \
-    SW_API_DESC(SW_API_BM_DYNAMIC_THRESH_GET)
+    SW_API_DESC(SW_API_BM_DYNAMIC_THRESH_GET) \
+    SW_API_DESC(SW_API_BM_PORT_COUNTER_GET)
 
 #else
 #define BM_API
@@ -1760,7 +1772,9 @@ extern "C" {
     SW_API_DEF(SW_API_REG_DUMP, fal_reg_dump), \
     SW_API_DEF(SW_API_DBG_REG_DUMP, fal_debug_reg_dump), \
     SW_API_DEF(SW_API_DBG_PSGMII_SELF_TEST, fal_debug_psgmii_self_test), \
-    SW_API_DEF(SW_API_PHY_DUMP, fal_phy_dump),
+    SW_API_DEF(SW_API_PHY_DUMP, fal_phy_dump), \
+	SW_API_DEF(SW_API_UNIPHY_REG_GET, fal_uniphy_reg_get), \
+    SW_API_DEF(SW_API_UNIPHY_REG_SET, fal_uniphy_reg_set),
 
 #define REG_API_PARAM \
     SW_API_DESC(SW_API_PHY_GET) \
@@ -1774,7 +1788,9 @@ extern "C" {
     SW_API_DESC(SW_API_REG_DUMP) \
     SW_API_DESC(SW_API_DBG_REG_DUMP) \
 	SW_API_DESC(SW_API_DBG_PSGMII_SELF_TEST) \
-	SW_API_DESC(SW_API_PHY_DUMP)
+	SW_API_DESC(SW_API_PHY_DUMP) \
+	SW_API_DESC(SW_API_UNIPHY_REG_GET) \
+    SW_API_DESC(SW_API_UNIPHY_REG_SET)
 
 #ifdef IN_CTRLPKT
 #define CTRLPKT_API \

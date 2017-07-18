@@ -32,6 +32,11 @@
 #define ADPT_HPPE_POLICER_BUCKET_SIZE_BITS  16
 #define ADPT_HPPE_POLICER_REFRESH_MAX  ((1 << ADPT_HPPE_POLICER_REFRESH_BITS) - 1)
 #define ADPT_HPPE_POLICER_BUCKET_SIZE_MAX  ((1 << ADPT_HPPE_POLICER_BUCKET_SIZE_BITS) - 1)
+#define BYTE_POLICER_MAX_RATE 10000000
+#define BYTE_POLICER_MIN_RATE 64
+#define FRAME_POLICER_MAX_RATE 14881000
+#define FRAME_POLICER_MIN_RATE 6
+
 
 static a_uint32_t hppe_policer_token_unit[NR_ADPT_HPPE_POLICER_METER_UNIT]
 	[NR_ADPT_HPPE_POLICER_METER_TOKEN_UNIT] = {{2048 * 8,
@@ -561,10 +566,25 @@ adpt_hppe_port_policer_entry_set(a_uint32_t dev_id, fal_port_t port_id,
 	if (port_id < 0 || port_id > 7)
 		return SW_BAD_PARAM;
 
-	if((ADPT_HPPE_POLICER_METER_UNIT_BYTE == policer->meter_unit) && (policer->cir > 10000000))
-		return SW_BAD_PARAM;
-	if((ADPT_HPPE_POLICER_METER_UNIT_FRAME == policer->meter_unit) && (policer->cir > 14881000))
-		return SW_BAD_PARAM;
+	if(ADPT_HPPE_POLICER_METER_UNIT_BYTE == policer->meter_unit)
+	{
+		if ((policer->cir > BYTE_POLICER_MAX_RATE) || (policer->eir > BYTE_POLICER_MAX_RATE))
+			return SW_BAD_PARAM;
+		if ((policer->cir < BYTE_POLICER_MIN_RATE) && (policer->cir != 0))
+			return SW_BAD_PARAM;
+		if ((policer->eir < BYTE_POLICER_MIN_RATE) && (policer->eir != 0))
+			return SW_BAD_PARAM;
+	}
+
+	if(ADPT_HPPE_POLICER_METER_UNIT_FRAME == policer->meter_unit)
+	{
+		if ((policer->cir > FRAME_POLICER_MAX_RATE) || (policer->eir > FRAME_POLICER_MAX_RATE))
+			return SW_BAD_PARAM;
+		if ((policer->cir < FRAME_POLICER_MIN_RATE) && (policer->cir != 0))
+			return SW_BAD_PARAM;
+		if ((policer->eir < FRAME_POLICER_MIN_RATE) && (policer->eir != 0))
+			return SW_BAD_PARAM;
+	}
 
 	if((0 == policer->meter_mode) && (policer->cir > policer->eir))
 		return SW_BAD_PARAM;
@@ -736,10 +756,25 @@ adpt_hppe_acl_policer_entry_set(a_uint32_t dev_id, a_uint32_t index,
 	if (index < 0 || index > 511)
 		return SW_BAD_PARAM;
 
-	if((ADPT_HPPE_POLICER_METER_UNIT_BYTE == policer->meter_unit) && (policer->cir > 10000000))
-		return SW_BAD_PARAM;
-	if((ADPT_HPPE_POLICER_METER_UNIT_FRAME == policer->meter_unit) && (policer->cir > 14881000))
-		return SW_BAD_PARAM;
+	if(ADPT_HPPE_POLICER_METER_UNIT_BYTE == policer->meter_unit)
+	{
+		if ((policer->cir > BYTE_POLICER_MAX_RATE) || (policer->eir > BYTE_POLICER_MAX_RATE))
+			return SW_BAD_PARAM;
+		if ((policer->cir < BYTE_POLICER_MIN_RATE) && (policer->cir != 0))
+			return SW_BAD_PARAM;
+		if ((policer->eir < BYTE_POLICER_MIN_RATE) && (policer->eir != 0))
+			return SW_BAD_PARAM;
+	}
+
+	if(ADPT_HPPE_POLICER_METER_UNIT_FRAME == policer->meter_unit)
+	{
+		if ((policer->cir > FRAME_POLICER_MAX_RATE) || (policer->eir > FRAME_POLICER_MAX_RATE))
+			return SW_BAD_PARAM;
+		if ((policer->cir < FRAME_POLICER_MIN_RATE) && (policer->cir != 0))
+			return SW_BAD_PARAM;
+		if ((policer->eir < FRAME_POLICER_MIN_RATE) && (policer->eir != 0))
+			return SW_BAD_PARAM;
+	}
 
 	if((0 == policer->meter_mode) && (policer->cir > policer->eir))
 		return SW_BAD_PARAM;
@@ -871,7 +906,7 @@ adpt_hppe_policer_time_slot_set(a_uint32_t dev_id, a_uint32_t time_slot)
 	memset(&time_slot_reg, 0, sizeof(time_slot_reg));
 	ADPT_DEV_ID_CHECK(dev_id);
 
-	if (time_slot > 1024)
+	if ((time_slot > 1024) || (time_slot < 512))
 		return SW_BAD_PARAM;
 
 	time_slot_reg.bf.time_slot = time_slot;

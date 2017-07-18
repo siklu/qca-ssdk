@@ -50,6 +50,7 @@ extern "C" {
 #include "fal_init.h"
 #include "fal_policer.h"
 #include "fal_misc.h"
+#include "ssdk_plat.h"
 
 #define ADPT_DEV_ID_CHECK(dev_id) \
 do { \
@@ -109,6 +110,10 @@ typedef sw_error_t (*adpt_fdb_del_all_func)(a_uint32_t dev_id, a_uint32_t flag);
 typedef sw_error_t (*adpt_fdb_age_ctrl_get_func)(a_uint32_t dev_id, a_bool_t * enable);
 typedef sw_error_t (*adpt_fdb_port_maclimit_ctrl_set_func)(a_uint32_t dev_id, fal_port_t port_id, fal_maclimit_ctrl_t * maclimit_ctrl);
 typedef sw_error_t (*adpt_fdb_port_maclimit_ctrl_get_func)(a_uint32_t dev_id, fal_port_t port_id, fal_maclimit_ctrl_t * maclimit_ctrl);
+typedef sw_error_t (*adpt_fdb_port_promisc_mode_set_func)(a_uint32_t dev_id,
+			fal_port_t port_id, a_bool_t enable);
+typedef sw_error_t (*adpt_fdb_port_promisc_mode_get_func)(a_uint32_t dev_id,
+			fal_port_t port_id, a_bool_t *enable);
 
 typedef sw_error_t (*adpt_mib_cpukeep_get_func)(a_uint32_t dev_id, a_bool_t * enable);
 typedef sw_error_t (*adpt_mib_cpukeep_set_func)(a_uint32_t dev_id, a_bool_t  enable);
@@ -279,12 +284,19 @@ typedef sw_error_t (*adpt_port_source_filter_get_func)(a_uint32_t dev_id, fal_po
 				a_bool_t * enable);
 typedef sw_error_t (*adpt_port_source_filter_set_func)(a_uint32_t dev_id, fal_port_t port_id,
 				a_bool_t enable);
-typedef sw_error_t (*adpt_port_mac_mux_set_func)(a_uint32_t dev_id, fal_port_t port_id,
-				a_uint32_t mux);
+typedef sw_error_t (*adpt_port_mux_mac_type_set_func)(a_uint32_t dev_id, fal_port_t port_id,
+	a_uint32_t mode0,	a_uint32_t mode1, a_uint32_t mode2);
 typedef sw_error_t (*adpt_port_mac_speed_set_func)(a_uint32_t dev_id, fal_port_t port_id,
 				fal_port_speed_t speed);
 typedef sw_error_t (*adpt_port_mac_duplex_set_func)(a_uint32_t dev_id, fal_port_t port_id,
 				fal_port_duplex_t duplex);
+typedef sw_error_t (*adpt_port_polling_sw_sync_func)(struct qca_phy_priv *priv);
+
+typedef sw_error_t (*adpt_port_bridge_txmac_set_func)(a_uint32_t dev_id,
+		fal_port_t port_id, a_bool_t enable);
+
+typedef sw_error_t (*adpt_port_interface_mode_apply_func)(a_uint32_t dev_id);
+
 // mirror
 typedef sw_error_t (*adpt_mirr_port_in_set_func)(a_uint32_t dev_id, fal_port_t port_id,
                          a_bool_t enable);
@@ -423,6 +435,10 @@ typedef sw_error_t (*adpt_flow_entry_get_func)(
 typedef sw_error_t (*adpt_flow_entry_del_func)(
 		a_uint32_t dev_id,
 		a_uint32_t del_mode,
+		fal_flow_entry_t *flow_entry);
+typedef sw_error_t (*adpt_flow_entry_next_func)(
+		a_uint32_t dev_id,
+		a_uint32_t next_mode,
 		fal_flow_entry_t *flow_entry);
 typedef sw_error_t (*adpt_flow_status_get_func)(
 		a_uint32_t dev_id, a_bool_t *enable);
@@ -571,6 +587,10 @@ typedef sw_error_t (*adpt_qm_enqueue_ctrl_set_func)(
 		a_uint32_t dev_id, a_uint32_t queue_id, a_bool_t enable);
 typedef sw_error_t (*adpt_qm_enqueue_ctrl_get_func)(
 		a_uint32_t dev_id, a_uint32_t queue_id, a_bool_t *enable);
+typedef sw_error_t (*adpt_qm_port_source_profile_set_func)(
+		a_uint32_t dev_id, fal_port_t port, a_uint32_t src_profile);
+typedef sw_error_t (*adpt_qm_port_source_profile_get_func)(
+		a_uint32_t dev_id, fal_port_t port, a_uint32_t *src_profile);
 
 
 /*portvlan module begin*/
@@ -812,6 +832,8 @@ typedef sw_error_t (*adpt_port_bm_ctrl_set_func)(a_uint32_t dev_id, fal_port_t p
 typedef sw_error_t (*adpt_port_tdm_ctrl_set_func)(a_uint32_t dev_id, fal_port_tdm_ctrl_t *ctrl);
 typedef sw_error_t (*adpt_port_tdm_tick_cfg_set_func)(a_uint32_t dev_id, a_uint32_t tick_index,
 			fal_port_tdm_tick_cfg_t *cfg);
+typedef sw_error_t (*adpt_bm_port_counter_get_func)(a_uint32_t dev_id, fal_port_t port,
+			fal_bm_port_counter_t *counter);
 
 //policer
 typedef sw_error_t (*adpt_acl_policer_counter_get_func)(a_uint32_t dev_id, a_uint32_t index,
@@ -841,6 +863,8 @@ typedef sw_error_t (*adpt_debug_port_counter_enable_func)(a_uint32_t dev_id,
 			fal_port_t port_id, fal_counter_en_t * cnt_en);
 typedef sw_error_t (*adpt_debug_port_counter_status_get_func)(a_uint32_t dev_id,
 			fal_port_t port_id, fal_counter_en_t * cnt_en);
+typedef sw_error_t (*adpt_debug_counter_get_func)(a_bool_t show_type);
+typedef sw_error_t (*adpt_debug_counter_set_func)(void);
 
 /* uniphy */
 typedef sw_error_t (*adpt_uniphy_mode_set_func)(a_uint32_t dev_id, a_uint32_t index, a_uint32_t mode);
@@ -880,6 +904,8 @@ typedef struct
 	adpt_fdb_age_ctrl_get_func adpt_fdb_age_ctrl_get;
 	adpt_fdb_port_maclimit_ctrl_set_func adpt_fdb_port_maclimit_ctrl_set;
 	adpt_fdb_port_maclimit_ctrl_get_func adpt_fdb_port_maclimit_ctrl_get;
+	adpt_fdb_port_promisc_mode_set_func adpt_fdb_port_promisc_mode_set;
+	adpt_fdb_port_promisc_mode_get_func adpt_fdb_port_promisc_mode_get;
 	/*mib*/
 	a_uint32_t adpt_mib_func_bitmap;
 	adpt_mib_cpukeep_get_func adpt_mib_cpukeep_get;
@@ -979,9 +1005,15 @@ typedef struct
 	adpt_port_wol_status_get_func adpt_port_wol_status_get;
 	adpt_port_source_filter_set_func adpt_port_source_filter_set;
 	adpt_port_source_filter_get_func adpt_port_source_filter_get;
-	adpt_port_mac_mux_set_func adpt_port_mac_mux_set;
+	adpt_port_mux_mac_type_set_func adpt_port_mux_mac_type_set;
 	adpt_port_mac_speed_set_func adpt_port_mac_speed_set;
 	adpt_port_mac_duplex_set_func adpt_port_mac_duplex_set;
+	adpt_port_polling_sw_sync_func adpt_port_polling_sw_sync_set;
+
+	adpt_port_bridge_txmac_set_func adpt_port_bridge_txmac_set;
+
+	adpt_port_interface_mode_apply_func adpt_port_interface_mode_apply;
+
 // mirror
 	a_uint32_t adpt_mirror_func_bitmap;
 	adpt_mirr_port_in_set_func adpt_mirr_port_in_set;
@@ -1045,6 +1077,7 @@ typedef struct
 	adpt_flow_host_add_func adpt_flow_host_add;
 	adpt_flow_entry_get_func adpt_flow_entry_get;
 	adpt_flow_entry_del_func adpt_flow_entry_del;
+	adpt_flow_entry_next_func adpt_flow_entry_next;
 	adpt_flow_status_get_func adpt_flow_status_get;
 	adpt_flow_ctrl_set_func adpt_flow_ctrl_set;
 	adpt_flow_age_timer_get_func adpt_flow_age_timer_get;
@@ -1058,7 +1091,7 @@ typedef struct
 	adpt_flow_global_cfg_set_func adpt_flow_global_cfg_set;
 
 	/* qm */
-	a_uint32_t adpt_qm_func_bitmap;
+	a_uint32_t adpt_qm_func_bitmap[2];
 	adpt_ucast_hash_map_set_func adpt_ucast_hash_map_set;
 	adpt_ac_dynamic_threshold_get_func adpt_ac_dynamic_threshold_get;
 	adpt_ucast_queue_base_profile_get_func adpt_ucast_queue_base_profile_get;
@@ -1090,6 +1123,8 @@ typedef struct
 	adpt_queue_counter_ctrl_set_func adpt_queue_counter_ctrl_set;
 	adpt_qm_enqueue_ctrl_set_func adpt_qm_enqueue_ctrl_set;
 	adpt_qm_enqueue_ctrl_get_func adpt_qm_enqueue_ctrl_get;
+	adpt_qm_port_source_profile_set_func adpt_qm_port_source_profile_set;
+	adpt_qm_port_source_profile_get_func adpt_qm_port_source_profile_get;
 
 	/*portvlan module begin*/
 	a_uint32_t adpt_portvlan_func_bitmap[2];
@@ -1232,6 +1267,7 @@ typedef struct
 	adpt_port_bm_ctrl_set_func adpt_port_bm_ctrl_set;
 	adpt_port_tdm_ctrl_set_func adpt_port_tdm_ctrl_set;
 	adpt_port_tdm_tick_cfg_set_func adpt_port_tdm_tick_cfg_set;
+	adpt_bm_port_counter_get_func adpt_bm_port_counter_get;
 
 	//shaper
 	a_uint32_t adpt_shaper_func_bitmap;
@@ -1273,6 +1309,8 @@ typedef struct
 	/* misc */
 	adpt_debug_port_counter_enable_func adpt_debug_port_counter_enable;
 	adpt_debug_port_counter_status_get_func adpt_debug_port_counter_status_get;
+	adpt_debug_counter_set_func adpt_debug_counter_set;
+	adpt_debug_counter_get_func adpt_debug_counter_get;
 
 	/* uniphy */
 	adpt_uniphy_mode_set_func adpt_uniphy_mode_set;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2015, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015, 2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -534,6 +534,8 @@ typedef sw_error_t
   typedef sw_error_t
     (*hsl_port_interface_mode_get) (a_uint32_t dev_id, fal_port_t port_id,
 			      fal_port_interface_mode_t * mode);
+    typedef sw_error_t
+    (*hsl_port_interface_mode_apply) (a_uint32_t dev_id);
 
   typedef sw_error_t
     (*hsl_port_interface_mode_status_get) (a_uint32_t dev_id, fal_port_t port_id,
@@ -1991,6 +1993,14 @@ typedef sw_error_t
     (*hsl_phy_dump)(a_uint32_t dev_id, a_uint32_t phy_addr,
 			a_uint32_t idx,fal_phy_dump_t *phy_dump);
 
+  typedef sw_error_t
+    (*hsl_uniphy_reg_get) (a_uint32_t dev_id, a_uint32_t index,
+		    a_uint32_t reg_addr, a_uint8_t value[], a_uint32_t value_len);
+
+  typedef sw_error_t
+    (*hsl_uniphy_reg_set) (a_uint32_t dev_id, a_uint32_t index,
+    a_uint32_t reg_addr, a_uint8_t value[], a_uint32_t value_len);
+
   typedef struct
   {
 #if (!(defined(USER_MODE) && defined(KERNEL_MODULE)))
@@ -2135,6 +2145,7 @@ typedef sw_error_t
     hsl_port_magic_frame_mac_get port_magic_frame_mac_get;
     hsl_port_interface_mode_set port_interface_mode_set;
     hsl_port_interface_mode_get port_interface_mode_get;
+    hsl_port_interface_mode_apply port_interface_mode_apply;
     hsl_port_interface_mode_status_get port_interface_mode_status_get;
     hsl_port_counter_set port_counter_set;
     hsl_port_counter_get port_counter_get;
@@ -2553,7 +2564,8 @@ typedef sw_error_t
 	hsl_debug_register_dump	debug_register_dump;
 	hsl_debug_psgmii_self_test	debug_psgmii_self_test;
 	hsl_phy_dump	 phy_dump;
-
+    hsl_uniphy_reg_get uniphy_reg_get;
+    hsl_uniphy_reg_set uniphy_reg_set;
 
       /*INIT*/ hsl_dev_reset dev_reset;
     hsl_dev_clean dev_clean;
