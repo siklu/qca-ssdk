@@ -26,6 +26,9 @@
 #ifdef IN_AQUANTIA_PHY
 #include <aquantia_phy.h>
 #endif
+#ifdef IN_QCA803X_PHY
+#include <qca803x_phy.h>
+#endif
 
 #include "ssdk_plat.h"
 
@@ -54,6 +57,11 @@ phy_driver_instance_t ssdk_phy_driver[] =
 	{AQUANTIA_PHY_CHIP, {0}, NULL, aquantia_phy_init},
 	#else
 	{AQUANTIA_PHY_CHIP, {0}, NULL, NULL},
+	#endif
+	#ifdef IN_QCA803X_PHY
+	{QCA803X_PHY_CHIP, {0}, NULL, qca803x_phy_init},
+	#else
+	{QCA803X_PHY_CHIP, {0}, NULL, NULL},
 	#endif
 	{MAX_PHY_CHIP, {0}, NULL, NULL}
 };
@@ -142,6 +150,8 @@ int ssdk_phy_driver_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 			else if ((phy_id == AQUANTIA_PHY_107) || (phy_id == AQUANTIA_PHY_109) ||
 						(phy_id == AQUANTIA_PHY_111))
 				phytype = AQUANTIA_PHY_CHIP;
+			else if (phy_id == QCA8033_PHY)
+				phytype = QCA803X_PHY_CHIP;
 			else
 			{
 				SSDK_INFO("dev_id = %d, phy_adress = %d, phy_id = 0x%x phy type doesn't match\n",
