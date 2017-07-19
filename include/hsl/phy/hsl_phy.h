@@ -286,6 +286,12 @@ typedef enum
 	MAX_PHY_CHIP,
 } phy_type_t;
 
+typedef struct {
+	a_uint32_t phy_address[SW_MAX_NR_PORT];
+	a_uint32_t phy_type[SW_MAX_NR_PORT];
+	a_bool_t phy_c45[SW_MAX_NR_PORT];
+} phy_info_t;
+
 #define MALIBU5PORT_PHY 0x004DD0B1
 #define MALIBU2PORT_PHY 0x004DD0B2
 #define F1V1_PHY 0x004DD033
@@ -310,7 +316,7 @@ sw_error_t phy_api_ops_init(phy_type_t phy_type);
 
 int ssdk_phy_driver_init(a_uint32_t dev_id, ssdk_init_cfg *cfg);
 
-void qca_ssdk_phy_address_init(a_uint32_t dev_id);
+int qca_ssdk_phy_address_init(a_uint32_t dev_id);
 
 void qca_ssdk_port_bmp_init(a_uint32_t dev_id);
 
@@ -329,6 +335,10 @@ a_uint32_t qca_ssdk_phy_type_port_bmp_get(a_uint32_t dev_id,
 
 a_uint32_t
 qca_ssdk_phy_addr_to_port(a_uint32_t dev_id, a_uint32_t phy_addr);
+
+void
+hsl_port_phy_c45_capability_set(a_uint32_t dev_id, a_uint32_t port_id,
+			a_bool_t enable);
 
 sw_error_t ssdk_phy_driver_cleanup(void);
 

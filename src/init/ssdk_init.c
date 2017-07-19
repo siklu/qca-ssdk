@@ -2476,6 +2476,7 @@ static void ssdk_dt_parse_mdio(struct device_node *switch_node, a_uint32_t dev_i
 	struct device_node *child = NULL;
 	a_uint32_t len = 0, i = 1;
 	const __be32 *phy_addr;
+	const __be32 * c45_phy;
 
 	/* prefer to get phy addr from ess-switch node */
 	if (SW_OK == ssdk_dt_parse_phy_addr(switch_node, dev_id))
@@ -2492,6 +2493,10 @@ static void ssdk_dt_parse_mdio(struct device_node *switch_node, a_uint32_t dev_i
 			phy_addr = of_get_property(child, "reg", &len);
 			if (phy_addr)
 				qca_ssdk_phy_address_set(dev_id, i, be32_to_cpup(phy_addr));
+
+			c45_phy = of_get_property(child, "compatible", &len);
+			if (c45_phy)
+				hsl_port_phy_c45_capability_set(dev_id, i, A_TRUE);
 			i++;
 			if (i >= SW_MAX_NR_PORT)
 				break;

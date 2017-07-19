@@ -29,9 +29,9 @@
 
 #include "ssdk_plat.h"
 
-a_uint32_t phy_address[SW_MAX_NR_DEV][SW_MAX_NR_PORT] = {0};
-a_uint32_t phy_type[SW_MAX_NR_DEV][SW_MAX_NR_PORT] = {0};
+phy_info_t *phy_info[SW_MAX_NR_DEV] = {0};
 a_uint32_t port_bmp[SW_MAX_NR_DEV] = {0};
+
 
 phy_driver_instance_t ssdk_phy_driver[] =
 {
@@ -82,7 +82,7 @@ hsl_phy_ops_t *hsl_phy_api_ops_get(a_uint32_t dev_id, a_uint32_t port_id)
 	if (dev_id >= SW_MAX_NR_DEV)
 		return NULL;
 
-	phytype = phy_type[dev_id][port_id];
+	phytype = phy_info[dev_id]->phy_type[port_id];
 
 	return ssdk_phy_driver[phytype].phy_ops;
 
@@ -107,20 +107,31 @@ int ssdk_phy_driver_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 
 	int i = 0;
 	a_uint16_t org_id = 0, rev_id = 0;
-	a_uint32_t phy_id = 0, xgphy_id = 0;
+	a_uint32_t phy_id = 0;
 	phy_type_t phytype = MAX_PHY_CHIP;
 
 	for (i = 0; i < SW_MAX_NR_PORT; i++)
 	{
 		if (port_bmp[dev_id] & (0x1 << i))
 		{
-			cfg->reg_func.mdio_get(dev_id, phy_address[dev_id][i], 2, &org_id);
-			cfg->reg_func.mdio_get(dev_id, phy_address[dev_id][i], 3, &rev_id);
-			phy_id = (org_id<<16) | rev_id;
-			cfg->reg_func.mdio_get(dev_id, phy_address[dev_id][i], ((1<<30) |(1<<16) |2), &org_id);
-			cfg->reg_func.mdio_get(dev_id, phy_address[dev_id][i], ((1<<30) |(1<<16) |3), &rev_id);
-			xgphy_id = (org_id<<16) | rev_id;
-
+			if (phy_info[dev_id]->phy_c45[i] == A_FALSE)
+			{
+				cfg->reg_func.mdio_get(dev_id,
+							phy_info[dev_id]->phy_address[i], 2, &org_id);
+				cfg->reg_func.mdio_get(dev_id,
+							phy_info[dev_id]->phy_address[i], 3, &rev_id);
+				phy_id = (org_id<<16) | rev_id;
+			}
+			else
+			{
+				cfg->reg_func.mdio_get(dev_id,
+							phy_info[dev_id]->phy_address[i],
+							((1<<30) |(1<<16) |2), &org_id);
+				cfg->reg_func.mdio_get(dev_id,
+							phy_info[dev_id]->phy_address[i],
+							((1<<30) |(1<<16) |3), &rev_id);
+				phy_id = (org_id<<16) | rev_id;
+			}
 			if ((phy_id == F1V1_PHY) || (phy_id == F1V2_PHY) ||
 				(phy_id == F1V3_PHY) || (phy_id == F1V4_PHY))
 				phytype = F1_PHY_CHIP;
@@ -128,15 +139,15 @@ int ssdk_phy_driver_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 				phytype = F2_PHY_CHIP;
 			else if ((phy_id == MALIBU2PORT_PHY) || (phy_id == MALIBU5PORT_PHY))
 				phytype = MALIBU_PHY_CHIP;
-			else if ((phy_id == AQUANTIA_PHY_107) || (xgphy_id == AQUANTIA_PHY_107)
-				|| (phy_id == AQUANTIA_PHY_109) || (xgphy_id == AQUANTIA_PHY_109))
+			else if ((phy_id == AQUANTIA_PHY_107) || (phy_id == AQUANTIA_PHY_109))
 				phytype = AQUANTIA_PHY_CHIP;
 			else
 			{
-				SSDK_INFO("phy type doesn't match!\n");
+				SSDK_INFO("dev_id = %d, phy_adress = %d, phy_id = 0x%x phy type doesn't match\n",
+						dev_id, phy_info[dev_id]->phy_address[i], phy_id);
 				continue;
 			}
-			phy_type[dev_id][i] = phytype;
+			phy_info[dev_id]->phy_type[i] = phytype;
 			ssdk_phy_driver[phytype].port_bmp[dev_id] |= (0x1 << i);
 		}
 	}
@@ -149,15 +160,25 @@ int ssdk_phy_driver_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 	}
 	return 0;
 }
-void qca_ssdk_phy_address_init(a_uint32_t dev_id)
+int qca_ssdk_phy_address_init(a_uint32_t dev_id)
 {
 	a_uint32_t j = 0;
+	phy_info_t *phy_information;
+
+	phy_information = kzalloc(sizeof(phy_info_t), GFP_KERNEL);
+	if (phy_information == NULL) {
+		SSDK_ERROR("phy_information kzalloc failed!\n");
+		return -ENOMEM;
+	}
+	memset(phy_information, 0, sizeof(phy_information));
+	phy_info[dev_id] = phy_information;
 
 	for (j = 1; j < SW_MAX_NR_PORT; j ++)
 	{
-		phy_address[dev_id][j] = j - 1;
+		phy_info[dev_id]->phy_address[j] = j - 1;
 	}
-	return;
+
+	return 0;
 }
 void qca_ssdk_port_bmp_init(a_uint32_t dev_id)
 {
@@ -169,7 +190,7 @@ void qca_ssdk_port_bmp_init(a_uint32_t dev_id)
 void qca_ssdk_phy_address_set(a_uint32_t dev_id, a_uint32_t i,
 			a_uint32_t value)
 {
-	phy_address[dev_id][i] = value;
+	phy_info[dev_id]->phy_address[i] = value;
 
 	return;
 }
@@ -197,7 +218,7 @@ a_uint32_t qca_ssdk_phy_type_port_bmp_get(a_uint32_t dev_id,
 a_uint32_t
 qca_ssdk_port_to_phy_addr(a_uint32_t dev_id, a_uint32_t port_id)
 {
-	return phy_address[dev_id][port_id];
+	return phy_info[dev_id]->phy_address[port_id];
 }
 
 a_uint32_t
@@ -207,11 +228,20 @@ qca_ssdk_phy_addr_to_port(a_uint32_t dev_id, a_uint32_t phy_addr)
 
 	for (i = 0; i < SW_MAX_NR_PORT; i ++)
 	{
-		if (phy_address[dev_id][i] == phy_addr)
+		if (phy_info[dev_id]->phy_address[i] == phy_addr)
 			return i;
 	}
 	SSDK_ERROR("doesn't match port_id to specified phy_addr !\n");
 	return 0;
+}
+
+void
+hsl_port_phy_c45_capability_set(a_uint32_t dev_id, a_uint32_t port_id,
+		a_bool_t enable)
+{
+	phy_info[dev_id]->phy_c45[port_id] = enable;
+
+	return;
 }
 
 sw_error_t ssdk_phy_driver_cleanup(void)
@@ -224,6 +254,15 @@ sw_error_t ssdk_phy_driver_cleanup(void)
 		{
 			kfree(ssdk_phy_driver[i].phy_ops);
 			ssdk_phy_driver[i].phy_ops = NULL;
+		}
+	}
+
+	for(i = 0; i < SW_MAX_NR_DEV;i++) {
+
+		if(phy_info[i] != NULL)
+		{
+			kfree(phy_info[i]);
+			phy_info[i] = NULL;
 		}
 	}
 	return SW_OK;
