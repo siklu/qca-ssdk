@@ -1517,10 +1517,17 @@ adpt_hppe_port_max_frame_size_get(a_uint32_t dev_id, fal_port_t port_id,
 
 	port_mac_type =qca_hppe_port_mac_type_get(dev_id, port_id);
 	if (port_mac_type == PORT_XGMAC_TYPE)
+	{
 		rv = _adpt_xgmac_port_max_frame_size_get( dev_id, port_id, max_frame);
+	}
 	else if (port_mac_type == PORT_GMAC_TYPE)
+	{
 		rv = _adpt_gmac_port_max_frame_size_get( dev_id, port_id, max_frame);
+	}
+	else
+	{
 		return SW_BAD_VALUE;
+	}
 
 	return rv;
 }
