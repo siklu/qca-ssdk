@@ -1517,10 +1517,17 @@ adpt_hppe_port_max_frame_size_get(a_uint32_t dev_id, fal_port_t port_id,
 
 	port_mac_type =qca_hppe_port_mac_type_get(dev_id, port_id);
 	if (port_mac_type == PORT_XGMAC_TYPE)
+	{
 		rv = _adpt_xgmac_port_max_frame_size_get( dev_id, port_id, max_frame);
+	}
 	else if (port_mac_type == PORT_GMAC_TYPE)
+	{
 		rv = _adpt_gmac_port_max_frame_size_get( dev_id, port_id, max_frame);
+	}
+	else
+	{
 		return SW_BAD_VALUE;
+	}
 
 	return rv;
 }
@@ -3002,17 +3009,6 @@ adpt_hppe_port_phy_status_get(a_uint32_t dev_id, a_uint32_t port_id,
 	mode1 = ssdk_dt_global_get_mac_mode(HPPE_UNIPHY_INSTANCE1);
 	mode2 = ssdk_dt_global_get_mac_mode(HPPE_UNIPHY_INSTANCE2);
 
-	if (((port_id == HPPE_MUX_PORT1) && (mode1 == PORT_WRAPPER_10GBASE_R))
-				|| ((port_id == HPPE_MUX_PORT2) &&
-				(mode2 == PORT_WRAPPER_10GBASE_R)))
-	{
-		phy_status->tx_flowctrl = 1;
-		phy_status->rx_flowctrl = 1;
-		phy_status->speed = FAL_SPEED_10000;
-		phy_status->duplex = FAL_FULL_DUPLEX;
-		phy_status->link_status = PORT_LINK_UP;
-		return rv;
-	}
 	if (((port_id == HPPE_MUX_PORT1) && (mode1 == PORT_WRAPPER_SGMII_PLUS))
 				|| ((port_id == HPPE_MUX_PORT2) &&
 				(mode2 == PORT_WRAPPER_SGMII_PLUS)))

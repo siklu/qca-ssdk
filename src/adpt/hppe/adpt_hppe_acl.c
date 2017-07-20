@@ -21,6 +21,7 @@
 #include "adpt.h"
 #include "hppe_acl_reg.h"
 #include "hppe_acl.h"
+#include "ssdk_plat.h"
 
 #ifdef ACL_DEBUG
 #define acl_print printk
@@ -52,6 +53,7 @@
 
 
 typedef struct{
+	a_uint8_t valid;
 	a_uint32_t list_pri;
 	a_uint8_t free_hw_entry_bitmap;
 	a_uint8_t free_hw_entry_count;
@@ -456,11 +458,41 @@ static void _acl_slice_ext_bitmap_gen(a_uint32_t ext_n)
 }
 #endif
 
+enum{
+	HPPE_ACL_TYPE_PORTBITMAP = 0,
+	HPPE_ACL_TYPE_PORT,
+	HPPE_ACL_TYPE_SERVICE_CODE,
+	HPPE_ACL_TYPE_L3_IF,
+	HPPE_ACL_TYPE_INVALID,
+};
+
+static a_uint32_t _adpt_hppe_acl_srctype_to_hw(fal_acl_bind_obj_t obj_t)
+{
+	a_uint32_t src_type = HPPE_ACL_TYPE_INVALID;
+
+	switch(obj_t)
+	{
+		case FAL_ACL_BIND_PORTBITMAP:
+			src_type = HPPE_ACL_TYPE_PORTBITMAP;
+			break;
+		case FAL_ACL_BIND_PORT:
+			src_type = HPPE_ACL_TYPE_PORT;
+			break;
+		case FAL_ACL_BIND_SERVICE_CODE:
+			src_type = HPPE_ACL_TYPE_SERVICE_CODE;
+			break;
+		case FAL_ACL_BIND_L3_IF:
+			src_type = HPPE_ACL_TYPE_L3_IF;
+			break;
+	}
+	return src_type;
+}
+
 static sw_error_t
 _adpt_hppe_acl_rule_bind(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_id,
 	fal_acl_direc_t direc, fal_acl_bind_obj_t obj_t, a_uint32_t obj_idx)
 {
-	a_uint32_t hw_index = 0, hw_entries = 0;
+	a_uint32_t hw_index = 0, hw_entries = 0, hw_srctype = 0;
 	union ipo_rule_reg_u hw_reg = {0};
 
 	hw_entries = g_acl_list[dev_id][list_id].rule_hw_entry[rule_id];
@@ -472,18 +504,36 @@ _adpt_hppe_acl_rule_bind(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_
 			break;
 
 		hppe_ipo_rule_reg_get(dev_id, list_id*ADPT_ACL_ENTRY_NUM_PER_LIST+hw_index, &hw_reg);
-		if(obj_t == FAL_ACL_BIND_PORT)
-			hw_reg.bf.src_type = 1;
-		else if(obj_t == FAL_ACL_BIND_PORTBITMAP)
-			hw_reg.bf.src_type = 0;
-		else if(obj_t == FAL_ACL_BIND_SERVICE_CODE)
-			hw_reg.bf.src_type = 2;
-		else if(obj_t == FAL_ACL_BIND_L3_IF)
-			hw_reg.bf.src_type = 3;
-		hw_reg.bf.src_0 = obj_idx&0x7;
-		hw_reg.bf.src_1 = (obj_idx>>3)&0x1f;
+
+		if(obj_t == FAL_ACL_BIND_PORT && obj_idx < SSDK_MAX_PORT_NUM)
+		{
+			/*convert port to bitmap if it is physical port*/
+			obj_t = FAL_ACL_BIND_PORTBITMAP;
+			obj_idx = (1<<obj_idx);
+		}
+
+		hw_srctype = _adpt_hppe_acl_srctype_to_hw(obj_t);
+
+		if(hw_srctype == HPPE_ACL_TYPE_INVALID)
+		{
+			SSDK_ERROR("Invalid source type %d\n", obj_t);
+			return SW_BAD_PARAM;
+		}
+		else if(hw_srctype == HPPE_ACL_TYPE_PORTBITMAP &&
+			hw_reg.bf.src_type == HPPE_ACL_TYPE_PORTBITMAP)
+		{
+			hw_reg.bf.src_0 |= obj_idx&0x7;
+			hw_reg.bf.src_1 |= (obj_idx>>3)&0x1f;
+		}
+		else
+		{
+			hw_reg.bf.src_0 = obj_idx&0x7;
+			hw_reg.bf.src_1 = (obj_idx>>3)&0x1f;
+		}
+		hw_reg.bf.src_type = hw_srctype;
+
 		hppe_ipo_rule_reg_set(dev_id, list_id*ADPT_ACL_ENTRY_NUM_PER_LIST+hw_index, &hw_reg);
-		acl_print("ACL bind entry %d source type %d, source value 0x%x\n",
+		SSDK_DEBUG("ACL bind entry %d source type %d, source value 0x%x\n",
 			list_id*ADPT_ACL_ENTRY_NUM_PER_LIST+hw_index, obj_t, obj_idx);
 		hw_entries &= (~(1<<hw_index));
 	}
@@ -1498,8 +1548,19 @@ _adpt_hppe_acl_rule_unbind(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rul
 
 		hppe_ipo_rule_reg_get(dev_id, list_id*ADPT_ACL_ENTRY_NUM_PER_LIST+hw_index, &hw_reg);
 
-		hw_reg.bf.src_type = 0;
-		if(obj_t == FAL_ACL_BIND_PORTBITMAP)
+		if(obj_t == FAL_ACL_BIND_PORT && obj_idx < SSDK_MAX_PORT_NUM)
+		{
+			/*convert port to bitmap if it is physical port*/
+			obj_t = FAL_ACL_BIND_PORTBITMAP;
+			obj_idx = (1<<obj_idx);
+		}
+
+		if(hw_reg.bf.src_type != _adpt_hppe_acl_srctype_to_hw(obj_t))
+		{
+			SSDK_ERROR("ACL unbind fail obj_t %d\n", obj_t);
+			return SW_NOT_FOUND;
+		}
+		if(hw_reg.bf.src_type == HPPE_ACL_TYPE_PORTBITMAP)
 		{
 			hw_reg.bf.src_0 &= ((~obj_idx)&0x7);
 			hw_reg.bf.src_1 &= ((~(obj_idx>>3))&0x1f);
@@ -1510,7 +1571,7 @@ _adpt_hppe_acl_rule_unbind(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rul
 			hw_reg.bf.src_1 = 0;
 		}
 		hppe_ipo_rule_reg_set(dev_id, list_id*ADPT_ACL_ENTRY_NUM_PER_LIST+hw_index, &hw_reg);
-		acl_print("ACL bind entry %d source type %d, source value 0x%x\n",
+		SSDK_DEBUG("ACL unbind entry %d source type %d, source value 0x%x\n",
 			list_id*ADPT_ACL_ENTRY_NUM_PER_LIST+hw_index, obj_t, obj_idx);
 		hw_entries &= (~(1<<hw_index));
 	}
@@ -3197,12 +3258,19 @@ adpt_hppe_acl_list_creat(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t list_
 {
 	ADPT_DEV_ID_CHECK(dev_id);
 
-	if(list_id >= ADPT_ACL_LIST_NUM)
+	if(list_id >= ADPT_ACL_LIST_NUM) {
 		return SW_OUT_OF_RANGE;
+	}
 
+	if(g_acl_list[dev_id][list_id].valid) {
+		return SW_ALREADY_EXIST;
+	}
+
+	g_acl_list[dev_id][list_id].valid = A_TRUE;
 	g_acl_list[dev_id][list_id].list_pri = list_pri;
 	g_acl_list[dev_id][list_id].free_hw_entry_bitmap = 0xff;
-	g_acl_list[dev_id][list_id].free_hw_entry_count = 8;
+	g_acl_list[dev_id][list_id].free_hw_entry_count =
+						ADPT_ACL_ENTRY_NUM_PER_LIST;
 	return SW_OK;
 }
 
@@ -3221,6 +3289,7 @@ adpt_hppe_acl_list_destroy(a_uint32_t dev_id, a_uint32_t list_id)
 		if(g_acl_list[dev_id][list_id].rule_hw_entry[rule_id])
 			adpt_hppe_acl_rule_delete(dev_id, list_id, rule_id, 1);
 	}
+	g_acl_list[dev_id][list_id].valid = A_FALSE;
 	return SW_OK;
 }
 

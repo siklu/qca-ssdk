@@ -128,7 +128,8 @@ int ssdk_phy_driver_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 				phytype = F2_PHY_CHIP;
 			else if ((phy_id == MALIBU2PORT_PHY) || (phy_id == MALIBU5PORT_PHY))
 				phytype = MALIBU_PHY_CHIP;
-			else if (phy_id == AQUANTIA_PHY || xgphy_id == AQUANTIA_PHY)
+			else if ((phy_id == AQUANTIA_PHY_107) || (xgphy_id == AQUANTIA_PHY_107)
+				|| (phy_id == AQUANTIA_PHY_109) || (xgphy_id == AQUANTIA_PHY_109))
 				phytype = AQUANTIA_PHY_CHIP;
 			else
 			{
