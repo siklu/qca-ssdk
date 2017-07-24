@@ -2322,70 +2322,85 @@ static void ssdk_dt_parse_l1_scheduler_cfg(
 	}
 }
 
+static void ssdk_dt_parse_l0_queue_cfg(
+	a_uint32_t dev_id,
+	a_uint32_t port_id,
+	struct device_node *node,
+	a_uint8_t *queue_name,
+	a_uint8_t *loop_name)
+{
+	ssdk_dt_scheduler_cfg *cfg = &(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->scheduler_cfg);
+	a_uint32_t tmp_cfg[5];
+	const __be32 *paddr;
+	a_uint32_t len, i, queue_id, pri_loop;
+
+	paddr = of_get_property(node, queue_name, &len);
+	len /= sizeof(a_uint32_t);
+	if (!paddr) {
+		SSDK_ERROR("error reading %s property\n", queue_name);
+		return;
+	}
+	if (of_property_read_u32_array(node, "cfg", tmp_cfg, 5)) {
+		SSDK_ERROR("error reading cfg property!\n");
+		return;
+	}
+	if (of_property_read_u32(node, loop_name, &pri_loop)) {
+		for (i = 0; i < len; i++) {
+			queue_id = be32_to_cpup(paddr+i);
+			if (queue_id >= SSDK_L0SCHEDULER_CFG_MAX) {
+				SSDK_ERROR("Invalid parameter for queue(%d)\n",
+					queue_id);
+				return;
+			}
+			cfg->l0cfg[queue_id].valid = 1;
+			cfg->l0cfg[queue_id].port_id = port_id;
+			cfg->l0cfg[queue_id].sp_id = tmp_cfg[0];
+			cfg->l0cfg[queue_id].cpri = tmp_cfg[1];
+			cfg->l0cfg[queue_id].cdrr_id = tmp_cfg[2];
+			cfg->l0cfg[queue_id].epri = tmp_cfg[3];
+			cfg->l0cfg[queue_id].edrr_id = tmp_cfg[4];
+		}
+	} else {
+		/* should one queue for loop */
+		if (len != 1) {
+			SSDK_ERROR("should one queue for loop!\n");
+			return;
+		}
+		queue_id = be32_to_cpup(paddr);
+		if (queue_id >= SSDK_L0SCHEDULER_CFG_MAX) {
+			SSDK_ERROR("Invalid parameter for queue(%d)\n",
+				queue_id);
+			return;
+		}
+		for (i = 0; i < pri_loop; i++) {
+			cfg->l0cfg[queue_id + i].valid = 1;
+			cfg->l0cfg[queue_id + i].port_id = port_id;
+			cfg->l0cfg[queue_id + i].sp_id = tmp_cfg[0] + i/SSDK_SP_MAX_PRIORITY;
+			cfg->l0cfg[queue_id + i].cpri = tmp_cfg[1] + i%SSDK_SP_MAX_PRIORITY;
+			cfg->l0cfg[queue_id + i].cdrr_id = tmp_cfg[2] + i;
+			cfg->l0cfg[queue_id + i].epri = tmp_cfg[3] + i%SSDK_SP_MAX_PRIORITY;
+			cfg->l0cfg[queue_id + i].edrr_id = tmp_cfg[4] + i;
+		}
+	}
+}
+
 static void ssdk_dt_parse_l0_scheduler_cfg(
 	struct device_node *port_node,
 	a_uint32_t port_id, a_uint32_t dev_id)
 {
 	struct device_node *scheduler_node;
 	struct device_node *child;
-	ssdk_dt_scheduler_cfg *cfg = &(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->scheduler_cfg);
-	a_uint32_t tmp_cfg[5];
-	const __be32 *paddr;
-	a_uint32_t len, i, queue_id;
 
 	scheduler_node = of_find_node_by_name(port_node, "l0scheduler");
 	if (!scheduler_node) {
-		SSDK_ERROR("cannot find l0scheduler node for port\n");
+		SSDK_ERROR("Can't find l0scheduler node for port\n");
 		return;
 	}
 	for_each_available_child_of_node(scheduler_node, child) {
-		paddr = of_get_property(child, "ucast_queue", &len);
-		len /= sizeof(a_uint32_t);
-		if (!paddr) {
-			SSDK_ERROR("error reading ucast_queue property\n");
-			return;
-		}
-		if (of_property_read_u32_array(child,
-				"cfg", tmp_cfg, 5)) {
-			SSDK_ERROR("error reading cfg property!\n");
-			return;
-		}
-		for (i = 0; i < len; i++) {
-			queue_id = be32_to_cpup(paddr+i);
-			if (queue_id >= SSDK_L0SCHEDULER_UCASTQ_CFG_MAX) {
-				SSDK_ERROR("Invalid parameter for Uqueue(%d)\n",
-					queue_id);
-				return;
-			}
-			cfg->l0cfg[queue_id].valid = 1;
-			cfg->l0cfg[queue_id].port_id = port_id;
-			cfg->l0cfg[queue_id].sp_id = tmp_cfg[0];
-			cfg->l0cfg[queue_id].cpri = tmp_cfg[1];
-			cfg->l0cfg[queue_id].cdrr_id = tmp_cfg[2];
-			cfg->l0cfg[queue_id].epri = tmp_cfg[3];
-			cfg->l0cfg[queue_id].edrr_id = tmp_cfg[4];
-		}
-		paddr = of_get_property(child, "mcast_queue", &len);
-		len /= sizeof(a_uint32_t);
-		if (!paddr) {
-			SSDK_ERROR("error reading Mcast_queue property\n");
-			return;
-		}
-		for (i = 0; i < len; i++) {
-			queue_id = be32_to_cpup(paddr+i);
-			if (queue_id >= SSDK_L0SCHEDULER_CFG_MAX) {
-				SSDK_ERROR("Invalid parameter for Mqueue(%d)\n",
-					queue_id);
-				return;
-			}
-			cfg->l0cfg[queue_id].valid = 1;
-			cfg->l0cfg[queue_id].port_id = port_id;
-			cfg->l0cfg[queue_id].sp_id = tmp_cfg[0];
-			cfg->l0cfg[queue_id].cpri = tmp_cfg[1];
-			cfg->l0cfg[queue_id].cdrr_id = tmp_cfg[2];
-			cfg->l0cfg[queue_id].epri = tmp_cfg[3];
-			cfg->l0cfg[queue_id].edrr_id = tmp_cfg[4];
-		}
+		ssdk_dt_parse_l0_queue_cfg(dev_id, port_id, child,
+				"ucast_queue", "ucast_loop_pri");
+		ssdk_dt_parse_l0_queue_cfg(dev_id, port_id, child,
+				"mcast_queue", "mcast_loop_pri");
 	}
 }
 
