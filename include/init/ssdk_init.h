@@ -390,6 +390,8 @@ qca_hppe_port_mac_type_set(a_uint32_t dev_id, a_uint32_t port_id, a_uint32_t por
 void
 qca_mac_sw_sync_port_status_init(a_uint32_t dev_id);
 
+ssdk_dt_scheduler_cfg *ssdk_bootup_shceduler_cfg_get(a_uint32_t dev_id);
+
 #ifdef __cplusplus
 }
 #endif                          /* __cplusplus */

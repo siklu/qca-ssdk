@@ -704,6 +704,51 @@ adpt_hppe_tdm_tick_num_get(a_uint32_t dev_id, a_uint32_t *tick_num)
 }
 
 sw_error_t
+adpt_hppe_port_scheduler_cfg_reset(a_uint32_t dev_id,
+				fal_port_t port_id)
+{
+	ssdk_dt_scheduler_cfg *dt_cfg;
+	fal_qos_scheduler_cfg_t cfg;
+	a_uint32_t i;
+
+	dt_cfg = ssdk_bootup_shceduler_cfg_get(dev_id);
+	if (!dt_cfg)
+		return SW_FAIL;
+
+	/* L1 shceduler */
+	for (i = 0; i < SSDK_L1SCHEDULER_CFG_MAX; i++) {
+		if (dt_cfg->l1cfg[i].valid && dt_cfg->l1cfg[i].port_id == port_id) {
+			cfg.sp_id = dt_cfg->l1cfg[i].port_id;
+			cfg.c_pri = dt_cfg->l1cfg[i].cpri;
+			cfg.e_pri = dt_cfg->l1cfg[i].epri;
+			cfg.c_drr_id = dt_cfg->l1cfg[i].cdrr_id;
+			cfg.e_drr_id = dt_cfg->l1cfg[i].edrr_id;
+			cfg.c_drr_wt = 1;
+			cfg.e_drr_wt = 1;
+			adpt_hppe_queue_scheduler_set(dev_id, i, 1,
+					dt_cfg->l1cfg[i].port_id, &cfg);
+		}
+	}
+
+	/* L0 shceduler */
+	for (i = 0; i < SSDK_L0SCHEDULER_CFG_MAX; i++) {
+		if (dt_cfg->l0cfg[i].valid && dt_cfg->l0cfg[i].port_id == port_id) {
+			cfg.sp_id = dt_cfg->l0cfg[i].sp_id;
+			cfg.c_pri = dt_cfg->l0cfg[i].cpri;
+			cfg.e_pri = dt_cfg->l0cfg[i].epri;
+			cfg.c_drr_id = dt_cfg->l0cfg[i].cdrr_id;
+			cfg.e_drr_id = dt_cfg->l0cfg[i].edrr_id;
+			cfg.c_drr_wt = 1;
+			cfg.e_drr_wt = 1;
+			adpt_hppe_queue_scheduler_set(dev_id, i,
+					0, dt_cfg->l0cfg[i].port_id, &cfg);
+		}
+	}
+
+	return SW_OK;
+}
+
+sw_error_t
 adpt_hppe_port_scheduler_cfg_set(a_uint32_t dev_id,
 				a_uint32_t tick_index,
 				fal_port_scheduler_cfg_t *cfg)
@@ -799,7 +844,8 @@ void adpt_hppe_qos_func_bitmap_init(a_uint32_t dev_id)
 						(1 << FUNC_SCHEDULER_DEQUEUE_CTRL_GET) |
 						(1 << FUNC_SCHEDULER_DEQUEUE_CTRL_SET) |
 						(1 << FUNC_QOS_PORT_MODE_PRI_GET) |
-						(1 << FUNC_QOS_PORT_MODE_PRI_SET));
+						(1 << FUNC_QOS_PORT_MODE_PRI_SET) |
+						(1 << FUNC_QOS_PORT_SCHEDULER_CFG_RESET));
 	return;
 }
 
@@ -833,6 +879,7 @@ static void adpt_hppe_qos_func_unregister(a_uint32_t dev_id, adpt_api_t *p_adpt_
 	p_adpt_api->adpt_scheduler_dequeue_ctrl_set = NULL;
 	p_adpt_api->adpt_qos_port_mode_pri_get = NULL;
 	p_adpt_api->adpt_qos_port_mode_pri_set = NULL;
+	p_adpt_api->adpt_port_scheduler_cfg_reset = NULL;
 
 	return;
 }
@@ -898,6 +945,8 @@ sw_error_t adpt_hppe_qos_init(a_uint32_t dev_id)
 		p_adpt_api->adpt_qos_port_mode_pri_get = adpt_hppe_qos_port_mode_pri_get;
 	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_QOS_PORT_MODE_PRI_SET))
 		p_adpt_api->adpt_qos_port_mode_pri_set = adpt_hppe_qos_port_mode_pri_set;
+	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_QOS_PORT_SCHEDULER_CFG_RESET))
+		p_adpt_api->adpt_port_scheduler_cfg_reset = adpt_hppe_port_scheduler_cfg_reset;
 
 	return SW_OK;
 }

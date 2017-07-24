@@ -2243,6 +2243,11 @@ void switch_cpuport_setup(a_uint32_t dev_id)
 	#endif
 }
 
+ssdk_dt_scheduler_cfg *ssdk_bootup_shceduler_cfg_get(a_uint32_t dev_id)
+{
+	return &(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->scheduler_cfg);
+}
+
 #ifndef BOARD_AR71XX
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 static void ssdk_dt_parse_mac_mode(ssdk_init_cfg *cfg, struct device_node *switch_node, a_uint32_t dev_id)
