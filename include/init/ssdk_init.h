@@ -81,9 +81,9 @@ extern "C" {
 	typedef sw_error_t
 	(*uniphy_reg_get) (a_uint32_t dev_id, a_uint32_t index, a_uint32_t reg_addr, a_uint8_t *reg_data, a_uint32_t len);
 
-	typedef void (*mii_reg_set)(a_uint32_t reg, a_uint32_t val);
+	typedef void (*mii_reg_set)(a_uint32_t dev_id, a_uint32_t reg, a_uint32_t val);
 
-	typedef a_uint32_t (*mii_reg_get)(a_uint32_t reg);
+	typedef a_uint32_t (*mii_reg_get)(a_uint32_t dev_id, a_uint32_t reg);
 
 enum ssdk_port_wrapper_cfg {
 	PORT_WRAPPER_PSGMII = 0,
@@ -253,7 +253,16 @@ typedef struct
 		ssdk_dt_scheduler_cfg scheduler_cfg;
 		a_uint8_t bm_tick_mode;
 		a_uint8_t tm_tick_mode;
+		a_bool_t ess_switch_flag;
+		a_uint32_t device_id;
+		struct device_node *of_node;
 	} ssdk_dt_cfg;
+
+	typedef struct
+	{
+		a_uint32_t num_devices;
+		ssdk_dt_cfg **ssdk_dt_switch_nodes;
+	} ssdk_dt_global_t;
 
 #if defined ATHENA
 #define def_init_cfg  {.reg_mode = HSL_MDIO, .cpu_mode = HSL_CPU_2};
@@ -362,8 +371,8 @@ ssdk_init(a_uint32_t dev_id, ssdk_init_cfg *cfg);
 sw_error_t
 ssdk_hsl_access_mode_set(a_uint32_t dev_id, hsl_access_mode reg_mode);
 
-a_uint32_t ssdk_dt_global_get_mac_mode(a_uint32_t index);
-a_uint32_t ssdk_dt_global_set_mac_mode(a_uint32_t index, a_uint32_t mode);
+a_uint32_t ssdk_dt_global_get_mac_mode(a_uint32_t dev_id, a_uint32_t index);
+a_uint32_t ssdk_dt_global_set_mac_mode(a_uint32_t dev_id, a_uint32_t index, a_uint32_t mode);
 
 uint32_t
 qca_hppe_gcc_speed_clock1_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr,
@@ -401,7 +410,7 @@ void
 qca_hppe_gcc_mac_port_clock_set(a_uint32_t dev_id, a_uint32_t port_id, a_bool_t enable);
 
 void
-qca_mac_sw_sync_port_status_init(void);
+qca_mac_sw_sync_port_status_init(a_uint32_t dev_id);
 
 #ifdef __cplusplus
 }

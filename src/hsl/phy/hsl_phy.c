@@ -114,11 +114,11 @@ int ssdk_phy_driver_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 	{
 		if (port_bmp[dev_id] & (0x1 << i))
 		{
-			cfg->reg_func.mdio_get(0, phy_address[dev_id][i], 2, &org_id);
-			cfg->reg_func.mdio_get(0, phy_address[dev_id][i], 3, &rev_id);
+			cfg->reg_func.mdio_get(dev_id, phy_address[dev_id][i], 2, &org_id);
+			cfg->reg_func.mdio_get(dev_id, phy_address[dev_id][i], 3, &rev_id);
 			phy_id = (org_id<<16) | rev_id;
-			cfg->reg_func.mdio_get(0, phy_address[dev_id][i], ((1<<30) |(1<<16) |2), &org_id);
-			cfg->reg_func.mdio_get(0, phy_address[dev_id][i], ((1<<30) |(1<<16) |3), &rev_id);
+			cfg->reg_func.mdio_get(dev_id, phy_address[dev_id][i], ((1<<30) |(1<<16) |2), &org_id);
+			cfg->reg_func.mdio_get(dev_id, phy_address[dev_id][i], ((1<<30) |(1<<16) |3), &rev_id);
 			xgphy_id = (org_id<<16) | rev_id;
 
 			if ((phy_id == F1V1_PHY) || (phy_id == F1V2_PHY) ||
@@ -149,27 +149,19 @@ int ssdk_phy_driver_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 	}
 	return 0;
 }
-void qca_ssdk_phy_address_init(void)
+void qca_ssdk_phy_address_init(a_uint32_t dev_id)
 {
-	a_uint32_t i = 0, j = 0;
+	a_uint32_t j = 0;
 
-	for (i = 0; i < SW_MAX_NR_DEV; i ++)
+	for (j = 1; j < SW_MAX_NR_PORT; j ++)
 	{
-		for (j = 1; j < SW_MAX_NR_PORT; j ++)
-		{
-			phy_address[i][j] = j - 1;
-		}
+		phy_address[dev_id][j] = j - 1;
 	}
 	return;
 }
-void qca_ssdk_port_bmp_init(void)
+void qca_ssdk_port_bmp_init(a_uint32_t dev_id)
 {
-	a_uint32_t i = 0;
-
-	for (i = 0; i < SW_MAX_NR_DEV; i ++)
-	{
-		port_bmp[i] = 0x3e;
-	}
+	port_bmp[dev_id] = 0x3e;
 
 	return;
 }

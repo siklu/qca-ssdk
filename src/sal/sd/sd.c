@@ -209,22 +209,22 @@ sd_reg_uniphy_get(a_uint32_t dev_id, a_uint32_t index, a_uint32_t reg_addr,
 }
 
 void
-sd_reg_mii_set(a_uint32_t reg, a_uint32_t val)
+sd_reg_mii_set(a_uint32_t dev_id, a_uint32_t reg, a_uint32_t val)
 {
     if (NULL != ssdk_mii_reg_set)
     {
-        ssdk_mii_reg_set(reg, val);
+        ssdk_mii_reg_set(dev_id, reg, val);
     }
 }
 
 a_uint32_t
-sd_reg_mii_get(a_uint32_t reg)
+sd_reg_mii_get(a_uint32_t dev_id, a_uint32_t reg)
 {
     a_uint32_t value = 0;
 
     if (NULL != ssdk_mii_reg_get)
     {
-        value = ssdk_mii_reg_get(reg);
+        value = ssdk_mii_reg_get(dev_id, reg);
     }
 
     return value;

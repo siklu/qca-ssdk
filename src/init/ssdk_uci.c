@@ -132,7 +132,7 @@ int ssdk_uci_takeover_init()
 	struct switch_dev *sdev = NULL;
 
 	/*only for s27*/
-	if((qca_ar8216_mii_read(0)&0xff00)>>8 != 0x02)
+	if((qca_ar8216_mii_read(0, 0)&0xff00)>>8 != 0x02)
 		return 0;
 
 	memset(&qca_priv, 0, sizeof(qca_priv));
