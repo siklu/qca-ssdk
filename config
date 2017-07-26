@@ -9,6 +9,11 @@ endif
 ifeq ($(KVER),$(filter 4.4%,$(KVER)))
 OS_VER=4_4
 endif
+
+ifeq ($(KVER),$(filter 4.1%,$(KVER)))
+OS_VER=4_1
+endif
+
 ifeq ($(KVER), 3.4.0)
 OS_VER=3_4
 endif
@@ -113,6 +118,9 @@ ifeq ($(ARCH), arm64)
 ifeq ($(KVER),$(filter 4.4%,$(KVER)))
   CPU_CFLAG=  -DMODULE -Os -pipe -march=armv8-a -mcpu=cortex-a53+crypto -fno-caller-saves -fhonour-copts -fno-common -Wno-error=unused-but-set-variable -Wno-error=unused-result -mcmodel=large
 endif
+ifeq ($(KVER),$(filter 4.1%,$(KVER)))
+  CPU_CFLAG=  -DMODULE -Os -pipe -march=armv8-a -mcpu=cortex-a53+crypto -fno-caller-saves -fno-common -Wno-error=unused-but-set-variable -Wno-error=unused-result -mcmodel=large
+endif
 endif
 
 ifeq ($(BOARD_TYPE), ap136)
@@ -129,7 +137,6 @@ endif
 
   #TOOLPREFIX=$(CPU)-$(OS)-
   #CPU_CFLAG=-Wstrict-prototypes -Wundef -fomit-frame-pointer -G 0 -mno-abicalls -Wno-trigraphs -fno-strict-aliasing -fno-common -ffreestanding -O2 -fno-pic -pipe -mabi=32 -march=r4600 -Wa,-32 -Wa,-march=r4600 -Wa,--trap -DMODULE -mlong-calls -DEXPORT_SYMTAB
-
 
 KERNEL_MODE=TRUE
 #compatiable with OpenWRT

@@ -50,7 +50,7 @@
 #ifdef IN_MALIBU_PHY
 #include <malibu_phy.h>
 #endif
-#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,1,0))
 #include <linux/switch.h>
 #include <linux/of.h>
 #include <linux/reset.h>
@@ -2757,7 +2757,9 @@ static int chip_ver_get(ssdk_init_cfg* cfg)
 	int rv = 0;
 	a_uint8_t chip_ver = 0;
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_MDIO)
+	{
 		chip_ver = (qca_ar8216_mii_read(0)&0xff00)>>8;
+	}
 	else {
 		a_uint32_t reg_val = 0;
 		qca_switch_reg_read(0,0,(a_uint8_t *)&reg_val, 4);
