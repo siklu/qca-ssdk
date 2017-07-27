@@ -12,6 +12,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 #include "ref_vsi.h"
+#include "ssdk_init.h"
+#include "ssdk_plat.h"
 
 #define PPE_VSI_MAX FAL_VSI_MAX
 #define PPE_VSI_RESERVE_MAX 5
@@ -78,8 +80,8 @@ static sw_error_t _ppe_vlan_vsi_mapping_add(a_uint32_t dev_id, fal_port_t port_i
 	rv = fal_port_vlan_vsi_set(dev_id, port_id, stag_vid, ctag_vid, vsi_id);
 	if( rv != SW_OK )
 	{
-		printk("%s,%d: port %d svlan %d cvlan %d vsi %d fal_port_vlan_vsi_set fail\n",
-				__FUNCTION__, __LINE__, port_id, stag_vid, ctag_vid, vsi_id);
+		SSDK_ERROR("port %d svlan %d cvlan %d vsi %d set fail, rv = %d\n",
+				port_id, stag_vid, ctag_vid, vsi_id, rv);
 		return rv;
 	}
 	rv = _ppe_vsi_member_update(dev_id, vsi_id, port_id, PPE_VSI_ADD);
@@ -103,13 +105,13 @@ static sw_error_t _ppe_vlan_vsi_mapping_add(a_uint32_t dev_id, fal_port_t port_i
 
 	if(p_vsi_info == NULL)/*create a new entry if no match*/
 	{
-		/*printk("%s,%d: port %d svlan %d cvlan %d vsi %d aos_mem_alloc\n",
-				__FUNCTION__, __LINE__, port_id, stag_vid, ctag_vid, vsi_id);*/
+		SSDK_DEBUG("port %d svlan %d cvlan %d vsi %d create new entry\n",
+				port_id, stag_vid, ctag_vid, vsi_id);
 		p_vsi_info = aos_mem_alloc(sizeof(ref_vlan_info_t));
 		if(p_vsi_info == NULL)
 		{
-			printk("%s,%d: port %d svlan %d cvlan %d vsi %d aos_mem_alloc fail\n",
-					__FUNCTION__, __LINE__, port_id, stag_vid, ctag_vid, vsi_id);
+			SSDK_ERROR("port %d svlan %d cvlan %d vsi %d aos_mem_alloc fail\n",
+					port_id, stag_vid, ctag_vid, vsi_id);
 			return SW_NO_RESOURCE;
 		}
 		p_vsi_info->vport_bitmap = 1 << port_id;
@@ -133,8 +135,8 @@ static sw_error_t _ppe_vlan_vsi_mapping_del(a_uint32_t dev_id, fal_port_t port_i
 	rv = fal_port_vlan_vsi_set(dev_id, port_id, stag_vid, ctag_vid, PPE_VSI_INVALID);
 	if( rv != SW_OK )
 	{
-		printk("%s,%d: port %d svlan %d cvlan %d vsi %d fal_port_vlan_vsi_set fail\n",
-				__FUNCTION__, __LINE__, port_id, stag_vid, ctag_vid, vsi_id);
+		SSDK_ERROR("port %d svlan %d cvlan %d vsi %d set fail, rv = %d\n",
+				port_id, stag_vid, ctag_vid, vsi_id, rv);
 		return rv;
 	}
 
@@ -180,8 +182,8 @@ static sw_error_t _ppe_vlan_vsi_mapping_del(a_uint32_t dev_id, fal_port_t port_i
 		rv = _ppe_vsi_member_update(dev_id, vsi_id, port_id, PPE_VSI_DEL);
 		if( rv != SW_OK )
 		{
-			printk("%s,%d: port %d svlan %d cvlan %d vsi %d _ref_vsi_member_update fail\n",
-					__FUNCTION__, __LINE__, port_id, stag_vid, ctag_vid, vsi_id);
+			SSDK_ERROR("port %d svlan %d cvlan %d vsi %d fail, rv = %d\n",
+					port_id, stag_vid, ctag_vid, vsi_id, rv);
 			return rv;
 		}
 	}
@@ -199,11 +201,9 @@ static sw_error_t _ppe_port_vsi_mapping_update(a_uint32_t dev_id,
 
 	if(ref_vsi_mapping[dev_id][vsi_id].valid == 0)
 	{
-		printk("%s,%d: port %d vsi %d entry not found\n",
-				__FUNCTION__, __LINE__, port_id, vsi_id);
+		SSDK_ERROR("port %d vsi %d entry not found\n", port_id, vsi_id);
 		return SW_NOT_FOUND;
 	}
-	//printk("%s, %d: port %d, vsi %d\n", __FUNCTION__, __LINE__, port_id, vsi_id);
 
 	/*check port previous vsi*/
 	for( i = 0; i <= PPE_VSI_MAX; i++ )
@@ -218,7 +218,7 @@ static sw_error_t _ppe_port_vsi_mapping_update(a_uint32_t dev_id,
 			p_vsi->pport_bitmap &= (~(1<<port_id));
 		}
 	}
-	//printk("%s, %d: port %d, vsi %d\n", __FUNCTION__, __LINE__, port_id, vsi_id);
+	SSDK_DEBUG("port %d, vsi %d set\n", port_id, vsi_id);
 
 	/*port based vsi update*/
 	rv = _ppe_vsi_member_update(dev_id, vsi_id, port_id, PPE_VSI_ADD);
@@ -239,14 +239,14 @@ ppe_port_vlan_vsi_set(a_uint32_t dev_id, fal_port_t port_id,
 
 	REF_DEV_ID_CHECK(dev_id);
 
-	/*printk("%s,%d: port %d svlan %d cvlan %d vsi %d \n",
-			__FUNCTION__, __LINE__, port_id, stag_vid, ctag_vid, vsi_id);*/
+	SSDK_DEBUG("port %d svlan %d cvlan %d vsi %d \n", 
+			port_id, stag_vid, ctag_vid, vsi_id);
 
 	if((vsi_id != PPE_VSI_INVALID) &&
 		(ref_vsi_mapping[dev_id][vsi_id].valid == 0))
 	{
-		printk("%s,%d: port %d svlan %d cvlan %d vsi %d entry not found\n",
-				__FUNCTION__, __LINE__, port_id, stag_vid, ctag_vid, vsi_id);
+		SSDK_ERROR("port %d svlan %d cvlan %d vsi %d entry not found\n",
+				port_id, stag_vid, ctag_vid, vsi_id);
 		return SW_NOT_FOUND;
 	}
 
@@ -256,8 +256,8 @@ ppe_port_vlan_vsi_set(a_uint32_t dev_id, fal_port_t port_id,
 
 	if(PPE_VSI_INVALID == vsi_id || cur_vsi != PPE_VSI_INVALID)
 	{
-		/*printk("%s,%d: port %d svlan %d cvlan %d vsi %d del\n",
-				__FUNCTION__, __LINE__, port_id, stag_vid, ctag_vid, cur_vsi);*/
+		SSDK_DEBUG("Deleting port %d svlan %d cvlan %d vsi %d\n",
+				port_id, stag_vid, ctag_vid, cur_vsi);
 		rv = _ppe_vlan_vsi_mapping_del(dev_id, port_id, stag_vid, ctag_vid, cur_vsi);
 		if( rv != SW_OK )
 			return rv;
@@ -265,8 +265,8 @@ ppe_port_vlan_vsi_set(a_uint32_t dev_id, fal_port_t port_id,
 
 	if(PPE_VSI_INVALID != vsi_id)
 	{
-		/*printk("%s,%d: port %d svlan %d cvlan %d vsi %d add\n",
-			__FUNCTION__, __LINE__, port_id, stag_vid, ctag_vid, vsi_id);*/
+		SSDK_DEBUG("Adding port %d svlan %d cvlan %d vsi %d\n",
+				port_id, stag_vid, ctag_vid, vsi_id);
 
 		rv = _ppe_vlan_vsi_mapping_add(dev_id, port_id, stag_vid, ctag_vid, vsi_id);
 	}
@@ -279,6 +279,8 @@ sw_error_t ppe_port_vlan_vsi_get(a_uint32_t dev_id, fal_port_t port_id,
 {
 	ref_vlan_info_t *p_vsi_info = NULL;
 	a_uint32_t i = 0;
+
+	SSDK_DEBUG("Getting port %d svlan %d cvlan %d\n", port_id, stag_vid, ctag_vid);
 
 	REF_DEV_ID_CHECK(dev_id);
 	REF_NULL_POINT_CHECK(vsi_id);
@@ -293,6 +295,8 @@ sw_error_t ppe_port_vlan_vsi_get(a_uint32_t dev_id, fal_port_t port_id,
 				(stag_vid== p_vsi_info->stag_vid))
 			{
 				*vsi_id = i;
+				SSDK_DEBUG("Returned port %d svlan %d cvlan %d vsi %d\n",
+						port_id, stag_vid, ctag_vid, *vsi_id);
 				return SW_OK;
 			}
 			p_vsi_info = p_vsi_info->pNext;
@@ -311,20 +315,16 @@ ppe_port_vsi_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vsi_id)
 	sw_error_t rv = SW_OK;
 
 	REF_DEV_ID_CHECK(dev_id);
-	/*printk("%s, %d: port %d, vsi %d\n", __FUNCTION__, __LINE__, port_id, vsi_id);*/
+	SSDK_DEBUG("port %d, vsi %d\n", port_id, vsi_id);
 	if(!(FAL_IS_PPORT(port_id)) && !(FAL_IS_VPORT(port_id)))
 		return SW_BAD_VALUE;
 
 	if(vsi_id > PPE_VSI_MAX){
-		printk("%s, %d: invalid VSI port %d, vsi %d\n",
-				__FUNCTION__, __LINE__, port_id, vsi_id);
+		SSDK_ERROR("invalid VSI port %d, vsi %d\n", port_id, vsi_id);
 		return SW_BAD_VALUE;
 	}
 
-	/*printk("%s, %d: port %d, vsi %d\n", __FUNCTION__, __LINE__, port_id, vsi_id);*/
-
-	if(FAL_IS_PPORT(port_id))
-	{
+	if(FAL_IS_PPORT(port_id)){
 		rv = _ppe_port_vsi_mapping_update(dev_id, FAL_PORT_ID_VALUE(port_id), vsi_id);
 		if( rv != SW_OK )
 			return rv;
@@ -344,11 +344,12 @@ ppe_port_vsi_get(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t *vsi_id)
 				(ref_vsi_mapping[dev_id][i].pport_bitmap & (1 << port_id)))
 			{
 				*vsi_id = i;
+				SSDK_DEBUG("returned port %d, vsi %d\n", port_id, *vsi_id);
 				return SW_OK;
 			}
 		}
 	}
-
+	SSDK_ERROR("VSI is not configured on port %d\n", port_id);
 	return SW_NOT_FOUND;
 }
 
@@ -358,7 +359,7 @@ sw_error_t ppe_vsi_alloc(a_uint32_t dev_id, a_uint32_t *vsi)
 
 	REF_DEV_ID_CHECK(dev_id);
 	REF_NULL_POINT_CHECK(vsi);
-	/*printk("%s, %d: requesting vsi\n", __FUNCTION__, __LINE__);*/
+	SSDK_DEBUG("requesting vsi\n");
 
 	for( vsi_id = PPE_VSI_RESERVE_MAX+1; vsi_id < PPE_VSI_MAX; vsi_id++ )
 	{
@@ -377,7 +378,7 @@ sw_error_t ppe_vsi_alloc(a_uint32_t dev_id, a_uint32_t *vsi)
 			stamove.stamove_en = 1;
 			stamove.action = 0;
 			fal_vsi_stamove_set(dev_id, vsi_id, &stamove);
-			/*printk("%s, %d: vsi %d allocated\n", __FUNCTION__, __LINE__, *vsi);*/
+			SSDK_DEBUG("vsi %d allocated\n", *vsi);
 			return SW_OK;
 		}
 	}
@@ -393,22 +394,20 @@ sw_error_t ppe_vsi_free(a_uint32_t dev_id, a_uint32_t vsi_id)
 	if( vsi_id <= PPE_VSI_RESERVE_MAX || vsi_id > PPE_VSI_MAX )
 		return SW_OUT_OF_RANGE;
 
-	/*TODO: free vlan and port bitmap*/
 	p_vsi_info = ref_vsi_mapping[dev_id][vsi_id].pHead;
 	while(p_vsi_info != NULL)
 	{
 		ref_vlan_info_t *ptemp = p_vsi_info;
 		p_vsi_info = p_vsi_info->pNext;
-		/*printk("%s,%d: port 0x%x svlan %d cvlan %d, vsi %d free vsi info\n",
-				__FUNCTION__, __LINE__, ptemp->vport_bitmap,
-				ptemp->stag_vid, ptemp->ctag_vid, vsi_id);*/
+		SSDK_DEBUG("port 0x%x svlan %d cvlan %d, vsi %d free vsi info\n",
+				ptemp->vport_bitmap, ptemp->stag_vid, ptemp->ctag_vid, vsi_id);
 		aos_mem_free(ptemp);
 	}
 	ref_vsi_mapping[dev_id][vsi_id].valid = 0;
 	ref_vsi_mapping[dev_id][vsi_id].pHead = NULL;
 	ref_vsi_mapping[dev_id][vsi_id].pport_bitmap = 0;
 
-	/*printk("%s, %d: vsi %d released\n", __FUNCTION__, __LINE__, vsi_id);*/
+	SSDK_DEBUG("vsi %d released\n", vsi_id);
 
 	return SW_OK;
 }
