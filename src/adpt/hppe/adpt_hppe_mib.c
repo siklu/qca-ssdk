@@ -458,7 +458,7 @@ adpt_hppe_get_xgmib_info(a_uint32_t dev_id, fal_port_t port_id,
 
 	data_low = 0;
 	hppe_rx_runt_error_frames_get(dev_id, port_id, (union rx_runt_error_frames_u  *)&data_low);
-	mib_info->RxRunt =   data_low;
+	mib_info->RxRuntErr  =   data_low;
 
 	data_low = 0;
 	hppe_rx_jabber_error_frames_get(dev_id, port_id, (union rx_jabber_error_frames_u  *)&data_low);
@@ -727,7 +727,7 @@ adpt_hppe_get_rx_xgmib_info(a_uint32_t dev_id, fal_port_t port_id,
 
 	data_low = 0;
 	hppe_rx_runt_error_frames_get(dev_id, port_id, (union rx_runt_error_frames_u  *)&data_low);
-	mib_info->RxRunt = data_low;
+	mib_info->RxRuntErr = data_low;
 
 	data_low = 0;
 	hppe_rx_jabber_error_frames_get(dev_id, port_id, (union rx_jabber_error_frames_u  *)&data_low);

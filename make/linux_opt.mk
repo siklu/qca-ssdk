@@ -218,7 +218,7 @@ MODULE_INC += -I$(PRJ_PATH)/include \
                    -I$(PRJ_PATH)/include/common \
                    -I$(PRJ_PATH)/include/api \
                    -I$(PRJ_PATH)/include/fal \
-		   -I$(PRJ_PATH)/include/ref \
+                   -I$(PRJ_PATH)/include/ref \
                    -I$(PRJ_PATH)/include/adpt \
                    -I$(PRJ_PATH)/include/hsl \
                    -I$(PRJ_PATH)/include/hsl/phy \

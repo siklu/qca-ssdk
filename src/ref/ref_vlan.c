@@ -279,6 +279,10 @@ qca_ar8327_sw_hw_apply(struct switch_dev *dev)
     fal_pbmp_t portmask[AR8327_NUM_PORTS];
     int i, j;
 
+    if (priv->version == QCA_VER_HPPE) {
+        return 0;
+    }
+
     mutex_lock(&priv->reg_mutex);
 
     memset(portmask, 0, sizeof(portmask));

@@ -56,6 +56,8 @@
 #define INTERRUPT_ENABLE_REGISTER  0X12
 #define INTERRUPT_STATUS_REGISTER 0X13
 
+extern void qca_ar8327_sw_mac_polling_task(struct qca_phy_priv *priv);
+
 static int qca_phy_disable_intr(struct qca_phy_priv *priv)
 {
 	a_uint32_t  phy_number = 0;
@@ -152,11 +154,7 @@ qca_link_change_task(struct qca_phy_priv *priv)
 {
 	SSDK_DEBUG("qca_link_change_task is running\n");
 	mutex_lock(&priv->qm_lock);
-#if defined(IN_SWCONFIG)
-	qca_ar8327_sw_mac_polling_task(&priv->sw_dev);
-#else
 	qca_ar8327_sw_mac_polling_task(priv);
-#endif
 	mutex_unlock(&priv->qm_lock);
 }
 
@@ -196,12 +194,16 @@ qca_intr_workqueue_task(struct work_struct *work)
 
  int qca_intr_init(struct qca_phy_priv *priv)
 {
+	#define SWITCH_DEVNAME "switch%d"
+	char devname[IFNAMSIZ];
+	snprintf(devname, IFNAMSIZ, SWITCH_DEVNAME, priv->device_id);
+
 	SSDK_DEBUG("start to  init the interrupt!\n");
 	mutex_init(&priv->qm_lock);
 	INIT_WORK(&priv->intr_workqueue, qca_intr_workqueue_task);
 	qca_phy_disable_intr(priv);
 	qca_mac_disable_intr(priv);
-	if(request_irq(priv->link_interrupt_no, qca_link_intr_handle, priv->interrupt_flag, priv->devname, priv))
+	if(request_irq(priv->link_interrupt_no, qca_link_intr_handle, priv->interrupt_flag, devname, priv))
 		return -1;
 	qca_phy_enable_intr(priv);
 	qca_mac_enable_intr(priv);

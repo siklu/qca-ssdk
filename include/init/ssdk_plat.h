@@ -169,22 +169,6 @@ enum {
     AR8327_PORT_SPEED_NONE = 3,
 };
 
-enum qca_port_speed {
-	QCA_SWITCH_PORT_SPEED_UNKNOWN = 0,
-	QCA_SWITCH_PORT_SPEED_10 = 10,
-	QCA_SWITCH_PORT_SPEED_100 = 100,
-	QCA_SWITCH_PORT_SPEED_1000 = 1000,
-};
-
-struct qca_port_link {
-	bool link;
-	bool aneg;
-	bool duplex;
-	bool rx_flow;
-	bool tx_flow;
-	enum qca_port_speed speed;
-};
-
 enum {
 	QCA_VER_AR8216 = 0x01,
 	QCA_VER_AR8227 = 0x02,
@@ -257,17 +241,15 @@ struct qca_phy_priv {
                             a_uint32_t reg, a_uint16_t data);
     sw_error_t (*phy_read)(a_uint32_t dev_id, a_uint32_t phy_addr,
                            a_uint32_t reg, a_uint16_t* data);
+
 	bool init;
 	a_bool_t qca_ssdk_sw_dev_registered;
 	a_bool_t ess_switch_flag;
-	const char *name;
-	char devname[IFNAMSIZ];
 	struct mutex reg_mutex;
 	struct mutex mib_lock;
 	struct delayed_work mib_dwork;
 	/*qm_err_check*/
 	struct mutex 	qm_lock;
-	struct delayed_work qm_dwork;
 	a_uint32_t port_link_down[AR8327_NUM_PORTS];
 	a_uint32_t port_link_up[AR8327_NUM_PORTS];
 	a_uint32_t port_old_link[AR8327_NUM_PORTS];

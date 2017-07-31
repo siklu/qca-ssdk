@@ -1517,10 +1517,17 @@ adpt_hppe_port_max_frame_size_get(a_uint32_t dev_id, fal_port_t port_id,
 
 	port_mac_type =qca_hppe_port_mac_type_get(dev_id, port_id);
 	if (port_mac_type == PORT_XGMAC_TYPE)
+	{
 		rv = _adpt_xgmac_port_max_frame_size_get( dev_id, port_id, max_frame);
+	}
 	else if (port_mac_type == PORT_GMAC_TYPE)
+	{
 		rv = _adpt_gmac_port_max_frame_size_get( dev_id, port_id, max_frame);
+	}
+	else
+	{
 		return SW_BAD_VALUE;
+	}
 
 	return rv;
 }
@@ -3002,31 +3009,10 @@ adpt_hppe_port_phy_status_get(a_uint32_t dev_id, a_uint32_t port_id,
 	mode1 = ssdk_dt_global_get_mac_mode(dev_id, HPPE_UNIPHY_INSTANCE1);
 	mode2 = ssdk_dt_global_get_mac_mode(dev_id, HPPE_UNIPHY_INSTANCE2);
 
-	if (((port_id == HPPE_MUX_PORT1) && (mode1 == PORT_WRAPPER_10GBASE_R))
-				|| ((port_id == HPPE_MUX_PORT2) &&
-				(mode2 == PORT_WRAPPER_10GBASE_R)))
-	{
-		phy_status->tx_flowctrl = 1;
-		phy_status->rx_flowctrl = 1;
-		phy_status->speed = FAL_SPEED_10000;
-		phy_status->duplex = FAL_FULL_DUPLEX;
-		phy_status->link_status = PORT_LINK_UP;
-		return rv;
-	}
-	if (((port_id == HPPE_MUX_PORT1) && (mode1 == PORT_WRAPPER_SGMII_PLUS))
-				|| ((port_id == HPPE_MUX_PORT2) &&
-				(mode2 == PORT_WRAPPER_SGMII_PLUS)))
-	{
-		phy_status->tx_flowctrl = 1;
-		phy_status->rx_flowctrl = 1;
-		phy_status->speed = FAL_SPEED_2500;
-		phy_status->duplex = FAL_FULL_DUPLEX;
-		phy_status->link_status = PORT_LINK_UP;
-		return rv;
-	}
-
-	if (((port_id == HPPE_MUX_PORT1) && (mode1 == PORT_WRAPPER_USXGMII)) ||
-		((port_id == HPPE_MUX_PORT2) && (mode2 == PORT_WRAPPER_USXGMII)))
+	if (((port_id == HPPE_MUX_PORT1) && ((mode1 == PORT_WRAPPER_USXGMII) ||
+				(mode1 == PORT_WRAPPER_SGMII_PLUS))) ||
+		((port_id == HPPE_MUX_PORT2) && ((mode2 == PORT_WRAPPER_USXGMII) ||
+				(mode2 == PORT_WRAPPER_SGMII_PLUS))))
 	{
 		rv = _adpt_hppe_port_xgphy_status_get(dev_id, port_id, phy_status);
 		return rv;
@@ -3592,11 +3578,13 @@ qca_hppe_mac_sw_sync_task(struct qca_phy_priv *priv)
 			continue;
 
 		adpt_hppe_port_phy_status_get(priv->device_id, port_id, &phy_status);
-
+		SSDK_DEBUG("polling task external phy %d link status is %d and speed is %d\n",
+				port_id, phy_status.link_status, phy_status.speed);
 		/* link status from up to down */
 		if ((phy_status.link_status == PORT_LINK_DOWN) &&
 			(priv->port_old_link[port_id - 1] == PORT_LINK_UP))
 		{
+			SSDK_DEBUG("Port %d change to link down status\n", port_id);
 			/* first check uniphy auto-neg complete interrupt to usxgmii */
 			adpt_hppe_uniphy_autoneg_status_check(priv->device_id, port_id);
 			/* disable mac */
@@ -3611,6 +3599,7 @@ qca_hppe_mac_sw_sync_task(struct qca_phy_priv *priv)
 		if ((phy_status.link_status == PORT_LINK_UP) &&
 			(priv->port_old_link[port_id - 1] == PORT_LINK_DOWN))
 		{
+			SSDK_DEBUG("Port %d change to link up status\n", port_id);
 			status = adpt_hppe_port_phy_status_change(priv, port_id, phy_status);
 			if (status == A_TRUE)
 			{
@@ -3627,22 +3616,34 @@ qca_hppe_mac_sw_sync_task(struct qca_phy_priv *priv)
 					/* config mac speed */
 					adpt_hppe_port_mac_speed_set(priv->device_id, port_id, phy_status.speed);
 					priv->port_old_speed[port_id - 1] = (a_uint32_t)phy_status.speed;
+
+					SSDK_DEBUG("Port %d is link up and speed change to %d\n", port_id,
+								priv->port_old_speed[port_id - 1]);
 				}
 				if ((a_uint32_t)phy_status.duplex != priv->port_old_duplex[port_id - 1])
 				{
 					adpt_hppe_uniphy_duplex_set(priv->device_id, port_id, phy_status.duplex);
 					adpt_hppe_port_mac_duplex_set(priv->device_id, port_id, phy_status.duplex);
 					priv->port_old_duplex[port_id - 1] = (a_uint32_t)phy_status.duplex;
+
+					SSDK_DEBUG("Port %d is link up and duplex change to %d\n", port_id,
+								priv->port_old_duplex[port_id - 1]);
 				}
 				if (phy_status.tx_flowctrl != priv->port_old_tx_flowctrl[port_id - 1])
 				{
 					adpt_hppe_port_rxfc_status_set(priv->device_id, port_id, (a_bool_t)phy_status.tx_flowctrl);
 					priv->port_old_tx_flowctrl[port_id - 1] = phy_status.tx_flowctrl;
+
+					SSDK_DEBUG("Port %d is link up and rx flowctrl change to %d\n", port_id,
+								priv->port_old_tx_flowctrl[port_id - 1]);
 				}
 				if (phy_status.rx_flowctrl != priv->port_old_rx_flowctrl[port_id - 1])
 				{
 					adpt_hppe_port_txfc_status_set(priv->device_id, port_id, (a_bool_t)phy_status.rx_flowctrl);
 					priv->port_old_rx_flowctrl[port_id - 1] = phy_status.rx_flowctrl;
+
+					SSDK_DEBUG("Port %d is link up and tx flowctrl change to %d\n", port_id,
+								priv->port_old_rx_flowctrl[port_id - 1]);
 				}
 				adpt_hppe_gcc_mac_clock_status_set(priv->device_id, port_id, A_TRUE);
 				adpt_hppe_gcc_uniphy_clock_status_set(priv->device_id, port_id, A_TRUE);
@@ -3654,6 +3655,8 @@ qca_hppe_mac_sw_sync_task(struct qca_phy_priv *priv)
 			adpt_hppe_port_rxmac_status_set(priv->device_id, port_id, A_TRUE);
 			priv->port_old_link[port_id - 1] = phy_status.link_status;
 		}
+		SSDK_DEBUG("polling task PPE port %d link status is %d and speed is %d\n",
+				port_id, priv->port_old_link[port_id - 1], priv->port_old_speed[port_id - 1]);
 	}
 	return 0;
 }

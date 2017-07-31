@@ -5,6 +5,7 @@ include $(PRJ_PATH)/make/config.mk
 
 SRC_LIST_TMP=$(wildcard *.c)
 SRC_SW_LIST=ref_misc.c ref_uci.c
+
 ifeq (FALSE, $(SWCONFIG))
 	SRC_LIST=$(filter-out $(SRC_SW_LIST), $(SRC_LIST_TMP))
 else

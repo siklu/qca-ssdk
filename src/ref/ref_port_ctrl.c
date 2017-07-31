@@ -509,13 +509,8 @@ int ssdk_port_link_notify_unregister(struct notifier_block *nb)
 EXPORT_SYMBOL(ssdk_port_link_notify_unregister);
 
 
-#if defined(IN_SWCONFIG)
-void
-qca_ar8327_sw_mac_polling_task(struct switch_dev *dev)
-#else
 void
 qca_ar8327_sw_mac_polling_task(struct qca_phy_priv *priv)
-#endif
 {
 	static int task_count = 0;
 	a_uint32_t i, dev_id = 0;
@@ -527,9 +522,6 @@ qca_ar8327_sw_mac_polling_task(struct qca_phy_priv *priv)
 
 	static a_uint32_t link_cnt[AR8327_NUM_PORTS] = {0,0,0,0,0,0,0};
 
-#if defined(IN_SWCONFIG)
-	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
-#endif
 	dev_id = priv->device_id;
 
 	/*Only valid for S17c chip*/
@@ -669,20 +661,12 @@ qca_ar8327_sw_mac_polling_task(struct qca_phy_priv *priv)
 	return ;
 }
 
-#if defined(IN_SWCONFIG)
-void
-dess_rgmii_sw_mac_polling_task(struct switch_dev *dev)
-#else
 void
 dess_rgmii_sw_mac_polling_task(struct qca_phy_priv *priv)
-#endif
 {
 	a_uint32_t mac_mode;
 	a_uint16_t phy_spec_status, phy_link_status;
 	a_uint32_t speed, duplex;
-#if defined(IN_SWCONFIG)
-	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
-#endif
 
 	mac_mode = ssdk_dt_global_get_mac_mode(priv->device_id, 0);
 

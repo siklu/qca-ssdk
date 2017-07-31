@@ -144,7 +144,7 @@ static int qca_ar8327_sw_print_xgport_mib(struct switch_dev *dev,
 	"%-18s: %llu\n", "RxFcsErr", xgmib_info.RxFcsErr);
 
 	len += snprintf(buf + len, sizeof(priv->buf) - len,
-	"%-18s: %llu\n", "RxRunt", xgmib_info.RxRunt);
+	"%-18s: %llu\n", "RxRuntErr", xgmib_info.RxRuntErr );
 
 	len += snprintf(buf + len, sizeof(priv->buf) - len,
 	"%-18s: %llu\n", "RxJabberError", xgmib_info.RxJabberError);
@@ -498,18 +498,10 @@ _qca_ar8327_sw_capture_port_rx_counter(struct qca_phy_priv *priv, int port)
     return 0;
 }
 
-#if defined(IN_SWCONFIG)
-void
-qca_ar8327_sw_mib_task(struct switch_dev *dev)
-#else
 void
 qca_ar8327_sw_mib_task(struct qca_phy_priv *priv)
-#endif
 {
 	static int loop = 0;
-#if defined(IN_SWCONFIG)
-	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
-#endif
 
 	mutex_lock(&priv->reg_mutex);
 	if ((loop % 2) == 0)

@@ -103,15 +103,6 @@ extern "C" {
 
 #define FAL_NEXT_ENTRY_FIRST_ID 0xffffffff
 
-    typedef struct
-    {
-        a_uint32_t     counter_id;
-        a_uint32_t     ingress_packet;
-        a_uint32_t     ingress_byte;
-        a_uint32_t     egress_packet;
-        a_uint32_t     egress_byte;
-    } fal_counter_entry_t;
-
 	typedef struct{
 		a_uint32_t reg_count;
 		a_uint32_t reg_base;
