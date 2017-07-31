@@ -22,6 +22,7 @@
 #include "hppe_uniphy.h"
 #include "hppe_init.h"
 #include "ssdk_init.h"
+#include "ssdk_clk.h"
 #include "adpt.h"
 #include "hppe_reg_access.h"
 
@@ -158,7 +159,7 @@ __adpt_hppe_uniphy_usxgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	msleep(500);
 
 	/* disable instance clock */
-	qca_hppe_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
+	qca_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
 			1, A_FALSE);
 
 	/* keep xpcs to reset status */
@@ -182,7 +183,7 @@ __adpt_hppe_uniphy_usxgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	rv = __adpt_hppe_uniphy_calibration(dev_id, uniphy_index);
 
 	/* enable instance clock */
-	qca_hppe_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
+	qca_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
 			1, A_TRUE);
 
 	/* release xpcs reset status */
@@ -232,7 +233,7 @@ __adpt_hppe_uniphy_10g_r_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	__adpt_hppe_gcc_uniphy_xpcs_reset(dev_id, uniphy_index, A_TRUE);
 
 	/* disable instance clock */
-	qca_hppe_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
+	qca_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
 				1, A_FALSE);
 
 	/* configure uniphy to 10g_r mode */
@@ -260,7 +261,7 @@ __adpt_hppe_uniphy_10g_r_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	adpt_hppe_gcc_port_speed_clock_set(dev_id, port_id, FAL_SPEED_10000);
 
 	/* enable instance clock */
-	qca_hppe_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
+	qca_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
 			1, A_TRUE);
 
 	/* release xpcs reset status */
@@ -293,7 +294,7 @@ __adpt_hppe_uniphy_sgmiiplus_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index
 	__adpt_hppe_gcc_uniphy_xpcs_reset(dev_id, uniphy_index, A_TRUE);
 
 	/* disable instance clock */
-	qca_hppe_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
+	qca_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
 				1, A_FALSE);
 
 	/* configure uniphy to Athr mode and sgmiiplus mode */
@@ -315,7 +316,7 @@ __adpt_hppe_uniphy_sgmiiplus_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index
 	rv = __adpt_hppe_uniphy_calibration(dev_id, uniphy_index);
 
 	/* enable instance clock */
-	qca_hppe_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
+	qca_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
 				1, A_TRUE);
 	return rv;
 }
@@ -353,7 +354,7 @@ __adpt_hppe_uniphy_sgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index, a_
 
 	for (i = 1; i <= max_port; i++)
 	{
-		qca_hppe_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
+		qca_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
 			i, A_FALSE);
 	}
 
@@ -396,6 +397,18 @@ __adpt_hppe_uniphy_sgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index, a_
 	/* wait uniphy calibration done */
 	rv = __adpt_hppe_uniphy_calibration(dev_id, uniphy_index);
 
+	/* enable instance clock */
+	if (uniphy_index == HPPE_UNIPHY_INSTANCE0)
+		max_port = 5;
+	else
+		max_port = 1;
+
+	for (i = 1; i <= max_port; i++)
+	{
+		qca_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
+			i, A_TRUE);
+	}
+
 	return rv;
 }
 
@@ -425,7 +438,7 @@ __adpt_hppe_uniphy_qsgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	/* disable instance0 clock */
 	for (i = 1; i < 6; i++)
 	{
-		qca_hppe_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
+		qca_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
 			i, A_FALSE);
 	}
 
@@ -444,6 +457,13 @@ __adpt_hppe_uniphy_qsgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 
 	/* wait uniphy calibration done */
 	rv = __adpt_hppe_uniphy_calibration(dev_id, uniphy_index);
+
+	/* enable instance0 clock */
+	for (i = 1; i < 6; i++)
+	{
+		qca_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
+			i, A_TRUE);
+	}
 
 	return rv;
 }
@@ -465,7 +485,7 @@ __adpt_hppe_uniphy_psgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	/* disable instance0 clock */
 	for (i = 1; i < 6; i++)
 	{
-		qca_hppe_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
+		qca_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
 			i, A_FALSE);
 	}
 
@@ -485,6 +505,13 @@ __adpt_hppe_uniphy_psgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	/* wait uniphy calibration done */
 	rv = __adpt_hppe_uniphy_calibration(dev_id, uniphy_index);
 
+	/* enable instance0 clock */
+	for (i = 1; i < 6; i++)
+	{
+		qca_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
+			i, A_TRUE);
+	}
+
 	return rv;
 }
 
@@ -492,6 +519,7 @@ sw_error_t
 adpt_hppe_uniphy_mode_set(a_uint32_t dev_id, a_uint32_t index, a_uint32_t mode)
 {
 	sw_error_t rv = SW_OK;
+	a_uint32_t clock = UNIPHY_CLK_RATE_125M;
 
 	if (mode == PORT_WRAPPER_MAX)
 		return SW_OK;
@@ -522,18 +550,25 @@ adpt_hppe_uniphy_mode_set(a_uint32_t dev_id, a_uint32_t index, a_uint32_t mode)
 
 		case PORT_WRAPPER_SGMII_PLUS:
 			rv = __adpt_hppe_uniphy_sgmiiplus_mode_set(dev_id, index);
+			clock = UNIPHY_CLK_RATE_312M;
 			break;
 
 		case PORT_WRAPPER_10GBASE_R:
 			rv = __adpt_hppe_uniphy_10g_r_mode_set(dev_id, index);
+			clock = UNIPHY_CLK_RATE_312M;
 			break;
 
 		case PORT_WRAPPER_USXGMII:
 			rv = __adpt_hppe_uniphy_usxgmii_mode_set(dev_id, index);
+			clock = UNIPHY_CLK_RATE_312M;
 			break;
 
 		default:
-			break;
+			rv = SW_FAIL;
+	}
+	if (SW_OK == rv) {
+		ssdk_uniphy_raw_clock_set(index, UNIPHY_RX, clock);
+		ssdk_uniphy_raw_clock_set(index, UNIPHY_TX, clock);
 	}
 	return rv;
 }

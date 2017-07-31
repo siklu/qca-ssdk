@@ -78,6 +78,7 @@
 #include <drivers/net/ethernet/atheros/ag71xx/ag71xx.h>
 #endif
 #include "ssdk_plat.h"
+#include "ssdk_clk.h"
 #include "ref_vlan.h"
 #include "ref_fdb.h"
 #include "ref_mib.h"
@@ -143,7 +144,6 @@ ssdk_dt_global_t ssdk_dt_global = {0};
 void __iomem *gcc_uniphy_base = NULL;
 void __iomem *gcc_hppe_clock_config1_base = NULL;
 void __iomem *gcc_hppe_clock_config2_base = NULL;
-void __iomem *gcc_hppe_clock_config3_base = NULL;
 struct qca_phy_priv **qca_phy_priv_global;
 
 a_uint32_t ssdk_dt_global_get_mac_mode(a_uint32_t dev_id, a_uint32_t index)
@@ -2573,6 +2573,7 @@ static int ssdk_dt_parse(ssdk_init_cfg *cfg, a_uint32_t num, a_uint32_t *dev_id)
 	ssdk_dt_priv->ess_clk = of_clk_get_by_name(switch_node, "ess_clk");
 	if (IS_ERR(ssdk_dt_priv->ess_clk))
 		SSDK_INFO("ess_clk doesn't exist!\n");
+	ssdk_dt_priv->cmnblk_clk = of_clk_get_by_name(switch_node, "cmn_ahb_clk");
 
 	SSDK_INFO("switch_access_mode: %s\n", ssdk_dt_priv->reg_access_mode);
 	if(!strcmp(ssdk_dt_priv->reg_access_mode, "local bus"))
@@ -3881,85 +3882,6 @@ qca_hppe_qos_scheduler_hw_init(a_uint32_t dev_id)
 }
 
 #ifdef HAWKEYE_CHIP
-void __iomem *gcc_ppeclock_base = NULL;
-void __iomem *gcc_pll_base = NULL;
-static int
-qca_hppe_gcc_clock_init(void)
-{
-	a_uint32_t reg_val, i;
-
-	gcc_ppeclock_base = ioremap_nocache(0x01868000, 0x500);
-	if (!gcc_ppeclock_base) {
-		SSDK_ERROR("can't map gcc ppe clock address!\n");
-		return -1;
-	}
-	gcc_pll_base = ioremap_nocache(0x0009B780, 0x100);
-	if (!gcc_pll_base) {
-		SSDK_ERROR("can't map gcc ppe pll address!\n");
-		return -1;
-	}
-	reg_val = readl(gcc_pll_base + 4);
-	reg_val=(reg_val&0xfffffff0)|0x7;
-	writel(reg_val, gcc_pll_base + 0x4);
-	reg_val = readl(gcc_pll_base);
-	reg_val=reg_val | 0x40;
-	writel(reg_val, gcc_pll_base);
-	msleep(1);
-	reg_val=reg_val & (~0x40);
-	writel(reg_val, gcc_pll_base);
-	msleep(1);
-	writel(0xbf, gcc_pll_base);
-	reg_val = readl(gcc_pll_base);
-	msleep(1);
-	writel(0xff, gcc_pll_base);
-	reg_val = readl(gcc_pll_base);
-	msleep(1);
-	/*set clock src and div*/
-	reg_val = 1 | (1 << 8);
-	writel(reg_val, gcc_ppeclock_base + 0x84);
-	/*issue command*/
-	reg_val = readl(gcc_ppeclock_base + 0x80);
-	reg_val |= 1;
-	writel(reg_val, gcc_ppeclock_base + 0x80);
-	msleep(100);
-	reg_val = readl(gcc_ppeclock_base + 0x80);
-	reg_val |= 2;
-	writel(reg_val, gcc_ppeclock_base + 0x80);
-
-	/*set CBCR*/
-	for (i= 0; i < 4; i++) {
-		reg_val = readl(gcc_ppeclock_base + 0x190 + i*4);
-		reg_val |= 1;
-		writel(reg_val, gcc_ppeclock_base + 0x190 + i*4);
-	}
-
-	/*enable nss noc ppe*/
-	reg_val = readl(gcc_ppeclock_base + 0x300);
-	reg_val |= 1;
-	writel(reg_val, gcc_ppeclock_base + 0x300);
-
-	/*enable nss noc ppe config*/
-	reg_val = readl(gcc_ppeclock_base + 0x304);
-	reg_val |= 1;
-	writel(reg_val, gcc_ppeclock_base + 0x304);
-
-	/*enable crypto ppe*/
-	reg_val = readl(gcc_ppeclock_base + 0x310);
-	reg_val |= 1;
-	writel(reg_val, gcc_ppeclock_base + 0x310);
-
-	/*enable mac, ipe btq*/
-	for (i= 0; i < 8; i++) {
-		reg_val = readl(gcc_ppeclock_base + 0x320 + i*4);
-		reg_val |= 1;
-		writel(reg_val, gcc_ppeclock_base + 0x320 + i*4);
-	}
-
-	iounmap(gcc_ppeclock_base);
-	iounmap(gcc_pll_base);
-	return 0;
-}
-
 static int
 qca_hppe_gcc_uniphy_init(void)
 {
@@ -3989,13 +3911,6 @@ qca_hppe_gcc_speed_clock_init(void)
 		return -1;
 	}
 	SSDK_INFO("Get gcc hppe colck config2 address successfully!\n");
-
-	gcc_hppe_clock_config3_base = ioremap_nocache(0x01868240, 0x2c);
-	if (!gcc_hppe_clock_config3_base) {
-		printk("can't get gcc hppe colck config3 address!\n");
-		return -1;
-	}
-	printk("Get gcc hppe colck config3 address successfully!\n");
 
 	return 0;
 }
@@ -4071,41 +3986,7 @@ qca_hppe_gcc_speed_clock2_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr,
 
 	return 0;
 }
-uint32_t
-qca_hppe_gcc_mac_clock_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr,
-				a_uint8_t * reg_data, a_uint32_t len)
-{
-	uint32_t reg_val = 0;
 
-	if (len != sizeof (a_uint32_t))
-        return SW_BAD_LEN;
-
-	if ((reg_addr%4)!= 0)
-	return SW_BAD_PARAM;
-
-	aos_mem_copy(&reg_val, reg_data, sizeof (a_uint32_t));
-	writel(reg_val, gcc_hppe_clock_config3_base + reg_addr);
-
-	return 0;
-}
-
-uint32_t
-qca_hppe_gcc_mac_clock_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr,
-				a_uint8_t * reg_data, a_uint32_t len)
-{
-	uint32_t reg_val = 0;
-
-	if (len != sizeof (a_uint32_t))
-        return SW_BAD_LEN;
-
-	if ((reg_addr%4)!= 0)
-	return SW_BAD_PARAM;
-
-	reg_val = readl(gcc_hppe_clock_config3_base + reg_addr);
-	aos_mem_copy(reg_data, &reg_val, sizeof (a_uint32_t));
-
-	return 0;
-}
 
 uint32_t
 qca_hppe_gcc_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
@@ -4139,46 +4020,6 @@ qca_hppe_gcc_uniphy_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t *
 	aos_mem_copy(reg_data, &reg_val, sizeof (a_uint32_t));
 
 	return 0;
-}
-void
-qca_hppe_gcc_uniphy_port_clock_set(a_uint32_t dev_id, a_uint32_t uniphy_index,
-			a_uint32_t port_id, a_bool_t enable)
-{
-	a_uint32_t i, reg_value;
-
-	for (i = 0; i < 2; i++)
-	{
-		reg_value = 0;
-		qca_hppe_gcc_uniphy_reg_read(dev_id, (((0x10 + i * 4) + 0x8 * (port_id - 1))
-				+ (uniphy_index * HPPE_GCC_UNIPHY_REG_INC)), (a_uint8_t *)&reg_value, 4);
-		if (enable == A_TRUE)
-			reg_value |= 0x1;
-		else
-			reg_value &= ~0x1;
-		qca_hppe_gcc_uniphy_reg_write(dev_id, (((0x10 + i * 4)+ 0x8 * (port_id - 1))
-				+ (uniphy_index * HPPE_GCC_UNIPHY_REG_INC)), (a_uint8_t *)&reg_value, 4);
-	}
-
-}
-
-void
-qca_hppe_gcc_mac_port_clock_set(a_uint32_t dev_id, a_uint32_t port_id, a_bool_t enable)
-{
-	a_uint32_t i, reg_value;
-
-	for (i = 0; i < 2; i++)
-	{
-		reg_value = 0;
-		qca_hppe_gcc_mac_clock_reg_read(dev_id, ((i * 4) + 0x8 * (port_id - 1)),
-				(a_uint8_t *)&reg_value, 4);
-		if (enable == A_TRUE)
-			reg_value |= 0x1;
-		else
-			reg_value &= ~0x1;
-		qca_hppe_gcc_mac_clock_reg_write(dev_id, ((i * 4)+ 0x8 * (port_id - 1)),
-				(a_uint8_t *)&reg_value, 4);
-	}
-
 }
 
 static sw_error_t
@@ -4283,8 +4124,6 @@ qca_hppe_hw_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 
 	qca_hppe_shaper_hw_init(dev_id);
 	qca_hppe_flow_hw_init(dev_id);
-
-	qca_hppe_gcc_clock_init();
 
 	qca_hppe_gcc_uniphy_init();
 
