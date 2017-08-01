@@ -141,9 +141,7 @@ extern void qca_ar8327_sw_mib_task(struct qca_phy_priv *priv);
 
 static bool qca_dess_rfs_registered = false;
 ssdk_dt_global_t ssdk_dt_global = {0};
-void __iomem *gcc_uniphy_base = NULL;
-void __iomem *gcc_hppe_clock_config1_base = NULL;
-void __iomem *gcc_hppe_clock_config2_base = NULL;
+
 struct qca_phy_priv **qca_phy_priv_global;
 
 a_uint32_t ssdk_dt_global_get_mac_mode(a_uint32_t dev_id, a_uint32_t index)
@@ -3917,147 +3915,6 @@ qca_hppe_qos_scheduler_hw_init(a_uint32_t dev_id)
 	return 0;
 }
 
-#ifdef HAWKEYE_CHIP
-static int
-qca_hppe_gcc_uniphy_init(void)
-{
-	gcc_uniphy_base = ioremap_nocache(0x01856000, 0x280);
-	if (!gcc_uniphy_base) {
-		SSDK_ERROR("can't get gcc uniphy address!\n");
-		return -1;
-	}
-	SSDK_INFO("Get gcc uniphy address successfully!\n");
-
-	return 0;
-}
-
-static int
-qca_hppe_gcc_speed_clock_init(void)
-{
-	gcc_hppe_clock_config1_base = ioremap_nocache(0x01868020, 0x5c);
-	if (!gcc_hppe_clock_config1_base) {
-		SSDK_ERROR("can't get gcc hppe colck config1 address!\n");
-		return -1;
-	}
-	SSDK_INFO("Get gcc hppe colck config1 address successfully!\n");
-
-	gcc_hppe_clock_config2_base = ioremap_nocache(0x01868400, 0x60);
-	if (!gcc_hppe_clock_config2_base) {
-		SSDK_ERROR("can't get gcc hppe colck config2 address!\n");
-		return -1;
-	}
-	SSDK_INFO("Get gcc hppe colck config2 address successfully!\n");
-
-	return 0;
-}
-
-uint32_t
-qca_hppe_gcc_speed_clock1_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr,
-				a_uint8_t * reg_data, a_uint32_t len)
-{
-	uint32_t reg_val = 0;
-
-	if (len != sizeof (a_uint32_t))
-        return SW_BAD_LEN;
-
-	if ((reg_addr%4)!= 0)
-	return SW_BAD_PARAM;
-
-	aos_mem_copy(&reg_val, reg_data, sizeof (a_uint32_t));
-	writel(reg_val, gcc_hppe_clock_config1_base + reg_addr);
-
-	return 0;
-}
-
-uint32_t
-qca_hppe_gcc_speed_clock1_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr,
-				a_uint8_t * reg_data, a_uint32_t len)
-{
-	uint32_t reg_val = 0;
-
-	if (len != sizeof (a_uint32_t))
-        return SW_BAD_LEN;
-
-	if ((reg_addr%4)!= 0)
-	return SW_BAD_PARAM;
-
-	reg_val = readl(gcc_hppe_clock_config1_base + reg_addr);
-	aos_mem_copy(reg_data, &reg_val, sizeof (a_uint32_t));
-
-	return 0;
-}
-
-uint32_t
-qca_hppe_gcc_speed_clock2_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr,
-				a_uint8_t * reg_data, a_uint32_t len)
-{
-	uint32_t reg_val = 0;
-
-	if (len != sizeof (a_uint32_t))
-        return SW_BAD_LEN;
-
-	if ((reg_addr%4)!= 0)
-	return SW_BAD_PARAM;
-
-	aos_mem_copy(&reg_val, reg_data, sizeof (a_uint32_t));
-	writel(reg_val, gcc_hppe_clock_config2_base + reg_addr);
-
-	return 0;
-}
-
-uint32_t
-qca_hppe_gcc_speed_clock2_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr,
-				a_uint8_t * reg_data, a_uint32_t len)
-{
-	uint32_t reg_val = 0;
-
-	if (len != sizeof (a_uint32_t))
-        return SW_BAD_LEN;
-
-	if ((reg_addr%4)!= 0)
-	return SW_BAD_PARAM;
-
-	reg_val = readl(gcc_hppe_clock_config2_base + reg_addr);
-	aos_mem_copy(reg_data, &reg_val, sizeof (a_uint32_t));
-
-	return 0;
-}
-
-
-uint32_t
-qca_hppe_gcc_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
-{
-	uint32_t reg_val = 0;
-
-	if (len != sizeof (a_uint32_t))
-        return SW_BAD_LEN;
-
-	if ((reg_addr%4)!= 0)
-	return SW_BAD_PARAM;
-
-	aos_mem_copy(&reg_val, reg_data, sizeof (a_uint32_t));
-	writel(reg_val, gcc_uniphy_base + reg_addr);
-
-	return 0;
-}
-
-uint32_t
-qca_hppe_gcc_uniphy_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
-{
-	uint32_t reg_val = 0;
-
-	if (len != sizeof (a_uint32_t))
-        return SW_BAD_LEN;
-
-	if ((reg_addr%4)!= 0)
-	return SW_BAD_PARAM;
-
-	reg_val = readl(gcc_uniphy_base + reg_addr);
-	aos_mem_copy(reg_data, &reg_val, sizeof (a_uint32_t));
-
-	return 0;
-}
-
 static sw_error_t
 qca_hppe_interface_mode_init(a_uint32_t dev_id, a_uint32_t mode0, a_uint32_t mode1, a_uint32_t mode2)
 {
@@ -4089,7 +3946,7 @@ qca_hppe_interface_mode_init(a_uint32_t dev_id, a_uint32_t mode0, a_uint32_t mod
 
 	return rv;
 }
-#endif
+
 
 static sw_error_t
 qca_hppe_flow_hw_init(a_uint32_t dev_id)
@@ -4144,10 +4001,6 @@ qca_hppe_hw_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 
 	qca_hppe_shaper_hw_init(dev_id);
 	qca_hppe_flow_hw_init(dev_id);
-
-	qca_hppe_gcc_uniphy_init();
-
-	qca_hppe_gcc_speed_clock_init();
 
 	qca_hppe_interface_mode_init(dev_id, cfg->mac_mode, cfg->mac_mode1,
 				cfg->mac_mode2);

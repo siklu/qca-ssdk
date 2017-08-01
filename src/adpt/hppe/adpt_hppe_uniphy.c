@@ -87,19 +87,22 @@ __adpt_hppe_uniphy_calibration(a_uint32_t dev_id, a_uint32_t uniphy_index)
 static void
 __adpt_hppe_gcc_uniphy_xpcs_reset(a_uint32_t dev_id, a_uint32_t uniphy_index, a_bool_t enable)
 {
-	a_uint32_t reg_value;
+	enum unphy_rst_type rst_type;
+	enum ssdk_rst_action rst_action;
 
-	reg_value = 0;
-	qca_hppe_gcc_uniphy_reg_read(0, 0x4 + (uniphy_index * HPPE_GCC_UNIPHY_REG_INC),
-		(a_uint8_t *)&reg_value, 4);
-	if (enable == A_TRUE)
-		/*keep xpcs to reset */
-		reg_value = HPPE_GCC_UNIPHY_USXGMII_XPCS_RESET;
+	if (uniphy_index == HPPE_UNIPHY_INSTANCE0)
+		rst_type = UNIPHY0_XPCS_RESET_E;
+	else if (uniphy_index == HPPE_UNIPHY_INSTANCE1)
+		rst_type = UNIPHY1_XPCS_RESET_E;
 	else
-		/*keep xpcs to reset release */
-		reg_value = HPPE_GCC_UNIPHY_USXGMII_XPCS_RELEASE_RESET;
-	qca_hppe_gcc_uniphy_reg_write(0, 0x4 + (uniphy_index * HPPE_GCC_UNIPHY_REG_INC),
-		(a_uint8_t *)&reg_value, 4);
+		rst_type = UNIPHY2_XPCS_RESET_E;
+
+	if (enable == A_TRUE)
+		rst_action = SSDK_RESET_ASSERT;
+	else
+		rst_action = SSDK_RESET_DEASSERT;
+	
+	ssdk_uniphy_reset(dev_id, rst_type, rst_action);
 
 	return;
 }
@@ -107,27 +110,21 @@ __adpt_hppe_gcc_uniphy_xpcs_reset(a_uint32_t dev_id, a_uint32_t uniphy_index, a_
 static void
 __adpt_hppe_gcc_uniphy_software_reset(a_uint32_t dev_id, a_uint32_t uniphy_index)
 {
-	a_uint32_t reg_value;
 
-	/* configure uniphy gcc software reset */
-	reg_value = 0;
-	qca_hppe_gcc_uniphy_reg_read(0, 0x4 + (uniphy_index * HPPE_GCC_UNIPHY_REG_INC),
-		(a_uint8_t *)&reg_value, 4);
+	enum unphy_rst_type rst_type;
 
 	if (uniphy_index == HPPE_UNIPHY_INSTANCE0)
-		reg_value |= HPPE_GCC_UNIPHY_PSGMII_SOFT_RESET;
+		rst_type = UNIPHY0_SOFT_RESET_E;
+	else if (uniphy_index == HPPE_UNIPHY_INSTANCE1)
+		rst_type = UNIPHY1_SOFT_RESET_E;
 	else
-		reg_value = HPPE_GCC_UNIPHY_USXGMII_SOFT_RESET;
-	qca_hppe_gcc_uniphy_reg_write(0, 0x4 + (uniphy_index * HPPE_GCC_UNIPHY_REG_INC),
-		(a_uint8_t *)&reg_value, 4);
+		rst_type = UNIPHY2_SOFT_RESET_E;
+
+	ssdk_uniphy_reset(dev_id, rst_type, SSDK_RESET_ASSERT);
+
 	msleep(100);
-	/* release reset */
-	if (uniphy_index == HPPE_UNIPHY_INSTANCE0)
-		reg_value &= ~HPPE_GCC_UNIPHY_PSGMII_SOFT_RESET;
-	else
-		reg_value = HPPE_GCC_UNIPHY_USXGMII_XPCS_RESET;
-	qca_hppe_gcc_uniphy_reg_write(0, 0x4 + (uniphy_index * HPPE_GCC_UNIPHY_REG_INC),
-		(a_uint8_t *)&reg_value, 4);
+
+	ssdk_uniphy_reset(dev_id, rst_type, SSDK_RESET_DEASSERT);
 
 	return;
 }
