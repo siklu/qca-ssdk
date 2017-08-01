@@ -4074,26 +4074,13 @@ qca_hppe_flow_hw_init(a_uint32_t dev_id)
 	return SW_OK;
 }
 
-#define GCC_NSS_PPE_RESET_ADDR  0x01868014
-#define GCC_NSS_PPE_RESET_VAL           0xf0000
 static int
 qca_hppe_hw_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 {
 	a_uint32_t val;
-	void __iomem *ppe_gcc_base;
 
 	/* reset ppe */
-	ppe_gcc_base = ioremap_nocache(GCC_NSS_PPE_RESET_ADDR, 0x100);
-	if (!ppe_gcc_base) {
-		SSDK_ERROR("can't get gcc ppe reset address!\n");
-		return -1;
-	}
-	writel(GCC_NSS_PPE_RESET_VAL, ppe_gcc_base);
-	msleep(100);
-	writel(0, ppe_gcc_base);
-	msleep(100);
-	iounmap(ppe_gcc_base);
-	SSDK_INFO("ppe reset successfully!\n");
+	ssdk_ppe_reset_init();
 
 	qca_switch_init(dev_id);
 

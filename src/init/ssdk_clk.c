@@ -31,6 +31,9 @@
 struct device_node *clock_node = NULL;
 static struct clk *uniphy_port_clks[UNIPHYT_CLK_MAX] = {0};
 
+struct device_node *rst_node = NULL;
+struct reset_control *uniphy_rsts[UNIPHY_RST_MAX] = {0};
+
 /* below 3 routines to be used as common */
 void ssdk_clock_rate_set_and_enable(
 	struct device_node *node, a_uint8_t* clock_id, a_uint32_t rate)
@@ -45,7 +48,35 @@ void ssdk_clock_rate_set_and_enable(
 		clk_prepare_enable(clk);
 	}
 }
+
+void ssdk_gcc_reset(struct reset_control *rst, a_uint32_t action)
+{
+	if (action == SSDK_RESET_ASSERT)
+		reset_control_assert(rst);
+	else
+		reset_control_deassert(rst);
+
+}
 #endif
+
+void ssdk_uniphy_reset(
+	a_uint32_t dev_id,
+	enum unphy_rst_type rst_type,
+	a_uint32_t action)
+{
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
+	struct reset_control *rst;
+
+	rst = uniphy_rsts[rst_type];
+	if (IS_ERR(rst)) {
+		SSDK_ERROR("reset(%d) nof exist!\n", rst_type);
+		return;
+	}
+
+	ssdk_gcc_reset(rst, action);
+#endif
+
+}
 
 void ssdk_uniphy_clock_rate_set(
 	a_uint32_t dev_id,
@@ -574,6 +605,40 @@ ssdk_port_speed_clock_set(
 	}
 }
 
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
+static char *ppe_rst_ids[UNIPHY_RST_MAX] = {
+	UNIPHY0_SOFT_RESET_ID,
+	UNIPHY0_XPCS_RESET_ID,
+	UNIPHY1_SOFT_RESET_ID,
+	UNIPHY1_XPCS_RESET_ID,
+	UNIPHY2_SOFT_RESET_ID,
+	UNIPHY2_XPCS_RESET_ID
+};
+#endif
 
+void ssdk_ppe_reset_init(void)
+{
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
+	struct reset_control *rst;
+	a_uint32_t i;
+
+	rst_node = of_find_node_by_name(NULL, "ess-switch");
+	rst = of_reset_control_get(rst_node, PPE_RESET_ID);
+	if (IS_ERR(rst)) {
+		SSDK_ERROR("%s not exist!\n", PPE_RESET_ID);
+		return;
+	}
+
+	ssdk_gcc_reset(rst, SSDK_RESET_ASSERT);
+	msleep(100);
+	ssdk_gcc_reset(rst, SSDK_RESET_DEASSERT);
+	msleep(100);
+	SSDK_INFO("ppe reset successfully!\n");
+
+	for (i = UNIPHY0_SOFT_RESET_E; i < UNIPHY_RST_MAX; i++)
+		uniphy_rsts[i] = of_reset_control_get(rst_node,
+							ppe_rst_ids[i]);
+#endif
+}
 #endif
 

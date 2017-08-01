@@ -19,6 +19,29 @@
 extern "C" {
 #endif                          /* __cplusplus */
 
+#define PPE_RESET_ID	"ppe_rst"
+#define UNIPHY0_SOFT_RESET_ID	"uniphy0_soft_rst"
+#define UNIPHY0_XPCS_RESET_ID	"uniphy0_xpcs_rst"
+#define UNIPHY1_SOFT_RESET_ID	"uniphy1_soft_rst"
+#define UNIPHY1_XPCS_RESET_ID	"uniphy1_xpcs_rst"
+#define UNIPHY2_SOFT_RESET_ID	"uniphy2_soft_rst"
+#define UNIPHY2_XPCS_RESET_ID	"uniphy2_xpcs_rst"
+
+enum ssdk_rst_action {
+        SSDK_RESET_DEASSERT      = 0,
+        SSDK_RESET_ASSERT        = 1
+};
+
+enum unphy_rst_type {
+	UNIPHY0_SOFT_RESET_E = 0,
+	UNIPHY0_XPCS_RESET_E,
+	UNIPHY1_SOFT_RESET_E,
+	UNIPHY1_XPCS_RESET_E,
+	UNIPHY2_SOFT_RESET_E,
+	UNIPHY2_XPCS_RESET_E,
+	UNIPHY_RST_MAX
+};
+
 #define CMN_AHB_CLK		"cmn_ahb_clk"
 #define CMN_SYS_CLK		"cmn_sys_clk"
 #define UNIPHY0_AHB_CLK	"uniphy0_ahb_clk"
@@ -147,6 +170,11 @@ enum {
 	UNIPHY_TX,
 };
 
+void ssdk_uniphy_reset(
+	a_uint32_t dev_id,
+	enum unphy_rst_type rst_type,
+	a_uint32_t action);
+
 #if defined(HPPE)
 void
 qca_gcc_mac_port_clock_set(a_uint32_t dev_id, a_uint32_t port_id,
@@ -165,6 +193,8 @@ ssdk_port_speed_clock_set(
 	a_uint32_t dev_id,
 	a_uint32_t port_id,
 	a_uint32_t rate);
+
+void ssdk_ppe_reset_init(void);
 #endif
 
 #ifdef __cplusplus
