@@ -212,7 +212,7 @@ ifeq (TRUE, $(DEBUG_ON))
   MODULE_CFLAG += -g
 endif
 
-MODULE_CFLAG += $(OPT_FLAG) -Wall -DVERSION=\"$(VERSION)\" -DBUILD_DATE=\"$(BUILD_DATE)\" -DCPU=\"$(CPU)\" -DOS=\"$(OS)\" -D"KBUILD_STR(s)=\#s" -D"KBUILD_MODNAME=KBUILD_STR(qca-ssdk)"
+MODULE_CFLAG += $(OPT_FLAG) -Wall -DVERSION=\"$(VERSION)\" -DBUILD_DATE=\"$(BUILD_DATE)\" -DOS=\"$(OS)\" -D"KBUILD_STR(s)=\#s" -D"KBUILD_MODNAME=KBUILD_STR(qca-ssdk)"
 
 MODULE_INC += -I$(PRJ_PATH)/include \
                    -I$(PRJ_PATH)/include/common \
