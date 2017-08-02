@@ -1584,13 +1584,11 @@ static int ssdk_switch_register(a_uint32_t dev_id)
 	#endif
 	#endif
 	#ifdef HPPE
-	#ifdef HAWKEYE_CHIP
 	ret = qca_mac_sw_sync_work_start(priv);
 	if (ret != 0) {
-			printk("qca_mac_sw_sync_work_start failed for chip 0x%02x%02x\n", priv->version, priv->revision);
+			SSDK_ERROR("qca_mac_sw_sync_work_start failed for chip 0x%02x%02x\n", priv->version, priv->revision);
 			return ret;
 	}
-	#endif
 	#endif
 
 	return 0;
@@ -1602,9 +1600,7 @@ static int ssdk_switch_unregister(a_uint32_t dev_id)
 	qca_phy_mib_work_stop(qca_phy_priv_global[dev_id]);
 	qm_err_check_work_stop(qca_phy_priv_global[dev_id]);
 	#ifdef HPPE
-	#ifdef HAWKEYE_CHIP
 	qca_mac_sw_sync_work_stop(qca_phy_priv_global[dev_id]);
-	#endif
 	#endif
 
 	#if defined(IN_SWCONFIG)
@@ -2140,15 +2136,9 @@ ssdk_init(a_uint32_t dev_id, ssdk_init_cfg * cfg)
 	if (rv != SW_OK)
 		SSDK_ERROR("ssdk fal init failed: %d. \r\n", rv);
 
-#ifndef HAWKEYE_CHIP
-	if (cfg->chip_type != CHIP_HPPE) {
-#endif
-		rv = ssdk_phy_driver_init(dev_id, cfg);
-		if (rv != SW_OK)
-			SSDK_ERROR("ssdk phy init failed: %d. \r\n", rv);
-#ifndef HAWKEYE_CHIP
-	}
-#endif
+	rv = ssdk_phy_driver_init(dev_id, cfg);
+	if (rv != SW_OK)
+		SSDK_ERROR("ssdk phy init failed: %d. \r\n", rv);
 
 	return rv;
 }
@@ -3284,7 +3274,6 @@ qca_hppe_portctrl_hw_init(a_uint32_t dev_id)
 		qca_switch_reg_write(dev_id, 0x00003008 + (0x4000*i), (a_uint8_t *)&val, 4);
 	}
 
-#ifdef HAWKEYE_CHIP
 	for(i = 1; i < 7; i++) {
 		hppe_port_type[i - 1] = PORT_GMAC_TYPE;
 		fal_port_txmac_status_set (dev_id, i, A_FALSE);
@@ -3306,7 +3295,6 @@ qca_hppe_portctrl_hw_init(a_uint32_t dev_id)
 	for(i = 1; i < 7; i++) {
 		hppe_port_type[i -1] = 0;
 	}
-#endif
 	return 0;
 }
 
@@ -4090,9 +4078,6 @@ qca_hppe_hw_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 {
 	a_uint32_t val;
 	void __iomem *ppe_gcc_base;
-	#ifndef HAWKEYE_CHIP
-	a_uint32_t i = 0;
-	#endif
 
 	/* reset ppe */
 	ppe_gcc_base = ioremap_nocache(GCC_NSS_PPE_RESET_ADDR, 0x100);
