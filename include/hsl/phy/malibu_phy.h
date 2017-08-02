@@ -47,7 +47,7 @@ extern "C"
 #define MALIBU_1_0 0x004DD0B0
 #define MALIBU_1_1 0x004DD0B1
 #define MALIBU_1_1_2PORT 0x004DD0B2
-
+#define MALIBU_ORG_ID_OFFSET_LEN 16
 
   /* PHY Registers */
 #define MALIBU_PHY_CONTROL                      0
