@@ -91,6 +91,8 @@ void ssdk_uniphy_clock_enable(
 
 /* below special for ppe */
 #if defined(HPPE)
+static a_bool_t uniphy1_status = A_FALSE;
+
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
 struct clk_uniphy {
 	struct clk_hw hw;
@@ -358,6 +360,17 @@ static void ssdk_ppe_cmnblk_init(void)
 }
 #endif
 
+static
+void ssdk_uniphy1_clock_source_set(void)
+{
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
+	clk_set_parent(uniphy_port_clks[PORT5_RX_SRC_E],
+			uniphy_raw_clks[2]->clk);
+	clk_set_parent(uniphy_port_clks[PORT5_TX_SRC_E],
+			uniphy_raw_clks[3]->clk);
+#endif
+}
+
 void ssdk_ppe_clock_init(void)
 {
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
@@ -388,10 +401,12 @@ void ssdk_uniphy_raw_clock_set(
 	id = uniphy_index*2 + direction;
 	old_clock = clk_get_rate(uniphy_raw_clks[id]->clk);
 
-	if (uniphy_index == UNIPHY_INSTANCE_1)
+	if (uniphy_index == UNIPHY_INSTANCE_1) {
 		if (clk_set_parent(uniphy_port_clks[PORT5_RX_SRC_E + direction],
 				uniphy_raw_clks[id]->clk))
 			SSDK_ERROR("set parent fail!\n");
+		uniphy1_status = A_TRUE;
+	}
 
 	if (clock != old_clock) {
 		if (clk_set_rate(uniphy_raw_clks[id]->clk, clock))
@@ -562,6 +577,8 @@ ssdk_port_speed_clock_set(
 					NSS_PORT5_RX_CLK_E, rate);
 			ssdk_uniphy_clock_rate_set(dev_id,
 					NSS_PORT5_TX_CLK_E, rate);
+			if (uniphy1_status)
+				ssdk_uniphy1_clock_source_set();
 			break;
 		case SSDK_PORT6:
 			ssdk_uniphy_clock_rate_set(dev_id,
