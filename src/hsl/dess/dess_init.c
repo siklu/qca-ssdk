@@ -114,24 +114,20 @@ dess_portproperty_init(a_uint32_t dev_id)
     fal_port_t port_id;
 	enum ssdk_port_wrapper_cfg cfg;
 	a_uint32_t bitmap = 0;
-	a_uint32_t phy_id;
 
     pdev = hsl_dev_ptr_get(dev_id);
     if (pdev == NULL)
         return SW_NOT_INITIALIZED;
 
 	cfg = dess_get_port_config();
-	phy_id = dess_get_port_phy_id();
-
-	if (phy_id == MALIBU_1_1_2PORT)
-		bitmap = dess_pbmp_2[cfg];
-	else {
 		bitmap = dess_pbmp_5[cfg];
-	}
 
     /* for port property set, SSDK should not generate some limitations */
-    for (port_id = 0; port_id < pdev->nr_ports; port_id++)
+    for (port_id = 0; port_id < SW_MAX_NR_PORT; port_id++)
     {
+        if((!SW_IS_PBMP_MEMBER(bitmap, port_id)) && (port_id != pdev->cpu_port_nr))
+            continue;
+
         hsl_port_prop_portmap_set(dev_id, port_id);
 
         for (p_type = HSL_PP_PHY; p_type < HSL_PP_BUTT; p_type++)
