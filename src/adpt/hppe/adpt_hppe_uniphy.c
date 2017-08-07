@@ -26,7 +26,7 @@
 #include "adpt.h"
 #include "hppe_reg_access.h"
 
-#ifdef HAWKEYE_CHIP
+
 extern void adpt_hppe_gcc_port_speed_clock_set(a_uint32_t dev_id,
 				a_uint32_t port_id, fal_port_speed_t phy_speed);
 
@@ -585,7 +585,7 @@ sw_error_t adpt_hppe_uniphy_init(a_uint32_t dev_id)
 
 	return SW_OK;
 }
-#endif
+
 
 /**
  * @}
