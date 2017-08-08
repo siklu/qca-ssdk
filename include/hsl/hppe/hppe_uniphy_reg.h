@@ -587,6 +587,25 @@ union uniphy_channel4_input_output_4_u {
 	struct uniphy_channel4_input_output_4 bf;
 };
 
+/*[register] UNIPHY_INSTANCE_LINK_DETECT*/
+#define UNIPHY_INSTANCE_LINK_DETECT
+#define UNIPHY_INSTANCE_LINK_DETECT_ADDRESS 0x570
+#define UNIPHY_INSTANCE_LINK_DETECT_NUM     3
+#define UNIPHY_INSTANCE_LINK_DETECT_INC     0x1
+#define UNIPHY_INSTANCE_LINK_DETECT_TYPE    REG_TYPE_RW
+#define UNIPHY_INSTANCE_LINK_DETECT_DEFAULT 0x0
+
+struct uniphy_instance_link_detect {
+	a_uint32_t  _reserved0:6;
+	a_uint32_t  detect_los_from_sfp:3;
+	a_uint32_t  _reserved1:23;
+};
+
+union uniphy_instance_link_detect_u {
+	a_uint32_t val;
+	struct uniphy_instance_link_detect  bf;
+};
+
 /*[register] SR_XS_PCS_KR_STS1*/
 #define SR_XS_PCS_KR_STS1
 #define SR_XS_PCS_KR_STS1_ADDRESS 0x30020

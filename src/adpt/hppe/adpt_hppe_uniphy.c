@@ -225,8 +225,10 @@ __adpt_hppe_uniphy_10g_r_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	sw_error_t rv = SW_OK;
 
 	union uniphy_mode_ctrl_u uniphy_mode_ctrl;
+	union uniphy_instance_link_detect_u uniphy_instance_link_detect;
 
 	memset(&uniphy_mode_ctrl, 0, sizeof(uniphy_mode_ctrl));
+	memset(&uniphy_instance_link_detect, 0, sizeof(uniphy_instance_link_detect));
 	ADPT_DEV_ID_CHECK(dev_id);
 
 	/* keep xpcs to reset status */
@@ -246,6 +248,10 @@ __adpt_hppe_uniphy_10g_r_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	uniphy_mode_ctrl.bf.newaddedfromhere_xpcs_mode = 1;
 
 	hppe_uniphy_mode_ctrl_set(0, uniphy_index, &uniphy_mode_ctrl);
+
+	hppe_uniphy_instance_link_detect_get(dev_id, uniphy_index, &uniphy_instance_link_detect);
+	uniphy_instance_link_detect.bf.detect_los_from_sfp = UNIPHY_10GR_LINK_LOSS;
+	hppe_uniphy_instance_link_detect_set(dev_id, uniphy_index, &uniphy_instance_link_detect);
 
 	/* configure uniphy gcc software reset */
 	__adpt_hppe_gcc_uniphy_software_reset(dev_id, uniphy_index);

@@ -220,6 +220,33 @@ hppe_uniphy_channel4_input_output_4_set(
 }
 
 sw_error_t
+hppe_uniphy_instance_link_detect_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union uniphy_instance_link_detect_u *value)
+{
+	return hppe_uniphy_reg_get(
+				dev_id,
+				NSS_UNIPHY_BASE_ADDR + UNIPHY_INSTANCE_LINK_DETECT_ADDRESS,
+				index * UNIPHY_INSTANCE_LINK_DETECT_INC,
+				&value->val);
+}
+
+
+sw_error_t
+hppe_uniphy_instance_link_detect_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union uniphy_instance_link_detect_u *value)
+{
+	return hppe_uniphy_reg_set(
+				dev_id,
+				NSS_UNIPHY_BASE_ADDR + UNIPHY_INSTANCE_LINK_DETECT_ADDRESS,
+				index * UNIPHY_INSTANCE_LINK_DETECT_INC,
+				value->val);
+}
+
+sw_error_t
 hppe_sr_xs_pcs_kr_sts1_get(
 		a_uint32_t dev_id,
 		a_uint32_t index,
