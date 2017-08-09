@@ -2293,6 +2293,15 @@ void clear_self_test_config(void)
 }
 #endif
 
+static void ssdk_phy_linkdown(ssdk_init_cfg *cfg)
+{
+       int i;
+
+       for (i = 0; i < AR8327_NUM_PHYS; i++) {
+               cfg->reg_func.mdio_set(0, i, 0x0, 0x0800);      // phy powerdown
+       }
+}
+
 int
 ssdk_plat_init(ssdk_init_cfg *cfg)
 {
@@ -2305,6 +2314,7 @@ ssdk_plat_init(ssdk_init_cfg *cfg)
 	if(miibus_get())
 		return -ENODEV;
 
+	ssdk_phy_linkdown(cfg);
 	#ifdef DESS
 	if(ssdk_dt_global.switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
 		/* Enable ess clock here */
