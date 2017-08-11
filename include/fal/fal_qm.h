@@ -85,10 +85,13 @@ typedef struct {
 	fal_port_t dst_port; /* destination physical or VP port */
 } fal_ucast_queue_dest_t;
 
+#define FAL_QM_DROP_ITEMS	6
 typedef struct {
 	a_uint32_t tx_packets;
 	a_uint64_t tx_bytes;
 	a_uint32_t pending_buff_num;
+	a_uint32_t drop_packets[FAL_QM_DROP_ITEMS];
+	a_uint64_t drop_bytes[FAL_QM_DROP_ITEMS];
 } fal_queue_stats_t;
 
 enum {
