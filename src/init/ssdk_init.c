@@ -207,7 +207,11 @@ ssdk_phy_rgmii_set(struct qca_phy_priv *priv)
 	if (priv->ess_switch_flag == A_TRUE)
 		np = priv->of_node;
 	else
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,9,0))
+		np = priv->phy->mdio.dev.of_node;
+#else
 		np = priv->phy->dev.of_node;
+#endif
 
 	if (!np)
 		return;
@@ -607,7 +611,11 @@ int qca_ar8327_hw_init(struct qca_phy_priv *priv)
 	if (priv->ess_switch_flag == A_TRUE)
 		np = priv->of_node;
 	else
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,9,0))
+		np = priv->phy->mdio.dev.of_node;
+#else
 		np = priv->phy->dev.of_node;
+#endif
 
 	if(!np)
 		return -EINVAL;
@@ -1212,7 +1220,11 @@ static int qca_link_polling_select(struct qca_phy_priv *priv)
 	if (priv->ess_switch_flag == A_TRUE)
 		np = priv->of_node;
 	else if(priv->version == QCA_VER_AR8337 || priv->version == QCA_VER_AR8327)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,9,0))
+		np = priv->phy->mdio.dev.of_node;
+#else
 		np = priv->phy->dev.of_node;
+#endif
 	else
 		SSDK_ERROR("cannot find np node!\n");
 
@@ -1432,7 +1444,11 @@ qca_phy_config_init(struct phy_device *pdev)
 	struct qca_phy_priv *priv = pdev->priv;
 	int ret = 0;
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,9,0))
+	if (pdev->mdio.addr != 0) {
+#else
 	if (pdev->addr != 0) {
+#endif
         pdev->supported |= SUPPORTED_1000baseT_Full;
         pdev->advertising |= ADVERTISED_1000baseT_Full;
 		#ifndef BOARD_AR71XX
@@ -1620,9 +1636,14 @@ qca_phy_read_status(struct phy_device *pdev)
 	struct qca_phy_priv *priv = pdev->priv;
 	a_uint32_t port_status;
 	a_uint32_t port_speed;
-	int ret = 0;
+	int ret = 0, addr = 0;
 
-	if (pdev->addr != 0) {
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,9,0))
+	addr = pdev->mdio.addr;
+#else
+	addr = pdev->addr;
+#endif
+	if (addr != 0) {
 		mutex_lock(&priv->reg_mutex);
 		ret = genphy_read_status(pdev);
 		mutex_unlock(&priv->reg_mutex);
@@ -1630,7 +1651,7 @@ qca_phy_read_status(struct phy_device *pdev)
 	}
 
 	mutex_lock(&priv->reg_mutex);
-	port_status = priv->mii_read(priv->device_id, AR8327_REG_PORT_STATUS(pdev->addr));
+	port_status = priv->mii_read(priv->device_id, AR8327_REG_PORT_STATUS(addr));
 	mutex_unlock(&priv->reg_mutex);
 
 	pdev->link = 1;
@@ -1675,7 +1696,11 @@ qca_phy_read_status(struct phy_device *pdev)
 static int
 qca_phy_config_aneg(struct phy_device *pdev)
 {
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,9,0))
+	if (pdev->mdio.addr != 0) {
+#else
 	if (pdev->addr != 0) {
+#endif
 		return genphy_config_aneg(pdev);
 	}
 
@@ -1705,8 +1730,14 @@ static void
 qca_phy_remove(struct phy_device *pdev)
 {
 	struct qca_phy_priv *priv = pdev->priv;
+	int addr;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,9,0))
+	addr = pdev->mdio.addr;
+#else
+	addr = pdev->addr;
+#endif
 
-	if ((pdev->addr == 0) && priv && (priv->ports != 0)) {
+	if ((addr == 0) && priv && (priv->ports != 0)) {
 		qca_phy_mib_work_stop(priv);
 		qm_err_check_work_stop(priv);
 #if defined(IN_SWCONFIG)
@@ -1730,7 +1761,11 @@ static struct phy_driver qca_phy_driver = {
 	.config_aneg= &qca_phy_config_aneg,
 	.read_status= &qca_phy_read_status,
 	.features	= PHY_BASIC_FEATURES,
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,9,0))
+	.mdiodrv.driver		= { .owner = THIS_MODULE },
+#else
 	.driver		= { .owner = THIS_MODULE },
+#endif
 };
 
 #ifndef BOARD_AR71XX
@@ -2789,7 +2824,12 @@ static void ssdk_driver_register(a_uint32_t dev_id)
 		}
 
 		SSDK_INFO("Register QCA PHY driver\n");
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,9,0))
+		phy_driver_register(&qca_phy_driver, THIS_MODULE);
+#else
 		phy_driver_register(&qca_phy_driver);
+#endif
+
 #ifdef BOARD_AR71XX
 #if defined(IN_SWCONFIG)
 		ssdk_uci_takeover_init();

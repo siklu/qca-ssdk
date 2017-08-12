@@ -371,7 +371,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
 
   endif
 
-  ifeq (4_1, $(OS_VER))
+  ifeq ($(OS_VER),$(filter 4_9 4_1, $(OS_VER)))
                 MODULE_CFLAG += -DKVER34
                 MODULE_CFLAG += -DKVER32
             MODULE_CFLAG += -DLNX26_22
@@ -390,6 +390,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
               -I$(SYS_PATH)/include/generated/uapi \
               -I$(SYS_PATH)/include/uapi \
               -I$(SYS_PATH)/arch/arm64/include/uapi \
+	      -I$(SYS_PATH)/source/include/uapi \
               -I$(SYS_PATH)/source/arch/arm64/include/asm/mach \
 	      -include $(KCONF_FILE)
 	    endif
