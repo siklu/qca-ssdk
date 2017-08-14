@@ -25,6 +25,8 @@
 #include "ssdk_clk.h"
 #include "adpt.h"
 #include "hppe_reg_access.h"
+#include "hsl_phy.h"
+
 
 
 extern void adpt_hppe_gcc_port_speed_clock_set(a_uint32_t dev_id,
@@ -427,13 +429,7 @@ __adpt_hppe_uniphy_qsgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	ADPT_DEV_ID_CHECK(dev_id);
 
 	/* configure malibu phy to qsgmii mode*/
-	qca_ar8327_phy_write(dev_id, MALIBU_PSGMII_PHY_ADDR - 1,
-		MALIBU_PHY_MODE_REG, MALIBU_PHY_QSGMII);
-	qca_ar8327_phy_write(dev_id, MALIBU_PSGMII_PHY_ADDR,
-		MALIBU_MODE_RESET_REG, MALIBU_MODE_CHANAGE_RESET);
-	msleep(10);
-	qca_ar8327_phy_write(dev_id, MALIBU_PSGMII_PHY_ADDR,
-		MALIBU_MODE_RESET_REG, MALIBU_MODE_RESET_DEFAULT_VALUE);
+	hsl_ssdk_phy_mode_set(dev_id, PHY_SGMII_BASET);
 
 	/* keep xpcs to reset status */
 	__adpt_hppe_gcc_uniphy_xpcs_reset(dev_id, uniphy_index, A_TRUE);
@@ -460,6 +456,8 @@ __adpt_hppe_uniphy_qsgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 
 	/* wait uniphy calibration done */
 	rv = __adpt_hppe_uniphy_calibration(dev_id, uniphy_index);
+
+	hsl_ssdk_phy_serdes_reset(dev_id);
 
 	/* enable instance0 clock */
 	for (i = 1; i < 6; i++)
@@ -507,6 +505,8 @@ __adpt_hppe_uniphy_psgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 
 	/* wait uniphy calibration done */
 	rv = __adpt_hppe_uniphy_calibration(dev_id, uniphy_index);
+
+	hsl_ssdk_phy_serdes_reset(dev_id);
 
 	/* enable instance0 clock */
 	for (i = 1; i < 6; i++)

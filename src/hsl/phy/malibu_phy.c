@@ -26,6 +26,8 @@
 #include <linux/phy.h>
 #include "ssdk_plat.h"
 
+static a_uint32_t first_phy_addr = 0;
+
 static a_uint16_t
 _phy_reg_read(a_uint32_t dev_id, a_uint32_t phy_addr, a_uint32_t reg)
 {
@@ -2007,6 +2009,25 @@ malibu_phy_get_wol_status(a_uint32_t dev_id, a_uint32_t phy_id, a_bool_t * enabl
 
 /******************************************************************************
 *
+* malibu_serdes_reset - malibu psgmii serdes reset
+*
+* reset serdes
+*/
+sw_error_t
+malibu_phy_serdes_reset(a_uint32_t dev_id)
+{
+
+	malibu_phy_reg_write(dev_id, first_phy_addr + MALIBU_PHY_PSGMII_ADDR_INC,
+				MALIBU_MODE_RESET_REG, MALIBU_MODE_CHANAGE_RESET);
+	mdelay(100);
+	malibu_phy_reg_write(dev_id, first_phy_addr + MALIBU_PHY_PSGMII_ADDR_INC,
+				MALIBU_MODE_RESET_REG, MALIBU_MODE_RESET_DEFAULT_VALUE);
+
+	return SW_OK;
+}
+
+/******************************************************************************
+*
 * malibu_phy_interface mode set
 *
 * set malibu phy interface mode
@@ -2015,11 +2036,13 @@ sw_error_t
 malibu_phy_interface_set_mode(a_uint32_t dev_id, a_uint32_t phy_id, fal_port_interface_mode_t interface_mode)
 {
 	a_uint16_t phy_data;
-	a_uint16_t phy_data1 = 0;
 
-       if (phy_id != COMBO_PHY_ID)
+	if ((phy_id < first_phy_addr) ||
+				(phy_id > (first_phy_addr + MALIBU_PHY_MAX_ADDR_INC)))
 		return SW_NOT_SUPPORTED;
-	phy_data = malibu_phy_reg_read(dev_id, phy_id, MALIBU_PHY_CHIP_CONFIG);
+
+	phy_data = malibu_phy_reg_read(dev_id,
+		first_phy_addr + MALIBU_PHY_MAX_ADDR_INC, MALIBU_PHY_CHIP_CONFIG);
 	phy_data &= 0xfff0;
 
 	if (interface_mode == PHY_PSGMII_BASET) {
@@ -2029,25 +2052,18 @@ malibu_phy_interface_set_mode(a_uint32_t dev_id, a_uint32_t phy_id, fal_port_int
 	} else if (interface_mode == PHY_PSGMII_FX100) {
 		phy_data |= MALIBU_PHY_PSGMII_FX100;
 	} else if (interface_mode == PHY_PSGMII_AMDET) {
-              phy_data |= MALIBU_PHY_PSGMII_AMDET;
+	       phy_data |= MALIBU_PHY_PSGMII_AMDET;
 	} else if (interface_mode == PHY_SGMII_BASET) {
-              phy_data |= MALIBU_PHY_SGMII_BASET;
+	       phy_data |= MALIBU_PHY_SGMII_BASET;
 	} else {
 		return SW_BAD_PARAM;
 	}
 
-	malibu_phy_reg_write(dev_id, phy_id, MALIBU_PHY_CHIP_CONFIG, phy_data);
+	malibu_phy_reg_write(dev_id,
+		first_phy_addr + MALIBU_PHY_MAX_ADDR_INC, MALIBU_PHY_CHIP_CONFIG, phy_data);
 
-/* reset operation */
-	phy_data1 = malibu_phy_mmd_read(0, PSGMII_ID, MALIBU_PHY_MMD1_NUM,
-				       MALIBU_PSGMII_CALIB_CTRL);
-	phy_data1 |= 0x4000;
-	malibu_phy_mmd_write(0, PSGMII_ID, MALIBU_PHY_MMD1_NUM,
-			     MALIBU_PSGMII_CALIB_CTRL, phy_data1);
-
-	phy_data1 &= 0xbfff;
-	malibu_phy_mmd_write(0, PSGMII_ID, MALIBU_PHY_MMD1_NUM,
-			     MALIBU_PSGMII_CALIB_CTRL, phy_data1);
+	/* reset operation */
+	malibu_phy_serdes_reset(dev_id);
 
 	return SW_OK;
 }
@@ -2356,7 +2372,7 @@ malibu_phy_show_counter(a_uint32_t dev_id, a_uint32_t phy_id,
 sw_error_t
 malibu_phy_hw_init(a_uint32_t dev_id, a_uint32_t port_bmp)
 {
-	a_uint32_t port_id = 0, phy_addr = 0, phy_cnt = 0, first_phy_addr = 0;
+	a_uint32_t port_id = 0, phy_addr = 0, phy_cnt = 0;
 	a_uint16_t dac_value,led_status, phy_data, org_id = 0, rev_id = 0;
 	a_uint32_t phy_id = 0;
 
@@ -2481,6 +2497,7 @@ static int malibu_phy_api_ops_init(void)
 	malibu_phy_api_ops->phy_counter_set = malibu_phy_set_counter;
 	malibu_phy_api_ops->phy_counter_get = malibu_phy_get_counter;
 	malibu_phy_api_ops->phy_counter_show = malibu_phy_show_counter;
+	malibu_phy_api_ops->phy_serdes_reset = malibu_phy_serdes_reset;
 
 	ret = hsl_phy_api_ops_register(MALIBU_PHY_CHIP, malibu_phy_api_ops);
 
