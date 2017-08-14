@@ -2304,11 +2304,8 @@ adpt_hppe_port_interface_mode_apply(a_uint32_t dev_id)
 	{
 		mode1 = PORT_WRAPPER_MAX;
 	}
-	else
-	{
-		rv |=_adpt_hppe_instance1_mode_get(dev_id, PORT5, &mode1);
-	}
-	 rv |=_adpt_hppe_instance1_mode_get(dev_id, PORT6, &mode2);
+	rv |=_adpt_hppe_instance1_mode_get(dev_id, PORT5, &mode1);
+	rv |=_adpt_hppe_instance1_mode_get(dev_id, PORT6, &mode2);
 	SSDK_DEBUG("mode0:%x, mode1:%x, mode2:%x\n",mode0, mode1, mode2);
 	if(rv)
 		goto out;
