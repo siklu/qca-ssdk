@@ -99,7 +99,7 @@ enum unphy_rst_type {
 #define UNIPHY2_PORT6_RX_CLK	"uniphy2_port6_rx_clk"
 #define UNIPHY2_PORT6_TX_CLK	"uniphy2_port6_tx_clk"
 #define PORT5_RX_SRC		"nss_port5_rx_clk_src"
-#define PORT5_TX_SRC		"nss_port5_rx_clk_src"
+#define PORT5_TX_SRC		"nss_port5_tx_clk_src"
 
 enum unphy_clk_type {
 	NSS_PORT1_RX_CLK_E = 0,
