@@ -1225,7 +1225,7 @@ static int qca_link_polling_select(struct qca_phy_priv *priv)
 	link_polling_required = of_get_property(np, "link-polling-required", &len);
 	if (!link_polling_required )
 	{
-		SSDK_ERROR("cannot find link-polling-required node\n");
+		SSDK_INFO("link-polling-required node does not exist\n");
 		return -1;
 	}
 	priv->link_polling_required  = be32_to_cpup(link_polling_required);
