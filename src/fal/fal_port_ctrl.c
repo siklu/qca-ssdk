@@ -3428,3 +3428,5 @@ EXPORT_SYMBOL(fal_port_interface_mode_get );
 EXPORT_SYMBOL(fal_port_interface_mode_status_get );
 EXPORT_SYMBOL(fal_port_source_filter_enable);
 EXPORT_SYMBOL(fal_port_source_filter_status_get);
+EXPORT_SYMBOL(fal_port_max_frame_size_set);
+EXPORT_SYMBOL(fal_port_max_frame_size_get);

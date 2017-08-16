@@ -29,7 +29,6 @@ extern "C" {
 #define HPPE_GCC_UNIPHY_REG_INC 0x100
 #define HPPE_TO_XGMAC_PORT_ID(port_id)  (port_id - 5)
 #define HPPE_TO_GMAC_PORT_ID(port_id) (port_id -1)
-#define HPPE_MAX_FRAME_SIZE 0x3FFF
 #define HPPE_FCS_LEN  4
 
 #define HPPE_MUX_PORT1  5

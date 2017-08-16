@@ -830,18 +830,10 @@ sw_error_t
 adpt_hppe_port_max_frame_size_set(a_uint32_t dev_id, fal_port_t port_id,
 		a_uint32_t max_frame)
 {
-	fal_mtu_ctrl_t mtu_ctrl;
-	fal_mru_ctrl_t mru_ctrl;
 	a_uint32_t port_mac_type = 0;
 	sw_error_t rv = SW_OK;
 
 	ADPT_DEV_ID_CHECK(dev_id);
-	mtu_ctrl.mtu_size = max_frame - HPPE_FCS_LEN;
-	mtu_ctrl.action = FAL_MAC_DROP;
-	rv |= adpt_hppe_port_mtu_set( dev_id, port_id, &mtu_ctrl);
-	mru_ctrl.mru_size = max_frame - HPPE_FCS_LEN;
-	mru_ctrl.action = FAL_MAC_DROP;
-	rv |= adpt_hppe_port_mru_set( dev_id, port_id, &mru_ctrl);
 
 	port_mac_type =qca_hppe_port_mac_type_get(dev_id, port_id);
 	if (port_mac_type == PORT_XGMAC_TYPE)
@@ -851,7 +843,7 @@ adpt_hppe_port_max_frame_size_set(a_uint32_t dev_id, fal_port_t port_id,
 		/*for gmac, rxtoolong have counters when package length is longer than jumbo size and shorter than max frame size,
 		   when package length is longer than max frame size, the rxbadbyte have counters.*/
 		rv |= _adpt_hppe_port_jumbo_size_set(dev_id, port_id, max_frame);
-		rv |= _adpt_gmac_port_max_frame_size_set( dev_id, port_id, HPPE_MAX_FRAME_SIZE);
+		rv |= _adpt_gmac_port_max_frame_size_set( dev_id, port_id, max_frame);
 	}
 	else
 		return SW_BAD_VALUE;
