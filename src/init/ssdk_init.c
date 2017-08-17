@@ -1375,8 +1375,8 @@ qca_mac_sw_sync_port_status_init(a_uint32_t dev_id)
 		qca_phy_priv_global[dev_id]->port_old_link[port_id - 1] = 0;
 		qca_phy_priv_global[dev_id]->port_old_speed[port_id - 1] = FAL_SPEED_BUTT;
 		qca_phy_priv_global[dev_id]->port_old_duplex[port_id - 1] = FAL_DUPLEX_BUTT;
-		qca_phy_priv_global[dev_id]->port_old_tx_flowctrl[port_id - 1] = 0;
-		qca_phy_priv_global[dev_id]->port_old_rx_flowctrl[port_id - 1] = 0;
+		qca_phy_priv_global[dev_id]->port_old_tx_flowctrl[port_id - 1] = 1;
+		qca_phy_priv_global[dev_id]->port_old_rx_flowctrl[port_id - 1] = 1;
 	}
 }
 void
