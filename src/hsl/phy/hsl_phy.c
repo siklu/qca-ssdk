@@ -141,27 +141,40 @@ int ssdk_phy_driver_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 							((1<<30) |(1<<16) |3), &rev_id);
 				phy_id = (org_id<<16) | rev_id;
 			}
-			if ((phy_id == F1V1_PHY) || (phy_id == F1V2_PHY) ||
-				(phy_id == F1V3_PHY) || (phy_id == F1V4_PHY))
-				phytype = F1_PHY_CHIP;
-			else if (phy_id == F2V1_PHY)
-				phytype = F2_PHY_CHIP;
-			else if ((phy_id == MALIBU2PORT_PHY) || (phy_id == MALIBU5PORT_PHY))
-				phytype = MALIBU_PHY_CHIP;
-			else if ((phy_id == AQUANTIA_PHY_107) || (phy_id == AQUANTIA_PHY_109) ||
-				(phy_id == AQUANTIA_PHY_111) ||
-				(phy_id == AQUANTIA_PHY_112))
-				phytype = AQUANTIA_PHY_CHIP;
-			else if (phy_id == QCA8033_PHY)
-				phytype = QCA803X_PHY_CHIP;
-			else
-			{
-				SSDK_INFO("dev_id = %d, phy_adress = %d, phy_id = 0x%x phy type doesn't match\n",
-						dev_id, phy_info[dev_id]->phy_address[i], phy_id);
-				continue;
+			switch (phy_id) {
+				case F1V1_PHY:
+				case F1V2_PHY:
+				case F1V3_PHY:
+				case F1V4_PHY:
+					phytype = F1_PHY_CHIP;
+					break;
+				case F2V1_PHY:
+					phytype = F2_PHY_CHIP;
+					break;
+				case MALIBU2PORT_PHY:
+				case MALIBU5PORT_PHY:
+					phytype = MALIBU_PHY_CHIP;
+					break;
+				case AQUANTIA_PHY_107:
+				case AQUANTIA_PHY_109:
+				case AQUANTIA_PHY_111:
+				case AQUANTIA_PHY_112:
+					phytype = AQUANTIA_PHY_CHIP;
+					break;
+				case QCA8030_PHY:
+				case QCA8033_PHY:
+				case QCA8035_PHY:
+					phytype = QCA803X_PHY_CHIP;
+					break;
+				default:
+					SSDK_INFO("dev_id = %d, phy_adress = %d, phy_id = 0x%x phy type doesn't match\n",
+							dev_id, phy_info[dev_id]->phy_address[i], phy_id);
 			}
-			phy_info[dev_id]->phy_type[i] = phytype;
-			ssdk_phy_driver[phytype].port_bmp[dev_id] |= (0x1 << i);
+
+			if (MAX_PHY_CHIP != phytype) {
+				phy_info[dev_id]->phy_type[i] = phytype;
+				ssdk_phy_driver[phytype].port_bmp[dev_id] |= (0x1 << i);
+			}
 		}
 	}
 

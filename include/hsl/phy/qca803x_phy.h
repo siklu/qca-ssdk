@@ -33,16 +33,23 @@ extern "C"
 #define QCA803X_PHY_ID1                          2
 #define QCA803X_PHY_ID2                          3
 #define QCA803X_AUTONEG_ADVERT                   4
+#define QCA803X_LINK_PARTNER_ABILITY             5
 #define QCA803X_1000BASET_CONTROL                9
 #define QCA803X_1000BASET_STATUS                 10
 #define QCA803X_MMD_CTRL_REG                     13
 #define QCA803X_MMD_DATA_REG                     14
+#define QCA803X_EXTENDED_STATUS                  15
+#define QCA803X_PHY_SPEC_CONTROL                 16
 #define QCA803X_PHY_INTR_MASK                    18
 #define QCA803X_PHY_INTR_STATUS                  19
 #define QCA803X_PHY_CDT_CONTROL                  22
 #define QCA803X_PHY_CDT_STATUS                   28
 #define QCA803X_DEBUG_PORT_ADDRESS               29
 #define QCA803X_DEBUG_PORT_DATA                  30
+#define QCA803X_PHY_CHIP_CONFIG          	 31	/* Chip Configuration Register  */
+
+#define QCA803X_PHY_SGMII_BASET              0x1
+#define QCA803X_PHY_RGMII_BASET              0x0
 
 #define QCA803X_DEBUG_PHY_HIBERNATION_CTRL  0xb
 #define QCA803X_DEBUG_PHY_POWER_SAVING_CTRL  0x29
@@ -54,6 +61,23 @@ extern "C"
 #define QCA803X_PHY_MMD3_WOL_CTRL  0x8012
 #define QCA803X_PHY_MMD3_ADDR_8023AZ_TIMER_CTRL       0x804e
 #define QCA803X_PHY_MMD3_ADDR_8023AZ_CLD_CTRL       0x8007
+#define QCA803X_PHY_MMD3_ADDR_CLD_CTRL5       0x8005
+#define QCA803X_PHY_MMD3_ADDR_CLD_CTRL3       0x8003
+
+#define QCA803X_PHY_MDIX     0x0020
+#define QCA803X_PHY_MDIX_AUTO     0x0060
+#define QCA803X_PHY_MDIX_STATUS     0x0040
+
+#define QCA803X_PHY_MMD7_NUM  7
+#define QCA803X_PHY_MMD3_NUM  3
+
+#define QCA803X_PWR_SAVE 0x29
+#define QCA803X_PWR_SAVE_EN 0x8000
+
+	/* CDT */
+#define QCA803X_MDI_PAIR_NUM 4
+#define QCA803X_RUN_CDT 0x1
+#define CDT_PAIR_MASK 0x0300
 
   /* PHY Registers Field */
 #define QCA803X_STATUS_LINK_PASS                 0x0400
@@ -95,6 +119,112 @@ extern "C"
 #define QCA803X_RESET_DONE(phy_control)                   \
     (((phy_control) & (QCA803X_CTRL_SOFTWARE_RESET)) == 0)
 
+  /* Status Register fields offset:1 */
+#define QCA803X_STATUS_EXTENDED_CAPS             0x0001
+
+  /* Jabber Detected */
+#define QCA803X_STATUS_JABBER_DETECT             0x0002
+
+  /* Link Status 1 = link */
+#define QCA803X_STATUS_LINK_STATUS_UP            0x0004
+
+  /* Auto Neg Capable */
+#define QCA803X_STATUS_AUTONEG_CAPS              0x0008
+
+  /* Remote Fault Detect */
+#define QCA803X_STATUS_REMOTE_FAULT              0x0010
+
+  /* Auto Neg Complete */
+#define QCA803X_STATUS_AUTO_NEG_DONE             0x0020
+
+  /* Preamble may be suppressed */
+#define QCA803X_STATUS_PREAMBLE_SUPPRESS         0x0040
+
+  /* Ext. status info in Reg 0x0F */
+#define QCA803X_STATUS_EXTENDED_STATUS           0x0100
+
+  /* 100T2 Half Duplex Capable */
+#define QCA803X_STATUS_100T2_HD_CAPS             0x0200
+
+  /* 100T2 Full Duplex Capable */
+#define QCA803X_STATUS_100T2_FD_CAPS             0x0400
+
+  /* 10T   Half Duplex Capable */
+#define QCA803X_STATUS_10T_HD_CAPS               0x0800
+
+  /* 10T   Full Duplex Capable */
+#define QCA803X_STATUS_10T_FD_CAPS               0x1000
+
+  /* 100X  Half Duplex Capable */
+#define QCA803X_STATUS_100X_HD_CAPS              0x2000
+
+  /* 100X  Full Duplex Capable */
+#define QCA803X_STATUS_100X_FD_CAPS              0x4000
+
+  /* 100T4 Capable */
+#define QCA803X_STATUS_100T4_CAPS                0x8000
+
+  /* extended status register capabilities */
+
+#define QCA803X_STATUS_1000T_HD_CAPS             0x1000
+
+#define QCA803X_STATUS_1000T_FD_CAPS             0x2000
+
+#define QCA803X_STATUS_1000X_HD_CAPS             0x4000
+
+#define QCA803X_STATUS_1000X_FD_CAPS             0x8000
+
+  /* Link Partner ability offset:5 */
+#define QCA803X_LINK_SLCT                        0x001f
+
+  /* Can do 10mbps half-duplex   */
+#define QCA803X_LINK_10BASETX_HALF_DUPLEX        0x0020
+
+  /* Can do 10mbps full-duplex   */
+#define QCA803X_LINK_10BASETX_FULL_DUPLEX        0x0040
+
+  /* Can do 100mbps half-duplex  */
+#define QCA803X_LINK_100BASETX_HALF_DUPLEX       0x0080
+
+  /* Can do 100mbps full-duplex  */
+#define QCA803X_LINK_100BASETX_FULL_DUPLEX       0x0100
+
+  /* Can do 1000mbps full-duplex  */
+#define QCA803X_LINK_1000BASETX_FULL_DUPLEX       0x0800
+
+  /* Can do 1000mbps half-duplex  */
+#define QCA803X_LINK_1000BASETX_HALF_DUPLEX       0x0400
+
+  /* 100BASE-T4  */
+#define QCA803X_LINK_100BASE4                    0x0200
+
+  /* PAUSE */
+#define QCA803X_LINK_PAUSE                       0x0400
+
+  /* Asymmetrical PAUSE */
+#define QCA803X_LINK_ASYPAUSE                    0x0800
+
+  /* Link partner faulted  */
+#define QCA803X_LINK_RFAULT                      0x2000
+
+  /* Link partner acked us */
+#define QCA803X_LINK_LPACK                       0x4000
+
+  /* Next page bit  */
+#define QCA803X_LINK_NPAGE                       0x8000
+
+  /* Auto Neg Complete */
+#define QCA803X_STATUS_AUTO_NEG_DONE             0x0020
+#define QCA803X_AUTONEG_DONE(ip_phy_status) \
+    (((ip_phy_status) & (QCA803X_STATUS_AUTO_NEG_DONE)) ==  \
+        (QCA803X_STATUS_AUTO_NEG_DONE))
+
+#define QCA803X_STATUS_RESOVLED                  0x0800
+#define QCA803X_SPEED_DUPLEX_RESOVLED(phy_status)                   \
+    (((phy_status) &                                  \
+        (QCA803X_STATUS_RESOVLED)) ==                    \
+        (QCA803X_STATUS_RESOVLED))
+
   /* Auto-Negotiation Advertisement register. offset:4 */
 #define QCA803X_ADVERTISE_SELECTOR_FIELD         0x0001
 
@@ -135,7 +265,8 @@ extern "C"
 
 #define QCA803X_ADVERTISE_MEGA_ALL \
     (QCA803X_ADVERTISE_10HALF | QCA803X_ADVERTISE_10FULL | \
-     QCA803X_ADVERTISE_100HALF | QCA803X_ADVERTISE_100FULL)
+     QCA803X_ADVERTISE_100HALF | QCA803X_ADVERTISE_100FULL | \
+     QCA803X_ADVERTISE_PAUSE | QCA803X_ADVERTISE_ASYM_PAUSE)
 
 #define QCA803X_BX_ADVERTISE_1000FULL                0x0020
 #define QCA803X_BX_ADVERTISE_1000HALF                0x0040
@@ -170,6 +301,8 @@ extern "C"
 #define QCA803X_INTR_BX_FX_STATUS_DOWN_CHANGE        0x0100
 #define QCA803X_INTR_BX_FX_STATUS_UP_CHANGE        0x0080
 #define QCA803X_INTR_MEDIA_STATUS_CHANGE             0x1000
+#define QCA803X_INTR_WOL             0x0001
+#define QCA803X_INTR_POE             0x0002
 
 sw_error_t
 qca803x_phy_set_duplex (a_uint32_t dev_id, a_uint32_t phy_id,

@@ -235,6 +235,8 @@ struct port_phy_status
 				/**< PSGMII Auto mode */
 		PHY_SGMII_BASET = 4,
 				/**< SGMII mode */
+		PHY_RGMII_BASET = 5,
+				/**< RGMII mode */
 		PORT_QSGMII,
 				/**<QSGMII mode*/
 		PORT_SGMII_PLUS,
