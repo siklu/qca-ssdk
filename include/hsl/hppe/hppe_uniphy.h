@@ -130,6 +130,19 @@ hppe_uniphy_channel4_input_output_4_set(
 		union uniphy_channel4_input_output_4_u *value);
 
 sw_error_t
+hppe_uniphy_instance_link_detect_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union uniphy_instance_link_detect_u *value);
+
+sw_error_t
+hppe_uniphy_instance_link_detect_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union uniphy_instance_link_detect_u *value);
+
+
+sw_error_t
 hppe_sr_xs_pcs_kr_sts1_get(
 		a_uint32_t dev_id,
 		a_uint32_t index,
