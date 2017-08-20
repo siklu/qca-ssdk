@@ -376,34 +376,10 @@ ssdk_hsl_access_mode_set(a_uint32_t dev_id, hsl_access_mode reg_mode);
 a_uint32_t ssdk_dt_global_get_mac_mode(a_uint32_t dev_id, a_uint32_t index);
 a_uint32_t ssdk_dt_global_set_mac_mode(a_uint32_t dev_id, a_uint32_t index, a_uint32_t mode);
 
-uint32_t
-qca_hppe_gcc_speed_clock1_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr,
-				a_uint8_t * reg_data, a_uint32_t len);
-
-uint32_t
-qca_hppe_gcc_speed_clock1_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr,
-				a_uint8_t * reg_data, a_uint32_t len);
-
-uint32_t
-qca_hppe_gcc_speed_clock2_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr,
-				a_uint8_t * reg_data, a_uint32_t len);
-
-uint32_t
-qca_hppe_gcc_speed_clock2_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr,
-				a_uint8_t * reg_data, a_uint32_t len);
-
-
 a_uint32_t
 qca_hppe_port_mac_type_get(a_uint32_t dev_id, a_uint32_t port_id);
 a_uint32_t
 qca_hppe_port_mac_type_set(a_uint32_t dev_id, a_uint32_t port_id, a_uint32_t port_type);
-
-uint32_t
-qca_hppe_gcc_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t reg_addr,
-			a_uint8_t * reg_data, a_uint32_t len);
-uint32_t
-qca_hppe_gcc_uniphy_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr,
-			a_uint8_t * reg_data, a_uint32_t len);
 
 void
 qca_mac_sw_sync_port_status_init(a_uint32_t dev_id);
