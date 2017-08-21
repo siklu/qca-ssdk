@@ -3051,8 +3051,7 @@ adpt_hppe_acl_rule_add(a_uint32_t dev_id, a_uint32_t list_id,
 		_adpt_hppe_acl_ipv4_fields_check(dev_id, list_id, rule_id, rule_nr, rule, &rule_type_map);
 	else if(rule->rule_type == FAL_ACL_RULE_IP6)/*input ipv6 type*/
 		_adpt_hppe_acl_ipv6_fields_check(dev_id, list_id, rule_id, rule_nr, rule, &rule_type_map);
-	else if(rule->rule_type == FAL_ACL_RULE_UDF)/*input udf type*/
-		_adpt_hppe_acl_udf_fields_check(dev_id, list_id, rule_id, rule_nr, rule, &rule_type_map);
+	_adpt_hppe_acl_udf_fields_check(dev_id, list_id, rule_id, rule_nr, rule, &rule_type_map);
 	_adpt_hppe_acl_l2_fields_check(dev_id, list_id, rule_id, rule_nr, rule, &rule_type_map);
 
 	if(rule_type_map == 0)
