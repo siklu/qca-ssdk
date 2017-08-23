@@ -1005,6 +1005,14 @@ aquantia_phy_hw_init(a_uint32_t dev_id,  a_uint32_t port_bmp)
 			phy_data |= AQUANTIA_AUTO_AND_ALARMS_INTR_MASK;
 			aquantia_phy_reg_write(dev_id, phy_addr, AQUANTIA_MMD_GLOABLE_REGISTERS,
 				AQUANTIA_GLOBAL_INTR_VENDOR_MASK, phy_data);
+
+			/* config aq phy ACT and LINK led behavior*/
+			phy_data = AQUANTIA_ACT_LED_VALUE;
+			aquantia_phy_reg_write(dev_id, phy_addr, AQUANTIA_MMD_GLOABLE_REGISTERS,
+				AQUANTIA_ACT_LED_STATUS, phy_data);
+			phy_data = AQUANTIA_LINK_LED_VALUE;
+			aquantia_phy_reg_write(dev_id, phy_addr, AQUANTIA_MMD_GLOABLE_REGISTERS,
+				AQUANTIA_LINK_LED_STATUS, phy_data);
 		}
 	}
 
