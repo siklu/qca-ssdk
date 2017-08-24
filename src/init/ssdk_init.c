@@ -4378,6 +4378,8 @@ static int ssdk_alloc_priv(void)
 		}
 		qca_phy_priv_global[dev_id]->qca_ssdk_sw_dev_registered = A_FALSE;
 		qca_phy_priv_global[dev_id]->ess_switch_flag = A_FALSE;
+		qca_ssdk_phy_address_init(dev_id);
+		qca_ssdk_port_bmp_init(dev_id);
 	}
 
 	return rev;
@@ -4399,8 +4401,6 @@ static int __init regi_init(void)
 
 	for (num = 0; num < ssdk_dt_global.num_devices; num++) {
 		ssdk_cfg_default_init(&cfg);
-		qca_ssdk_phy_address_init(num);
-		qca_ssdk_port_bmp_init(num);
 
 		#ifndef BOARD_AR71XX
 		#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
