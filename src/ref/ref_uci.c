@@ -2251,6 +2251,31 @@ parse_port_interfacemode(struct switch_val *val)
 }
 
 static int
+parse_port_interfacemodeapply(struct switch_val *val)
+{
+	struct switch_ext *switch_ext_p, *ext_value_p;
+	int rv = 0;
+
+	switch_ext_p = val->value.ext_val;
+	while(switch_ext_p) {
+		ext_value_p = switch_ext_p;
+
+		if(!strcmp(ext_value_p->option_name, "name")) {
+			switch_ext_p = switch_ext_p->next;
+			continue;
+		} else {
+			rv = -1;
+			break;
+		}
+
+		parameter_length++;
+		switch_ext_p = switch_ext_p->next;
+	}
+
+	return rv;
+}
+
+static int
 parse_port_poweron(struct switch_val *val)
 {
 	struct switch_ext *switch_ext_p, *ext_value_p;
@@ -10403,6 +10428,8 @@ parse_port(const char *command_name, struct switch_val *val)
 		rv = parse_port_wolstatus(val);
 	} else if(!strcmp(command_name, "InterfaceMode")) {
 		rv = parse_port_interfacemode(val);
+	} else if(!strcmp(command_name, "InterfaceModeApply")) {
+		rv = parse_port_interfacemodeapply(val);
 	} else if(!strcmp(command_name, "Poweron")) {
 		rv = parse_port_poweron(val);
 	} else if(!strcmp(command_name, "Poweroff")) {

@@ -653,6 +653,7 @@ struct sub_cmd_des_t g_port_des[] =
 	{"magicFrameMac", "set",   SW_API_PT_MAGIC_FRAME_MAC_SET, NULL},
 	{"wolstatus", "set",   SW_API_PT_WOL_STATUS_SET, NULL},
 	{"interfaceMode", "set",   SW_API_PT_INTERFACE_MODE_SET, NULL},
+	{"InterfaceModeApply", "set",   SW_API_PT_INTERFACE_MODE_APPLY, NULL},
 	{"mtu", "set",   SW_API_PT_MTU_SET, NULL},
 	{"mru", "set",   SW_API_PT_MRU_SET, NULL},
 	{"srcfilter", "set",   SW_API_PT_SOURCE_FILTER_SET, NULL},
