@@ -8337,18 +8337,27 @@ parse_acl_rule(struct switch_val *val)
 		rule.pri = prio & 0x7;
 		prio = (prio >> 3) & 0x3f;
 	}
+	SSDK_DEBUG("uci set acl list %d, rule %d\n", list_id, rule_id);
+	SSDK_DEBUG("uci set acl portbitmap 0x%x, obj_type %d, obj_value %d\n",
+			portmap, obj_type, obj_value);
 	fal_acl_list_creat(0, list_id, prio);
 	fal_acl_rule_add(0, list_id, rule_id, 1, &rule);
 	/*bind to port bitmap*/
 	if( portmap != 0 ) {
-		for (i = 0; i < AR8327_NUM_PORTS; i ++) {
+		for (i = 0; i < AR8327_NUM_PORTS; i++) {
 			fal_acl_list_unbind(0, list_id, 0, 0, i);
 			if (portmap & (0x1 << i)) {
-				fal_acl_list_bind(0, list_id, 0, 0, i);
+				rv = fal_acl_list_bind(0, list_id, 0, 0, i);
+				if(rv != SW_OK){
+					SSDK_ERROR("uci set acl fail %d\n", rv);
+				}
 			}
 		}
 	} else {
-		fal_acl_list_bind(0, list_id, 0, obj_type, obj_value);
+		rv = fal_acl_list_bind(0, list_id, 0, obj_type, obj_value);
+		if(rv != SW_OK){
+			SSDK_ERROR("uci set acl fail %d\n", rv);
+		}
 	}
 	fal_acl_status_set(0, A_TRUE);
 
