@@ -206,6 +206,7 @@ extern "C" {
 	typedef sw_error_t(*hsl_phy_counter_show) (a_uint32_t dev_id,
 						      a_uint32_t phy_id,
 						      fal_port_counter_info_t * counter_info);
+	typedef sw_error_t(*hsl_phy_serdes_reset) (a_uint32_t dev_id);
 
 
 	typedef struct hsl_phy_ops_s {
@@ -268,6 +269,7 @@ extern "C" {
 		hsl_phy_counter_set  phy_counter_set;
 		hsl_phy_counter_get  phy_counter_get;
 		hsl_phy_counter_show  phy_counter_show;
+		hsl_phy_serdes_reset phy_serdes_reset;
 	} hsl_phy_ops_t;
 
 typedef struct phy_driver_instance {
@@ -340,6 +342,12 @@ qca_ssdk_phy_addr_to_port(a_uint32_t dev_id, a_uint32_t phy_addr);
 void
 hsl_port_phy_c45_capability_set(a_uint32_t dev_id, a_uint32_t port_id,
 			a_bool_t enable);
+
+sw_error_t
+hsl_ssdk_phy_serdes_reset(a_uint32_t dev_id);
+
+sw_error_t
+hsl_ssdk_phy_mode_set(a_uint32_t dev_id, fal_port_interface_mode_t mode);
 
 sw_error_t ssdk_phy_driver_cleanup(void);
 
