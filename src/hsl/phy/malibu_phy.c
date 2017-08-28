@@ -24,6 +24,7 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/phy.h>
+#include "ssdk_init.h"
 #include "ssdk_plat.h"
 
 static a_uint32_t first_phy_addr = 0;
@@ -2055,6 +2056,8 @@ malibu_phy_interface_set_mode(a_uint32_t dev_id, a_uint32_t phy_id, fal_port_int
 	       phy_data |= MALIBU_PHY_PSGMII_AMDET;
 	} else if (interface_mode == PHY_SGMII_BASET) {
 	       phy_data |= MALIBU_PHY_SGMII_BASET;
+	} else if (interface_mode == PHY_PSGMII_FIBER) {
+		phy_data |= MALIBU_PHY_PSGMII_AMDET;
 	} else {
 		return SW_BAD_PARAM;
 	}
@@ -2064,6 +2067,13 @@ malibu_phy_interface_set_mode(a_uint32_t dev_id, a_uint32_t phy_id, fal_port_int
 
 	/* reset operation */
 	malibu_phy_serdes_reset(dev_id);
+
+	if (interface_mode == PHY_PSGMII_FIBER) {
+		malibu_phy_reg_write(dev_id, first_phy_addr + MALIBU_PHY_MAX_ADDR_INC,
+			MALIBU_PHY_CHIP_CONFIG, MALIBU_MODECTRL_DFLT);
+		malibu_phy_reg_write(dev_id, first_phy_addr + MALIBU_PHY_MAX_ADDR_INC,
+			MALIBU_PHY_CONTROL, MALIBU_MIICTRL_DFLT);
+	}
 
 	return SW_OK;
 }
@@ -2374,7 +2384,7 @@ malibu_phy_hw_init(a_uint32_t dev_id, a_uint32_t port_bmp)
 {
 	a_uint32_t port_id = 0, phy_addr = 0, phy_cnt = 0;
 	a_uint16_t dac_value,led_status, phy_data, org_id = 0, rev_id = 0;
-	a_uint32_t phy_id = 0;
+	a_uint32_t phy_id = 0, mode;
 
 	for (port_id = 0; port_id < SW_MAX_NR_PORT; port_id ++)
 	{
@@ -2428,6 +2438,10 @@ malibu_phy_hw_init(a_uint32_t dev_id, a_uint32_t port_bmp)
 	malibu_phy_mmd_write(dev_id, first_phy_addr + 4, MALIBU_PHY_MMD3_NUM,
 		MALIBU_PHY_MMD3_ADDR_REMOTE_LOOPBACK_CTRL, phy_data);
 
+
+	mode = ssdk_dt_global_get_mac_mode(dev_id, 0);
+	if (mode == PORT_WRAPPER_PSGMII_FIBER)
+		malibu_phy_interface_set_mode(dev_id, first_phy_addr, PHY_PSGMII_FIBER);
 	return SW_OK;
 }
 

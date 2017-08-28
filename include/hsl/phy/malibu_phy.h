@@ -168,6 +168,9 @@ extern "C"
 #define MODE_CFG_OFFSET              0
 #define MODE_CFG_LEN                 4
 
+#define MALIBU_MODECTRL_DFLT	0x533
+#define MALIBU_MIICTRL_DFLT	0x140
+
   /*debug port */
 #define MALIBU_DEBUG_PORT_RGMII_MODE            18
 #define MALIBU_DEBUG_PORT_RGMII_MODE_EN         0x0008

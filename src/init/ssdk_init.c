@@ -3172,6 +3172,7 @@ static int ssdk_dess_mac_mode_init(a_uint32_t dev_id, a_uint32_t mac_mode)
 
 	switch(mac_mode) {
 		case PORT_WRAPPER_PSGMII:
+		case PORT_WRAPPER_PSGMII_FIBER:
 			reg_value = 0x2200;
 			qca_psgmii_reg_write(dev_id, DESS_PSGMII_MODE_CONTROL,
 								(a_uint8_t *)&reg_value, 4);
@@ -3382,7 +3383,8 @@ qca_dess_hw_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 	a_uint32_t psgmii_result = 0;
 
 	/*Do Malibu self test to fix packet drop issue firstly*/
-	if (ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->mac_mode == PORT_WRAPPER_PSGMII) {
+	if ((ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->mac_mode == PORT_WRAPPER_PSGMII) ||
+	    (ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->mac_mode == PORT_WRAPPER_PSGMII_FIBER)) {
 		ssdk_psgmii_self_test(dev_id, A_FALSE, 100, &psgmii_result);
 		clear_self_test_config(dev_id);
 	} else {
