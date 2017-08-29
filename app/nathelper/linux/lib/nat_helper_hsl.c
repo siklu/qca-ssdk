@@ -276,13 +276,16 @@ if_mac_add(a_uint8_t *mac, a_uint32_t vid, uint32_t ipv6)
 {
     a_uint8_t i = 0;
 
+    if(if_mac_count > MAX_INTF_NUM)
+        return -1;
+
     for(i = 0; i < if_mac_count; i++)
     {
         if((!memcmp(global_if_mac_entry[i].mac_addr.uc, mac, 6)) &&
                 (global_if_mac_entry[i].vid_low == vid))
         {
             HNAT_PRINTK("%s: mac exist id:%d\n", __func__,
-                        global_if_mac_entry[if_mac_count].entry_id);
+                        global_if_mac_entry[i].entry_id);
             return 0;
         }
     }
