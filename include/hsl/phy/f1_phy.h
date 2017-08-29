@@ -44,7 +44,9 @@ extern "C" {
 #define F1_PHY_CDT_STATUS                   28
 #define F1_DEBUG_PORT_ADDRESS               29
 #define F1_DEBUG_PORT_DATA                  30
-
+#define F1_PHY_8023AZ_EEE_CTRL	0x3c
+#define F1_PHY_MMD7_NUM	7
+#define F1_PHY_AZ_ENABLE	0x6
 
     /*debug port*/
 #define F1_DEBUG_PORT_RGMII_MODE            18
@@ -454,7 +456,14 @@ extern "C" {
     f1_phy_intr_status_get(a_uint32_t dev_id, a_uint32_t phy_id,
                            a_uint32_t * intr_status_flag);
 
-	int f1_phy_init(a_uint32_t dev_id, a_uint32_t port_bmp);
+    sw_error_t
+    f1_phy_set_8023az(a_uint32_t dev_id, a_uint32_t phy_id, a_bool_t enable);
+
+    sw_error_t
+    f1_phy_get_8023az(a_uint32_t dev_id, a_uint32_t phy_id, a_bool_t *enable);
+
+    int
+    f1_phy_init(a_uint32_t dev_id, a_uint32_t port_bmp);
 
 #ifdef __cplusplus
 }

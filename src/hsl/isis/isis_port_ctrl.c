@@ -705,6 +705,57 @@ _isis_port_cdt(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t mdi_pair,
 
     return rv;
 }
+static sw_error_t
+_isis_port_8023az_set (a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+{
+    sw_error_t rv;
+    a_uint32_t phy_id = 0;
+    hsl_phy_ops_t *phy_drv;
+
+    HSL_DEV_ID_CHECK (dev_id);
+    if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+        return SW_BAD_PARAM;
+    }
+
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
+    if (NULL == phy_drv->phy_8023az_set)
+        return SW_NOT_SUPPORTED;
+
+    rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+    SW_RTN_ON_ERROR (rv);
+
+    rv = phy_drv->phy_8023az_set (dev_id, phy_id, enable);
+
+    return rv;
+}
+
+static sw_error_t
+_isis_port_8023az_get (a_uint32_t dev_id, fal_port_t port_id,
+		       a_bool_t * enable)
+{
+    sw_error_t rv;
+    a_uint32_t phy_id = 0;
+    hsl_phy_ops_t *phy_drv;
+
+    HSL_DEV_ID_CHECK (dev_id);
+
+    if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+    {
+        return SW_BAD_PARAM;
+    }
+
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
+    if (NULL == phy_drv->phy_8023az_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+    SW_RTN_ON_ERROR (rv);
+
+    rv = phy_drv->phy_8023az_get (dev_id, phy_id, enable);
+
+    return rv;
+}
 
 static sw_error_t
 _isis_port_rxhdr_mode_set(a_uint32_t dev_id, fal_port_t port_id,
@@ -1830,6 +1881,42 @@ isis_port_cdt(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t mdi_pair,
     HSL_API_UNLOCK;
     return rv;
 }
+/**
+ * @brief Set 802.3az status on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+isis_port_8023az_set (a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _isis_port_8023az_set (dev_id, port_id, enable);
+    HSL_API_UNLOCK;
+    return rv;
+}
+
+/**
+ * @brief Get 8023az status on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+isis_port_8023az_get (a_uint32_t dev_id, fal_port_t port_id,
+		      a_bool_t * enable)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _isis_port_8023az_get (dev_id, port_id, enable);
+    HSL_API_UNLOCK;
+    return rv;
+}
 
 /**
  * @brief Set status of Atheros header packets parsed on a particular port.
@@ -2255,6 +2342,8 @@ isis_port_ctrl_init(a_uint32_t dev_id)
         p_api->port_link_status_get = isis_port_link_status_get;
         p_api->port_mac_loopback_set = isis_port_mac_loopback_set;
         p_api->port_mac_loopback_get = isis_port_mac_loopback_get;
+        p_api->port_8023az_set = isis_port_8023az_set;
+        p_api->port_8023az_get = isis_port_8023az_get;
     }
 #endif
 
