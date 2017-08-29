@@ -27,6 +27,7 @@
 #include <aquantia_phy.h>
 #endif
 
+#include "sw.h"
 #include "ssdk_plat.h"
 
 phy_info_t *phy_info[SW_MAX_NR_DEV] = {0};
@@ -255,7 +256,7 @@ hsl_ssdk_phy_serdes_reset(a_uint32_t dev_id)
 	{
 		if (phy_info[dev_id]->phy_type[i] == MALIBU_PHY_CHIP)
 		{
-			phy_drv = hsl_phy_api_ops_get (dev_id, i);
+			SW_RTN_ON_NULL(phy_drv = hsl_phy_api_ops_get (dev_id, i));
 			if (NULL == phy_drv->phy_serdes_reset)
 				return SW_NOT_SUPPORTED;
 			rv = phy_drv->phy_serdes_reset(dev_id);
@@ -276,7 +277,7 @@ hsl_ssdk_phy_mode_set(a_uint32_t dev_id, fal_port_interface_mode_t mode)
 	{
 		if (phy_info[dev_id]->phy_type[i] == MALIBU_PHY_CHIP)
 		{
-			phy_drv = hsl_phy_api_ops_get (dev_id, i);
+			SW_RTN_ON_NULL(phy_drv = hsl_phy_api_ops_get (dev_id, i));
 			if (NULL == phy_drv->phy_interface_mode_set)
 				return SW_NOT_SUPPORTED;
 

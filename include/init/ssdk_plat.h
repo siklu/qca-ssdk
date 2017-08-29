@@ -257,15 +257,15 @@ struct qca_phy_priv {
 	struct delayed_work mib_dwork;
 	/*qm_err_check*/
 	struct mutex 	qm_lock;
-	a_uint32_t port_link_down[AR8327_NUM_PORTS];
-	a_uint32_t port_link_up[AR8327_NUM_PORTS];
-	a_uint32_t port_old_link[AR8327_NUM_PORTS];
-	a_uint32_t port_old_speed[AR8327_NUM_PORTS];
-	a_uint32_t port_old_duplex[AR8327_NUM_PORTS];
-	a_uint32_t port_old_phy_status[AR8327_NUM_PORTS];
-	a_uint32_t port_qm_buf[AR8327_NUM_PORTS];
-	a_uint32_t port_old_tx_flowctrl[AR8327_NUM_PORTS];
-	a_uint32_t port_old_rx_flowctrl[AR8327_NUM_PORTS];
+	a_uint32_t port_link_down[SW_MAX_NR_PORT];
+	a_uint32_t port_link_up[SW_MAX_NR_PORT];
+	a_uint32_t port_old_link[SW_MAX_NR_PORT];
+	a_uint32_t port_old_speed[SW_MAX_NR_PORT];
+	a_uint32_t port_old_duplex[SW_MAX_NR_PORT];
+	a_uint32_t port_old_phy_status[SW_MAX_NR_PORT];
+	a_uint32_t port_qm_buf[SW_MAX_NR_PORT];
+	a_uint32_t port_old_tx_flowctrl[SW_MAX_NR_PORT];
+	a_uint32_t port_old_rx_flowctrl[SW_MAX_NR_PORT];
 	struct delayed_work qm_dwork_polling;
 	struct work_struct	 intr_workqueue;
 	/*qm_err_check end*/
