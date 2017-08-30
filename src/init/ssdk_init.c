@@ -308,6 +308,8 @@ qca_ar8327_phy_fixup(struct qca_phy_priv *priv, int phy)
 		break;
 	}
 }
+
+#ifdef IN_PORTVLAN
 static void qca_port_isolate(a_uint32_t dev_id)
 {
 	a_uint32_t port_id, mem_port_id, mem_port_map[AR8327_NUM_PORTS]={0};
@@ -330,6 +332,27 @@ static void qca_port_isolate(a_uint32_t dev_id)
 		 fal_portvlan_member_update(dev_id, port_id, mem_port_map[port_id]);
 
 }
+
+static void ssdk_portvlan_init(a_uint32_t dev_id, a_uint32_t cpu_bmp, a_uint32_t lan_bmp, a_uint32_t wan_bmp)
+{
+	a_uint32_t port = 0;
+	for(port = 0; port < SSDK_MAX_PORT_NUM; port++)
+	{
+		if(cpu_bmp & (1 << port))
+		{
+			fal_portvlan_member_update(dev_id, port, lan_bmp|wan_bmp);
+		}
+		if(lan_bmp & (1 << port))
+		{
+			fal_portvlan_member_update(dev_id, port, (lan_bmp|cpu_bmp)&(~(1<<port)));
+		}
+		if(wan_bmp & (1 << port))
+		{
+			fal_portvlan_member_update(dev_id, port, (wan_bmp|cpu_bmp)&(~(1<<port)));
+		}
+	}
+}
+#endif
 
 sw_error_t
 qca_switch_init(a_uint32_t dev_id)
@@ -604,6 +627,7 @@ void qca_ar8327_sw_soft_reset(struct qca_phy_priv *priv)
 int qca_ar8327_hw_init(struct qca_phy_priv *priv)
 {
 	struct device_node *np = NULL;
+	ssdk_port_cfg port_cfg;
 	const __be32 *paddr;
 	a_uint32_t reg, value, i;
 	a_int32_t len;
@@ -652,7 +676,15 @@ int qca_ar8327_hw_init(struct qca_phy_priv *priv)
 	priv->mii_write(priv->device_id, AR8327_REG_MODULE_EN, value);
 
 	qca_switch_init(priv->device_id);
-	qca_port_isolate(priv->device_id);
+	port_cfg = ssdk_dt_global.ssdk_dt_switch_nodes[priv->device_id]->port_cfg;
+#ifdef IN_PORTVLAN
+	/* configuring the portvlan of S17C from BMP DT information is perferred */
+	if (port_cfg.cpu_bmp || port_cfg.lan_bmp || port_cfg.wan_bmp) {
+		ssdk_portvlan_init(priv->device_id, port_cfg.cpu_bmp, port_cfg.lan_bmp, port_cfg.wan_bmp);
+	} else {
+		qca_port_isolate(priv->device_id);
+	}
+#endif
 	qca_mac_enable_intr(priv);
 	qca_ar8327_phy_enable(priv);
 
@@ -2546,6 +2578,11 @@ static void ssdk_dt_parse_port_bmp(a_uint32_t dev_id,ssdk_init_cfg *cfg,
 		SSDK_ERROR("port_bmp doesn't exist!\n");
 		return;
 	}
+
+	ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->port_cfg.cpu_bmp = cfg->port_cfg.cpu_bmp;
+	ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->port_cfg.lan_bmp = cfg->port_cfg.lan_bmp;
+	ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->port_cfg.wan_bmp = cfg->port_cfg.wan_bmp;
+
 	portbmp = cfg->port_cfg.lan_bmp | cfg->port_cfg.wan_bmp;
 	qca_ssdk_port_bmp_set(dev_id, portbmp);
 
@@ -2909,35 +2946,7 @@ static int ssdk_flow_default_act_init(a_uint32_t dev_id)
 
 	return 0;
 }
-static int ssdk_portvlan_init(a_uint32_t cpu_bmp, a_uint32_t lan_bmp, a_uint32_t wan_bmp)
-{
-	a_uint32_t port = 0;
-	for(port = 0; port < SSDK_MAX_PORT_NUM; port++)
-	{
-		if(cpu_bmp & (1 << port))
-		{
-			#ifdef IN_PORTVLAN
-			fal_portvlan_member_update(0, 0, lan_bmp|wan_bmp);
-			#endif
-		}
-		if(lan_bmp & (1 << port))
-		{
-			#ifdef IN_PORTVLAN
-			fal_portvlan_member_update(0, port, (lan_bmp|cpu_bmp)&(~(1<<port)));
-			#endif
-		}
-		if(wan_bmp & (1 << port))
-		{
-			#ifdef IN_PORTVLAN
-			fal_portvlan_member_update(0, port, (wan_bmp|cpu_bmp)&(~(1<<port)));
-			#endif
-		}
-	}
-	return 0;
-}
-#endif
 
-#ifdef DESS
 static int ssdk_dess_led_init(ssdk_init_cfg *cfg)
 {
 	a_uint32_t i,led_num, led_source_id,source_id;
@@ -3231,7 +3240,9 @@ qca_dess_hw_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 	hsl_api_t *p_api;
 
 	qca_switch_init(dev_id);
-	ssdk_portvlan_init(cfg->port_cfg.cpu_bmp, cfg->port_cfg.lan_bmp, cfg->port_cfg.wan_bmp);
+#ifdef IN_PORTVLAN
+	ssdk_portvlan_init(dev_id, cfg->port_cfg.cpu_bmp, cfg->port_cfg.lan_bmp, cfg->port_cfg.wan_bmp);
+#endif
 
 	#ifdef IN_PORTVLAN
 	fal_port_rxhdr_mode_set(dev_id, 0, FAL_ALL_TYPE_FRAME_EN);
