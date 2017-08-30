@@ -276,7 +276,7 @@ int
 qca_ar8327_sw_hw_apply(struct switch_dev *dev)
 {
     struct qca_phy_priv *priv = qca_phy_priv_get(dev);
-    fal_pbmp_t portmask[AR8327_NUM_PORTS];
+    fal_pbmp_t *portmask;
     int i, j;
 
     if (priv->version == QCA_VER_HPPE) {
@@ -284,6 +284,8 @@ qca_ar8327_sw_hw_apply(struct switch_dev *dev)
     }
 
     mutex_lock(&priv->reg_mutex);
+
+    portmask = aos_mem_alloc(sizeof(fal_pbmp_t) * dev->ports);
 
     memset(portmask, 0, sizeof(portmask));
     if (!priv->init) {
@@ -353,6 +355,8 @@ qca_ar8327_sw_hw_apply(struct switch_dev *dev)
         fal_port_default_cvid_set(priv->device_id, i, pvid);
         fal_portvlan_member_update(priv->device_id, i, portmask[i]);
     }
+
+    aos_mem_free(portmask);
 
     mutex_unlock(&priv->reg_mutex);
 
