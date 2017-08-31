@@ -3353,7 +3353,7 @@ qca_hppe_portctrl_hw_init(a_uint32_t dev_id)
 		fal_port_rxmac_status_set (dev_id, i, A_FALSE);
 		fal_port_rxfc_status_set(dev_id, i, A_TRUE);
 		fal_port_txfc_status_set(dev_id, i, A_TRUE);
-		fal_port_max_frame_size_set(dev_id, i, 1518);
+		fal_port_max_frame_size_set(dev_id, i, SSDK_MAX_FRAME_SIZE);
 	}
 
 	for(i = 5; i < 7; i++) {
@@ -3362,7 +3362,7 @@ qca_hppe_portctrl_hw_init(a_uint32_t dev_id)
 		fal_port_rxmac_status_set (dev_id, i, A_FALSE);
 		fal_port_rxfc_status_set(dev_id, i, A_TRUE);
 		fal_port_txfc_status_set(dev_id, i, A_TRUE);
-		fal_port_max_frame_size_set(dev_id, i, 1518);
+		fal_port_max_frame_size_set(dev_id, i, SSDK_MAX_FRAME_SIZE);
 	}
 
 	for(i = 1; i < 7; i++) {
