@@ -963,6 +963,45 @@ aquantia_phy_intr_mask_get(a_uint32_t dev_id, a_uint32_t phy_id,
 	return SW_OK;
 }
 
+/******************************************************************************
+*
+* aquantia_phy_off - power off the phy
+*
+* Power off the phy
+*/
+sw_error_t aquantia_phy_poweroff(a_uint32_t dev_id, a_uint32_t phy_id)
+{
+	a_uint16_t phy_data;
+	sw_error_t rv;
+
+	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
+		AQUANTIA_GLOABLE_STANDARD_CONTROL1);
+	phy_data |= AQUANTIA_POWER_DOWN;
+	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
+		AQUANTIA_GLOABLE_STANDARD_CONTROL1,phy_data);
+
+	return rv;
+}
+
+/******************************************************************************
+*
+* aquantia_phy_on - power on the phy
+*
+* Power on the phy
+*/
+sw_error_t aquantia_phy_poweron(a_uint32_t dev_id, a_uint32_t phy_id)
+{
+	a_uint16_t phy_data;
+	sw_error_t rv;
+
+	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
+		AQUANTIA_GLOABLE_STANDARD_CONTROL1);
+	phy_data &= ~AQUANTIA_POWER_DOWN;
+	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
+		AQUANTIA_GLOABLE_STANDARD_CONTROL1,phy_data);
+
+	return rv;
+}
 
 /******************************************************************************
 *
@@ -1043,6 +1082,8 @@ static int aquantia_phy_api_ops_init(void)
 	aquantia_phy_api_ops->phy_autoneg_adv_get = aquantia_phy_get_autoneg_adv;
 	aquantia_phy_api_ops->phy_powersave_set = aquantia_phy_set_powersave;
 	aquantia_phy_api_ops->phy_powersave_get = aquantia_phy_get_powersave;
+	aquantia_phy_api_ops->phy_power_on = aquantia_phy_poweron;
+	aquantia_phy_api_ops->phy_power_off = aquantia_phy_poweroff;
 	aquantia_phy_api_ops->phy_cdt = aquantia_phy_cdt;
 	aquantia_phy_api_ops->phy_link_status_get = aquantia_phy_get_link_status;
 	aquantia_phy_api_ops->phy_mdix_set = aquantia_phy_set_mdix;
