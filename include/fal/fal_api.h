@@ -106,7 +106,9 @@ extern "C" {
     SW_API_DEF(SW_API_PT_SOURCE_FILTER_GET, fal_port_source_filter_status_get), \
     SW_API_DEF(SW_API_PT_SOURCE_FILTER_SET, fal_port_source_filter_enable), \
     SW_API_DEF(SW_API_PT_FRAME_MAX_SIZE_GET, fal_port_max_frame_size_get), \
-    SW_API_DEF(SW_API_PT_FRAME_MAX_SIZE_SET, fal_port_max_frame_size_set),
+    SW_API_DEF(SW_API_PT_FRAME_MAX_SIZE_SET, fal_port_max_frame_size_set), \
+    SW_API_DEF(SW_API_PT_INTERFACE_3AZ_STATUS_SET, fal_port_interface_3az_status_set), \
+    SW_API_DEF(SW_API_PT_INTERFACE_3AZ_STATUS_GET, fal_port_interface_3az_status_get),
 
 #define PORTCONTROL_API_PARAM \
     SW_API_DESC(SW_API_PT_DUPLEX_GET) \
@@ -191,7 +193,9 @@ extern "C" {
     SW_API_DESC(SW_API_PT_SOURCE_FILTER_GET) \
     SW_API_DESC(SW_API_PT_SOURCE_FILTER_SET) \
     SW_API_DESC(SW_API_PT_FRAME_MAX_SIZE_GET) \
-    SW_API_DESC(SW_API_PT_FRAME_MAX_SIZE_SET)
+    SW_API_DESC(SW_API_PT_FRAME_MAX_SIZE_SET) \
+    SW_API_DESC(SW_API_PT_INTERFACE_3AZ_STATUS_SET)  \
+    SW_API_DESC(SW_API_PT_INTERFACE_3AZ_STATUS_GET)
 #else
 #define PORTCONTROL_API \
     SW_API_DEF(SW_API_PT_DUPLEX_SET, fal_port_duplex_set), \

@@ -878,4 +878,154 @@ union epe_dbg_out_cnt_reg_u {
 	struct epe_dbg_out_cnt_reg bf;
 };
 
+/*[register] LPI_ENABLE*/
+#define LPI_ENABLE
+#define LPI_ENABLE_ADDRESS 0x0
+#define LPI_ENABLE_NUM     1
+#define LPI_ENABLE_INC     0x0
+#define LPI_ENABLE_TYPE    REG_TYPE_RW
+#define LPI_ENABLE_DEFAULT 0x0
+	/*[field] LPI_PORT1_EN*/
+	#define LPI_PORT1_EN
+	#define LPI_PORT1_EN_OFFSET  0
+	#define LPI_PORT1_EN_LEN     1
+	#define LPI_PORT1_EN_DEFAULT 0x0
+	/*[field] LPI_PORT2_EN*/
+	#define LPI_PORT2_EN
+	#define LPI_PORT2_EN_OFFSET  1
+	#define LPI_PORT2_EN_LEN     1
+	#define LPI_PORT2_EN_DEFAULT 0x0
+	/*[field] LPI_PORT3_EN*/
+	#define LPI_PORT3_EN
+	#define LPI_PORT3_EN_OFFSET  2
+	#define LPI_PORT3_EN_LEN     1
+	#define LPI_PORT3_EN_DEFAULT 0x0
+	/*[field] LPI_PORT4_EN*/
+	#define LPI_PORT4_EN
+	#define LPI_PORT4_EN_OFFSET  3
+	#define LPI_PORT4_EN_LEN     1
+	#define LPI_PORT4_EN_DEFAULT 0x0
+	/*[field] LPI_PORT5_EN*/
+	#define LPI_PORT5_EN
+	#define LPI_PORT5_EN_OFFSET  4
+	#define LPI_PORT5_EN_LEN     1
+	#define LPI_PORT5_EN_DEFAULT 0x0
+	/*[field] LPI_LPI_PORT6_EN*/
+	#define LPI_PORT6_EN
+	#define LPI_PORT6_EN_OFFSET  5
+	#define LPI_PORT6_EN_LEN     1
+	#define LPI_LPI_PORT6_EN_DEFAULT 0x0
+struct lpi_enable {
+	a_uint32_t  lpi_port1_en:1;
+	a_uint32_t  lpi_port2_en:1;
+	a_uint32_t  lpi_port3_en:1;
+	a_uint32_t  lpi_port4_en:1;
+	a_uint32_t  lpi_port5_en:1;
+	a_uint32_t  lpi_port6_en:1;
+	a_uint32_t  _reserved0:26;
+};
+
+union lpi_enable_u {
+	a_uint32_t val;
+	struct lpi_enable bf;
+};
+
+/*[register] LPI_PORT_TIMER*/
+#define LPI_PORT_TIMER_ENABLE
+#define LPI_PORT_TIMER_ADDRESS 0x0
+#define LPI_PORT_TIMER_NUM     6
+#define LPI_PORT_TIMER_INC     0x4
+#define LPI_PORT_TIMER_TYPE    REG_TYPE_RW
+#define LPI_PORT_TIMER_DEFAULT 0x0
+	/*[field] LPI_PORT_WAKEUP_TIMER*/
+	#define LPI_PORT_WAKEUP_TIMER
+	#define LPI_PORT_WAKEUP_TIMER_OFFSET  0
+	#define LPI_PORT_WAKEUP_TIMER_LEN     16
+	#define LPI_PORT_WAKEUP_TIMER_DEFAULT 0x0
+	/*[field] LPI_PORT_SLEEP_TIMER*/
+	#define LPI_PORT_SLEEP_TIMER
+	#define LPI_PORT_SLEEP_TIMER_OFFSET  16
+	#define LPI_PORT_SLEEP_TIMER_LEN     16
+	#define LPI_PORT_SLEEP_TIMER_DEFAULT 0x0
+
+struct lpi_port_timer {
+	a_uint32_t  lpi_port_wakeup_timer:16;
+	a_uint32_t  lpi_port_sleep_timer:16;
+};
+
+union lpi_port_timer_u {
+	a_uint32_t val;
+	struct lpi_port_timer bf;
+};
+
+/*[register] LPI_DBG_ADDR*/
+#define LPI_DBG_ADDR
+#define LPI_DBG_ADDR_ADDRESS 0x1C
+#define LPI_DBG_ADDR_NUM     1
+#define LPI_DBG_ADDR_INC     0x1
+#define LPI_DBG_ADDR_TYPE    REG_TYPE_RW
+#define LPI_DBG_ADDR_DEFAULT 0x0
+	/*[field] LPI_DBG_ADDR*/
+	#define LPI_DBG_ADDR
+	#define IIP_DBG_ADDR_OFFSET  0
+	#define LPI_DBG_ADDR_LEN     8
+	#define LPI_DBG_ADDR_DEFAULT 0x0
+
+struct lpi_dbg_addr {
+	a_uint32_t  lpi_debug_addr:8;
+	a_uint32_t  _reserved0:24;
+};
+
+union lpi_dbg_addr_u {
+	a_uint32_t val;
+	struct lpi_dbg_addr bf;
+};
+
+/*[register] LPI_DBG_DATA*/
+#define LPI_DBG_DATA
+#define LPI_DBG_DATA_ADDRESS 0x20
+#define LPI_DBG_DATA_NUM     1
+#define LPI_DBG_DATA_INC     0x1
+#define LPI_DBG_DATA_TYPE    REG_TYPE_RW
+#define LPI_DBG_DATA_DEFAULT 0x0
+	/*[field] LPI_DBG_DATA*/
+	#define LPI_DBG_DATA
+	#define LPI_DBG_DATA_OFFSET  0
+	#define LPI_DBG_DATA_LEN     32
+	#define LPI_DBG_DATA_DEFAULT 0x0
+
+struct lpi_dbg_data {
+	a_uint32_t  lpi_debug_data:8;
+	a_uint32_t  _reserved0:24;
+};
+
+union lpi_dbg_data_u {
+	a_uint32_t val;
+	struct lpi_dbg_data bf;
+};
+
+/*[register] LPI_CNT*/
+#define LPI_CNT
+#define LPI_CNT_ADDRESS 0x30
+#define LPI_CNT_NUM     1
+#define LPI_CNT_INC     0x1
+#define LPI_CNT_TYPE    REG_TYPE_RW
+#define LPI_CNT_DEFAULT 0x0
+	/*[field] LPI_CNT*/
+	#define LPI_CNT
+	#define LPI_CNT_OFFSET  0
+	#define LPI_CNT_LEN     9
+	#define LPI_CNT_DEFAULT 0x0
+
+struct lpi_cnt {
+	a_uint32_t  lpi_cnt_val:9;
+	a_uint32_t  _reserved0:23;
+};
+
+union lpi_cnt_u {
+	a_uint32_t val;
+	struct lpi_cnt bf;
+};
+
+
 #endif

@@ -1835,6 +1835,41 @@ _fal_port_source_filter_set(a_uint32_t dev_id,
     return rv;
 }
 
+static sw_error_t
+_fal_port_interface_3az_status_set(a_uint32_t dev_id, fal_port_t port_id,
+		a_bool_t enable)
+{
+
+	adpt_api_t *p_api;
+	sw_error_t rv = SW_OK;
+
+	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+	if (NULL == p_api->adpt_port_interface_3az_status_set)
+		return SW_NOT_SUPPORTED;
+
+	rv = p_api->adpt_port_interface_3az_status_set(dev_id, port_id, enable);
+	return rv;
+
+}
+
+static sw_error_t
+_fal_port_interface_3az_status_get(a_uint32_t dev_id, fal_port_t port_id,
+		a_bool_t * enable)
+{
+	adpt_api_t *p_api;
+	sw_error_t rv = SW_OK;
+
+	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+	if (NULL == p_api->adpt_port_interface_3az_status_get)
+		return SW_NOT_SUPPORTED;
+
+	rv = p_api->adpt_port_interface_3az_status_get(dev_id, port_id, enable);
+	return rv;
+
+}
+
 /*insert flag for inner fal, don't remove it*/
 /**
  * @brief Set duplex mode on a particular port.
@@ -3360,6 +3395,29 @@ fal_port_source_filter_enable(a_uint32_t dev_id,
     return rv;
 }
 
+sw_error_t
+fal_port_interface_3az_status_set(a_uint32_t dev_id, fal_port_t port_id,
+		a_bool_t enable)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_port_interface_3az_status_set(dev_id, port_id, enable);
+    FAL_API_UNLOCK;
+    return rv;
+}
+sw_error_t
+fal_port_interface_3az_status_get(a_uint32_t dev_id, fal_port_t port_id,
+		a_bool_t * enable)
+{
+    sw_error_t rv;
+
+    FAL_API_LOCK;
+    rv = _fal_port_interface_3az_status_get(dev_id, port_id, enable);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
 
 /*insert flag for outter fal, don't remove it*/
 /**
@@ -3430,3 +3488,5 @@ EXPORT_SYMBOL(fal_port_source_filter_enable);
 EXPORT_SYMBOL(fal_port_source_filter_status_get);
 EXPORT_SYMBOL(fal_port_max_frame_size_set);
 EXPORT_SYMBOL(fal_port_max_frame_size_get);
+EXPORT_SYMBOL(fal_port_interface_3az_status_set);
+EXPORT_SYMBOL(fal_port_interface_3az_status_get);

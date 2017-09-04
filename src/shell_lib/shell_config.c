@@ -658,6 +658,7 @@ struct sub_cmd_des_t g_port_des[] =
 	{"mru", "set",   SW_API_PT_MRU_SET, NULL},
 	{"srcfilter", "set",   SW_API_PT_SOURCE_FILTER_SET, NULL},
 	{"frameMaxSize", "set",   SW_API_PT_FRAME_MAX_SIZE_SET, NULL},
+	{"interface3az", "set", SW_API_PT_INTERFACE_3AZ_STATUS_SET, NULL},
 	#endif
 	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
 };
