@@ -367,6 +367,43 @@ static sw_error_t qca803x_phy_api_ops_init(void)
 
 /******************************************************************************
 *
+* qca803x_phy_hw_init
+*
+*/
+sw_error_t
+qca803x_phy_hw_init(a_uint32_t dev_id, a_uint32_t port_bmp)
+{
+	sw_error_t  ret = SW_OK;
+	a_uint32_t port_id = 0, phy_addr = 0, mac_mode = 0;
+
+	for (port_id = 0; port_id < SW_MAX_NR_PORT; port_id ++)
+	{
+		if (port_bmp & (0x1 << port_id))
+		{
+			/*config phy mode based on the mac mode DT*/
+			switch (port_id) {
+				case SSDK_PORT0:
+					mac_mode = ssdk_dt_global_get_mac_mode(dev_id, SSDK_UNIPHY_INSTANCE0);
+					break;
+				case SSDK_PORT6:
+					mac_mode = ssdk_dt_global_get_mac_mode(dev_id, SSDK_UNIPHY_INSTANCE2);
+					break;
+				default:
+					mac_mode = PORT_WRAPPER_MAX;
+			}
+
+			phy_addr = qca_ssdk_port_to_phy_addr(dev_id, port_id);
+			if (mac_mode == PORT_WRAPPER_SGMII_CHANNEL0)
+				qca803x_phy_interface_set_mode(dev_id, phy_addr, PHY_SGMII_BASET);
+			else if (mac_mode == PORT_WRAPPER_RGMII)
+				qca803x_phy_interface_set_mode(dev_id, phy_addr, PHY_RGMII_BASET);
+		}
+	}
+	return ret;
+}
+
+/******************************************************************************
+*
 * qca803x_phy_init -
 *
 */
@@ -380,6 +417,6 @@ int qca803x_phy_init(a_uint32_t dev_id, a_uint32_t port_bmp)
 		phy_ops_flag = 1;
 	}
 
+	qca803x_phy_hw_init(dev_id, port_bmp);
 	return 0;
 }
-
