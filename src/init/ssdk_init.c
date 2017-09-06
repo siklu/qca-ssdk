@@ -109,11 +109,6 @@
 #include "fal_rfs.h"
 #endif
 #endif
-
-#if defined(HPPE)
-#include "hppe_init.h"
-#endif
-
 #include "adpt.h"
 
 #ifdef IN_RFS
@@ -3960,11 +3955,11 @@ qca_hppe_interface_mode_init(a_uint32_t dev_id, a_uint32_t mode0, a_uint32_t mod
 	if (NULL == p_api->adpt_uniphy_mode_set)
 		return SW_NOT_SUPPORTED;
 
-	rv = p_api->adpt_uniphy_mode_set(dev_id, HPPE_UNIPHY_INSTANCE0, mode0);
+	rv = p_api->adpt_uniphy_mode_set(dev_id, SSDK_UNIPHY_INSTANCE0, mode0);
 
-	rv = p_api->adpt_uniphy_mode_set(dev_id, HPPE_UNIPHY_INSTANCE1, mode1);
+	rv = p_api->adpt_uniphy_mode_set(dev_id, SSDK_UNIPHY_INSTANCE1, mode1);
 
-	rv = p_api->adpt_uniphy_mode_set(dev_id, HPPE_UNIPHY_INSTANCE2, mode2);
+	rv = p_api->adpt_uniphy_mode_set(dev_id, SSDK_UNIPHY_INSTANCE2, mode2);
 
 	for(port_id =1; port_id <=6; port_id++)
 	{
