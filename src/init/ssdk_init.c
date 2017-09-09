@@ -1370,7 +1370,7 @@ qca_mac_sw_sync_port_status_init(a_uint32_t dev_id)
 {
 	a_uint32_t port_id;
 
-	for (port_id = 1; port_id < AR8327_NUM_PORTS; port_id ++) {
+	for (port_id = 1; port_id < SW_MAX_NR_PORT; port_id ++) {
 
 		qca_phy_priv_global[dev_id]->port_old_link[port_id - 1] = 0;
 		qca_phy_priv_global[dev_id]->port_old_speed[port_id - 1] = FAL_SPEED_BUTT;
