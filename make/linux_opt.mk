@@ -160,6 +160,10 @@ ifeq (TRUE, $(IN_AQUANTIA_PHY))
   MODULE_CFLAG += -DIN_AQUANTIA_PHY
 endif
 
+ifeq (TRUE, $(IN_QCA803X_PHY))
+  MODULE_CFLAG += -DIN_QCA803X_PHY
+endif
+
 ifeq (TRUE, $(IN_VSI))
   MODULE_CFLAG += -DIN_VSI
 endif
