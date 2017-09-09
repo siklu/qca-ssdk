@@ -1296,6 +1296,59 @@ f1_phy_intr_status_get(a_uint32_t dev_id, a_uint32_t phy_id,
 
     return SW_OK;
 }
+/******************************************************************************
+*
+*f1_phy_set_8023az status
+*
+* get 8023az status
+*/
+
+sw_error_t
+f1_phy_set_8023az(a_uint32_t dev_id, a_uint32_t phy_id, a_bool_t enable)
+{
+	a_uint16_t phy_data;
+
+	phy_data = f1_phy_mmd_read(dev_id, phy_id, F1_PHY_MMD7_NUM,
+				       F1_PHY_8023AZ_EEE_CTRL);
+	if (enable == A_TRUE) {
+		phy_data |= F1_PHY_AZ_ENABLE;
+
+		f1_phy_mmd_write(dev_id, phy_id, F1_PHY_MMD7_NUM,
+			     F1_PHY_8023AZ_EEE_CTRL, phy_data);
+	} else {
+		phy_data &= ~F1_PHY_AZ_ENABLE;
+
+		f1_phy_mmd_write(dev_id, phy_id, F1_PHY_MMD7_NUM,
+			     F1_PHY_8023AZ_EEE_CTRL, phy_data);
+	}
+
+	f1_phy_restart_autoneg(dev_id, phy_id);
+
+	return SW_OK;
+}
+
+/******************************************************************************
+*
+*f1_phy_get_8023az status
+*
+* get 8023az status
+*/
+sw_error_t
+f1_phy_get_8023az(a_uint32_t dev_id, a_uint32_t phy_id, a_bool_t * enable)
+{
+	a_uint16_t phy_data;
+
+	*enable = A_FALSE;
+
+	phy_data = f1_phy_mmd_read(dev_id, phy_id, F1_PHY_MMD7_NUM,
+				       F1_PHY_8023AZ_EEE_CTRL);
+
+	if ((phy_data & 0x6) == F1_PHY_AZ_ENABLE)
+		*enable = A_TRUE;
+
+	return SW_OK;
+}
+
 static int f1_phy_api_ops_init(void)
 {
 	int ret;
@@ -1337,6 +1390,8 @@ static int f1_phy_api_ops_init(void)
 	f1_phy_api_ops->phy_intr_mask_set = f1_phy_intr_mask_set;
 	f1_phy_api_ops->phy_intr_mask_get = f1_phy_intr_mask_get;
 	f1_phy_api_ops->phy_intr_status_get = f1_phy_intr_status_get;
+	f1_phy_api_ops->phy_8023az_set = f1_phy_set_8023az;
+	f1_phy_api_ops->phy_8023az_get = f1_phy_get_8023az;
 
 	ret = hsl_phy_api_ops_register(F1_PHY_CHIP, f1_phy_api_ops);
 
