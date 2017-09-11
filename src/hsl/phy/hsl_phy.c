@@ -156,6 +156,7 @@ int ssdk_phy_driver_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 					phytype = MALIBU_PHY_CHIP;
 					break;
 				case AQUANTIA_PHY_107:
+				case AQUANTIA_PHY_108:
 				case AQUANTIA_PHY_109:
 				case AQUANTIA_PHY_111:
 				case AQUANTIA_PHY_112:
