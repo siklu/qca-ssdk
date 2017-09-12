@@ -15,6 +15,7 @@
 #include "ssdk_init.h"
 #include "ssdk_plat.h"
 #include "ssdk_clk.h"
+#include "fal.h"
 #include <linux/kconfig.h>
 #include <linux/version.h>
 #include <linux/kernel.h>
@@ -122,7 +123,6 @@ void ssdk_uniphy_clock_enable(
 
 /* below special for ppe */
 #if defined(HPPE)
-static a_bool_t uniphy1_status = A_FALSE;
 
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
 struct clk_uniphy {
@@ -436,7 +436,6 @@ void ssdk_uniphy_raw_clock_set(
 		if (clk_set_parent(uniphy_port_clks[PORT5_RX_SRC_E + direction],
 				uniphy_raw_clks[id]->clk))
 			SSDK_ERROR("set parent fail!\n");
-		uniphy1_status = A_TRUE;
 	}
 
 	if (clock != old_clock) {
@@ -577,6 +576,7 @@ ssdk_port_speed_clock_set(
 	a_uint32_t port_id,
 	a_uint32_t rate)
 {
+	a_uint32_t mode = 0;
 
                switch (port_id ) {
 		case SSDK_PORT1:
@@ -608,7 +608,8 @@ ssdk_port_speed_clock_set(
 					NSS_PORT5_RX_CLK_E, rate);
 			ssdk_uniphy_clock_rate_set(dev_id,
 					NSS_PORT5_TX_CLK_E, rate);
-			if (uniphy1_status)
+			mode = ssdk_dt_global_get_mac_mode(dev_id, UNIPHY_INSTANCE_1);
+			if (mode != PORT_INTERFACE_MODE_MAX)
 				ssdk_uniphy1_clock_source_set();
 			break;
 		case SSDK_PORT6:
