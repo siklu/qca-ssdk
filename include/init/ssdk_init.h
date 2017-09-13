@@ -391,6 +391,7 @@ void
 qca_mac_sw_sync_port_status_init(a_uint32_t dev_id);
 
 ssdk_dt_scheduler_cfg *ssdk_bootup_shceduler_cfg_get(a_uint32_t dev_id);
+struct qca_phy_priv* ssdk_phy_priv_data_get(a_uint32_t dev_id);
 
 #ifdef __cplusplus
 }

@@ -139,6 +139,14 @@ ssdk_dt_global_t ssdk_dt_global = {0};
 
 struct qca_phy_priv **qca_phy_priv_global;
 
+struct qca_phy_priv* ssdk_phy_priv_data_get(a_uint32_t dev_id)
+{
+	if (dev_id >= SW_MAX_NR_DEV || !qca_phy_priv_global)
+		return NULL;
+
+	return qca_phy_priv_global[dev_id];
+}
+
 a_uint32_t ssdk_dt_global_get_mac_mode(a_uint32_t dev_id, a_uint32_t index)
 {
 	if (index == 0)

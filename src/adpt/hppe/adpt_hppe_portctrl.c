@@ -2315,8 +2315,14 @@ adpt_hppe_port_interface_mode_apply(a_uint32_t dev_id)
 	a_uint32_t mode0 = PORT_WRAPPER_MAX,mode1 = PORT_WRAPPER_MAX,
 			      mode2 = PORT_WRAPPER_MAX;
 	a_uint32_t mode0_old, mode1_old, mode2_old;
+	struct qca_phy_priv *priv;
 
 	ADPT_DEV_ID_CHECK(dev_id);
+	priv = ssdk_phy_priv_data_get(dev_id);
+	if (!priv)
+	{
+		return SW_FAIL;
+	}
 	/*power off the ports*/
 	rv = adpt_hppe_all_ports_power_on_set(dev_id, A_FALSE);
 	if(rv)
@@ -2331,7 +2337,11 @@ adpt_hppe_port_interface_mode_apply(a_uint32_t dev_id)
 	rv = _adpt_hppe_instance0_mode_get(dev_id, &mode0);
 	if(rv)
 	{
-                goto recovery;
+		/*restore the mode0 mode1 mode2*/
+		ssdk_dt_global_set_mac_mode(dev_id, MAC_MODE0_INDEX, mode0_old);
+		ssdk_dt_global_set_mac_mode(dev_id, MAC_MODE1_INDEX, mode1_old);
+		ssdk_dt_global_set_mac_mode(dev_id, MAC_MODE2_INDEX, mode2_old);
+		return rv;;
 	}
 	if(mode0 == PORT_WRAPPER_SGMII_CHANNEL4)
 	{
@@ -2342,38 +2352,63 @@ adpt_hppe_port_interface_mode_apply(a_uint32_t dev_id)
 		rv =_adpt_hppe_instance1_mode_get(dev_id, PHYSICAL_PORT5, &mode1);
 		if(rv)
 		{
-			goto recovery;
+			/*restore the mode0 mode1 mode2*/
+			ssdk_dt_global_set_mac_mode(dev_id, MAC_MODE0_INDEX, mode0_old);
+			ssdk_dt_global_set_mac_mode(dev_id, MAC_MODE1_INDEX, mode1_old);
+			ssdk_dt_global_set_mac_mode(dev_id, MAC_MODE2_INDEX, mode2_old);
+			return rv;
 		}
 	}
 	rv =_adpt_hppe_instance1_mode_get(dev_id, PHYSICAL_PORT6, &mode2);
 	SSDK_DEBUG("mode0:%x, mode1:%x, mode2:%x\n",mode0, mode1, mode2);
 	if(rv)
 	{
-		goto recovery;
+		/*restore the mode0 mode1 mode2*/
+		ssdk_dt_global_set_mac_mode(dev_id, MAC_MODE0_INDEX, mode0_old);
+		ssdk_dt_global_set_mac_mode(dev_id, MAC_MODE1_INDEX, mode1_old);
+		ssdk_dt_global_set_mac_mode(dev_id, MAC_MODE2_INDEX, mode2_old);
+		return rv;
 	}
+	mutex_lock(&priv->mac_sw_sync_lock);
 	/*sync mode of port*/
 	ssdk_dt_global_set_mac_mode(dev_id, MAC_MODE0_INDEX, mode0);
 	ssdk_dt_global_set_mac_mode(dev_id, MAC_MODE1_INDEX, mode1);
 	ssdk_dt_global_set_mac_mode(dev_id, MAC_MODE2_INDEX, mode2);
+
 	/*config uniphy*/
 	rv = adpt_hppe_uniphy_mode_set(dev_id, MAC_MODE0_INDEX, mode0);
 	if(rv)
 	{
-                goto recovery;
+		SSDK_DEBUG("config the uniphy instance0, rv:%x\n", rv);
+		mutex_unlock(&priv->mac_sw_sync_lock);
+		/*restore the mode0 mode1 mode2*/
+		ssdk_dt_global_set_mac_mode(dev_id, MAC_MODE0_INDEX, mode0_old);
+		ssdk_dt_global_set_mac_mode(dev_id, MAC_MODE1_INDEX, mode1_old);
+		ssdk_dt_global_set_mac_mode(dev_id, MAC_MODE2_INDEX, mode2_old);
+		return rv;
 	}
-	SSDK_DEBUG("config the uniphy instance0, rv:%x\n", rv);
 	rv = adpt_hppe_uniphy_mode_set(dev_id, MAC_MODE1_INDEX, mode1);
 	if(rv)
 	{
-                goto recovery;
+		SSDK_DEBUG("config the uniphy instance1, rv:%x\n", rv);
+		mutex_unlock(&priv->mac_sw_sync_lock);
+		/*restore the mode0 mode1 mode2*/
+		ssdk_dt_global_set_mac_mode(dev_id, MAC_MODE0_INDEX, mode0_old);
+		ssdk_dt_global_set_mac_mode(dev_id, MAC_MODE1_INDEX, mode1_old);
+		ssdk_dt_global_set_mac_mode(dev_id, MAC_MODE2_INDEX, mode2_old);
+		return rv;
 	}
-	SSDK_DEBUG("config the uniphy instance1, rv:%x\n", rv);
 	rv = adpt_hppe_uniphy_mode_set(dev_id, MAC_MODE2_INDEX, mode2);
 	if(rv)
 	{
-                goto recovery;
+		SSDK_DEBUG("config the uniphy instance2, rv:%x\n", rv);
+		mutex_unlock(&priv->mac_sw_sync_lock);
+		/*restore the mode0 mode1 mode2*/
+		ssdk_dt_global_set_mac_mode(dev_id, MAC_MODE0_INDEX, mode0_old);
+		ssdk_dt_global_set_mac_mode(dev_id, MAC_MODE1_INDEX, mode1_old);
+		ssdk_dt_global_set_mac_mode(dev_id, MAC_MODE2_INDEX, mode2_old);
+		return rv;
 	}
-	SSDK_DEBUG("config the uniphy instance2, rv:%x\n", rv);
 	/*configure mac and sync port type*/
 	for(port_id =PHYSICAL_PORT1; port_id <= PHYSICAL_PORT6; port_id++)
 	{
@@ -2381,7 +2416,12 @@ adpt_hppe_port_interface_mode_apply(a_uint32_t dev_id)
 		if(rv)
 		{
 			SSDK_ERROR("port_id:%d, mode0:%d, mode1:%d, mode2:%d\n", port_id, mode0, mode1, mode2);
-			goto recovery;
+			mutex_unlock(&priv->mac_sw_sync_lock);
+			/*restore the mode0 mode1 mode2*/
+			ssdk_dt_global_set_mac_mode(dev_id, MAC_MODE0_INDEX, mode0_old);
+			ssdk_dt_global_set_mac_mode(dev_id, MAC_MODE1_INDEX, mode1_old);
+			ssdk_dt_global_set_mac_mode(dev_id, MAC_MODE2_INDEX, mode2_old);
+			return rv;
 		}
 	}
 	/*initial the phy status to */
@@ -2401,17 +2441,16 @@ adpt_hppe_port_interface_mode_apply(a_uint32_t dev_id)
 		default:
 			break;
 	}
+	mutex_unlock(&priv->mac_sw_sync_lock);
+	if(rv)
+	{
+		/*restore the mode0 mode1 mode2*/
+		ssdk_dt_global_set_mac_mode(dev_id, MAC_MODE0_INDEX, mode0_old);
+		ssdk_dt_global_set_mac_mode(dev_id, MAC_MODE1_INDEX, mode1_old);
+		ssdk_dt_global_set_mac_mode(dev_id, MAC_MODE2_INDEX, mode2_old);
+	}
 	/*power on the ports*/
 	rv = adpt_hppe_all_ports_power_on_set(dev_id, A_TRUE);
-	if(rv == SW_OK)
-	{
-		return SW_OK;
-	}
-recovery:
-	/*restore the mode0 mode1 mode2*/
-	ssdk_dt_global_set_mac_mode(dev_id, MAC_MODE0_INDEX, mode0_old);
-	ssdk_dt_global_set_mac_mode(dev_id, MAC_MODE1_INDEX, mode1_old);
-	ssdk_dt_global_set_mac_mode(dev_id, MAC_MODE2_INDEX, mode2_old);
 
 	return rv;
 }
