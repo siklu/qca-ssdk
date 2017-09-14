@@ -1588,17 +1588,30 @@ sw_error_t
 adpt_hppe_port_txfc_status_set(a_uint32_t dev_id, fal_port_t port_id,
 				     a_bool_t enable)
 {
+	sw_error_t rv = SW_OK;
 	a_uint32_t port_mac_type;
+	struct qca_phy_priv *priv = ssdk_phy_priv_data_get(dev_id);
 
 	ADPT_DEV_ID_CHECK(dev_id);
 
+	if (!priv)
+		return SW_FAIL;
+
+	if ((port_id < PHYSICAL_PORT1) || (port_id > PHYSICAL_PORT6))
+		return SW_BAD_VALUE;
+
 	port_mac_type =qca_hppe_port_mac_type_get(dev_id, port_id);
 	if (port_mac_type == PORT_XGMAC_TYPE)
-		_adpt_xgmac_port_txfc_status_set( dev_id, port_id, enable);
+		rv = _adpt_xgmac_port_txfc_status_set( dev_id, port_id, enable);
 	else if (port_mac_type == PORT_GMAC_TYPE)
-		_adpt_gmac_port_txfc_status_set( dev_id, port_id, enable);
+		rv = _adpt_gmac_port_txfc_status_set( dev_id, port_id, enable);
 	else
 		return SW_BAD_VALUE;
+
+	if (rv != SW_OK)
+		return rv;
+
+	priv->port_old_tx_flowctrl[port_id - 1] = enable;
 
 	return SW_OK;
 }
@@ -2702,17 +2715,30 @@ sw_error_t
 adpt_hppe_port_rxfc_status_set(a_uint32_t dev_id, fal_port_t port_id,
 				     a_bool_t enable)
 {
+	sw_error_t rv = SW_OK;
 	a_uint32_t port_mac_type;
+	struct qca_phy_priv *priv = ssdk_phy_priv_data_get(dev_id);
 
 	ADPT_DEV_ID_CHECK(dev_id);
 
+	if (!priv)
+		return SW_FAIL;
+
+	if ((port_id < PHYSICAL_PORT1) || (port_id > PHYSICAL_PORT6))
+		return SW_BAD_VALUE;
+
 	port_mac_type =qca_hppe_port_mac_type_get(dev_id, port_id);
 	if(port_mac_type == PORT_XGMAC_TYPE)
-		_adpt_xgmac_port_rxfc_status_set( dev_id, port_id, enable);
+		rv = _adpt_xgmac_port_rxfc_status_set( dev_id, port_id, enable);
 	else if (port_mac_type == PORT_GMAC_TYPE)
-		_adpt_gmac_port_rxfc_status_set( dev_id, port_id, enable);
+		rv = _adpt_gmac_port_rxfc_status_set( dev_id, port_id, enable);
 	else
 		return SW_BAD_VALUE;
+
+	if (rv != SW_OK)
+		return rv;
+
+	priv->port_old_rx_flowctrl[port_id - 1] = enable;
 
 	return SW_OK;
 }
@@ -2721,11 +2747,22 @@ adpt_hppe_port_flowctrl_set(a_uint32_t dev_id, fal_port_t port_id,
 				  a_bool_t enable)
 {
 	sw_error_t rv = SW_OK;
+	struct qca_phy_priv *priv = ssdk_phy_priv_data_get(dev_id);
+
+	if (!priv)
+		return SW_FAIL;
+
+	if ((port_id < PHYSICAL_PORT1) || (port_id > PHYSICAL_PORT6))
+		return SW_BAD_VALUE;
 
 	rv = adpt_hppe_port_txfc_status_set(dev_id, port_id, enable);
 	rv |= adpt_hppe_port_rxfc_status_set(dev_id, port_id, enable);
+
 	if(rv != SW_OK)
 		return rv;
+
+	priv->port_old_tx_flowctrl[port_id - 1] = enable;
+	priv->port_old_rx_flowctrl[port_id - 1] = enable;
 
 	return SW_OK;
 }
@@ -3032,6 +3069,49 @@ adpt_hppe_port_mux_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t port_ty
 		return SW_OK;
 	}
 	rv = hppe_port_mux_ctrl_set(dev_id, &port_mux_ctrl);
+
+	return rv;
+}
+
+static sw_error_t
+adpt_hppe_port_flowctrl_forcemode_set(a_uint32_t dev_id,
+		fal_port_t port_id, a_bool_t enable)
+{
+	sw_error_t rv = SW_OK;
+	struct qca_phy_priv *priv = ssdk_phy_priv_data_get(dev_id);
+
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	if (!priv)
+		return SW_FAIL;
+
+	if ((port_id < PHYSICAL_PORT1) || (port_id > PHYSICAL_PORT6))
+		return SW_BAD_VALUE;
+
+	priv->port_tx_flowctrl_forcemode[port_id - 1] = enable;
+	priv->port_rx_flowctrl_forcemode[port_id - 1] = enable;
+
+	return rv;
+}
+static sw_error_t
+adpt_hppe_port_flowctrl_forcemode_get(a_uint32_t dev_id,
+		fal_port_t port_id, a_bool_t *enable)
+{
+	sw_error_t rv = SW_OK;
+	struct qca_phy_priv *priv = ssdk_phy_priv_data_get(dev_id);
+
+
+	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(enable);
+
+	if ((port_id < PHYSICAL_PORT1) || (port_id > PHYSICAL_PORT6))
+		return SW_BAD_VALUE;
+
+	if (!priv)
+		return SW_FAIL;
+
+	*enable = (priv->port_tx_flowctrl_forcemode[port_id - 1] &
+		priv->port_rx_flowctrl_forcemode[port_id - 1]);
 
 	return rv;
 }
@@ -3750,21 +3830,27 @@ qca_hppe_mac_sw_sync_task(struct qca_phy_priv *priv)
 					SSDK_DEBUG("Port %d is link up and duplex change to %d\n", port_id,
 								priv->port_old_duplex[port_id - 1]);
 				}
-				if (phy_status.tx_flowctrl != priv->port_old_tx_flowctrl[port_id - 1])
+				if (priv->port_tx_flowctrl_forcemode[port_id - 1] != A_TRUE)
 				{
-					adpt_hppe_port_txfc_status_set(priv->device_id, port_id, (a_bool_t)phy_status.tx_flowctrl);
-					priv->port_old_tx_flowctrl[port_id - 1] = phy_status.tx_flowctrl;
+					if (phy_status.tx_flowctrl != priv->port_old_tx_flowctrl[port_id - 1])
+					{
+						adpt_hppe_port_txfc_status_set(priv->device_id, port_id, (a_bool_t)phy_status.tx_flowctrl);
+						priv->port_old_tx_flowctrl[port_id - 1] = phy_status.tx_flowctrl;
 
-					SSDK_DEBUG("Port %d is link up and tx flowctrl change to %d\n", port_id,
-								priv->port_old_tx_flowctrl[port_id - 1]);
+						SSDK_DEBUG("Port %d is link up and tx flowctrl change to %d\n", port_id,
+									priv->port_old_tx_flowctrl[port_id - 1]);
+					}
 				}
-				if (phy_status.rx_flowctrl != priv->port_old_rx_flowctrl[port_id - 1])
+				if (priv->port_rx_flowctrl_forcemode[port_id - 1] != A_TRUE)
 				{
-					adpt_hppe_port_rxfc_status_set(priv->device_id, port_id, (a_bool_t)phy_status.rx_flowctrl);
-					priv->port_old_rx_flowctrl[port_id - 1] = phy_status.rx_flowctrl;
+					if (phy_status.rx_flowctrl != priv->port_old_rx_flowctrl[port_id - 1])
+					{
+						adpt_hppe_port_rxfc_status_set(priv->device_id, port_id, (a_bool_t)phy_status.rx_flowctrl);
+						priv->port_old_rx_flowctrl[port_id - 1] = phy_status.rx_flowctrl;
 
-					SSDK_DEBUG("Port %d is link up and rx flowctrl change to %d\n", port_id,
-								priv->port_old_rx_flowctrl[port_id - 1]);
+						SSDK_DEBUG("Port %d is link up and rx flowctrl change to %d\n", port_id,
+									priv->port_old_rx_flowctrl[port_id - 1]);
+					}
 				}
 				adpt_hppe_gcc_mac_clock_status_set(priv->device_id, port_id, A_TRUE);
 				adpt_hppe_gcc_uniphy_clock_status_set(priv->device_id, port_id, A_TRUE);
@@ -3859,7 +3945,9 @@ void adpt_hppe_port_ctrl_func_bitmap_init(a_uint32_t dev_id)
 
 	p_adpt_api->adpt_port_ctrl_func_bitmap[2] = ((1 << (FUNC_ADPT_PORT_INTERFACE_MODE_APPLY% 32))|
 						(1 << (FUNC_ADPT_PORT_INTERFACE_3AZ_STATUS_SET% 32))|
-						(1 << (FUNC_ADPT_PORT_INTERFACE_3AZ_STATUS_GET% 32)));
+						(1 << (FUNC_ADPT_PORT_INTERFACE_3AZ_STATUS_GET% 32))|
+						(1 << (FUNC_ADPT_PORT_FLOWCTRL_FORCEMODE_SET% 32))|
+						(1 << (FUNC_ADPT_PORT_FLOWCTRL_FORCEMODE_GET% 32)));
 
 	return;
 
@@ -3937,6 +4025,8 @@ static void adpt_hppe_port_ctrl_func_unregister(a_uint32_t dev_id, adpt_api_t *p
 	p_adpt_api->adpt_port_source_filter_set = NULL;
 	p_adpt_api->adpt_port_interface_3az_status_set = NULL;
 	p_adpt_api->adpt_port_interface_3az_status_get = NULL;
+	p_adpt_api->adpt_port_flowctrl_forcemode_set = NULL;
+	p_adpt_api->adpt_port_flowctrl_forcemode_get = NULL;
 
 	return;
 
@@ -4222,6 +4312,14 @@ sw_error_t adpt_hppe_port_ctrl_init(a_uint32_t dev_id)
 	if(p_adpt_api->adpt_port_ctrl_func_bitmap[2] & (1 <<  (FUNC_ADPT_PORT_INTERFACE_3AZ_STATUS_GET% 32)))
 	{
 		p_adpt_api->adpt_port_interface_3az_status_get = adpt_hppe_port_interface_3az_get;
+	}
+	if(p_adpt_api->adpt_port_ctrl_func_bitmap[2] & (1 <<  (FUNC_ADPT_PORT_FLOWCTRL_FORCEMODE_SET% 32)))
+	{
+		p_adpt_api->adpt_port_flowctrl_forcemode_set = adpt_hppe_port_flowctrl_forcemode_set;
+	}
+	if(p_adpt_api->adpt_port_ctrl_func_bitmap[2] & (1 <<  (FUNC_ADPT_PORT_FLOWCTRL_FORCEMODE_GET% 32)))
+	{
+		p_adpt_api->adpt_port_flowctrl_forcemode_get = adpt_hppe_port_flowctrl_forcemode_get;
 	}
 
 	p_adpt_api->adpt_port_mux_mac_type_set = adpt_hppe_port_mux_mac_type_set;

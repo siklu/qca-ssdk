@@ -267,6 +267,8 @@ struct qca_phy_priv {
 	a_uint32_t port_qm_buf[SW_MAX_NR_PORT];
 	a_uint32_t port_old_tx_flowctrl[SW_MAX_NR_PORT];
 	a_uint32_t port_old_rx_flowctrl[SW_MAX_NR_PORT];
+	a_bool_t port_tx_flowctrl_forcemode[SW_MAX_NR_PORT];
+	a_bool_t port_rx_flowctrl_forcemode[SW_MAX_NR_PORT];
 	struct delayed_work qm_dwork_polling;
 	struct work_struct	 intr_workqueue;
 	/*qm_err_check end*/
