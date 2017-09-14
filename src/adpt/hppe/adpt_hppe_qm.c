@@ -19,6 +19,7 @@
  */
 #include "sw.h"
 #include "fal_qm.h"
+#include "hppe_reg_access.h"
 #include "hppe_qm_reg.h"
 #include "hppe_qm.h"
 #include "hppe_qos_reg.h"
@@ -35,6 +36,18 @@
 
 #define UCAST_QUEUE_ID_MAX	256
 #define ALL_QUEUE_ID_MAX	300
+#define MCAST_QUEUE_PORT7_START	296
+#define MCAST_QUEUE_PORT6_START	292
+#define MCAST_QUEUE_PORT5_START	288
+#define MCAST_QUEUE_PORT4_START	284
+#define MCAST_QUEUE_PORT3_START	280
+#define MCAST_QUEUE_PORT2_START	276
+#define MCAST_QUEUE_PORT1_START	272
+#define MCAST_QUEUE_PORT0_START	256
+#define MCAST_QUEUE_OFFSET	(3*0x10)
+#define UCAST_QUEUE_ITEMS	6
+#define MCAST_QUEUE_ITEMS	3
+#define DROP_INC	0x10
 
 sw_error_t
 adpt_hppe_ucast_hash_map_set(
@@ -936,10 +949,46 @@ adpt_hppe_ac_group_buffer_set(
 	return hppe_ac_grp_cfg_tbl_set(dev_id, group_id, &ac_grp_cfg_tbl);;
 }
 
+static a_uint32_t
+adpt_hppe_mcast_queue_dropcnt_start_addr_get(a_uint32_t queue_id)
+{
+	a_uint32_t start_addr = QUEUE_MANAGER_BASE_ADDR;
+
+	if (queue_id >= MCAST_QUEUE_PORT7_START) {
+		start_addr += MUL_P7_DROP_CNT_TBL_ADDRESS;
+		start_addr += (queue_id - MCAST_QUEUE_PORT7_START)*MCAST_QUEUE_OFFSET;
+	} else if (queue_id >= MCAST_QUEUE_PORT6_START) {
+		start_addr += MUL_P6_DROP_CNT_TBL_ADDRESS;
+		start_addr += (queue_id - MCAST_QUEUE_PORT6_START)*MCAST_QUEUE_OFFSET;
+	} else if (queue_id >= MCAST_QUEUE_PORT5_START) {
+		start_addr += MUL_P5_DROP_CNT_TBL_ADDRESS;
+		start_addr += (queue_id - MCAST_QUEUE_PORT5_START)*MCAST_QUEUE_OFFSET;
+	} else if (queue_id >= MCAST_QUEUE_PORT4_START) {
+		start_addr += MUL_P4_DROP_CNT_TBL_ADDRESS;
+		start_addr += (queue_id - MCAST_QUEUE_PORT4_START)*MCAST_QUEUE_OFFSET;
+	} else if (queue_id >= MCAST_QUEUE_PORT3_START) {
+		start_addr += MUL_P3_DROP_CNT_TBL_ADDRESS;
+		start_addr += (queue_id - MCAST_QUEUE_PORT3_START)*MCAST_QUEUE_OFFSET;
+	} else if (queue_id >= MCAST_QUEUE_PORT2_START) {
+		start_addr += MUL_P2_DROP_CNT_TBL_ADDRESS;
+		start_addr += (queue_id - MCAST_QUEUE_PORT2_START)*MCAST_QUEUE_OFFSET;
+	} else if (queue_id >= MCAST_QUEUE_PORT1_START) {
+		start_addr += MUL_P1_DROP_CNT_TBL_ADDRESS;
+		start_addr += (queue_id - MCAST_QUEUE_PORT1_START)*MCAST_QUEUE_OFFSET;
+	}  else if (queue_id >= MCAST_QUEUE_PORT0_START) {
+		start_addr += MUL_P0_DROP_CNT_TBL_ADDRESS;
+		start_addr += (queue_id - MCAST_QUEUE_PORT0_START)*MCAST_QUEUE_OFFSET;
+	}
+
+	return start_addr;
+}
+
 sw_error_t
 adpt_hppe_queue_counter_cleanup(a_uint32_t dev_id, a_uint32_t queue_id)
 {
 	union queue_tx_counter_tbl_u tx_cnt;
+	a_uint32_t i = 0;
+	a_uint32_t val[3] = {0};
 
 	ADPT_DEV_ID_CHECK(dev_id);
 
@@ -950,7 +999,25 @@ adpt_hppe_queue_counter_cleanup(a_uint32_t dev_id, a_uint32_t queue_id)
 	tx_cnt.bf.tx_bytes_0 = 0;
 	tx_cnt.bf.tx_bytes_1 = 0;
 
-	return hppe_queue_tx_counter_tbl_set(dev_id, queue_id, &tx_cnt);
+	hppe_queue_tx_counter_tbl_set(dev_id, queue_id, &tx_cnt);
+
+	if (queue_id >= UCAST_QUEUE_ID_MAX) {
+		a_uint32_t start_addr = 0;
+
+		start_addr = adpt_hppe_mcast_queue_dropcnt_start_addr_get(queue_id);
+		for (i = 0; i < MCAST_QUEUE_ITEMS; i++) {
+			hppe_reg_tbl_set(dev_id, start_addr + i*DROP_INC, val, 3);
+		}
+	} else {
+		union uni_drop_cnt_tbl_u uni_drop_cnt;
+
+		memset(&uni_drop_cnt, 0, sizeof(uni_drop_cnt));
+		for (i = 0; i < UCAST_QUEUE_ITEMS; i++) {
+			hppe_uni_drop_cnt_tbl_set(dev_id, queue_id*UCAST_QUEUE_ITEMS+i, &uni_drop_cnt);
+		}
+	}
+
+	return SW_OK;
 }
 sw_error_t
 adpt_hppe_queue_counter_get(a_uint32_t dev_id, a_uint32_t queue_id, fal_queue_stats_t *info)
@@ -959,6 +1026,7 @@ adpt_hppe_queue_counter_get(a_uint32_t dev_id, a_uint32_t queue_id, fal_queue_st
 	union queue_tx_counter_tbl_u tx_cnt;
 	union ac_mul_queue_cnt_tbl_u mul_cnt;
 	union ac_uni_queue_cnt_tbl_u uni_cnt;
+	a_uint32_t i = 0;
 
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(info);
@@ -970,16 +1038,34 @@ adpt_hppe_queue_counter_get(a_uint32_t dev_id, a_uint32_t queue_id, fal_queue_st
 	if( rv != SW_OK )
 		return rv;
 	if (queue_id >= UCAST_QUEUE_ID_MAX) {
+		a_uint32_t start_addr = 0;
+		union mul_p7_drop_cnt_tbl_u drop_cnt;
+
 		rv = hppe_ac_mul_queue_cnt_tbl_get(dev_id,
 				queue_id - UCAST_QUEUE_ID_MAX, &mul_cnt);
 		if( rv != SW_OK )
 			return rv;
 		info->pending_buff_num = mul_cnt.bf.ac_mul_queue_cnt;
+		start_addr = adpt_hppe_mcast_queue_dropcnt_start_addr_get(queue_id);
+		for (i = 0; i < MCAST_QUEUE_ITEMS; i++) {
+			hppe_reg_tbl_get(dev_id, start_addr + i*DROP_INC, drop_cnt.val, 3);
+			info->drop_packets[i+3] = drop_cnt.bf.mul_p7_drop_pkt;
+			info->drop_bytes[i+3] = (a_uint64_t)drop_cnt.bf.mul_p7_drop_byte_0 |
+					(a_uint64_t)drop_cnt.bf.mul_p7_drop_byte_1 <<32;
+		}
 	} else {
+		union uni_drop_cnt_tbl_u uni_drop_cnt;
+
 		rv = hppe_ac_uni_queue_cnt_tbl_get(dev_id, queue_id, &uni_cnt);
 		if( rv != SW_OK )
 			return rv;
 		info->pending_buff_num = uni_cnt.bf.ac_uni_queue_cnt;
+		for (i = 0; i < UCAST_QUEUE_ITEMS; i++) {
+			hppe_uni_drop_cnt_tbl_get(dev_id, queue_id*UCAST_QUEUE_ITEMS+i, &uni_drop_cnt);
+			info->drop_packets[i] = uni_drop_cnt.bf.uni_drop_pkt;
+			info->drop_bytes[i] = (a_uint64_t)uni_drop_cnt.bf.uni_drop_byte_0 |
+					(a_uint64_t)uni_drop_cnt.bf.uni_drop_byte_1 <<32;
+		}
 	}
 	info->tx_packets = tx_cnt.bf.tx_packets;
 	info->tx_bytes = (a_uint64_t)tx_cnt.bf.tx_bytes_0 | (a_uint64_t)tx_cnt.bf.tx_bytes_1 << 32;
