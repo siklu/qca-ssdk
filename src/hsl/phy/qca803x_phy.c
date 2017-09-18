@@ -1612,10 +1612,10 @@ qca803x_phy_hw_init(a_uint32_t dev_id, a_uint32_t port_bmp)
 		{
 			/*config phy mode based on the mac mode DT*/
 			switch (port_id) {
-				case SSDK_PORT0:
+				case SSDK_PHYSICAL_PORT0:
 					mac_mode = ssdk_dt_global_get_mac_mode(dev_id, SSDK_UNIPHY_INSTANCE0);
 					break;
-				case SSDK_PORT6:
+				case SSDK_PHYSICAL_PORT6:
 					mac_mode = ssdk_dt_global_get_mac_mode(dev_id, SSDK_UNIPHY_INSTANCE2);
 					break;
 				default:

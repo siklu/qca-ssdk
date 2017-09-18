@@ -240,7 +240,7 @@ static struct clk_uniphy uniphy2_gcc_tx_clk = {
 		.rate = UNIPHY_DEFAULT_RATE,
 };
 
-static struct clk_hw *uniphy_raw_clks[MAX_UNIPHY_INSTANCE * 2] = {
+static struct clk_hw *uniphy_raw_clks[SSDK_MAX_UNIPHY_INSTANCE * 2] = {
 	&uniphy0_gcc_rx_clk.hw, &uniphy0_gcc_tx_clk.hw,
 	&uniphy1_gcc_rx_clk.hw, &uniphy1_gcc_tx_clk.hw,
 	&uniphy2_gcc_rx_clk.hw, &uniphy2_gcc_tx_clk.hw,
@@ -282,7 +282,7 @@ static void ssdk_ppe_uniphy_clock_init(void)
 	a_uint32_t i;
 	struct clk *clk;
 
-	for (i = 0; i < MAX_UNIPHY_INSTANCE * 2; i++) {
+	for (i = 0; i < SSDK_MAX_UNIPHY_INSTANCE * 2; i++) {
 		clk = clk_register(NULL, uniphy_raw_clks[i]);
 		if (IS_ERR(clk))
 			SSDK_ERROR("Clk register %d fail!\n", i);
@@ -423,7 +423,7 @@ void ssdk_uniphy_raw_clock_set(
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
 	a_uint32_t old_clock, id;
 
-	if ((uniphy_index >= MAX_UNIPHY_INSTANCE) ||
+	if ((uniphy_index >= SSDK_MAX_UNIPHY_INSTANCE) ||
 	     (direction > UNIPHY_TX) ||
 	     (clock != UNIPHY_CLK_RATE_125M &&
 	      clock != UNIPHY_CLK_RATE_312M))
@@ -432,7 +432,7 @@ void ssdk_uniphy_raw_clock_set(
 	id = uniphy_index*2 + direction;
 	old_clock = clk_get_rate(uniphy_raw_clks[id]->clk);
 
-	if (uniphy_index == UNIPHY_INSTANCE_1) {
+	if (uniphy_index == SSDK_UNIPHY_INSTANCE1) {
 		if (clk_set_parent(uniphy_port_clks[PORT5_RX_SRC_E + direction],
 				uniphy_raw_clks[id]->clk))
 			SSDK_ERROR("set parent fail!\n");
@@ -451,19 +451,19 @@ qca_gcc_uniphy_port_clock_set(
 	a_uint32_t port_id, a_bool_t enable)
 {
 
-	if (uniphy_index == UNIPHY_INSTANCE_2) {
+	if (uniphy_index == SSDK_UNIPHY_INSTANCE2) {
 		ssdk_uniphy_clock_enable(dev_id,
 					UNIPHY2_PORT6_RX_CLK_E, enable);
 		ssdk_uniphy_clock_enable(dev_id,
 					UNIPHY2_PORT6_TX_CLK_E, enable);
-	} else if (uniphy_index == UNIPHY_INSTANCE_1) {
+	} else if (uniphy_index == SSDK_UNIPHY_INSTANCE1) {
 		ssdk_uniphy_clock_enable(dev_id,
 					UNIPHY1_PORT5_RX_CLK_E, enable);
 		ssdk_uniphy_clock_enable(dev_id,
 					UNIPHY1_PORT5_TX_CLK_E, enable);
-	} else if (uniphy_index == UNIPHY_INSTANCE_0) {
+	} else if (uniphy_index == SSDK_UNIPHY_INSTANCE0) {
 		switch (port_id) {
-			case SSDK_PORT1:
+			case SSDK_PHYSICAL_PORT1:
 				ssdk_uniphy_clock_enable(dev_id,
 							UNIPHY0_PORT1_RX_CLK_E,
 							enable);
@@ -471,7 +471,7 @@ qca_gcc_uniphy_port_clock_set(
 							UNIPHY0_PORT1_TX_CLK_E,
 							enable);
 				break;
-			case SSDK_PORT2:
+			case SSDK_PHYSICAL_PORT2:
 				ssdk_uniphy_clock_enable(dev_id,
 							UNIPHY0_PORT2_RX_CLK_E,
 							enable);
@@ -479,7 +479,7 @@ qca_gcc_uniphy_port_clock_set(
 							UNIPHY0_PORT2_TX_CLK_E,
 							enable);
 				break;
-			case SSDK_PORT3:
+			case SSDK_PHYSICAL_PORT3:
 				ssdk_uniphy_clock_enable(dev_id,
 							UNIPHY0_PORT3_RX_CLK_E,
 							enable);
@@ -487,7 +487,7 @@ qca_gcc_uniphy_port_clock_set(
 							UNIPHY0_PORT3_TX_CLK_E,
 							enable);
 				break;
-			case SSDK_PORT4:
+			case SSDK_PHYSICAL_PORT4:
 				ssdk_uniphy_clock_enable(dev_id,
 							UNIPHY0_PORT4_RX_CLK_E,
 							enable);
@@ -495,7 +495,7 @@ qca_gcc_uniphy_port_clock_set(
 							UNIPHY0_PORT4_TX_CLK_E,
 							enable);
 				break;
-			case SSDK_PORT5:
+			case SSDK_PHYSICAL_PORT5:
 				ssdk_uniphy_clock_enable(dev_id,
 							UNIPHY0_PORT5_RX_CLK_E,
 							enable);
@@ -517,7 +517,7 @@ qca_gcc_mac_port_clock_set(
 {
 
 	switch (port_id) {
-		case SSDK_PORT1:
+		case SSDK_PHYSICAL_PORT1:
 			ssdk_uniphy_clock_enable(dev_id,
 						NSS_PORT1_RX_CLK_E,
 						enable);
@@ -525,7 +525,7 @@ qca_gcc_mac_port_clock_set(
 						NSS_PORT1_TX_CLK_E,
 						enable);
 			break;
-		case SSDK_PORT2:
+		case SSDK_PHYSICAL_PORT2:
 			ssdk_uniphy_clock_enable(dev_id,
 						NSS_PORT2_RX_CLK_E,
 						enable);
@@ -533,7 +533,7 @@ qca_gcc_mac_port_clock_set(
 						NSS_PORT2_TX_CLK_E,
 						enable);
 			break;
-		case SSDK_PORT3:
+		case SSDK_PHYSICAL_PORT3:
 			ssdk_uniphy_clock_enable(dev_id,
 						NSS_PORT3_RX_CLK_E,
 						enable);
@@ -541,7 +541,7 @@ qca_gcc_mac_port_clock_set(
 						NSS_PORT3_TX_CLK_E,
 						enable);
 			break;
-		case SSDK_PORT4:
+		case SSDK_PHYSICAL_PORT4:
 			ssdk_uniphy_clock_enable(dev_id,
 						NSS_PORT4_RX_CLK_E,
 						enable);
@@ -549,7 +549,7 @@ qca_gcc_mac_port_clock_set(
 						NSS_PORT4_TX_CLK_E,
 						enable);
 			break;
-		case SSDK_PORT5:
+		case SSDK_PHYSICAL_PORT5:
 			ssdk_uniphy_clock_enable(dev_id,
 						NSS_PORT5_RX_CLK_E,
 						enable);
@@ -557,7 +557,7 @@ qca_gcc_mac_port_clock_set(
 						NSS_PORT5_TX_CLK_E,
 						enable);
 			break;
-		case SSDK_PORT6:
+		case SSDK_PHYSICAL_PORT6:
 			ssdk_uniphy_clock_enable(dev_id,
 						NSS_PORT6_RX_CLK_E,
 						enable);
@@ -579,40 +579,40 @@ ssdk_port_speed_clock_set(
 	a_uint32_t mode = 0;
 
                switch (port_id ) {
-		case SSDK_PORT1:
+		case SSDK_PHYSICAL_PORT1:
 			ssdk_uniphy_clock_rate_set(dev_id,
 					NSS_PORT1_RX_CLK_E, rate);
 			ssdk_uniphy_clock_rate_set(dev_id,
 					NSS_PORT1_TX_CLK_E, rate);
 			break;
-		case SSDK_PORT2:
+		case SSDK_PHYSICAL_PORT2:
 			ssdk_uniphy_clock_rate_set(dev_id,
 					NSS_PORT2_RX_CLK_E, rate);
 			ssdk_uniphy_clock_rate_set(dev_id,
 					NSS_PORT2_TX_CLK_E, rate);
 			break;
-		case SSDK_PORT3:
+		case SSDK_PHYSICAL_PORT3:
 			ssdk_uniphy_clock_rate_set(dev_id,
 					NSS_PORT3_RX_CLK_E, rate);
 			ssdk_uniphy_clock_rate_set(dev_id,
 					NSS_PORT3_TX_CLK_E, rate);
 			break;
-		case SSDK_PORT4:
+		case SSDK_PHYSICAL_PORT4:
 			ssdk_uniphy_clock_rate_set(dev_id,
 					NSS_PORT4_RX_CLK_E, rate);
 			ssdk_uniphy_clock_rate_set(dev_id,
 					NSS_PORT4_TX_CLK_E, rate);
 			break;
-		case SSDK_PORT5:
+		case SSDK_PHYSICAL_PORT5:
 			ssdk_uniphy_clock_rate_set(dev_id,
 					NSS_PORT5_RX_CLK_E, rate);
 			ssdk_uniphy_clock_rate_set(dev_id,
 					NSS_PORT5_TX_CLK_E, rate);
-			mode = ssdk_dt_global_get_mac_mode(dev_id, UNIPHY_INSTANCE_1);
+			mode = ssdk_dt_global_get_mac_mode(dev_id, SSDK_UNIPHY_INSTANCE1);
 			if (mode != PORT_INTERFACE_MODE_MAX)
 				ssdk_uniphy1_clock_source_set();
 			break;
-		case SSDK_PORT6:
+		case SSDK_PHYSICAL_PORT6:
 			ssdk_uniphy_clock_rate_set(dev_id,
 					NSS_PORT6_RX_CLK_E, rate);
 			ssdk_uniphy_clock_rate_set(dev_id,

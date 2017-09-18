@@ -92,9 +92,9 @@ __adpt_hppe_gcc_uniphy_xpcs_reset(a_uint32_t dev_id, a_uint32_t uniphy_index, a_
 	enum unphy_rst_type rst_type;
 	enum ssdk_rst_action rst_action;
 
-	if (uniphy_index == HPPE_UNIPHY_INSTANCE0)
+	if (uniphy_index == SSDK_UNIPHY_INSTANCE0)
 		rst_type = UNIPHY0_XPCS_RESET_E;
-	else if (uniphy_index == HPPE_UNIPHY_INSTANCE1)
+	else if (uniphy_index == SSDK_UNIPHY_INSTANCE1)
 		rst_type = UNIPHY1_XPCS_RESET_E;
 	else
 		rst_type = UNIPHY2_XPCS_RESET_E;
@@ -115,9 +115,9 @@ __adpt_hppe_gcc_uniphy_software_reset(a_uint32_t dev_id, a_uint32_t uniphy_index
 
 	enum unphy_rst_type rst_type;
 
-	if (uniphy_index == HPPE_UNIPHY_INSTANCE0)
+	if (uniphy_index == SSDK_UNIPHY_INSTANCE0)
 		rst_type = UNIPHY0_SOFT_RESET_E;
-	else if (uniphy_index == HPPE_UNIPHY_INSTANCE1)
+	else if (uniphy_index == SSDK_UNIPHY_INSTANCE1)
 		rst_type = UNIPHY1_SOFT_RESET_E;
 	else
 		rst_type = UNIPHY2_SOFT_RESET_E;
@@ -212,7 +212,7 @@ __adpt_hppe_uniphy_usxgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	hppe_sr_mii_ctrl_set(0, uniphy_index, &sr_mii_ctrl);
 
 	/*This hardcode will move to aq phy driver init when it's available*/
-	if (uniphy_index == HPPE_UNIPHY_INSTANCE2)
+	if (uniphy_index == SSDK_UNIPHY_INSTANCE2)
 		qca_ar8327_phy_write(0, 7, (1<<30) | (4<<16) | 0xc441, 8);
 	return rv;
 }
@@ -259,9 +259,9 @@ __adpt_hppe_uniphy_10g_r_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	rv = __adpt_hppe_uniphy_calibration(dev_id, uniphy_index);
 
 	/* configure gcc speed clock to 10g r mode*/
-	if (uniphy_index == HPPE_UNIPHY_INSTANCE1)
+	if (uniphy_index == SSDK_UNIPHY_INSTANCE1)
 		port_id = HPPE_MUX_PORT1;
-	else if (uniphy_index == HPPE_UNIPHY_INSTANCE2)
+	else if (uniphy_index == SSDK_UNIPHY_INSTANCE2)
 		port_id = HPPE_MUX_PORT2;
 	adpt_hppe_gcc_port_speed_clock_set(dev_id, port_id, FAL_SPEED_10000);
 
@@ -352,7 +352,7 @@ __adpt_hppe_uniphy_sgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index, a_
 	__adpt_hppe_gcc_uniphy_xpcs_reset(dev_id, uniphy_index, A_TRUE);
 
 	/* disable instance clock */
-	if (uniphy_index == HPPE_UNIPHY_INSTANCE0)
+	if (uniphy_index == SSDK_UNIPHY_INSTANCE0)
 		max_port = 5;
 	else
 		max_port = 1;
@@ -370,7 +370,7 @@ __adpt_hppe_uniphy_sgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index, a_
 	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_qsgmii_sgmii = 0;
 	uniphy_mode_ctrl.bf.newaddedfromhere_sgplus_mode = 0;
 	uniphy_mode_ctrl.bf.newaddedfromhere_xpcs_mode = 0;
-	if (uniphy_index == HPPE_UNIPHY_INSTANCE0) {
+	if (uniphy_index == SSDK_UNIPHY_INSTANCE0) {
 		uniphy_mode_ctrl.bf.newaddedfromhere_sg_mode = 0;
 		/* select channel as a sgmii interface */
 		if (channel == 0)
@@ -403,7 +403,7 @@ __adpt_hppe_uniphy_sgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index, a_
 	rv = __adpt_hppe_uniphy_calibration(dev_id, uniphy_index);
 
 	/* enable instance clock */
-	if (uniphy_index == HPPE_UNIPHY_INSTANCE0)
+	if (uniphy_index == SSDK_UNIPHY_INSTANCE0)
 		max_port = 5;
 	else
 		max_port = 1;
