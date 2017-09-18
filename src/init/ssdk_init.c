@@ -662,17 +662,19 @@ int qca_ar8327_hw_init(struct qca_phy_priv *priv)
 
 	/* Configure switch register from DT information */
 	paddr = of_get_property(np, "qca,ar8327-initvals", &len);
-	if (!paddr || len < (2 * sizeof(*paddr))) {
-		SSDK_ERROR("len:%d < 2 * sizeof(*paddr):%d\n", len, 2 * sizeof(*paddr));
-		return -EINVAL;
-	}
+	if (paddr) {
+		if (len < (2 * sizeof(*paddr))) {
+			SSDK_ERROR("len:%d < 2 * sizeof(*paddr):%d\n", len, 2 * sizeof(*paddr));
+			return -EINVAL;
+		}
 
-	len /= sizeof(*paddr);
+		len /= sizeof(*paddr);
 
-	for (i = 0; i < len - 1; i += 2) {
-		reg = be32_to_cpup(paddr + i);
-		value = be32_to_cpup(paddr + i + 1);
-		priv->mii_write(priv->device_id, reg, value);
+		for (i = 0; i < len - 1; i += 2) {
+			reg = be32_to_cpup(paddr + i);
+			value = be32_to_cpup(paddr + i + 1);
+			priv->mii_write(priv->device_id, reg, value);
+		}
 	}
 
 	value = priv->mii_read(priv->device_id, AR8327_REG_MODULE_EN);
