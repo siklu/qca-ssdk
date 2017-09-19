@@ -1275,7 +1275,7 @@ qca803x_phy_interface_set_mode(a_uint32_t dev_id, a_uint32_t phy_id, fal_port_in
 
 	phy_data &= 0xfff0;
 
-	if (interface_mode == PHY_RGMII_BASET) {
+	if (interface_mode == PORT_RGMII_BASET) {
 		phy_data |= QCA803X_PHY_RGMII_BASET;
 	} else if (interface_mode == PHY_SGMII_BASET) {
 		phy_data |= QCA803X_PHY_SGMII_BASET;
@@ -1306,7 +1306,7 @@ qca803x_phy_interface_get_mode(a_uint32_t dev_id, a_uint32_t phy_id, fal_port_in
 
 	phy_data &= 0x000f;
 	if (phy_data == QCA803X_PHY_RGMII_BASET) {
-		*interface_mode = PHY_RGMII_BASET;
+		*interface_mode = PORT_RGMII_BASET;
 	} else if (phy_data == QCA803X_PHY_SGMII_BASET) {
 		*interface_mode = PHY_SGMII_BASET;
 	} else {
@@ -1332,7 +1332,7 @@ qca803x_phy_interface_get_mode_status(a_uint32_t dev_id, a_uint32_t phy_id, fal_
 	phy_data &= 0x00f0;
 	phy_data = (phy_data >>4);
 	if (phy_data == QCA803X_PHY_RGMII_BASET) {
-		*interface_mode_status = PHY_RGMII_BASET;
+		*interface_mode_status = PORT_RGMII_BASET;
 	} else if (phy_data == QCA803X_PHY_SGMII_BASET) {
 		*interface_mode_status = PHY_SGMII_BASET;
 	} else {
@@ -1626,7 +1626,7 @@ qca803x_phy_hw_init(a_uint32_t dev_id, a_uint32_t port_bmp)
 			if (mac_mode == PORT_WRAPPER_SGMII_CHANNEL0)
 				qca803x_phy_interface_set_mode(dev_id, phy_addr, PHY_SGMII_BASET);
 			else if (mac_mode == PORT_WRAPPER_RGMII)
-				qca803x_phy_interface_set_mode(dev_id, phy_addr, PHY_RGMII_BASET);
+				qca803x_phy_interface_set_mode(dev_id, phy_addr, PORT_RGMII_BASET);
 		}
 	}
 	return ret;
