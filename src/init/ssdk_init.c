@@ -2527,9 +2527,9 @@ static sw_error_t ssdk_dt_parse_phy_info(struct device_node *switch_node, a_uint
 	a_bool_t phy_c45;
 	sw_error_t rv = SW_OK;
 
-	phy_info_node = of_get_child_by_name(switch_node, "qca,port_phyinfo");
+	phy_info_node = of_get_child_by_name(switch_node, "qcom,port_phyinfo");
 	if (!phy_info_node) {
-		SSDK_INFO("qca,port_phyinfo DT doesn't exist!\n");
+		SSDK_INFO("qcom,port_phyinfo DT doesn't exist!\n");
 		return SW_NOT_FOUND;
 	}
 
