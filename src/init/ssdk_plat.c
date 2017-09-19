@@ -728,7 +728,7 @@ static ssize_t ssdk_packet_counter_get(struct device *dev,
 		return count;
 	}
 
-	count = snprintf(buf, (ssize_t)PAGE_SIZE, " ");
+	count = snprintf(buf, (ssize_t)PAGE_SIZE, "\n");
 
 	p_api->adpt_debug_counter_get(A_FALSE);
 
@@ -771,7 +771,7 @@ static ssize_t ssdk_byte_counter_get(struct device *dev,
 		return count;
 	}
 
-	count = snprintf(buf, (ssize_t)PAGE_SIZE, " ");
+	count = snprintf(buf, (ssize_t)PAGE_SIZE, "\n");
 
 	p_api->adpt_debug_counter_get(A_TRUE);
 
@@ -869,7 +869,7 @@ static ssize_t ssdk_dts_dump(struct device *dev,
 	a_uint32_t dev_id;
 	ssdk_dt_cfg *dt_cfg;
 
-	count = snprintf(buf, (ssize_t)PAGE_SIZE, " ");
+	count = snprintf(buf, (ssize_t)PAGE_SIZE, "\n");
 
 	for (dev_id = 0; dev_id < ssdk_dt_global.num_devices; dev_id ++)
 	{
