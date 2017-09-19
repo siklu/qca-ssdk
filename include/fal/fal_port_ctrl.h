@@ -235,8 +235,6 @@ struct port_phy_status
 				/**< PSGMII Auto mode */
 		PHY_SGMII_BASET = 4,
 				/**< SGMII mode */
-		PHY_RGMII_BASET = 5,
-				/**< RGMII mode */
 		PORT_QSGMII,
 				/**<QSGMII mode*/
 		PORT_SGMII_PLUS,
@@ -245,6 +243,8 @@ struct port_phy_status
 				/**<PORT_USXGMII mode*/
 		PORT_10GBASE_R,
 				/**<PORT_10GBASE_R mode*/
+		PORT_RGMII_BASET,
+				/**< RGMII mode */
 		PORT_INTERFACE_MODE_MAX = 0xFF
 	} fal_port_interface_mode_t;
 
