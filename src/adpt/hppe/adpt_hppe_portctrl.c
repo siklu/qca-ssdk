@@ -3122,7 +3122,7 @@ _adpt_hppe_port_gphy_status_get(a_uint32_t dev_id, a_uint32_t port_id,
 				struct port_phy_status *phy_status)
 {
 	sw_error_t rv = SW_OK;
-	a_uint32_t speed, duplex;
+	a_uint32_t speed = 0, duplex = 0;
 	a_uint32_t mode0, mode1, mode2;
 
 	mode0 = ssdk_dt_global_get_mac_mode(dev_id, HPPE_UNIPHY_INSTANCE0);
