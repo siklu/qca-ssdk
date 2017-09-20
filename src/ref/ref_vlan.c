@@ -276,16 +276,20 @@ int
 qca_ar8327_sw_hw_apply(struct switch_dev *dev)
 {
     struct qca_phy_priv *priv = qca_phy_priv_get(dev);
-    fal_pbmp_t *portmask;
+    fal_pbmp_t *portmask = NULL;
     int i, j;
 
     if (priv->version == QCA_VER_HPPE) {
         return 0;
     }
 
-    mutex_lock(&priv->reg_mutex);
-
     portmask = aos_mem_alloc(sizeof(fal_pbmp_t) * dev->ports);
+    if (portmask == NULL) {
+        SSDK_ERROR("%s: portmask malloc failed. \n", __func__);
+        return -1;
+    }
+
+    mutex_lock(&priv->reg_mutex);
 
     memset(portmask, 0, sizeof(portmask));
     if (!priv->init) {
@@ -357,6 +361,7 @@ qca_ar8327_sw_hw_apply(struct switch_dev *dev)
     }
 
     aos_mem_free(portmask);
+    portmask = NULL;
 
     mutex_unlock(&priv->reg_mutex);
 
