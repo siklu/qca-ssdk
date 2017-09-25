@@ -313,6 +313,11 @@ typedef struct {
 #define PHY_805XV2 0x004DD082
 #define PHY_805XV1 0x004DD081
 
+#define CABLE_PAIR_A  0
+#define CABLE_PAIR_B  1
+#define CABLE_PAIR_C  2
+#define CABLE_PAIR_D  3
+
 sw_error_t
 hsl_phy_api_ops_register(phy_type_t phy_type, hsl_phy_ops_t * phy_api_ops);
 
