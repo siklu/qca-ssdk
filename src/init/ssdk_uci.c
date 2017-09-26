@@ -144,35 +144,35 @@ int ssdk_uci_takeover_init()
 	memset(&tmp_dev, 0, sizeof(tmp_dev));
 	tmp_dev.ops = &qca_ar8327_sw_ops;
 	tmp_dev.name = "ssdk probe";
-	//printk("new uci takeover!\n");
+	SSDK_DEBUG("SSDK uci takeover!\n");
 	tmp_net = dev_get_by_name(&init_net, "eth1");
 	if(!tmp_net) {
 		tmp_net = dev_get_by_name(&init_net, "eth0");
 		if(!tmp_net)
 			return 0;
 	}
+	SSDK_DEBUG("using %s\n", tmp_net->name);
 	if(register_switch(&tmp_dev, tmp_net) < 0) {
-		printk("register temp switch fail!\n");
+		SSDK_ERROR("register temp switch fail!\n");
 		return 0;
 	}
-	//printk("go over the list!\n");
-	list_for_each_entry_reverse(sdev, tmp_dev.dev_list.prev, dev_list) {
+	list_for_each_entry(sdev, &tmp_dev.dev_list, dev_list) {
+		SSDK_DEBUG("Found %s\n", sdev->name);
 		if(!strcmp(sdev->name, "AR7240/AR9330 built-in switch") ||
 			!strcmp(sdev->name, "AR934X built-in switch")) {
+			int err;
 			/*found*/
 			sw_attach_dev = sdev->netdev;
 			old_sw_dev = sdev;
 			/*unregister openwrt switch device*/
 			unregister_switch(sdev);
 			/*register ours*/
-			//printk("ssdk register switch, old name %s\n", sdev->name);
-			if(register_switch(&priv->sw_dev, sw_attach_dev) < 0)
-				printk("ssdk register switch fail!\n");
-				break;
+			SSDK_DEBUG("ssdk register switch, old name %s\n", sdev->name);
+			if(err = register_switch(&priv->sw_dev, sw_attach_dev) < 0) {
+				SSDK_ERROR("ssdk register switch fail %d!\n", err);
 			}
-			else {
-				printk("unexpect switch %s\n", sdev->name);
-			}
+			break;
+		}
 	}
 	/*anyway should unregister the temp switch dev*/
 	unregister_switch(&tmp_dev);
