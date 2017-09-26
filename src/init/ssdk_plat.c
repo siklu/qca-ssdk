@@ -103,7 +103,7 @@ extern ssdk_dt_global_t ssdk_dt_global;
 extern ssdk_chip_type SSDK_CURRENT_CHIP_TYPE;
 void __iomem *hppe_uniphy_addr = NULL;
 
-static struct mutex switch_mdio_lock;
+struct mutex switch_mdio_lock;
 
 #ifdef BOARD_IPQ806X
 #define IPQ806X_MDIO_BUS_NAME			"mdio-gpio"
@@ -120,6 +120,7 @@ static struct mutex switch_mdio_lock;
 #define ISIS_CHIP_REG 0
 #define SHIVA_CHIP_ID 0x1f
 #define SHIVA_CHIP_REG 0x10
+#define HIGH_ADDR_DFLT	0x200
 
 /*
  * Using ISIS's address as default
@@ -185,6 +186,7 @@ qca_ar8216_mii_read(a_uint32_t dev_id, a_uint32_t reg)
 	udelay(100);
         lo = mdiobus_read(bus, 0x10 | r2, r1);
         hi = mdiobus_read(bus, 0x10 | r2, r1 + 1);
+	mdiobus_write(bus, switch_chip_id, switch_chip_reg, HIGH_ADDR_DFLT);
         mutex_unlock(&switch_mdio_lock);
         return (hi << 16) | lo;
 }
@@ -213,6 +215,7 @@ qca_ar8216_mii_write(a_uint32_t dev_id, a_uint32_t reg, a_uint32_t val)
             mdiobus_write(bus, 0x10 | r2, r1 + 1, hi);
             mdiobus_write(bus, 0x10 | r2, r1, lo);
         }
+	mdiobus_write(bus, switch_chip_id, switch_chip_reg, HIGH_ADDR_DFLT);
         mutex_unlock(&switch_mdio_lock);
 }
 

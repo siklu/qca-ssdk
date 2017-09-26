@@ -2894,6 +2894,7 @@ static const struct net_device_ops ssdk_netdev_ops = {
 };
 
 #ifdef CONFIG_MDIO
+extern struct mutex switch_mdio_lock;
 static int ssdk_miireg_ioctl_read(struct net_device *netdev, int phy_addr, int mmd, uint16_t addr)
 {
 	a_uint32_t reg = 0;
@@ -2905,7 +2906,9 @@ static int ssdk_miireg_ioctl_read(struct net_device *netdev, int phy_addr, int m
 	}
 
 	reg = MII_ADDR_C45 | mmd << 16 | addr;
+	mutex_lock(&switch_mdio_lock);
 	qca_ar8327_phy_read(0, phy_addr, reg, &val);
+	mutex_unlock(&switch_mdio_lock);
 
 	return (int)val;
 }
@@ -2921,7 +2924,9 @@ static int ssdk_miireg_ioctl_write(struct net_device *netdev, int phy_addr, int 
 	}
 
 	reg = MII_ADDR_C45 | mmd << 16 | addr;
+	mutex_lock(&switch_mdio_lock);
 	qca_ar8327_phy_write(0, phy_addr, reg, value);
+	mutex_unlock(&switch_mdio_lock);
 
 	return 0;
 }
