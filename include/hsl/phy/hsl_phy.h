@@ -297,13 +297,16 @@ typedef struct {
 
 #define MALIBU5PORT_PHY 0x004DD0B1
 #define MALIBU2PORT_PHY 0x004DD0B2
+#define QCA8030_PHY 0x004DD076
 #define QCA8033_PHY 0x004DD074
+#define QCA8035_PHY 0x004DD072
 #define F1V1_PHY 0x004DD033
 #define F1V2_PHY 0x004DD034
 #define F1V3_PHY 0x004DD035
 #define F1V4_PHY 0x004DD036
 #define F2V1_PHY 0x004DD042
 #define AQUANTIA_PHY_107 0x03a1b4e2
+#define AQUANTIA_PHY_108 0x03a1b4f2
 #define AQUANTIA_PHY_109 0x03a1b502
 #define AQUANTIA_PHY_111 0x03a1b610
 #define AQUANTIA_PHY_112 0x03a1b660
@@ -322,7 +325,7 @@ sw_error_t phy_api_ops_init(phy_type_t phy_type);
 
 int ssdk_phy_driver_init(a_uint32_t dev_id, ssdk_init_cfg *cfg);
 
-int qca_ssdk_phy_address_init(a_uint32_t dev_id);
+int qca_ssdk_phy_info_init(a_uint32_t dev_id);
 
 void qca_ssdk_port_bmp_init(a_uint32_t dev_id);
 

@@ -3054,3 +3054,131 @@ hppe_epe_dbg_out_cnt_reg_counter_set(
 	return ret;
 }
 
+sw_error_t
+hppe_lpi_enable_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union lpi_enable_u *value)
+{
+	return hppe_reg_get(
+				dev_id,
+				NSS_LPI_BASE_ADDR + LPI_ENABLE_ADDRESS + \
+				index * LPI_ENABLE_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_lpi_enable_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union lpi_enable_u *value)
+{
+	return hppe_reg_set(
+				dev_id,
+				NSS_LPI_BASE_ADDR + LPI_ENABLE_ADDRESS + \
+				index * LPI_ENABLE_INC,
+				value->val);
+}
+
+sw_error_t
+hppe_lpi_timer_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union lpi_port_timer_u *value)
+{
+	return hppe_reg_get(
+				dev_id,
+				NSS_LPI_BASE_ADDR + LPI_PORT_TIMER_ADDRESS + \
+				index * LPI_PORT_TIMER_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_lpi_timer_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union lpi_port_timer_u *value)
+{
+	return hppe_reg_set(
+				dev_id,
+				NSS_LPI_BASE_ADDR + LPI_PORT_TIMER_ADDRESS + \
+				index * LPI_PORT_TIMER_INC,
+				value->val);
+}
+sw_error_t
+hppe_lpi_dbg_addr_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union lpi_dbg_addr_u *value)
+{
+	return hppe_reg_get(
+				dev_id,
+				NSS_LPI_BASE_ADDR + LPI_DBG_ADDR_ADDRESS + \
+				index * LPI_DBG_ADDR_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_lpi_dbg_addr_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union lpi_dbg_addr_u *value)
+{
+	return hppe_reg_set(
+				dev_id,
+				NSS_LPI_BASE_ADDR + LPI_DBG_ADDR_ADDRESS + \
+				index * LPI_DBG_ADDR_INC,
+				value->val);
+}
+
+sw_error_t
+hppe_lpi_dbg_data_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union lpi_dbg_data_u *value)
+{
+	return hppe_reg_get(
+				dev_id,
+				NSS_LPI_BASE_ADDR + LPI_DBG_DATA_ADDRESS + \
+				index * LPI_DBG_DATA_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_lpi_dbg_data_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union lpi_dbg_addr_u *value)
+{
+	return hppe_reg_set(
+				dev_id,
+				NSS_LPI_BASE_ADDR + LPI_DBG_DATA_ADDRESS + \
+				index * LPI_DBG_DATA_INC,
+				value->val);
+}
+sw_error_t
+hppe_lpi_cnt_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union lpi_cnt_u *value)
+{
+	return hppe_reg_get(
+				dev_id,
+				NSS_LPI_BASE_ADDR + LPI_CNT_ADDRESS + \
+				index * LPI_CNT_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_lpi_cnt_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union lpi_cnt_u *value)
+{
+	return hppe_reg_set(
+				dev_id,
+				NSS_LPI_BASE_ADDR + LPI_CNT_ADDRESS + \
+				index * LPI_CNT_INC,
+				value->val);
+}
+

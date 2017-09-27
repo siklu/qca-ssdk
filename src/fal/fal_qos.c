@@ -938,6 +938,23 @@ _fal_scheduler_dequeue_ctrl_get(
 	rv = p_api->adpt_scheduler_dequeue_ctrl_get(dev_id, queue_id, enable);
 	return rv;
 }
+
+sw_error_t
+_fal_port_scheduler_cfg_reset(
+		a_uint32_t dev_id,
+		fal_port_t port_id)
+{
+	adpt_api_t *p_api;
+	sw_error_t rv = SW_OK;
+
+	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+	if (NULL == p_api->adpt_port_scheduler_cfg_reset)
+		return SW_NOT_SUPPORTED;
+
+	rv = p_api->adpt_port_scheduler_cfg_reset(dev_id, port_id);
+	return rv;
+}
 /*insert flag for inner fal, don't remove it*/
 
 /**
@@ -1890,6 +1907,19 @@ fal_scheduler_dequeue_ctrl_get(
 	return rv;
 }
 
+sw_error_t
+fal_port_scheduler_cfg_reset(
+		a_uint32_t dev_id,
+		fal_port_t port_id)
+{
+	sw_error_t rv = SW_OK;
+
+	FAL_API_LOCK;
+	rv = _fal_port_scheduler_cfg_reset(dev_id, port_id);
+	FAL_API_UNLOCK;
+	return rv;
+}
+
 EXPORT_SYMBOL(fal_scheduler_dequeue_ctrl_get);
 
 EXPORT_SYMBOL(fal_scheduler_dequeue_ctrl_set);
@@ -1927,6 +1957,8 @@ EXPORT_SYMBOL(fal_qos_port_remark_get);
 EXPORT_SYMBOL(fal_edma_ring_queue_map_set);
 
 EXPORT_SYMBOL(fal_edma_ring_queue_map_get);
+
+EXPORT_SYMBOL(fal_port_scheduler_cfg_reset);
 
 /*insert flag for outter fal, don't remove it*/
 /**

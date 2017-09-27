@@ -1246,5 +1246,66 @@ hppe_drop_stat_pkts_set(
 		a_uint32_t index,
 		a_uint32_t value);
 
+sw_error_t
+hppe_lpi_enable_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union lpi_enable_u *value);
+
+sw_error_t
+hppe_lpi_enable_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union lpi_enable_u *value);
+
+sw_error_t
+hppe_lpi_timer_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union lpi_port_timer_u *value);
+
+sw_error_t
+hppe_lpi_timer_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union lpi_port_timer_u *value);
+
+sw_error_t
+hppe_lpi_dbg_addr_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union lpi_dbg_addr_u *value);
+
+sw_error_t
+hppe_lpi_adb_addr_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union lpi_dbg_addr_u *value);
+
+sw_error_t
+hppe_lpi_dbg_data_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union lpi_dbg_data_u *value);
+
+sw_error_t
+hppe_lpi_adb_data_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union lpi_dbg_data_u *value);
+
+sw_error_t
+hppe_lpi_cnt_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union lpi_cnt_u *value);
+
+sw_error_t
+hppe_lpi_cnt_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union lpi_cnt_u *value);
+
+
 #endif
 
