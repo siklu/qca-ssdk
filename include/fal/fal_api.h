@@ -106,7 +106,9 @@ extern "C" {
     SW_API_DEF(SW_API_PT_SOURCE_FILTER_GET, fal_port_source_filter_status_get), \
     SW_API_DEF(SW_API_PT_SOURCE_FILTER_SET, fal_port_source_filter_enable), \
     SW_API_DEF(SW_API_PT_FRAME_MAX_SIZE_GET, fal_port_max_frame_size_get), \
-    SW_API_DEF(SW_API_PT_FRAME_MAX_SIZE_SET, fal_port_max_frame_size_set),
+    SW_API_DEF(SW_API_PT_FRAME_MAX_SIZE_SET, fal_port_max_frame_size_set), \
+    SW_API_DEF(SW_API_PT_INTERFACE_3AZ_STATUS_SET, fal_port_interface_3az_status_set), \
+    SW_API_DEF(SW_API_PT_INTERFACE_3AZ_STATUS_GET, fal_port_interface_3az_status_get),
 
 #define PORTCONTROL_API_PARAM \
     SW_API_DESC(SW_API_PT_DUPLEX_GET) \
@@ -191,7 +193,9 @@ extern "C" {
     SW_API_DESC(SW_API_PT_SOURCE_FILTER_GET) \
     SW_API_DESC(SW_API_PT_SOURCE_FILTER_SET) \
     SW_API_DESC(SW_API_PT_FRAME_MAX_SIZE_GET) \
-    SW_API_DESC(SW_API_PT_FRAME_MAX_SIZE_SET)
+    SW_API_DESC(SW_API_PT_FRAME_MAX_SIZE_SET) \
+    SW_API_DESC(SW_API_PT_INTERFACE_3AZ_STATUS_SET)  \
+    SW_API_DESC(SW_API_PT_INTERFACE_3AZ_STATUS_GET)
 #else
 #define PORTCONTROL_API \
     SW_API_DEF(SW_API_PT_DUPLEX_SET, fal_port_duplex_set), \
@@ -675,7 +679,8 @@ extern "C" {
     SW_API_DEF(SW_API_QOS_RING_QUEUE_MAP_SET, fal_edma_ring_queue_map_set), \
     SW_API_DEF(SW_API_QOS_PORT_QUEUES_GET, fal_port_queues_get), \
     SW_API_DEF(SW_API_QOS_SCHEDULER_DEQUEU_CTRL_GET, fal_scheduler_dequeue_ctrl_get), \
-    SW_API_DEF(SW_API_QOS_SCHEDULER_DEQUEU_CTRL_SET, fal_scheduler_dequeue_ctrl_set),
+    SW_API_DEF(SW_API_QOS_SCHEDULER_DEQUEU_CTRL_SET, fal_scheduler_dequeue_ctrl_set), \
+    SW_API_DEF(SW_API_QOS_PORT_SCHEDULER_CFG_RESET, fal_port_scheduler_cfg_reset),
 
 #define QOS_API_PARAM \
     SW_API_DESC(SW_API_QOS_SCH_MODE_SET) \
@@ -732,7 +737,8 @@ extern "C" {
     SW_API_DESC(SW_API_QOS_RING_QUEUE_MAP_SET) \
     SW_API_DESC(SW_API_QOS_PORT_QUEUES_GET) \
     SW_API_DESC(SW_API_QOS_SCHEDULER_DEQUEU_CTRL_GET) \
-    SW_API_DESC(SW_API_QOS_SCHEDULER_DEQUEU_CTRL_SET)
+    SW_API_DESC(SW_API_QOS_SCHEDULER_DEQUEU_CTRL_SET) \
+    SW_API_DESC(SW_API_QOS_PORT_SCHEDULER_CFG_RESET)
 #else
 #define QOS_API \
     SW_API_DEF(SW_API_QOS_PT_MODE_SET, fal_qos_port_mode_set),

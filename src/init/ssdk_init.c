@@ -109,11 +109,6 @@
 #include "fal_rfs.h"
 #endif
 #endif
-
-#if defined(HPPE)
-#include "hppe_init.h"
-#endif
-
 #include "adpt.h"
 
 #ifdef IN_RFS
@@ -143,6 +138,14 @@ static bool qca_dess_rfs_registered = false;
 ssdk_dt_global_t ssdk_dt_global = {0};
 
 struct qca_phy_priv **qca_phy_priv_global;
+
+struct qca_phy_priv* ssdk_phy_priv_data_get(a_uint32_t dev_id)
+{
+	if (dev_id >= SW_MAX_NR_DEV || !qca_phy_priv_global)
+		return NULL;
+
+	return qca_phy_priv_global[dev_id];
+}
 
 a_uint32_t ssdk_dt_global_get_mac_mode(a_uint32_t dev_id, a_uint32_t index)
 {
@@ -667,17 +670,19 @@ int qca_ar8327_hw_init(struct qca_phy_priv *priv)
 
 	/* Configure switch register from DT information */
 	paddr = of_get_property(np, "qca,ar8327-initvals", &len);
-	if (!paddr || len < (2 * sizeof(*paddr))) {
-		SSDK_ERROR("len:%d < 2 * sizeof(*paddr):%d\n", len, 2 * sizeof(*paddr));
-		return -EINVAL;
-	}
+	if (paddr) {
+		if (len < (2 * sizeof(*paddr))) {
+			SSDK_ERROR("len:%d < 2 * sizeof(*paddr):%d\n", len, 2 * sizeof(*paddr));
+			return -EINVAL;
+		}
 
-	len /= sizeof(*paddr);
+		len /= sizeof(*paddr);
 
-	for (i = 0; i < len - 1; i += 2) {
-		reg = be32_to_cpup(paddr + i);
-		value = be32_to_cpup(paddr + i + 1);
-		priv->mii_write(priv->device_id, reg, value);
+		for (i = 0; i < len - 1; i += 2) {
+			reg = be32_to_cpup(paddr + i);
+			value = be32_to_cpup(paddr + i + 1);
+			priv->mii_write(priv->device_id, reg, value);
+		}
 	}
 
 	value = priv->mii_read(priv->device_id, AR8327_REG_MODULE_EN);
@@ -1377,6 +1382,8 @@ qca_mac_sw_sync_port_status_init(a_uint32_t dev_id)
 		qca_phy_priv_global[dev_id]->port_old_duplex[port_id - 1] = FAL_DUPLEX_BUTT;
 		qca_phy_priv_global[dev_id]->port_old_tx_flowctrl[port_id - 1] = 1;
 		qca_phy_priv_global[dev_id]->port_old_rx_flowctrl[port_id - 1] = 1;
+		qca_phy_priv_global[dev_id]->port_tx_flowctrl_forcemode[port_id - 1] = A_FALSE;
+		qca_phy_priv_global[dev_id]->port_rx_flowctrl_forcemode[port_id - 1] = A_FALSE;
 	}
 }
 void
@@ -2248,6 +2255,11 @@ void switch_cpuport_setup(a_uint32_t dev_id)
 	#endif
 }
 
+ssdk_dt_scheduler_cfg *ssdk_bootup_shceduler_cfg_get(a_uint32_t dev_id)
+{
+	return &(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->scheduler_cfg);
+}
+
 #ifndef BOARD_AR71XX
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 static void ssdk_dt_parse_mac_mode(ssdk_init_cfg *cfg, struct device_node *switch_node, a_uint32_t dev_id)
@@ -2518,29 +2530,29 @@ static void ssdk_dt_parse_scheduler_cfg(struct device_node *switch_node, a_uint3
 	}
 }
 
-static int ssdk_dt_parse_phy_addr(struct device_node *switch_node, a_uint32_t dev_id)
+static sw_error_t ssdk_dt_parse_phy_info(struct device_node *switch_node, a_uint32_t dev_id)
 {
-	a_uint32_t phy_id, phy_addr;
-	a_uint32_t len = 0, i = 0;
-	const __be32 *phy_mp;
-	int rv = SW_OK;
+	struct device_node *phy_info_node, *port_node;
+	a_uint32_t port_id, phy_addr;
+	a_bool_t phy_c45;
+	sw_error_t rv = SW_OK;
 
-	phy_mp = of_get_property(switch_node, "qca,port_phyaddr_map", &len);
-	if (!phy_mp) {
-		SSDK_INFO("port_phyaddr_map doesn't exist!\n");
+	phy_info_node = of_get_child_by_name(switch_node, "qcom,port_phyinfo");
+	if (!phy_info_node) {
+		SSDK_INFO("qcom,port_phyinfo DT doesn't exist!\n");
 		return SW_NOT_FOUND;
 	}
-	else if (len < (2 * sizeof(*phy_mp))) {
-		SSDK_ERROR("len:%d < 2 * sizeof(*phy_mp):%d\n", len, 2 * sizeof(*phy_mp));
-		return -EINVAL;
-	}
 
-	len /= sizeof(*phy_mp);
+	for_each_available_child_of_node(phy_info_node, port_node) {
+		if (of_property_read_u32(port_node, "port_id", &port_id) ||
+				of_property_read_u32(port_node, "phy_address", &phy_addr))
+			return SW_BAD_VALUE;
 
-	for (i = 0; i < len - 1; i += 2) {
-		phy_id = be32_to_cpup(phy_mp + i);
-		phy_addr = be32_to_cpup(phy_mp + i + 1);
-		qca_ssdk_phy_address_set(dev_id, phy_id, phy_addr);
+		phy_c45 = of_property_read_bool(port_node,
+				"ethernet-phy-ieee802.3-c45");
+
+		hsl_port_phy_c45_capability_set(dev_id, port_id, phy_c45);
+		qca_ssdk_phy_address_set(dev_id, port_id, phy_addr);
 	}
 
 	return rv;
@@ -2554,8 +2566,8 @@ static void ssdk_dt_parse_mdio(struct device_node *switch_node, a_uint32_t dev_i
 	const __be32 *phy_addr;
 	const __be32 * c45_phy;
 
-	/* prefer to get phy addr from ess-switch node */
-	if (SW_OK == ssdk_dt_parse_phy_addr(switch_node, dev_id))
+	/* prefer to get phy info from ess-switch node */
+	if (SW_OK == ssdk_dt_parse_phy_info(switch_node, dev_id))
 		return;
 
 	mdio_node = of_find_node_by_name(NULL, "mdio");
@@ -3960,11 +3972,11 @@ qca_hppe_interface_mode_init(a_uint32_t dev_id, a_uint32_t mode0, a_uint32_t mod
 	if (NULL == p_api->adpt_uniphy_mode_set)
 		return SW_NOT_SUPPORTED;
 
-	rv = p_api->adpt_uniphy_mode_set(dev_id, HPPE_UNIPHY_INSTANCE0, mode0);
+	rv = p_api->adpt_uniphy_mode_set(dev_id, SSDK_UNIPHY_INSTANCE0, mode0);
 
-	rv = p_api->adpt_uniphy_mode_set(dev_id, HPPE_UNIPHY_INSTANCE1, mode1);
+	rv = p_api->adpt_uniphy_mode_set(dev_id, SSDK_UNIPHY_INSTANCE1, mode1);
 
-	rv = p_api->adpt_uniphy_mode_set(dev_id, HPPE_UNIPHY_INSTANCE2, mode2);
+	rv = p_api->adpt_uniphy_mode_set(dev_id, SSDK_UNIPHY_INSTANCE2, mode2);
 
 	for(port_id =1; port_id <=6; port_id++)
 	{
@@ -4390,7 +4402,7 @@ static int ssdk_alloc_priv(void)
 		}
 		qca_phy_priv_global[dev_id]->qca_ssdk_sw_dev_registered = A_FALSE;
 		qca_phy_priv_global[dev_id]->ess_switch_flag = A_FALSE;
-		qca_ssdk_phy_address_init(dev_id);
+		qca_ssdk_phy_info_init(dev_id);
 		qca_ssdk_port_bmp_init(dev_id);
 	}
 

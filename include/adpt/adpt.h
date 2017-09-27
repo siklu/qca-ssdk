@@ -297,6 +297,15 @@ typedef sw_error_t (*adpt_port_bridge_txmac_set_func)(a_uint32_t dev_id,
 
 typedef sw_error_t (*adpt_port_interface_mode_apply_func)(a_uint32_t dev_id);
 
+typedef sw_error_t (*adpt_port_interface_3az_status_set_func)(a_uint32_t dev_id,
+		a_uint32_t port_id, a_bool_t enable);
+typedef sw_error_t (*adpt_port_interface_3az_status_get_func)(a_uint32_t dev_id,
+		a_uint32_t port_id, a_bool_t * enable);
+typedef sw_error_t (*adpt_port_flowctrl_forcemode_set_func) (a_uint32_t dev_id,
+		fal_port_t port_id, a_bool_t enable);
+typedef sw_error_t (*adpt_port_flowctrl_forcemode_get_func) (a_uint32_t dev_id,
+		fal_port_t port_id, a_bool_t * enable);
+
 // mirror
 typedef sw_error_t (*adpt_mirr_port_in_set_func)(a_uint32_t dev_id, fal_port_t port_id,
                          a_bool_t enable);
@@ -797,6 +806,7 @@ typedef sw_error_t (*adpt_tdm_tick_num_set_func)(a_uint32_t dev_id, a_uint32_t t
 typedef sw_error_t (*adpt_tdm_tick_num_get_func)(a_uint32_t dev_id, a_uint32_t *tick_num);
 typedef sw_error_t (*adpt_port_scheduler_cfg_set_func)(a_uint32_t dev_id, a_uint32_t tick_index,
 					fal_port_scheduler_cfg_t *cfg);
+typedef sw_error_t (*adpt_port_scheduler_cfg_reset_func)(a_uint32_t dev_id, fal_port_t port_id);
 typedef sw_error_t (*adpt_port_scheduler_cfg_get_func)(a_uint32_t dev_id, a_uint32_t tick_index,
 					fal_port_scheduler_cfg_t *cfg);
 typedef sw_error_t (*adpt_scheduler_dequeue_ctrl_get_func)(a_uint32_t dev_id, a_uint32_t queue_id,
@@ -1013,6 +1023,10 @@ typedef struct
 	adpt_port_bridge_txmac_set_func adpt_port_bridge_txmac_set;
 
 	adpt_port_interface_mode_apply_func adpt_port_interface_mode_apply;
+	adpt_port_interface_3az_status_set_func adpt_port_interface_3az_status_set;
+	adpt_port_interface_3az_status_get_func adpt_port_interface_3az_status_get;
+	adpt_port_flowctrl_forcemode_set_func adpt_port_flowctrl_forcemode_set;
+	adpt_port_flowctrl_forcemode_get_func adpt_port_flowctrl_forcemode_get;
 
 // mirror
 	a_uint32_t adpt_mirror_func_bitmap;
@@ -1250,6 +1264,7 @@ typedef struct
 	adpt_scheduler_dequeue_ctrl_set_func adpt_scheduler_dequeue_ctrl_set;
 	adpt_qos_port_mode_pri_get_func adpt_qos_port_mode_pri_get;
 	adpt_qos_port_mode_pri_set_func adpt_qos_port_mode_pri_set;
+	adpt_port_scheduler_cfg_reset_func adpt_port_scheduler_cfg_reset;
 
 	/* bm */
 	a_uint32_t adpt_bm_func_bitmap;
