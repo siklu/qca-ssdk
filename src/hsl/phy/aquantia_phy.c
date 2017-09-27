@@ -36,17 +36,14 @@
 */
 static sw_error_t
 aquantia_phy_reg_read(a_uint32_t dev_id, a_uint32_t phy_id, a_uint32_t reg_mmd,
-	a_uint32_t reg_id)
+	a_uint32_t reg_id, a_uint16_t *phy_data)
 {
 	sw_error_t rv;
-	a_uint16_t phy_data;
 
 	reg_id = AQUANTIA_REG_ADDRESS(reg_mmd, reg_id);
-	HSL_PHY_GET(rv, dev_id, phy_id, reg_id, &phy_data);
-	if (rv)
-		return rv;
+	HSL_PHY_GET(rv, dev_id, phy_id, reg_id, phy_data);
 
-	return phy_data;
+	return rv;
 }
 
 /******************************************************************************
@@ -72,9 +69,11 @@ aquantia_phy_get_speed(a_uint32_t dev_id, a_uint32_t phy_id,
 		     fal_port_speed_t * speed)
 {
 	a_uint16_t phy_data;
+	sw_error_t rv = SW_OK;
 
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-				AQUANTIA_REG_AUTONEG_VENDOR_STATUS);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_REG_AUTONEG_VENDOR_STATUS, &phy_data);
+	SW_RTN_ON_ERROR(rv);
 	switch ((phy_data & AQUANTIA_STATUS_SPEED_MASK) >>1) {
 	case AQUANTIA_STATUS_SPEED_100MBS:
 		*speed = FAL_SPEED_100;
@@ -95,7 +94,7 @@ aquantia_phy_get_speed(a_uint32_t dev_id, a_uint32_t phy_id,
 		return SW_READ_ERROR;
 	}
 
-	return SW_OK;
+	return rv;
 }
 
 /******************************************************************************
@@ -108,16 +107,22 @@ aquantia_phy_get_duplex(a_uint32_t dev_id, a_uint32_t phy_id,
 		      fal_port_duplex_t * duplex)
 {
 	a_uint16_t phy_data;
+	sw_error_t rv = SW_OK;
 
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_REG_AUTONEG_VENDOR_STATUS);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_REG_AUTONEG_VENDOR_STATUS, &phy_data);
+	SW_RTN_ON_ERROR(rv);
 	//read duplex
 	if (phy_data & AQUANTIA_STATUS_FULL_DUPLEX)
+	{
 		*duplex = FAL_FULL_DUPLEX;
+	}
 	else
+	{
 		*duplex = FAL_HALF_DUPLEX;
+	}
 
-	return SW_OK;
+	return rv;
 }
 
 /******************************************************************************
@@ -129,13 +134,16 @@ aquantia_phy_get_duplex(a_uint32_t dev_id, a_uint32_t phy_id,
 sw_error_t aquantia_phy_reset(a_uint32_t dev_id, a_uint32_t phy_id)
 {
 	a_uint16_t phy_data;
+	sw_error_t rv = SW_OK;
 
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
-		AQUANTIA_GLOABLE_STANDARD_CONTROL1);
-	aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
+		AQUANTIA_GLOABLE_STANDARD_CONTROL1, &phy_data);
+	SW_RTN_ON_ERROR(rv);
+	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
 	AQUANTIA_GLOABLE_STANDARD_CONTROL1, phy_data | AQUANTIA_CTRL_SOFTWARE_RESET);
+	aos_mdelay(100);
 
-	return SW_OK;
+	return rv;
 }
 
 /******************************************************************************
@@ -148,17 +156,23 @@ sw_error_t
 aquantia_phy_set_powersave(a_uint32_t dev_id, a_uint32_t phy_id, a_bool_t enable)
 {
 	a_uint16_t phy_data;
+	sw_error_t rv;
 
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
-		AQUANTIA_GLOABLE_STANDARD_CONTROL1);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
+		AQUANTIA_GLOABLE_STANDARD_CONTROL1, &phy_data);
+	SW_RTN_ON_ERROR(rv);
 	if (enable == A_TRUE)
-			phy_data |= AQUANTIA_POWER_SAVE;
+	{
+		phy_data |= AQUANTIA_POWER_SAVE;
+	}
 	else
-			phy_data &= ~AQUANTIA_POWER_SAVE;
-	phy_data = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
+	{
+		phy_data &= ~AQUANTIA_POWER_SAVE;
+	}
+	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
 		AQUANTIA_GLOABLE_STANDARD_CONTROL1,phy_data);
 
-	return SW_OK;
+	return rv;
 }
 
 /******************************************************************************
@@ -172,15 +186,21 @@ aquantia_phy_get_powersave(a_uint32_t dev_id, a_uint32_t phy_id,
 			 a_bool_t * enable)
 {
 	a_uint16_t phy_data;
+	sw_error_t rv = SW_OK;
 
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
-		AQUANTIA_GLOABLE_STANDARD_CONTROL1);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
+		AQUANTIA_GLOABLE_STANDARD_CONTROL1, &phy_data);
+	SW_RTN_ON_ERROR(rv);
 	if (phy_data& AQUANTIA_POWER_SAVE)
+	{
 		*enable = A_TRUE;
+	}
 	else
+	{
 		*enable = A_FALSE;
+	}
 
-	return SW_OK;
+	return rv;
 }
 
 /******************************************************************************
@@ -194,24 +214,32 @@ aquantia_phy_set_mdix(a_uint32_t dev_id, a_uint32_t phy_id,
 		    fal_port_mdix_mode_t mode)
 {
 	a_uint16_t phy_data;
+	sw_error_t rv = SW_OK;
 
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_RESERVED_VENDOR_PROVISIONING1);
-	if (mode == PHY_MDIX_AUTO) {
-		phy_data |= AQUANTIA_PHY_MDIX_AUTO;
-	} else if (mode == PHY_MDIX_MDIX) {
-		phy_data &= ~AQUANTIA_PHY_MDIX_AUTO;
-		phy_data |= AQUANTIA_PHY_MDIX;
-	} else if (mode == PHY_MDIX_MDI) {
-		phy_data &= ~AQUANTIA_PHY_MDIX_AUTO;
-	} else {
-		return SW_BAD_PARAM;
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_RESERVED_VENDOR_PROVISIONING1, &phy_data);
+	SW_RTN_ON_ERROR(rv);
+	phy_data &= ~(BITS(0,2));
+	switch(mode)
+	{
+		case PHY_MDIX_AUTO:
+			phy_data |= AQUANTIA_PHY_MDIX_AUTO;
+			break;
+		case PHY_MDIX_MDIX:
+			phy_data |= AQUANTIA_PHY_MDIX;
+			break;
+		case PHY_MDIX_MDI:
+			phy_data |= AQUANTIA_PHY_MDI;
+			break;
+		default:
+			return SW_BAD_PARAM;
 	}
-	aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_RESERVED_VENDOR_PROVISIONING1,phy_data);
-	aquantia_phy_reset(dev_id, phy_id);
+	SW_RTN_ON_ERROR(rv);
+	rv = aquantia_phy_restart_autoneg(dev_id, phy_id);
 
-	return SW_OK;
+	return rv;
 }
 
 /******************************************************************************
@@ -225,9 +253,11 @@ aquantia_phy_get_mdix(a_uint32_t dev_id, a_uint32_t phy_id,
 		    fal_port_mdix_mode_t * mode)
 {
 	a_uint16_t phy_data;
+	sw_error_t rv = SW_OK;
 
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_RESERVED_VENDOR_PROVISIONING1);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_RESERVED_VENDOR_PROVISIONING1,&phy_data);
+	SW_RTN_ON_ERROR(rv);
 	if ((phy_data & AQUANTIA_PHY_MDIX_AUTO) == AQUANTIA_PHY_MDIX_AUTO) {
 		*mode = PHY_MDIX_AUTO;
 	} else if ((phy_data & AQUANTIA_PHY_MDIX) == AQUANTIA_PHY_MDIX) {
@@ -236,7 +266,7 @@ aquantia_phy_get_mdix(a_uint32_t dev_id, a_uint32_t phy_id,
 		*mode = PHY_MDIX_MDI;
 	}
 
-	return SW_OK;
+	return rv;
 }
 
 /******************************************************************************
@@ -250,13 +280,15 @@ aquantia_phy_get_mdix_status(a_uint32_t dev_id, a_uint32_t phy_id,
 			   fal_port_mdix_status_t * mode)
 {
 	a_uint16_t phy_data;
+	sw_error_t rv = SW_OK;
 
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_RESERVED_VENDOR_STATUS1);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_RESERVED_VENDOR_STATUS1, &phy_data);
+	SW_RTN_ON_ERROR(rv);
 	*mode = (phy_data &  AQUANTIA_PHY_MDIX_STATUS) ? PHY_MDIX_STATUS_MDIX :
 	    PHY_MDIX_STATUS_MDI;
 
-	return SW_OK;
+	return rv;
 }
 
 /******************************************************************************
@@ -271,32 +303,45 @@ aquantia_phy_set_local_loopback(a_uint32_t dev_id, a_uint32_t phy_id,
 {
 	a_uint16_t phy_data;
 	fal_port_speed_t old_speed;
+	sw_error_t rv = SW_OK;
 
-	 phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_PHY_XS_REGISTERS,
-		AQUANTIA_PHY_XS_TRANAMIT_RESERVED_VENDOR_PROVISION5);
-       if (enable == A_TRUE) {
-	   		  phy_data |= AQUANTIA_INTERNAL_LOOPBACK;
-			  aquantia_phy_get_speed(dev_id, phy_id, &old_speed);
-			  if (old_speed == FAL_SPEED_100) {
-			  	   phy_data |= AQUANTIA_100M_LOOPBACK;
-			  	} else if (old_speed == FAL_SPEED_1000) {
-			  	   phy_data |= AQUANTIA_1000M_LOOPBACK;
-			  	} else if (old_speed == FAL_SPEED_10000) {
-			  	   phy_data |= AQUANTIA_10000M_LOOPBACK;
-			  	}else if (old_speed == FAL_SPEED_2500) {
-			  	   phy_data |= AQUANTIA_2500M_LOOPBACK;
-			  	}else if (old_speed == FAL_SPEED_5000) {
-			  	   phy_data |= AQUANTIA_5000M_LOOPBACK;
-			  	}else {
-                                return SW_FAIL;
-			  	}
-         } else {
-			  phy_data &= AQUANTIA_INTERNAL_LOOPBACK;
-		 }
-	 phy_data = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_PHY_XS_REGISTERS,
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_PHY_XS_REGISTERS,
+		AQUANTIA_PHY_XS_TRANAMIT_RESERVED_VENDOR_PROVISION5, &phy_data);
+	SW_RTN_ON_ERROR(rv);
+	if (enable == A_TRUE)
+	{
+		phy_data |= AQUANTIA_INTERNAL_LOOPBACK;
+		rv = aquantia_phy_get_speed(dev_id, phy_id, &old_speed);
+		SW_RTN_ON_ERROR(rv);
+		switch(old_speed)
+		{
+			case FAL_SPEED_100:
+				phy_data |= AQUANTIA_100M_LOOPBACK;
+				break;
+			case FAL_SPEED_1000:
+				 phy_data |= AQUANTIA_1000M_LOOPBACK;
+				 break;
+			case FAL_SPEED_10000:
+				phy_data |= AQUANTIA_10000M_LOOPBACK;
+				break;
+			case FAL_SPEED_2500:
+				 phy_data |= AQUANTIA_2500M_LOOPBACK;
+				 break;
+			case FAL_SPEED_5000:
+				phy_data |= AQUANTIA_5000M_LOOPBACK;
+				break;
+			default:
+				return SW_FAIL;
+		}
+	}
+	else
+	{
+		phy_data &= AQUANTIA_INTERNAL_LOOPBACK;
+	}
+	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_PHY_XS_REGISTERS,
 		AQUANTIA_PHY_XS_TRANAMIT_RESERVED_VENDOR_PROVISION5,phy_data);
 
-	return SW_OK;
+	return rv;
 }
 
 /******************************************************************************
@@ -310,16 +355,18 @@ aquantia_phy_get_local_loopback(a_uint32_t dev_id, a_uint32_t phy_id,
 			      a_bool_t * enable)
 {
 	a_uint16_t phy_data;
+	sw_error_t rv = SW_OK;
 
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_PHY_XS_REGISTERS,
-		AQUANTIA_PHY_XS_TRANAMIT_RESERVED_VENDOR_PROVISION5);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_PHY_XS_REGISTERS,
+		AQUANTIA_PHY_XS_TRANAMIT_RESERVED_VENDOR_PROVISION5, &phy_data);
+	SW_RTN_ON_ERROR(rv);
 	if (phy_data & AQUANTIA_INTERNAL_LOOPBACK) {
 		*enable = A_TRUE;
 	} else {
 		*enable = A_FALSE;
 	}
 
-	return SW_OK;
+	return rv;
 }
 
 sw_error_t
@@ -327,18 +374,20 @@ aquantia_phy_set_remote_loopback(a_uint32_t dev_id, a_uint32_t phy_id,
 				   a_bool_t enable)
 {
 	a_uint16_t phy_data;
+	sw_error_t rv = SW_OK;
 
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_PHY_XS_REGISTERS,
-		AQUANTIA_PHY_XS_STANDARD_CONTROL1);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_PHY_XS_REGISTERS,
+		AQUANTIA_PHY_XS_STANDARD_CONTROL1, &phy_data);
+	SW_RTN_ON_ERROR(rv);
 	if (enable == A_TRUE) {
 		phy_data |= AQUANTIA_PHY_REMOTE_LOOPBACK;
 	} else {
 		phy_data &= ~AQUANTIA_PHY_REMOTE_LOOPBACK;
 	}
-	phy_data = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_PHY_XS_REGISTERS,
+	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_PHY_XS_REGISTERS,
 		AQUANTIA_PHY_XS_STANDARD_CONTROL1, phy_data);
 
-	return SW_OK;
+	return rv;
 }
 
 /******************************************************************************
@@ -352,16 +401,18 @@ aquantia_phy_get_remote_loopback(a_uint32_t dev_id, a_uint32_t phy_id,
 				   a_bool_t * enable)
 {
 	a_uint16_t phy_data;
+	sw_error_t rv = SW_OK;
 
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_PHY_XS_REGISTERS,
-		AQUANTIA_PHY_XS_STANDARD_CONTROL1);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_PHY_XS_REGISTERS,
+		AQUANTIA_PHY_XS_STANDARD_CONTROL1, &phy_data);
+	SW_RTN_ON_ERROR(rv);
 	if (phy_data & AQUANTIA_PHY_REMOTE_LOOPBACK) {
 		*enable = A_TRUE;
 	} else {
 		*enable = A_FALSE;
 	}
 
-	return SW_OK;
+	return rv;
 }
 
 /******************************************************************************
@@ -391,28 +442,41 @@ aquantia_phy_cdt_get(a_uint32_t dev_id, a_uint32_t phy_id,
 		   fal_port_cdt_t * port_cdt)
 {
 	a_uint16_t status = 0;
+	sw_error_t rv = SW_OK;
+	a_uint16_t phy_data;
 
 	if ((!port_cdt) || (phy_id > 6)) {
 		return SW_FAIL;
 	}
 	/* Get cable status */
-	status = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
-		AQUANTIA_CABLE_DIAGNOSTIC_STATUS1);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
+		AQUANTIA_CABLE_DIAGNOSTIC_STATUS1, &status);
+	SW_RTN_ON_ERROR(rv);
 	port_cdt->pair_a_status =  (status >> 12) & 0x7;
 	port_cdt->pair_b_status = (status >> 8) & 0x7;
 	port_cdt->pair_c_status = (status >> 4) & 0x7;
 	port_cdt->pair_d_status = status & 0x3;
-	/* Get Cable Length value */
-	port_cdt->pair_a_len = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
-		AQUANTIA_CABLE_DIAGNOSTIC_STATUS2);
-	port_cdt->pair_b_len = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
-		AQUANTIA_CABLE_DIAGNOSTIC_STATUS4);
-	port_cdt->pair_c_len = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
-		AQUANTIA_CABLE_DIAGNOSTIC_STATUS6);
-	port_cdt->pair_d_len = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
-		AQUANTIA_CABLE_DIAGNOSTIC_STATUS8);
 
-	return SW_OK;
+	/* Get Cable Length value */
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
+		AQUANTIA_CABLE_DIAGNOSTIC_STATUS2, &phy_data);
+	SW_RTN_ON_ERROR(rv);
+	port_cdt->pair_a_len = phy_data;
+
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
+		AQUANTIA_CABLE_DIAGNOSTIC_STATUS4, &phy_data);
+	SW_RTN_ON_ERROR(rv);
+	port_cdt->pair_b_len = phy_data;
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
+		AQUANTIA_CABLE_DIAGNOSTIC_STATUS6, &phy_data);
+	SW_RTN_ON_ERROR(rv);
+	port_cdt->pair_c_len = phy_data;
+
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
+		AQUANTIA_CABLE_DIAGNOSTIC_STATUS8, &phy_data);
+	port_cdt->pair_d_len = phy_data;
+
+	return rv;
 }
 
 sw_error_t
@@ -470,10 +534,12 @@ a_bool_t aquantia_autoneg_done(a_uint32_t dev_id, a_uint32_t phy_id)
 {
 	a_uint16_t phy_data;
 	a_uint16_t ii = 200;
+	sw_error_t rv = SW_OK;
 
 	do {
-		phy_data =  aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-			AQUANTIA_AUTONEG_STANDARD_STATUS1);
+		rv =  aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+			AQUANTIA_AUTONEG_STANDARD_STATUS1, &phy_data);
+		SW_RTN_ON_ERROR(rv);
 		aos_mdelay(10);
 	}
 	while ((!AQUANTIA_AUTONEG_DONE(phy_data)) && --ii);
@@ -495,11 +561,12 @@ aquantia_phy_get_partner_ability(a_uint32_t dev_id, a_uint32_t phy_id,
 			       a_uint32_t * ability)
 {
 	a_uint16_t phy_data;
+	sw_error_t rv = SW_OK;
 
 	*ability = 0;
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_AUTONEG_LINK_PARTNER_ABILITY);
-
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_AUTONEG_LINK_PARTNER_ABILITY, &phy_data);
+	SW_RTN_ON_ERROR(rv);
 	if (phy_data & AQUANTIA_LINK_10BASETX_HALF_DUPLEX)
 		*ability |= FAL_PHY_PART_10T_HD;
 
@@ -512,7 +579,7 @@ aquantia_phy_get_partner_ability(a_uint32_t dev_id, a_uint32_t phy_id,
 	if (phy_data & AQUANTIA_LINK_100BASETX_FULL_DUPLEX)
 		*ability |= FAL_PHY_PART_100TX_FD;
 
-	return SW_OK;
+	return rv;
 }
 
 /******************************************************************************
@@ -526,9 +593,11 @@ aquantia_phy_get_partner_ability(a_uint32_t dev_id, a_uint32_t phy_id,
 a_bool_t aquantia_phy_get_link_status(a_uint32_t dev_id, a_uint32_t phy_id)
 {
 	a_uint16_t phy_data;
+	sw_error_t rv = SW_OK;
 
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_AUTONEG_STANDARD_STATUS1);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_AUTONEG_STANDARD_STATUS1, &phy_data);
+	SW_RTN_ON_ERROR(rv);
 	if (phy_data & AQUANTIA_STATUS_LINK)
 		return A_TRUE;
 
@@ -545,50 +614,65 @@ aquantia_phy_set_autoneg_adv(a_uint32_t dev_id, a_uint32_t phy_id,
 			   a_uint32_t autoneg)
 {
 	a_uint16_t phy_data = 0;
+	sw_error_t rv = SW_OK;
 
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_AUTONEG_ADVERTISEMENT_REGISTER);
+	if ((autoneg & FAL_PHY_ADV_10T_FD) ||(autoneg & FAL_PHY_ADV_10T_HD)||
+		(autoneg & FAL_PHY_ADV_100TX_HD))
+	{
+		return SW_NOT_SUPPORTED;
+	}
+
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_AUTONEG_ADVERTISEMENT_REGISTER, &phy_data);
+	SW_RTN_ON_ERROR(rv);
 	phy_data &= ~AQUANTIA_ADVERTISE_MEGA_ALL;
 	phy_data &=
 	    ~(AQUANTIA_ADVERTISE_PAUSE | AQUANTIA_ADVERTISE_ASYM_PAUSE);
 	if (autoneg & FAL_PHY_ADV_100TX_FD)
+	{
 		phy_data |= AQUANTIA_ADVERTISE_100FULL;
-	if (autoneg & FAL_PHY_ADV_100TX_HD)
-		phy_data |= AQUANTIA_ADVERTISE_100HALF;
-	if (autoneg & FAL_PHY_ADV_10T_FD)
-		phy_data |= AQUANTIA_ADVERTISE_10FULL;
-	if (autoneg & FAL_PHY_ADV_10T_HD)
-		phy_data |= AQUANTIA_ADVERTISE_10HALF;
+	}
 	if (autoneg & FAL_PHY_ADV_PAUSE)
+	{
 		phy_data |= AQUANTIA_ADVERTISE_PAUSE;
+	}
 	if (autoneg & FAL_PHY_ADV_ASY_PAUSE)
+	{
 		phy_data |= AQUANTIA_ADVERTISE_ASYM_PAUSE;
-	aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+	}
+	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_ADVERTISEMENT_REGISTER, phy_data);
+	SW_RTN_ON_ERROR(rv);
 
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_AUTONEG_VENDOR_PROVISION1);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_AUTONEG_VENDOR_PROVISION1, &phy_data);
 	phy_data &= ~AQUANTIA_ADVERTISE_GIGA_ALL;
 	if (autoneg & FAL_PHY_ADV_1000T_FD)
+	{
 		phy_data |= AQUANTIA_ADVERTISE_1000FULL;
-	if (autoneg & FAL_PHY_ADV_1000T_FD)
-		phy_data |= AQUANTIA_ADVERTISE_1000FULL;
+	}
 	if (autoneg & FAL_PHY_ADV_2500T_FD)
+	{
 		phy_data |= AQUANTIA_ADVERTISE_2500FULL;
+	}
 	if (autoneg & FAL_PHY_ADV_5000T_FD)
+	{
 		phy_data |= AQUANTIA_ADVERTISE_5000FULL;
-	aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+	}
+	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_VENDOR_PROVISION1, phy_data);
+	SW_RTN_ON_ERROR(rv);
 
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_AUTONEG_10GBASS_T_CONTROL_REGISTER);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_AUTONEG_10GBASS_T_CONTROL_REGISTER, &phy_data);
+	SW_RTN_ON_ERROR(rv);
 	phy_data &= ~AQUANTIA_ADVERTISE_GIGA_PLUS_ALL;
 	if (autoneg & FAL_PHY_ADV_10000T_FD)
 		phy_data |= AQUANTIA_ADVERTISE_10000FULL;
-	phy_data = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_10GBASS_T_CONTROL_REGISTER,phy_data);
 
-	return SW_OK;
+	return rv;
 }
 
 /******************************************************************************
@@ -601,39 +685,49 @@ aquantia_phy_get_autoneg_adv(a_uint32_t dev_id, a_uint32_t phy_id,
 			   a_uint32_t * autoneg)
 {
 	a_uint16_t phy_data = 0;
+	sw_error_t rv = SW_OK;
 
 	*autoneg = 0;
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_AUTONEG_ADVERTISEMENT_REGISTER);
-
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_AUTONEG_ADVERTISEMENT_REGISTER, &phy_data);
+	SW_RTN_ON_ERROR(rv);
 	if (phy_data & AQUANTIA_ADVERTISE_100FULL)
+	{
 		*autoneg |= FAL_PHY_ADV_100TX_FD;
-	if (phy_data & AQUANTIA_ADVERTISE_100HALF)
-		*autoneg |= FAL_PHY_ADV_100TX_HD;
-	if (phy_data & AQUANTIA_ADVERTISE_10FULL)
-		*autoneg |= FAL_PHY_ADV_10T_FD;
-	if (phy_data & AQUANTIA_ADVERTISE_10HALF)
-		*autoneg |= FAL_PHY_ADV_10T_HD;
+	}
 	if (phy_data & AQUANTIA_ADVERTISE_PAUSE)
+	{
 		*autoneg |= FAL_PHY_ADV_PAUSE;
+	}
 	if (phy_data & AQUANTIA_ADVERTISE_ASYM_PAUSE)
+	{
 		*autoneg |= FAL_PHY_ADV_ASY_PAUSE;
+	}
 
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_AUTONEG_VENDOR_PROVISION1);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_AUTONEG_VENDOR_PROVISION1, &phy_data);
+	SW_RTN_ON_ERROR(rv);
 	if (phy_data & AQUANTIA_ADVERTISE_1000FULL)
+	{
 		*autoneg |= FAL_PHY_ADV_1000T_FD;
+	}
 	if (phy_data & AQUANTIA_ADVERTISE_2500FULL)
+	{
 		*autoneg |= FAL_PHY_ADV_2500T_FD;
+	}
 	if (phy_data & AQUANTIA_ADVERTISE_5000FULL)
+	{
 		*autoneg |= FAL_PHY_ADV_5000T_FD;
+	}
 
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_AUTONEG_10GBASS_T_CONTROL_REGISTER);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_AUTONEG_10GBASS_T_CONTROL_REGISTER, &phy_data);
 	if (phy_data & AQUANTIA_ADVERTISE_10000FULL)
+	{
 		*autoneg |= FAL_PHY_ADV_10000T_FD;
+	}
 
-	return SW_OK;
+	return rv;
 }
 
 /******************************************************************************
@@ -644,11 +738,15 @@ aquantia_phy_get_autoneg_adv(a_uint32_t dev_id, a_uint32_t phy_id,
 a_bool_t aquantia_phy_autoneg_status(a_uint32_t dev_id, a_uint32_t phy_id)
 {
 	a_uint16_t phy_data;
+	sw_error_t rv = SW_OK;
 
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_AUTONEG_STANDARD_CONTROL1);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_AUTONEG_STANDARD_CONTROL1, &phy_data);
+	SW_RTN_ON_ERROR(rv);
 	if (phy_data & AQUANTIA_CTRL_AUTONEGOTIATION_ENABLE)
+	{
 		return A_TRUE;
+	}
 
 	return A_FALSE;
 }
@@ -660,24 +758,27 @@ a_bool_t aquantia_phy_autoneg_status(a_uint32_t dev_id, a_uint32_t phy_id)
 sw_error_t aquantia_phy_restart_autoneg(a_uint32_t dev_id, a_uint32_t phy_id)
 {
 	a_uint16_t phy_data = 0;
+	sw_error_t rv = SW_OK;
 
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id,
-		AQUANTIA_MMD_PHY_XS_REGISTERS,
-		AQUANTIA_PHY_XS_USX_TRANSMIT);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_PHY_XS_REGISTERS,
+		AQUANTIA_PHY_XS_USX_TRANSMIT, &phy_data);
+	SW_RTN_ON_ERROR(rv);
 	if (!(phy_data & AQUANTIA_PHY_USX_AUTONEG_ENABLE))
-		aquantia_phy_reg_write(dev_id, phy_id,
-		AQUANTIA_MMD_PHY_XS_REGISTERS,
-		AQUANTIA_PHY_XS_USX_TRANSMIT,
-		phy_data | AQUANTIA_PHY_USX_AUTONEG_ENABLE);
-
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_AUTONEG_STANDARD_CONTROL1);
+	{
+		rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_PHY_XS_REGISTERS,
+			AQUANTIA_PHY_XS_USX_TRANSMIT,
+			phy_data | AQUANTIA_PHY_USX_AUTONEG_ENABLE);
+		SW_RTN_ON_ERROR(rv);
+	}
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_AUTONEG_STANDARD_CONTROL1, &phy_data);
 	phy_data |= AQUANTIA_CTRL_AUTONEGOTIATION_ENABLE;
-	aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+	SW_RTN_ON_ERROR(rv);
+	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_STANDARD_CONTROL1,
 		phy_data | AQUANTIA_CTRL_RESTART_AUTONEGOTIATION);
 
-	return SW_OK;
+	return rv;
 }
 
 /******************************************************************************
@@ -688,14 +789,16 @@ sw_error_t aquantia_phy_restart_autoneg(a_uint32_t dev_id, a_uint32_t phy_id)
 sw_error_t aquantia_phy_enable_autoneg(a_uint32_t dev_id, a_uint32_t phy_id)
 {
 	a_uint16_t phy_data = 0;
+	sw_error_t rv = SW_OK;
 
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_AUTONEG_STANDARD_CONTROL1);
-	aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_AUTONEG_STANDARD_CONTROL1, &phy_data);
+	SW_RTN_ON_ERROR(rv);
+	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_STANDARD_CONTROL1,
 		phy_data | AQUANTIA_CTRL_AUTONEGOTIATION_ENABLE);
 
-	return SW_OK;
+	return rv;
 }
 
 /******************************************************************************
@@ -706,42 +809,50 @@ sw_error_t aquantia_phy_enable_autoneg(a_uint32_t dev_id, a_uint32_t phy_id)
 static sw_error_t _aquantia_phy_set_100speed(a_uint32_t dev_id, a_uint32_t phy_id, fal_port_duplex_t duplex)
 {
 	a_uint16_t phy_data = 0;
-
+	sw_error_t rv = SW_OK;
 	/*set 100M */
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_AUTONEG_ADVERTISEMENT_REGISTER);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_AUTONEG_ADVERTISEMENT_REGISTER, &phy_data);
+	SW_RTN_ON_ERROR(rv);
 	phy_data &= ~(AQUANTIA_ADVERTISE_MEGA_ALL);
 	if(duplex == FAL_FULL_DUPLEX)
+	{
 		phy_data |= AQUANTIA_ADVERTISE_100FULL;
+	}
 	else
+	{
 		phy_data |= AQUANTIA_ADVERTISE_100HALF;
-	aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+	}
+	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_ADVERTISEMENT_REGISTER, phy_data);
-
+	SW_RTN_ON_ERROR(rv);
 	/*disable 1000M, 2500M, 5000M speed*/
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_AUTONEG_VENDOR_PROVISION1);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_AUTONEG_VENDOR_PROVISION1, &phy_data);
+	SW_RTN_ON_ERROR(rv);
 	phy_data &= ~(AQUANTIA_ADVERTISE_GIGA_ALL);
-	aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_VENDOR_PROVISION1, phy_data);
-
+	SW_RTN_ON_ERROR(rv);
 	/*disable 10000M speed*/
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_AUTONEG_10GBASS_T_CONTROL_REGISTER);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_AUTONEG_10GBASS_T_CONTROL_REGISTER, &phy_data);
+	SW_RTN_ON_ERROR(rv);
 	phy_data &= ~(AQUANTIA_ADVERTISE_GIGA_PLUS_ALL);
-	aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_10GBASS_T_CONTROL_REGISTER, phy_data);
 
-	return SW_OK;
+	return rv;
 }
 
 static sw_error_t _aquantia_phy_set_giga_speed(a_uint32_t dev_id, a_uint32_t phy_id, fal_port_speed_t speed)
 {
 	a_uint16_t phy_data = 0;
-
+	sw_error_t rv = SW_OK;
 	/*set 1000M and disable 2500M, 5000M */
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_AUTONEG_VENDOR_PROVISION1);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_AUTONEG_VENDOR_PROVISION1, &phy_data);
+	SW_RTN_ON_ERROR(rv);
 	phy_data &= ~(AQUANTIA_ADVERTISE_GIGA_ALL);
 	switch(speed)
 	{
@@ -757,53 +868,61 @@ static sw_error_t _aquantia_phy_set_giga_speed(a_uint32_t dev_id, a_uint32_t phy
 		default:
 			return SW_FAIL;
 	}
-	aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_VENDOR_PROVISION1, phy_data);
+	SW_RTN_ON_ERROR(rv);
 
 	/*disable 100M speed*/
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_AUTONEG_ADVERTISEMENT_REGISTER);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_AUTONEG_ADVERTISEMENT_REGISTER, &phy_data);
+	SW_RTN_ON_ERROR(rv);
 	phy_data &= ~(AQUANTIA_ADVERTISE_MEGA_ALL);
-	aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_ADVERTISEMENT_REGISTER, phy_data);
-
+	SW_RTN_ON_ERROR(rv);
 	/*disable 10000M speed*/
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_AUTONEG_10GBASS_T_CONTROL_REGISTER);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_AUTONEG_10GBASS_T_CONTROL_REGISTER, &phy_data);
+	SW_RTN_ON_ERROR(rv);
 	phy_data &= ~(AQUANTIA_ADVERTISE_GIGA_PLUS_ALL);
-	 aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+	rv =  aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_10GBASS_T_CONTROL_REGISTER, phy_data);
 
-	return SW_OK;
+	return rv;
 }
 
 static sw_error_t _aquantia_phy_set_10g_speed(a_uint32_t dev_id, a_uint32_t phy_id)
 {
 	a_uint16_t phy_data = 0;
-
+	sw_error_t rv = SW_OK;
 	/*set giga speed */
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_AUTONEG_10GBASS_T_CONTROL_REGISTER);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_AUTONEG_10GBASS_T_CONTROL_REGISTER,&phy_data);
+	SW_RTN_ON_ERROR(rv);
 	phy_data &= ~(AQUANTIA_ADVERTISE_GIGA_PLUS_ALL);
 	phy_data |= AQUANTIA_ADVERTISE_10000FULL;
-	aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_10GBASS_T_CONTROL_REGISTER, phy_data);
+	SW_RTN_ON_ERROR(rv);
 
 	/*disable 100M speed*/
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_AUTONEG_ADVERTISEMENT_REGISTER);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_AUTONEG_ADVERTISEMENT_REGISTER, &phy_data);
+	SW_RTN_ON_ERROR(rv);
 	phy_data &= ~(AQUANTIA_ADVERTISE_MEGA_ALL);
-	aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_ADVERTISEMENT_REGISTER, phy_data);
+	SW_RTN_ON_ERROR(rv);
 
 	/*disable 1000M 2500M 5000M speed*/
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_AUTONEG_VENDOR_PROVISION1);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_AUTONEG_VENDOR_PROVISION1, &phy_data);
+	SW_RTN_ON_ERROR(rv);
 	phy_data &= ~(AQUANTIA_ADVERTISE_GIGA_ALL);
-	aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_VENDOR_PROVISION1, phy_data);
 
-	return SW_OK;
+	return rv;
 }
 
 sw_error_t
@@ -811,33 +930,36 @@ aquantia_phy_set_speed(a_uint32_t dev_id, a_uint32_t phy_id,
 		     fal_port_speed_t speed)
 {
 	fal_port_duplex_t old_duplex;
+	sw_error_t rv;
 
-	aquantia_phy_get_duplex(dev_id, phy_id, &old_duplex);
+	rv = aquantia_phy_get_duplex(dev_id, phy_id, &old_duplex);
+	SW_RTN_ON_ERROR(rv);
 	if (old_duplex == FAL_FULL_DUPLEX) {
 		if (FAL_SPEED_100 == speed) {
-			_aquantia_phy_set_100speed(dev_id, phy_id, FAL_FULL_DUPLEX);
-		}
-		else if(FAL_SPEED_2500 == speed ||FAL_SPEED_5000 == speed || FAL_SPEED_1000 == speed){
-			_aquantia_phy_set_giga_speed(dev_id, phy_id, speed);
-		}
-		else if(FAL_SPEED_10000 == speed){
-				_aquantia_phy_set_10g_speed(dev_id, phy_id);
-		}
-		else{
+			rv = _aquantia_phy_set_100speed(dev_id, phy_id, FAL_FULL_DUPLEX);
+			SW_RTN_ON_ERROR(rv);
+		} else if(FAL_SPEED_2500 == speed ||FAL_SPEED_5000 == speed || FAL_SPEED_1000 == speed){
+			rv = _aquantia_phy_set_giga_speed(dev_id, phy_id, speed);
+			SW_RTN_ON_ERROR(rv);
+		} else if(FAL_SPEED_10000 == speed){
+			rv = _aquantia_phy_set_10g_speed(dev_id, phy_id);
+			SW_RTN_ON_ERROR(rv);
+		} else {
 			return SW_BAD_PARAM;
 		}
-	}else if (old_duplex == FAL_HALF_DUPLEX) {
+	} else if (old_duplex == FAL_HALF_DUPLEX) {
 		if (FAL_SPEED_100 == speed) {
-			_aquantia_phy_set_100speed(dev_id, phy_id, FAL_HALF_DUPLEX);
-		}else {
+			rv = _aquantia_phy_set_100speed(dev_id, phy_id, FAL_HALF_DUPLEX);
+			SW_RTN_ON_ERROR(rv);
+		} else {
 			return SW_BAD_PARAM;
-	       }
+		}
 	} else {
 		return SW_FAIL;
 	}
-	aquantia_phy_restart_autoneg(dev_id, phy_id);
+	rv = aquantia_phy_restart_autoneg(dev_id, phy_id);
 
-	return SW_OK;
+	return rv;
 }
 
 /******************************************************************************
@@ -851,28 +973,33 @@ aquantia_phy_set_duplex(a_uint32_t dev_id, a_uint32_t phy_id,
 {
 	a_uint16_t phy_data = 0;
 	fal_port_speed_t old_speed;
+	sw_error_t rv = SW_OK;
 
-	aquantia_phy_get_speed(dev_id, phy_id, &old_speed);
+	rv = aquantia_phy_get_speed(dev_id, phy_id, &old_speed);
+	SW_RTN_ON_ERROR(rv);
 	if (old_speed == FAL_SPEED_100){
-		phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-			AQUANTIA_AUTONEG_ADVERTISEMENT_REGISTER);
-	 	if (duplex == FAL_FULL_DUPLEX) {
+		rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+			AQUANTIA_AUTONEG_ADVERTISEMENT_REGISTER, &phy_data);
+		SW_RTN_ON_ERROR(rv);
+		if (duplex == FAL_FULL_DUPLEX) {
 			phy_data &= ~(AQUANTIA_ADVERTISE_MEGA_ALL);
 			phy_data |= AQUANTIA_ADVERTISE_100FULL;
-			 aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+			 rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 				AQUANTIA_AUTONEG_ADVERTISEMENT_REGISTER, phy_data);
+			 SW_RTN_ON_ERROR(rv);
 		 } else {
 		 	phy_data &= ~(AQUANTIA_ADVERTISE_MEGA_ALL);
 			phy_data |= AQUANTIA_ADVERTISE_100HALF;
-			aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+			rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 				AQUANTIA_AUTONEG_ADVERTISEMENT_REGISTER, phy_data);
+			SW_RTN_ON_ERROR(rv);
 		 }
-	}
-	else
+	} else {
 	 	return SW_NOT_SUPPORTED;
-	aquantia_phy_restart_autoneg(dev_id, phy_id);
+	}
+	rv = aquantia_phy_restart_autoneg(dev_id, phy_id);
 
-	return SW_OK;
+	return rv;
 }
 
 /******************************************************************************
@@ -885,18 +1012,20 @@ sw_error_t
 aquantia_phy_set_wol_status(a_uint32_t dev_id, a_uint32_t phy_id, a_bool_t enable)
 {
 	a_uint16_t phy_data;
+	sw_error_t rv = SW_OK;
 
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_RESERVED_VENDOR_PROVISIONING1);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_RESERVED_VENDOR_PROVISIONING1, &phy_data);
+	SW_RTN_ON_ERROR(rv);
 	if (enable == A_TRUE) {
 		phy_data |= AQUANTIA_PHY_WOL_ENABLE;
 	} else {
 		phy_data &= ~AQUANTIA_PHY_WOL_ENABLE;
 	}
-	aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_RESERVED_VENDOR_PROVISIONING1, phy_data);
 
-	return SW_OK;
+	return rv;
 }
 
 /******************************************************************************
@@ -909,14 +1038,18 @@ sw_error_t
 aquantia_phy_get_wol_status(a_uint32_t dev_id, a_uint32_t phy_id, a_bool_t * enable)
 {
 	a_uint16_t phy_data;
+	sw_error_t rv = SW_OK;
 
 	*enable = A_FALSE;
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_RESERVED_VENDOR_PROVISIONING1);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_RESERVED_VENDOR_PROVISIONING1, &phy_data);
+	SW_RTN_ON_ERROR(rv);
 	if (phy_data & AQUANTIA_PHY_WOL_ENABLE)
+	{
 		*enable = A_TRUE;
+	}
 
-	return SW_OK;
+	return rv;
 }
 
 /******************************************************************************
@@ -929,18 +1062,20 @@ aquantia_phy_intr_mask_set(a_uint32_t dev_id, a_uint32_t phy_id,
 			 a_uint32_t intr_mask_flag)
 {
 	a_uint16_t phy_data = 0;
+	sw_error_t rv = SW_OK;
 
 	if ((FAL_PHY_INTR_STATUS_DOWN_CHANGE |FAL_PHY_INTR_STATUS_UP_CHANGE)
 		& intr_mask_flag)
 	{
-		phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-			AQUANTIA_AUTONEG_TRANSMIT_VENDOR_INTR_MASK);
+		rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+			AQUANTIA_AUTONEG_TRANSMIT_VENDOR_INTR_MASK, &phy_data);
+		SW_RTN_ON_ERROR(rv);
 		phy_data |= AQUANTIA_INTR_LINK_STATUS_CHANGE;
-		aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 			AQUANTIA_AUTONEG_TRANSMIT_VENDOR_INTR_MASK, phy_data);
 	}
 
-	return SW_OK;
+	return rv;
 }
 
 /******************************************************************************
@@ -953,14 +1088,18 @@ aquantia_phy_intr_mask_get(a_uint32_t dev_id, a_uint32_t phy_id,
 			 a_uint32_t * intr_mask_flag)
 {
 	a_uint16_t phy_data = 0;
+	sw_error_t rv = SW_OK;
 
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_AUTONEG_TRANSMIT_VENDOR_INTR_MASK);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_AUTONEG_TRANSMIT_VENDOR_INTR_MASK, &phy_data);
+	SW_RTN_ON_ERROR(rv);
 	if (AQUANTIA_INTR_LINK_STATUS_CHANGE & phy_data)
+	{
 		*intr_mask_flag = (FAL_PHY_INTR_STATUS_DOWN_CHANGE |
 							  FAL_PHY_INTR_STATUS_UP_CHANGE);
+	}
 
-	return SW_OK;
+	return rv;
 }
 
 /******************************************************************************
@@ -974,8 +1113,9 @@ sw_error_t aquantia_phy_poweroff(a_uint32_t dev_id, a_uint32_t phy_id)
 	a_uint16_t phy_data;
 	sw_error_t rv;
 
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
-		AQUANTIA_GLOABLE_STANDARD_CONTROL1);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
+		AQUANTIA_GLOABLE_STANDARD_CONTROL1, &phy_data);
+	SW_RTN_ON_ERROR(rv);
 	phy_data |= AQUANTIA_POWER_DOWN;
 	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
 		AQUANTIA_GLOABLE_STANDARD_CONTROL1,phy_data);
@@ -994,8 +1134,9 @@ sw_error_t aquantia_phy_poweron(a_uint32_t dev_id, a_uint32_t phy_id)
 	a_uint16_t phy_data;
 	sw_error_t rv;
 
-	phy_data = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
-		AQUANTIA_GLOABLE_STANDARD_CONTROL1);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
+		AQUANTIA_GLOABLE_STANDARD_CONTROL1, &phy_data);
+	SW_RTN_ON_ERROR(rv);
 	phy_data &= ~AQUANTIA_POWER_DOWN;
 	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_GLOABLE_REGISTERS,
 		AQUANTIA_GLOABLE_STANDARD_CONTROL1,phy_data);
@@ -1013,6 +1154,7 @@ aquantia_phy_hw_init(a_uint32_t dev_id,  a_uint32_t port_bmp)
 {
 	a_uint16_t phy_data = 0;
 	a_uint32_t port_id = 0, phy_addr = 0;
+	sw_error_t rv = SW_OK;
 
 	for (port_id = 0; port_id < SW_MAX_NR_PORT; port_id ++)
 	{
@@ -1020,42 +1162,48 @@ aquantia_phy_hw_init(a_uint32_t dev_id,  a_uint32_t port_bmp)
 		{
 			phy_addr = qca_ssdk_port_to_phy_addr(dev_id, port_id);
 			/*set auto neg of aq*/
-			phy_data = aquantia_phy_reg_read(dev_id, phy_addr, AQUANTIA_MMD_PHY_XS_REGISTERS,
-				AQUANTIA_PHY_XS_USX_TRANSMIT);
+			rv = aquantia_phy_reg_read(dev_id, phy_addr, AQUANTIA_MMD_PHY_XS_REGISTERS,
+				AQUANTIA_PHY_XS_USX_TRANSMIT, &phy_data);
+			SW_RTN_ON_ERROR(rv);
 			phy_data |= AQUANTIA_PHY_USX_AUTONEG_ENABLE;
-			aquantia_phy_reg_write(dev_id, phy_addr, AQUANTIA_MMD_PHY_XS_REGISTERS,
+			rv = aquantia_phy_reg_write(dev_id, phy_addr, AQUANTIA_MMD_PHY_XS_REGISTERS,
 				AQUANTIA_PHY_XS_USX_TRANSMIT,phy_data);
-
+			SW_RTN_ON_ERROR(rv);
 			/*config interrupt of aq*/
-			phy_data = aquantia_phy_reg_read(dev_id, phy_addr, AQUANTIA_MMD_AUTONEG,
-				AQUANTIA_AUTONEG_TRANSMIT_VENDOR_INTR_MASK);
+			rv = aquantia_phy_reg_read(dev_id, phy_addr, AQUANTIA_MMD_AUTONEG,
+				AQUANTIA_AUTONEG_TRANSMIT_VENDOR_INTR_MASK, &phy_data);
+			SW_RTN_ON_ERROR(rv);
 			phy_data |= AQUANTIA_INTR_LINK_STATUS_CHANGE;
-			aquantia_phy_reg_write(dev_id, phy_addr, AQUANTIA_MMD_AUTONEG,
+			rv = aquantia_phy_reg_write(dev_id, phy_addr, AQUANTIA_MMD_AUTONEG,
 				AQUANTIA_AUTONEG_TRANSMIT_VENDOR_INTR_MASK, phy_data);
-
-			phy_data = aquantia_phy_reg_read(dev_id, phy_addr, AQUANTIA_MMD_GLOABLE_REGISTERS,
-				AQUANTIA_GLOBAL_INTR_STANDARD_MASK);
+			SW_RTN_ON_ERROR(rv);
+			rv = aquantia_phy_reg_read(dev_id, phy_addr, AQUANTIA_MMD_GLOABLE_REGISTERS,
+				AQUANTIA_GLOBAL_INTR_STANDARD_MASK, &phy_data);
+			SW_RTN_ON_ERROR(rv);
 			phy_data |= AQUANTIA_ALL_VENDOR_ALARMS_INTERRUPT_MASK;
-			aquantia_phy_reg_write(dev_id, phy_addr, AQUANTIA_MMD_GLOABLE_REGISTERS,
+			rv = aquantia_phy_reg_write(dev_id, phy_addr, AQUANTIA_MMD_GLOABLE_REGISTERS,
 				AQUANTIA_GLOBAL_INTR_STANDARD_MASK, phy_data);
-
-			phy_data = aquantia_phy_reg_read(dev_id, phy_addr, AQUANTIA_MMD_GLOABLE_REGISTERS,
-				AQUANTIA_GLOBAL_INTR_VENDOR_MASK);
+			SW_RTN_ON_ERROR(rv);
+			rv = aquantia_phy_reg_read(dev_id, phy_addr, AQUANTIA_MMD_GLOABLE_REGISTERS,
+				AQUANTIA_GLOBAL_INTR_VENDOR_MASK, &phy_data);
+			SW_RTN_ON_ERROR(rv);
 			phy_data |= AQUANTIA_AUTO_AND_ALARMS_INTR_MASK;
-			aquantia_phy_reg_write(dev_id, phy_addr, AQUANTIA_MMD_GLOABLE_REGISTERS,
+			rv = aquantia_phy_reg_write(dev_id, phy_addr, AQUANTIA_MMD_GLOABLE_REGISTERS,
 				AQUANTIA_GLOBAL_INTR_VENDOR_MASK, phy_data);
+			SW_RTN_ON_ERROR(rv);
 
 			/* config aq phy ACT and LINK led behavior*/
 			phy_data = AQUANTIA_ACT_LED_VALUE;
-			aquantia_phy_reg_write(dev_id, phy_addr, AQUANTIA_MMD_GLOABLE_REGISTERS,
+			rv = aquantia_phy_reg_write(dev_id, phy_addr, AQUANTIA_MMD_GLOABLE_REGISTERS,
 				AQUANTIA_ACT_LED_STATUS, phy_data);
+			SW_RTN_ON_ERROR(rv);
 			phy_data = AQUANTIA_LINK_LED_VALUE;
-			aquantia_phy_reg_write(dev_id, phy_addr, AQUANTIA_MMD_GLOABLE_REGISTERS,
+			rv = aquantia_phy_reg_write(dev_id, phy_addr, AQUANTIA_MMD_GLOABLE_REGISTERS,
 				AQUANTIA_LINK_LED_STATUS, phy_data);
 		}
 	}
 
-	return SW_OK;
+	return rv;
 }
 
 static int aquantia_phy_api_ops_init(void)

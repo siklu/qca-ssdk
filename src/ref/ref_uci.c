@@ -854,6 +854,34 @@ parse_qos_dequeue(struct switch_val *val)
 
 	return rv;
 }
+
+static int
+parse_qos_portscheduler(struct switch_val *val)
+{
+	struct switch_ext *switch_ext_p, *ext_value_p;
+	int rv = 0;
+
+	switch_ext_p = val->value.ext_val;
+	while (switch_ext_p) {
+		ext_value_p = switch_ext_p;
+
+		if (!strcmp(ext_value_p->option_name, "name")) {
+			switch_ext_p = switch_ext_p->next;
+			continue;
+		} else if (!strcmp(ext_value_p->option_name, "port_id")) {
+			val_ptr[0] = (char*)ext_value_p->option_value;
+		} else {
+			rv = -1;
+			break;
+		}
+
+		parameter_length++;
+		switch_ext_p = switch_ext_p->next;
+	}
+
+	return rv;
+}
+
 #endif
 #endif
 
@@ -2346,6 +2374,33 @@ parse_port_reset(struct switch_val *val)
 
 	return rv;
 }
+
+static int
+parse_port_interface8023az(struct switch_val *val)
+{
+	struct switch_ext *switch_ext_p, *ext_value_p;
+	int rv = 0;
+	switch_ext_p = val->value.ext_val;
+	while(switch_ext_p) {
+		ext_value_p = switch_ext_p;
+		if(!strcmp(ext_value_p->option_name, "name")) {
+			switch_ext_p = switch_ext_p->next;
+			continue;
+		} else if(!strcmp(ext_value_p->option_name, "port_id")) {
+			val_ptr[0] = (char*)ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "mode")) {
+			val_ptr[1] = (char*)ext_value_p->option_value;
+		}  else {
+			rv = -1;
+			break;
+		}
+		parameter_length++;
+		switch_ext_p = switch_ext_p->next;
+	}
+
+	return rv;
+}
+
 #endif
 
 static int
@@ -10304,6 +10359,8 @@ parse_qos(const char *command_name, struct switch_val *val)
 		rv = parse_qos_ringqueue(val);
 	} else if (!strcmp(command_name, "Dequeue")) {
 		rv = parse_qos_dequeue(val);
+	} else if (!strcmp(command_name, "Portscheduler")) {
+		rv = parse_qos_portscheduler(val);
 	}
 	#endif
 
@@ -10453,6 +10510,8 @@ parse_port(const char *command_name, struct switch_val *val)
 		rv = parse_port_mru(val);
 	} else if(!strcmp(command_name, "Srcfilter")) {
 		rv = parse_port_srcfilter(val);
+	} else if(!strcmp(command_name, "Interface3az")) {
+		rv = parse_port_interface8023az(val);
 	}
 	#endif
 

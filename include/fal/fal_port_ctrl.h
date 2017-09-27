@@ -90,6 +90,9 @@ struct port_phy_status
 #define FAL_PHY_ADV_BX_SPEED_ALL   \
     (FAL_PHY_ADV_1000BX_HD | FAL_PHY_ADV_1000BX_FD |FAL_PHY_ADV_10G_R_FD)
 
+#define FAL_PHY_ADV_XGE_SPEED_ALL   \
+		(FAL_PHY_ADV_2500T_FD | FAL_PHY_ADV_5000T_FD | FAL_PHY_ADV_10000T_FD)
+
 #define FAL_PHY_ADV_PAUSE       0x10
 #define FAL_PHY_ADV_ASY_PAUSE   0x20
 #define FAL_PHY_FE_ADV_ALL         \
@@ -98,7 +101,8 @@ struct port_phy_status
     (FAL_PHY_ADV_GE_SPEED_ALL | FAL_PHY_ADV_PAUSE | FAL_PHY_ADV_ASY_PAUSE)
 
 #define FAL_PHY_COMBO_ADV_ALL         \
-    (FAL_PHY_ADV_BX_SPEED_ALL | FAL_PHY_ADV_GE_SPEED_ALL | FAL_PHY_ADV_PAUSE | FAL_PHY_ADV_ASY_PAUSE)
+    (FAL_PHY_ADV_BX_SPEED_ALL | FAL_PHY_ADV_GE_SPEED_ALL | FAL_PHY_ADV_XGE_SPEED_ALL|\
+FAL_PHY_ADV_PAUSE | FAL_PHY_ADV_ASY_PAUSE)
 
 //phy capablity
 #define FAL_PHY_AUTONEG_CAPS   0x01
@@ -243,6 +247,8 @@ struct port_phy_status
 				/**<PORT_USXGMII mode*/
 		PORT_10GBASE_R,
 				/**<PORT_10GBASE_R mode*/
+		PORT_RGMII_BASET,
+				/**< RGMII mode */
 		PORT_INTERFACE_MODE_MAX = 0xFF
 	} fal_port_interface_mode_t;
 
@@ -326,6 +332,10 @@ enum
 	FUNC_ADPT_PORT_SOURCE_FILTER_SET,
 
 	FUNC_ADPT_PORT_INTERFACE_MODE_APPLY,
+	FUNC_ADPT_PORT_INTERFACE_3AZ_STATUS_SET,
+	FUNC_ADPT_PORT_INTERFACE_3AZ_STATUS_GET,
+	FUNC_ADPT_PORT_FLOWCTRL_FORCEMODE_SET,
+	FUNC_ADPT_PORT_FLOWCTRL_FORCEMODE_GET,
 };
 
 typedef struct {
@@ -676,6 +686,13 @@ fal_port_source_filter_status_get(a_uint32_t dev_id,
 sw_error_t
 fal_port_source_filter_enable(a_uint32_t dev_id,
 				fal_port_t port_id, a_bool_t enable);
+sw_error_t
+fal_port_interface_3az_status_set(a_uint32_t dev_id, fal_port_t port_id,
+		a_bool_t enable);
+
+sw_error_t
+fal_port_interface_3az_status_get(a_uint32_t dev_id, fal_port_t port_id,
+		a_bool_t * enable);
 
 #ifdef __cplusplus
 }

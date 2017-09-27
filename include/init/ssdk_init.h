@@ -33,6 +33,9 @@ extern "C" {
 #define SSDK_L1SCHEDULER_CFG_MAX	64
 #define SSDK_SP_MAX_PRIORITY		8
 #define SSDK_MAX_FRAME_SIZE	16383
+#define SSDK_UNIPHY_INSTANCE0	0
+#define SSDK_UNIPHY_INSTANCE1	1
+#define SSDK_UNIPHY_INSTANCE2	2
 
 #define PORT_GMAC_TYPE	1
 #define PORT_XGMAC_TYPE	2
@@ -106,6 +109,7 @@ enum ssdk_port_wrapper_cfg {
 	PORT_WRAPPER_SGMII_CHANNEL0,
 	PORT_WRAPPER_SGMII_CHANNEL1,
 	PORT_WRAPPER_SGMII_CHANNEL4,
+	PORT_WRAPPER_RGMII,
 	PORT_WRAPPER_MAX = 0xFF
 };
 
@@ -385,6 +389,9 @@ qca_hppe_port_mac_type_set(a_uint32_t dev_id, a_uint32_t port_id, a_uint32_t por
 
 void
 qca_mac_sw_sync_port_status_init(a_uint32_t dev_id);
+
+ssdk_dt_scheduler_cfg *ssdk_bootup_shceduler_cfg_get(a_uint32_t dev_id);
+struct qca_phy_priv* ssdk_phy_priv_data_get(a_uint32_t dev_id);
 
 #ifdef __cplusplus
 }
