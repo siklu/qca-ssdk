@@ -4237,6 +4237,9 @@ static int ssdk_inet_event(struct notifier_block *this, unsigned long event, voi
 //#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 static int ssdk_dev_event(struct notifier_block *this, unsigned long event, void *ptr)
 {
+	int rv = 0;
+	ssdk_init_cfg cfg;
+
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 	struct net_device *dev = netdev_notifier_info_to_dev(ptr);
 #else
@@ -4259,9 +4262,12 @@ static int ssdk_dev_event(struct notifier_block *this, unsigned long event, void
 #endif
 		case NETDEV_CHANGEMTU:
 			if(dev->type == ARPHRD_ETHER) {
-				if(qca_phy_priv_global[0]->version == QCA_VER_DESS ||
-				   qca_phy_priv_global[0]->version == QCA_VER_AR8327 ||
-				   qca_phy_priv_global[0]->version == QCA_VER_AR8337){
+				rv = chip_ver_get(0, &cfg);
+				if (rv)
+					return rv;
+				if(cfg.chip_type == CHIP_DESS ||
+				   cfg.chip_type == CHIP_ISIS ||
+				   cfg.chip_type == CHIP_ISISC){
 					fal_frame_max_size_set(0, dev->mtu + 18);
 				}
 			}
