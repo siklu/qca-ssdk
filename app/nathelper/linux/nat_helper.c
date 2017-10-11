@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2017, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -35,7 +35,7 @@ void hnat_log_msg(int level, char *string, ...)
 		return;
 	memset(hnat_log_buffer, 0, sizeof(hnat_log_buffer));
 	va_start(ptr,string);
-	vsprintf(hnat_log_buffer , string, ptr);
+	vsnprintf(hnat_log_buffer,sizeof(hnat_log_buffer), string, ptr);
 	va_end(ptr);
 	aos_printk("%s\n", hnat_log_buffer);
 }
