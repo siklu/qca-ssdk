@@ -906,6 +906,99 @@ static ssize_t ssdk_dts_dump(struct device *dev,
 	return count;
 }
 
+static a_uint16_t phy_reg_val = 0;
+static ssize_t ssdk_phy_write_reg_set(struct device *dev,
+		struct device_attribute *attr,
+		const char *buf, size_t count)
+{
+	char phy_buf[32];
+	char *this_opt;
+	char *options = phy_buf;
+	unsigned int phy_addr, reg_addr, reg_value;
+
+	if (count >= sizeof(phy_buf))
+		return 0;
+	memcpy(phy_buf, buf, count);
+	phy_buf[count] = '\0';
+
+	this_opt = strsep(&options, " ");
+	if (!this_opt)
+		goto fail;
+
+	kstrtouint(this_opt, 0, &phy_addr);
+	if ((options - phy_buf) >= (count - 1))
+		goto fail;
+
+	this_opt = strsep(&options, " ");
+	if (!this_opt)
+		goto fail;
+
+	kstrtouint(this_opt, 0, &reg_addr);
+	if ((options - phy_buf) >= (count - 1))
+		goto fail;
+
+	this_opt = strsep(&options, " ");
+	if (!this_opt)
+		goto fail;
+
+	kstrtouint(this_opt, 0, &reg_value);
+
+	qca_ar8327_phy_write(0, phy_addr, reg_addr, reg_value);
+
+	return count;
+
+fail:
+	printk("Format: phy_addr reg_addr reg_value\n");
+	return -EINVAL;
+}
+
+static ssize_t ssdk_phy_read_reg_get(struct device *dev,
+		struct device_attribute *attr,
+		char *buf)
+{
+	ssize_t count;
+
+	count = snprintf(buf, (ssize_t)PAGE_SIZE, "reg_val = 0x%x\n", phy_reg_val);
+	return count;
+}
+
+static ssize_t ssdk_phy_read_reg_set(struct device *dev,
+		struct device_attribute *attr,
+		const char *buf, size_t count)
+{
+	char phy_buf[32];
+	char *this_opt;
+	char *options = phy_buf;
+	unsigned int phy_addr, reg_addr;
+
+	if (count >= sizeof(phy_buf))
+		return 0;
+	memcpy(phy_buf, buf, count);
+	phy_buf[count] = '\0';
+
+	this_opt = strsep(&options, " ");
+	if (!this_opt)
+		goto fail;
+
+	kstrtouint(this_opt, 0, &phy_addr);
+	if ((options - phy_buf) >= (count - 1))
+		goto fail;
+
+	this_opt = strsep(&options, " ");
+	if (!this_opt)
+		goto fail;
+
+	kstrtouint(this_opt, 0, &reg_addr);
+
+	qca_ar8327_phy_read(0, phy_addr, reg_addr, &phy_reg_val);
+
+	return count;
+
+fail:
+	printk("Format: phy_addr reg_addr\n");
+	return -EINVAL;
+}
+
 static const struct device_attribute ssdk_dev_id_attr =
 	__ATTR(dev_id, 0660, ssdk_dev_id_get, ssdk_dev_id_set);
 static const struct device_attribute ssdk_log_level_attr =
@@ -916,6 +1009,10 @@ static const struct device_attribute ssdk_byte_counter_attr =
 	__ATTR(byte_counter, 0660, ssdk_byte_counter_get, ssdk_byte_counter_set);
 static const struct device_attribute ssdk_dts_dump_attr =
 	__ATTR(dts_dump, 0660, ssdk_dts_dump, NULL);
+static const struct device_attribute ssdk_phy_write_reg_attr =
+	__ATTR(phy_write_reg, 0660, NULL, ssdk_phy_write_reg_set);
+static const struct device_attribute ssdk_phy_read_reg_attr =
+	__ATTR(phy_read_reg, 0660, ssdk_phy_read_reg_get, ssdk_phy_read_reg_set);
 struct kobject *ssdk_sys = NULL;
 
 int ssdk_sysfs_init (void)
@@ -964,10 +1061,28 @@ int ssdk_sysfs_init (void)
 		goto CLEANUP_5;
 	}
 
+	/* create /sys/ssdk/phy_write_reg file */
+	ret = sysfs_create_file(ssdk_sys, &ssdk_phy_write_reg_attr.attr);
+	if (ret) {
+		printk("Failed to register SSDK phy write reg file\n");
+		goto CLEANUP_6;
+	}
+
+	/* create /sys/ssdk/phy_read_reg file */
+	ret = sysfs_create_file(ssdk_sys, &ssdk_phy_read_reg_attr.attr);
+	if (ret) {
+		printk("Failed to register SSDK phy read reg file\n");
+		goto CLEANUP_7;
+	}
+
 	return 0;
 
-CLEANUP_5:
+CLEANUP_7:
+	sysfs_remove_file(ssdk_sys, &ssdk_phy_write_reg_attr.attr);
+CLEANUP_6:
 	sysfs_remove_file(ssdk_sys, &ssdk_dts_dump_attr.attr);
+CLEANUP_5:
+	sysfs_remove_file(ssdk_sys, &ssdk_byte_counter_attr.attr);
 CLEANUP_4:
 	sysfs_remove_file(ssdk_sys, &ssdk_packet_counter_attr.attr);
 CLEANUP_3:
@@ -982,6 +1097,8 @@ CLEANUP_1:
 
 void ssdk_sysfs_exit (void)
 {
+	sysfs_remove_file(ssdk_sys, &ssdk_phy_read_reg_attr.attr);
+	sysfs_remove_file(ssdk_sys, &ssdk_phy_write_reg_attr.attr);
 	sysfs_remove_file(ssdk_sys, &ssdk_dts_dump_attr.attr);
 	sysfs_remove_file(ssdk_sys, &ssdk_byte_counter_attr.attr);
 	sysfs_remove_file(ssdk_sys, &ssdk_packet_counter_attr.attr);
