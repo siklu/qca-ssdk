@@ -179,7 +179,7 @@ __adpt_hppe_uniphy_usxgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	msleep(100);
 
 	/* wait calibration done to uniphy */
-	rv = __adpt_hppe_uniphy_calibration(dev_id, uniphy_index);
+	__adpt_hppe_uniphy_calibration(dev_id, uniphy_index);
 
 	/* enable instance clock */
 	qca_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
@@ -189,7 +189,7 @@ __adpt_hppe_uniphy_usxgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	__adpt_hppe_gcc_uniphy_xpcs_reset(dev_id, uniphy_index, A_FALSE);
 
 	/* wait 10g base_r link up */
-	rv = __adpt_hppe_uniphy_10g_r_linkup(dev_id, uniphy_index);
+	__adpt_hppe_uniphy_10g_r_linkup(dev_id, uniphy_index);
 
 	/* enable uniphy usxgmii */
 	hppe_vr_xs_pcs_dig_ctrl1_get(0, uniphy_index, &vr_xs_pcs_dig_ctrl1);
