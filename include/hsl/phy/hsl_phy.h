@@ -338,6 +338,9 @@ void qca_ssdk_phy_address_set(a_uint32_t dev_id, a_uint32_t i,
 				a_uint32_t value);
 
 a_uint32_t
+hsl_phyid_get(a_uint32_t dev_id, a_uint32_t port_id, ssdk_init_cfg *cfg);
+
+a_uint32_t
 qca_ssdk_port_to_phy_addr(a_uint32_t dev_id, a_uint32_t port_id);
 
 void qca_ssdk_port_bmp_set(a_uint32_t dev_id, a_uint32_t value);

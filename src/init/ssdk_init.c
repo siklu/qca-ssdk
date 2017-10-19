@@ -2928,9 +2928,35 @@ static void ssdk_driver_unregister(a_uint32_t dev_id)
 	}
 }
 
+static int chip_is_scomphy(a_uint32_t dev_id, ssdk_init_cfg* cfg)
+{
+	int rv = -ENODEV;
+	a_uint32_t phy_id = 0, port_id = 0;
+	a_uint32_t port_bmp = qca_ssdk_port_bmp_get(dev_id);
+	while (port_bmp) {
+		if (port_bmp & 0x1) {
+			phy_id = hsl_phyid_get(dev_id, port_id, cfg);
+			switch (phy_id) {
+				case QCA8030_PHY:
+				case QCA8033_PHY:
+				case QCA8035_PHY:
+					cfg->chip_type = CHIP_SCOMPHY;
+					rv = SW_OK;
+					break;
+				default:
+					break;
+			}
+		}
+		port_bmp >>= 1;
+		port_id++;
+	}
+
+	return rv;
+}
+
 static int chip_ver_get(a_uint32_t dev_id, ssdk_init_cfg* cfg)
 {
-	int rv = 0;
+	int rv = SW_OK;
 	a_uint8_t chip_ver = 0;
 	if(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->switch_reg_access_mode == HSL_REG_MDIO)
 	{
@@ -2952,8 +2978,10 @@ static int chip_ver_get(a_uint32_t dev_id, ssdk_init_cfg* cfg)
 		cfg->chip_type = CHIP_DESS;
 	else if(chip_ver == QCA_VER_HPPE)
 		cfg->chip_type = CHIP_HPPE;
-	else
-		rv = -ENODEV;
+	else {
+		/* try single phy without switch connected */
+		rv = chip_is_scomphy(dev_id, cfg);
+	}
 
 	return rv;
 }
@@ -4511,6 +4539,7 @@ static int __init regi_init(void)
 			case CHIP_GARUDA:
 			case CHIP_HORUS:
 			case CHIP_UNSPECIFIED:
+			case CHIP_SCOMPHY:
 				break;
 		}
 

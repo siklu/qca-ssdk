@@ -111,11 +111,29 @@ sw_error_t phy_api_ops_init(phy_type_t phy_type)
 	return SW_OK;
 }
 
+a_uint32_t hsl_phyid_get(a_uint32_t dev_id,
+		a_uint32_t port_id, ssdk_init_cfg *cfg)
+{
+	a_uint16_t org_id = 0, rev_id = 0;
+	a_uint32_t reg_pad = 0, phy_id = 0;
+
+	if (phy_info[dev_id]->phy_c45[port_id] == A_TRUE)
+		reg_pad = BIT(30) | BIT(16);
+
+	cfg->reg_func.mdio_get(dev_id,
+			phy_info[dev_id]->phy_address[port_id], reg_pad | 2, &org_id);
+	cfg->reg_func.mdio_get(dev_id,
+			phy_info[dev_id]->phy_address[port_id], reg_pad | 3, &rev_id);
+
+	phy_id = (org_id<<16) | rev_id;
+
+	return phy_id;
+}
+
 int ssdk_phy_driver_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 {
 
 	int i = 0;
-	a_uint16_t org_id = 0, rev_id = 0;
 	a_uint32_t phy_id = 0;
 	phy_type_t phytype = MAX_PHY_CHIP;
 
@@ -123,24 +141,7 @@ int ssdk_phy_driver_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 	{
 		if (port_bmp[dev_id] & (0x1 << i))
 		{
-			if (phy_info[dev_id]->phy_c45[i] == A_FALSE)
-			{
-				cfg->reg_func.mdio_get(dev_id,
-							phy_info[dev_id]->phy_address[i], 2, &org_id);
-				cfg->reg_func.mdio_get(dev_id,
-							phy_info[dev_id]->phy_address[i], 3, &rev_id);
-				phy_id = (org_id<<16) | rev_id;
-			}
-			else
-			{
-				cfg->reg_func.mdio_get(dev_id,
-							phy_info[dev_id]->phy_address[i],
-							((1<<30) |(1<<16) |2), &org_id);
-				cfg->reg_func.mdio_get(dev_id,
-							phy_info[dev_id]->phy_address[i],
-							((1<<30) |(1<<16) |3), &rev_id);
-				phy_id = (org_id<<16) | rev_id;
-			}
+			phy_id = hsl_phyid_get(dev_id, i, cfg);
 			switch (phy_id) {
 				case F1V1_PHY:
 				case F1V2_PHY:
@@ -168,6 +169,7 @@ int ssdk_phy_driver_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 					phytype = QCA803X_PHY_CHIP;
 					break;
 				default:
+					phytype = MAX_PHY_CHIP;
 					SSDK_INFO("dev_id = %d, phy_adress = %d, phy_id = 0x%x phy type doesn't match\n",
 							dev_id, phy_info[dev_id]->phy_address[i], phy_id);
 			}

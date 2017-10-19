@@ -63,7 +63,7 @@ else
      ifneq (TRUE, $(FAL))
          $(error FAL must be TRUE when CHIP_TYPE is defined as ALL_CHIP!)
      endif
-     SUPPORT_CHIP = ISIS ISISC SHIVA DESS HPPE
+     SUPPORT_CHIP = ISIS ISISC SHIVA DESS HPPE SCOMPHY
   endif
 
   ifeq (NONHK_CHIP, $(CHIP_TYPE))

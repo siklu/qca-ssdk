@@ -44,6 +44,9 @@
 #if defined HPPE
 #include "hppe_init.h"
 #endif
+#if defined SCOMPHY
+#include "scomphy_init.h"
+#endif
 #include "sw_api.h"
 #ifdef KERNEL_MODULE
 #include "sw_api_ks.h"
@@ -79,6 +82,8 @@ static sw_error_t hsl_set_current_chip_type(ssdk_chip_type chip_type)
         SSDK_CURRENT_CHIP_TYPE = CHIP_DESS;
 #elif defined HPPE
         SSDK_CURRENT_CHIP_TYPE = CHIP_HPPE;
+#elif defined SCOMPHY
+        SSDK_CURRENT_CHIP_TYPE = CHIP_SCOMPHY;
 #else
         rv = SW_FAIL;
 #endif
@@ -186,6 +191,11 @@ hsl_dev_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
             rv = hppe_init(dev_id, cfg);
 #endif
             break;
+	case CHIP_SCOMPHY:
+#if defined SCOMPHY
+	    rv = scomphy_init(dev_id, cfg);
+#endif
+	    break;
 
         case CHIP_UNSPECIFIED:
 #if defined ATHENA
