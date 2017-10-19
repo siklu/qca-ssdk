@@ -2308,7 +2308,64 @@ sw_error_t adpt_hppe_all_ports_power_on_set(a_uint32_t dev_id, a_bool_t enable)
 
 	return rv;
 }
+static sw_error_t
+_adpt_hppe_port_phy_config(a_uint32_t dev_id, a_uint32_t index, a_uint32_t mode)
+{
+	sw_error_t rv = SW_OK;
 
+	switch(mode)
+	{
+		case PORT_WRAPPER_PSGMII:
+			rv = _adpt_hppe_port_interface_mode_phy_config(dev_id,
+				SSDK_PHYSICAL_PORT5, PHY_PSGMII_BASET);
+			break;
+		case PORT_WRAPPER_SGMII_CHANNEL4:
+		case PORT_WRAPPER_QSGMII:
+			rv = _adpt_hppe_port_interface_mode_phy_config(dev_id,
+				SSDK_PHYSICAL_PORT5, PHY_SGMII_BASET);
+			break;
+		case PORT_WRAPPER_SGMII_CHANNEL0:
+			if(index == SSDK_UNIPHY_INSTANCE1)
+			{
+				rv = _adpt_hppe_port_interface_mode_phy_config(dev_id,
+					SSDK_PHYSICAL_PORT5, PHY_SGMII_BASET);
+			}
+			if(index == SSDK_UNIPHY_INSTANCE2)
+			{
+				rv = _adpt_hppe_port_interface_mode_phy_config(dev_id,
+					SSDK_PHYSICAL_PORT6, PHY_SGMII_BASET);
+			}
+			break;
+		case PORT_WRAPPER_USXGMII:
+			if(index == SSDK_UNIPHY_INSTANCE1)
+			{
+				rv = _adpt_hppe_port_interface_mode_phy_config(dev_id,
+					SSDK_PHYSICAL_PORT5, PORT_USXGMII);
+			}
+			if(index == SSDK_UNIPHY_INSTANCE2)
+			{
+				rv = _adpt_hppe_port_interface_mode_phy_config(dev_id,
+					SSDK_PHYSICAL_PORT6, PORT_USXGMII);
+			}
+			break;
+		case PORT_WRAPPER_SGMII_PLUS:
+			if(index == SSDK_UNIPHY_INSTANCE1)
+			{
+				rv = _adpt_hppe_port_interface_mode_phy_config(dev_id,
+					SSDK_PHYSICAL_PORT5, PORT_SGMII_PLUS);
+			}
+			if(index == SSDK_UNIPHY_INSTANCE2)
+			{
+				rv = _adpt_hppe_port_interface_mode_phy_config(dev_id,
+					SSDK_PHYSICAL_PORT6, PORT_SGMII_PLUS);
+			}
+			break;
+		default:
+			break;
+	}
+
+	return rv;
+}
 sw_error_t
 adpt_hppe_port_interface_mode_apply(a_uint32_t dev_id)
 {
@@ -2412,7 +2469,7 @@ adpt_hppe_port_interface_mode_apply(a_uint32_t dev_id)
 		return rv;
 	}
 	/*configure mac and sync port type*/
-	for(port_id =SSDK_PHYSICAL_PORT1; port_id <= SSDK_PHYSICAL_PORT6; port_id++)
+	for(port_id = SSDK_PHYSICAL_PORT1; port_id <= SSDK_PHYSICAL_PORT6; port_id++)
 	{
 		rv = adpt_hppe_port_mux_mac_type_set(dev_id, port_id, mode0, mode1, mode2);
 		if(rv)
@@ -2429,20 +2486,27 @@ adpt_hppe_port_interface_mode_apply(a_uint32_t dev_id)
 	/*initial the phy status to */
 	qca_mac_sw_sync_port_status_init(dev_id);
 	/*config phy*/
-	switch(mode0)
+	rv = _adpt_hppe_port_phy_config(dev_id, SSDK_UNIPHY_INSTANCE0, mode0);
+	if(rv)
 	{
-		case PORT_WRAPPER_PSGMII:
-			rv = _adpt_hppe_port_interface_mode_phy_config(dev_id, SSDK_PHYSICAL_PORT5, PHY_PSGMII_BASET);
-			SSDK_DEBUG("config the phy mode:%x, rv:%x\n", mode0, rv);
-			break;
-		case PORT_WRAPPER_SGMII_CHANNEL4:
-		case PORT_WRAPPER_QSGMII:
-			rv = _adpt_hppe_port_interface_mode_phy_config(dev_id, SSDK_PHYSICAL_PORT5, PHY_SGMII_BASET);
-			SSDK_DEBUG("config the phy mode:%x, rv:%x\n", mode0, rv);
-			break;
-		default:
-			break;
+		mutex_unlock(&priv->mac_sw_sync_lock);
+		/*restore the mode0 mode1 mode2*/
+		ssdk_dt_global_set_mac_mode(dev_id, SSDK_UNIPHY_INSTANCE0, mode0_old);
+		ssdk_dt_global_set_mac_mode(dev_id, SSDK_UNIPHY_INSTANCE1, mode1_old);
+		ssdk_dt_global_set_mac_mode(dev_id, SSDK_UNIPHY_INSTANCE2, mode2_old);
+		return rv;
 	}
+	rv = _adpt_hppe_port_phy_config(dev_id, SSDK_UNIPHY_INSTANCE1, mode1);
+	if(rv)
+	{
+		mutex_unlock(&priv->mac_sw_sync_lock);
+		/*restore the mode0 mode1 mode2*/
+		ssdk_dt_global_set_mac_mode(dev_id, SSDK_UNIPHY_INSTANCE0, mode0_old);
+		ssdk_dt_global_set_mac_mode(dev_id, SSDK_UNIPHY_INSTANCE1, mode1_old);
+		ssdk_dt_global_set_mac_mode(dev_id, SSDK_UNIPHY_INSTANCE2, mode2_old);
+		return rv;
+	}
+	rv = _adpt_hppe_port_phy_config(dev_id, SSDK_UNIPHY_INSTANCE2, mode2);
 	mutex_unlock(&priv->mac_sw_sync_lock);
 	if(rv)
 	{
