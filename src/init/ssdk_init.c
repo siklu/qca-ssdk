@@ -2791,10 +2791,9 @@ static int ssdk_miireg_close(struct net_device *netdev)
 static int ssdk_miireg_do_ioctl(struct net_device *netdev,
 			struct ifreq *ifr, int32_t cmd)
 {
-	struct mii_ioctl_data *mii_data = if_mii(ifr);
 	int ret = -EINVAL;
-
 #ifdef CONFIG_MDIO
+	struct mii_ioctl_data *mii_data = if_mii(ifr);
 	ret = mdio_mii_ioctl(&ssdk_mdio_ctl, mii_data, cmd);
 #endif
 	return ret;

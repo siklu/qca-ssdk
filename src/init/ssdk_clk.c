@@ -178,7 +178,9 @@ static struct clk_uniphy uniphy0_gcc_rx_clk = {
                 .hw.init = &(struct clk_init_data){
                         .name = "uniphy0_gcc_rx_clk",
                         .ops = &clk_uniphy_ops,
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,9,0))
 			.flags = CLK_IS_ROOT,
+#endif
                 },
 		.uniphy_index = 0,
 		.dir = UNIPHY_RX,
@@ -189,7 +191,9 @@ static struct clk_uniphy uniphy0_gcc_tx_clk = {
                 .hw.init = &(struct clk_init_data){
                         .name = "uniphy0_gcc_tx_clk",
                         .ops = &clk_uniphy_ops,
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,9,0))
 			.flags = CLK_IS_ROOT,
+#endif
                 },
 		.uniphy_index = 0,
 		.dir = UNIPHY_TX,
@@ -200,7 +204,9 @@ static struct clk_uniphy uniphy1_gcc_rx_clk = {
                 .hw.init = &(struct clk_init_data){
                         .name = "uniphy1_gcc_rx_clk",
                         .ops = &clk_uniphy_ops,
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,9,0))
 			.flags = CLK_IS_ROOT,
+#endif
                 },
 		.uniphy_index = 1,
 		.dir = UNIPHY_RX,
@@ -211,7 +217,9 @@ static struct clk_uniphy uniphy1_gcc_tx_clk = {
                 .hw.init = &(struct clk_init_data){
                         .name = "uniphy1_gcc_tx_clk",
                         .ops = &clk_uniphy_ops,
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,9,0))
 			.flags = CLK_IS_ROOT,
+#endif
                 },
 		.uniphy_index = 1,
 		.dir = UNIPHY_TX,
@@ -222,7 +230,9 @@ static struct clk_uniphy uniphy2_gcc_rx_clk = {
                 .hw.init = &(struct clk_init_data){
                         .name = "uniphy2_gcc_rx_clk",
                         .ops = &clk_uniphy_ops,
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,9,0))
 			.flags = CLK_IS_ROOT,
+#endif
                 },
 		.uniphy_index = 2,
 		.dir = UNIPHY_RX,
@@ -233,7 +243,9 @@ static struct clk_uniphy uniphy2_gcc_tx_clk = {
                 .hw.init = &(struct clk_init_data){
                         .name = "uniphy2_gcc_tx_clk",
                         .ops = &clk_uniphy_ops,
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,9,0))
 			.flags = CLK_IS_ROOT,
+#endif
                 },
 		.uniphy_index = 2,
 		.dir = UNIPHY_TX,
