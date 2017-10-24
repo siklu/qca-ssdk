@@ -142,7 +142,27 @@ enum {
 	FUNC_QOS_PORT_MODE_PRI_GET,
 	FUNC_QOS_PORT_MODE_PRI_SET,
 	FUNC_QOS_PORT_SCHEDULER_CFG_RESET,
+	FUNC_QOS_PORT_SCHEDULER_RESOURCE_GET,
 };
+
+typedef struct {
+	a_uint16_t ucastq_start;
+	a_uint16_t ucastq_num;
+	a_uint16_t mcastq_start;
+	a_uint16_t mcastq_num;
+	a_uint16_t l0sp_start;
+	a_uint16_t l0sp_num;
+	a_uint16_t l0cdrr_start;
+	a_uint16_t l0cdrr_num;
+	a_uint16_t l0edrr_start;
+	a_uint16_t l0edrr_num;
+	a_uint16_t l1sp_start;
+	a_uint16_t l1sp_num;
+	a_uint16_t l1cdrr_start;
+	a_uint16_t l1cdrr_num;
+	a_uint16_t l1edrr_start;
+	a_uint16_t l1edrr_num;
+} fal_portscheduler_resource_t;
 
 #define FAL_DOT1P_MIN    0
 #define FAL_DOT1P_MAX    7
@@ -401,6 +421,12 @@ sw_error_t
 fal_port_scheduler_cfg_reset(
 		a_uint32_t dev_id,
 		fal_port_t port_id);
+
+sw_error_t
+fal_port_scheduler_resource_get(
+		a_uint32_t dev_id,
+		fal_port_t port_id,
+		fal_portscheduler_resource_t *cfg);
 
 #ifdef __cplusplus
 }
