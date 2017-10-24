@@ -1337,8 +1337,6 @@ aquantia_phy_interface_set_mode(a_uint32_t dev_id, a_uint32_t phy_id, fal_port_i
 	}
 	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_GLOBAL_REGISTERS,
 		phy_register, phy_data);
-	SW_RTN_ON_ERROR(rv);
-	rv = aquantia_phy_restart_autoneg(dev_id, phy_id);
 
 	return rv;
 }

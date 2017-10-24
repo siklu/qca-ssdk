@@ -2288,22 +2288,17 @@ _adpt_hppe_port_interface_mode_phy_config(a_uint32_t dev_id, a_uint32_t port_id,
 	return rv;
 }
 
-sw_error_t adpt_hppe_all_ports_power_on_set(a_uint32_t dev_id, a_bool_t enable)
+sw_error_t adpt_hppe_all_ports_mac_set(a_uint32_t dev_id, a_bool_t enable)
 {
 	sw_error_t rv = SW_OK;
 	a_uint32_t port_id = 0;
 
 	for(port_id = SSDK_PHYSICAL_PORT1; port_id <= SSDK_PHYSICAL_PORT6; port_id++)
 	{
-		if(enable)
-		{
-			rv = adpt_hppe_port_power_on(dev_id, port_id);
-		}
-		else
-		{
-			rv = adpt_hppe_port_power_off(dev_id, port_id);
-		}
-
+		rv = adpt_hppe_port_txmac_status_set(dev_id, port_id, enable);
+		SW_RTN_ON_ERROR(rv);
+		rv = adpt_hppe_port_rxmac_status_set(dev_id, port_id, enable);
+		SW_RTN_ON_ERROR(rv);
 	}
 
 	return rv;
@@ -2382,12 +2377,6 @@ adpt_hppe_port_interface_mode_apply(a_uint32_t dev_id)
 	{
 		return SW_FAIL;
 	}
-	/*power off the ports*/
-	rv = adpt_hppe_all_ports_power_on_set(dev_id, A_FALSE);
-	if(rv)
-	{
-		return rv;
-	}
 	mode0_old = ssdk_dt_global_get_mac_mode(dev_id, SSDK_UNIPHY_INSTANCE0);
 	mode1_old = ssdk_dt_global_get_mac_mode(dev_id, SSDK_UNIPHY_INSTANCE1);
 	mode2_old = ssdk_dt_global_get_mac_mode(dev_id, SSDK_UNIPHY_INSTANCE2);
@@ -2429,6 +2418,9 @@ adpt_hppe_port_interface_mode_apply(a_uint32_t dev_id)
 		return rv;
 	}
 	mutex_lock(&priv->mac_sw_sync_lock);
+	/*disable all macs*/
+	rv = adpt_hppe_all_ports_mac_set(dev_id, A_FALSE);
+	SW_RTN_ON_ERROR(rv);
 	/*sync mode of port*/
 	ssdk_dt_global_set_mac_mode(dev_id, SSDK_UNIPHY_INSTANCE0, mode0);
 	ssdk_dt_global_set_mac_mode(dev_id, SSDK_UNIPHY_INSTANCE1, mode1);
@@ -2483,8 +2475,6 @@ adpt_hppe_port_interface_mode_apply(a_uint32_t dev_id)
 			return rv;
 		}
 	}
-	/*initial the phy status to */
-	qca_mac_sw_sync_port_status_init(dev_id);
 	/*config phy*/
 	rv = _adpt_hppe_port_phy_config(dev_id, SSDK_UNIPHY_INSTANCE0, mode0);
 	if(rv)
@@ -2515,8 +2505,8 @@ adpt_hppe_port_interface_mode_apply(a_uint32_t dev_id)
 		ssdk_dt_global_set_mac_mode(dev_id, SSDK_UNIPHY_INSTANCE1, mode1_old);
 		ssdk_dt_global_set_mac_mode(dev_id, SSDK_UNIPHY_INSTANCE2, mode2_old);
 	}
-	/*power on the ports*/
-	rv = adpt_hppe_all_ports_power_on_set(dev_id, A_TRUE);
+	/*initial the phy status to trigger polling*/
+	qca_mac_sw_sync_port_status_init(dev_id);
 
 	return rv;
 }
