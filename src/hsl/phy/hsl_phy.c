@@ -264,6 +264,27 @@ qca_ssdk_phy_addr_to_port(a_uint32_t dev_id, a_uint32_t phy_addr)
 	return 0;
 }
 
+a_bool_t
+hsl_port_phy_combo_capability_get(a_uint32_t dev_id, a_uint32_t port_id)
+{
+	if (dev_id >= SW_MAX_NR_DEV)
+		return A_FALSE;
+
+	return phy_info[dev_id]->phy_combo[port_id];
+}
+
+void
+hsl_port_phy_combo_capability_set(a_uint32_t dev_id, a_uint32_t port_id,
+		a_bool_t enable)
+{
+	if (dev_id >= SW_MAX_NR_DEV)
+		return;
+
+	phy_info[dev_id]->phy_combo[port_id] = enable;
+
+	return;
+}
+
 void
 hsl_port_phy_c45_capability_set(a_uint32_t dev_id, a_uint32_t port_id,
 		a_bool_t enable)

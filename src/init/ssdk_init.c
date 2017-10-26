@@ -2534,7 +2534,7 @@ static sw_error_t ssdk_dt_parse_phy_info(struct device_node *switch_node, a_uint
 {
 	struct device_node *phy_info_node, *port_node;
 	a_uint32_t port_id, phy_addr;
-	a_bool_t phy_c45;
+	a_bool_t phy_c45, phy_combo;
 	sw_error_t rv = SW_OK;
 
 	phy_info_node = of_get_child_by_name(switch_node, "qcom,port_phyinfo");
@@ -2551,6 +2551,10 @@ static sw_error_t ssdk_dt_parse_phy_info(struct device_node *switch_node, a_uint
 		phy_c45 = of_property_read_bool(port_node,
 				"ethernet-phy-ieee802.3-c45");
 
+		phy_combo = of_property_read_bool(port_node,
+				"ethernet-phy-combo");
+
+		hsl_port_phy_combo_capability_set(dev_id, port_id, phy_combo);
 		hsl_port_phy_c45_capability_set(dev_id, port_id, phy_c45);
 		qca_ssdk_phy_address_set(dev_id, port_id, phy_addr);
 	}
