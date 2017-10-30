@@ -647,6 +647,165 @@ _shiva_port_cdt(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t mdi_pair,
     return rv;
 }
 
+static sw_error_t
+_shiva_port_link_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *status)
+{
+    sw_error_t rv;
+    a_uint32_t phy_id = 0;
+    hsl_phy_ops_t *phy_drv;
+
+    HSL_DEV_ID_CHECK(dev_id);
+
+    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_PHY))
+    {
+        return SW_BAD_PARAM;
+    }
+
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id));
+    if (NULL == phy_drv->phy_link_status_get)
+        return SW_NOT_SUPPORTED;
+
+    rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
+    SW_RTN_ON_ERROR(rv);
+
+    *status = phy_drv->phy_link_status_get(dev_id, phy_id);
+
+    return rv;
+}
+
+static sw_error_t
+_shiva_port_txfc_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable)
+{
+    sw_error_t rv;
+    a_uint32_t tx_fc_full, tx_fc_half, reg = 0;
+
+    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
+    {
+        return SW_BAD_PARAM;
+    }
+
+    HSL_REG_ENTRY_GET(rv, dev_id, PORT_STATUS, port_id,
+        (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+    SW_RTN_ON_ERROR(rv);
+
+    SW_GET_FIELD_BY_REG(PORT_STATUS, TX_FLOW_EN, tx_fc_full, reg);
+    SW_GET_FIELD_BY_REG(PORT_STATUS, TX_HALF_FLOW_EN, tx_fc_half, reg);
+    if (TX_FC_FULL_EN == tx_fc_full && TX_FC_HALF_EN == tx_fc_half)
+    {
+        *enable = A_TRUE;
+    }
+    else
+    {
+        *enable = A_FALSE;
+    }
+
+    return rv;
+}
+
+static sw_error_t
+_shiva_port_txfc_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+{
+    sw_error_t rv;
+    a_uint32_t force, reg = 0, tmp;
+
+    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
+    {
+        return SW_BAD_PARAM;
+    }
+
+    if (A_TRUE != enable && A_FALSE != enable)
+    {
+        return SW_BAD_PARAM;
+    }
+
+    HSL_REG_ENTRY_GET(rv, dev_id, PORT_STATUS, port_id,
+        (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+    SW_RTN_ON_ERROR(rv);
+
+    SW_GET_FIELD_BY_REG(PORT_STATUS, FLOW_LINK_EN, force, reg);
+    if (force)
+    {
+        /* flow control isn't in force mode so can't set */
+        return SW_DISABLE;
+    }
+    tmp = reg;
+    SW_SET_REG_BY_FIELD(PORT_STATUS, TX_FLOW_EN, enable, reg);
+    SW_SET_REG_BY_FIELD(PORT_STATUS, TX_HALF_FLOW_EN, enable, reg);
+    if (tmp == reg)
+        return SW_OK;
+
+    HSL_REG_ENTRY_SET(rv, dev_id, PORT_STATUS, port_id,
+        (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+
+    return rv;
+}
+
+static sw_error_t
+_shiva_port_rxfc_status_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable)
+{
+    sw_error_t rv;
+    a_uint32_t rx_fc, reg = 0;
+
+    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
+    {
+        return SW_BAD_PARAM;
+    }
+
+    HSL_REG_ENTRY_GET(rv, dev_id, PORT_STATUS, port_id,
+        (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+    SW_RTN_ON_ERROR(rv);
+
+    SW_GET_FIELD_BY_REG(PORT_STATUS, RX_FLOW_EN, rx_fc, reg);
+    if (RX_FC_EN == rx_fc)
+    {
+        *enable = A_TRUE;
+    }
+    else
+    {
+        *enable = A_FALSE;
+    }
+
+    return rv;
+}
+
+static sw_error_t
+_shiva_port_rxfc_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+{
+    sw_error_t rv;
+    a_uint32_t force, reg = 0, tmp;
+
+    if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_INCL_CPU))
+    {
+        return SW_BAD_PARAM;
+    }
+
+    if (A_TRUE != enable && A_FALSE != enable)
+    {
+        return SW_BAD_PARAM;
+    }
+
+    HSL_REG_ENTRY_GET(rv, dev_id, PORT_STATUS, port_id,
+        (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+    SW_RTN_ON_ERROR(rv);
+
+    SW_GET_FIELD_BY_REG(PORT_STATUS, FLOW_LINK_EN, force, reg);
+    if (force)
+    {
+        /* flow control isn't in force mode so can't set */
+        return SW_DISABLE;
+    }
+    tmp = reg;
+
+    SW_SET_REG_BY_FIELD(PORT_STATUS, RX_FLOW_EN, enable, reg);
+    if (tmp == reg)
+        return SW_OK;
+
+    HSL_REG_ENTRY_SET(rv, dev_id, PORT_STATUS, port_id,
+        (a_uint8_t *) (&reg), sizeof (a_uint32_t));
+
+    return rv;
+}
+
 /**
  * @brief Set duplex mode on a particular port.
  * @param[in] dev_id device id
@@ -1027,6 +1186,104 @@ shiva_port_cdt(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t mdi_pair,
     return rv;
 }
 
+/**
+ * @brief Get linkstatus on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] status A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+shiva_port_link_status_get(a_uint32_t dev_id, fal_port_t port_id,
+		a_bool_t *status)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _shiva_port_link_status_get(dev_id, port_id, status);
+    HSL_API_UNLOCK;
+
+    return rv;
+}
+
+/**
+ * @brief Get txfc status on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+shiva_port_txfc_status_get(a_uint32_t dev_id, fal_port_t port_id,
+		a_bool_t * enable)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _shiva_port_txfc_status_get(dev_id, port_id, enable);
+    HSL_API_UNLOCK;
+
+    return rv;
+}
+
+/**
+ * @brief Set tx flow control status on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[in] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+shiva_port_txfc_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _shiva_port_txfc_status_set(dev_id, port_id, enable);
+    HSL_API_UNLOCK;
+
+    return rv;
+}
+
+/**
+ * @brief Get rxfc status on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[out] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+shiva_port_rxfc_status_get(a_uint32_t dev_id, fal_port_t port_id,
+		a_bool_t * enable)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _shiva_port_rxfc_status_get(dev_id, port_id, enable);
+    HSL_API_UNLOCK;
+
+    return rv;
+}
+
+/**
+ * @brief Set rx flow control status on a particular port.
+ * @param[in] dev_id device id
+ * @param[in] port_id port id
+ * @param[in] enable A_TRUE or A_FALSE
+ * @return SW_OK or error code
+ */
+HSL_LOCAL sw_error_t
+shiva_port_rxfc_status_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _shiva_port_rxfc_status_set(dev_id, port_id, enable);
+    HSL_API_UNLOCK;
+
+    return rv;
+}
+
 sw_error_t
 shiva_port_ctrl_init(a_uint32_t dev_id)
 {
@@ -1057,7 +1314,12 @@ shiva_port_ctrl_init(a_uint32_t dev_id)
         p_api->port_powersave_get = shiva_port_powersave_get;
         p_api->port_hibernate_set = shiva_port_hibernate_set;
         p_api->port_hibernate_get = shiva_port_hibernate_get;
-        p_api->port_cdt           = shiva_port_cdt;
+        p_api->port_cdt = shiva_port_cdt;
+        p_api->port_link_status_get = shiva_port_link_status_get;
+        p_api->port_txfc_status_get = shiva_port_txfc_status_get;
+        p_api->port_txfc_status_set = shiva_port_txfc_status_set;
+        p_api->port_rxfc_status_get = shiva_port_rxfc_status_get;
+        p_api->port_rxfc_status_set = shiva_port_rxfc_status_set;
     }
 #endif
 
