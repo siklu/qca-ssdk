@@ -938,6 +938,77 @@ sw_error_t aquantia_phy_enable_autoneg(a_uint32_t dev_id, a_uint32_t phy_id)
 
 	return rv;
 }
+/******************************************************************************
+*
+* aquantia_phy_set_802.3az
+*
+* set 802.3az status
+*/
+sw_error_t
+aquantia_phy_set_8023az(a_uint32_t dev_id, a_uint32_t phy_id, a_bool_t enable)
+{
+	a_uint16_t phy_data = 0, phy_data1 = 0;
+	sw_error_t rv = SW_OK;
+
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_EEE_ADVERTISTMENT_REGISTER, &phy_data);
+	SW_RTN_ON_ERROR(rv);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_EEE_ADVERTISTMENT_REGISTER1, &phy_data1);
+	SW_RTN_ON_ERROR(rv);
+	if(enable == A_TRUE)
+	{
+		phy_data |= (AQUANTIA_EEE_ADV_10000M | AQUANTIA_EEE_ADV_1000M);
+		phy_data1 |= (AQUANTIA_EEE_ADV_2500M | AQUANTIA_EEE_ADV_5000M);
+	}
+	else
+	{
+		phy_data &= ~(AQUANTIA_EEE_ADV_10000M | AQUANTIA_EEE_ADV_1000M);
+		phy_data1 &= ~(AQUANTIA_EEE_ADV_2500M | AQUANTIA_EEE_ADV_5000M);
+	}
+	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_EEE_ADVERTISTMENT_REGISTER, phy_data);
+	SW_RTN_ON_ERROR(rv);
+	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_EEE_ADVERTISTMENT_REGISTER1, phy_data1);
+	SW_RTN_ON_ERROR(rv);
+	rv = aquantia_phy_restart_autoneg(dev_id, phy_id);
+
+	return rv;
+}
+
+/******************************************************************************
+*
+* aquantia_phy_get_8023az status
+*
+* get 8023az status
+*/
+sw_error_t
+aquantia_phy_get_8023az(a_uint32_t dev_id, a_uint32_t phy_id, a_bool_t * enable)
+{
+	a_uint16_t phy_data = 0, phy_data1 = 0;
+	sw_error_t rv = SW_OK;
+
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_EEE_ADVERTISTMENT_REGISTER, &phy_data);
+	SW_RTN_ON_ERROR(rv);
+
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_EEE_ADVERTISTMENT_REGISTER1, &phy_data1);
+	SW_RTN_ON_ERROR(rv);
+
+	if((phy_data & (AQUANTIA_EEE_ADV_1000M | AQUANTIA_EEE_ADV_10000M)) &&
+		(phy_data1 & (AQUANTIA_EEE_ADV_2500M | AQUANTIA_EEE_ADV_5000M)))
+	{
+		*enable = A_TRUE;
+	}
+	else
+	{
+		*enable = A_FALSE;
+	}
+
+	return rv;
+}
 
 /******************************************************************************
 *
@@ -1562,6 +1633,8 @@ static int aquantia_phy_api_ops_init(void)
 	aquantia_phy_api_ops->phy_autoneg_adv_get = aquantia_phy_get_autoneg_adv;
 	aquantia_phy_api_ops->phy_powersave_set = aquantia_phy_set_powersave;
 	aquantia_phy_api_ops->phy_powersave_get = aquantia_phy_get_powersave;
+	aquantia_phy_api_ops->phy_8023az_set = aquantia_phy_set_8023az;
+	aquantia_phy_api_ops->phy_8023az_get = aquantia_phy_get_8023az;
 	aquantia_phy_api_ops->phy_power_on = aquantia_phy_poweron;
 	aquantia_phy_api_ops->phy_power_off = aquantia_phy_poweroff;
 	aquantia_phy_api_ops->phy_cdt = aquantia_phy_cdt;
