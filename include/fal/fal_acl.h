@@ -94,6 +94,16 @@ extern "C" {
         FAL_ACL_UDF_BUTT,
     }fal_acl_udf_pkt_type_t;
 
+typedef enum {
+	FAL_ACL_DEST_PORT_BMP = 0, /*dest info is bitmap*/
+	FAL_ACL_DEST_NEXTHOP, /*dest info is nexthop*/
+	FAL_ACL_DEST_PORT_ID, /*dest info is port id*/
+}fal_acl_dest_type_t;
+
+#define FAL_ACL_DEST_OFFSET(type,value) (((type)<<24)|(value))
+#define FAL_ACL_DEST_TYPE(dest) (((dest)>>24)&0xff)
+#define FAL_ACL_DEST_VALUE(dest) ((dest)&0xffffff)
+
 #define    FAL_ACL_FIELD_MAC_DA         0
 #define    FAL_ACL_FIELD_MAC_SA         1
 #define    FAL_ACL_FIELD_MAC_ETHTYPE    2
@@ -399,7 +409,7 @@ typedef struct
 
 	/* fields of action */
 	fal_acl_action_map_t  action_flg;/*Indicate which action apply*/
-	fal_pbmp_t            ports; /*high 2bits, 00-port bitmap, 01-nexthop, 10-vp*/
+	fal_pbmp_t            ports; /*high 8bits, 00-port bitmap, 01-nexthop, 10-vp*/
 	a_uint32_t            match_cnt;/*rule match frame counter*/
 	a_uint16_t            vid;/*modify vlan id, IPQ807x not support*/
 	a_uint8_t             up;/*modify COS priority, IPQ807x not support*/

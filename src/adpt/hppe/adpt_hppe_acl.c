@@ -459,6 +459,24 @@ enum{
 	HPPE_ACL_TYPE_INVALID,
 };
 
+enum{
+	HPPE_ACL_ACTION_FWD = 0,
+	HPPE_ACL_ACTION_DROP,
+	HPPE_ACL_ACTION_COPYCPU,
+	HPPE_ACL_ACTION_RDTCPU,
+};
+
+enum{
+	HPPE_ACL_DEST_INVALID = 0,
+	HPPE_ACL_DEST_NEXTHOP,
+	HPPE_ACL_DEST_PORT_ID,
+	HPPE_ACL_DEST_PORT_BMP,
+};
+
+#define HPPE_ACL_DEST_INFO(type,value) (((type)<<12)|((value)&0xfff))
+#define HPPE_ACL_DEST_TYPE(dest) (((dest)>>12)&0x3)
+#define HPPE_ACL_DEST_VALUE(dest) ((dest)&0xfff)
+
 static a_uint32_t _adpt_hppe_acl_srctype_to_hw(fal_acl_bind_obj_t obj_t)
 {
 	a_uint32_t src_type = HPPE_ACL_TYPE_INVALID;
@@ -1318,39 +1336,46 @@ _adpt_hppe_acl_action_hw_2_sw(union ipo_action_u *hw_act, fal_acl_rule_t *rule)
 {
 	if(hw_act->bf.dest_info_change_en)
 	{
-		FAL_ACTION_FLG_SET(rule->action_flg, FAL_ACL_ACTION_REDPT);
-		if((hw_act->bf.dest_info>>12) == 0x1) /*nexthop*/
+		a_uint32_t dest_type = HPPE_ACL_DEST_TYPE(hw_act->bf.dest_info);
+		a_uint32_t dest_val = HPPE_ACL_DEST_VALUE(hw_act->bf.dest_info);
+		SSDK_DEBUG("hw_act->bf.dest_info = %x\n", hw_act->bf.dest_info);
+		if(dest_type == HPPE_ACL_DEST_NEXTHOP) /*nexthop*/
 		{
-			rule->ports = (0x1<<24)|(hw_act->bf.dest_info&0xfff);
+			rule->ports = FAL_ACL_DEST_OFFSET(FAL_ACL_DEST_NEXTHOP,
+					dest_val);
 		}
-		else if((hw_act->bf.dest_info>>12) == 0x2) /*vp*/
+		else if(dest_type == HPPE_ACL_DEST_PORT_ID) /*vp or trunk*/
 		{
-			rule->ports = (0x2<<24)|(hw_act->bf.dest_info&0xfff);
+			rule->ports = FAL_ACL_DEST_OFFSET(FAL_ACL_DEST_PORT_ID,
+					dest_val);
 		}
-		else
+		else if(dest_type == HPPE_ACL_DEST_PORT_BMP) /*bitmap*/
 		{
-			rule->ports = (hw_act->bf.dest_info&0xfff);
+			rule->ports = FAL_ACL_DEST_OFFSET(FAL_ACL_DEST_PORT_BMP,
+					dest_val);
+		}
+		if(rule->ports != 0)
+		{
+			FAL_ACTION_FLG_SET(rule->action_flg, FAL_ACL_ACTION_REDPT);
+		}
+		else if(hw_act->bf.fwd_cmd == HPPE_ACL_ACTION_RDTCPU)
+		{
+			FAL_ACTION_FLG_SET(rule->action_flg, FAL_ACL_ACTION_RDTCPU);
+		}
+		else if(hw_act->bf.fwd_cmd == HPPE_ACL_ACTION_COPYCPU)
+		{
+			FAL_ACTION_FLG_SET(rule->action_flg, FAL_ACL_ACTION_CPYCPU);
+		}
+		else if(hw_act->bf.fwd_cmd == HPPE_ACL_ACTION_DROP)
+		{
+			FAL_ACTION_FLG_SET(rule->action_flg, FAL_ACL_ACTION_DENY);
+		}
+		else if(hw_act->bf.fwd_cmd == HPPE_ACL_ACTION_FWD)
+		{
+			FAL_ACTION_FLG_SET(rule->action_flg, FAL_ACL_ACTION_PERMIT);
 		}
 	}
 
-	if(hw_act->bf.fwd_cmd == 3)
-	{
-		FAL_ACTION_FLG_SET(rule->action_flg, FAL_ACL_ACTION_RDTCPU);
-		FAL_ACTION_FLG_CLR(rule->action_flg, FAL_ACL_ACTION_REDPT);/*clear this bit if rdtcpu*/
-	}
-	if(hw_act->bf.fwd_cmd == 2)
-	{
-		FAL_ACTION_FLG_SET(rule->action_flg, FAL_ACL_ACTION_CPYCPU);
-	}
-	if(hw_act->bf.fwd_cmd == 1)
-	{
-		FAL_ACTION_FLG_SET(rule->action_flg, FAL_ACL_ACTION_DENY);
-		FAL_ACTION_FLG_CLR(rule->action_flg, FAL_ACL_ACTION_REDPT);/*clear this bit if drop*/
-	}
-	if(hw_act->bf.fwd_cmd == 0)
-	{
-		FAL_ACTION_FLG_SET(rule->action_flg, FAL_ACL_ACTION_PERMIT);
-	}
 	if(hw_act->bf.mirror_en == 1)
 	{
 		FAL_ACTION_FLG_SET(rule->action_flg, FAL_ACL_ACTION_MIRROR);
@@ -2757,18 +2782,26 @@ _adpt_hppe_acl_action_sw_2_hw(fal_acl_rule_t *rule, union ipo_action_u *hw_act)
 {
 	if(FAL_ACTION_FLG_TST(rule->action_flg, FAL_ACL_ACTION_REDPT))
 	{
+		a_uint32_t dest_type = FAL_ACL_DEST_TYPE(rule->ports);
+		a_uint32_t dest_val = FAL_ACL_DEST_VALUE(rule->ports);
+
+		SSDK_DEBUG("rule->ports = %x\n", rule->ports);
+
 		hw_act->bf.dest_info_change_en = 1;
-		if((rule->ports>>24) == 0x1) /*nexthop*/
+		if(dest_type == FAL_ACL_DEST_NEXTHOP) /*nexthop*/
 		{
-			hw_act->bf.dest_info = (0x1<<12)|(rule->ports&0xfff);
+			hw_act->bf.dest_info =
+				HPPE_ACL_DEST_INFO(HPPE_ACL_DEST_NEXTHOP, dest_val);
 		}
-		else if((rule->ports>>24) == 0x2)/*vp*/
+		else if(FAL_ACL_DEST_TYPE(rule->ports) == FAL_ACL_DEST_PORT_ID)/*vp*/
 		{
-			hw_act->bf.dest_info = (0x2<<12)|(rule->ports&0xfff);
+			hw_act->bf.dest_info =
+				HPPE_ACL_DEST_INFO(HPPE_ACL_DEST_PORT_ID, dest_val);
 		}
-		else /*bitmap*/
+		else if(FAL_ACL_DEST_TYPE(rule->ports) == FAL_ACL_DEST_PORT_BMP)/*bitmap*/
 		{
-			hw_act->bf.dest_info = (0x3<<12)|(rule->ports&0xfff);
+			hw_act->bf.dest_info =
+				HPPE_ACL_DEST_INFO(HPPE_ACL_DEST_PORT_BMP, dest_val);
 		}
 	}
 	if(FAL_ACTION_FLG_TST(rule->action_flg, FAL_ACL_ACTION_PERMIT))
