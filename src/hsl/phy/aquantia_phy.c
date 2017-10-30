@@ -751,7 +751,7 @@ sw_error_t
 aquantia_phy_set_autoneg_adv(a_uint32_t dev_id, a_uint32_t phy_id,
 			   a_uint32_t autoneg)
 {
-	a_uint16_t phy_data = 0;
+	a_uint16_t phy_data = 0, phy_data1 = 0 ;
 	sw_error_t rv = SW_OK;
 
 	if ((autoneg & FAL_PHY_ADV_10T_FD) ||(autoneg & FAL_PHY_ADV_10T_HD)||
@@ -784,7 +784,13 @@ aquantia_phy_set_autoneg_adv(a_uint32_t dev_id, a_uint32_t phy_id,
 
 	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_VENDOR_PROVISION1, &phy_data);
+	SW_RTN_ON_ERROR(rv);
 	phy_data &= ~AQUANTIA_ADVERTISE_GIGA_ALL;
+
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_AUTONEG_10GBASE_T_CONTROL_REGISTER, &phy_data1);
+	SW_RTN_ON_ERROR(rv);
+	phy_data1 &= ~AQUANTIA_ADVERTISE_GIGA_PLUS_ALL;
 	if (autoneg & FAL_PHY_ADV_1000T_FD)
 	{
 		phy_data |= AQUANTIA_ADVERTISE_1000FULL;
@@ -792,23 +798,21 @@ aquantia_phy_set_autoneg_adv(a_uint32_t dev_id, a_uint32_t phy_id,
 	if (autoneg & FAL_PHY_ADV_2500T_FD)
 	{
 		phy_data |= AQUANTIA_ADVERTISE_2500FULL;
+		phy_data1 |= AQUANTIA_ADVERTISE_8023BZ_2500FULL;
 	}
 	if (autoneg & FAL_PHY_ADV_5000T_FD)
 	{
 		phy_data |= AQUANTIA_ADVERTISE_5000FULL;
+		phy_data1 |= AQUANTIA_ADVERTISE_8023BZ_5000FULL;
 	}
 	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_VENDOR_PROVISION1, phy_data);
 	SW_RTN_ON_ERROR(rv);
 
-	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_AUTONEG_10GBASS_T_CONTROL_REGISTER, &phy_data);
-	SW_RTN_ON_ERROR(rv);
-	phy_data &= ~AQUANTIA_ADVERTISE_GIGA_PLUS_ALL;
 	if (autoneg & FAL_PHY_ADV_10000T_FD)
-		phy_data |= AQUANTIA_ADVERTISE_10000FULL;
+		phy_data1 |= AQUANTIA_ADVERTISE_10000FULL;
 	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_AUTONEG_10GBASS_T_CONTROL_REGISTER,phy_data);
+		AQUANTIA_AUTONEG_10GBASE_T_CONTROL_REGISTER,phy_data1);
 
 	return rv;
 }
@@ -822,7 +826,7 @@ sw_error_t
 aquantia_phy_get_autoneg_adv(a_uint32_t dev_id, a_uint32_t phy_id,
 			   a_uint32_t * autoneg)
 {
-	a_uint16_t phy_data = 0;
+	a_uint16_t phy_data = 0, phy_data1 = 0;
 	sw_error_t rv = SW_OK;
 
 	*autoneg = 0;
@@ -845,22 +849,25 @@ aquantia_phy_get_autoneg_adv(a_uint32_t dev_id, a_uint32_t phy_id,
 	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_VENDOR_PROVISION1, &phy_data);
 	SW_RTN_ON_ERROR(rv);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_AUTONEG_10GBASE_T_CONTROL_REGISTER, &phy_data1);
+	SW_RTN_ON_ERROR(rv);
 	if (phy_data & AQUANTIA_ADVERTISE_1000FULL)
 	{
 		*autoneg |= FAL_PHY_ADV_1000T_FD;
 	}
-	if (phy_data & AQUANTIA_ADVERTISE_2500FULL)
+	if ((phy_data & AQUANTIA_ADVERTISE_2500FULL) &&
+		(phy_data1 & AQUANTIA_ADVERTISE_8023BZ_2500FULL))
 	{
 		*autoneg |= FAL_PHY_ADV_2500T_FD;
 	}
-	if (phy_data & AQUANTIA_ADVERTISE_5000FULL)
+	if ((phy_data & AQUANTIA_ADVERTISE_5000FULL) &&
+		(phy_data1 & AQUANTIA_ADVERTISE_8023BZ_5000FULL))
 	{
 		*autoneg |= FAL_PHY_ADV_5000T_FD;
 	}
 
-	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_AUTONEG_10GBASS_T_CONTROL_REGISTER, &phy_data);
-	if (phy_data & AQUANTIA_ADVERTISE_10000FULL)
+	if (phy_data1 & AQUANTIA_ADVERTISE_10000FULL)
 	{
 		*autoneg |= FAL_PHY_ADV_10000T_FD;
 	}
@@ -1045,24 +1052,28 @@ static sw_error_t _aquantia_phy_set_100speed(a_uint32_t dev_id, a_uint32_t phy_i
 	SW_RTN_ON_ERROR(rv);
 	/*disable 10000M speed*/
 	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_AUTONEG_10GBASS_T_CONTROL_REGISTER, &phy_data);
+		AQUANTIA_AUTONEG_10GBASE_T_CONTROL_REGISTER, &phy_data);
 	SW_RTN_ON_ERROR(rv);
 	phy_data &= ~(AQUANTIA_ADVERTISE_GIGA_PLUS_ALL);
 	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_AUTONEG_10GBASS_T_CONTROL_REGISTER, phy_data);
+		AQUANTIA_AUTONEG_10GBASE_T_CONTROL_REGISTER, phy_data);
 
 	return rv;
 }
 
 static sw_error_t _aquantia_phy_set_giga_speed(a_uint32_t dev_id, a_uint32_t phy_id, fal_port_speed_t speed)
 {
-	a_uint16_t phy_data = 0;
+	a_uint16_t phy_data = 0, phy_data1 = 0;
 	sw_error_t rv = SW_OK;
 	/*set 1000M and disable 2500M, 5000M */
 	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_VENDOR_PROVISION1, &phy_data);
 	SW_RTN_ON_ERROR(rv);
 	phy_data &= ~(AQUANTIA_ADVERTISE_GIGA_ALL);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_AUTONEG_10GBASE_T_CONTROL_REGISTER, &phy_data1);
+	SW_RTN_ON_ERROR(rv);
+	phy_data1 &= ~(AQUANTIA_ADVERTISE_GIGA_PLUS_ALL);
 	switch(speed)
 	{
 		case FAL_SPEED_1000:
@@ -1070,15 +1081,20 @@ static sw_error_t _aquantia_phy_set_giga_speed(a_uint32_t dev_id, a_uint32_t phy
 			break;
 		case FAL_SPEED_2500:
 			phy_data |= AQUANTIA_ADVERTISE_2500FULL;
+			phy_data1 |= AQUANTIA_ADVERTISE_8023BZ_2500FULL;
 			break;
 		case FAL_SPEED_5000:
 			phy_data |= AQUANTIA_ADVERTISE_5000FULL;
+			phy_data1 |= AQUANTIA_ADVERTISE_8023BZ_5000FULL;
 			break;
 		default:
-			return SW_FAIL;
+			return SW_NOT_SUPPORTED;
 	}
 	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_VENDOR_PROVISION1, phy_data);
+	SW_RTN_ON_ERROR(rv);
+	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_AUTONEG_10GBASE_T_CONTROL_REGISTER, phy_data1);
 	SW_RTN_ON_ERROR(rv);
 
 	/*disable 100M speed*/
@@ -1088,14 +1104,6 @@ static sw_error_t _aquantia_phy_set_giga_speed(a_uint32_t dev_id, a_uint32_t phy
 	phy_data &= ~(AQUANTIA_ADVERTISE_MEGA_ALL);
 	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_ADVERTISEMENT_REGISTER, phy_data);
-	SW_RTN_ON_ERROR(rv);
-	/*disable 10000M speed*/
-	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_AUTONEG_10GBASS_T_CONTROL_REGISTER, &phy_data);
-	SW_RTN_ON_ERROR(rv);
-	phy_data &= ~(AQUANTIA_ADVERTISE_GIGA_PLUS_ALL);
-	rv =  aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_AUTONEG_10GBASS_T_CONTROL_REGISTER, phy_data);
 
 	return rv;
 }
@@ -1106,12 +1114,12 @@ static sw_error_t _aquantia_phy_set_10g_speed(a_uint32_t dev_id, a_uint32_t phy_
 	sw_error_t rv = SW_OK;
 	/*set giga speed */
 	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_AUTONEG_10GBASS_T_CONTROL_REGISTER,&phy_data);
+		AQUANTIA_AUTONEG_10GBASE_T_CONTROL_REGISTER,&phy_data);
 	SW_RTN_ON_ERROR(rv);
 	phy_data &= ~(AQUANTIA_ADVERTISE_GIGA_PLUS_ALL);
 	phy_data |= AQUANTIA_ADVERTISE_10000FULL;
 	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
-		AQUANTIA_AUTONEG_10GBASS_T_CONTROL_REGISTER, phy_data);
+		AQUANTIA_AUTONEG_10GBASE_T_CONTROL_REGISTER, phy_data);
 	SW_RTN_ON_ERROR(rv);
 
 	/*disable 100M speed*/
