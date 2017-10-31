@@ -106,6 +106,14 @@ qca_ar8327_sw_get_port_link(struct switch_dev *dev, int port,
 		link->speed = SWITCH_PORT_SPEED_100;
 	} else if (speed == FAL_SPEED_1000){
 		link->speed = SWITCH_PORT_SPEED_1000;
+	#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
+	} else if (speed == FAL_SPEED_2500){
+		link->speed = SWITCH_PORT_SPEED_2500;
+	} else if (speed == FAL_SPEED_5000){
+		link->speed = SWITCH_PORT_SPEED_5000;
+	} else if (speed == FAL_SPEED_10000){
+		link->speed = SWITCH_PORT_SPEED_10000;
+	#endif
 	} else {
 		link->speed = SWITCH_PORT_SPEED_UNKNOWN;
 	}
