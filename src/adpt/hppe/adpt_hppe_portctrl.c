@@ -70,10 +70,57 @@ static a_uint32_t port_interface_mode[SW_MAX_NR_DEV][SW_MAX_NR_PORT] = {0};
 static a_bool_t
 _adpt_hppe_port_phy_connected (a_uint32_t dev_id, fal_port_t port_id)
 {
-  if (0 == port_id)
-      return A_FALSE;
-  else
-      return hppe_mac_port_valid_check (dev_id, port_id);
+	a_uint32_t mode1, mode2;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	mode1 = ssdk_dt_global_get_mac_mode(dev_id, SSDK_UNIPHY_INSTANCE1);
+	mode2 = ssdk_dt_global_get_mac_mode(dev_id, SSDK_UNIPHY_INSTANCE2);
+
+	if ((SSDK_PHYSICAL_PORT0 == port_id) ||
+	((SSDK_PHYSICAL_PORT5 == port_id) && (mode1 == PORT_WRAPPER_10GBASE_R)) ||
+	((SSDK_PHYSICAL_PORT6 == port_id) && (mode2 == PORT_WRAPPER_10GBASE_R)))
+		return A_FALSE;
+	else
+		return hppe_mac_port_valid_check (dev_id, port_id);
+}
+
+static sw_error_t
+_adpt_phy_status_get_from_ppe(a_uint32_t dev_id, a_uint32_t port_id,
+		struct port_phy_status *phy_status)
+{
+	sw_error_t rv = SW_OK;
+	a_uint32_t reg_field = 0;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	if (port_id == SSDK_PHYSICAL_PORT5)
+		rv = hppe_port_phy_status_1_port5_1_phy_status_get(dev_id,
+						&reg_field);
+	else
+		rv = hppe_port_phy_status_1_port6_phy_status_get(dev_id,
+						&reg_field);
+	SW_RTN_ON_ERROR (rv);
+
+	if ((reg_field >> 3) & 0x1)
+		phy_status->tx_flowctrl = A_TRUE;
+	else
+		phy_status->tx_flowctrl = A_FALSE;
+
+	if ((reg_field >> 4) & 0x1)
+		phy_status->rx_flowctrl = A_TRUE;
+	else
+		phy_status->rx_flowctrl = A_FALSE;
+
+	if ((reg_field >> 7) & 0x1)
+		phy_status->link_status = PORT_LINK_UP;
+	else
+		phy_status->link_status = PORT_LINK_DOWN;
+
+	phy_status->speed = FAL_SPEED_10000;
+	phy_status->duplex = FAL_FULL_DUPLEX;
+
+	return rv;
 }
 
 static sw_error_t
@@ -475,6 +522,8 @@ adpt_hppe_port_local_loopback_get(a_uint32_t dev_id, fal_port_t port_id,
 	  {
 		return SW_BAD_PARAM;
 	  }
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_local_loopback_get)
@@ -503,6 +552,8 @@ adpt_hppe_port_autoneg_restart(a_uint32_t dev_id, fal_port_t port_id)
 	  {
 		return SW_BAD_PARAM;
 	  }
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_restart_autoneg)
@@ -531,6 +582,8 @@ adpt_hppe_port_duplex_set(a_uint32_t dev_id, fal_port_t port_id,
 	  {
 		return SW_BAD_PARAM;
 	  }
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_duplex_set)
@@ -605,6 +658,8 @@ adpt_hppe_port_cdt(a_uint32_t dev_id, fal_port_t port_id,
 	  {
 		return SW_BAD_PARAM;
 	  }
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_cdt)
@@ -652,6 +707,8 @@ adpt_hppe_port_combo_fiber_mode_set(a_uint32_t dev_id,
 	  {
 		return SW_BAD_PARAM;
 	  }
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_combo_fiber_mode_set)
@@ -683,6 +740,8 @@ adpt_hppe_port_combo_medium_status_get(a_uint32_t dev_id,
 	  {
 		return SW_BAD_PARAM;
 	  }
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_combo_medium_status_get)
@@ -712,6 +771,8 @@ adpt_hppe_port_magic_frame_mac_set(a_uint32_t dev_id, fal_port_t port_id,
 	  {
 		return SW_BAD_PARAM;
 	  }
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_magic_frame_mac_set)
@@ -739,6 +800,8 @@ adpt_hppe_port_powersave_set(a_uint32_t dev_id, fal_port_t port_id,
 	  {
 		return SW_BAD_PARAM;
 	  }
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_powersave_set)
@@ -767,6 +830,8 @@ adpt_hppe_port_hibernate_set(a_uint32_t dev_id, fal_port_t port_id,
 	  {
 		return SW_BAD_PARAM;
 	  }
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_hibernation_set)
@@ -859,6 +924,8 @@ adpt_hppe_port_8023az_get(a_uint32_t dev_id, fal_port_t port_id,
 	  {
 		return SW_BAD_PARAM;
 	  }
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_8023az_get)
@@ -939,6 +1006,8 @@ adpt_hppe_port_remote_loopback_set(a_uint32_t dev_id, fal_port_t port_id,
 	  {
 		return SW_BAD_PARAM;
 	  }
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_remote_loopback_set)
@@ -969,6 +1038,8 @@ adpt_hppe_port_autoneg_status_get(a_uint32_t dev_id, fal_port_t port_id,
 	  {
 		return SW_BAD_PARAM;
 	  }
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_autoneg_status_get)
@@ -1025,6 +1096,8 @@ adpt_hppe_port_mdix_get(a_uint32_t dev_id, fal_port_t port_id,
 	  {
 		return SW_BAD_PARAM;
 	  }
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_mdix_get)
@@ -1048,6 +1121,7 @@ adpt_hppe_ports_link_status_get(a_uint32_t dev_id, a_uint32_t * status)
 	a_uint32_t phy_id;
 	hsl_dev_t *pdev = NULL;
 	hsl_phy_ops_t *phy_drv;
+	struct port_phy_status phy_status = {0};
 
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(status);
@@ -1061,10 +1135,22 @@ adpt_hppe_ports_link_status_get(a_uint32_t dev_id, a_uint32_t * status)
 	{
 		if (port_id >= SW_MAX_NR_PORT)
 			break;
-		/* for those ports without PHY device supposed always link up */
+
+		/* for those ports without PHY device should be sfp port */
 		if (A_FALSE == _adpt_hppe_port_phy_connected(dev_id, port_id))
 		{
-			*status |= (0x1 << port_id);
+			if (port_id == SSDK_PHYSICAL_PORT0)
+				*status |= (0x1 << port_id);
+			else {
+				rv = _adpt_phy_status_get_from_ppe(dev_id,
+					port_id, &phy_status);
+				SW_RTN_ON_ERROR (rv);
+
+				if (phy_status.link_status == PORT_LINK_UP)
+					*status |= (0x1 << port_id);
+				else
+					*status &= ~(0x1 << port_id);
+			}
 		}
 		else
 		{
@@ -1123,6 +1209,8 @@ adpt_hppe_port_phy_id_get(a_uint32_t dev_id, fal_port_t port_id,
 	{
 		return SW_BAD_PARAM;
 	}
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_id_get)
@@ -1173,6 +1261,8 @@ adpt_hppe_port_power_on(a_uint32_t dev_id, fal_port_t port_id)
 	  {
 		return SW_BAD_PARAM;
 	  }
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_power_on)
@@ -1190,18 +1280,18 @@ sw_error_t
 adpt_hppe_port_speed_set(a_uint32_t dev_id, fal_port_t port_id,
 			       fal_port_speed_t speed)
 {
-	union mac_speed_u mac_speed;
 	sw_error_t rv = 0;
 	a_uint32_t phy_id = 0;
 	hsl_phy_ops_t *phy_drv;
 
-	memset(&mac_speed, 0, sizeof(mac_speed));
 	ADPT_DEV_ID_CHECK(dev_id);
 
 	if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
 	  {
 		return SW_BAD_PARAM;
 	  }
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_speed_set)
@@ -1212,20 +1302,6 @@ adpt_hppe_port_speed_set(a_uint32_t dev_id, fal_port_t port_id,
 
 	rv = phy_drv->phy_speed_set (dev_id, phy_id, speed);
 	SW_RTN_ON_ERROR (rv);
-
-#if 0
-	port_id = port_id - 1;
-	hppe_mac_speed_get(dev_id, port_id, &mac_speed);
-
-	if(FAL_SPEED_1000 == speed)
-		mac_speed.bf.mac_speed = 2;
-	if(FAL_SPEED_100 == speed)
-		mac_speed.bf.mac_speed = 1;
-	if(FAL_SPEED_10 == speed)
-		mac_speed.bf.mac_speed = 0;
-
-	hppe_mac_speed_set(dev_id, port_id, &mac_speed);
-#endif
 
 	return rv;
 }
@@ -1244,12 +1320,11 @@ sw_error_t
 adpt_hppe_port_duplex_get(a_uint32_t dev_id, fal_port_t port_id,
 				fal_port_duplex_t * pduplex)
 {
-	union mac_enable_u mac_enable;
 	sw_error_t rv = 0;
 	a_uint32_t phy_id = 0;
 	hsl_phy_ops_t *phy_drv;
+	struct port_phy_status phy_status = {0};
 
-	memset(&mac_enable, 0, sizeof(mac_enable));
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(pduplex);
 
@@ -1258,10 +1333,18 @@ adpt_hppe_port_duplex_get(a_uint32_t dev_id, fal_port_t port_id,
 		return SW_BAD_PARAM;
 	  }
 
-	/* for those ports without PHY device supposed always full duplex */
+	/* for those ports without PHY device should be sfp port */
 	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
 	{
-		*pduplex = FAL_FULL_DUPLEX;
+		if (port_id == SSDK_PHYSICAL_PORT0)
+			*pduplex = FAL_FULL_DUPLEX;
+		else {
+			rv = _adpt_phy_status_get_from_ppe(dev_id,
+				port_id, &phy_status);
+			SW_RTN_ON_ERROR (rv);
+			*pduplex = phy_status.duplex;
+		}
+
 	}
 	else
 	{
@@ -1274,20 +1357,6 @@ adpt_hppe_port_duplex_get(a_uint32_t dev_id, fal_port_t port_id,
 		rv = phy_drv->phy_duplex_get (dev_id, phy_id, pduplex);
 		SW_RTN_ON_ERROR (rv);
 	}
-
-#if 0
-	port_id = port_id - 1;
-	rv = hppe_mac_enable_get(dev_id, port_id, &mac_enable);
-
-	if( rv != SW_OK )
-		return rv;
-
-	if (mac_enable.bf.duplex == 0)
-		*pduplex = FAL_HALF_DUPLEX;
-	if (mac_enable.bf.duplex == 1)
-		*pduplex = FAL_FULL_DUPLEX;
-
-#endif
 
 	return rv;
 }
@@ -1308,6 +1377,8 @@ adpt_hppe_port_autoneg_adv_get(a_uint32_t dev_id, fal_port_t port_id,
 	  {
 		return SW_BAD_PARAM;
 	  }
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_autoneg_adv_get)
@@ -1340,6 +1411,8 @@ adpt_hppe_port_mdix_status_get(a_uint32_t dev_id, fal_port_t port_id,
 	  {
 		return SW_BAD_PARAM;
 	  }
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_mdix_status_get)
@@ -1362,6 +1435,7 @@ adpt_hppe_port_link_status_get(a_uint32_t dev_id, fal_port_t port_id,
 	sw_error_t rv = 0;
 	a_uint32_t phy_id;
 	hsl_phy_ops_t *phy_drv;
+	struct port_phy_status phy_status = {0};
 
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(status);
@@ -1371,11 +1445,17 @@ adpt_hppe_port_link_status_get(a_uint32_t dev_id, fal_port_t port_id,
 		return SW_BAD_PARAM;
 	}
 
-
-	/* for those ports without PHY device supposed always link up */
+	/* for those ports without PHY device should be sfp port */
 	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
 	{
-		*status = A_TRUE;
+		if (port_id == SSDK_PHYSICAL_PORT0)
+			*status = A_TRUE;
+		else {
+			rv = _adpt_phy_status_get_from_ppe(dev_id,
+				port_id, &phy_status);
+			SW_RTN_ON_ERROR (rv);
+			*status = (a_bool_t) phy_status.link_status;
+		}
 	}
 	else
 	{
@@ -1415,6 +1495,8 @@ adpt_hppe_port_8023az_set(a_uint32_t dev_id, fal_port_t port_id,
 	  {
 		return SW_BAD_PARAM;
 	  }
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_8023az_set)
@@ -1444,6 +1526,8 @@ adpt_hppe_port_powersave_get(a_uint32_t dev_id, fal_port_t port_id,
 	  {
 		return SW_BAD_PARAM;
 	  }
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_powersave_get)
@@ -1475,6 +1559,8 @@ adpt_hppe_port_combo_prefer_medium_get(a_uint32_t dev_id,
 	  {
 		return SW_BAD_PARAM;
 	  }
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_combo_prefer_medium_get)
@@ -1533,6 +1619,8 @@ adpt_hppe_port_combo_prefer_medium_set(a_uint32_t dev_id,
 	  {
 		return SW_BAD_PARAM;
 	  }
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_combo_prefer_medium_set)
@@ -1560,6 +1648,8 @@ adpt_hppe_port_power_off(a_uint32_t dev_id, fal_port_t port_id)
 	  {
 		return SW_BAD_PARAM;
 	  }
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_power_off)
@@ -1619,6 +1709,8 @@ adpt_hppe_port_counter_set(a_uint32_t dev_id, fal_port_t port_id,
 	  {
 		return SW_BAD_PARAM;
 	  }
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_counter_set)
@@ -1647,6 +1739,8 @@ adpt_hppe_port_combo_fiber_mode_get(a_uint32_t dev_id,
 	  {
 	  	return SW_BAD_PARAM;
 	  }
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_combo_fiber_mode_get)
@@ -1677,6 +1771,8 @@ adpt_hppe_port_local_loopback_set(a_uint32_t dev_id,
 	  {
 		return SW_BAD_PARAM;
 	  }
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_local_loopback_set)
@@ -1705,6 +1801,8 @@ adpt_hppe_port_wol_status_set(a_uint32_t dev_id, fal_port_t port_id,
 	{
 		return SW_BAD_PARAM;
 	}
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_wol_status_set)
@@ -1735,6 +1833,8 @@ adpt_hppe_port_magic_frame_mac_get(a_uint32_t dev_id, fal_port_t port_id,
 	  {
 		return SW_BAD_PARAM;
 	  }
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_magic_frame_mac_get)
@@ -1799,6 +1899,8 @@ adpt_hppe_port_counter_get(a_uint32_t dev_id, fal_port_t port_id,
 	   {
 		return SW_BAD_PARAM;
 	   }
+	 if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		 return SW_NOT_SUPPORTED;
 
 	 SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	 if (NULL == phy_drv->phy_counter_get)
@@ -2548,6 +2650,8 @@ adpt_hppe_port_hibernate_get(a_uint32_t dev_id, fal_port_t port_id,
 	  {
 		return SW_BAD_PARAM;
 	  }
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_hibernation_get)
@@ -2576,6 +2680,8 @@ adpt_hppe_port_autoneg_adv_set(a_uint32_t dev_id, fal_port_t port_id,
 	  {
 		return SW_BAD_PARAM;
 	  }
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_autoneg_adv_set)
@@ -2606,6 +2712,8 @@ adpt_hppe_port_remote_loopback_get(a_uint32_t dev_id, fal_port_t port_id,
 	  {
 		return SW_BAD_PARAM;
 	  }
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_remote_loopback_get)
@@ -2636,6 +2744,8 @@ adpt_hppe_port_counter_show(a_uint32_t dev_id, fal_port_t port_id,
 	  {
 		return SW_BAD_PARAM;
 	  }
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_counter_show)
@@ -2663,6 +2773,8 @@ adpt_hppe_port_autoneg_enable(a_uint32_t dev_id, fal_port_t port_id)
 	  {
 		return SW_BAD_PARAM;
 	  }
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_autoneg_enable_set)
@@ -2741,6 +2853,8 @@ adpt_hppe_port_reset(a_uint32_t dev_id, fal_port_t port_id)
 	  {
 		return SW_BAD_PARAM;
 	  }
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_reset)
@@ -2814,11 +2928,10 @@ adpt_hppe_port_speed_get(a_uint32_t dev_id, fal_port_t port_id,
 			       fal_port_speed_t * pspeed)
 {
 	sw_error_t rv = 0;
-	union mac_speed_u mac_speed;
 	a_uint32_t phy_id;
 	hsl_phy_ops_t *phy_drv;
+	struct port_phy_status phy_status = {0};
 
-	memset(&mac_speed, 0, sizeof(mac_speed));
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(pspeed);
 
@@ -2827,10 +2940,17 @@ adpt_hppe_port_speed_get(a_uint32_t dev_id, fal_port_t port_id,
 		return SW_BAD_PARAM;
 	}
 
-	/* for those ports without PHY device supposed always 1000Mbps */
+	/* for those ports without PHY device should be sfp port */
 	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
 	{
-		*pspeed = FAL_SPEED_1000;
+		if (port_id == SSDK_PHYSICAL_PORT0)
+			*pspeed = FAL_SPEED_10000;
+		else {
+			rv = _adpt_phy_status_get_from_ppe(dev_id,
+				port_id, &phy_status);
+			SW_RTN_ON_ERROR (rv);
+			*pspeed= phy_status.speed;
+		}
 	}
 	else
 	{
@@ -2843,22 +2963,6 @@ adpt_hppe_port_speed_get(a_uint32_t dev_id, fal_port_t port_id,
 		rv = phy_drv->phy_speed_get (dev_id, phy_id, pspeed);
 		SW_RTN_ON_ERROR (rv);
 	}
-
-
-#if 0
-	port_id = port_id - 1;
-	rv = hppe_mac_speed_get(dev_id, port_id, &mac_speed);
-
-	if( rv != SW_OK )
-		return rv;
-
-	if (mac_speed.bf.mac_speed == 0)
-		*pspeed = FAL_SPEED_10;
-	if (mac_speed.bf.mac_speed == 1)
-		*pspeed = FAL_SPEED_100;
-	if (mac_speed.bf.mac_speed == 2)
-		*pspeed = FAL_SPEED_1000;
-#endif
 
 	return rv;
 }
@@ -2878,6 +2982,8 @@ adpt_hppe_port_mdix_set(a_uint32_t dev_id, fal_port_t port_id,
 	  {
 		return SW_BAD_PARAM;
 	  }
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_mdix_set)
@@ -2907,6 +3013,8 @@ adpt_hppe_port_wol_status_get(a_uint32_t dev_id, fal_port_t port_id,
 	{
 		return SW_BAD_PARAM;
 	}
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_wol_status_get)
@@ -2974,6 +3082,8 @@ adpt_hppe_port_interface_3az_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t
 	{
 		return SW_BAD_PARAM;
 	}
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL(phy_drv = hsl_phy_api_ops_get(dev_id, port_id));
 	if (NULL == phy_drv->phy_8023az_set)
@@ -3013,6 +3123,8 @@ adpt_hppe_port_interface_3az_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t
 	{
 		return SW_BAD_PARAM;
 	}
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
+		return SW_NOT_SUPPORTED;
 
 	SW_RTN_ON_NULL (phy_drv =hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_8023az_get)
@@ -3222,11 +3334,17 @@ _adpt_hppe_port_xgphy_status_get(a_uint32_t dev_id, a_uint32_t port_id,
 	rv = qca_xgphy_read(dev_id, phy_addr, AQ_PHY_FLOWCTRL_STATUS_REG,
 				&phy_data);
 
-	if( rv != SW_OK )
-		return rv;
+	SW_RTN_ON_ERROR (rv);
 
-	phy_status->tx_flowctrl = phy_data & 0x1;
-	phy_status->rx_flowctrl = (phy_data >> 1) & 0x1;
+	if (phy_data & 0x1)
+		phy_status->tx_flowctrl = A_TRUE;
+	else
+		phy_status->tx_flowctrl = A_FALSE;
+
+	if ((phy_data >> 1) & 0x1)
+		phy_status->rx_flowctrl = A_TRUE;
+	else
+		phy_status->rx_flowctrl = A_FALSE;
 
 	return rv;
 }
@@ -3242,39 +3360,21 @@ _adpt_phy_status_get_from_phy(a_uint32_t dev_id, a_uint32_t port_id,
 	phy_addr = qca_ssdk_port_to_phy_addr(dev_id, port_id);
 	rv = qca_ar8327_phy_read(dev_id, phy_addr, PHY_MII_STATUS_REG, &phy_data);
 
-	if( rv != SW_OK )
-		return rv;
+	SW_RTN_ON_ERROR (rv);
 
-	phy_status->rx_flowctrl = (phy_data >> 2) & 0x1;
-	phy_status->tx_flowctrl = (phy_data >> 3) & 0x1;
+	if ((phy_data >> 2) & 0x1)
+		phy_status->rx_flowctrl = A_TRUE;
+	else
+		phy_status->rx_flowctrl = A_FALSE;
+
+	if ((phy_data >> 3) & 0x1)
+		phy_status->tx_flowctrl = A_TRUE;
+	else
+		phy_status->tx_flowctrl = A_FALSE;
+
 	phy_status->link_status = (phy_data >> 10) & 0x1;
 	*speed = (phy_data >> 14) & 0x3;
 	*duplex = (phy_data >> 13) & 0x1;
-
-	return rv;
-}
-static sw_error_t
-_adpt_phy_status_get_from_ppe(a_uint32_t dev_id, a_uint32_t port_id,
-		struct port_phy_status *phy_status, a_uint32_t *speed, a_uint32_t *duplex)
-{
-	sw_error_t rv = SW_OK;
-	a_uint32_t reg_field;
-
-	if (port_id == SSDK_PHYSICAL_PORT5)
-		rv = hppe_port_phy_status_1_port5_1_phy_status_get(dev_id,
-						&reg_field);
-	else
-		rv = hppe_port_phy_status_1_port6_phy_status_get(dev_id,
-						&reg_field);
-
-	if( rv != SW_OK )
-		return rv;
-
-	phy_status->tx_flowctrl = (reg_field >> 3) & 0x1;
-	phy_status->rx_flowctrl = (reg_field >> 4) & 0x1;
-	phy_status->link_status = (reg_field >> 7) & 0x1;
-	*speed = reg_field & 0x7;
-	*duplex = (reg_field >> 5) & 0x1;
 
 	return rv;
 }
@@ -3299,21 +3399,20 @@ _adpt_hppe_port_gphy_status_get(a_uint32_t dev_id, a_uint32_t port_id,
 		case SSDK_PHYSICAL_PORT4:
 			rv = _adpt_phy_status_get_from_phy(dev_id, port_id, phy_status,
 						&speed, &duplex);
+			rv = _adpt_hppe_phy_status_convert(speed, duplex, phy_status);
 			break;
 		case SSDK_PHYSICAL_PORT5:
 		case SSDK_PHYSICAL_PORT6:
 			if (((mode1 == PORT_WRAPPER_10GBASE_R) && (port_id == SSDK_PHYSICAL_PORT5)) ||
 				((mode2 == PORT_WRAPPER_10GBASE_R) && (port_id == SSDK_PHYSICAL_PORT6)))
-				_adpt_phy_status_get_from_ppe(dev_id, port_id, phy_status,
-						&speed, &duplex);
-
-			else
+				rv = _adpt_phy_status_get_from_ppe(dev_id, port_id, phy_status);
+			else {
 				rv = _adpt_phy_status_get_from_phy(dev_id, port_id, phy_status,
 						&speed, &duplex);
+				rv = _adpt_hppe_phy_status_convert(speed, duplex, phy_status);
+			}
 			break;
 	}
-
-	_adpt_hppe_phy_status_convert(speed, duplex, phy_status);
 
 	return rv;
 }
@@ -3877,7 +3976,7 @@ qca_hppe_mac_sw_sync_task(struct qca_phy_priv *priv)
 				{
 					if (phy_status.tx_flowctrl != priv->port_old_tx_flowctrl[port_id - 1])
 					{
-						adpt_hppe_port_txfc_status_set(priv->device_id, port_id, (a_bool_t)phy_status.tx_flowctrl);
+						adpt_hppe_port_txfc_status_set(priv->device_id, port_id, phy_status.tx_flowctrl);
 						priv->port_old_tx_flowctrl[port_id - 1] = phy_status.tx_flowctrl;
 
 						SSDK_DEBUG("Port %d is link up and tx flowctrl change to %d\n", port_id,
@@ -3888,7 +3987,7 @@ qca_hppe_mac_sw_sync_task(struct qca_phy_priv *priv)
 				{
 					if (phy_status.rx_flowctrl != priv->port_old_rx_flowctrl[port_id - 1])
 					{
-						adpt_hppe_port_rxfc_status_set(priv->device_id, port_id, (a_bool_t)phy_status.rx_flowctrl);
+						adpt_hppe_port_rxfc_status_set(priv->device_id, port_id, phy_status.rx_flowctrl);
 						priv->port_old_rx_flowctrl[port_id - 1] = phy_status.rx_flowctrl;
 
 						SSDK_DEBUG("Port %d is link up and rx flowctrl change to %d\n", port_id,

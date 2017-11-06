@@ -884,7 +884,7 @@ static void setup_dev_list(void)
 				/*wan port*/
 				HNAT_PRINTK("wan port vid:%d\n", tmp_vid);
 				nat_wan_vid = tmp_vid;
-				snprintf(nat_wan_dev_list, IFNAMSIZ*4, "eth0.%d eth0 pppoe-wan", tmp_vid);
+				snprintf(nat_wan_dev_list, IFNAMSIZ*4, "eth0.%d eth0 pppoe-wan erouter0", tmp_vid);
 			} else {
 				/*lan port*/
 				HNAT_PRINTK("lan port vid:%d\n", tmp_vid);
