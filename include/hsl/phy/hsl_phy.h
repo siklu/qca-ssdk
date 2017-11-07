@@ -293,6 +293,7 @@ typedef struct {
 	a_uint32_t phy_address[SW_MAX_NR_PORT];
 	a_uint32_t phy_type[SW_MAX_NR_PORT];
 	a_bool_t phy_c45[SW_MAX_NR_PORT];
+	a_bool_t phy_combo[SW_MAX_NR_PORT];
 } phy_info_t;
 
 #define MALIBU5PORT_PHY 0x004DD0B1
@@ -338,6 +339,9 @@ void qca_ssdk_phy_address_set(a_uint32_t dev_id, a_uint32_t i,
 				a_uint32_t value);
 
 a_uint32_t
+hsl_phyid_get(a_uint32_t dev_id, a_uint32_t port_id, ssdk_init_cfg *cfg);
+
+a_uint32_t
 qca_ssdk_port_to_phy_addr(a_uint32_t dev_id, a_uint32_t port_id);
 
 void qca_ssdk_port_bmp_set(a_uint32_t dev_id, a_uint32_t value);
@@ -353,6 +357,13 @@ qca_ssdk_phy_addr_to_port(a_uint32_t dev_id, a_uint32_t phy_addr);
 void
 hsl_port_phy_c45_capability_set(a_uint32_t dev_id, a_uint32_t port_id,
 			a_bool_t enable);
+
+a_bool_t
+hsl_port_phy_combo_capability_get(a_uint32_t dev_id, a_uint32_t port_id);
+
+void
+hsl_port_phy_combo_capability_set(a_uint32_t dev_id, a_uint32_t port_id,
+		a_bool_t enable);
 
 sw_error_t
 hsl_ssdk_phy_serdes_reset(a_uint32_t dev_id);

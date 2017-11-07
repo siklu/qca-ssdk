@@ -271,6 +271,11 @@ ifneq (,$(findstring HPPE, $(SUPPORT_CHIP)))
   MODULE_CFLAG += -DHPPE
 endif
 
+ifneq (,$(findstring SCOMPHY, $(SUPPORT_CHIP)))
+  MODULE_INC   += -I$(PRJ_PATH)/include/hsl/scomphy
+  MODULE_CFLAG += -DSCOMPHY
+endif
+
 # check for GCC version
 ifeq (4, $(GCC_VER))
   MODULE_CFLAG += -DGCCV4

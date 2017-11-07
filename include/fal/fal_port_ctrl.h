@@ -258,6 +258,12 @@ FAL_PHY_ADV_PAUSE | FAL_PHY_ADV_ASY_PAUSE)
 				/**<PORT_10GBASE_R mode*/
 		PORT_RGMII_BASET,
 				/**< RGMII mode */
+		PORT_RGMII_BX1000,
+				/**< RGMII BX1000 mode */
+		PORT_RGMII_FX100,
+				/**< RGMII FX100 mode */
+		PORT_RGMII_AMDET,
+				/**< RGMII Auto mode */
 		PORT_INTERFACE_MODE_MAX = 0xFF
 	} fal_port_interface_mode_t;
 

@@ -2534,7 +2534,7 @@ static sw_error_t ssdk_dt_parse_phy_info(struct device_node *switch_node, a_uint
 {
 	struct device_node *phy_info_node, *port_node;
 	a_uint32_t port_id, phy_addr;
-	a_bool_t phy_c45;
+	a_bool_t phy_c45, phy_combo;
 	sw_error_t rv = SW_OK;
 
 	phy_info_node = of_get_child_by_name(switch_node, "qcom,port_phyinfo");
@@ -2551,6 +2551,10 @@ static sw_error_t ssdk_dt_parse_phy_info(struct device_node *switch_node, a_uint
 		phy_c45 = of_property_read_bool(port_node,
 				"ethernet-phy-ieee802.3-c45");
 
+		phy_combo = of_property_read_bool(port_node,
+				"ethernet-phy-combo");
+
+		hsl_port_phy_combo_capability_set(dev_id, port_id, phy_combo);
 		hsl_port_phy_c45_capability_set(dev_id, port_id, phy_c45);
 		qca_ssdk_phy_address_set(dev_id, port_id, phy_addr);
 	}
@@ -2928,9 +2932,35 @@ static void ssdk_driver_unregister(a_uint32_t dev_id)
 	}
 }
 
+static int chip_is_scomphy(a_uint32_t dev_id, ssdk_init_cfg* cfg)
+{
+	int rv = -ENODEV;
+	a_uint32_t phy_id = 0, port_id = 0;
+	a_uint32_t port_bmp = qca_ssdk_port_bmp_get(dev_id);
+	while (port_bmp) {
+		if (port_bmp & 0x1) {
+			phy_id = hsl_phyid_get(dev_id, port_id, cfg);
+			switch (phy_id) {
+				case QCA8030_PHY:
+				case QCA8033_PHY:
+				case QCA8035_PHY:
+					cfg->chip_type = CHIP_SCOMPHY;
+					rv = SW_OK;
+					break;
+				default:
+					break;
+			}
+		}
+		port_bmp >>= 1;
+		port_id++;
+	}
+
+	return rv;
+}
+
 static int chip_ver_get(a_uint32_t dev_id, ssdk_init_cfg* cfg)
 {
-	int rv = 0;
+	int rv = SW_OK;
 	a_uint8_t chip_ver = 0;
 	if(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->switch_reg_access_mode == HSL_REG_MDIO)
 	{
@@ -2952,8 +2982,10 @@ static int chip_ver_get(a_uint32_t dev_id, ssdk_init_cfg* cfg)
 		cfg->chip_type = CHIP_DESS;
 	else if(chip_ver == QCA_VER_HPPE)
 		cfg->chip_type = CHIP_HPPE;
-	else
-		rv = -ENODEV;
+	else {
+		/* try single phy without switch connected */
+		rv = chip_is_scomphy(dev_id, cfg);
+	}
 
 	return rv;
 }
@@ -4511,6 +4543,7 @@ static int __init regi_init(void)
 			case CHIP_GARUDA:
 			case CHIP_HORUS:
 			case CHIP_UNSPECIFIED:
+			case CHIP_SCOMPHY:
 				break;
 		}
 
