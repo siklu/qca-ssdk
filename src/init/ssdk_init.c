@@ -1474,9 +1474,34 @@ static int qca_switchdev_register(struct qca_phy_priv *priv)
 	int ret = SW_OK;
 	sw_dev = &priv->sw_dev;
 
+	switch (priv->version) {
+		case QCA_VER_AR8227:
+			sw_dev->name = "QCA AR8227";
+			sw_dev->alias = "QCA AR8227";
+			break;
+		case QCA_VER_AR8327:
+			sw_dev->name = "QCA AR8327";
+			sw_dev->alias = "QCA AR8327";
+			break;
+		case QCA_VER_AR8337:
+			sw_dev->name = "QCA AR8337";
+			sw_dev->alias = "QCA AR8337";
+			break;
+		case QCA_VER_DESS:
+			sw_dev->name = "QCA DESS";
+			sw_dev->alias = "QCA DESS";
+			break;
+		case QCA_VER_HPPE:
+			sw_dev->name = "QCA HPPE";
+			sw_dev->alias = "QCA HPPE";
+			break;
+		default:
+			sw_dev->name = "unknown switch";
+			sw_dev->alias = "unknown switch";
+			break;
+	}
+
 	sw_dev->ops = &qca_ar8327_sw_ops;
-	sw_dev->name = "QCA AR8327 AR8337";
-	sw_dev->alias = "QCA AR8327 AR8337";
 	sw_dev->vlans = AR8327_MAX_VLANS;
 	sw_dev->ports = AR8327_NUM_PORTS;
 
