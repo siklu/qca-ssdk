@@ -3296,172 +3296,38 @@ adpt_hppe_port_flowctrl_forcemode_get(a_uint32_t dev_id,
 }
 
 static sw_error_t
-_adpt_hppe_phy_status_convert(a_uint32_t speed, a_uint32_t duplex,
-				struct port_phy_status *phy_status)
-{
-	sw_error_t rv = SW_OK;
-
-	if (duplex == 1)
-			phy_status->duplex = FAL_FULL_DUPLEX;
-		else
-			phy_status->duplex = FAL_HALF_DUPLEX;
-
-	if (speed == 0)
-		phy_status->speed = FAL_SPEED_10;
-	else if (speed == 1)
-		phy_status->speed = FAL_SPEED_100;
-	else if (speed == 2)
-		phy_status->speed = FAL_SPEED_1000;
-	else if (speed == 3)
-		phy_status->speed = FAL_SPEED_10000;
-	else if (speed == 4)
-		phy_status->speed = FAL_SPEED_2500;
-	else if (speed == 5)
-		phy_status->speed = FAL_SPEED_5000;
-
-	return rv;
-}
-
-
-static sw_error_t
-_adpt_hppe_port_xgphy_status_get(a_uint32_t dev_id, a_uint32_t port_id,
-				struct port_phy_status *phy_status)
-{
-	sw_error_t rv = SW_OK;
-	a_uint16_t phy_data;
-	a_uint32_t phy_addr = 0;
-	a_uint32_t speed, duplex;
-
-	SW_RTN_ON_ERROR (rv)
-
-	phy_addr = qca_ssdk_port_to_phy_addr(dev_id, port_id);
-
-	/* read aq phy link status */
-	phy_data = 0;
-	rv = qca_xgphy_read(dev_id, phy_addr, AQ_PHY_AUTO_STATUS_REG, &phy_data);
-	rv = qca_xgphy_read(dev_id, phy_addr, AQ_PHY_AUTO_STATUS_REG, &phy_data);
-	phy_status->link_status = (phy_data >> 2) & 0x1;
-	/* read aq phy speed and duplex */
-	phy_data = 0;
-	rv = qca_xgphy_read(dev_id, phy_addr, AQ_PHY_LINK_STATUS_REG, &phy_data);
-
-	if( rv != SW_OK )
-		return rv;
-
-	duplex = phy_data & 0x1;
-	speed = (phy_data >> 1) & 0x7;
-
-	_adpt_hppe_phy_status_convert(speed, duplex, phy_status);
-
-	/* read aq phy tx and rx flowctrl */
-	phy_data = 0;
-	rv = qca_xgphy_read(dev_id, phy_addr, AQ_PHY_FLOWCTRL_STATUS_REG,
-				&phy_data);
-
-	SW_RTN_ON_ERROR (rv);
-
-	if (phy_data & 0x1)
-		phy_status->tx_flowctrl = A_TRUE;
-	else
-		phy_status->tx_flowctrl = A_FALSE;
-
-	if ((phy_data >> 1) & 0x1)
-		phy_status->rx_flowctrl = A_TRUE;
-	else
-		phy_status->rx_flowctrl = A_FALSE;
-
-	return rv;
-}
-
-static sw_error_t
-_adpt_phy_status_get_from_phy(a_uint32_t dev_id, a_uint32_t port_id,
-		struct port_phy_status *phy_status, a_uint32_t *speed, a_uint32_t *duplex)
-{
-	sw_error_t rv = SW_OK;
-	a_uint16_t phy_data;
-	a_uint32_t phy_addr;
-
-	phy_addr = qca_ssdk_port_to_phy_addr(dev_id, port_id);
-	rv = qca_ar8327_phy_read(dev_id, phy_addr, PHY_MII_STATUS_REG, &phy_data);
-
-	SW_RTN_ON_ERROR (rv);
-
-	if ((phy_data >> 2) & 0x1)
-		phy_status->rx_flowctrl = A_TRUE;
-	else
-		phy_status->rx_flowctrl = A_FALSE;
-
-	if ((phy_data >> 3) & 0x1)
-		phy_status->tx_flowctrl = A_TRUE;
-	else
-		phy_status->tx_flowctrl = A_FALSE;
-
-	phy_status->link_status = (phy_data >> 10) & 0x1;
-	*speed = (phy_data >> 14) & 0x3;
-	*duplex = (phy_data >> 13) & 0x1;
-
-	return rv;
-}
-
-static sw_error_t
-_adpt_hppe_port_gphy_status_get(a_uint32_t dev_id, a_uint32_t port_id,
-				struct port_phy_status *phy_status)
-{
-	sw_error_t rv = SW_OK;
-	a_uint32_t speed = 0, duplex = 0;
-	a_uint32_t mode0, mode1, mode2;
-
-	mode0 = ssdk_dt_global_get_mac_mode(dev_id, SSDK_UNIPHY_INSTANCE0);
-	mode1 = ssdk_dt_global_get_mac_mode(dev_id, SSDK_UNIPHY_INSTANCE1);
-	mode2 = ssdk_dt_global_get_mac_mode(dev_id, SSDK_UNIPHY_INSTANCE2);
-
-	switch (port_id) {
-
-		case SSDK_PHYSICAL_PORT1:
-		case SSDK_PHYSICAL_PORT2:
-		case SSDK_PHYSICAL_PORT3:
-		case SSDK_PHYSICAL_PORT4:
-			rv = _adpt_phy_status_get_from_phy(dev_id, port_id, phy_status,
-						&speed, &duplex);
-			rv = _adpt_hppe_phy_status_convert(speed, duplex, phy_status);
-			break;
-		case SSDK_PHYSICAL_PORT5:
-		case SSDK_PHYSICAL_PORT6:
-			if (((mode1 == PORT_WRAPPER_10GBASE_R) && (port_id == SSDK_PHYSICAL_PORT5)) ||
-				((mode2 == PORT_WRAPPER_10GBASE_R) && (port_id == SSDK_PHYSICAL_PORT6)))
-				rv = _adpt_phy_status_get_from_ppe(dev_id, port_id, phy_status);
-			else {
-				rv = _adpt_phy_status_get_from_phy(dev_id, port_id, phy_status,
-						&speed, &duplex);
-				rv = _adpt_hppe_phy_status_convert(speed, duplex, phy_status);
-			}
-			break;
-	}
-
-	return rv;
-}
-static sw_error_t
 adpt_hppe_port_phy_status_get(a_uint32_t dev_id, a_uint32_t port_id,
 				struct port_phy_status *phy_status)
 {
-	a_uint32_t mode1, mode2;
-	sw_error_t rv = SW_OK;
+	sw_error_t rv = 0;
+	a_uint32_t phy_id;
+	hsl_phy_ops_t *phy_drv;
 
-	mode1 = ssdk_dt_global_get_mac_mode(dev_id, SSDK_UNIPHY_INSTANCE1);
-	mode2 = ssdk_dt_global_get_mac_mode(dev_id, SSDK_UNIPHY_INSTANCE2);
+	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(phy_status);
 
-	if (((port_id == HPPE_MUX_PORT1) && ((mode1 == PORT_WRAPPER_USXGMII) ||
-				(mode1 == PORT_WRAPPER_SGMII_PLUS))) ||
-		((port_id == HPPE_MUX_PORT2) && ((mode2 == PORT_WRAPPER_USXGMII) ||
-				(mode2 == PORT_WRAPPER_SGMII_PLUS))))
-	{
-		rv = _adpt_hppe_port_xgphy_status_get(dev_id, port_id, phy_status);
-		return rv;
+	/* for those ports without PHY device should be sfp port */
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id)) {
+		if (port_id != SSDK_PHYSICAL_PORT0) {
+			rv = _adpt_phy_status_get_from_ppe(dev_id,
+				port_id, phy_status);
+			SW_RTN_ON_ERROR (rv);
+		} else {
+			return SW_NOT_SUPPORTED;
+		}
+	} else {
+		SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
+		if (NULL == phy_drv->phy_get_status)
+			return SW_NOT_SUPPORTED;
+
+		rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+		SW_RTN_ON_ERROR (rv);
+		rv = phy_drv->phy_get_status (dev_id, phy_id, phy_status);
+		SW_RTN_ON_ERROR (rv);
 	}
 
-	rv = _adpt_hppe_port_gphy_status_get(dev_id, port_id, phy_status);
-
 	return rv;
+
 }
 static void
 adpt_hppe_uniphy_psgmii_port_reset(a_uint32_t dev_id, a_uint32_t uniphy_index,
@@ -3942,6 +3808,7 @@ qca_hppe_mac_sw_sync_task(struct qca_phy_priv *priv)
 	struct port_phy_status phy_status = {0};
 	a_bool_t status;
 	a_uint32_t portbmp[SW_MAX_NR_DEV] = {0};
+	sw_error_t rv = SW_OK;
 
 	portbmp[priv->device_id] = qca_ssdk_port_bmp_get(priv->device_id);
 
@@ -3950,7 +3817,12 @@ qca_hppe_mac_sw_sync_task(struct qca_phy_priv *priv)
 		if(!(portbmp[priv->device_id] & (0x1 << port_id)))
 			continue;
 
-		adpt_hppe_port_phy_status_get(priv->device_id, port_id, &phy_status);
+		rv = adpt_hppe_port_phy_status_get(priv->device_id, port_id, &phy_status);
+		if (rv != SW_OK) {
+			SSDK_DEBUG("failed to get port %d status, return value is %d\n", port_id, rv);
+			continue;
+		}
+
 		SSDK_DEBUG("polling task external phy %d link status is %d and speed is %d\n",
 				port_id, phy_status.link_status, phy_status.speed);
 		/* link status from up to down */
