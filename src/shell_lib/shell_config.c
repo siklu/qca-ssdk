@@ -785,6 +785,7 @@ struct sub_cmd_des_t g_acl_des[] =
 	{"srcfiltersts", "set",   SW_API_ACL_RULE_SRC_FILTER_STS_SET, NULL},
 	{"status", "set",   SW_API_ACL_STATUS_SET, NULL},
 	{"udfprofile", "set",   SW_API_ACL_PT_UDF_PROFILE_SET, NULL},
+	{"udf", "set", SW_API_ACL_UDF_SET, NULL},
 	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
 };
 #endif
