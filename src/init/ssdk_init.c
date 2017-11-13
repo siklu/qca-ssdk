@@ -34,6 +34,7 @@
 #include <linux/if_arp.h>
 #include <linux/inetdevice.h>
 #include <linux/netdevice.h>
+#include <linux/etherdevice.h>
 #include <linux/phy.h>
 #include <linux/mdio.h>
 #include <linux/clk.h>
@@ -60,6 +61,8 @@
 #endif
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,1,0))
 #include <linux/of.h>
+#include <linux/of_net.h>
+#include <linux/of_address.h>
 #include <linux/reset.h>
 #ifdef BOARD_AR71XX
 #ifdef CONFIG_AR8216_PHY
@@ -71,6 +74,8 @@
 #include <linux/of.h>
 #include <drivers/leds/leds-ipq40xx.h>
 #include <linux/of_platform.h>
+#include <linux/of_net.h>
+#include <linux/of_address.h>
 #include <linux/reset.h>
 #else
 #include <linux/ar8216_platform.h>
@@ -2620,6 +2625,31 @@ static void ssdk_dt_parse_port_bmp(struct device_node *switch_node,
 	return;
 }
 
+static void ssdk_dt_parse_intf_mac(void)
+{
+	struct device_node *dp_node = NULL;
+	a_uint32_t dp = 0;
+	a_uint8_t *maddr = NULL;
+	char dp_name[8] = {0};
+
+	for (dp = 1; dp <= SSDK_MAX_NR_ETH; dp++) {
+		snprintf(dp_name, sizeof(dp_name), "dp%d", dp);
+		dp_node = of_find_node_by_name(NULL, dp_name);
+		if (!dp_node) {
+			continue;
+		}
+		maddr = (a_uint8_t *)of_get_mac_address(dp_node);
+		if (maddr && is_valid_ether_addr(maddr)) {
+			ssdk_dt_global.num_intf_mac++;
+			ether_addr_copy(ssdk_dt_global.intf_mac[dp-1].uc, maddr);
+			SSDK_INFO("%s MAC %02x:%02x:%02x:%02x:%02x:%02x\n",
+				dp_name, maddr[0], maddr[1], maddr[2], maddr[3],
+				maddr[4], maddr[5]);
+		}
+	}
+	return;
+}
+
 static void ssdk_dt_parse_psgmii(ssdk_dt_cfg *ssdk_dt_priv)
 {
 
@@ -2813,6 +2843,7 @@ static sw_error_t ssdk_dt_parse(ssdk_init_cfg *cfg, a_uint32_t num, a_uint32_t *
 		/* HPPE chip */
 		ssdk_dt_parse_uniphy(*dev_id);
 		ssdk_dt_parse_scheduler_cfg(switch_node, *dev_id);
+		ssdk_dt_parse_intf_mac();
 
 		ssdk_dt_priv->cmnblk_clk = of_clk_get_by_name(switch_node, "cmn_ahb_clk");
 		if (!of_property_read_u32(switch_node, "tm_tick_mode", &mode))
@@ -4044,6 +4075,44 @@ qca_hppe_qos_scheduler_hw_init(a_uint32_t dev_id)
 	return 0;
 }
 
+#define LIST_ID_BYP_FDB_LRN 63/*reserved for bypass fdb learning*/
+#define LIST_PRI_BYP_FDB_LRN 32
+
+sw_error_t qca_hppe_acl_byp_intf_mac_learn(a_uint32_t dev_id)
+{
+	a_uint32_t index = 0;
+	fal_acl_rule_t rule = { 0 };
+
+	if(0 == ssdk_dt_global.num_intf_mac){
+		return SW_OK;/*No found interface MAC*/
+	}
+
+	/*Bypass fdb learn*/
+	rule.rule_type = FAL_ACL_RULE_MAC;
+	rule.bypass_bitmap |= (1<<FAL_ACL_BYPASS_FDB_LEARNING);
+	rule.bypass_bitmap |= (1<<FAL_ACL_BYPASS_FDB_REFRESH);
+
+	FAL_FIELD_FLG_SET(rule.field_flg, FAL_ACL_FIELD_MAC_SA);
+
+	fal_acl_list_creat(dev_id, LIST_ID_BYP_FDB_LRN,
+					LIST_PRI_BYP_FDB_LRN);
+
+	for (index = 0; index < SSDK_MAX_NR_ETH; index++) {
+		if(index >= ssdk_dt_global.num_intf_mac)
+			break;
+		memcpy(rule.src_mac_val.uc, ssdk_dt_global.intf_mac[index].uc, 6);
+		memset(rule.src_mac_mask.uc, 0xff, 6);
+		SSDK_DEBUG("%02x:%02x:%02x:%02x:%02x:%02x\n", rule.src_mac_val.uc[0],
+			rule.src_mac_val.uc[1], rule.src_mac_val.uc[2], rule.src_mac_val.uc[3],
+			rule.src_mac_val.uc[4], rule.src_mac_val.uc[5]);
+		fal_acl_rule_add(dev_id, LIST_ID_BYP_FDB_LRN, index, 1, &rule);
+	}
+	fal_acl_list_bind(dev_id, LIST_ID_BYP_FDB_LRN, FAL_ACL_DIREC_IN,
+				FAL_ACL_BIND_PORTBITMAP, 0x7c);
+
+	return SW_OK;
+}
+
 static sw_error_t
 qca_hppe_interface_mode_init(a_uint32_t dev_id, a_uint32_t mode0, a_uint32_t mode1, a_uint32_t mode2)
 {
@@ -4130,7 +4199,7 @@ qca_hppe_hw_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 
 	qca_hppe_shaper_hw_init(dev_id);
 	qca_hppe_flow_hw_init(dev_id);
-
+	qca_hppe_acl_byp_intf_mac_learn(dev_id);
 	qca_hppe_interface_mode_init(dev_id, cfg->mac_mode, cfg->mac_mode1,
 				cfg->mac_mode2);
 	return 0;
