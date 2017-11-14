@@ -1863,11 +1863,6 @@ static int ssdk_probe(struct platform_device *pdev)
 		return -1;
 	}
 
-	reset_control_assert(ess_rst);
-	mdelay(10);
-	reset_control_deassert(ess_rst);
-	mdelay(100);
-	SSDK_INFO("reset ok in probe!\n");
 	return 0;
 }
 
@@ -3384,6 +3379,17 @@ qca_dess_hw_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 {
 	a_uint32_t reg_value = 0;
 	hsl_api_t *p_api;
+	a_uint32_t psgmii_result = 0;
+
+	/*Do Malibu self test to fix packet drop issue firstly*/
+	if (ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->mac_mode == PORT_WRAPPER_PSGMII) {
+		ssdk_psgmii_self_test(dev_id, A_FALSE, 100, &psgmii_result);
+		clear_self_test_config(dev_id);
+	} else {
+#ifndef BOARD_AR71XX
+		ssdk_ess_reset();
+#endif
+	}
 
 	qca_switch_init(dev_id);
 #ifdef IN_PORTVLAN
@@ -4562,9 +4568,6 @@ static int __init regi_init(void)
 	a_uint32_t num = 0, dev_id = 0;
 	ssdk_init_cfg cfg;
 	garuda_init_spec_cfg chip_spec_cfg;
-	#ifdef DESS
-	a_uint32_t psgmii_result = 0;
-	#endif
 	int rv = 0;
 
 	rv = ssdk_alloc_priv();
@@ -4632,11 +4635,6 @@ static int __init regi_init(void)
 			case CHIP_DESS:
 			#if defined(DESS)
 				SSDK_INFO("Initializing DESS!!\n");
-				/*Do Malibu self test to fix packet drop issue firstly*/
-				if (ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->mac_mode == PORT_WRAPPER_PSGMII) {
-					ssdk_psgmii_self_test(dev_id, A_FALSE, 100, &psgmii_result);
-					clear_self_test_config(dev_id);
-				}
 
 				qca_dess_hw_init(&cfg, dev_id);
 				qca_dess_rfs_init();
