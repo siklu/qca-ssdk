@@ -426,6 +426,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
 	    MODULE_INC += -I$(SYS_PATH) \
                   -I$(TOOL_PATH)/../lib/gcc/$(TARGET_NAME)/$(GCC_VERSION)/include/ \
 		  -I$(TOOL_PATH)/../../lib/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/5.3.0/include/ \
+		  -I$(TOOL_PATH)/../../lib/armv7a-vfp-neon-rdk-linux-gnueabi/gcc/arm-rdk-linux-gnueabi/4.8.4/include/ \
 	          -I$(SYS_PATH)/include \
               -I$(SYS_PATH)/source/ \
               -I$(SYS_PATH)/source/include \
