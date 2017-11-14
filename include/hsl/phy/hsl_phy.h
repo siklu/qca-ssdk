@@ -208,7 +208,8 @@ extern "C" {
 						      fal_port_counter_info_t * counter_info);
 	typedef sw_error_t(*hsl_phy_serdes_reset) (a_uint32_t dev_id);
 
-
+	typedef sw_error_t(*hsl_phy_get_status) (a_uint32_t dev_id,
+				a_uint32_t phy_id, struct port_phy_status *phy_status);
 	typedef struct hsl_phy_ops_s {
 
 		hsl_phy_init phy_init;
@@ -270,6 +271,7 @@ extern "C" {
 		hsl_phy_counter_get  phy_counter_get;
 		hsl_phy_counter_show  phy_counter_show;
 		hsl_phy_serdes_reset phy_serdes_reset;
+		hsl_phy_get_status phy_get_status;
 	} hsl_phy_ops_t;
 
 typedef struct phy_driver_instance {
