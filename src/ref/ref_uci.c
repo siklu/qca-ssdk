@@ -8127,6 +8127,12 @@ parse_acl_rule(struct switch_val *val)
 			cmd_data_check_uint16((char*)ext_value_p->option_value,
 						&tmpdata, sizeof(tmpdata));
 			rule.l3_pkt_type_mask = tmpdata;
+		} else if(!strcmp(ext_value_p->option_name, "user_defined_op0")) {
+			fal_acl_field_op_t op = FAL_ACL_FIELD_MASK;
+			cmd_data_check_fieldop((char*)ext_value_p->option_value,
+						FAL_ACL_FIELD_MASK, &op);
+			printk("%s, %d", (char*)ext_value_p->option_value, op);
+			rule.udf0_op= op;
 		} else if(!strcmp(ext_value_p->option_name, "user_defined_val0")) {
 			cmd_data_check_uint16((char*)ext_value_p->option_value,
 						&tmpdata, sizeof(tmpdata));
@@ -8136,6 +8142,11 @@ parse_acl_rule(struct switch_val *val)
 			cmd_data_check_uint16((char*)ext_value_p->option_value,
 						&tmpdata, sizeof(tmpdata));
 			rule.udf0_mask = tmpdata;
+		} else if(!strcmp(ext_value_p->option_name, "user_defined_op1")) {
+			fal_acl_field_op_t op = FAL_ACL_FIELD_MASK;
+			cmd_data_check_fieldop((char*)ext_value_p->option_value,
+						FAL_ACL_FIELD_MASK, &op);
+			rule.udf1_op= op;
 		} else if(!strcmp(ext_value_p->option_name, "user_defined_val1")) {
 			cmd_data_check_uint16((char*)ext_value_p->option_value,
 						&tmpdata, sizeof(tmpdata));
@@ -11417,9 +11428,7 @@ qca_ar8327_sw_switch_ext(struct switch_dev *dev,
 		ext_value_p = switch_ext_p;
 		if(!strcmp(ext_value_p->option_name, "name")) {
 			name_transfer((char*)ext_value_p->option_value, module_name, command_name);
-#ifdef DEBUG
-			printk("module_name:%s command_name:%s\n", module_name, command_name);
-#endif
+			SSDK_DEBUG("module_name:%s command_name:%s\n", module_name, command_name);
 			break;
 		}
 		switch_ext_p = switch_ext_p->next;
@@ -11552,18 +11561,16 @@ qca_ar8327_sw_switch_ext(struct switch_dev *dev,
 
 			val_ptr[i] = NULL;
 		}
-#ifdef DEBUG
-		printk("command_line:%s\n", whole_command_line);
-#endif
+
+		SSDK_DEBUG("command_line:%s\n", whole_command_line);
+
 	}
 	uci_set_devid(priv->device_id);
 	set_talk_mode(0);
 	rv = cmd_run_one(whole_command_line);
 	set_talk_mode(1);
 
-#ifdef DEBUG
-	printk("cmd_run_one: ret=%d\r\n", rv);
-#endif
+	SSDK_DEBUG("cmd_run_one: ret=%d\r\n", rv);
 
 	return rv;
 }
