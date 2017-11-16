@@ -551,7 +551,7 @@ static int miibus_get(a_uint32_t dev_id)
 
 	if (!mdio_node) {
 		printk("No MDIO node found in DTS!\n");
-		return 1;
+		return 0;
 	}
 
 	mdio_plat = of_find_device_by_node(mdio_node);
@@ -565,7 +565,7 @@ static int miibus_get(a_uint32_t dev_id)
 		mdio_data = dev_get_drvdata(&mdio_plat->dev);
 		if (!mdio_data) {
                 	printk("cannot get mdio_data reference from device data\n");
-			return 1;
+                	return 0;
         	}
 		miibus = mdio_data->mii_bus;
 	}
