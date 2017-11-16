@@ -2262,8 +2262,7 @@ ssdk_dt_scheduler_cfg *ssdk_bootup_shceduler_cfg_get(a_uint32_t dev_id)
 
 #ifndef BOARD_AR71XX
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-static void ssdk_dt_parse_mac_mode(struct device_node *switch_node,
-		ssdk_init_cfg *cfg, a_uint32_t dev_id)
+static void ssdk_dt_parse_mac_mode(ssdk_init_cfg *cfg, struct device_node *switch_node, a_uint32_t dev_id)
 {
 	const __be32 *mac_mode;
 	a_uint32_t len = 0;
@@ -2598,8 +2597,8 @@ static void ssdk_dt_parse_mdio(struct device_node *switch_node, a_uint32_t dev_i
 	return;
 }
 
-static void ssdk_dt_parse_port_bmp(struct device_node *switch_node,
-		ssdk_init_cfg *cfg, a_uint32_t dev_id)
+static void ssdk_dt_parse_port_bmp(a_uint32_t dev_id,ssdk_init_cfg *cfg,
+				struct device_node *switch_node)
 {
 	a_uint32_t portbmp = 0;
 
@@ -2620,79 +2619,115 @@ static void ssdk_dt_parse_port_bmp(struct device_node *switch_node,
 	return;
 }
 
-static void ssdk_dt_parse_psgmii(ssdk_dt_cfg *ssdk_dt_priv)
+static int ssdk_dt_parse(ssdk_init_cfg *cfg, a_uint32_t num, a_uint32_t *dev_id)
 {
-
+	struct device_node *switch_node = NULL;
+	struct device_node *switch_instance = NULL;
 	struct device_node *psgmii_node = NULL;
-	const __be32 *reg_cfg;
-	a_uint32_t len = 0;
+	struct device_node *child = NULL;
+	ssdk_dt_cfg *ssdk_dt_priv = NULL;
+	a_uint32_t len = 0, i = 0, mode = 0;
+	const __be32 *reg_cfg, *led_source, *device_id;
+	const __be32 *led_number;
+	a_uint8_t *led_str;
+	a_uint8_t *status_value;
+	char ess_switch_name[64] = {0};
 
-	psgmii_node = of_find_node_by_name(NULL, "ess-psgmii");
-	if (!psgmii_node) {
-		SSDK_ERROR("cannot find ess-psgmii node\n");
-		return;
+	if (num == 0)
+		snprintf(ess_switch_name, sizeof(ess_switch_name), "ess-switch");
+	else
+		snprintf(ess_switch_name, sizeof(ess_switch_name), "ess-switch%d", num);
+
+	/*
+	 * Get reference to ESS SWITCH device node from ess-instance node firstly.
+	 */
+	switch_instance = of_find_node_by_name(NULL, "ess-instance");
+	switch_node = of_find_node_by_name(switch_instance, ess_switch_name);
+	if (!switch_node) {
+		SSDK_ERROR("cannot find ess-switch node\n");
+		return SW_BAD_PARAM;
 	}
 
-	SSDK_INFO("ess-psgmii DT exist!\n");
-	reg_cfg = of_get_property(psgmii_node, "reg", &len);
-	if(!reg_cfg) {
-		SSDK_ERROR("%s: error reading device node properties for reg\n", psgmii_node->name);
-		return;
+	SSDK_INFO("ess-switch DT exist!\n");
+
+	if (!of_property_read_string(switch_node, "status", (const char **)&status_value))
+	{
+		if (!strcmp(status_value, "disabled"))
+			return SW_DISABLE;
 	}
 
-	ssdk_dt_priv->psgmiireg_base_addr = be32_to_cpup(reg_cfg);
-	ssdk_dt_priv->psgmiireg_size = be32_to_cpup(reg_cfg + 1);
-	if (of_property_read_string(psgmii_node, "psgmii_access_mode", (const char **)&ssdk_dt_priv->psgmii_reg_access_str)) {
-		SSDK_ERROR("%s: error reading device node properties for psmgii_access_mode\n", psgmii_node->name);
-		return;
-	}
-	if(!strcmp(ssdk_dt_priv->psgmii_reg_access_str, "local bus"))
-		ssdk_dt_priv->psgmii_reg_access_mode = HSL_REG_LOCAL_BUS;
+	device_id = of_get_property(switch_node, "device_id", &len);
+	if(!device_id)
+		*dev_id = 0;
+	else
+		*dev_id = be32_to_cpup(device_id);
 
-	return;
-}
-
-static sw_error_t ssdk_dt_parse_access_mode(struct device_node *switch_node,
-		ssdk_dt_cfg *ssdk_dt_priv)
-{
-	const __be32 *reg_cfg;
-	a_uint32_t len = 0;
+	ssdk_dt_priv = ssdk_dt_global.ssdk_dt_switch_nodes[*dev_id];
+	ssdk_dt_priv->device_id = *dev_id;
+	ssdk_dt_priv->ess_switch_flag = A_TRUE;
+	ssdk_dt_priv->of_node = switch_node;
 
 	if (of_property_read_string(switch_node, "switch_access_mode", (const char **)&ssdk_dt_priv->reg_access_mode)) {
 		SSDK_ERROR("%s: error reading device node properties for switch_access_mode\n", switch_node->name);
 		return SW_BAD_PARAM;
 	}
 
+	ssdk_dt_priv->ess_clk = of_clk_get_by_name(switch_node, "ess_clk");
+	if (IS_ERR(ssdk_dt_priv->ess_clk))
+		SSDK_INFO("ess_clk doesn't exist!\n");
+	ssdk_dt_priv->cmnblk_clk = of_clk_get_by_name(switch_node, "cmn_ahb_clk");
+
 	SSDK_INFO("switch_access_mode: %s\n", ssdk_dt_priv->reg_access_mode);
-	if(!strcmp(ssdk_dt_priv->reg_access_mode, "local bus")) {
+	if(!strcmp(ssdk_dt_priv->reg_access_mode, "local bus"))
 		ssdk_dt_priv->switch_reg_access_mode = HSL_REG_LOCAL_BUS;
-
-		reg_cfg = of_get_property(switch_node, "reg", &len);
-		if(!reg_cfg) {
-			SSDK_ERROR("%s: error reading device node properties for reg\n", switch_node->name);
-			return SW_BAD_PARAM;
-		}
-		ssdk_dt_priv->switchreg_base_addr = be32_to_cpup(reg_cfg);
-		ssdk_dt_priv->switchreg_size = be32_to_cpup(reg_cfg + 1);
-
-		SSDK_INFO("switchreg_base_addr: 0x%x\n", ssdk_dt_priv->switchreg_base_addr);
-		SSDK_INFO("switchreg_size: 0x%x\n", ssdk_dt_priv->switchreg_size);
-	}
-	else {
+	else if(!strcmp(ssdk_dt_priv->reg_access_mode, "mdio"))
 		ssdk_dt_priv->switch_reg_access_mode = HSL_REG_MDIO;
+	else
+		ssdk_dt_priv->switch_reg_access_mode = HSL_REG_MDIO;
+
+	ssdk_dt_parse_mac_mode(cfg, switch_node, *dev_id);
+
+	ssdk_dt_parse_uniphy(*dev_id);
+
+	ssdk_dt_parse_scheduler_cfg(switch_node, *dev_id);
+
+	ssdk_dt_parse_mdio(switch_node, *dev_id);
+
+	ssdk_dt_parse_port_bmp(*dev_id, cfg, switch_node);
+
+	reg_cfg = of_get_property(switch_node, "reg", &len);
+	if(!reg_cfg) {
+		SSDK_ERROR("%s: error reading device node properties for reg\n", switch_node->name);
+		return SW_BAD_PARAM;
+	}
+	ssdk_dt_priv->switchreg_base_addr = be32_to_cpup(reg_cfg);
+	ssdk_dt_priv->switchreg_size = be32_to_cpup(reg_cfg + 1);
+
+	SSDK_INFO("switchreg_base_addr: 0x%x\n", ssdk_dt_priv->switchreg_base_addr);
+	SSDK_INFO("switchreg_size: 0x%x\n", ssdk_dt_priv->switchreg_size);
+
+	if (!of_property_read_u32(switch_node, "tm_tick_mode", &mode))
+		ssdk_dt_priv->tm_tick_mode = mode;
+
+	psgmii_node = of_find_node_by_name(NULL, "ess-psgmii");
+	if (!psgmii_node) {
+		return SW_BAD_PARAM;
+	}
+	SSDK_INFO("ess-psgmii DT exist!\n");
+	reg_cfg = of_get_property(psgmii_node, "reg", &len);
+	if(!reg_cfg) {
+		SSDK_ERROR("%s: error reading device node properties for reg\n", psgmii_node->name);
+		return SW_BAD_PARAM;
 	}
 
-	return SW_OK;
-
-}
-
-static void ssdk_dt_parse_led(struct device_node *switch_node,
-		ssdk_init_cfg *cfg)
-{
-	struct device_node *child = NULL;
-	const __be32 *led_source, *led_number;
-	a_uint8_t *led_str;
-	a_uint32_t len = 0, i = 0;
+	ssdk_dt_priv->psgmiireg_base_addr = be32_to_cpup(reg_cfg);
+	ssdk_dt_priv->psgmiireg_size = be32_to_cpup(reg_cfg + 1);
+	if (of_property_read_string(psgmii_node, "psgmii_access_mode", (const char **)&ssdk_dt_priv->psgmii_reg_access_str)) {
+		SSDK_INFO("%s: error reading device node properties for psmgii_access_mode\n", psgmii_node->name);
+		return SW_BAD_PARAM;
+	}
+	if(!strcmp(ssdk_dt_priv->psgmii_reg_access_str, "local bus"))
+		ssdk_dt_priv->psgmii_reg_access_mode = HSL_REG_LOCAL_BUS;
 
 	for_each_available_child_of_node(switch_node, child) {
 
@@ -2736,95 +2771,6 @@ static void ssdk_dt_parse_led(struct device_node *switch_node,
 	}
 	cfg->led_source_num = i;
 	SSDK_INFO("current dts led_source_num is %d\n",cfg->led_source_num);
-
-	return;
-}
-
-static sw_error_t ssdk_dt_get_switch_node(struct device_node **switch_node,
-		a_uint32_t num)
-{
-	struct device_node *switch_instance = NULL;
-	char ess_switch_name[64] = {0};
-
-	if (num == 0)
-		snprintf(ess_switch_name, sizeof(ess_switch_name), "ess-switch");
-	else
-		snprintf(ess_switch_name, sizeof(ess_switch_name), "ess-switch%d", num);
-
-	/*
-	 * Get reference to ESS SWITCH device node from ess-instance node firstly.
-	 */
-	switch_instance = of_find_node_by_name(NULL, "ess-instance");
-	*switch_node = of_find_node_by_name(switch_instance, ess_switch_name);
-	if (!*switch_node) {
-		SSDK_WARN("cannot find ess-switch node\n");
-		return SW_BAD_PARAM;
-	}
-
-	SSDK_INFO("ess-switch DT exist!\n");
-
-	if (!of_device_is_available(*switch_node))
-	{
-		SSDK_WARN("ess-switch node[%s] is disabled\n", ess_switch_name);
-		return SW_DISABLE;
-	}
-
-	return SW_OK;
-}
-
-static sw_error_t ssdk_dt_parse(ssdk_init_cfg *cfg, a_uint32_t num, a_uint32_t *dev_id)
-{
-	struct device_node *switch_node = NULL;
-	ssdk_dt_cfg *ssdk_dt_priv = NULL;
-	a_uint32_t len = 0, mode = 0;
-	const __be32 *device_id;
-
-	SW_RTN_ON_ERROR(ssdk_dt_get_switch_node(&switch_node, num));
-
-	device_id = of_get_property(switch_node, "device_id", &len);
-	if(!device_id)
-		*dev_id = 0;
-	else
-		*dev_id = be32_to_cpup(device_id);
-
-	ssdk_dt_priv = ssdk_dt_global.ssdk_dt_switch_nodes[*dev_id];
-	ssdk_dt_priv->device_id = *dev_id;
-	ssdk_dt_priv->ess_switch_flag = A_TRUE;
-	ssdk_dt_priv->of_node = switch_node;
-	ssdk_dt_priv->ess_clk= ERR_PTR(-ENOENT);
-	ssdk_dt_priv->cmnblk_clk = ERR_PTR(-ENOENT);
-
-	/* parse common dts info */
-	SW_RTN_ON_ERROR(ssdk_dt_parse_access_mode(switch_node, ssdk_dt_priv));
-	ssdk_dt_parse_mac_mode(switch_node, cfg, *dev_id);
-	ssdk_dt_parse_mdio(switch_node, *dev_id);
-	ssdk_dt_parse_port_bmp(switch_node, cfg, *dev_id);
-
-	if (of_device_is_compatible(switch_node, "qcom,ess-switch")) {
-		/* DESS chip */
-		ssdk_dt_parse_led(switch_node, cfg);
-		ssdk_dt_parse_psgmii(ssdk_dt_priv);
-
-		ssdk_dt_priv->ess_clk = of_clk_get_by_name(switch_node, "ess_clk");
-		if (IS_ERR(ssdk_dt_priv->ess_clk))
-			SSDK_INFO("ess_clk doesn't exist!\n");
-	}
-	else if (of_device_is_compatible(switch_node, "qcom,ess-switch-ipq807x")) {
-		/* HPPE chip */
-		ssdk_dt_parse_uniphy(*dev_id);
-		ssdk_dt_parse_scheduler_cfg(switch_node, *dev_id);
-
-		ssdk_dt_priv->cmnblk_clk = of_clk_get_by_name(switch_node, "cmn_ahb_clk");
-		if (!of_property_read_u32(switch_node, "tm_tick_mode", &mode))
-			ssdk_dt_priv->tm_tick_mode = mode;
-	}
-	else if (of_device_is_compatible(switch_node, "qcom,ess-switch-qca83xx")) {
-		/* s17/s17c chip */
-		SSDK_INFO("switch node is qca83xx!\n");
-	}
-	else {
-		SSDK_WARN("invalid compatible property\n");
-	}
 
 	return SW_OK;
 }
@@ -4519,7 +4465,7 @@ static int __init regi_init(void)
 
 		#ifndef BOARD_AR71XX
 		#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-		if(SW_OK != ssdk_dt_parse(&cfg, num, &dev_id)) {
+		if(SW_DISABLE == ssdk_dt_parse(&cfg, num, &dev_id)) {
 			SSDK_INFO("ess-switch node is unavalilable\n");
 			continue;
 		}
