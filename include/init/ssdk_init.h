@@ -264,10 +264,14 @@ typedef struct
 		struct device_node *of_node;
 	} ssdk_dt_cfg;
 
+#define SSDK_MAX_NR_ETH 6
+
 	typedef struct
 	{
 		a_uint32_t num_devices;
 		ssdk_dt_cfg **ssdk_dt_switch_nodes;
+		a_uint32_t num_intf_mac;
+		fal_mac_addr_t intf_mac[SSDK_MAX_NR_ETH];
 	} ssdk_dt_global_t;
 
 #if defined ATHENA
