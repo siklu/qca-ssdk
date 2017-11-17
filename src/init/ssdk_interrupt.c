@@ -164,7 +164,7 @@ qca_intr_workqueue_task(struct work_struct *work)
 	a_uint32_t data;
 	struct qca_phy_priv *priv = container_of(work, struct qca_phy_priv,  intr_workqueue);
 
-	fal_reg_get(0,  GBL_INT_STATUS1_OFFSET, (a_uint8_t*)&data, 4);
+	fal_reg_get(priv->device_id,  GBL_INT_STATUS1_OFFSET, (a_uint8_t*)&data, 4);
 	qca_phy_clean_intr(priv);
 	qca_mac_clean_intr(priv);
 	SSDK_DEBUG("data:%x, priv->version:%x\n", data, priv->version);
@@ -194,16 +194,12 @@ qca_intr_workqueue_task(struct work_struct *work)
 
  int qca_intr_init(struct qca_phy_priv *priv)
 {
-	#define SWITCH_DEVNAME "switch%d"
-	char devname[IFNAMSIZ];
-	snprintf(devname, IFNAMSIZ, SWITCH_DEVNAME, priv->device_id);
-
 	SSDK_DEBUG("start to  init the interrupt!\n");
 	mutex_init(&priv->qm_lock);
 	INIT_WORK(&priv->intr_workqueue, qca_intr_workqueue_task);
 	qca_phy_disable_intr(priv);
 	qca_mac_disable_intr(priv);
-	if(request_irq(priv->link_interrupt_no, qca_link_intr_handle, priv->interrupt_flag, devname, priv))
+	if(request_irq(priv->link_interrupt_no, qca_link_intr_handle, priv->interrupt_flag, priv->link_intr_name, priv))
 		return -1;
 	qca_phy_enable_intr(priv);
 	qca_mac_enable_intr(priv);

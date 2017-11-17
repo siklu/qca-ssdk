@@ -1540,6 +1540,8 @@ qca_phy_config_init(struct phy_device *pdev)
 #endif
 	priv->qca_ssdk_sw_dev_registered = A_TRUE;
 
+	snprintf(priv->link_intr_name, IFNAMSIZ, "switch0");
+
 	ret = qca_ar8327_hw_init(priv);
 	if (ret != 0) {
 		return ret;
@@ -1600,6 +1602,8 @@ static int ssdk_switch_register(a_uint32_t dev_id)
 		return ret;
 	}
 #endif
+
+	snprintf(priv->link_intr_name, IFNAMSIZ, "switch%d", dev_id);
 
 	priv->qca_ssdk_sw_dev_registered = A_TRUE;
 	ret = qca_phy_mib_work_start(qca_phy_priv_global[dev_id]);
@@ -2266,8 +2270,8 @@ ssdk_dt_scheduler_cfg *ssdk_bootup_shceduler_cfg_get(a_uint32_t dev_id)
 
 #ifndef BOARD_AR71XX
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-static void ssdk_dt_parse_mac_mode(struct device_node *switch_node,
-		ssdk_init_cfg *cfg, a_uint32_t dev_id)
+static void ssdk_dt_parse_mac_mode(a_uint32_t dev_id,
+		struct device_node *switch_node, ssdk_init_cfg *cfg)
 {
 	const __be32 *mac_mode;
 	a_uint32_t len = 0;
@@ -2493,7 +2497,7 @@ static void ssdk_dt_parse_scheduler_resource(
 	cfg->pool[port_id].l1edrr_end = l1edrr[1];
 }
 
-static void ssdk_dt_parse_scheduler_cfg(struct device_node *switch_node, a_uint32_t dev_id)
+static void ssdk_dt_parse_scheduler_cfg(a_uint32_t dev_id, struct device_node *switch_node)
 {
 	struct device_node *scheduler_node;
 	struct device_node *child;
@@ -2567,7 +2571,7 @@ static sw_error_t ssdk_dt_parse_phy_info(struct device_node *switch_node, a_uint
 	return rv;
 }
 
-static void ssdk_dt_parse_mdio(struct device_node *switch_node, a_uint32_t dev_id)
+static void ssdk_dt_parse_mdio(a_uint32_t dev_id, struct device_node *switch_node)
 {
 	struct device_node *mdio_node = NULL;
 	struct device_node *child = NULL;
@@ -2602,8 +2606,8 @@ static void ssdk_dt_parse_mdio(struct device_node *switch_node, a_uint32_t dev_i
 	return;
 }
 
-static void ssdk_dt_parse_port_bmp(struct device_node *switch_node,
-		ssdk_init_cfg *cfg, a_uint32_t dev_id)
+static void ssdk_dt_parse_port_bmp(a_uint32_t dev_id,
+		struct device_node *switch_node, ssdk_init_cfg *cfg)
 {
 	a_uint32_t portbmp = 0;
 
@@ -2803,12 +2807,14 @@ static sw_error_t ssdk_dt_get_switch_node(struct device_node **switch_node,
 
 static sw_error_t ssdk_dt_parse(ssdk_init_cfg *cfg, a_uint32_t num, a_uint32_t *dev_id)
 {
+	sw_error_t rv = SW_OK;
 	struct device_node *switch_node = NULL;
 	ssdk_dt_cfg *ssdk_dt_priv = NULL;
 	a_uint32_t len = 0, mode = 0;
 	const __be32 *device_id;
 
-	SW_RTN_ON_ERROR(ssdk_dt_get_switch_node(&switch_node, num));
+	rv = ssdk_dt_get_switch_node(&switch_node, num);
+	SW_RTN_ON_ERROR(rv);
 
 	device_id = of_get_property(switch_node, "device_id", &len);
 	if(!device_id)
@@ -2824,10 +2830,11 @@ static sw_error_t ssdk_dt_parse(ssdk_init_cfg *cfg, a_uint32_t num, a_uint32_t *
 	ssdk_dt_priv->cmnblk_clk = ERR_PTR(-ENOENT);
 
 	/* parse common dts info */
-	SW_RTN_ON_ERROR(ssdk_dt_parse_access_mode(switch_node, ssdk_dt_priv));
-	ssdk_dt_parse_mac_mode(switch_node, cfg, *dev_id);
-	ssdk_dt_parse_mdio(switch_node, *dev_id);
-	ssdk_dt_parse_port_bmp(switch_node, cfg, *dev_id);
+	rv = ssdk_dt_parse_access_mode(switch_node, ssdk_dt_priv);
+	SW_RTN_ON_ERROR(rv);
+	ssdk_dt_parse_mac_mode(*dev_id, switch_node, cfg);
+	ssdk_dt_parse_mdio(*dev_id, switch_node);
+	ssdk_dt_parse_port_bmp(*dev_id, switch_node, cfg);
 
 	if (of_device_is_compatible(switch_node, "qcom,ess-switch")) {
 		/* DESS chip */
@@ -2841,7 +2848,7 @@ static sw_error_t ssdk_dt_parse(ssdk_init_cfg *cfg, a_uint32_t num, a_uint32_t *
 	else if (of_device_is_compatible(switch_node, "qcom,ess-switch-ipq807x")) {
 		/* HPPE chip */
 		ssdk_dt_parse_uniphy(*dev_id);
-		ssdk_dt_parse_scheduler_cfg(switch_node, *dev_id);
+		ssdk_dt_parse_scheduler_cfg(*dev_id, switch_node);
 		ssdk_dt_parse_intf_mac();
 
 		ssdk_dt_priv->cmnblk_clk = of_clk_get_by_name(switch_node, "cmn_ahb_clk");

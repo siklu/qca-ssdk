@@ -296,6 +296,7 @@ struct qca_phy_priv {
 	/* it is valid only when link_polling_required is false*/
 	a_uint32_t link_interrupt_no;
 	a_uint32_t interrupt_flag;
+	char link_intr_name[IFNAMSIZ];
     /* VLAN database */
     bool       vlan;  /* True: 1q vlan mode, False: port vlan mode */
     a_uint16_t vlan_id[AR8327_MAX_VLANS];
