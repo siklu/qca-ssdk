@@ -4588,7 +4588,7 @@ static int __init regi_init(void)
 
 		#ifndef BOARD_AR71XX
 		#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-		if(SW_OK != ssdk_dt_parse(&cfg, num, &dev_id)) {
+		if(SW_DISABLE == ssdk_dt_parse(&cfg, num, &dev_id)) {
 			SSDK_INFO("ess-switch node is unavalilable\n");
 			continue;
 		}
