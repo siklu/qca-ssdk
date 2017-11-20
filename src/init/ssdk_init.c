@@ -1380,8 +1380,8 @@ qca_mac_sw_sync_port_status_init(a_uint32_t dev_id)
 		qca_phy_priv_global[dev_id]->port_old_link[port_id - 1] = 0;
 		qca_phy_priv_global[dev_id]->port_old_speed[port_id - 1] = FAL_SPEED_BUTT;
 		qca_phy_priv_global[dev_id]->port_old_duplex[port_id - 1] = FAL_DUPLEX_BUTT;
-		qca_phy_priv_global[dev_id]->port_old_tx_flowctrl[port_id - 1] = 1;
-		qca_phy_priv_global[dev_id]->port_old_rx_flowctrl[port_id - 1] = 1;
+		qca_phy_priv_global[dev_id]->port_old_tx_flowctrl[port_id - 1] = A_TRUE;
+		qca_phy_priv_global[dev_id]->port_old_rx_flowctrl[port_id - 1] = A_TRUE;
 		qca_phy_priv_global[dev_id]->port_tx_flowctrl_forcemode[port_id - 1] = A_FALSE;
 		qca_phy_priv_global[dev_id]->port_rx_flowctrl_forcemode[port_id - 1] = A_FALSE;
 	}
@@ -2791,10 +2791,9 @@ static int ssdk_miireg_close(struct net_device *netdev)
 static int ssdk_miireg_do_ioctl(struct net_device *netdev,
 			struct ifreq *ifr, int32_t cmd)
 {
-	struct mii_ioctl_data *mii_data = if_mii(ifr);
 	int ret = -EINVAL;
-
 #ifdef CONFIG_MDIO
+	struct mii_ioctl_data *mii_data = if_mii(ifr);
 	ret = mdio_mii_ioctl(&ssdk_mdio_ctl, mii_data, cmd);
 #endif
 	return ret;

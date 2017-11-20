@@ -61,8 +61,8 @@ struct port_phy_status
 	a_uint32_t link_status;
 	fal_port_speed_t speed;
 	fal_port_duplex_t duplex;
-	a_uint32_t tx_flowctrl;
-	a_uint32_t rx_flowctrl;
+	a_bool_t tx_flowctrl;
+	a_bool_t rx_flowctrl;
 };
 
 #define FAL_ENABLE      1
