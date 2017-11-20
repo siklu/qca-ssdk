@@ -2035,7 +2035,7 @@ void ssdk_psgmii_all_phy_testing(a_uint32_t dev_id, a_uint32_t first_phy_addr, a
 				break;
 		}
 
-		if (phy >= 5)
+		if (phy >= (first_phy_addr + 5))
 			break;
 		mdelay(10);
 		j++;
