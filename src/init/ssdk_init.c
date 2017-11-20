@@ -1883,6 +1883,7 @@ static struct platform_driver ssdk_driver = {
 #endif
 #ifdef DESS
 static u32 phy_t_status = 0;
+static a_uint16_t modectrl_data = 0;
 void ssdk_malibu_psgmii_and_dakota_dess_reset(a_uint32_t dev_id, a_uint32_t first_phy_addr)
 {
 #ifndef BOARD_AR71XX
@@ -2105,6 +2106,7 @@ void ssdk_psgmii_self_test(a_uint32_t dev_id, a_bool_t enable, a_uint32_t times,
 		ssdk_malibu_psgmii_and_dakota_dess_reset(dev_id, first_phy_addr);
 	}
 
+	qca_ar8327_phy_read(dev_id, first_phy_addr + 4, 0x1f, &modectrl_data);
 	qca_ar8327_phy_write(dev_id, first_phy_addr + 4, 0x1f, 0x8500);/*switch to access MII reg for copper*/
 	for(phy = first_phy_addr; phy < first_phy_addr + 5; phy++) {
 		/*enable phy mdio broadcast write*/
@@ -2199,6 +2201,8 @@ void clear_self_test_config(a_uint32_t dev_id)
 		qca_phy_mmd_write(dev_id, phy, 7, 0x8028, 0x001f);
 
 	}
+
+	qca_ar8327_phy_write(dev_id, first_phy_addr + 4, 0x1f, modectrl_data);
 
 	/* clear fdb entry */
 	fal_fdb_entry_flush(dev_id,1);
