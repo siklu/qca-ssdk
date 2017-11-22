@@ -66,6 +66,7 @@
 #define LPI_SLEEP_TIMER	0xa
 #define PROMISCUOUS_MODE 0x1
 #define PASS_CONTROL_PACKET 0x2
+#define XGMAC_PAUSE_TIME	0xffff
 
 static a_uint32_t port_interface_mode[SW_MAX_NR_DEV][SW_MAX_NR_PORT] = {0};
 
@@ -418,7 +419,10 @@ _adpt_xgmac_port_txfc_status_set(a_uint32_t dev_id, fal_port_t port_id,  a_bool_
 	port_id = HPPE_TO_XGMAC_PORT_ID(port_id);
 	rv |= hppe_mac_q0_tx_flow_ctrl_get(dev_id, port_id,  &xgmac_txfc_enable);
 	if (A_TRUE == enable)
+	{
 		xgmac_txfc_enable.bf.tfe = 1;
+		xgmac_txfc_enable.bf.pt = XGMAC_PAUSE_TIME;
+	}
 	if (A_FALSE == enable)
 		xgmac_txfc_enable.bf.tfe = 0;
 	 rv |= hppe_mac_q0_tx_flow_ctrl_set(dev_id, port_id,  &xgmac_txfc_enable);
