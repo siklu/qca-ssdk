@@ -64,6 +64,8 @@
 #define XGMAC_SPEED_SELECT_1000M 3
 #define LPI_WAKEUP_TIMER	0xa
 #define LPI_SLEEP_TIMER	0xa
+#define PROMISCUOUS_MODE 0x1
+#define PASS_CONTROL_PACKET 0x2
 
 static a_uint32_t port_interface_mode[SW_MAX_NR_DEV][SW_MAX_NR_PORT] = {0};
 
@@ -218,6 +220,8 @@ _adpt_xgmac_port_max_frame_size_set(a_uint32_t dev_id, fal_port_t port_id,
 	rv |= hppe_mac_rx_configuration_gpsl_set(dev_id, port_id, max_frame);
 	rv |= hppe_mac_rx_configuration_wd_set(dev_id, port_id, 1);
 	rv |= hppe_mac_rx_configuration_gmpslce_set(dev_id, port_id, 1);
+	rv |= hppe_mac_packet_filter_pr_set(dev_id, port_id, PROMISCUOUS_MODE);
+	rv |= hppe_mac_packet_filter_pcf_set(dev_id, port_id, PASS_CONTROL_PACKET);
 
 	return rv;
 }

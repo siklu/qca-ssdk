@@ -1385,8 +1385,8 @@ qca_mac_sw_sync_port_status_init(a_uint32_t dev_id)
 		qca_phy_priv_global[dev_id]->port_old_link[port_id - 1] = 0;
 		qca_phy_priv_global[dev_id]->port_old_speed[port_id - 1] = FAL_SPEED_BUTT;
 		qca_phy_priv_global[dev_id]->port_old_duplex[port_id - 1] = FAL_DUPLEX_BUTT;
-		qca_phy_priv_global[dev_id]->port_old_tx_flowctrl[port_id - 1] = A_TRUE;
-		qca_phy_priv_global[dev_id]->port_old_rx_flowctrl[port_id - 1] = A_TRUE;
+		qca_phy_priv_global[dev_id]->port_old_tx_flowctrl[port_id - 1] = A_FALSE;
+		qca_phy_priv_global[dev_id]->port_old_rx_flowctrl[port_id - 1] = A_FALSE;
 		qca_phy_priv_global[dev_id]->port_tx_flowctrl_forcemode[port_id - 1] = A_FALSE;
 		qca_phy_priv_global[dev_id]->port_rx_flowctrl_forcemode[port_id - 1] = A_FALSE;
 	}
@@ -3467,20 +3467,14 @@ static int qca_hppe_fdb_hw_init(a_uint32_t dev_id)
 static int
 qca_hppe_portctrl_hw_init(a_uint32_t dev_id)
 {
-	a_uint32_t i = 0, val;
-
-	for (i = 0; i < 2; i++)
-	{
-		val = 0x00000081;
-		qca_switch_reg_write(dev_id, 0x00003008 + (0x4000*i), (a_uint8_t *)&val, 4);
-	}
+	a_uint32_t i = 0;
 
 	for(i = 1; i < 7; i++) {
 		hppe_port_type[i - 1] = PORT_GMAC_TYPE;
 		fal_port_txmac_status_set (dev_id, i, A_FALSE);
 		fal_port_rxmac_status_set (dev_id, i, A_FALSE);
-		fal_port_rxfc_status_set(dev_id, i, A_TRUE);
-		fal_port_txfc_status_set(dev_id, i, A_TRUE);
+		fal_port_rxfc_status_set(dev_id, i, A_FALSE);
+		fal_port_txfc_status_set(dev_id, i, A_FALSE);
 		fal_port_max_frame_size_set(dev_id, i, SSDK_MAX_FRAME_SIZE);
 	}
 
@@ -3488,8 +3482,8 @@ qca_hppe_portctrl_hw_init(a_uint32_t dev_id)
 		hppe_port_type[i - 1] = PORT_XGMAC_TYPE;
 		fal_port_txmac_status_set (dev_id, i, A_FALSE);
 		fal_port_rxmac_status_set (dev_id, i, A_FALSE);
-		fal_port_rxfc_status_set(dev_id, i, A_TRUE);
-		fal_port_txfc_status_set(dev_id, i, A_TRUE);
+		fal_port_rxfc_status_set(dev_id, i, A_FALSE);
+		fal_port_txfc_status_set(dev_id, i, A_FALSE);
 		fal_port_max_frame_size_set(dev_id, i, SSDK_MAX_FRAME_SIZE);
 	}
 
