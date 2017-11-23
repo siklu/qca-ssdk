@@ -4172,17 +4172,11 @@ qca_hppe_flow_hw_init(a_uint32_t dev_id)
 static int
 qca_hppe_hw_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 {
-	a_uint32_t val;
 
 	/* reset ppe */
 	ssdk_ppe_reset_init();
 
 	qca_switch_init(dev_id);
-
-	val = 0x3b;
-	qca_switch_reg_write(dev_id, 0x000010, (a_uint8_t *)&val, 4);
-	val = 0;
-	qca_switch_reg_write(dev_id, 0x000008, (a_uint8_t *)&val, 4);
 
 	qca_hppe_bm_hw_init(dev_id);
 	qca_hppe_qm_hw_init(dev_id);
