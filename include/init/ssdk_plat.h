@@ -298,15 +298,16 @@ struct qca_phy_priv {
 	a_uint32_t link_interrupt_no;
 	a_uint32_t interrupt_flag;
 	char link_intr_name[IFNAMSIZ];
-    /* VLAN database */
-    bool       vlan;  /* True: 1q vlan mode, False: port vlan mode */
-    a_uint16_t vlan_id[AR8327_MAX_VLANS];
-    a_uint8_t  vlan_table[AR8327_MAX_VLANS];
-    a_uint8_t  vlan_tagged[AR8327_MAX_VLANS];
-    a_uint16_t pvid[AR8327_NUM_PORTS];
-    a_uint32_t ports;
+	/* VLAN database */
+	bool       vlan;  /* True: 1q vlan mode, False: port vlan mode */
+	a_uint16_t vlan_id[AR8327_MAX_VLANS];
+	a_uint8_t  vlan_table[AR8327_MAX_VLANS];
+	a_uint8_t  vlan_tagged[AR8327_MAX_VLANS];
+	a_uint16_t pvid[AR8327_NUM_PORTS];
+	a_uint32_t ports;
 	u8 __iomem *hw_addr;
 	u8 __iomem *psgmii_hw_addr;
+	u8 __iomem *uniphy_hw_addr;
 };
 
 struct ipq40xx_mdio_data {
