@@ -274,6 +274,7 @@ typedef struct
 		a_uint32_t num_intf_mac;
 		fal_mac_addr_t intf_mac[SSDK_MAX_NR_ETH];
 	} ssdk_dt_global_t;
+extern ssdk_dt_global_t ssdk_dt_global;
 
 #if defined ATHENA
 #define def_init_cfg  {.reg_mode = HSL_MDIO, .cpu_mode = HSL_CPU_2};
@@ -395,6 +396,7 @@ qca_mac_sw_sync_port_status_init(a_uint32_t dev_id);
 
 ssdk_dt_scheduler_cfg *ssdk_bootup_shceduler_cfg_get(a_uint32_t dev_id);
 struct qca_phy_priv* ssdk_phy_priv_data_get(a_uint32_t dev_id);
+sw_error_t qca_switch_init(a_uint32_t dev_id);
 
 #ifdef __cplusplus
 }
