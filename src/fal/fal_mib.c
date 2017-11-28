@@ -378,7 +378,7 @@ fal_mib_counter_get(a_uint32_t dev_id, fal_port_t port_id,
 				fal_mib_counter_t *mib_counter)
 {
 	sw_error_t rv;
-	fal_mib_info_t mib_info;
+	fal_mib_info_t mib_info = {0};
 
 	if(NULL == g_mibcounter[dev_id])
 		return SW_BAD_PTR;
