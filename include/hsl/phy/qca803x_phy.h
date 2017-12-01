@@ -298,6 +298,10 @@ extern "C"
   /* 10=1000Mbs */
 #define QCA803X_STATUS_SPEED_1000MBS            0x8000
 
+	/*pause status */
+#define QCA803X_PHY_RX_FLOWCTRL_STATUS		0x4
+#define QCA803X_PHY_TX_FLOWCTRL_STATUS		0x8
+
   /*QCA803X interrupt flag */
 #define QCA803X_INTR_SPEED_CHANGE              0x4000
 #define QCA803X_INTR_DUPLEX_CHANGE             0x2000
