@@ -22,7 +22,7 @@ extern "C" {
 #endif                          /* __cplusplus */
 
 #include "common/sw.h"
-#include "fal_led.h"
+#include "fal/fal_led.h"
 
 #define SSDK_MAX_PORT_NUM		8
 #define SSDK_MAX_VIRTUAL_PORT_NUM	256
