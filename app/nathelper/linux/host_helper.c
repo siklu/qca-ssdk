@@ -1339,6 +1339,7 @@ arp_in_bg_handle(struct nat_helper_bg_msg *msg)
     uint8_t dev_is_lan = 0;
     uint32_t sport = 0, vid = 0;
     a_bool_t prvbasemode = 1;
+    sw_error_t rv = SW_OK;
 
     a_int32_t arp_entry_id = -1;
 	struct net_device *in = msg->arp_in.in;
@@ -1449,13 +1450,13 @@ arp_in_bg_handle(struct nat_helper_bg_msg *msg)
     /* check for SIP and DIP range */
     if ((lanip[0] != 0) && (wanip[0] != 0))
     {
-		if(!NAT_PRV_ADDR_MODE_GET)
-			return 1;
-
-        if (NAT_PRV_ADDR_MODE_GET(0, &prvbasemode) != SW_OK)
-        {
-            aos_printk("Private IP base mode check failed: %d\n", prvbasemode);
-        }
+	 rv = NAT_PRV_ADDR_MODE_GET(0, &prvbasemode);
+	 if (rv == SW_NOT_SUPPORTED || rv == SW_NOT_INITIALIZED) {
+		 return 1;
+	 }
+	 else if (rv != SW_OK) {
+		 aos_printk("Private IP base mode check failed: %d\n", prvbasemode);
+	 }
 
         if (!prvbasemode) /* mode 0 */
         {

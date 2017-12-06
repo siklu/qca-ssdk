@@ -1570,7 +1570,7 @@ dess_acl_reset(a_uint32_t dev_id)
  * @param[in] list_pri acl list priority
  * @return SW_OK or error code
  */
-HSL_LOCAL sw_error_t
+sw_error_t
 dess_acl_list_creat(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t list_pri)
 {
     sw_error_t rv;
@@ -1607,7 +1607,7 @@ dess_acl_list_destroy(a_uint32_t dev_id, a_uint32_t list_id)
  * @param[in] rule rules content of this adding operation
  * @return SW_OK or error code
  */
-HSL_LOCAL sw_error_t
+sw_error_t
 dess_acl_rule_add(a_uint32_t dev_id, a_uint32_t list_id,
                   a_uint32_t rule_id, a_uint32_t rule_nr, fal_acl_rule_t * rule)
 {
@@ -1627,7 +1627,7 @@ dess_acl_rule_add(a_uint32_t dev_id, a_uint32_t list_id,
  * @param[in] rule_nr rule number of this deleteing operation
  * @return SW_OK or error code
  */
-HSL_LOCAL sw_error_t
+sw_error_t
 dess_acl_rule_delete(a_uint32_t dev_id, a_uint32_t list_id,
                      a_uint32_t rule_id, a_uint32_t rule_nr)
 {
@@ -1647,7 +1647,7 @@ dess_acl_rule_delete(a_uint32_t dev_id, a_uint32_t list_id,
  * @param[out] rule rule content of this operation
  * @return SW_OK or error code
  */
-HSL_LOCAL sw_error_t
+sw_error_t
 dess_acl_rule_query(a_uint32_t dev_id, a_uint32_t list_id,
                     a_uint32_t rule_id, fal_acl_rule_t * rule)
 {
@@ -1659,7 +1659,7 @@ dess_acl_rule_query(a_uint32_t dev_id, a_uint32_t list_id,
     return rv;
 }
 
-HSL_LOCAL a_uint32_t
+a_uint32_t
 dess_acl_rule_get_offset(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_id)
 {
     a_uint32_t i, pos=0;
@@ -1683,7 +1683,7 @@ dess_acl_rule_get_offset(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_
 }
 
 
-HSL_LOCAL sw_error_t
+sw_error_t
 dess_acl_rule_sync_multi_portmap(a_uint32_t dev_id, a_uint32_t pos, a_uint32_t *act)
 {
 
@@ -1718,7 +1718,7 @@ dess_acl_rule_sync_multi_portmap(a_uint32_t dev_id, a_uint32_t pos, a_uint32_t *
  * @param[in] obj_idx object index of this binding operation
  * @return SW_OK or error code
  */
-HSL_LOCAL sw_error_t
+sw_error_t
 dess_acl_list_bind(a_uint32_t dev_id, a_uint32_t list_id,
                    fal_acl_direc_t direc, fal_acl_bind_obj_t obj_t,
                    a_uint32_t obj_idx)
@@ -1742,7 +1742,7 @@ dess_acl_list_bind(a_uint32_t dev_id, a_uint32_t list_id,
  * @param[in] obj_idx object index of this unbinding operation
  * @return SW_OK or error code
  */
-HSL_LOCAL sw_error_t
+sw_error_t
 dess_acl_list_unbind(a_uint32_t dev_id, a_uint32_t list_id,
                      fal_acl_direc_t direc, fal_acl_bind_obj_t obj_t,
                      a_uint32_t obj_idx)
@@ -1761,7 +1761,7 @@ dess_acl_list_unbind(a_uint32_t dev_id, a_uint32_t list_id,
  * @param[in] enable A_TRUE or A_FALSE
  * @return SW_OK or error code
  */
-HSL_LOCAL sw_error_t
+sw_error_t
 dess_acl_status_set(a_uint32_t dev_id, a_bool_t enable)
 {
     sw_error_t rv;
