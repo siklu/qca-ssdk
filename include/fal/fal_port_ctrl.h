@@ -275,6 +275,10 @@ typedef struct {
 	a_uint32_t RxBadCRC;
 	a_uint32_t TxGoodFrame;
 	a_uint32_t TxBadCRC;
+	a_uint32_t SysRxGoodFrame;
+	a_uint32_t SysRxBadCRC;
+	a_uint32_t SysTxGoodFrame;
+	a_uint32_t SysTxBadCRC;
 } fal_port_counter_info_t;
 
 /*above is new add for malibu phy*/

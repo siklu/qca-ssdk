@@ -195,7 +195,8 @@ enum {
 #define SSDK_PHYSICAL_PORT3	3
 #define SSDK_PHYSICAL_PORT4	4
 #define SSDK_PHYSICAL_PORT5	5
-#define SSDK_PHYSICAL_PORT6 	6
+#define SSDK_PHYSICAL_PORT6	6
+#define SSDK_PHYSICAL_PORT7	7
 
 #define SSDK_GLOBAL_INT0_ACL_INI_INT        (1<<29)
 #define SSDK_GLOBAL_INT0_LOOKUP_INI_INT     (1<<28)
@@ -347,14 +348,6 @@ qca_phy_mmd_write(u32 dev_id, u32 phy_id,
 u16
 qca_phy_mmd_read(u32 dev_id, u32 phy_id,
 		u16 mmd_num, u16 reg_id);
-
-sw_error_t
-qca_xgphy_read(a_uint32_t dev_id, a_uint32_t phy_addr,
-                           a_uint32_t reg, a_uint16_t* data);
-
-sw_error_t
-qca_xgphy_write(a_uint32_t dev_id, a_uint32_t phy_addr,
-                           a_uint32_t reg, a_uint16_t data);
 
 sw_error_t
 qca_switch_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr,

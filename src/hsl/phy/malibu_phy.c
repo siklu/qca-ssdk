@@ -2376,6 +2376,70 @@ malibu_phy_show_counter(a_uint32_t dev_id, a_uint32_t phy_id,
 
 /******************************************************************************
 *
+* malibu_phy_get status
+*
+* get phy status
+*/
+sw_error_t
+malibu_phy_get_status(a_uint32_t dev_id, a_uint32_t phy_id,
+		struct port_phy_status *phy_status)
+{
+	a_uint16_t phy_data;
+
+	if (phy_id == COMBO_PHY_ID) {
+		__phy_reg_pages_sel_by_active_medium(dev_id, phy_id);
+	}
+
+	phy_data = malibu_phy_reg_read(dev_id, phy_id, MALIBU_PHY_SPEC_STATUS);
+
+	/*get phy link status*/
+	if (phy_data & MALIBU_STATUS_LINK_PASS) {
+		phy_status->link_status = A_TRUE;
+	} else {
+		phy_status->link_status = A_FALSE;
+		return SW_OK;
+	}
+
+	/*get phy speed*/
+	switch (phy_data & MALIBU_STATUS_SPEED_MASK) {
+	case MALIBU_STATUS_SPEED_1000MBS:
+		phy_status->speed = FAL_SPEED_1000;
+		break;
+	case MALIBU_STATUS_SPEED_100MBS:
+		phy_status->speed = FAL_SPEED_100;
+		break;
+	case MALIBU_STATUS_SPEED_10MBS:
+		phy_status->speed = FAL_SPEED_10;
+		break;
+	default:
+		return SW_READ_ERROR;
+	}
+
+	/*get phy duplex*/
+	if (phy_data & MALIBU_STATUS_FULL_DUPLEX) {
+		phy_status->duplex = FAL_FULL_DUPLEX;
+	} else {
+		phy_status->duplex = FAL_HALF_DUPLEX;
+	}
+
+	/* get phy flowctrl resolution status */
+	if (phy_data & MALIBU_PHY_RX_FLOWCTRL_STATUS) {
+		phy_status->rx_flowctrl = A_TRUE;
+	} else {
+		phy_status->rx_flowctrl = A_FALSE;
+	}
+
+	if (phy_data & MALIBU_PHY_TX_FLOWCTRL_STATUS) {
+		phy_status->tx_flowctrl = A_TRUE;
+	} else {
+		phy_status->tx_flowctrl = A_FALSE;
+	}
+
+	return SW_OK;
+}
+
+/******************************************************************************
+*
 * malibu_phy_hw_register init
 *
 */
@@ -2512,6 +2576,7 @@ static int malibu_phy_api_ops_init(void)
 	malibu_phy_api_ops->phy_counter_get = malibu_phy_get_counter;
 	malibu_phy_api_ops->phy_counter_show = malibu_phy_show_counter;
 	malibu_phy_api_ops->phy_serdes_reset = malibu_phy_serdes_reset;
+	malibu_phy_api_ops->phy_get_status = malibu_phy_get_status;
 
 	ret = hsl_phy_api_ops_register(MALIBU_PHY_CHIP, malibu_phy_api_ops);
 

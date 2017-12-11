@@ -78,6 +78,20 @@ void adpt_hppe_policer_func_bitmap_init(a_uint32_t dev_id);
 
 sw_error_t adpt_hppe_uniphy_init(a_uint32_t dev_id);
 
+/*shaper*/
+#define HPPE_MAX_C_TOKEN_NUM 0x3fffffff
+#define HPPE_MAX_E_TOKEN_NUM 0x3fffffff
+
+#define HPPE_POLICER_TIMESLOT_DFT 600
+#define HPPE_PORT_SHAPER_TIMESLOT_DFT 8
+#define HPPE_FLOW_SHAPER_TIMESLOT_DFT 64
+#define HPPE_QUEUE_SHAPER_TIMESLOT_DFT 300
+#define HPPE_SHAPER_IPG_PREAMBLE_LEN_DFT 20
+
+/*BM*/
+#define HPPE_BM_PORT_NUM 15
+#define HPPE_BM_PHY_PORT_OFFSET 8
+
 #ifdef __cplusplus
 }
 #endif                          /* __cplusplus */
