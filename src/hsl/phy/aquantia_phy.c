@@ -70,28 +70,34 @@ aquantia_phy_get_speed(a_uint32_t dev_id, a_uint32_t phy_id,
 {
 	a_uint16_t phy_data;
 	sw_error_t rv = SW_OK;
+	a_bool_t link_status;
+
+	link_status = aquantia_phy_get_link_status(dev_id, phy_id);
+	if (link_status != A_TRUE) {
+		return SW_OK;
+	}
 
 	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_REG_AUTONEG_VENDOR_STATUS, &phy_data);
 	SW_RTN_ON_ERROR(rv);
-	switch ((phy_data & AQUANTIA_STATUS_SPEED_MASK) >>1) {
-	case AQUANTIA_STATUS_SPEED_100MBS:
-		*speed = FAL_SPEED_100;
-		break;
-	case AQUANTIA_STATUS_SPEED_1000MBS:
-		*speed = FAL_SPEED_1000;
-		break;
-	case AQUANTIA_STATUS_SPEED_10000MBS:
-		*speed = FAL_SPEED_10000;
-		break;
-	case AQUANTIA_STATUS_SPEED_2500MBS:
-		*speed = FAL_SPEED_2500;
-		break;
-	case AQUANTIA_STATUS_SPEED_5000MBS:
-		*speed = FAL_SPEED_5000;
-		break;
-	default:
-		return SW_READ_ERROR;
+	switch ((phy_data & AQUANTIA_STATUS_SPEED_MASK) >> 1) {
+		case AQUANTIA_STATUS_SPEED_100MBS:
+			*speed = FAL_SPEED_100;
+			break;
+		case AQUANTIA_STATUS_SPEED_1000MBS:
+			*speed = FAL_SPEED_1000;
+			break;
+		case AQUANTIA_STATUS_SPEED_10000MBS:
+			*speed = FAL_SPEED_10000;
+			break;
+		case AQUANTIA_STATUS_SPEED_2500MBS:
+			*speed = FAL_SPEED_2500;
+			break;
+		case AQUANTIA_STATUS_SPEED_5000MBS:
+			*speed = FAL_SPEED_5000;
+			break;
+		default:
+			return SW_READ_ERROR;
 	}
 
 	return rv;
@@ -108,6 +114,13 @@ aquantia_phy_get_duplex(a_uint32_t dev_id, a_uint32_t phy_id,
 {
 	a_uint16_t phy_data;
 	sw_error_t rv = SW_OK;
+	a_bool_t link_status;
+
+	link_status = aquantia_phy_get_link_status(dev_id, phy_id);
+	if (link_status != A_TRUE)
+	{
+		return SW_OK;
+	}
 
 	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_REG_AUTONEG_VENDOR_STATUS, &phy_data);
