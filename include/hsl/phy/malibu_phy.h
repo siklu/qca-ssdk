@@ -124,6 +124,9 @@ extern "C"
 #define MALIBU_MODE_RESET_DEFAULT_VALUE 0x5f
 #define MALIBU_MODE_RESET_REG 0x0
 
+#define MALIBU_PHY_TX_FLOWCTRL_STATUS 0x80
+#define MALIBU_PHY_RX_FLOWCTRL_STATUS 0x40
+
 
 #define MALIBU_PHY_MMD7_NUM  7
 #define MALIBU_PHY_MMD3_NUM  3
@@ -167,6 +170,9 @@ extern "C"
 #define MODE_CFG                     BIT_0
 #define MODE_CFG_OFFSET              0
 #define MODE_CFG_LEN                 4
+
+#define MALIBU_MODECTRL_DFLT	0x533
+#define MALIBU_MIICTRL_DFLT	0x140
 
   /*debug port */
 #define MALIBU_DEBUG_PORT_RGMII_MODE            18

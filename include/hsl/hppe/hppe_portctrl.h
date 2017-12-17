@@ -39,6 +39,12 @@
 #define PORT_IN_FORWARD_MAX_ENTRY	8
 #define PORT_TX_COUNTER_TBL_REG_MAX_ENTRY	8
 #define VP_TX_COUNTER_TBL_REG_MAX_ENTRY	256
+#define IPR_PKT_NUM_TBL_REG_MAX_ENTRY	8
+#define IPR_BYTE_LOW_REG_REG_MAX_ENTRY	8
+#define IPR_BYTE_HIGH_REG_MAX_ENTRY	8
+#define DROP_CNT_MAX_ENTRY	8
+#define DROP_PKT_STAT_MAX_ENTRY	30
+
 
 sw_error_t
 hppe_mac_enable_get(
@@ -1305,6 +1311,102 @@ hppe_lpi_cnt_set(
 		a_uint32_t dev_id,
 		a_uint32_t index,
 		union lpi_cnt_u *value);
+
+sw_error_t
+hppe_drop_cnt_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union drop_cnt_u *value);
+
+sw_error_t
+hppe_drop_cnt_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union drop_cnt_u *value);
+
+sw_error_t
+hppe_drop_cnt_drop_cnt_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_drop_cnt_drop_cnt_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_ipr_pkt_num_tbl_reg_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union ipr_pkt_num_tbl_reg_u *value);
+
+sw_error_t
+hppe_ipr_pkt_num_tbl_reg_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union ipr_pkt_num_tbl_reg_u *value);
+
+sw_error_t
+hppe_ipr_byte_low_reg_reg_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union ipr_byte_low_reg_reg_u *value);
+
+sw_error_t
+hppe_ipr_byte_low_reg_reg_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union ipr_byte_low_reg_reg_u *value);
+
+sw_error_t
+hppe_ipr_byte_high_reg_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union ipr_byte_high_reg_u *value);
+
+sw_error_t
+hppe_ipr_byte_high_reg_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union ipr_byte_high_reg_u *value);
+
+sw_error_t
+hppe_ipr_pkt_num_tbl_reg_packets_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_ipr_pkt_num_tbl_reg_packets_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_ipr_byte_low_reg_reg_bytes_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_ipr_byte_low_reg_reg_bytes_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
+
+sw_error_t
+hppe_ipr_byte_high_reg_bytes_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value);
+
+sw_error_t
+hppe_ipr_byte_high_reg_bytes_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value);
 
 
 #endif

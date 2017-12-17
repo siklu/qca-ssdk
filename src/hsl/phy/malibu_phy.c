@@ -24,6 +24,7 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/phy.h>
+#include "ssdk_init.h"
 #include "ssdk_plat.h"
 
 static a_uint32_t first_phy_addr = 0;
@@ -2055,6 +2056,8 @@ malibu_phy_interface_set_mode(a_uint32_t dev_id, a_uint32_t phy_id, fal_port_int
 	       phy_data |= MALIBU_PHY_PSGMII_AMDET;
 	} else if (interface_mode == PHY_SGMII_BASET) {
 	       phy_data |= MALIBU_PHY_SGMII_BASET;
+	} else if (interface_mode == PHY_PSGMII_FIBER) {
+		phy_data |= MALIBU_PHY_PSGMII_AMDET;
 	} else {
 		return SW_BAD_PARAM;
 	}
@@ -2064,6 +2067,13 @@ malibu_phy_interface_set_mode(a_uint32_t dev_id, a_uint32_t phy_id, fal_port_int
 
 	/* reset operation */
 	malibu_phy_serdes_reset(dev_id);
+
+	if (interface_mode == PHY_PSGMII_FIBER) {
+		malibu_phy_reg_write(dev_id, first_phy_addr + MALIBU_PHY_MAX_ADDR_INC,
+			MALIBU_PHY_CHIP_CONFIG, MALIBU_MODECTRL_DFLT);
+		malibu_phy_reg_write(dev_id, first_phy_addr + MALIBU_PHY_MAX_ADDR_INC,
+			MALIBU_PHY_CONTROL, MALIBU_MIICTRL_DFLT);
+	}
 
 	return SW_OK;
 }
@@ -2366,6 +2376,70 @@ malibu_phy_show_counter(a_uint32_t dev_id, a_uint32_t phy_id,
 
 /******************************************************************************
 *
+* malibu_phy_get status
+*
+* get phy status
+*/
+sw_error_t
+malibu_phy_get_status(a_uint32_t dev_id, a_uint32_t phy_id,
+		struct port_phy_status *phy_status)
+{
+	a_uint16_t phy_data;
+
+	if (phy_id == COMBO_PHY_ID) {
+		__phy_reg_pages_sel_by_active_medium(dev_id, phy_id);
+	}
+
+	phy_data = malibu_phy_reg_read(dev_id, phy_id, MALIBU_PHY_SPEC_STATUS);
+
+	/*get phy link status*/
+	if (phy_data & MALIBU_STATUS_LINK_PASS) {
+		phy_status->link_status = A_TRUE;
+	} else {
+		phy_status->link_status = A_FALSE;
+		return SW_OK;
+	}
+
+	/*get phy speed*/
+	switch (phy_data & MALIBU_STATUS_SPEED_MASK) {
+	case MALIBU_STATUS_SPEED_1000MBS:
+		phy_status->speed = FAL_SPEED_1000;
+		break;
+	case MALIBU_STATUS_SPEED_100MBS:
+		phy_status->speed = FAL_SPEED_100;
+		break;
+	case MALIBU_STATUS_SPEED_10MBS:
+		phy_status->speed = FAL_SPEED_10;
+		break;
+	default:
+		return SW_READ_ERROR;
+	}
+
+	/*get phy duplex*/
+	if (phy_data & MALIBU_STATUS_FULL_DUPLEX) {
+		phy_status->duplex = FAL_FULL_DUPLEX;
+	} else {
+		phy_status->duplex = FAL_HALF_DUPLEX;
+	}
+
+	/* get phy flowctrl resolution status */
+	if (phy_data & MALIBU_PHY_RX_FLOWCTRL_STATUS) {
+		phy_status->rx_flowctrl = A_TRUE;
+	} else {
+		phy_status->rx_flowctrl = A_FALSE;
+	}
+
+	if (phy_data & MALIBU_PHY_TX_FLOWCTRL_STATUS) {
+		phy_status->tx_flowctrl = A_TRUE;
+	} else {
+		phy_status->tx_flowctrl = A_FALSE;
+	}
+
+	return SW_OK;
+}
+
+/******************************************************************************
+*
 * malibu_phy_hw_register init
 *
 */
@@ -2374,7 +2448,7 @@ malibu_phy_hw_init(a_uint32_t dev_id, a_uint32_t port_bmp)
 {
 	a_uint32_t port_id = 0, phy_addr = 0, phy_cnt = 0;
 	a_uint16_t dac_value,led_status, phy_data, org_id = 0, rev_id = 0;
-	a_uint32_t phy_id = 0;
+	a_uint32_t phy_id = 0, mode;
 
 	for (port_id = 0; port_id < SW_MAX_NR_PORT; port_id ++)
 	{
@@ -2428,6 +2502,10 @@ malibu_phy_hw_init(a_uint32_t dev_id, a_uint32_t port_bmp)
 	malibu_phy_mmd_write(dev_id, first_phy_addr + 4, MALIBU_PHY_MMD3_NUM,
 		MALIBU_PHY_MMD3_ADDR_REMOTE_LOOPBACK_CTRL, phy_data);
 
+
+	mode = ssdk_dt_global_get_mac_mode(dev_id, 0);
+	if (mode == PORT_WRAPPER_PSGMII_FIBER)
+		malibu_phy_interface_set_mode(dev_id, first_phy_addr, PHY_PSGMII_FIBER);
 	return SW_OK;
 }
 
@@ -2498,6 +2576,7 @@ static int malibu_phy_api_ops_init(void)
 	malibu_phy_api_ops->phy_counter_get = malibu_phy_get_counter;
 	malibu_phy_api_ops->phy_counter_show = malibu_phy_show_counter;
 	malibu_phy_api_ops->phy_serdes_reset = malibu_phy_serdes_reset;
+	malibu_phy_api_ops->phy_get_status = malibu_phy_get_status;
 
 	ret = hsl_phy_api_ops_register(MALIBU_PHY_CHIP, malibu_phy_api_ops);
 

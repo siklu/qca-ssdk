@@ -271,6 +271,11 @@ ifneq (,$(findstring HPPE, $(SUPPORT_CHIP)))
   MODULE_CFLAG += -DHPPE
 endif
 
+ifneq (,$(findstring SCOMPHY, $(SUPPORT_CHIP)))
+  MODULE_INC   += -I$(PRJ_PATH)/include/hsl/scomphy
+  MODULE_CFLAG += -DSCOMPHY
+endif
+
 # check for GCC version
 ifeq (4, $(GCC_VER))
   MODULE_CFLAG += -DGCCV4
@@ -394,6 +399,23 @@ ifeq (KSLIB, $(MODULE_TYPE))
 	      -I$(SYS_PATH)/source/include/uapi \
               -I$(SYS_PATH)/source/arch/arm64/include/asm/mach \
 	      -include $(KCONF_FILE)
+	    else ifeq ($(ARCH), arm)
+	    MODULE_INC += -I$(SYS_PATH) \
+              -I$(TOOL_PATH)/../lib/gcc/$(TARGET_NAME)/$(GCC_VERSION)/include/ \
+              -I$(TOOL_PATH)/../../lib/armv7a-vfp-neon-rdk-linux-gnueabi/gcc/arm-rdk-linux-gnueabi/4.8.4/include/ \
+              -I$(SYS_PATH)/include \
+              -I$(SYS_PATH)/source/include \
+              -I$(SYS_PATH)/source/arch/arm/mach-msm/include \
+              -I$(SYS_PATH)/arch/arm/mach-msm/include \
+              -I$(SYS_PATH)/source/arch/arm/include \
+              -I$(SYS_PATH)/arch/arm/include \
+              -I$(SYS_PATH)/source/arch/arm/include/asm \
+              -I$(SYS_PATH)/arch/arm/include/generated \
+              -I$(SYS_PATH)/include/generated/uapi \
+              -I$(SYS_PATH)/include/uapi \
+              -I$(SYS_PATH)/arch/arm/include/uapi \
+              -I$(SYS_PATH)/source/arch/arm/include/asm/mach \
+	          -include $(SYS_PATH)/include/linux/kconfig.h
 	    endif
   endif
 
@@ -404,6 +426,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
 	    MODULE_INC += -I$(SYS_PATH) \
                   -I$(TOOL_PATH)/../lib/gcc/$(TARGET_NAME)/$(GCC_VERSION)/include/ \
 		  -I$(TOOL_PATH)/../../lib/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/5.3.0/include/ \
+		  -I$(TOOL_PATH)/../../lib/armv7a-vfp-neon-rdk-linux-gnueabi/gcc/arm-rdk-linux-gnueabi/4.8.4/include/ \
 	          -I$(SYS_PATH)/include \
               -I$(SYS_PATH)/source/ \
               -I$(SYS_PATH)/source/include \

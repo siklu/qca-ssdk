@@ -25,6 +25,7 @@
 #include "fal_qos.h"
 #include "hsl.h"
 #include "hsl_dev.h"
+#include "hsl_phy.h"
 #include "ssdk_init.h"
 #include <linux/kconfig.h>
 #include <linux/version.h>
@@ -106,6 +107,14 @@ qca_ar8327_sw_get_port_link(struct switch_dev *dev, int port,
 		link->speed = SWITCH_PORT_SPEED_100;
 	} else if (speed == FAL_SPEED_1000){
 		link->speed = SWITCH_PORT_SPEED_1000;
+	#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
+	} else if (speed == FAL_SPEED_2500){
+		link->speed = SWITCH_PORT_SPEED_2500;
+	} else if (speed == FAL_SPEED_5000){
+		link->speed = SWITCH_PORT_SPEED_5000;
+	} else if (speed == FAL_SPEED_10000){
+		link->speed = SWITCH_PORT_SPEED_10000;
+	#endif
 	} else {
 		link->speed = SWITCH_PORT_SPEED_UNKNOWN;
 	}
@@ -470,7 +479,7 @@ qca_phy_status_get(a_uint32_t dev_id, a_uint32_t port_id, a_uint32_t *speed_stat
 	a_uint16_t port_phy_status;
 	a_uint32_t phy_addr;
 
-	phy_addr = port_id -1;
+	phy_addr = qca_ssdk_port_to_phy_addr(dev_id, port_id);
 	if (qca_ar8327_sw_rgmii_mode_valid(dev_id, port_id) == A_TRUE)
 		phy_addr = 4;
 
@@ -516,7 +525,7 @@ qca_ar8327_sw_mac_polling_task(struct qca_phy_priv *priv)
 	a_uint32_t i, dev_id = 0;
 	a_uint32_t value;
 	a_uint32_t link = 0, speed = 0, duplex = 0;
-	a_uint32_t qm_buffer_err = 0;
+	a_uint32_t qm_buffer_err = 0, phy_addr = 0;
 	a_uint16_t port_phy_status[AR8327_NUM_PORTS] = {0,0,0,0,0,0,0};
 	static a_uint32_t qm_err_cnt[AR8327_NUM_PORTS] = {0,0,0,0,0,0,0};
 
@@ -541,6 +550,7 @@ qca_ar8327_sw_mac_polling_task(struct qca_phy_priv *priv)
 	++task_count;
 
 	for (i = 1; i < AR8327_NUM_PORTS-1; i++) {
+		phy_addr = qca_ssdk_port_to_phy_addr(dev_id, i);
 		if(qca_ar8327_sw_mac_polling_port_valid(priv, i) == A_FALSE)
 			continue;
 
@@ -589,9 +599,9 @@ qca_ar8327_sw_mac_polling_task(struct qca_phy_priv *priv)
 						mdelay(10);
 						SSDK_DEBUG("%s, %d, port %d link down\n",__FUNCTION__,__LINE__,i);
 					}
-					qca_ar8327_phy_dbg_read(dev_id, i-1, 0, &value);
+					qca_ar8327_phy_dbg_read(dev_id, phy_addr, 0, &value);
 					value &= (~(1<<12));
-					qca_ar8327_phy_dbg_write(dev_id, i-1, 0, value);
+					qca_ar8327_phy_dbg_write(dev_id, phy_addr, 0, value);
 				}
 			}
 			/* Down --> Up */
@@ -626,9 +636,9 @@ qca_ar8327_sw_mac_polling_task(struct qca_phy_priv *priv)
 					if((speed == 0x01) && (priv->version != 0x14))/*PHY is link up 100M*/
 					{
 						a_uint16_t value = 0;
-						qca_ar8327_phy_dbg_read(dev_id, i-1, 0, &value);
+						qca_ar8327_phy_dbg_read(dev_id, phy_addr, 0, &value);
 						value |= (1<<12);
-						qca_ar8327_phy_dbg_write(dev_id, i-1, 0, value);
+						qca_ar8327_phy_dbg_write(dev_id, phy_addr, 0, value);
 					}
 				}
 			}

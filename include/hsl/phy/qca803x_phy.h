@@ -48,8 +48,13 @@ extern "C"
 #define QCA803X_DEBUG_PORT_DATA                  30
 #define QCA803X_PHY_CHIP_CONFIG          	 31	/* Chip Configuration Register  */
 
-#define QCA803X_PHY_SGMII_BASET              0x1
-#define QCA803X_PHY_RGMII_BASET              0x0
+#define QCA803X_PHY_FIBER_MODE_1000BX	0x100
+
+#define QCA803X_PHY_COPPER_PAGE_SEL  0x8000
+#define QCA803X_PHY_PREFER_FIBER  0x400
+
+#define QCA803X_PHY_CHIP_MODE_CFG	0x000f
+#define QCA803X_PHY_CHIP_MODE_STAT	0x00f0
 
 #define QCA803X_DEBUG_PHY_HIBERNATION_CTRL  0xb
 #define QCA803X_DEBUG_PHY_POWER_SAVING_CTRL  0x29
@@ -293,6 +298,10 @@ extern "C"
   /* 10=1000Mbs */
 #define QCA803X_STATUS_SPEED_1000MBS            0x8000
 
+	/*pause status */
+#define QCA803X_PHY_RX_FLOWCTRL_STATUS		0x4
+#define QCA803X_PHY_TX_FLOWCTRL_STATUS		0x8
+
   /*QCA803X interrupt flag */
 #define QCA803X_INTR_SPEED_CHANGE              0x4000
 #define QCA803X_INTR_DUPLEX_CHANGE             0x2000
@@ -303,6 +312,28 @@ extern "C"
 #define QCA803X_INTR_MEDIA_STATUS_CHANGE             0x1000
 #define QCA803X_INTR_WOL             0x0001
 #define QCA803X_INTR_POE             0x0002
+
+  /** phy chip config */
+  typedef enum {
+	  QCA803X_PHY_RGMII_BASET = 0,
+	  QCA803X_PHY_SGMII_BASET = 1,
+	  QCA803X_PHY_BX1000_RGMII_50 = 2,
+	  QCA803X_PHY_FX100_RGMII_50 = 6,
+	  QCA803X_PHY_RGMII_AMDET = 11
+  } qca803x_cfg_t;
+
+  typedef enum {
+	  QCA803X_CHIP_CFG_SET,
+	  QCA803X_CHIP_CFG_STAT
+  } qca803x_cfg_type_t;
+
+/** Phy preferred medium type */
+  typedef enum
+  {
+	  QCA803X_PHY_MEDIUM_COPPER = 0,	/* Copper */
+	  QCA803X_PHY_MEDIUM_FIBER = 1,		/* Fiber */
+	  QCA803X_PHY_MEDIUM_MAX
+  } qca803x_phy_medium_t;
 
 sw_error_t
 qca803x_phy_set_duplex (a_uint32_t dev_id, a_uint32_t phy_id,

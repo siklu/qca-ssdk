@@ -208,7 +208,8 @@ extern "C" {
 						      fal_port_counter_info_t * counter_info);
 	typedef sw_error_t(*hsl_phy_serdes_reset) (a_uint32_t dev_id);
 
-
+	typedef sw_error_t(*hsl_phy_get_status) (a_uint32_t dev_id,
+				a_uint32_t phy_id, struct port_phy_status *phy_status);
 	typedef struct hsl_phy_ops_s {
 
 		hsl_phy_init phy_init;
@@ -270,6 +271,7 @@ extern "C" {
 		hsl_phy_counter_get  phy_counter_get;
 		hsl_phy_counter_show  phy_counter_show;
 		hsl_phy_serdes_reset phy_serdes_reset;
+		hsl_phy_get_status phy_get_status;
 	} hsl_phy_ops_t;
 
 typedef struct phy_driver_instance {
@@ -293,6 +295,7 @@ typedef struct {
 	a_uint32_t phy_address[SW_MAX_NR_PORT];
 	a_uint32_t phy_type[SW_MAX_NR_PORT];
 	a_bool_t phy_c45[SW_MAX_NR_PORT];
+	a_bool_t phy_combo[SW_MAX_NR_PORT];
 } phy_info_t;
 
 #define MALIBU5PORT_PHY 0x004DD0B1
@@ -338,6 +341,9 @@ void qca_ssdk_phy_address_set(a_uint32_t dev_id, a_uint32_t i,
 				a_uint32_t value);
 
 a_uint32_t
+hsl_phyid_get(a_uint32_t dev_id, a_uint32_t port_id, ssdk_init_cfg *cfg);
+
+a_uint32_t
 qca_ssdk_port_to_phy_addr(a_uint32_t dev_id, a_uint32_t port_id);
 
 void qca_ssdk_port_bmp_set(a_uint32_t dev_id, a_uint32_t value);
@@ -353,6 +359,13 @@ qca_ssdk_phy_addr_to_port(a_uint32_t dev_id, a_uint32_t phy_addr);
 void
 hsl_port_phy_c45_capability_set(a_uint32_t dev_id, a_uint32_t port_id,
 			a_bool_t enable);
+
+a_bool_t
+hsl_port_phy_combo_capability_get(a_uint32_t dev_id, a_uint32_t port_id);
+
+void
+hsl_port_phy_combo_capability_set(a_uint32_t dev_id, a_uint32_t port_id,
+		a_bool_t enable);
 
 sw_error_t
 hsl_ssdk_phy_serdes_reset(a_uint32_t dev_id);

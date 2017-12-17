@@ -3182,3 +3182,239 @@ hppe_lpi_cnt_set(
 				value->val);
 }
 
+sw_error_t
+hppe_drop_cnt_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union drop_cnt_u *value)
+{
+	if (index >= DROP_CNT_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+	return hppe_reg_get(
+				dev_id,
+				NSS_PRX_CSR_BASE_ADDR + DROP_CNT_ADDRESS + \
+				index * DROP_CNT_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_drop_cnt_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union drop_cnt_u *value)
+{
+	return hppe_reg_set(
+				dev_id,
+				NSS_PRX_CSR_BASE_ADDR + DROP_CNT_ADDRESS + \
+				index * DROP_CNT_INC,
+				value->val);
+}
+
+sw_error_t
+hppe_drop_cnt_drop_cnt_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union drop_cnt_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_drop_cnt_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.drop_cnt;
+	return ret;
+}
+
+sw_error_t
+hppe_drop_cnt_drop_cnt_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union drop_cnt_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_drop_cnt_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.drop_cnt = value;
+	ret = hppe_drop_cnt_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_ipr_pkt_num_tbl_reg_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union ipr_pkt_num_tbl_reg_u *value)
+{
+	if (index >= IPR_PKT_NUM_TBL_REG_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+	return hppe_reg_get(
+				dev_id,
+				IPR_CSR_BASE_ADDR + IPR_PKT_NUM_TBL_REG_ADDRESS + \
+				index * IPR_PKT_NUM_TBL_REG_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_ipr_pkt_num_tbl_reg_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union ipr_pkt_num_tbl_reg_u *value)
+{
+	return hppe_reg_set(
+				dev_id,
+				IPR_CSR_BASE_ADDR + IPR_PKT_NUM_TBL_REG_ADDRESS + \
+				index * IPR_PKT_NUM_TBL_REG_INC,
+				value->val);
+}
+
+sw_error_t
+hppe_ipr_byte_low_reg_reg_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union ipr_byte_low_reg_reg_u *value)
+{
+	if (index >= IPR_BYTE_LOW_REG_REG_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+	return hppe_reg_get(
+				dev_id,
+				IPR_CSR_BASE_ADDR + IPR_BYTE_LOW_REG_REG_ADDRESS + \
+				index * IPR_BYTE_LOW_REG_REG_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_ipr_byte_low_reg_reg_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union ipr_byte_low_reg_reg_u *value)
+{
+	return hppe_reg_set(
+				dev_id,
+				IPR_CSR_BASE_ADDR + IPR_BYTE_LOW_REG_REG_ADDRESS + \
+				index * IPR_BYTE_LOW_REG_REG_INC,
+				value->val);
+}
+
+sw_error_t
+hppe_ipr_byte_high_reg_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union ipr_byte_high_reg_u *value)
+{
+	if (index >= IPR_BYTE_HIGH_REG_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+	return hppe_reg_get(
+				dev_id,
+				IPR_CSR_BASE_ADDR + IPR_BYTE_HIGH_REG_ADDRESS + \
+				index * IPR_BYTE_HIGH_REG_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_ipr_byte_high_reg_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union ipr_byte_high_reg_u *value)
+{
+	return hppe_reg_set(
+				dev_id,
+				IPR_CSR_BASE_ADDR + IPR_BYTE_HIGH_REG_ADDRESS + \
+				index * IPR_BYTE_HIGH_REG_INC,
+				value->val);
+}
+
+sw_error_t
+hppe_ipr_pkt_num_tbl_reg_packets_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union ipr_pkt_num_tbl_reg_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_ipr_pkt_num_tbl_reg_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.packets;
+	return ret;
+}
+
+sw_error_t
+hppe_ipr_pkt_num_tbl_reg_packets_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union ipr_pkt_num_tbl_reg_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_ipr_pkt_num_tbl_reg_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.packets = value;
+	ret = hppe_ipr_pkt_num_tbl_reg_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_ipr_byte_low_reg_reg_bytes_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union ipr_byte_low_reg_reg_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_ipr_byte_low_reg_reg_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.bytes;
+	return ret;
+}
+
+sw_error_t
+hppe_ipr_byte_low_reg_reg_bytes_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union ipr_byte_low_reg_reg_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_ipr_byte_low_reg_reg_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.bytes = value;
+	ret = hppe_ipr_byte_low_reg_reg_set(dev_id, index, &reg_val);
+	return ret;
+}
+
+sw_error_t
+hppe_ipr_byte_high_reg_bytes_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union ipr_byte_high_reg_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_ipr_byte_high_reg_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.bytes;
+	return ret;
+}
+
+sw_error_t
+hppe_ipr_byte_high_reg_bytes_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union ipr_byte_high_reg_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = hppe_ipr_byte_high_reg_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+		return ret;
+	reg_val.bf.bytes = value;
+	ret = hppe_ipr_byte_high_reg_set(dev_id, index, &reg_val);
+	return ret;
+}
+
