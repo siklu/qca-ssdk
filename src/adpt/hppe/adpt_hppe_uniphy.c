@@ -529,6 +529,7 @@ adpt_hppe_uniphy_mode_set(a_uint32_t dev_id, a_uint32_t index, a_uint32_t mode)
 
 	switch(mode) {
 		case PORT_WRAPPER_PSGMII:
+		case PORT_WRAPPER_PSGMII_FIBER:
 			rv = __adpt_hppe_uniphy_psgmii_mode_set(dev_id, index);
 			break;
 

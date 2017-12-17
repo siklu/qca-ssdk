@@ -445,6 +445,9 @@ cmd_data_check_ctrlpkt_appprofile(char *info, void *val, a_uint32_t size);
 #ifdef IN_ACL
 sw_error_t
 cmd_data_check_udf_type(char *cmdstr, fal_acl_udf_type_t * arg_val, a_uint32_t size);
+sw_error_t
+cmd_data_check_fieldop(char *cmdstr, fal_acl_field_op_t def, fal_acl_field_op_t * val);
+
 #endif
 #endif
 

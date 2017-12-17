@@ -195,7 +195,8 @@ enum {
 #define SSDK_PHYSICAL_PORT3	3
 #define SSDK_PHYSICAL_PORT4	4
 #define SSDK_PHYSICAL_PORT5	5
-#define SSDK_PHYSICAL_PORT6 	6
+#define SSDK_PHYSICAL_PORT6	6
+#define SSDK_PHYSICAL_PORT7	7
 
 #define SSDK_GLOBAL_INT0_ACL_INI_INT        (1<<29)
 #define SSDK_GLOBAL_INT0_LOOKUP_INI_INT     (1<<28)
@@ -270,8 +271,8 @@ struct qca_phy_priv {
 	a_uint32_t port_old_duplex[SW_MAX_NR_PORT];
 	a_uint32_t port_old_phy_status[SW_MAX_NR_PORT];
 	a_uint32_t port_qm_buf[SW_MAX_NR_PORT];
-	a_uint32_t port_old_tx_flowctrl[SW_MAX_NR_PORT];
-	a_uint32_t port_old_rx_flowctrl[SW_MAX_NR_PORT];
+	a_bool_t port_old_tx_flowctrl[SW_MAX_NR_PORT];
+	a_bool_t port_old_rx_flowctrl[SW_MAX_NR_PORT];
 	a_bool_t port_tx_flowctrl_forcemode[SW_MAX_NR_PORT];
 	a_bool_t port_rx_flowctrl_forcemode[SW_MAX_NR_PORT];
 	struct delayed_work qm_dwork_polling;
@@ -296,6 +297,7 @@ struct qca_phy_priv {
 	/* it is valid only when link_polling_required is false*/
 	a_uint32_t link_interrupt_no;
 	a_uint32_t interrupt_flag;
+	char link_intr_name[IFNAMSIZ];
     /* VLAN database */
     bool       vlan;  /* True: 1q vlan mode, False: port vlan mode */
     a_uint16_t vlan_id[AR8327_MAX_VLANS];
@@ -346,14 +348,6 @@ qca_phy_mmd_write(u32 dev_id, u32 phy_id,
 u16
 qca_phy_mmd_read(u32 dev_id, u32 phy_id,
 		u16 mmd_num, u16 reg_id);
-
-sw_error_t
-qca_xgphy_read(a_uint32_t dev_id, a_uint32_t phy_addr,
-                           a_uint32_t reg, a_uint16_t* data);
-
-sw_error_t
-qca_xgphy_write(a_uint32_t dev_id, a_uint32_t phy_addr,
-                           a_uint32_t reg, a_uint16_t data);
 
 sw_error_t
 qca_switch_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr,

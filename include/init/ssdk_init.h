@@ -22,7 +22,7 @@ extern "C" {
 #endif                          /* __cplusplus */
 
 #include "common/sw.h"
-#include "fal_led.h"
+#include "fal/fal_led.h"
 
 #define SSDK_MAX_PORT_NUM		8
 #define SSDK_MAX_VIRTUAL_PORT_NUM	256
@@ -107,6 +107,7 @@ enum ssdk_port_wrapper_cfg {
 	PORT_WRAPPER_SGMII_CHANNEL1,
 	PORT_WRAPPER_SGMII_CHANNEL4,
 	PORT_WRAPPER_RGMII,
+	PORT_WRAPPER_PSGMII_FIBER,
 	PORT_WRAPPER_MAX = 0xFF
 };
 
@@ -149,6 +150,7 @@ enum ssdk_port_wrapper_cfg {
         CHIP_ISISC,
         CHIP_DESS,
         CHIP_HPPE,
+	CHIP_SCOMPHY,
     } ssdk_chip_type;
 
 	typedef struct
@@ -263,11 +265,16 @@ typedef struct
 		struct device_node *of_node;
 	} ssdk_dt_cfg;
 
+#define SSDK_MAX_NR_ETH 6
+
 	typedef struct
 	{
 		a_uint32_t num_devices;
 		ssdk_dt_cfg **ssdk_dt_switch_nodes;
+		a_uint32_t num_intf_mac;
+		fal_mac_addr_t intf_mac[SSDK_MAX_NR_ETH];
 	} ssdk_dt_global_t;
+extern ssdk_dt_global_t ssdk_dt_global;
 
 #if defined ATHENA
 #define def_init_cfg  {.reg_mode = HSL_MDIO, .cpu_mode = HSL_CPU_2};
@@ -389,6 +396,7 @@ qca_mac_sw_sync_port_status_init(a_uint32_t dev_id);
 
 ssdk_dt_scheduler_cfg *ssdk_bootup_shceduler_cfg_get(a_uint32_t dev_id);
 struct qca_phy_priv* ssdk_phy_priv_data_get(a_uint32_t dev_id);
+sw_error_t qca_switch_init(a_uint32_t dev_id);
 
 #ifdef __cplusplus
 }

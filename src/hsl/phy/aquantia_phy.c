@@ -733,11 +733,23 @@ a_bool_t aquantia_phy_get_link_status(a_uint32_t dev_id, a_uint32_t phy_id)
 	a_uint16_t phy_data;
 	sw_error_t rv = SW_OK;
 
+	/*in order to get the  link status of real time, need to read the link status two times */
 	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
 		AQUANTIA_AUTONEG_STANDARD_STATUS1, &phy_data);
-	SW_RTN_ON_ERROR(rv);
+	if(rv != SW_OK)
+	{
+		return A_FALSE;
+	}
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_AUTONEG_STANDARD_STATUS1, &phy_data);
+	if(rv != SW_OK)
+	{
+		return A_FALSE;
+	}
 	if (phy_data & AQUANTIA_STATUS_LINK)
+	{
 		return A_TRUE;
+	}
 
 	return A_FALSE;
 }
@@ -1555,6 +1567,200 @@ aquantia_phy_get_phy_id(a_uint32_t dev_id, a_uint32_t phy_id,
 	return rv;
 }
 
+static sw_error_t
+_aquantia_phy_line_side_counter_get(a_uint32_t dev_id, a_uint32_t phy_id,
+			 fal_port_counter_info_t * counter_infor)
+{
+	a_uint16_t msw_counter;
+	a_uint16_t lsw_counter;
+	sw_error_t rv = SW_OK;
+
+	/*get line side tx good packets*/
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_PCS_REGISTERS,
+		AQUANTIA_LINE_SIDE_TRANSMIT_GOOD_FRAME_COUNTER2, &msw_counter);
+	SW_RTN_ON_ERROR(rv);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_PCS_REGISTERS,
+		AQUANTIA_LINE_SIDE_TRANSMIT_GOOD_FRAME_COUNTER1, &lsw_counter);
+	SW_RTN_ON_ERROR(rv);
+	counter_infor->TxGoodFrame = (msw_counter << 16) | lsw_counter;
+
+	/*get line side tx bad packets*/
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_PCS_REGISTERS,
+		AQUANTIA_LINE_SIDE_TRANSMIT_ERROR_FRAME_COUNTER2, &msw_counter);
+	SW_RTN_ON_ERROR(rv);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_PCS_REGISTERS,
+		AQUANTIA_LINE_SIDE_TRANSMIT_ERROR_FRAME_COUNTER1, &lsw_counter);
+	SW_RTN_ON_ERROR(rv);
+	counter_infor->TxBadCRC = (msw_counter << 16) | lsw_counter;
+
+	/*get line side rx good packets*/
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_PCS_REGISTERS,
+		AQUANTIA_LINE_SIDE_RECEIVE_GOOD_FRAME_COUNTER2, &msw_counter);
+	SW_RTN_ON_ERROR(rv);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_PCS_REGISTERS,
+		AQUANTIA_LINE_SIDE_RECEIVE_GOOD_FRAME_COUNTER1, &lsw_counter);
+	SW_RTN_ON_ERROR(rv);
+	counter_infor->RxGoodFrame = (msw_counter << 16) | lsw_counter;
+
+	/*get line side rx bad packets*/
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_PCS_REGISTERS,
+		AQUANTIA_LINE_SIDE_RECEIVE_ERROR_FRAME_COUNTER2, &msw_counter);
+	SW_RTN_ON_ERROR(rv);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_PCS_REGISTERS,
+		AQUANTIA_LINE_SIDE_RECEIVE_ERROR_FRAME_COUNTER1, &lsw_counter);
+	SW_RTN_ON_ERROR(rv);
+	counter_infor->RxBadCRC = (msw_counter << 16) | lsw_counter;
+
+	return rv;
+}
+
+static sw_error_t
+_aquantia_phy_system_side_counter_get(a_uint32_t dev_id, a_uint32_t phy_id,
+			 fal_port_counter_info_t * counter_infor)
+{
+	a_uint16_t msw_counter;
+	a_uint16_t lsw_counter;
+	sw_error_t rv = SW_OK;
+
+	/*get system tx good packets*/
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_PCS_REGISTERS,
+		AQUANTIA_SYSTEM_SIDE_TRANSMIT_GOOD_FRAME_COUNTER2, &msw_counter);
+	SW_RTN_ON_ERROR(rv);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_PCS_REGISTERS,
+		AQUANTIA_SYSTEM_SIDE_TRANSMIT_GOOD_FRAME_COUNTER1, &lsw_counter);
+	SW_RTN_ON_ERROR(rv);
+	counter_infor->SysTxGoodFrame = (msw_counter << 16) | lsw_counter;
+
+	/*get system tx bad packets*/
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_PCS_REGISTERS,
+		AQUANTIA_SYSTEM_SIDE_TRANSMIT_ERROR_FRAME_COUNTER2, &msw_counter);
+	SW_RTN_ON_ERROR(rv);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_PCS_REGISTERS,
+		AQUANTIA_SYSTEM_SIDE_TRANSMIT_ERROR_FRAME_COUNTER1, &lsw_counter);
+	SW_RTN_ON_ERROR(rv);
+	counter_infor->SysTxBadCRC = (msw_counter << 16) | lsw_counter;
+
+	/*get system rx good packets*/
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_PCS_REGISTERS,
+		AQUANTIA_SYSTEM_SIDE_RECEIVE_GOOD_FRAME_COUNTER2, &msw_counter);
+	SW_RTN_ON_ERROR(rv);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_PCS_REGISTERS,
+		AQUANTIA_SYSTEM_SIDE_RECEIVE_GOOD_FRAME_COUNTER1, &lsw_counter);
+	SW_RTN_ON_ERROR(rv);
+	counter_infor->SysRxGoodFrame = (msw_counter << 16) | lsw_counter;
+
+	/*get system rx bad packets*/
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_PCS_REGISTERS,
+		AQUANTIA_SYSTEM_SIDE_RECEIVE_ERROR_FRAME_COUNTER2, &msw_counter);
+	SW_RTN_ON_ERROR(rv);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_PCS_REGISTERS,
+		AQUANTIA_SYSTEM_SIDE_RECEIVE_ERROR_FRAME_COUNTER1, &lsw_counter);
+	SW_RTN_ON_ERROR(rv);
+	counter_infor->SysRxBadCRC = (msw_counter << 16) | lsw_counter;
+
+	return rv;
+}
+
+/******************************************************************************
+*
+* aquantia_phy_show show counter statistics
+*
+* show counter statistics
+*/
+sw_error_t
+aquantia_phy_show_counter(a_uint32_t dev_id, a_uint32_t phy_id,
+			 fal_port_counter_info_t * counter_infor)
+{
+	sw_error_t rv = SW_OK;
+	fal_port_speed_t speed;
+
+	rv = aquantia_phy_get_speed(dev_id, phy_id, &speed);
+	SW_RTN_ON_ERROR(rv);
+	if(speed == FAL_SPEED_2500 || speed == FAL_SPEED_5000 || speed == FAL_SPEED_10000)
+	{
+		rv = _aquantia_phy_line_side_counter_get(dev_id, phy_id, counter_infor);
+		SW_RTN_ON_ERROR(rv);
+	}
+	rv = _aquantia_phy_system_side_counter_get(dev_id, phy_id, counter_infor);
+
+	return rv;
+}
+
+/******************************************************************************
+*
+* aquantia_phy_get_status
+*
+* get phy status
+*/
+sw_error_t
+aquantia_phy_get_status(a_uint32_t dev_id, a_uint32_t phy_id,
+		struct port_phy_status *phy_status)
+{
+	sw_error_t rv = SW_OK;
+	a_uint16_t phy_data;
+
+	/*get phy link status*/
+	phy_status->link_status = aquantia_phy_get_link_status(dev_id, phy_id);
+	if(phy_status->link_status != A_TRUE)
+	{
+		return SW_OK;
+	}
+	/*get phy speed and duplex*/
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_REG_AUTONEG_VENDOR_STATUS, &phy_data);
+	SW_RTN_ON_ERROR(rv);
+	switch ((phy_data & AQUANTIA_STATUS_SPEED_MASK) >>1)
+	{
+		case AQUANTIA_STATUS_SPEED_100MBS:
+			phy_status->speed = FAL_SPEED_100;
+			break;
+		case AQUANTIA_STATUS_SPEED_1000MBS:
+			phy_status->speed = FAL_SPEED_1000;
+			break;
+		case AQUANTIA_STATUS_SPEED_2500MBS:
+			phy_status->speed = FAL_SPEED_2500;
+			break;
+		case AQUANTIA_STATUS_SPEED_5000MBS:
+			phy_status->speed = FAL_SPEED_5000;
+			break;
+		case AQUANTIA_STATUS_SPEED_10000MBS:
+			phy_status->speed = FAL_SPEED_10000;
+			break;
+		default:
+			return SW_READ_ERROR;
+	}
+	if (phy_data & AQUANTIA_STATUS_FULL_DUPLEX)
+	{
+		phy_status->duplex = FAL_FULL_DUPLEX;
+	}
+	else
+	{
+		phy_status->duplex = FAL_HALF_DUPLEX;
+	}
+	/* get phy tx flowctrl and rx flowctrl resolution status */
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_AUTONEG,
+		AQUANTIA_RESERVED_VENDOR_STATUS1, &phy_data);
+	SW_RTN_ON_ERROR(rv);
+	if(phy_data & AQUANTIA_PHY_TX_FLOWCTRL_STATUS)
+	{
+		phy_status->tx_flowctrl = A_TRUE;
+	}
+	else
+	{
+		phy_status->tx_flowctrl = A_FALSE;
+	}
+	if(phy_data & AQUANTIA_PHY_RX_FLOWCTRL_STATUS)
+	{
+		phy_status->rx_flowctrl = A_TRUE;
+	}
+	else
+	{
+		phy_status->rx_flowctrl = A_FALSE;
+	}
+
+	return rv;
+}
+
 /******************************************************************************
 *
 * aquantia_phy_hw_register init to avoid packet loss
@@ -1661,8 +1867,10 @@ static int aquantia_phy_api_ops_init(void)
 	aquantia_phy_api_ops->phy_magic_frame_mac_set = aquantia_phy_set_magic_frame_mac;
 	aquantia_phy_api_ops->phy_intr_mask_set = aquantia_phy_intr_mask_set;
 	aquantia_phy_api_ops->phy_intr_mask_get = aquantia_phy_intr_mask_get;
-	aquantia_phy_api_ops->phy_id_get= aquantia_phy_get_phy_id;
-	aquantia_phy_api_ops->phy_interface_mode_set= aquantia_phy_interface_set_mode;
+	aquantia_phy_api_ops->phy_id_get = aquantia_phy_get_phy_id;
+	aquantia_phy_api_ops->phy_interface_mode_set = aquantia_phy_interface_set_mode;
+	aquantia_phy_api_ops->phy_get_status = aquantia_phy_get_status;
+	aquantia_phy_api_ops->phy_counter_show = aquantia_phy_show_counter;
 	ret = hsl_phy_api_ops_register(AQUANTIA_PHY_CHIP, aquantia_phy_api_ops);
 	if (ret == 0)
 		SSDK_INFO("qca probe aquantia phy driver succeeded!\n");

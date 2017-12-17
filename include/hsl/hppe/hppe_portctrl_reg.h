@@ -1027,5 +1027,93 @@ union lpi_cnt_u {
 	struct lpi_cnt bf;
 };
 
+/*[register] DROP_CNT*/
+#define DROP_CNT
+#define DROP_CNT_ADDRESS 0x24
+#define DROP_CNT_NUM     8
+#define DROP_CNT_INC     0x4
+#define DROP_CNT_TYPE    REG_TYPE_RW
+#define DROP_CNT_DEFAULT 0x0
+	/*[field] DROP_CNT*/
+	#define DROP_CNT_DROP_CNT
+	#define DROP_CNT_DROP_CNT_OFFSET  0
+	#define DROP_CNT_DROP_CNT_LEN     32
+	#define DROP_CNT_DROP_CNT_DEFAULT 0x0
+
+struct drop_cnt {
+	a_uint32_t  drop_cnt:32;
+};
+
+union drop_cnt_u {
+	a_uint32_t val;
+	struct drop_cnt bf;
+};
+
+/*[register] IPR_PKT_NUM_TBL_REG*/
+#define IPR_PKT_NUM_TBL_REG
+#define IPR_PKT_NUM_TBL_REG_ADDRESS 0x80
+#define IPR_PKT_NUM_TBL_REG_NUM     8
+#define IPR_PKT_NUM_TBL_REG_INC     0x4
+#define IPR_PKT_NUM_TBL_REG_TYPE    REG_TYPE_RW
+#define IPR_PKT_NUM_TBL_REG_DEFAULT 0x0
+	/*[field] PACKETS*/
+	#define IPR_PKT_NUM_TBL_REG_PACKETS
+	#define IPR_PKT_NUM_TBL_REG_PACKETS_OFFSET  0
+	#define IPR_PKT_NUM_TBL_REG_PACKETS_LEN     32
+	#define IPR_PKT_NUM_TBL_REG_PACKETS_DEFAULT 0x0
+
+struct ipr_pkt_num_tbl_reg {
+	a_uint32_t  packets:32;
+};
+
+union ipr_pkt_num_tbl_reg_u {
+	a_uint32_t val;
+	struct ipr_pkt_num_tbl_reg bf;
+};
+
+/*[register] IPR_BYTE_LOW_REG_REG*/
+#define IPR_BYTE_LOW_REG_REG
+#define IPR_BYTE_LOW_REG_REG_ADDRESS 0xa0
+#define IPR_BYTE_LOW_REG_REG_NUM     8
+#define IPR_BYTE_LOW_REG_REG_INC     0x4
+#define IPR_BYTE_LOW_REG_REG_TYPE    REG_TYPE_RW
+#define IPR_BYTE_LOW_REG_REG_DEFAULT 0x0
+	/*[field] BYTES*/
+	#define IPR_BYTE_LOW_REG_REG_BYTES
+	#define IPR_BYTE_LOW_REG_REG_BYTES_OFFSET  0
+	#define IPR_BYTE_LOW_REG_REG_BYTES_LEN     32
+	#define IPR_BYTE_LOW_REG_REG_BYTES_DEFAULT 0x0
+
+struct ipr_byte_low_reg_reg {
+	a_uint32_t  bytes:32;
+};
+
+union ipr_byte_low_reg_reg_u {
+	a_uint32_t val;
+	struct ipr_byte_low_reg_reg bf;
+};
+
+/*[register] IPR_BYTE_HIGH_REG*/
+#define IPR_BYTE_HIGH_REG
+#define IPR_BYTE_HIGH_REG_ADDRESS 0xc0
+#define IPR_BYTE_HIGH_REG_NUM     8
+#define IPR_BYTE_HIGH_REG_INC     0x4
+#define IPR_BYTE_HIGH_REG_TYPE    REG_TYPE_RW
+#define IPR_BYTE_HIGH_REG_DEFAULT 0x0
+	/*[field] BYTES*/
+	#define IPR_BYTE_HIGH_REG_BYTES
+	#define IPR_BYTE_HIGH_REG_BYTES_OFFSET  0
+	#define IPR_BYTE_HIGH_REG_BYTES_LEN     32
+	#define IPR_BYTE_HIGH_REG_BYTES_DEFAULT 0x0
+
+struct ipr_byte_high_reg {
+	a_uint32_t  bytes:32;
+};
+
+union ipr_byte_high_reg_u {
+	a_uint32_t val;
+	struct ipr_byte_high_reg bf;
+};
+
 
 #endif

@@ -72,10 +72,21 @@ a_uint32_t dess_pbmp_5[PORT_WRAPPER_MAX] = {
 	((1<<1) | (1<<4)),                            /*PORT_WRAPPER_SGMII0_RGMII4*/
 	((1<<2) | (1<<4)),                            /*PORT_WRAPPER_SGMII1_RGMII4*/
 	((1<<5) | (1<<4)),                            /*PORT_WRAPPER_SGMII4_RGMII4*/
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	((1<<1) | (1<<2) | (1<<3) | (1<<4) | (1<<5)), /*PORT_WRAPPER_PSGMII_FIBER*/
 	};
 
 a_uint32_t dess_pbmp_2[PORT_WRAPPER_MAX] = {
-	((1<<4) | (1<<5)), 						/*PORT_WRAPPER_PSGMII*/
+	((1<<4) | (1<<5)), 				/*PORT_WRAPPER_PSGMII*/
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	((1<<4) | (1<<5)), 				/*PORT_WRAPPER_PSGMII_FIBER*/
 	};
 
 a_uint32_t dess_get_port_phy_id(void)

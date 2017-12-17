@@ -103,7 +103,7 @@ extern ssdk_dt_global_t ssdk_dt_global;
 extern ssdk_chip_type SSDK_CURRENT_CHIP_TYPE;
 void __iomem *hppe_uniphy_addr = NULL;
 
-static struct mutex switch_mdio_lock;
+struct mutex switch_mdio_lock;
 
 #ifdef BOARD_IPQ806X
 #define IPQ806X_MDIO_BUS_NAME			"mdio-gpio"
@@ -120,6 +120,7 @@ static struct mutex switch_mdio_lock;
 #define ISIS_CHIP_REG 0
 #define SHIVA_CHIP_ID 0x1f
 #define SHIVA_CHIP_REG 0x10
+#define HIGH_ADDR_DFLT	0x200
 
 /*
  * Using ISIS's address as default
@@ -185,6 +186,7 @@ qca_ar8216_mii_read(a_uint32_t dev_id, a_uint32_t reg)
 	udelay(100);
         lo = mdiobus_read(bus, 0x10 | r2, r1);
         hi = mdiobus_read(bus, 0x10 | r2, r1 + 1);
+	mdiobus_write(bus, switch_chip_id, switch_chip_reg, HIGH_ADDR_DFLT);
         mutex_unlock(&switch_mdio_lock);
         return (hi << 16) | lo;
 }
@@ -213,6 +215,7 @@ qca_ar8216_mii_write(a_uint32_t dev_id, a_uint32_t reg, a_uint32_t val)
             mdiobus_write(bus, 0x10 | r2, r1 + 1, hi);
             mdiobus_write(bus, 0x10 | r2, r1, lo);
         }
+	mdiobus_write(bus, switch_chip_id, switch_chip_reg, HIGH_ADDR_DFLT);
         mutex_unlock(&switch_mdio_lock);
 }
 
@@ -347,28 +350,6 @@ u16 qca_phy_mmd_read(u32 dev_id, u32 phy_id,
 	return value;
 }
 
-sw_error_t
-qca_xgphy_read(a_uint32_t dev_id, a_uint32_t phy_addr,
-                           a_uint32_t reg, a_uint16_t* data)
-{
-	struct mii_bus *bus = miibus;
-
-	reg = MII_PHYADDR_C45 | reg;
-	*data = mdiobus_read(bus, phy_addr, reg);
-
-	return 0;
-}
-sw_error_t
-qca_xgphy_write(a_uint32_t dev_id, a_uint32_t phy_addr,
-                            a_uint32_t reg, a_uint16_t data)
-{
-	struct mii_bus *bus = miibus;
-
-	reg = MII_PHYADDR_C45 | reg;
-	mdiobus_write(bus, phy_addr, reg, data);
-
-	return 0;
-}
 sw_error_t
 qca_switch_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
 {
@@ -551,7 +532,7 @@ static int miibus_get(a_uint32_t dev_id)
 
 	if (!mdio_node) {
 		printk("No MDIO node found in DTS!\n");
-		return 0;
+		return 1;
 	}
 
 	mdio_plat = of_find_device_by_node(mdio_node);
@@ -565,7 +546,7 @@ static int miibus_get(a_uint32_t dev_id)
 		mdio_data = dev_get_drvdata(&mdio_plat->dev);
 		if (!mdio_data) {
                 	printk("cannot get mdio_data reference from device data\n");
-                	return 0;
+			return 1;
         	}
 		miibus = mdio_data->mii_bus;
 	}
@@ -728,7 +709,7 @@ static ssize_t ssdk_packet_counter_get(struct device *dev,
 		return count;
 	}
 
-	count = snprintf(buf, (ssize_t)PAGE_SIZE, " ");
+	count = snprintf(buf, (ssize_t)PAGE_SIZE, "\n");
 
 	p_api->adpt_debug_counter_get(A_FALSE);
 
@@ -771,7 +752,7 @@ static ssize_t ssdk_byte_counter_get(struct device *dev,
 		return count;
 	}
 
-	count = snprintf(buf, (ssize_t)PAGE_SIZE, " ");
+	count = snprintf(buf, (ssize_t)PAGE_SIZE, "\n");
 
 	p_api->adpt_debug_counter_get(A_TRUE);
 
@@ -869,7 +850,7 @@ static ssize_t ssdk_dts_dump(struct device *dev,
 	a_uint32_t dev_id;
 	ssdk_dt_cfg *dt_cfg;
 
-	count = snprintf(buf, (ssize_t)PAGE_SIZE, " ");
+	count = snprintf(buf, (ssize_t)PAGE_SIZE, "\n");
 
 	for (dev_id = 0; dev_id < ssdk_dt_global.num_devices; dev_id ++)
 	{

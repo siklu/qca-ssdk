@@ -816,6 +816,22 @@ cmd_data_check_interface_mode(char *cmd_str, a_uint32_t * arg_val, a_uint32_t si
     {
 	*arg_val = PHY_PSGMII_AMDET;
     }
+    else if (!strncasecmp(cmd_str, "rgmii_amdet", 13))
+    {
+	*arg_val = PORT_RGMII_AMDET;
+    }
+    else if (!strncasecmp(cmd_str, "rgmii_baset", 13))
+    {
+	*arg_val = PORT_RGMII_BASET;
+    }
+    else if (!strncasecmp(cmd_str, "rgmii_bx1000", 13))
+    {
+	*arg_val = PORT_RGMII_BX1000;
+    }
+    else if (!strncasecmp(cmd_str, "rgmii_fx100", 13))
+    {
+	*arg_val = PORT_RGMII_FX100;
+    }
     else if (!strncasecmp(cmd_str, "sgmii_baset", 13))
     {
 	*arg_val = PHY_SGMII_BASET;
@@ -2418,6 +2434,44 @@ cmd_data_check_udf_type(char *cmdstr, fal_acl_udf_type_t * arg_val, a_uint32_t s
 
     return SW_OK;
 }
+
+sw_error_t
+cmd_data_check_fieldop(char *cmdstr, fal_acl_field_op_t def,
+                       fal_acl_field_op_t * val)
+{
+    if ('\0' == cmdstr[0])
+    {
+        *val = def;
+    }
+    else if ((!strcasecmp(cmdstr, "mask")) || (!strcasecmp(cmdstr, "m")))
+    {
+        *val = FAL_ACL_FIELD_MASK;
+    }
+    else if ((!strcasecmp(cmdstr, "range")) || (!strcasecmp(cmdstr, "r")))
+    {
+        *val = FAL_ACL_FIELD_RANGE;
+    }
+    else if ((!strcasecmp(cmdstr, "le")) || (!strcasecmp(cmdstr, "l")))
+    {
+        *val = FAL_ACL_FIELD_LE;
+    }
+    else if ((!strcasecmp(cmdstr, "ge")) || (!strcasecmp(cmdstr, "g")))
+    {
+        *val = FAL_ACL_FIELD_GE;
+    }
+    else if ((!strcasecmp(cmdstr, "ne")) || (!strcasecmp(cmdstr, "n")))
+    {
+        *val = FAL_ACL_FIELD_NE;
+    }
+    else
+    {
+        return SW_BAD_VALUE;
+    }
+
+    return SW_OK;
+}
+
+
 #endif
 sw_error_t
 cmd_data_check_ip4addr(char *cmdstr, void * val, a_uint32_t size)
