@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2018, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -28,7 +28,7 @@
 #include "hppe_ip.h"
 
 #define ADPT_VSI_MAX FAL_VSI_MAX
-#define ADPT_VSI_RESERVE_MAX 5
+#define ADPT_VSI_STRIP_VLAN_TAG 2
 
 enum{
 	ADPT_VSI_ADD,
@@ -186,6 +186,14 @@ static sw_error_t _adpt_hppe_vsi_xlt_update(a_uint32_t dev_id,
 			aos_mem_zero(&xlt_action, sizeof(union xlt_action_tbl_u));
 			xlt_action.bf.vsi_cmd = A_TRUE;
 			xlt_action.bf.vsi = vsi_id;
+			if(ctag_vid != FAL_VLAN_INVALID)
+			{
+				xlt_action.bf.xlt_cvid_cmd = ADPT_VSI_STRIP_VLAN_TAG;
+			}
+			if(stag_vid != FAL_VLAN_INVALID)
+			{
+				xlt_action.bf.xlt_svid_cmd = ADPT_VSI_STRIP_VLAN_TAG;
+			}
 			rv = hppe_xlt_action_tbl_set(dev_id, new_entry, &xlt_action);
 			return rv;
 		}

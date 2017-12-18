@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2014-2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2014-2018, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -174,9 +174,21 @@ qca_hppe_portvlan_hw_init(a_uint32_t dev_id)
 	}
 
 	vlantag_eg_mode.mask = 0x3;
+	vlantag_eg_mode.stag_mode = FAL_EG_UNTOUCHED;
+	vlantag_eg_mode.ctag_mode = FAL_EG_UNTOUCHED;
+	/*stag/ctag egress mode as untouched/untouched*/
+	fal_port_vlantag_egmode_set(dev_id, SSDK_PHYSICAL_PORT0,
+				&vlantag_eg_mode);
+	/*vsi tag mode control to disable*/
+	fal_port_vlantag_vsi_egmode_enable(dev_id, SSDK_PHYSICAL_PORT0,
+				A_FALSE);
+	/*ingress vlan translation mismatched command as forward*/
+	fal_port_vlan_xlt_miss_cmd_set(dev_id, SSDK_PHYSICAL_PORT0,
+				FAL_MAC_FRWRD);
+
 	vlantag_eg_mode.stag_mode = FAL_EG_UNMODIFIED;
 	vlantag_eg_mode.ctag_mode = FAL_EG_UNMODIFIED;
-	for (port_id = SSDK_PHYSICAL_PORT0; port_id <= SSDK_PHYSICAL_PORT7;
+	for (port_id = SSDK_PHYSICAL_PORT1; port_id <= SSDK_PHYSICAL_PORT7;
 			port_id++) {
 		/*ingress vlan translation mismatched command as forward*/
 		fal_port_vlan_xlt_miss_cmd_set(dev_id, port_id, FAL_MAC_FRWRD);
