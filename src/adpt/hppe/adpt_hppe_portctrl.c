@@ -3878,6 +3878,10 @@ qca_hppe_mac_sw_sync_task(struct qca_phy_priv *priv)
 				}
 				if (priv->port_tx_flowctrl_forcemode[port_id - 1] != A_TRUE)
 				{
+					if (phy_status.duplex == FAL_HALF_DUPLEX)
+					{
+						phy_status.tx_flowctrl = A_TRUE;
+					}
 					if (phy_status.tx_flowctrl != priv->port_old_tx_flowctrl[port_id - 1])
 					{
 						adpt_hppe_port_txfc_status_set(priv->device_id, port_id, phy_status.tx_flowctrl);
@@ -3889,6 +3893,10 @@ qca_hppe_mac_sw_sync_task(struct qca_phy_priv *priv)
 				}
 				if (priv->port_rx_flowctrl_forcemode[port_id - 1] != A_TRUE)
 				{
+					if (phy_status.duplex == FAL_HALF_DUPLEX)
+					{
+						phy_status.rx_flowctrl = A_TRUE;
+					}
 					if (phy_status.rx_flowctrl != priv->port_old_rx_flowctrl[port_id - 1])
 					{
 						adpt_hppe_port_rxfc_status_set(priv->device_id, port_id, phy_status.rx_flowctrl);
