@@ -67,6 +67,7 @@
 #define PROMISCUOUS_MODE 0x1
 #define PASS_CONTROL_PACKET 0x2
 #define XGMAC_PAUSE_TIME	0xffff
+#define CARRIER_SENSE_SIGNAL_FROM_MAC        0x0
 
 static a_uint32_t port_interface_mode[SW_MAX_NR_DEV][SW_MAX_NR_PORT] = {0};
 
@@ -235,6 +236,7 @@ _adpt_gmac_port_max_frame_size_set(a_uint32_t dev_id, fal_port_t port_id,
 
 	port_id = HPPE_TO_GMAC_PORT_ID(port_id);
 	rv |= hppe_mac_ctrl2_maxfr_set(dev_id, port_id, max_frame);
+	rv |= hppe_mac_ctrl2_crs_sel_set(dev_id, port_id, CARRIER_SENSE_SIGNAL_FROM_MAC);
 
 	return rv;
 }
