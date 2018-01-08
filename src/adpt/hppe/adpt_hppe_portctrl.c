@@ -902,6 +902,10 @@ adpt_hppe_port_max_frame_size_set(a_uint32_t dev_id, fal_port_t port_id,
 
 	ADPT_DEV_ID_CHECK(dev_id);
 
+	if (max_frame > SSDK_MAX_FRAME_SIZE) {
+		return SW_BAD_VALUE;
+	}
+
 	port_mac_type =qca_hppe_port_mac_type_get(dev_id, port_id);
 	if (port_mac_type == PORT_XGMAC_TYPE)
 		rv |= _adpt_xgmac_port_max_frame_size_set( dev_id, port_id, max_frame);
