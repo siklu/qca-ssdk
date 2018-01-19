@@ -69,6 +69,8 @@
 #define XGMAC_PAUSE_TIME	0xffff
 #define CARRIER_SENSE_SIGNAL_FROM_MAC        0x0
 
+#define PHY_PORT_TO_BM_PORT(port)	(port + 7)
+
 static a_uint32_t port_interface_mode[SW_MAX_NR_DEV][SW_MAX_NR_PORT] = {0};
 
 static a_bool_t
@@ -1684,6 +1686,7 @@ adpt_hppe_port_txfc_status_set(a_uint32_t dev_id, fal_port_t port_id,
 	sw_error_t rv = SW_OK;
 	a_uint32_t port_mac_type;
 	struct qca_phy_priv *priv = ssdk_phy_priv_data_get(dev_id);
+	adpt_api_t *p_adpt_api;
 
 	ADPT_DEV_ID_CHECK(dev_id);
 
@@ -1706,7 +1709,14 @@ adpt_hppe_port_txfc_status_set(a_uint32_t dev_id, fal_port_t port_id,
 
 	priv->port_old_tx_flowctrl[port_id - 1] = enable;
 
-	return SW_OK;
+	/*keep bm status same with port*/
+	p_adpt_api = adpt_api_ptr_get(dev_id);
+	if (p_adpt_api && p_adpt_api->adpt_port_bm_ctrl_set)
+		rv = p_adpt_api->adpt_port_bm_ctrl_set(dev_id,
+					PHY_PORT_TO_BM_PORT(port_id),
+					enable);
+
+	return rv;
 }
 sw_error_t
 adpt_hppe_port_counter_set(a_uint32_t dev_id, fal_port_t port_id,
