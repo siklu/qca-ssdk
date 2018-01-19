@@ -443,15 +443,14 @@ qca_hppe_bm_hw_init(a_uint32_t dev_id)
 		fal_port_bufgroup_map_set(0, i, 0);
 	}
 
-	fal_bm_bufgroup_buffer_set(dev_id, 0, 1600);
+	fal_bm_bufgroup_buffer_set(dev_id, 0, 1400);
 
 	/* set reserved buffer */
-	fal_bm_port_reserved_buffer_set(dev_id, 0, 0, 52);
-	for (i = 1; i < HPPE_BM_PHY_PORT_OFFSET; i++) {
-		fal_bm_port_reserved_buffer_set(dev_id, i, 0, 18);
+	for (i = 0; i < HPPE_BM_PHY_PORT_OFFSET; i++) {
+		fal_bm_port_reserved_buffer_set(dev_id, i, 0, 100);
 	}
 	for (i = HPPE_BM_PHY_PORT_OFFSET; i < HPPE_BM_PORT_NUM-1; i++) {
-		fal_bm_port_reserved_buffer_set(dev_id, i, 0, 163);
+		fal_bm_port_reserved_buffer_set(dev_id, i, 0, 128);
 	}
 	fal_bm_port_reserved_buffer_set(dev_id, HPPE_BM_PORT_NUM-1, 0, 40);
 
@@ -575,7 +574,7 @@ qca_hppe_qm_hw_init(a_uint32_t dev_id)
 
 	memset(&dthresh_cfg, 0, sizeof(dthresh_cfg));
 	dthresh_cfg.shared_weight = 4;
-	dthresh_cfg.ceiling = 250;
+	dthresh_cfg.ceiling = 400;
 	dthresh_cfg.green_resume_off = 36;
 	for (i = 0; i < SSDK_L0SCHEDULER_UCASTQ_CFG_MAX; i++) {
 		fal_ac_dynamic_threshold_set(dev_id, i, &dthresh_cfg);
