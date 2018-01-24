@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2018, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -647,7 +647,7 @@ adpt_hppe_fdb_del_all(a_uint32_t dev_id, a_uint32_t flag)
 
 	ADPT_DEV_ID_CHECK(dev_id);
 
-	if (flag == 1)
+	if (FAL_FDB_DEL_STATIC & flag)
 	{
 		aos_mem_zero(&entry, sizeof (fal_fdb_entry_t));
 		return _modify_fdb_table_entry(dev_id, &entry, OP_TYPE_FLUSH, 0x0);

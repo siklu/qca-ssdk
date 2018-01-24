@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2017-2018, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -17,12 +17,7 @@
 #include "hsl_api.h"
 #include "hsl.h"
 #include "aquantia_phy.h"
-#include "aos_timer.h"
 #include "hsl_phy.h"
-#include <linux/kconfig.h>
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/phy.h>
 #include "ssdk_plat.h"
 
 /* #define aquantia_phy_reg_read _phy_reg_read  */
