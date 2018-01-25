@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, 2015-2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2013, 2015-2018, The Linux Foundation. All rights reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -766,6 +766,7 @@ struct sub_cmd_des_t g_fdb_des[] =
 	{"PtLearnCtrl", "set", SW_API_FDB_PT_NEWADDR_LEARN_SET, NULL},
 	{"PtStationMove", "set", SW_API_FDB_PT_STAMOVE_SET, NULL},
 	{"PtMacLimitCtrl", "set", SW_API_FDB_PT_MACLIMIT_CTRL_SET, NULL},
+        {"fidEntry", "flush", SW_API_FDB_DEL_BY_FID, NULL},
 #endif
 	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
 };
