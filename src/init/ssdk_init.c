@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2014-2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2014-2018, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -1681,11 +1681,13 @@ static int ssdk_switch_register(a_uint32_t dev_id)
 	#endif
 	#endif
 	#ifdef HPPE
+	#ifdef HAWKEYE_CHIP
 	ret = qca_mac_sw_sync_work_start(priv);
 	if (ret != 0) {
 			SSDK_ERROR("qca_mac_sw_sync_work_start failed for chip 0x%02x%02x\n", priv->version, priv->revision);
 			return ret;
 	}
+	#endif
 	#endif
 
 	return 0;
@@ -1697,9 +1699,10 @@ static int ssdk_switch_unregister(a_uint32_t dev_id)
 	qca_phy_mib_work_stop(qca_phy_priv_global[dev_id]);
 	qm_err_check_work_stop(qca_phy_priv_global[dev_id]);
 	#ifdef HPPE
+	#ifdef HAWKEYE_CHIP
 	qca_mac_sw_sync_work_stop(qca_phy_priv_global[dev_id]);
 	#endif
-
+	#endif
 	#if defined(IN_SWCONFIG)
 	unregister_switch(&qca_phy_priv_global[dev_id]->sw_dev);
 	#endif
@@ -2252,9 +2255,15 @@ ssdk_init(a_uint32_t dev_id, ssdk_init_cfg * cfg)
 	if (rv != SW_OK)
 		SSDK_ERROR("ssdk fal init failed: %d. \r\n", rv);
 
-	rv = ssdk_phy_driver_init(dev_id, cfg);
-	if (rv != SW_OK)
-		SSDK_ERROR("ssdk phy init failed: %d. \r\n", rv);
+#ifndef HAWKEYE_CHIP
+	if (cfg->chip_type != CHIP_HPPE) {
+#endif
+		rv = ssdk_phy_driver_init(dev_id, cfg);
+		if (rv != SW_OK)
+			SSDK_ERROR("ssdk phy init failed: %d. \r\n", rv);
+#ifndef HAWKEYE_CHIP
+	}
+#endif
 
 	return rv;
 }
