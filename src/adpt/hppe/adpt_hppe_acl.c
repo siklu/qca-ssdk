@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2018, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -46,7 +46,7 @@
 
 
 typedef struct{
-	a_uint8_t valid;
+	a_bool_t valid;
 	a_uint32_t list_pri;
 	a_uint8_t free_hw_entry_bitmap;
 	a_uint8_t free_hw_entry_count;
@@ -561,12 +561,28 @@ adpt_hppe_acl_list_bind(a_uint32_t dev_id, a_uint32_t list_id, fal_acl_direc_t d
 	ADPT_DEV_ID_CHECK(dev_id);
 
 	if(list_id >= ADPT_ACL_LIST_NUM)
+	{
 		return SW_OUT_OF_RANGE;
+	}
+
+	if(g_acl_list[dev_id][list_id].valid == A_FALSE)
+	{
+		return SW_NOT_FOUND;
+	}
 
 	for(rule_id = 0; rule_id < ADPT_ACL_RULE_NUM_PER_LIST; rule_id++)
 	{
 		if(g_acl_list[dev_id][list_id].rule_hw_entry[rule_id])
-			_adpt_hppe_acl_rule_bind(dev_id, list_id, rule_id, direc, obj_t, obj_idx);
+		{
+			sw_error_t rc;
+			rc = _adpt_hppe_acl_rule_bind(dev_id, list_id, rule_id,
+					direc, obj_t, obj_idx);
+			if(rc != SW_OK)
+			{
+				SSDK_ERROR("rule %d bind fail\n", rule_id);
+				return SW_FAIL;
+			}
+		}
 	}
 	return SW_OK;
 }
