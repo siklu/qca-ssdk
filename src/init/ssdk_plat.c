@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2017-2018, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -1128,7 +1128,9 @@ ssdk_plat_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 			clk_prepare_enable(dt_cfg->ess_clk);
 		} else if (!IS_ERR(dt_cfg->cmnblk_clk)) {
 #if defined(HPPE)
+#ifdef HAWKEYE_CHIP
 			ssdk_ppe_clock_init();
+#endif
 #endif
 			return 0;
 		}

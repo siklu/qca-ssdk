@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2017-2018, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -27,7 +27,7 @@
 #include "hppe_reg_access.h"
 #include "hsl_phy.h"
 
-
+#ifdef HAWKEYE_CHIP
 
 extern void adpt_hppe_gcc_port_speed_clock_set(a_uint32_t dev_id,
 				a_uint32_t port_id, fal_port_speed_t phy_speed);
@@ -589,7 +589,7 @@ sw_error_t adpt_hppe_uniphy_init(a_uint32_t dev_id)
 
 	return SW_OK;
 }
-
+#endif
 
 /**
  * @}

@@ -57,19 +57,33 @@ qca_hppe_portctrl_hw_init(a_uint32_t dev_id)
 
 	for(i = SSDK_PHYSICAL_PORT1; i < SSDK_PHYSICAL_PORT7; i++) {
 		qca_hppe_port_mac_type_set(dev_id, i, PORT_GMAC_TYPE);
+#ifdef HAWKEYE_CHIP
 		fal_port_txmac_status_set (dev_id, i, A_FALSE);
 		fal_port_rxmac_status_set (dev_id, i, A_FALSE);
 		fal_port_rxfc_status_set(dev_id, i, A_FALSE);
 		fal_port_txfc_status_set(dev_id, i, A_FALSE);
+#else
+		fal_port_txmac_status_set (dev_id, i, A_TRUE);
+		fal_port_rxmac_status_set (dev_id, i, A_TRUE);
+		fal_port_rxfc_status_set(dev_id, i, A_TRUE);
+		fal_port_txfc_status_set(dev_id, i, A_TRUE);
+#endif
 		fal_port_max_frame_size_set(dev_id, i, SSDK_MAX_FRAME_SIZE);
 	}
 
 	for(i = SSDK_PHYSICAL_PORT5; i < SSDK_PHYSICAL_PORT7; i++) {
 		qca_hppe_port_mac_type_set(dev_id, i, PORT_XGMAC_TYPE);
+#ifdef HAWKEYE_CHIP
 		fal_port_txmac_status_set (dev_id, i, A_FALSE);
 		fal_port_rxmac_status_set (dev_id, i, A_FALSE);
 		fal_port_rxfc_status_set(dev_id, i, A_FALSE);
 		fal_port_txfc_status_set(dev_id, i, A_FALSE);
+#else
+		fal_port_txmac_status_set (dev_id, i, A_TRUE);
+		fal_port_rxmac_status_set (dev_id, i, A_TRUE);
+		fal_port_rxfc_status_set(dev_id, i, A_TRUE);
+		fal_port_txfc_status_set(dev_id, i, A_TRUE);
+#endif
 		fal_port_max_frame_size_set(dev_id, i, SSDK_MAX_FRAME_SIZE);
 	}
 
@@ -713,8 +727,10 @@ qca_hppe_interface_mode_init(a_uint32_t dev_id, a_uint32_t mode0, a_uint32_t mod
 	fal_port_t port_id;
 
 	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
-	SW_RTN_ON_NULL(p_api->adpt_uniphy_mode_set);
 	SW_RTN_ON_NULL(p_api->adpt_port_mux_mac_type_set);
+#ifdef HAWKEYE_CHIP
+	SW_RTN_ON_NULL(p_api->adpt_uniphy_mode_set);
+
 
 	rv = p_api->adpt_uniphy_mode_set(dev_id, SSDK_UNIPHY_INSTANCE0, mode0);
 	SW_RTN_ON_ERROR(rv);
@@ -724,7 +740,7 @@ qca_hppe_interface_mode_init(a_uint32_t dev_id, a_uint32_t mode0, a_uint32_t mod
 
 	rv = p_api->adpt_uniphy_mode_set(dev_id, SSDK_UNIPHY_INSTANCE2, mode2);
 	SW_RTN_ON_ERROR(rv);
-
+#endif
 	for(port_id = SSDK_PHYSICAL_PORT1; port_id <=SSDK_PHYSICAL_PORT6; port_id++) {
 		rv = p_api->adpt_port_mux_mac_type_set(dev_id, port_id, mode0, mode1, mode2);
 		if(rv != SW_OK) {
@@ -761,9 +777,10 @@ qca_hppe_flow_hw_init(a_uint32_t dev_id)
 sw_error_t qca_hppe_hw_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 {
 	sw_error_t rv = SW_OK;
+#ifdef HAWKEYE_CHIP
 	/* reset ppe */
 	ssdk_ppe_reset_init();
-
+#endif
 	rv = qca_switch_init(dev_id);
 	SW_RTN_ON_ERROR(rv);
 
