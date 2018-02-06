@@ -946,21 +946,22 @@ f1_phy_set_speed(a_uint32_t dev_id, a_uint32_t phy_id,
     if (FAL_SPEED_1000 == speed)
     {
         phy_data |= F1_CTRL_SPEED_1000;
+	phy_data |= F1_CTRL_AUTONEGOTIATION_ENABLE;
     }
     else if (FAL_SPEED_100 == speed)
     {
         phy_data |= F1_CTRL_SPEED_100;
+	phy_data &= ~F1_CTRL_AUTONEGOTIATION_ENABLE;
     }
     else if (FAL_SPEED_10 == speed)
     {
         phy_data |= F1_CTRL_SPEED_10;
+	phy_data &= ~F1_CTRL_AUTONEGOTIATION_ENABLE;
     }
     else
     {
         return SW_BAD_PARAM;
     }
-
-    phy_data &= ~F1_CTRL_AUTONEGOTIATION_ENABLE;
 
     (void)f1_phy_get_autoneg_adv(dev_id, phy_id, &autoneg);
     oldneg = autoneg;
@@ -1081,6 +1082,7 @@ f1_phy_set_duplex(a_uint32_t dev_id, a_uint32_t phy_id,
     if (FAL_SPEED_1000 == old_speed)
     {
         phy_data |= F1_CTRL_SPEED_1000;
+        phy_data |= F1_CTRL_AUTONEGOTIATION_ENABLE;
     }
     else if (FAL_SPEED_100 == old_speed)
     {
