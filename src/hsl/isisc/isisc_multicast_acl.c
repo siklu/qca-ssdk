@@ -1008,7 +1008,8 @@ sw_error_t isisc_igmp_sg_entry_query(a_uint32_t dev_id, fal_igmp_sg_info_t *info
     number = isisc_multicast_acl_query(dev_id);
     if(number > FAL_IGMP_SG_ENTRY_MAX)
     {
-		return SW_FAIL;
+	    HSL_API_UNLOCK;
+	    return SW_FAIL;
     }
     info->cnt = number;
 
