@@ -3102,8 +3102,6 @@ adpt_hppe_acl_rule_add(a_uint32_t dev_id, a_uint32_t list_id,
 
 	if(rule_type_map == 0)
 	{
-		if((FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_IPV6)) ||
-			(FAL_FIELD_FLG_TST(rule->field_flg, FAL_ACL_FIELD_IP)))
 		rule_type_map |= (1<<ADPT_ACL_HPPE_MAC_DA_RULE);
 	}
 
