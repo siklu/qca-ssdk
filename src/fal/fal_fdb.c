@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2015-2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015-2018, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -942,6 +942,20 @@ _fal_fdb_port_maclimit_ctrl_get(a_uint32_t dev_id, fal_port_t port_id, fal_macli
     rv = p_api->adpt_fdb_port_maclimit_ctrl_get(dev_id, port_id, maclimit_ctrl);
     return rv;
 }
+sw_error_t
+_fal_fdb_del_by_fid(a_uint32_t dev_id, a_uint16_t fid, a_uint32_t flag)
+{
+    adpt_api_t *p_api;
+	sw_error_t rv = SW_OK;
+
+    SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+    if (NULL == p_api->adpt_fdb_del_by_fid)
+        return SW_NOT_SUPPORTED;
+
+    rv = p_api->adpt_fdb_del_by_fid(dev_id, fid, flag);
+    return rv;
+}
 
 /*insert flag for inner fal, don't remove it*/
 
@@ -1796,6 +1810,17 @@ fal_fdb_port_maclimit_ctrl_get(a_uint32_t dev_id, fal_port_t port_id, fal_maclim
     FAL_API_UNLOCK;
     return rv;
 }
+sw_error_t
+fal_fdb_del_by_fid(a_uint32_t dev_id, a_uint16_t fid, a_uint32_t flag)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_API_LOCK;
+    rv = _fal_fdb_del_by_fid(dev_id, fid, flag);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
 
 #ifndef IN_FDB_MINI
 
@@ -1864,6 +1889,8 @@ fal_fdb_port_maclimit_ctrl_get(a_uint32_t dev_id, fal_port_t port_id, fal_maclim
     EXPORT_SYMBOL(fal_fdb_port_maclimit_ctrl_set);
 
     EXPORT_SYMBOL(fal_fdb_port_maclimit_ctrl_get);
+
+    EXPORT_SYMBOL(fal_fdb_del_by_fid);
 #endif
 
     EXPORT_SYMBOL(fal_fdb_port_learned_mac_counter_get);

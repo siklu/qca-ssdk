@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2018, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -110,6 +110,7 @@ typedef sw_error_t (*adpt_fdb_del_all_func)(a_uint32_t dev_id, a_uint32_t flag);
 typedef sw_error_t (*adpt_fdb_age_ctrl_get_func)(a_uint32_t dev_id, a_bool_t * enable);
 typedef sw_error_t (*adpt_fdb_port_maclimit_ctrl_set_func)(a_uint32_t dev_id, fal_port_t port_id, fal_maclimit_ctrl_t * maclimit_ctrl);
 typedef sw_error_t (*adpt_fdb_port_maclimit_ctrl_get_func)(a_uint32_t dev_id, fal_port_t port_id, fal_maclimit_ctrl_t * maclimit_ctrl);
+typedef sw_error_t (*adpt_fdb_del_by_fid_func)(a_uint32_t dev_id, a_uint16_t fid, a_uint32_t flag);
 typedef sw_error_t (*adpt_fdb_port_promisc_mode_set_func)(a_uint32_t dev_id,
 			fal_port_t port_id, a_bool_t enable);
 typedef sw_error_t (*adpt_fdb_port_promisc_mode_get_func)(a_uint32_t dev_id,
@@ -883,7 +884,7 @@ typedef sw_error_t (*adpt_uniphy_mode_set_func)(a_uint32_t dev_id, a_uint32_t in
 
 typedef struct
 {
-	a_uint32_t adpt_fdb_func_bitmap;
+	a_uint32_t adpt_fdb_func_bitmap[2];
 	adpt_fdb_first_func adpt_fdb_first;
 	adpt_fdb_next_func adpt_fdb_next;
 	adpt_fdb_add_func adpt_fdb_add;
@@ -916,6 +917,7 @@ typedef struct
 	adpt_fdb_age_ctrl_get_func adpt_fdb_age_ctrl_get;
 	adpt_fdb_port_maclimit_ctrl_set_func adpt_fdb_port_maclimit_ctrl_set;
 	adpt_fdb_port_maclimit_ctrl_get_func adpt_fdb_port_maclimit_ctrl_get;
+	adpt_fdb_del_by_fid_func adpt_fdb_del_by_fid;
 	adpt_fdb_port_promisc_mode_set_func adpt_fdb_port_promisc_mode_set;
 	adpt_fdb_port_promisc_mode_get_func adpt_fdb_port_promisc_mode_get;
 	/*mib*/

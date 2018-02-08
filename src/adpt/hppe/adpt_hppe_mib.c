@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2018, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -55,7 +55,7 @@ adpt_hppe_mib_cpukeep_set(a_uint32_t dev_id, a_bool_t  enable)
 
 	ADPT_DEV_ID_CHECK(dev_id);
 
-	for (port_id = 0; port_id < 6; port_id++) {
+	for (port_id = SSDK_PHYSICAL_PORT0; port_id < SSDK_PHYSICAL_PORT6; port_id++) {
 
 		hppe_mac_mib_ctrl_mib_rd_clr_set(dev_id, port_id, (a_uint32_t)(!enable));
 	}
@@ -157,27 +157,28 @@ adpt_hppe_get_tx_mib_info(a_uint32_t dev_id, fal_port_t port_id,
 sw_error_t
 adpt_hppe_mib_status_set(a_uint32_t dev_id, a_bool_t enable)
 {
-	a_uint32_t port_id = 0;
+	a_uint32_t port_id = 0, xg_port_id = 0;
 	union mmc_control_u mmc_control;
 
 	memset(&mmc_control, 0, sizeof(mmc_control));
 	ADPT_DEV_ID_CHECK(dev_id);
 
-	for (port_id = 0; port_id < 6; port_id++) {
+	for (port_id = SSDK_PHYSICAL_PORT0; port_id < SSDK_PHYSICAL_PORT6; port_id++) {
 
 		hppe_mac_mib_ctrl_mib_en_set(dev_id, port_id, (a_uint32_t)enable);
 	}
 
-	for (port_id = 0; port_id < 2; port_id++) {
+	for (port_id = SSDK_PHYSICAL_PORT5; port_id <= SSDK_PHYSICAL_PORT6; port_id++) {
 
-		hppe_mmc_control_get(dev_id, port_id, &mmc_control);
+		xg_port_id = HPPE_TO_XGMAC_PORT_ID(port_id);
+		hppe_mmc_control_get(dev_id, xg_port_id, &mmc_control);
 
 		if(A_TRUE == enable)
 			mmc_control.bf.mcf = 0;
 		else
 			mmc_control.bf.mcf = 1;
 
-		hppe_mmc_control_set(dev_id, port_id, &mmc_control);
+		hppe_mmc_control_set(dev_id, xg_port_id, &mmc_control);
 	}
 
 	return SW_OK;
@@ -191,7 +192,7 @@ adpt_hppe_mib_port_flush_counters(a_uint32_t dev_id, fal_port_t port_id)
 	memset(&mmc_control, 0, sizeof(mmc_control));
 	ADPT_DEV_ID_CHECK(dev_id);
 
-	if(port_id < 1 || port_id > 7)
+	if(port_id < SSDK_PHYSICAL_PORT1 || port_id > SSDK_PHYSICAL_PORT6)
 		return SW_BAD_PARAM;
 	/*GMAC*/
 	if(!hppe_xgmac_port_check(port_id))
@@ -205,7 +206,7 @@ adpt_hppe_mib_port_flush_counters(a_uint32_t dev_id, fal_port_t port_id)
 	{
 		port_id = HPPE_TO_XGMAC_PORT_ID(port_id);
 		hppe_mmc_control_get(dev_id, port_id, &mmc_control);
-	mmc_control.bf.cntrst = 1;
+		mmc_control.bf.cntrst = 1;
 		hppe_mmc_control_set(dev_id, port_id, &mmc_control);
 	}
 
