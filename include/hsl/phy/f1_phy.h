@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2015, 2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015, 2017-2018, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -86,7 +86,11 @@ extern "C" {
 #define F1_CTRL_SPEED_LSB                   0x2000
 
     /* 0 = normal, 1 = loopback */
-#define F1_CTRL_LOOPBACK                    0x4000
+#define F1_LOCAL_LOOPBACK_ENABLE            0x4000
+
+#define F1_PHY_MMD3_NUM  3
+#define F1_PHY_MMD3_ADDR_REMOTE_LOOPBACK_CTRL       0x805a
+#define F1_PHY_REMOTE_LOOPBACK_ENABLE       0x0001
 #define F1_CTRL_SOFTWARE_RESET              0x8000
 
 #define F1_CTRL_SPEED_MASK                  0x2040

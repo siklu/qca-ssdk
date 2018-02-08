@@ -1343,6 +1343,122 @@ f1_phy_get_8023az(a_uint32_t dev_id, a_uint32_t phy_id, a_bool_t * enable)
 	return SW_OK;
 }
 
+/******************************************************************************
+*
+* f1_phy_set_local_loopback
+*
+* set phy local loopback
+*/
+sw_error_t
+f1_phy_set_local_loopback(a_uint32_t dev_id, a_uint32_t phy_id, a_bool_t enable)
+{
+	a_uint16_t phy_data;
+	sw_error_t rv = SW_OK;
+
+	phy_data = f1_phy_reg_read(dev_id, phy_id, F1_PHY_CONTROL);
+	if (enable == A_TRUE)
+	{
+		phy_data |= F1_LOCAL_LOOPBACK_ENABLE;
+		if(phy_data & F1_CTRL_SPEED_1000)
+		{
+			phy_data &= ~F1_CTRL_AUTONEGOTIATION_ENABLE;
+		}
+	}
+	else
+	{
+		phy_data &= ~F1_LOCAL_LOOPBACK_ENABLE;
+		if(phy_data & F1_CTRL_SPEED_1000)
+		{
+			phy_data |= F1_CTRL_AUTONEGOTIATION_ENABLE;
+		}
+	}
+
+	rv = f1_phy_reg_write(dev_id, phy_id, F1_PHY_CONTROL, phy_data);
+
+	return rv;
+}
+
+/******************************************************************************
+*
+* f1_phy_get_local_loopback
+*
+* get phy local loopback
+*/
+sw_error_t
+f1_phy_get_local_loopback(a_uint32_t dev_id, a_uint32_t phy_id, a_bool_t * enable)
+{
+	a_uint16_t phy_data;
+
+	phy_data = f1_phy_reg_read(dev_id, phy_id, F1_PHY_CONTROL);
+
+	if (phy_data & F1_LOCAL_LOOPBACK_ENABLE)
+	{
+		*enable = A_TRUE;
+	}
+	else
+	{
+		*enable = A_FALSE;
+	}
+
+	return SW_OK;
+}
+
+/******************************************************************************
+*
+* f1_phy_set_remote_loopback
+*
+* set phy remote loopback
+*/
+sw_error_t
+f1_phy_set_remote_loopback(a_uint32_t dev_id, a_uint32_t phy_id, a_bool_t enable)
+{
+	a_uint16_t phy_data;
+	sw_error_t rv = SW_OK;
+
+	phy_data = f1_phy_mmd_read(dev_id, phy_id, F1_PHY_MMD3_NUM,
+		F1_PHY_MMD3_ADDR_REMOTE_LOOPBACK_CTRL);
+
+	if (enable == A_TRUE)
+	{
+		phy_data |= F1_PHY_REMOTE_LOOPBACK_ENABLE;
+	}
+	else
+	{
+		phy_data &= ~F1_PHY_REMOTE_LOOPBACK_ENABLE;
+	}
+
+	rv = f1_phy_mmd_write(dev_id, phy_id, F1_PHY_MMD3_NUM,
+		F1_PHY_MMD3_ADDR_REMOTE_LOOPBACK_CTRL, phy_data);
+
+	return rv;
+}
+
+/******************************************************************************
+*
+* f1_phy_get_remote_loopback
+*
+* get phy remote loopback
+*/
+sw_error_t
+f1_phy_get_remote_loopback(a_uint32_t dev_id, a_uint32_t phy_id, a_bool_t * enable)
+{
+	a_uint16_t phy_data;
+
+	phy_data = f1_phy_mmd_read(dev_id, phy_id, F1_PHY_MMD3_NUM,
+		F1_PHY_MMD3_ADDR_REMOTE_LOOPBACK_CTRL);
+
+	if (phy_data & F1_PHY_REMOTE_LOOPBACK_ENABLE)
+	{
+		*enable = A_TRUE;
+	}
+	else
+	{
+		*enable = A_FALSE;
+	}
+
+	return SW_OK;
+}
+
 static int f1_phy_api_ops_init(void)
 {
 	int ret;
@@ -1381,6 +1497,10 @@ static int f1_phy_api_ops_init(void)
 	f1_phy_api_ops->phy_debug_read = f1_phy_debug_read;
 	f1_phy_api_ops->phy_mmd_write = f1_phy_mmd_write;
 	f1_phy_api_ops->phy_mmd_read = f1_phy_mmd_read;
+	f1_phy_api_ops->phy_local_loopback_set = f1_phy_set_local_loopback;
+	f1_phy_api_ops->phy_local_loopback_get = f1_phy_get_local_loopback;
+	f1_phy_api_ops->phy_remote_loopback_set = f1_phy_set_remote_loopback;
+	f1_phy_api_ops->phy_remote_loopback_get = f1_phy_get_remote_loopback;
 	f1_phy_api_ops->phy_intr_mask_set = f1_phy_intr_mask_set;
 	f1_phy_api_ops->phy_intr_mask_get = f1_phy_intr_mask_get;
 	f1_phy_api_ops->phy_intr_status_get = f1_phy_intr_status_get;
