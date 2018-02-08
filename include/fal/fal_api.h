@@ -513,7 +513,7 @@ extern "C" {
     SW_API_DEF(SW_API_FDB_RFS_DEL,   fal_fdb_rfs_del),   \
     SW_API_DEF(SW_API_FDB_PT_MACLIMIT_CTRL_SET, fal_fdb_port_maclimit_ctrl_set), \
     SW_API_DEF(SW_API_FDB_PT_MACLIMIT_CTRL_GET, fal_fdb_port_maclimit_ctrl_get), \
-    SW_API_DEF(SW_API_FDB_DEL_BY_FID, fal_fdb_del_by_fid),
+    SW_API_DEF(SW_API_FDB_DEL_BY_FID, fal_fdb_entry_del_byfid),
 
 #define FDB_API_PARAM \
     SW_API_DESC(SW_API_FDB_ADD) \
