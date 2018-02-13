@@ -943,7 +943,7 @@ _fal_fdb_port_maclimit_ctrl_get(a_uint32_t dev_id, fal_port_t port_id, fal_macli
     return rv;
 }
 sw_error_t
-_fal_fdb_del_by_fid(a_uint32_t dev_id, a_uint16_t fid, a_uint32_t flag)
+_fal_fdb_entry_del_byfid(a_uint32_t dev_id, a_uint16_t fid, a_uint32_t flag)
 {
     adpt_api_t *p_api;
 	sw_error_t rv = SW_OK;
@@ -1811,12 +1811,12 @@ fal_fdb_port_maclimit_ctrl_get(a_uint32_t dev_id, fal_port_t port_id, fal_maclim
     return rv;
 }
 sw_error_t
-fal_fdb_del_by_fid(a_uint32_t dev_id, a_uint16_t fid, a_uint32_t flag)
+fal_fdb_entry_del_byfid(a_uint32_t dev_id, a_uint16_t fid, a_uint32_t flag)
 {
     sw_error_t rv = SW_OK;
 
     FAL_API_LOCK;
-    rv = _fal_fdb_del_by_fid(dev_id, fid, flag);
+    rv = _fal_fdb_entry_del_byfid(dev_id, fid, flag);
     FAL_API_UNLOCK;
     return rv;
 }
@@ -1890,7 +1890,7 @@ fal_fdb_del_by_fid(a_uint32_t dev_id, a_uint16_t fid, a_uint32_t flag)
 
     EXPORT_SYMBOL(fal_fdb_port_maclimit_ctrl_get);
 
-    EXPORT_SYMBOL(fal_fdb_del_by_fid);
+    EXPORT_SYMBOL(fal_fdb_entry_del_byfid);
 #endif
 
     EXPORT_SYMBOL(fal_fdb_port_learned_mac_counter_get);
