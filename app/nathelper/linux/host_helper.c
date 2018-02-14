@@ -408,7 +408,7 @@ uint32_t napt_set_default_route(fal_ip4_addr_t dst_addr, fal_ip4_addr_t src_addr
         }
         else
         {
-            printk("multi_route_indev %p nf_athrs17_hnat_wan_type %d\n", multi_route_indev, nf_athrs17_hnat_wan_type);
+            printk("multi_route_indev %pK nf_athrs17_hnat_wan_type %d\n", multi_route_indev, nf_athrs17_hnat_wan_type);
         }
     }
     /* end next hop (s) */
