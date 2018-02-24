@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2015-2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015-2018, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -802,6 +802,118 @@ _isisc_port_8023az_get (a_uint32_t dev_id, fal_port_t port_id,
     rv = phy_drv->phy_8023az_get (dev_id, phy_id, enable);
 
     return rv;
+}
+
+static sw_error_t
+_isisc_port_local_loopback_set(a_uint32_t dev_id, a_uint32_t port_id,
+	a_bool_t enable)
+{
+	sw_error_t rv;
+	a_uint32_t phy_id = 0;
+	hsl_phy_ops_t *phy_drv;
+
+	HSL_DEV_ID_CHECK (dev_id);
+	if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+	{
+		return SW_BAD_PARAM;
+	}
+
+	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
+	if (NULL == phy_drv->phy_local_loopback_set)
+	{
+		return SW_NOT_SUPPORTED;
+	}
+
+	rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+	SW_RTN_ON_ERROR (rv);
+
+	rv = phy_drv->phy_local_loopback_set (dev_id, phy_id, enable);
+
+	return rv;
+}
+
+static sw_error_t
+_isisc_port_local_loopback_get(a_uint32_t dev_id, a_uint32_t port_id,
+	a_bool_t *enable)
+{
+	sw_error_t rv;
+	a_uint32_t phy_id = 0;
+	hsl_phy_ops_t *phy_drv;
+
+	HSL_DEV_ID_CHECK (dev_id);
+	if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+	{
+		return SW_BAD_PARAM;
+	}
+
+	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
+	if (NULL == phy_drv->phy_local_loopback_set)
+	{
+		return SW_NOT_SUPPORTED;
+	}
+
+	rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+	SW_RTN_ON_ERROR (rv);
+
+	rv = phy_drv->phy_local_loopback_get (dev_id, phy_id, enable);
+
+	return rv;
+}
+
+static sw_error_t
+_isisc_port_remote_loopback_set(a_uint32_t dev_id, a_uint32_t port_id,
+	a_bool_t enable)
+{
+	sw_error_t rv;
+	a_uint32_t phy_id = 0;
+	hsl_phy_ops_t *phy_drv;
+
+	HSL_DEV_ID_CHECK (dev_id);
+	if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+	{
+		return SW_BAD_PARAM;
+	}
+
+	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
+	if (NULL == phy_drv->phy_remote_loopback_set)
+	{
+		return SW_NOT_SUPPORTED;
+	}
+
+	rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+	SW_RTN_ON_ERROR (rv);
+
+	rv = phy_drv->phy_remote_loopback_set (dev_id, phy_id, enable);
+
+	return rv;
+}
+
+static sw_error_t
+_isisc_port_remote_loopback_get(a_uint32_t dev_id, a_uint32_t port_id,
+	a_bool_t *enable)
+{
+	sw_error_t rv;
+	a_uint32_t phy_id = 0;
+	hsl_phy_ops_t *phy_drv;
+
+	HSL_DEV_ID_CHECK (dev_id);
+	if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
+	{
+		return SW_BAD_PARAM;
+	}
+
+	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
+	if (NULL == phy_drv->phy_remote_loopback_set)
+	{
+		return SW_NOT_SUPPORTED;
+	}
+
+	rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
+	SW_RTN_ON_ERROR (rv);
+
+	rv = phy_drv->phy_remote_loopback_get (dev_id, phy_id, enable);
+
+	return rv;
 }
 
 #endif
@@ -2045,6 +2157,54 @@ isisc_port_8023az_get (a_uint32_t dev_id, fal_port_t port_id,
     return rv;
 }
 
+HSL_LOCAL sw_error_t
+isisc_port_local_loopback_set(a_uint32_t dev_id, fal_port_t port_id,
+                     a_bool_t enable)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _isisc_port_local_loopback_set(dev_id, port_id, enable);
+    HSL_API_UNLOCK;
+    return rv;
+}
+
+HSL_LOCAL sw_error_t
+isisc_port_local_loopback_get(a_uint32_t dev_id, fal_port_t port_id,
+                     a_bool_t *enable)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _isisc_port_local_loopback_get(dev_id, port_id, enable);
+    HSL_API_UNLOCK;
+    return rv;
+}
+
+HSL_LOCAL sw_error_t
+isisc_port_remote_loopback_set(a_uint32_t dev_id, fal_port_t port_id,
+                     a_bool_t enable)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _isisc_port_remote_loopback_set(dev_id, port_id, enable);
+    HSL_API_UNLOCK;
+    return rv;
+}
+
+HSL_LOCAL sw_error_t
+isisc_port_remote_loopback_get(a_uint32_t dev_id, fal_port_t port_id,
+                     a_bool_t *enable)
+{
+    sw_error_t rv;
+
+    HSL_API_LOCK;
+    rv = _isisc_port_remote_loopback_get(dev_id, port_id, enable);
+    HSL_API_UNLOCK;
+    return rv;
+}
+
 #endif
 
 /**
@@ -2546,6 +2706,11 @@ isisc_port_ctrl_init(a_uint32_t dev_id)
         p_api->port_rxmac_status_get = isisc_port_rxmac_status_get;
         p_api->port_8023az_set = isisc_port_8023az_set;
         p_api->port_8023az_get = isisc_port_8023az_get;
+        p_api->port_local_loopback_set = isisc_port_local_loopback_set;
+        p_api->port_local_loopback_get = isisc_port_local_loopback_get;
+        p_api->port_remote_loopback_set = isisc_port_remote_loopback_set;
+        p_api->port_remote_loopback_get = isisc_port_remote_loopback_get;
+
 #endif
         p_api->port_txfc_status_get = isisc_port_txfc_status_get;
         p_api->port_rxhdr_mode_set = isisc_port_rxhdr_mode_set;

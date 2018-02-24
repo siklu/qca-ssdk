@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2015-2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015-2018, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -1135,6 +1135,10 @@ extern "C" {
     SW_PARAM_DEF(SW_API_FDB_PT_MACLIMIT_CTRL_GET, SW_UINT32, 4, SW_PARAM_IN, "Port ID"),\
     SW_PARAM_DEF(SW_API_FDB_PT_MACLIMIT_CTRL_GET, SW_MACLIMIT_CTRL, sizeof(fal_maclimit_ctrl_t), SW_PARAM_PTR|SW_PARAM_OUT, "MacLimit Ctrl"),
 
+#define SW_API_FDB_DEL_BY_FID_DESC \
+    SW_PARAM_DEF(SW_API_FDB_DEL_BY_FID, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"),\
+    SW_PARAM_DEF(SW_API_FDB_DEL_BY_FID, SW_UINT16, 2, SW_PARAM_IN, "FID"),\
+    SW_PARAM_DEF(SW_API_FDB_DEL_BY_FID, SW_UINT32, 4, SW_PARAM_IN, "Flag"),
 
 
 #define SW_API_ACL_LIST_CREAT_DESC \

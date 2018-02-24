@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2017-2018, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -28,6 +28,7 @@
 #include <linux/clkdev.h>
 #endif
 
+#ifdef HAWKEYE_CHIP
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
 struct device_node *clock_node = NULL;
 static struct clk *uniphy_port_clks[UNIPHYT_CLK_MAX] = {0};
@@ -671,4 +672,4 @@ void ssdk_ppe_reset_init(void)
 #endif
 }
 #endif
-
+#endif

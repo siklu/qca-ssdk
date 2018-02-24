@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2018, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -70,6 +70,7 @@
 #define CARRIER_SENSE_SIGNAL_FROM_MAC        0x0
 
 #define PHY_PORT_TO_BM_PORT(port)	(port + 7)
+#define GMAC_IPG_CHECK 0xc
 
 static a_uint32_t port_interface_mode[SW_MAX_NR_DEV][SW_MAX_NR_PORT] = {0};
 
@@ -239,6 +240,7 @@ _adpt_gmac_port_max_frame_size_set(a_uint32_t dev_id, fal_port_t port_id,
 	port_id = HPPE_TO_GMAC_PORT_ID(port_id);
 	rv |= hppe_mac_ctrl2_maxfr_set(dev_id, port_id, max_frame);
 	rv |= hppe_mac_ctrl2_crs_sel_set(dev_id, port_id, CARRIER_SENSE_SIGNAL_FROM_MAC);
+	rv |= hppe_mac_dbg_ctrl_hihg_ipg_set(dev_id, port_id, GMAC_IPG_CHECK);
 
 	return rv;
 }
@@ -2567,6 +2569,7 @@ adpt_hppe_port_interface_mode_apply(a_uint32_t dev_id)
 	ssdk_dt_global_set_mac_mode(dev_id, SSDK_UNIPHY_INSTANCE2, mode2);
 
 	/*config uniphy*/
+#ifdef HAWKEYE_CHIP
 	rv = adpt_hppe_uniphy_mode_set(dev_id, SSDK_UNIPHY_INSTANCE0, mode0);
 	if(rv)
 	{
@@ -2600,6 +2603,7 @@ adpt_hppe_port_interface_mode_apply(a_uint32_t dev_id)
 		ssdk_dt_global_set_mac_mode(dev_id, SSDK_UNIPHY_INSTANCE2, mode2_old);
 		return rv;
 	}
+#endif
 	/*configure mac and sync port type*/
 	for(port_id = SSDK_PHYSICAL_PORT1; port_id <= SSDK_PHYSICAL_PORT6; port_id++)
 	{
@@ -3311,6 +3315,7 @@ adpt_hppe_port_flowctrl_forcemode_get(a_uint32_t dev_id,
 	return rv;
 }
 
+#ifdef HAWKEYE_CHIP
 static sw_error_t
 adpt_hppe_port_phy_status_get(a_uint32_t dev_id, a_uint32_t port_id,
 				struct port_phy_status *phy_status)
@@ -3935,6 +3940,7 @@ qca_hppe_mac_sw_sync_task(struct qca_phy_priv *priv)
 	}
 	return 0;
 }
+#endif
 
 void adpt_hppe_port_ctrl_func_bitmap_init(a_uint32_t dev_id)
 {
