@@ -1403,9 +1403,14 @@ arp_in_bg_handle(struct nat_helper_bg_msg *msg)
             sport++;
         }
     } else {
-        printk("not find the FDB entry\n");
+        HNAT_PRINTK("not find the FDB entry\n");
     }
 #endif
+
+    if (sport == 0) {
+        HNAT_PRINTK("Not the expected arp, ignore it!\n");
+        return 0;
+    }
 
     arp = arp_hdr(skb);
     smac = ((uint8_t *) arp) + ARP_HEADER_LEN;
