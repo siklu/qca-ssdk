@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2015, 2017-2018, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -312,6 +312,7 @@ typedef struct {
 #define AQUANTIA_PHY_108 0x03a1b4f2
 #define AQUANTIA_PHY_109 0x03a1b502
 #define AQUANTIA_PHY_111 0x03a1b610
+#define AQUANTIA_PHY_111B0 0x03a1b612
 #define AQUANTIA_PHY_112 0x03a1b660
 #define PHY_805XV2 0x004DD082
 #define PHY_805XV1 0x004DD081
