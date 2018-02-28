@@ -279,6 +279,7 @@ typedef struct phy_driver_instance {
 	a_uint32_t port_bmp[SW_MAX_NR_DEV];
 	hsl_phy_ops_t *phy_ops;
 	int (*init)(a_uint32_t dev_id, a_uint32_t portbmp);
+	void (*exit)(a_uint32_t dev_id, a_uint32_t portbmp);
 } phy_driver_instance_t;
 
 typedef enum
@@ -288,6 +289,7 @@ typedef enum
 	MALIBU_PHY_CHIP,
 	AQUANTIA_PHY_CHIP,
 	QCA803X_PHY_CHIP,
+	SFP_PHY_CHIP,
 	MAX_PHY_CHIP,
 } phy_type_t;
 
@@ -316,6 +318,8 @@ typedef struct {
 #define AQUANTIA_PHY_112 0x03a1b660
 #define PHY_805XV2 0x004DD082
 #define PHY_805XV1 0x004DD081
+#define SFP_PHY	0xaaaabbbb
+#define SFP_PHY_MASK	0xffffffff
 
 #define CABLE_PAIR_A  0
 #define CABLE_PAIR_B  1

@@ -29,6 +29,9 @@
 #ifdef IN_QCA803X_PHY
 #include <qca803x_phy.h>
 #endif
+#ifdef IN_SFP_PHY
+#include <sfp_phy.h>
+#endif
 
 #include "sw.h"
 #include "ssdk_plat.h"
@@ -40,31 +43,36 @@ a_uint32_t port_bmp[SW_MAX_NR_DEV] = {0};
 phy_driver_instance_t ssdk_phy_driver[] =
 {
 	#if defined(ISIS) ||defined(ISISC) ||defined(GARUDA)
-	{F1_PHY_CHIP, {0}, NULL, f1_phy_init},
+	{F1_PHY_CHIP, {0}, NULL, f1_phy_init, NULL},
 	#else
-	{F1_PHY_CHIP, {0}, NULL, NULL},
+	{F1_PHY_CHIP, {0}, NULL, NULL, NULL},
 	#endif
 	#if defined(ATHENA) ||defined(SHIVA) ||defined(HORUS)
-	{F2_PHY_CHIP, {0}, NULL, f2_phy_init},
+	{F2_PHY_CHIP, {0}, NULL, f2_phy_init, NULL},
 	#else
-	{F2_PHY_CHIP, {0}, NULL, NULL},
+	{F2_PHY_CHIP, {0}, NULL, NULL, NULL},
 	#endif
 	#ifdef IN_MALIBU_PHY
-	{MALIBU_PHY_CHIP, {0}, NULL, malibu_phy_init},
+	{MALIBU_PHY_CHIP, {0}, NULL, malibu_phy_init, NULL},
 	#else
-	{MALIBU_PHY_CHIP, {0}, NULL, NULL},
+	{MALIBU_PHY_CHIP, {0}, NULL, NULL, NULL},
 	#endif
 	#ifdef IN_AQUANTIA_PHY
-	{AQUANTIA_PHY_CHIP, {0}, NULL, aquantia_phy_init},
+	{AQUANTIA_PHY_CHIP, {0}, NULL, aquantia_phy_init, NULL},
 	#else
-	{AQUANTIA_PHY_CHIP, {0}, NULL, NULL},
+	{AQUANTIA_PHY_CHIP, {0}, NULL, NULL, NULL},
 	#endif
 	#ifdef IN_QCA803X_PHY
-	{QCA803X_PHY_CHIP, {0}, NULL, qca803x_phy_init},
+	{QCA803X_PHY_CHIP, {0}, NULL, qca803x_phy_init, NULL},
 	#else
-	{QCA803X_PHY_CHIP, {0}, NULL, NULL},
+	{QCA803X_PHY_CHIP, {0}, NULL, NULL, NULL},
 	#endif
-	{MAX_PHY_CHIP, {0}, NULL, NULL}
+	#ifdef IN_SFP_PHY
+	{SFP_PHY_CHIP, {0}, NULL, sfp_phy_init, sfp_phy_exit},
+	#else
+	{SFP_PHY_CHIP, {0}, NULL, NULL, NULL},
+	#endif
+	{MAX_PHY_CHIP, {0}, NULL, NULL, NULL}
 };
 sw_error_t hsl_phy_api_ops_register(phy_type_t phy_type, hsl_phy_ops_t * phy_api_ops)
 {
@@ -111,11 +119,26 @@ sw_error_t phy_api_ops_init(phy_type_t phy_type)
 	return SW_OK;
 }
 
+a_bool_t hsl_port_is_sfp(a_uint32_t dev_id, a_uint32_t port_id, ssdk_init_cfg *cfg)
+{
+	if ((cfg->chip_type == CHIP_HPPE) &&
+	    (((SSDK_PHYSICAL_PORT5 == port_id) &&
+	    	(cfg->mac_mode1 == PORT_WRAPPER_10GBASE_R)) ||
+	    ((SSDK_PHYSICAL_PORT6 == port_id) &&
+	    	(cfg->mac_mode2 == PORT_WRAPPER_10GBASE_R))))
+		return A_TRUE;
+	else
+		return A_FALSE;
+}
+
 a_uint32_t hsl_phyid_get(a_uint32_t dev_id,
 		a_uint32_t port_id, ssdk_init_cfg *cfg)
 {
 	a_uint16_t org_id = 0, rev_id = 0;
 	a_uint32_t reg_pad = 0, phy_id = 0;
+
+	if (hsl_port_is_sfp(dev_id, port_id, cfg))
+		return SFP_PHY;
 
 	if (phy_info[dev_id]->phy_c45[port_id] == A_TRUE)
 		reg_pad = BIT(30) | BIT(16);
@@ -126,6 +149,7 @@ a_uint32_t hsl_phyid_get(a_uint32_t dev_id,
 			phy_info[dev_id]->phy_address[port_id], reg_pad | 3, &rev_id);
 
 	phy_id = (org_id<<16) | rev_id;
+
 
 	return phy_id;
 }
@@ -168,6 +192,9 @@ int ssdk_phy_driver_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 				case QCA8033_PHY:
 				case QCA8035_PHY:
 					phytype = QCA803X_PHY_CHIP;
+					break;
+				case SFP_PHY:
+					phytype = SFP_PHY_CHIP;
 					break;
 				default:
 					phytype = MAX_PHY_CHIP;
@@ -340,10 +367,15 @@ hsl_ssdk_phy_mode_set(a_uint32_t dev_id, fal_port_interface_mode_t mode)
 }
 sw_error_t ssdk_phy_driver_cleanup(void)
 {
-	a_uint32_t i = 0;
+	a_uint32_t i = 0, j = 0;
 
-	for(i = 0; i < MAX_PHY_CHIP;i++) {
-
+	for (i = 0; i < MAX_PHY_CHIP;i++) {
+		for (j = 0; j < SW_MAX_NR_DEV; j++) {
+			if (ssdk_phy_driver[i].port_bmp[j] != 0 &&
+			    ssdk_phy_driver[i].exit != NULL) {
+				ssdk_phy_driver[i].exit(j, ssdk_phy_driver[i].port_bmp[j]);
+			}
+		}
 		if(ssdk_phy_driver[i].phy_ops != NULL)
 		{
 			kfree(ssdk_phy_driver[i].phy_ops);
