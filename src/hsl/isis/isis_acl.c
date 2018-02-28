@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2016, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2016, 2018, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -1072,23 +1072,25 @@ _isis_acl_list_bind(a_uint32_t dev_id, a_uint32_t list_id,
         return SW_NOT_SUPPORTED;
     }
 
-    if (FAL_ACL_BIND_PORT != obj_t)
-    {
-        return SW_NOT_SUPPORTED;
-    }
-
     sw_list = _isis_acl_list_loc(dev_id, list_id);
     if (NULL == sw_list)
     {
         return SW_NOT_FOUND;
     }
 
-    if (sw_list->bind_pts & (0x1 << obj_idx))
+    if (FAL_ACL_BIND_PORT == obj_t)
     {
-        return SW_ALREADY_EXIST;
+        ports = (sw_list->bind_pts) | (0x1 << obj_idx);
+    }
+    else if (FAL_ACL_BIND_PORTBITMAP == obj_t)
+    {
+        ports = (sw_list->bind_pts) | obj_idx;
+    }
+    else
+    {
+        return SW_NOT_SUPPORTED;
     }
 
-    ports = (sw_list->bind_pts) | (0x1 << obj_idx);
     rv = _isis_acl_rule_bind(dev_id, list_id, ports);
     SW_RTN_ON_ERROR(rv);
 
