@@ -16,12 +16,12 @@
 #include "ssdk_plat.h"
 
 #define PPE_VSI_MAX FAL_VSI_MAX
-#define PPE_VSI_RESERVE_MAX 5
+#define PPE_VSI_RESERVE_MAX 6
 
 static ref_vsi_t ref_vsi_mapping[SW_MAX_NR_DEV][PPE_VSI_MAX+1] ={{{0, 0, NULL},
 								{0, 0, NULL},
 								{0, 0, NULL}}};
-static a_uint32_t default_port_vsi[PPE_VSI_PPORT_NR] = {0, 1, 2, 3, 4, 5};/*PPORT*/
+static a_uint32_t default_port_vsi[PPE_VSI_PPORT_NR] = {0, 1, 2, 3, 4, 5, 6};/*PPORT*/
 
 static sw_error_t
 _ppe_vsi_member_init(a_uint32_t dev_id, a_uint32_t vsi_id)
@@ -435,7 +435,7 @@ sw_error_t ppe_vsi_init(a_uint32_t dev_id)
 	newaddr_lrn.lrn_en = 1;
 	stamove.action = 0;
 	stamove.stamove_en = 1;
-	for(port_id = 1; port_id <= 6; port_id++)
+	for(port_id = SSDK_PHYSICAL_PORT1; port_id <= SSDK_PHYSICAL_PORT7; port_id++)
 	{
 		ppe_init_one_vsi(dev_id, default_port_vsi[port_id-1]);
 		fal_vsi_newaddr_lrn_set(dev_id, default_port_vsi[port_id-1], &newaddr_lrn);
