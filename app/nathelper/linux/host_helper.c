@@ -2127,15 +2127,8 @@ void nat_helper_bg_task_exit()
 
 extern int napt_procfs_init(void);
 extern void napt_procfs_exit(void);
-extern a_uint32_t hsl_dev_wan_port_get(a_uint32_t dev_id);
 
-void host_helper_wan_port_init(void)
-{
-	nat_wan_port = hsl_dev_wan_port_get(0);
-	printk("nat wan port is %d\n", nat_wan_port);
-}
-
-void host_helper_init(void)
+void host_helper_init(a_uint32_t portbmp)
 {
 	int i;
 
@@ -2187,14 +2180,15 @@ void host_helper_init(void)
     register_inetaddr_notifier(&qcaswitch_ip_notifier);
 #endif // ifdef AUTO_UPDATE_PPPOE_INFO
 
+    nat_wan_port = portbmp;
+
     /* Enable ACLs to handle MLD packets */
     upnp_ssdp_add_acl_rules();
     ipv6_snooping_solicted_node_add_acl_rules();
     ipv6_snooping_sextuple0_group_add_acl_rules();
     ipv6_snooping_quintruple0_1_group_add_acl_rules();
 
-	napt_helper_hsl_init();
-	host_helper_wan_port_init();
+    napt_helper_hsl_init();
 }
 
 void host_helper_exit(void)
