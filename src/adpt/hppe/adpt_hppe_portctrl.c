@@ -84,7 +84,7 @@ _adpt_hppe_port_phy_connected (a_uint32_t dev_id, fal_port_t port_id)
 	mode1 = ssdk_dt_global_get_mac_mode(dev_id, SSDK_UNIPHY_INSTANCE1);
 	mode2 = ssdk_dt_global_get_mac_mode(dev_id, SSDK_UNIPHY_INSTANCE2);
 
-	if ((SSDK_PHYSICAL_PORT0 == port_id) ||
+	if ((SSDK_PHYSICAL_PORT0 == port_id) || (SSDK_PHYSICAL_PORT7 == port_id)||
 	((SSDK_PHYSICAL_PORT5 == port_id) && (mode1 == PORT_WRAPPER_10GBASE_R)) ||
 	((SSDK_PHYSICAL_PORT6 == port_id) && (mode2 == PORT_WRAPPER_10GBASE_R)))
 		return A_FALSE;
@@ -1157,7 +1157,8 @@ adpt_hppe_ports_link_status_get(a_uint32_t dev_id, a_uint32_t * status)
 		/* for those ports without PHY device should be sfp port */
 		if (A_FALSE == _adpt_hppe_port_phy_connected(dev_id, port_id))
 		{
-			if (port_id == SSDK_PHYSICAL_PORT0)
+			if (port_id == SSDK_PHYSICAL_PORT0 ||
+				port_id == SSDK_PHYSICAL_PORT7)
 				*status |= (0x1 << port_id);
 			else {
 				rv = _adpt_phy_status_get_from_ppe(dev_id,

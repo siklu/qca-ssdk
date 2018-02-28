@@ -54,7 +54,7 @@ typedef struct{
 	ref_vlan_info_t *pHead;
 }ref_vsi_t;
 
-#define PPE_VSI_PPORT_NR 6
+#define PPE_VSI_PPORT_NR 7
 #define PPE_VSI_INVALID FAL_VSI_INVALID
 
 sw_error_t ppe_port_vlan_vsi_set(a_uint32_t dev_id, fal_port_t port_id,
