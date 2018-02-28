@@ -369,7 +369,10 @@ extern "C" {
     */
     typedef enum
     {
-        FAL_ACL_BIND_PORT = 0,  /**<   Acl wil work on particular port */
+        FAL_ACL_BIND_PORT = 0,  /**<   Acl wil work on particular port and virtual port */
+        FAL_ACL_BIND_PORTBITMAP = 1,  /**<   Acl wil work on port bitmap */
+        FAL_ACL_BIND_SERVICE_CODE = 2,  /**<   Acl wil work on service code */
+        FAL_ACL_BIND_L3_IF = 3,  /**<   Acl wil work on l3 interface */
     } fal_acl_bind_obj_t;
 
 
