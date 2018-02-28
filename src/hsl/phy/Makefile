@@ -46,6 +46,11 @@ endif
 ifeq (TRUE, $(IN_QCA803X_PHY))
     SRC_LIST += qca803x_phy.c
 endif
+
+ifeq (TRUE, $(IN_SFP_PHY))
+    SRC_LIST += sfp_phy.c
+endif
+
 SRC_LIST += hsl_phy.c
 
 ifeq (linux, $(OS))
