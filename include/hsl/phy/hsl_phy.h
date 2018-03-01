@@ -212,6 +212,192 @@ extern "C" {
 
 	typedef sw_error_t(*hsl_phy_get_status) (a_uint32_t dev_id,
 				a_uint32_t phy_id, struct port_phy_status *phy_status);
+
+	typedef sw_error_t(*hsl_phy_ptp_security_set) (a_uint32_t dev_id,
+				a_uint32_t phy_id, fal_ptp_security_t *sec);
+
+	typedef sw_error_t(*hsl_phy_ptp_link_delay_set) (a_uint32_t dev_id,
+				a_uint32_t phy_id, fal_ptp_time_t *time);
+
+	typedef sw_error_t(*hsl_phy_ptp_rx_crc_recalc_status_get) (a_uint32_t dev_id,
+				a_uint32_t phy_id, a_bool_t *status);
+
+	typedef sw_error_t(*hsl_phy_ptp_tod_uart_set) (a_uint32_t dev_id,
+				a_uint32_t phy_id, fal_ptp_tod_uart_t *tod_uart);
+
+	typedef sw_error_t(*hsl_phy_ptp_enhanced_timestamp_engine_get) (a_uint32_t dev_id,
+				a_uint32_t phy_id, fal_ptp_direction_t direction,
+				fal_ptp_enhanced_ts_engine_t *ts_engine);
+
+	typedef sw_error_t(*hsl_phy_ptp_pps_signal_control_set) (a_uint32_t dev_id,
+				a_uint32_t phy_id, fal_ptp_pps_signal_control_t *sig_control);
+
+	typedef sw_error_t(*hsl_phy_ptp_timestamp_get) (a_uint32_t dev_id,
+				a_uint32_t phy_id, fal_ptp_direction_t direction,
+				fal_ptp_pkt_info_t *pkt_info, fal_ptp_time_t *time);
+
+	typedef sw_error_t(*hsl_phy_ptp_asym_correction_get) (a_uint32_t dev_id,
+				a_uint32_t phy_id, fal_ptp_asym_correction_t* asym_cf);
+
+	typedef sw_error_t(*hsl_phy_ptp_rtc_time_snapshot_status_get) (a_uint32_t dev_id,
+				a_uint32_t phy_id, a_bool_t *status);
+
+	typedef sw_error_t(*hsl_phy_ptp_capture_set) (a_uint32_t dev_id,
+				a_uint32_t phy_id, a_uint32_t capture_id,
+				fal_ptp_capture_t *capture);
+
+	typedef sw_error_t(*hsl_phy_ptp_rtc_adjfreq_set) (a_uint32_t dev_id,
+				a_uint32_t phy_id, fal_ptp_time_t *time);
+
+	typedef sw_error_t(*hsl_phy_ptp_asym_correction_set) (a_uint32_t dev_id,
+				a_uint32_t phy_id, fal_ptp_asym_correction_t *asym_cf);
+
+	typedef sw_error_t(*hsl_phy_ptp_pkt_timestamp_set) (a_uint32_t dev_id,
+				a_uint32_t phy_id, fal_ptp_time_t *time);
+
+	typedef sw_error_t(*hsl_phy_ptp_rtc_time_get) (a_uint32_t dev_id,
+				a_uint32_t phy_id, fal_ptp_time_t *time);
+
+	typedef sw_error_t(*hsl_phy_ptp_rtc_time_set) (a_uint32_t dev_id,
+				a_uint32_t phy_id, fal_ptp_time_t *time);
+
+	typedef sw_error_t(*hsl_phy_ptp_pkt_timestamp_get) (a_uint32_t dev_id,
+				a_uint32_t phy_id, fal_ptp_time_t *time);
+
+	typedef sw_error_t(*hsl_phy_ptp_interrupt_set) (a_uint32_t dev_id,
+				a_uint32_t phy_id, fal_ptp_interrupt_t *interrupt);
+
+	typedef sw_error_t(*hsl_phy_ptp_trigger_set) (a_uint32_t dev_id,
+				a_uint32_t phy_id, a_uint32_t trigger_id,
+				fal_ptp_trigger_t *triger);
+
+	typedef sw_error_t(*hsl_phy_ptp_pps_signal_control_get) (a_uint32_t dev_id,
+				a_uint32_t phy_id,
+				fal_ptp_pps_signal_control_t *sig_control);
+
+	typedef sw_error_t(*hsl_phy_ptp_capture_get) (a_uint32_t dev_id,
+				a_uint32_t phy_id, a_uint32_t capture_id,
+				fal_ptp_capture_t *capture);
+
+	typedef sw_error_t(*hsl_phy_ptp_rx_crc_recalc_enable) (a_uint32_t dev_id,
+				a_uint32_t phy_id, a_bool_t status);
+
+	typedef sw_error_t(*hsl_phy_ptp_security_get) (a_uint32_t dev_id,
+				a_uint32_t phy_id, fal_ptp_security_t *sec);
+
+	typedef sw_error_t(*hsl_phy_ptp_increment_sync_from_clock_status_get) (a_uint32_t dev_id,
+				a_uint32_t phy_id, a_bool_t *status);
+
+	typedef sw_error_t(*hsl_phy_ptp_tod_uart_get) (a_uint32_t dev_id,
+				a_uint32_t phy_id, fal_ptp_tod_uart_t *tod_uart);
+
+	typedef sw_error_t(*hsl_phy_ptp_enhanced_timestamp_engine_set) (a_uint32_t dev_id,
+				a_uint32_t phy_id, fal_ptp_direction_t direction,
+				fal_ptp_enhanced_ts_engine_t *ts_engine);
+
+	typedef sw_error_t(*hsl_phy_ptp_rtc_time_clear) (a_uint32_t dev_id,
+				a_uint32_t phy_id);
+
+	typedef sw_error_t(*hsl_phy_ptp_reference_clock_set) (a_uint32_t dev_id,
+				a_uint32_t phy_id, fal_ptp_reference_clock_t ref_clock);
+
+	typedef sw_error_t(*hsl_phy_ptp_output_waveform_set) (a_uint32_t dev_id,
+				a_uint32_t phy_id, fal_ptp_output_waveform_t *waveform);
+
+	typedef sw_error_t(*hsl_phy_ptp_rx_timestamp_mode_set) (a_uint32_t dev_id,
+				a_uint32_t phy_id, fal_ptp_rx_timestamp_mode_t ts_mode);
+
+	typedef sw_error_t(*hsl_phy_ptp_grandmaster_mode_set) (a_uint32_t dev_id,
+				a_uint32_t phy_id, fal_ptp_grandmaster_mode_t *gm_mode);
+
+	typedef sw_error_t(*hsl_phy_ptp_config_set) (a_uint32_t dev_id,
+				a_uint32_t phy_id, fal_ptp_config_t *config);
+
+	typedef sw_error_t(*hsl_phy_ptp_trigger_get) (a_uint32_t dev_id,
+				a_uint32_t phy_id, a_uint32_t trigger_id,
+				fal_ptp_trigger_t *triger);
+
+	typedef sw_error_t(*hsl_phy_ptp_rtc_adjfreq_get) (a_uint32_t dev_id,
+				a_uint32_t phy_id, fal_ptp_time_t *time);
+
+	typedef sw_error_t(*hsl_phy_ptp_grandmaster_mode_get) (a_uint32_t dev_id,
+				a_uint32_t phy_id, fal_ptp_grandmaster_mode_t *gm_mode);
+
+	typedef sw_error_t(*hsl_phy_ptp_rx_timestamp_mode_get) (a_uint32_t dev_id,
+				a_uint32_t phy_id, fal_ptp_rx_timestamp_mode_t *ts_mode);
+
+	typedef sw_error_t(*hsl_phy_ptp_rtc_adjtime_set) (a_uint32_t dev_id,
+				a_uint32_t phy_id, fal_ptp_time_t *time);
+
+	typedef sw_error_t(*hsl_phy_ptp_link_delay_get) (a_uint32_t dev_id,
+				a_uint32_t phy_id, fal_ptp_time_t *time);
+
+	typedef sw_error_t(*hsl_phy_ptp_increment_sync_from_clock_enable) (a_uint32_t dev_id,
+				a_uint32_t phy_id, a_bool_t status);
+
+	typedef sw_error_t(*hsl_phy_ptp_config_get) (a_uint32_t dev_id,
+				a_uint32_t phy_id, fal_ptp_config_t *config);
+
+	typedef sw_error_t(*hsl_phy_ptp_output_waveform_get) (a_uint32_t dev_id,
+				a_uint32_t phy_id, fal_ptp_output_waveform_t *waveform);
+
+	typedef sw_error_t(*hsl_phy_ptp_interrupt_get) (a_uint32_t dev_id,
+				a_uint32_t phy_id, fal_ptp_interrupt_t *interrupt);
+
+	typedef sw_error_t(*hsl_phy_ptp_rtc_time_snapshot_enable) (a_uint32_t dev_id,
+				a_uint32_t phy_id, a_bool_t status);
+
+	typedef sw_error_t(*hsl_phy_ptp_reference_clock_get) (a_uint32_t dev_id,
+				a_uint32_t phy_id, fal_ptp_reference_clock_t *ref_clock);
+
+	typedef struct hsl_phy_ptp_ops_s {
+		hsl_phy_ptp_security_set phy_ptp_security_set;
+		hsl_phy_ptp_link_delay_set phy_ptp_link_delay_set;
+		hsl_phy_ptp_rx_crc_recalc_status_get phy_ptp_rx_crc_recalc_status_get;
+		hsl_phy_ptp_tod_uart_set phy_ptp_tod_uart_set;
+		hsl_phy_ptp_enhanced_timestamp_engine_get phy_ptp_enhanced_timestamp_engine_get;
+		hsl_phy_ptp_pps_signal_control_set phy_ptp_pps_signal_control_set;
+		hsl_phy_ptp_timestamp_get phy_ptp_timestamp_get;
+		hsl_phy_ptp_asym_correction_get phy_ptp_asym_correction_get;
+		hsl_phy_ptp_rtc_time_snapshot_status_get phy_ptp_rtc_time_snapshot_status_get;
+		hsl_phy_ptp_capture_set phy_ptp_capture_set;
+		hsl_phy_ptp_rtc_adjfreq_set phy_ptp_rtc_adjfreq_set;
+		hsl_phy_ptp_asym_correction_set phy_ptp_asym_correction_set;
+		hsl_phy_ptp_pkt_timestamp_set phy_ptp_pkt_timestamp_set;
+		hsl_phy_ptp_rtc_time_get phy_ptp_rtc_time_get;
+		hsl_phy_ptp_rtc_time_set phy_ptp_rtc_time_set;
+		hsl_phy_ptp_pkt_timestamp_get phy_ptp_pkt_timestamp_get;
+		hsl_phy_ptp_interrupt_set phy_ptp_interrupt_set;
+		hsl_phy_ptp_trigger_set phy_ptp_trigger_set;
+		hsl_phy_ptp_pps_signal_control_get phy_ptp_pps_signal_control_get;
+		hsl_phy_ptp_capture_get phy_ptp_capture_get;
+		hsl_phy_ptp_rx_crc_recalc_enable phy_ptp_rx_crc_recalc_enable;
+		hsl_phy_ptp_security_get phy_ptp_security_get;
+		hsl_phy_ptp_increment_sync_from_clock_status_get \
+			phy_ptp_increment_sync_from_clock_status_get;
+		hsl_phy_ptp_tod_uart_get phy_ptp_tod_uart_get;
+		hsl_phy_ptp_enhanced_timestamp_engine_set phy_ptp_enhanced_timestamp_engine_set;
+		hsl_phy_ptp_rtc_time_clear phy_ptp_rtc_time_clear;
+		hsl_phy_ptp_reference_clock_set phy_ptp_reference_clock_set;
+		hsl_phy_ptp_output_waveform_set phy_ptp_output_waveform_set;
+		hsl_phy_ptp_rx_timestamp_mode_set phy_ptp_rx_timestamp_mode_set;
+		hsl_phy_ptp_grandmaster_mode_set phy_ptp_grandmaster_mode_set;
+		hsl_phy_ptp_config_set phy_ptp_config_set;
+		hsl_phy_ptp_trigger_get phy_ptp_trigger_get;
+		hsl_phy_ptp_rtc_adjfreq_get phy_ptp_rtc_adjfreq_get;
+		hsl_phy_ptp_grandmaster_mode_get phy_ptp_grandmaster_mode_get;
+		hsl_phy_ptp_rx_timestamp_mode_get phy_ptp_rx_timestamp_mode_get;
+		hsl_phy_ptp_rtc_adjtime_set phy_ptp_rtc_adjtime_set;
+		hsl_phy_ptp_link_delay_get phy_ptp_link_delay_get;
+		hsl_phy_ptp_increment_sync_from_clock_enable \
+			phy_ptp_increment_sync_from_clock_enable;
+		hsl_phy_ptp_config_get phy_ptp_config_get;
+		hsl_phy_ptp_output_waveform_get phy_ptp_output_waveform_get;
+		hsl_phy_ptp_interrupt_get phy_ptp_interrupt_get;
+		hsl_phy_ptp_rtc_time_snapshot_enable phy_ptp_rtc_time_snapshot_enable;
+		hsl_phy_ptp_reference_clock_get phy_ptp_reference_clock_get;
+	} hsl_phy_ptp_ops_t;
+
 	typedef struct hsl_phy_ops_s {
 
 		hsl_phy_init phy_init;
@@ -276,6 +462,7 @@ extern "C" {
 		hsl_phy_counter_show  phy_counter_show;
 		hsl_phy_serdes_reset phy_serdes_reset;
 		hsl_phy_get_status phy_get_status;
+		hsl_phy_ptp_ops_t phy_ptp_ops;
 	} hsl_phy_ops_t;
 
 typedef struct phy_driver_instance {

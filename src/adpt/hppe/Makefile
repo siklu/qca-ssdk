@@ -97,6 +97,10 @@ ifeq (TRUE, $(IN_UNIPHY))
   SRC_LIST += adpt_hppe_uniphy.c
 endif
 
+ifeq (TRUE, $(IN_PTP))
+  SRC_LIST += adpt_hppe_ptp.c
+endif
+
 ifeq (, $(findstring HPPE, $(SUPPORT_CHIP)))
   SRC_LIST=
 endif

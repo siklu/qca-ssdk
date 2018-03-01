@@ -18,6 +18,7 @@
 #include "hsl_phy.h"
 #include "ssdk_plat.h"
 #include "qca808x_phy.h"
+#include "qca808x_ptp.h"
 
 #define PHY_INVALID_DATA 0xffff
 #define PHY_RTN_ON_READ_ERROR(phy_data) \
@@ -1788,6 +1789,9 @@ static sw_error_t qca808x_phy_api_ops_init(void)
 	qca808x_phy_api_ops->phy_counter_set = qca808x_phy_set_counter;
 	qca808x_phy_api_ops->phy_counter_get = qca808x_phy_get_counter;
 	qca808x_phy_api_ops->phy_counter_show = qca808x_phy_show_counter;
+	qca808x_phy_api_ops->phy_get_status = qca808x_phy_get_status;
+
+	qca808x_phy_ptp_api_ops_init(qca808x_phy_api_ops);
 
 	ret = hsl_phy_api_ops_register(QCA808X_PHY_CHIP, qca808x_phy_api_ops);
 
@@ -1809,6 +1813,7 @@ int qca808x_phy_init(a_uint32_t dev_id, a_uint32_t port_bmp)
 {
 	if(phy_ops_flag == A_FALSE) {
 		if (qca808x_phy_api_ops_init() == SW_OK) {
+			qca808x_phy_ptp_init();
 			phy_ops_flag = A_TRUE;
 		}
 	}

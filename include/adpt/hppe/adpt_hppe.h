@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2018, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -91,6 +91,9 @@ sw_error_t adpt_hppe_uniphy_init(a_uint32_t dev_id);
 /*BM*/
 #define HPPE_BM_PORT_NUM 15
 #define HPPE_BM_PHY_PORT_OFFSET 8
+
+void adpt_hppe_ptp_func_bitmap_init(a_uint32_t dev_id);
+sw_error_t adpt_hppe_ptp_init(a_uint32_t dev_id);
 
 #ifdef __cplusplus
 }

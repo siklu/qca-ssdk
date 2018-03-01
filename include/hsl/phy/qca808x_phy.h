@@ -373,6 +373,21 @@ extern "C"
 
 #define QCA808X_PHY_FRAME_CHECK_EN              0x0001
 #define QCA808X_PHY_XMIT_MAC_CNT_SELFCLR        0x0002
+a_uint16_t
+qca808x_phy_reg_read(a_uint32_t dev_id, a_uint32_t phy_id, a_uint32_t reg_id);
+
+sw_error_t
+qca808x_phy_reg_write(a_uint32_t dev_id, a_uint32_t phy_id,
+		a_uint32_t reg_id, a_uint16_t reg_val);
+
+sw_error_t
+qca808x_phy_mmd_write(a_uint32_t dev_id, a_uint32_t phy_id,
+		a_uint16_t mmd_num, a_uint16_t reg_id,
+		a_uint16_t reg_val);
+
+a_uint16_t
+qca808x_phy_mmd_read(a_uint32_t dev_id, a_uint32_t phy_id,
+		a_uint16_t mmd_num, a_uint16_t reg_id);
 
 a_uint16_t
 qca808x_phy_reg_read(a_uint32_t dev_id, a_uint32_t phy_id, a_uint32_t reg_id);

@@ -199,6 +199,10 @@ ifeq (TRUE, $(HAWKEYE_CHIP))
   MODULE_CFLAG += -DHAWKEYE_CHIP
 endif
 
+ifeq (TRUE, $(IN_PTP))
+  MODULE_CFLAG += -DIN_PTP
+endif
+
 ifneq (TRUE, $(FAL))
   MODULE_CFLAG += -DHSL_STANDALONG
 endif

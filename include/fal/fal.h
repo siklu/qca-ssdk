@@ -57,8 +57,9 @@ extern "C" {
 #include "fal_bm.h"
 #include "fal_shaper.h"
 #include "fal_policer.h"
-/*qca808x_start*/
+#include "fal_ptp.h"
 
+/*qca808x_start*/
 #ifdef __cplusplus
 }
 #endif                          /* __cplusplus */

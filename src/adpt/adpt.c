@@ -102,6 +102,9 @@ static sw_error_t adpt_hppe_module_func_register(a_uint32_t dev_id, a_uint32_t m
 		case FAL_MODULE_MISC:
 			rv = adpt_hppe_misc_init(dev_id);
 			break;
+		case FAL_MODULE_PTP:
+			rv = adpt_hppe_ptp_init(dev_id);
+			break;
 		default:
 			break;
 	}
@@ -358,6 +361,9 @@ sw_error_t adpt_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 			SW_RTN_ON_ERROR(rv);
 
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_MISC);
+			SW_RTN_ON_ERROR(rv);
+
+			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_PTP);
 			SW_RTN_ON_ERROR(rv);
 
 #ifdef HAWKEYE_CHIP
