@@ -901,7 +901,7 @@ napt_ct_check_add_one(a_uint32_t ct_addr, a_uint8_t *napt_ct_valid)
                 }
             }
         } else {
-        	HNAT_INFO_PRINTK("can not reach thres for napt_ct=%p\n", napt_ct);
+        	HNAT_INFO_PRINTK("can not reach thres for napt_ct=%pK\n", napt_ct);
         }
 
         in_hw = napt_ct_buf_in_hw_get(napt_ct, &hw_index);
