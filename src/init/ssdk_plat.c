@@ -630,7 +630,14 @@ static int miibus_get(a_uint32_t dev_id)
 	}
 #endif
 
+	if (miibus)
+		qca_phy_priv_global[dev_id]->miibus = miibus;
 	return 0;
+}
+
+struct mii_bus *ssdk_miibus_get_by_device(a_uint32_t dev_id)
+{
+	return qca_phy_priv_global[dev_id]->miibus;
 }
 
 static ssize_t ssdk_dev_id_get(struct device *dev,
