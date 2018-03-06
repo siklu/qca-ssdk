@@ -44,10 +44,10 @@ void hnat_log_msg(int level, char *string, ...)
 sw_error_t
 nat_helper_init(uint32_t dev_id, uint32_t portbmp)
 {
+	nat_helper_bg_task_init();
 	host_helper_init(portbmp);
 	napt_helper_init();
 	nat_ipt_helper_init();
-	nat_helper_bg_task_init();
 
 	aos_printk("Hello, nat helper module for 1.1!\n");
 
