@@ -519,6 +519,9 @@ qca_hppe_qm_hw_init(a_uint32_t dev_id)
 	queue_dst.service_code = 6;
 	fal_ucast_queue_base_profile_set(dev_id, &queue_dst, 8, 0);
 
+	queue_dst.service_code = 7;
+	fal_ucast_queue_base_profile_set(dev_id, &queue_dst, 240, 0);
+
 	queue_dst.service_code_en = A_FALSE;
 	queue_dst.service_code = 0;
 	for(i = 0; i < SSDK_MAX_PORT_NUM; i++) {
