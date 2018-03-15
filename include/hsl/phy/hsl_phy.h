@@ -295,6 +295,7 @@ typedef enum
 
 typedef struct {
 	a_uint32_t phy_address[SW_MAX_NR_PORT];
+	a_uint32_t phy_address_from_dts[SW_MAX_NR_PORT];
 	a_uint32_t phy_type[SW_MAX_NR_PORT];
 	a_bool_t phy_c45[SW_MAX_NR_PORT];
 	a_bool_t phy_combo[SW_MAX_NR_PORT];
@@ -342,7 +343,7 @@ int qca_ssdk_phy_info_init(a_uint32_t dev_id);
 
 void qca_ssdk_port_bmp_init(a_uint32_t dev_id);
 
-void qca_ssdk_phy_address_set(a_uint32_t dev_id, a_uint32_t i,
+void hsl_phy_address_init(a_uint32_t dev_id, a_uint32_t i,
 				a_uint32_t value);
 
 a_uint32_t
@@ -379,6 +380,17 @@ sw_error_t
 hsl_ssdk_phy_mode_set(a_uint32_t dev_id, fal_port_interface_mode_t mode);
 
 sw_error_t ssdk_phy_driver_cleanup(void);
+
+sw_error_t
+hsl_phydriver_update(a_uint32_t dev_id, a_uint32_t port_id,
+	a_uint32_t mode);
+
+void
+qca_ssdk_phy_address_set(a_uint32_t dev_id, a_uint32_t port_id,
+	a_uint32_t phy_addr);
+
+a_uint32_t
+qca_ssdk_phy_address_from_dts_get(a_uint32_t dev_id, a_uint32_t port_id);
 
 #ifdef __cplusplus
 }

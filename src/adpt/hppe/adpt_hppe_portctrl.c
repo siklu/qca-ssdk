@@ -888,7 +888,7 @@ adpt_hppe_port_mtu_set(a_uint32_t dev_id, fal_port_t port_id,
 	mru_mtu_ctrl_tbl.bf.mtu_cmd = (a_uint32_t)ctrl->action;
 	hppe_mru_mtu_ctrl_tbl_set(dev_id, port_id, &mru_mtu_ctrl_tbl);
 
-	if ((port_id >= 0) && (port_id <= 7))
+	if ((port_id >= SSDK_PHYSICAL_PORT0) && (port_id <= SSDK_PHYSICAL_PORT7))
 	{
 		hppe_mc_mtu_ctrl_tbl_mtu_set(dev_id, port_id, ctrl->mtu_size);
 		hppe_mc_mtu_ctrl_tbl_mtu_cmd_set(dev_id, port_id, (a_uint32_t)ctrl->action);
@@ -2339,8 +2339,8 @@ _adpt_hppe_instance0_mode_get(a_uint32_t dev_id, a_uint32_t *mode0)
 				else
 					return SW_OK;
 			}
- 			switch(port_id)
- 			{
+			switch(port_id)
+			{
 				case SSDK_PHYSICAL_PORT1:
 					*mode0 = PORT_WRAPPER_SGMII_CHANNEL0;
 					break;
@@ -2411,17 +2411,16 @@ _adpt_hppe_port_interface_mode_phy_config(a_uint32_t dev_id, a_uint32_t port_id,
 	ADPT_DEV_ID_CHECK(dev_id);
 
 	if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
-	  {
+	{
 		return SW_BAD_PARAM;
-	  }
-
+	}
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_interface_mode_set)
 		return SW_NOT_SUPPORTED;
 
 	rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
 	SW_RTN_ON_ERROR (rv);
-
+	SSDK_DEBUG("port_id:%x, phy_id:%x, mode:%x\n", port_id, phy_id, mode);
 	rv = phy_drv->phy_interface_mode_set (dev_id, phy_id,mode);
 
 	return rv;
@@ -2442,6 +2441,54 @@ sw_error_t adpt_hppe_all_ports_mac_set(a_uint32_t dev_id, a_bool_t enable)
 
 	return rv;
 }
+
+static sw_error_t
+_adpt_hppe_port_phyaddr_update(a_uint32_t dev_id, a_uint32_t port_id,
+	a_uint32_t mode)
+{
+	sw_error_t rv = SW_OK;
+	a_uint32_t phy_addr = 0, mode0 = PORT_WRAPPER_MAX;
+
+	if(port_id != SSDK_PHYSICAL_PORT5)
+	{
+		return rv;
+	}
+	if(mode == PORT_WRAPPER_10GBASE_R)
+	{
+		phy_addr = qca_ssdk_phy_address_from_dts_get(dev_id, port_id);
+		qca_ssdk_phy_address_set(dev_id, port_id, phy_addr);
+		SSDK_DEBUG("port %x phy_addr is %x\n", port_id, phy_addr);
+	}
+	else
+	{
+		mode0 = ssdk_dt_global_get_mac_mode(dev_id, SSDK_UNIPHY_INSTANCE0);
+		if((mode0 == PORT_WRAPPER_PSGMII || mode0 == PORT_WRAPPER_PSGMII_FIBER) &&
+			mode == PORT_WRAPPER_MAX)
+		{
+			rv = hsl_port_prop_get_phyid (dev_id, SSDK_PHYSICAL_PORT4, &phy_addr);
+			SW_RTN_ON_ERROR (rv);
+			phy_addr++;
+			qca_ssdk_phy_address_set(dev_id, port_id, phy_addr);
+			SSDK_DEBUG("port %x phy_addr is %x\n", port_id, phy_addr);
+		}
+	}
+
+	return rv;
+}
+
+static sw_error_t
+_adpt_hppe_sfp_copper_phydriver_switch(a_uint32_t dev_id, a_uint32_t port_id,
+	a_uint32_t mode)
+{
+	sw_error_t rv = SW_OK;
+
+	rv = _adpt_hppe_port_phyaddr_update(dev_id, port_id, mode);
+	SW_RTN_ON_ERROR(rv);
+	rv = hsl_phydriver_update(dev_id, port_id, mode);
+
+	return rv;
+}
+
 static sw_error_t
 _adpt_hppe_port_phy_config(a_uint32_t dev_id, a_uint32_t index, a_uint32_t mode)
 {
@@ -2450,17 +2497,22 @@ _adpt_hppe_port_phy_config(a_uint32_t dev_id, a_uint32_t index, a_uint32_t mode)
 	switch(mode)
 	{
 		case PORT_WRAPPER_PSGMII:
+			/*interface mode changed form psgmii+usxgmii to psgmii+10gbase-r+usxgmii, cannot
+			use port 5 to configure malibu*/
 			rv = _adpt_hppe_port_interface_mode_phy_config(dev_id,
-				SSDK_PHYSICAL_PORT5, PHY_PSGMII_BASET);
+				SSDK_PHYSICAL_PORT4, PHY_PSGMII_BASET);
 			break;
 		case PORT_WRAPPER_PSGMII_FIBER:
 			rv = _adpt_hppe_port_interface_mode_phy_config(dev_id,
-				SSDK_PHYSICAL_PORT5, PHY_PSGMII_FIBER);
+				SSDK_PHYSICAL_PORT4, PHY_PSGMII_FIBER);
 			break;
 		case PORT_WRAPPER_SGMII_CHANNEL4:
-		case PORT_WRAPPER_QSGMII:
 			rv = _adpt_hppe_port_interface_mode_phy_config(dev_id,
 				SSDK_PHYSICAL_PORT5, PHY_SGMII_BASET);
+			break;
+		case PORT_WRAPPER_QSGMII:
+			rv = _adpt_hppe_port_interface_mode_phy_config(dev_id,
+				SSDK_PHYSICAL_PORT4, PHY_SGMII_BASET);
 			break;
 		case PORT_WRAPPER_SGMII_CHANNEL0:
 			if(index == SSDK_UNIPHY_INSTANCE1)
@@ -2621,6 +2673,9 @@ adpt_hppe_port_interface_mode_apply(a_uint32_t dev_id)
 		}
 	}
 	/*config phy*/
+	rv = _adpt_hppe_sfp_copper_phydriver_switch(dev_id, SSDK_PHYSICAL_PORT5, mode1);
+	SW_RTN_ON_ERROR(rv);
+
 	rv = _adpt_hppe_port_phy_config(dev_id, SSDK_UNIPHY_INSTANCE0, mode0);
 	if(rv)
 	{
