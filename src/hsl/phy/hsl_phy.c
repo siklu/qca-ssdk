@@ -14,6 +14,7 @@
 
 #include "sw.h"
 #include "hsl_phy.h"
+#include "hsl.h"
 #if defined(ISIS) ||defined(ISISC) ||defined(GARUDA)
 #include <f1_phy.h>
 #endif
@@ -154,6 +155,83 @@ a_uint32_t hsl_phyid_get(a_uint32_t dev_id,
 	return phy_id;
 }
 
+phy_type_t hsl_phytype_get_by_phyid(a_uint32_t dev_id, a_uint32_t phy_id)
+{
+	phy_type_t phytype = MAX_PHY_CHIP;
+
+	switch (phy_id)
+	{
+		case F1V1_PHY:
+		case F1V2_PHY:
+		case F1V3_PHY:
+		case F1V4_PHY:
+			phytype = F1_PHY_CHIP;
+			break;
+		case F2V1_PHY:
+			phytype = F2_PHY_CHIP;
+			break;
+		case MALIBU2PORT_PHY:
+		case MALIBU5PORT_PHY:
+			phytype = MALIBU_PHY_CHIP;
+			break;
+		case AQUANTIA_PHY_107:
+		case AQUANTIA_PHY_108:
+		case AQUANTIA_PHY_109:
+		case AQUANTIA_PHY_111:
+		case AQUANTIA_PHY_111B0:
+		case AQUANTIA_PHY_112:
+			phytype = AQUANTIA_PHY_CHIP;
+			break;
+		case QCA8030_PHY:
+		case QCA8033_PHY:
+		case QCA8035_PHY:
+			phytype = QCA803X_PHY_CHIP;
+			break;
+		case SFP_PHY:
+			phytype = SFP_PHY_CHIP;
+			break;
+		default:
+			phytype = MAX_PHY_CHIP;
+	}
+
+	return phytype;
+}
+
+sw_error_t hsl_phydriver_update(a_uint32_t dev_id, a_uint32_t port_id,
+	a_uint32_t mode)
+{
+	a_uint32_t phy_id;
+	phy_type_t phytype;
+	ssdk_init_cfg cfg;
+
+	cfg.chip_type = CHIP_HPPE;
+	if(port_id == SSDK_PHYSICAL_PORT5)
+	{
+		cfg.mac_mode1 = mode;
+	}
+	else if(port_id == SSDK_PHYSICAL_PORT6)
+	{
+		cfg.mac_mode2 = mode;
+	}
+	else
+	{
+		return SW_NOT_SUPPORTED;
+	}
+	cfg.reg_func.mdio_get = reduce_hsl_phy_get;
+
+	phy_id = hsl_phyid_get(dev_id, port_id, &cfg);
+	phytype = hsl_phytype_get_by_phyid(dev_id, phy_id);
+	SSDK_DEBUG("port_id is %x, phy_id is %x, phy_type is:%x\n",
+		port_id, phy_id, phytype);
+	if (MAX_PHY_CHIP != phytype)
+	{
+		phy_info[dev_id]->phy_type[port_id] = phytype;
+		ssdk_phy_driver[phytype].port_bmp[dev_id] |= (0x1 << port_id);
+	}
+
+	return SW_OK;
+}
+
 int ssdk_phy_driver_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 {
 
@@ -166,45 +244,14 @@ int ssdk_phy_driver_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 		if (port_bmp[dev_id] & (0x1 << i))
 		{
 			phy_id = hsl_phyid_get(dev_id, i, cfg);
-			switch (phy_id) {
-				case F1V1_PHY:
-				case F1V2_PHY:
-				case F1V3_PHY:
-				case F1V4_PHY:
-					phytype = F1_PHY_CHIP;
-					break;
-				case F2V1_PHY:
-					phytype = F2_PHY_CHIP;
-					break;
-				case MALIBU2PORT_PHY:
-				case MALIBU5PORT_PHY:
-					phytype = MALIBU_PHY_CHIP;
-					break;
-				case AQUANTIA_PHY_107:
-				case AQUANTIA_PHY_108:
-				case AQUANTIA_PHY_109:
-				case AQUANTIA_PHY_111:
-				case AQUANTIA_PHY_111B0:
-				case AQUANTIA_PHY_112:
-					phytype = AQUANTIA_PHY_CHIP;
-					break;
-				case QCA8030_PHY:
-				case QCA8033_PHY:
-				case QCA8035_PHY:
-					phytype = QCA803X_PHY_CHIP;
-					break;
-				case SFP_PHY:
-					phytype = SFP_PHY_CHIP;
-					break;
-				default:
-					phytype = MAX_PHY_CHIP;
-					SSDK_INFO("dev_id = %d, phy_adress = %d, phy_id = 0x%x phy type doesn't match\n",
-							dev_id, phy_info[dev_id]->phy_address[i], phy_id);
-			}
-
+			phytype = hsl_phytype_get_by_phyid(dev_id, phy_id);
 			if (MAX_PHY_CHIP != phytype) {
 				phy_info[dev_id]->phy_type[i] = phytype;
 				ssdk_phy_driver[phytype].port_bmp[dev_id] |= (0x1 << i);
+			} else {
+				SSDK_INFO("dev_id = %d, phyadress = %d, phy_id = 0x%x phy type\
+				doesn't match\n", dev_id, phy_info[dev_id]->phy_address[i],
+				phy_id);
 			}
 		}
 	}
@@ -244,10 +291,11 @@ void qca_ssdk_port_bmp_init(a_uint32_t dev_id)
 	return;
 }
 
-void qca_ssdk_phy_address_set(a_uint32_t dev_id, a_uint32_t i,
+void hsl_phy_address_init(a_uint32_t dev_id, a_uint32_t i,
 			a_uint32_t value)
 {
 	phy_info[dev_id]->phy_address[i] = value;
+	phy_info[dev_id]->phy_address_from_dts[i] = value;
 
 	return;
 }
@@ -271,6 +319,23 @@ a_uint32_t qca_ssdk_phy_type_port_bmp_get(a_uint32_t dev_id,
 
 	return ssdk_phy_driver[phy_type].port_bmp[dev_id];
 }
+
+void
+qca_ssdk_phy_address_set(a_uint32_t dev_id, a_uint32_t port_id,
+	a_uint32_t phy_addr)
+{
+	 phy_info[dev_id]->phy_address[port_id] = phy_addr;
+
+	return;
+}
+
+a_uint32_t
+qca_ssdk_phy_address_from_dts_get(a_uint32_t dev_id,
+	a_uint32_t port_id)
+{
+	 return phy_info[dev_id]->phy_address_from_dts[port_id];
+}
+
 
 a_uint32_t
 qca_ssdk_port_to_phy_addr(a_uint32_t dev_id, a_uint32_t port_id)
