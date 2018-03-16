@@ -1128,23 +1128,25 @@ _isisc_acl_list_unbind(a_uint32_t dev_id, a_uint32_t list_id,
         return SW_NOT_SUPPORTED;
     }
 
-    if (FAL_ACL_BIND_PORT != obj_t)
-    {
-        return SW_NOT_SUPPORTED;
-    }
-
     sw_list = _isisc_acl_list_loc(dev_id, list_id);
     if (NULL == sw_list)
     {
         return SW_NOT_FOUND;
     }
 
-    if (!(sw_list->bind_pts & (0x1 << obj_idx)))
+    if (FAL_ACL_BIND_PORT == obj_t)
     {
-        return SW_NOT_FOUND;
+        ports = (sw_list->bind_pts) & (~(0x1UL << obj_idx));
+    }
+    else if (FAL_ACL_BIND_PORTBITMAP == obj_t)
+    {
+        ports = (sw_list->bind_pts) & (~obj_idx);
+    }
+    else
+    {
+        return SW_NOT_SUPPORTED;
     }
 
-    ports = (sw_list->bind_pts) & (~(0x1UL << obj_idx));
     rv = _isisc_acl_rule_bind(dev_id, list_id, ports);
     SW_RTN_ON_ERROR(rv);
 
