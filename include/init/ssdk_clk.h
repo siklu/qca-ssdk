@@ -142,6 +142,7 @@ enum unphy_clk_type {
 #define NSS_IMEM_RATE	400000000
 #define PTP_REF_RARE	150000000
 #define NSS_AXI_RATE	461500000
+#define NSS_PORT5_DFLT_RATE 19200000
 
 #define UNIPHY_CLK_RATE_125M		125000000
 #define UNIPHY_CLK_RATE_312M		312500000
@@ -180,6 +181,7 @@ void
 qca_gcc_uniphy_port_clock_set(a_uint32_t dev_id, a_uint32_t uniphy_index,
                                 a_uint32_t port_id, a_bool_t enable);
 void ssdk_ppe_clock_init(void);
+void ssdk_uniphy_raw_clock_reset(a_uint8_t uniphy_index);
 void ssdk_uniphy_raw_clock_set(
 	a_uint8_t uniphy_index,
 	a_uint8_t direction,
