@@ -428,6 +428,22 @@ void ssdk_ppe_clock_init(void)
 	SSDK_INFO("ppe and uniphy clock init successfully!\n");
 }
 
+void ssdk_uniphy_raw_clock_reset(a_uint8_t uniphy_index)
+{
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
+	a_uint32_t id;
+
+	if (uniphy_index >= SSDK_MAX_UNIPHY_INSTANCE)
+		return;
+
+	id = uniphy_index*2;
+	if (clk_set_rate(uniphy_raw_clks[id]->clk, UNIPHY_DEFAULT_RATE))
+		SSDK_ERROR("set rate for %d fail!\n", id);
+	if (clk_set_rate(uniphy_raw_clks[id+1]->clk, UNIPHY_DEFAULT_RATE))
+		SSDK_ERROR("set rate for %d fail!\n", id+1);
+#endif
+}
+
 void ssdk_uniphy_raw_clock_set(
 	a_uint8_t uniphy_index,
 	a_uint8_t direction,
@@ -445,15 +461,25 @@ void ssdk_uniphy_raw_clock_set(
 	id = uniphy_index*2 + direction;
 	old_clock = clk_get_rate(uniphy_raw_clks[id]->clk);
 
+	if (clock != old_clock) {
+		if (uniphy_index == SSDK_UNIPHY_INSTANCE1) {
+			if (UNIPHY_RX == direction)
+				ssdk_uniphy_clock_rate_set(0,
+						NSS_PORT5_RX_CLK_E,
+						NSS_PORT5_DFLT_RATE);
+			else
+				ssdk_uniphy_clock_rate_set(0,
+						NSS_PORT5_TX_CLK_E,
+						NSS_PORT5_DFLT_RATE);
+		}
+		if (clk_set_rate(uniphy_raw_clks[id]->clk, clock))
+			SSDK_ERROR("set rate: %d fail!\n", clock);
+	}
+
 	if (uniphy_index == SSDK_UNIPHY_INSTANCE1) {
 		if (clk_set_parent(uniphy_port_clks[PORT5_RX_SRC_E + direction],
 				uniphy_raw_clks[id]->clk))
 			SSDK_ERROR("set parent fail!\n");
-	}
-
-	if (clock != old_clock) {
-		if (clk_set_rate(uniphy_raw_clks[id]->clk, clock))
-			SSDK_ERROR("set rate: %d fail!\n", clock);
 	}
 #endif
 }

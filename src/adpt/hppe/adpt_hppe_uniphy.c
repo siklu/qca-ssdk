@@ -524,8 +524,10 @@ adpt_hppe_uniphy_mode_set(a_uint32_t dev_id, a_uint32_t index, a_uint32_t mode)
 	sw_error_t rv = SW_OK;
 	a_uint32_t clock = UNIPHY_CLK_RATE_125M;
 
-	if (mode == PORT_WRAPPER_MAX)
+	if (mode == PORT_WRAPPER_MAX) {
+		ssdk_uniphy_raw_clock_reset(index);
 		return SW_OK;
+	}
 
 	switch(mode) {
 		case PORT_WRAPPER_PSGMII:
