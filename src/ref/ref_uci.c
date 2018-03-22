@@ -7235,6 +7235,9 @@ parse_nat_global(struct switch_val *val)
 		}  else if(!strcmp(ext_value_p->option_name, "sync")) {
 			val_ptr[1] = (char*)ext_value_p->option_value;
 			parameter_length--;
+		}  else if(!strcmp(ext_value_p->option_name, "portbmp")) {
+			val_ptr[2] = (char*)ext_value_p->option_value;
+			parameter_length--;
 		}  else {
 			rv = -1;
 			break;

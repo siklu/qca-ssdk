@@ -408,7 +408,7 @@ uint32_t napt_set_default_route(fal_ip4_addr_t dst_addr, fal_ip4_addr_t src_addr
         }
         else
         {
-            printk("multi_route_indev %p nf_athrs17_hnat_wan_type %d\n", multi_route_indev, nf_athrs17_hnat_wan_type);
+            printk("multi_route_indev %pK nf_athrs17_hnat_wan_type %d\n", multi_route_indev, nf_athrs17_hnat_wan_type);
         }
     }
     /* end next hop (s) */
@@ -1403,9 +1403,14 @@ arp_in_bg_handle(struct nat_helper_bg_msg *msg)
             sport++;
         }
     } else {
-        printk("not find the FDB entry\n");
+        HNAT_PRINTK("not find the FDB entry\n");
     }
 #endif
+
+    if (sport == 0) {
+        HNAT_PRINTK("Not the expected arp, ignore it!\n");
+        return 0;
+    }
 
     arp = arp_hdr(skb);
     smac = ((uint8_t *) arp) + ARP_HEADER_LEN;
@@ -2122,15 +2127,8 @@ void nat_helper_bg_task_exit()
 
 extern int napt_procfs_init(void);
 extern void napt_procfs_exit(void);
-extern a_uint32_t hsl_dev_wan_port_get(a_uint32_t dev_id);
 
-void host_helper_wan_port_init(void)
-{
-	nat_wan_port = hsl_dev_wan_port_get(0);
-	printk("nat wan port is %d\n", nat_wan_port);
-}
-
-void host_helper_init(void)
+void host_helper_init(a_uint32_t portbmp)
 {
 	int i;
 
@@ -2182,14 +2180,15 @@ void host_helper_init(void)
     register_inetaddr_notifier(&qcaswitch_ip_notifier);
 #endif // ifdef AUTO_UPDATE_PPPOE_INFO
 
+    nat_wan_port = portbmp;
+
     /* Enable ACLs to handle MLD packets */
     upnp_ssdp_add_acl_rules();
     ipv6_snooping_solicted_node_add_acl_rules();
     ipv6_snooping_sextuple0_group_add_acl_rules();
     ipv6_snooping_quintruple0_1_group_add_acl_rules();
 
-	napt_helper_hsl_init();
-	host_helper_wan_port_init();
+    napt_helper_hsl_init();
 }
 
 void host_helper_exit(void)

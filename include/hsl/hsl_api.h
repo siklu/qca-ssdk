@@ -1840,7 +1840,7 @@ typedef sw_error_t
     (*hsl_nat_unk_session_cmd_get) (a_uint32_t dev_id, fal_fwd_cmd_t * cmd);
 
   typedef sw_error_t
-    (*hsl_nat_global_set) (a_uint32_t dev_id, a_bool_t enable);
+    (*hsl_nat_global_set) (a_uint32_t dev_id, a_bool_t enable, a_uint32_t portbmp);
 
   typedef sw_error_t
     (*hsl_flow_cookie_set) (a_uint32_t dev_id,
