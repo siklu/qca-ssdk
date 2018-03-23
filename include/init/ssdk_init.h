@@ -377,6 +377,15 @@ extern ssdk_dt_global_t ssdk_dt_global;
         ssdk_init_cfg init_cfg;
     } ssdk_cfg_t;
 
+#define SSDK_RFS_INTF_MAX	8
+typedef struct
+{
+	a_uint32_t if_idx; /*netdevic idx*/
+	fal_mac_addr_t macaddr;
+	a_uint16_t vid;
+	a_uint8_t hw_idx; /* HW table entry idx*/
+} ssdk_rfs_intf_t;
+
 sw_error_t
 ssdk_init(a_uint32_t dev_id, ssdk_init_cfg *cfg);
 
