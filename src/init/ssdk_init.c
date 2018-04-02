@@ -3986,7 +3986,15 @@ static void __exit
 regi_exit(void)
 {
 	a_uint32_t dev_id;
-	sw_error_t rv=ssdk_cleanup();
+	sw_error_t rv;
+
+	for (dev_id = 0; dev_id < ssdk_dt_global.num_devices; dev_id++) {
+		ssdk_driver_unregister(dev_id);
+		if (qca_phy_priv_global[dev_id]->qca_ssdk_sw_dev_registered == A_TRUE)
+			ssdk_switch_unregister(dev_id);
+	}
+
+	rv=ssdk_cleanup();
 
 	if (rv == 0)
 		SSDK_INFO("qca-ssdk module exit  done!\n");
@@ -4001,9 +4009,6 @@ regi_exit(void)
 	ssdk_miireg_ioctrl_unregister();
 	for (dev_id = 0; dev_id < ssdk_dt_global.num_devices; dev_id++) {
 		ssdk_plat_exit(dev_id);
-		ssdk_driver_unregister(dev_id);
-		if (qca_phy_priv_global[dev_id]->qca_ssdk_sw_dev_registered == A_TRUE)
-			ssdk_switch_unregister(dev_id);
 	}
 
 	unregister_netdevice_notifier(&ssdk_dev_notifier);
