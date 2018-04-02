@@ -503,7 +503,7 @@ qca_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t uniphy_index,
 #endif
 	return 0;
 }
-
+#ifdef HAWKEYE_CHIP
 static int miibus_get(a_uint32_t dev_id)
 {
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
@@ -634,6 +634,7 @@ static int miibus_get(a_uint32_t dev_id)
 		qca_phy_priv_global[dev_id]->miibus = miibus;
 	return 0;
 }
+#endif
 
 struct mii_bus *ssdk_miibus_get_by_device(a_uint32_t dev_id)
 {
@@ -1105,9 +1106,10 @@ ssdk_plat_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 	printk("ssdk_plat_init start\n");
 	mutex_init(&switch_mdio_lock);
 
+#ifdef HAWKEYE_CHIP
 	if(miibus_get(dev_id))
 		return -ENODEV;
-
+#endif
 	dt_cfg = ssdk_dt_global.ssdk_dt_switch_nodes[dev_id];
 	if(dt_cfg->uniphy_reg_access_mode == HSL_REG_LOCAL_BUS) {
 		qca_phy_priv_global[dev_id]->uniphy_hw_addr = ioremap_nocache(dt_cfg->uniphyreg_base_addr,
