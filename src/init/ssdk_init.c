@@ -2605,7 +2605,7 @@ static sw_error_t ssdk_dt_parse_phy_info(struct device_node *switch_node, a_uint
 
 		hsl_port_phy_combo_capability_set(dev_id, port_id, phy_combo);
 		hsl_port_phy_c45_capability_set(dev_id, port_id, phy_c45);
-		qca_ssdk_phy_address_set(dev_id, port_id, phy_addr);
+		hsl_phy_address_init(dev_id, port_id, phy_addr);
 	}
 
 	return rv;
@@ -2632,15 +2632,17 @@ static void ssdk_dt_parse_mdio(a_uint32_t dev_id, struct device_node *switch_nod
 		SSDK_INFO("mdio DT exist!\n");
 		for_each_available_child_of_node(mdio_node, child) {
 			phy_addr = of_get_property(child, "reg", &len);
-			if (phy_addr)
-				qca_ssdk_phy_address_set(dev_id, i, be32_to_cpup(phy_addr));
-
+			if (phy_addr) {
+				hsl_phy_address_init(dev_id, i, be32_to_cpup(phy_addr));
+			}
 			c45_phy = of_get_property(child, "compatible", &len);
-			if (c45_phy)
+			if (c45_phy) {
 				hsl_port_phy_c45_capability_set(dev_id, i, A_TRUE);
+			}
 			i++;
-			if (i >= SW_MAX_NR_PORT)
+			if (i >= SW_MAX_NR_PORT) {
 				break;
+			}
 		}
 	}
 	return;
