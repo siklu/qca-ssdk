@@ -123,6 +123,7 @@
 #ifdef IN_RFS
 struct rfs_device rfs_dev;
 struct notifier_block ssdk_inet_notifier;
+ssdk_rfs_intf_t rfs_intf_tbl[SSDK_RFS_INTF_MAX] = {{0}};
 #endif
 
 //#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
@@ -3515,156 +3516,163 @@ int ssdk_netdev_rfs_cb(
 							proto, rxq_index, action);
 }
 #endif
-int ssdk_intf_search(
-	fal_intf_mac_entry_t *exist_entry, int num,
-	fal_intf_mac_entry_t *new_entry, int *index)
+
+#ifdef DESS
+a_bool_t ssdk_intf_search(
+	a_uint8_t *mac, a_uint16_t vid,
+	a_uint8_t *ret_index, a_uint8_t *free_index)
 {
-	int i = 0;
-	*index = 0xffffffff;
-	for (i = 0; i < num; i++) {
-		if (exist_entry[i].vid_high == 0 && exist_entry[i].vid_low == 0)
-			*index = i;
-		if (!memcmp(exist_entry[i].mac_addr.uc, new_entry->mac_addr.uc, 6) &&
-			exist_entry[i].vid_low == new_entry->vid_low) {
-			*index = i;
-			return 1;
+	a_uint8_t  i = 0;
+
+	for (i = 0; i < SSDK_RFS_INTF_MAX; i++) {
+		if (rfs_intf_tbl[i].vid == 0)
+			*free_index = i;
+		if (!memcmp(rfs_intf_tbl[i].macaddr.uc, mac, 6) &&
+			rfs_intf_tbl[i].vid == vid) {
+			/* find it */
+			*ret_index = i;
+			return A_TRUE;
 		}
 	}
-	return 0;
+
+	/* Not find the same entry */
+	return A_FALSE;
 }
 
-void ssdk_intf_set(struct net_device *dev, char op)
+static a_bool_t ssdk_is_raw_dev(struct net_device *dev)
+{
+	struct device *pdev;
+
+	pdev = dev->dev.parent;
+	if (!pdev)
+		return A_FALSE;
+
+	if (!strstr(dev_name(pdev), "edma"))
+		return A_FALSE;
+	else
+		return A_TRUE;
+}
+
+static a_uint16_t ssdk_raw_dev_vid_get(struct net_device *dev)
+{
+#ifdef CONFIG_RFS_ACCEL
+	const struct net_device_ops *ops;
+
+	ops = dev->netdev_ops;
+	if (!ops ||
+	    !ops->ndo_get_default_vlan_tag) {
+		return 0;
+	}
+	return ops->ndo_get_default_vlan_tag(dev);
+#else
+	return 0;
+#endif
+}
+
+static a_uint16_t ssdk_netdev_vid_get(struct net_device *dev)
+{
+	struct net_device *pdev;
+	a_uint16_t vid = 0;
+
+	if (is_vlan_dev(dev)) {
+		pdev = vlan_dev_real_dev(dev);
+		if (!ssdk_is_raw_dev(pdev)) {
+			SSDK_DEBUG("The device %s is not expected!\n", dev->name);
+			return 0;
+		}
+		vid = vlan_dev_vlan_id(dev);
+	} else if (ssdk_is_raw_dev(dev)) {
+		vid = ssdk_raw_dev_vid_get(dev);
+	} else if (dev->priv_flags & IFF_EBRIDGE) {
+		/* Do nothing for bridge */
+	} else {
+		SSDK_DEBUG("The device %s is not expected!\n", dev->name);
+	}
+
+	return vid;
+}
+
+static void ssdk_rfs_intf_add(struct net_device *dev)
 {
 	a_uint8_t *devmac = NULL;
-	fal_vlan_t entry;
-	a_uint32_t tmp_vid = 0xffffffff;
+	a_uint16_t vid = 0;
 	fal_intf_mac_entry_t intf_entry;
-	a_uint32_t wan_port = 0;
 	sw_error_t rv = 0;
-	static fal_intf_mac_entry_t if_mac_entry[8] = {{0}};
-	int index = 0xffffffff;
+	a_uint8_t index0, index1;
+
+	/* get vid */
+	vid = ssdk_netdev_vid_get(dev);
+	if (vid == 0)
+		return;
+
 	/*get mac*/
 	devmac = (a_uint8_t*)(dev->dev_addr);
-	/*get wan port*/
-	wan_port = hsl_dev_wan_port_get(0);
-	/*get vid*/
+
+	if (ssdk_intf_search(devmac, vid, &index0, &index1)) {
+		/* already exist, ignore */
+		return;
+	}
+	rfs_intf_tbl[index1].vid = vid;
+	rfs_intf_tbl[index1].if_idx = dev->ifindex;
+	memcpy(&rfs_intf_tbl[index1].macaddr, devmac, ETH_ALEN);
+
 	memset(&intf_entry, 0, sizeof(intf_entry));
 	intf_entry.ip4_route = 1;
 	intf_entry.ip6_route = 1;
+	intf_entry.vid_low = vid;
+	intf_entry.vid_high = vid;
 	memcpy(&intf_entry.mac_addr, devmac, 6);
-
-	#if defined(CONFIG_VLAN_8021Q) || defined(CONFIG_VLAN_8021Q_MODULE)
-	tmp_vid = vlan_dev_vlan_id(dev);
-	if (tmp_vid) {
-		intf_entry.vid_low = tmp_vid;
-		intf_entry.vid_high = intf_entry.vid_low;
-		if (op) {
-			if (!ssdk_intf_search(if_mac_entry, 8, &intf_entry, &index)) {
-				if (index != 0xffffffff) {
-					#ifdef IN_IP
-					rv = fal_ip_intf_entry_add(0, &intf_entry);
-					#endif
-					if (SW_OK == rv) {
-						if_mac_entry[index] = intf_entry;
-					}
-				}
-			}
-		}
-		else {
-			if (ssdk_intf_search(if_mac_entry, 8, &intf_entry, &index)) {
-				intf_entry.entry_id = if_mac_entry[index].entry_id;
-				#ifdef IN_IP
-				fal_ip_intf_entry_del(0, 1, &intf_entry);
-				#endif
-				memset(&if_mac_entry[index], 0, sizeof(fal_intf_mac_entry_t));
-			}
-		}
+	rv = fal_ip_intf_entry_add(0, &intf_entry);
+	if (rv) {
+		SSDK_ERROR("Faled to add intf entry, rv=%d\n", rv);
+		memset(&rfs_intf_tbl[index1], 0, sizeof(ssdk_rfs_intf_t));
 		return;
-	} else {
-		tmp_vid = 0xffffffff;
 	}
-	#endif
-	while(1) {
-		#ifdef IN_VLAN
-		if (SW_OK != fal_vlan_next(0, tmp_vid, &entry))
-		#endif
-			break;
-		tmp_vid = entry.vid;
-		if (tmp_vid != 0) {
-			if(entry.mem_ports & wan_port) {
-				if (!strcmp(dev->name, "eth0") ||
-				    !strcmp(dev->name, "br-wan")) {
-					intf_entry.vid_low = tmp_vid;
-					intf_entry.vid_high = intf_entry.vid_low;
-					if (op) {
-						if (!ssdk_intf_search(if_mac_entry, 8, &intf_entry, &index)) {
-							if (index != 0xffffffff) {
-								#ifdef IN_IP
-								rv = fal_ip_intf_entry_add(0, &intf_entry);
-								#endif
-								if (SW_OK == rv) {
-									if_mac_entry[index] = intf_entry;
-								}
-							}
-						}
-					}
-					else {
-						if (ssdk_intf_search(if_mac_entry, 8, &intf_entry, &index)) {
-							intf_entry.entry_id = if_mac_entry[index].entry_id;
-							#ifdef IN_IP
-							fal_ip_intf_entry_del(0, 1, &intf_entry);
-							#endif
-							memset(&if_mac_entry[index], 0, sizeof(fal_intf_mac_entry_t));
-						}
-					}
-				}
-			} else {
-				if (strcmp(dev->name, "eth0") &&
-				    strcmp(dev->name, "br-wan")) {
-					intf_entry.vid_low = tmp_vid;
-					intf_entry.vid_high = intf_entry.vid_low;
-					if (op) {
-						if (!ssdk_intf_search(if_mac_entry, 8, &intf_entry, &index)) {
-							if (index != 0xffffffff) {
-								#ifdef IN_IP
-								rv = fal_ip_intf_entry_add(0, &intf_entry);
-								#endif
-								if (SW_OK == rv) {
-									if_mac_entry[index] = intf_entry;
-								}
-							}
-						}
-					}
-					else {
-						if (ssdk_intf_search(if_mac_entry, 8, &intf_entry, &index)) {
-							intf_entry.entry_id = if_mac_entry[index].entry_id;
-							#ifdef IN_IP
-							fal_ip_intf_entry_del(0, 1, &intf_entry);
-							#endif
-							memset(&if_mac_entry[index], 0, sizeof(fal_intf_mac_entry_t));
-						}
-					}
-				}
-			}
-		}
-	}
+
+	rfs_intf_tbl[index1].hw_idx = intf_entry.entry_id;
 
 }
 
-#ifdef DESS
+static void ssdk_rfs_intf_del(struct net_device *dev)
+{
+	a_uint8_t i = 0;
+	fal_intf_mac_entry_t intf_entry;
+	sw_error_t rv = 0;
+
+	for (i = 0; i < SSDK_RFS_INTF_MAX; i++) {
+		if ((rfs_intf_tbl[i].if_idx == dev->ifindex) &&
+		    (rfs_intf_tbl[i].vid != 0)) {
+			intf_entry.entry_id = rfs_intf_tbl[i].hw_idx;
+			rv = fal_ip_intf_entry_del(0, 1, &intf_entry);
+			if (rv) {
+				SSDK_ERROR("Faled to del entry, rv=%d\n", rv);
+			} else {
+				memset(&rfs_intf_tbl[i], 0, sizeof(ssdk_rfs_intf_t));
+			}
+			return;
+		}
+	}
+}
+
 static int ssdk_inet_event(struct notifier_block *this, unsigned long event, void *ptr)
 {
 	struct net_device *dev = ((struct in_ifaddr *)ptr)->ifa_dev->dev;
 
-	if (!strstr(dev->name, "eth") && !strstr(dev->name, "br")) {
+	/* Ignore the wireless dev */
+#ifdef CONFIG_WIRELESS_EXT
+	if (dev->wireless_handlers)
 		return NOTIFY_DONE;
-	}
+	else
+#endif
+		if (dev->ieee80211_ptr)
+			return NOTIFY_DONE;
+
 	switch (event) {
 		case NETDEV_DOWN:
-			ssdk_intf_set(dev, 0);
+			ssdk_rfs_intf_del(dev);
 			break;
 		case NETDEV_UP:
-			ssdk_intf_set(dev, 1);
+			ssdk_rfs_intf_add(dev);
 			break;
 	}
 	return NOTIFY_DONE;
