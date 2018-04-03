@@ -59,6 +59,26 @@ aquantia_phy_reg_write(a_uint32_t dev_id, a_uint32_t phy_id, a_uint32_t reg_mmd,
 	return rv;
 }
 
+/******************************************************************************
+*
+* aquantia_phy_get_phy_id - get the phy id
+*
+*/
+sw_error_t
+aquantia_phy_get_phy_id(a_uint32_t dev_id, a_uint32_t phy_id,
+		      a_uint16_t * org_id, a_uint16_t * rev_id)
+{
+	sw_error_t rv;
+
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_PHY_XS_REGISTERS,
+		AQUANTIA_PHY_ID1, org_id);
+	SW_RTN_ON_ERROR(rv);
+	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_PHY_XS_REGISTERS,
+		AQUANTIA_PHY_ID2, rev_id);
+
+	return rv;
+}
+
 sw_error_t
 aquantia_phy_get_speed(a_uint32_t dev_id, a_uint32_t phy_id,
 		     fal_port_speed_t * speed)
@@ -581,20 +601,38 @@ aquantia_phy_cdt_get(a_uint32_t dev_id, a_uint32_t phy_id,
 
 sw_error_t aquatia_phy_cdt_start(a_uint32_t dev_id, a_uint32_t phy_id)
 {
-	a_uint16_t status = 0;
+	a_uint16_t status = 0, phy_data = 0, org_id, rev_id;
+	a_uint32_t aq_phy_id;
 	a_uint16_t ii = 300;
 	sw_error_t rv = SW_OK;
 
-	/* RUN CDT */
+	/*select mode0 if aq107, and select mode2 if aq109*/
+	rv = aquantia_phy_get_phy_id(dev_id, phy_id, &org_id, &rev_id);
+	SW_RTN_ON_ERROR(rv);
+	aq_phy_id = (org_id << 16) | rev_id;
+	rv  = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_GLOBAL_REGISTERS,
+		AQUANTIA_GLOBAL_CDT_CONTROL, &phy_data);
+	SW_RTN_ON_ERROR(rv);
+	if(aq_phy_id == AQUANTIA_PHY_109)
+	{
+		phy_data |= AQUANTIA_PHY_CDT_MODE2;
+	}
+	else
+	{
+		phy_data |= AQUANTIA_PHY_CDT_MODE0;
+	}
+
+	phy_data |= AQUANTIA_NORMAL_CABLE_DIAGNOSTICS;
 	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_GLOBAL_REGISTERS,
-		 AQUANTIA_GLOBAL_CDT_CONTROL, AQUANTIA_NORMAL_CABLE_DIAGNOSTICS);
+		 AQUANTIA_GLOBAL_CDT_CONTROL, phy_data);
+	SW_RTN_ON_ERROR(rv);
 	do {
 		aos_mdelay(30);
 		rv  = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_GLOBAL_REGISTERS,
-			AQUANTIA_GLOBAL_CDT_CONTROL, &status);
+			AQUANTIA_GLOBAL_GENERAL_STATUS, &status);
 		SW_RTN_ON_ERROR(rv);
 	}
-	while ((status & AQUANTIA_NORMAL_CABLE_DIAGNOSTICS) && (--ii));
+	while ((status & AQUANTIA_CABLE_DIAGNOSTICS_STATUS) && (--ii));
 
 	return rv;
 }
@@ -1555,26 +1593,6 @@ sw_error_t aquantia_phy_poweron(a_uint32_t dev_id, a_uint32_t phy_id)
 	phy_data &= ~AQUANTIA_POWER_DOWN;
 	rv = aquantia_phy_reg_write(dev_id, phy_id, AQUANTIA_MMD_GLOBAL_REGISTERS,
 		AQUANTIA_GLOBAL_STANDARD_CONTROL1,phy_data);
-
-	return rv;
-}
-
-/******************************************************************************
-*
-* aquantia_phy_get_phy_id - get the phy id
-*
-*/
-sw_error_t
-aquantia_phy_get_phy_id(a_uint32_t dev_id, a_uint32_t phy_id,
-		      a_uint16_t * org_id, a_uint16_t * rev_id)
-{
-	sw_error_t rv;
-
-	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_PHY_XS_REGISTERS,
-		AQUANTIA_PHY_ID1, org_id);
-	SW_RTN_ON_ERROR(rv);
-	rv = aquantia_phy_reg_read(dev_id, phy_id, AQUANTIA_MMD_PHY_XS_REGISTERS,
-		AQUANTIA_PHY_ID2, rev_id);
 
 	return rv;
 }
