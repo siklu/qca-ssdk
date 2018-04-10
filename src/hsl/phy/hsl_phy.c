@@ -245,11 +245,13 @@ int ssdk_phy_driver_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 		{
 			phy_id = hsl_phyid_get(dev_id, i, cfg);
 			phytype = hsl_phytype_get_by_phyid(dev_id, phy_id);
-			SSDK_INFO("dev_id = %d, phy_adress = %d, phy_id = 0x%x phy type doesn't match\n",
-						dev_id, phy_info[dev_id]->phy_address[i], phy_id);
 			if (MAX_PHY_CHIP != phytype) {
 				phy_info[dev_id]->phy_type[i] = phytype;
 				ssdk_phy_driver[phytype].port_bmp[dev_id] |= (0x1 << i);
+			} else {
+				SSDK_INFO("dev_id = %d, phy_adress = %d, phy_id = 0x%x phy\
+				type doesn't match\n",dev_id, phy_info[dev_id]->phy_address[i],
+				phy_id);
 			}
 		}
 	}
