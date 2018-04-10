@@ -3086,13 +3086,17 @@ static int ssdk_dev_event(struct notifier_block *this, unsigned long event, void
 #endif
 		case NETDEV_CHANGEMTU:
 			if(dev->type == ARPHRD_ETHER) {
-				rv = chip_ver_get(0, &cfg);
-				if (rv)
-					return rv;
-				if(cfg.chip_type == CHIP_DESS ||
-				   cfg.chip_type == CHIP_ISIS ||
-				   cfg.chip_type == CHIP_ISISC){
-					fal_frame_max_size_set(0, dev->mtu + 18);
+				if (strstr(dev->name, "eth")) {
+					rv = chip_ver_get(0, &cfg);
+					if (rv) {
+						return rv;
+					}
+					if (cfg.chip_type == CHIP_DESS ||
+					   cfg.chip_type == CHIP_ISIS ||
+					   cfg.chip_type == CHIP_ISISC) {
+						fal_frame_max_size_set(0,
+							dev->mtu + 18);
+					}
 				}
 			}
 			break;
