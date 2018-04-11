@@ -18,6 +18,7 @@
  * @{
  */
 #include "sw.h"
+#include "ssdk_dts.h"
 #include "fal_qos.h"
 #include "hppe_qos_reg.h"
 #include "hppe_qos.h"
