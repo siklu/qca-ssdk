@@ -21,6 +21,7 @@
 #include "hsl_dev.h"
 #include "hsl_phy.h"
 #include "ssdk_init.h"
+#include "ssdk_dts.h"
 #include "ssdk_interrupt.h"
 #include <linux/kconfig.h>
 #include <linux/version.h>
@@ -145,7 +146,6 @@ extern void qca_ar8327_sw_mib_task(struct qca_phy_priv *priv);
 #define QCA_MAC_SW_SYNC_WORK_DELAY	1000
 
 static bool qca_dess_rfs_registered = false;
-ssdk_dt_global_t ssdk_dt_global = {0};
 
 struct qca_phy_priv **qca_phy_priv_global;
 
@@ -155,36 +155,6 @@ struct qca_phy_priv* ssdk_phy_priv_data_get(a_uint32_t dev_id)
 		return NULL;
 
 	return qca_phy_priv_global[dev_id];
-}
-
-a_uint32_t ssdk_dt_global_get_mac_mode(a_uint32_t dev_id, a_uint32_t index)
-{
-	if (index == 0)
-		return ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->mac_mode;
-	if (index == 1)
-		return ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->mac_mode1;
-	if (index == 2)
-		return ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->mac_mode2;
-
-	return 0;
-}
-
-a_uint32_t ssdk_dt_global_set_mac_mode(a_uint32_t dev_id, a_uint32_t index, a_uint32_t mode)
-{
-	if (index == 0)
-	{
-		 ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->mac_mode= mode;
-	}
-	if (index == 1)
-	{
-		 ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->mac_mode1 = mode;
-	}
-	if (index == 2)
-	{
-		 ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->mac_mode2 = mode;
-	}
-
-	return 0;
 }
 
 a_uint32_t hppe_port_type[6] = {0,0,0,0,0,0}; // this variable should be init by ssdk_init
@@ -346,14 +316,12 @@ static void qca_port_isolate(a_uint32_t dev_id)
 
 static void ssdk_portvlan_init(a_uint32_t dev_id)
 {
-	ssdk_dt_cfg *dt_cfg;
 	a_uint32_t port = 0;
 	a_uint32_t cpu_bmp, lan_bmp, wan_bmp;
 
-	dt_cfg = ssdk_dt_global.ssdk_dt_switch_nodes[dev_id];
-	cpu_bmp = dt_cfg->port_cfg.cpu_bmp;
-	lan_bmp = dt_cfg->port_cfg.lan_bmp;
-	wan_bmp = dt_cfg->port_cfg.wan_bmp;
+	cpu_bmp = ssdk_cpu_bmp_get(dev_id);
+	lan_bmp = ssdk_lan_bmp_get(dev_id);
+	wan_bmp = ssdk_wan_bmp_get(dev_id);
 
 	if (!(cpu_bmp | lan_bmp | wan_bmp)) {
 		qca_port_isolate(dev_id);
@@ -2303,614 +2271,6 @@ void switch_cpuport_setup(a_uint32_t dev_id)
 	#endif
 }
 
-ssdk_dt_scheduler_cfg *ssdk_bootup_shceduler_cfg_get(a_uint32_t dev_id)
-{
-	return &(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->scheduler_cfg);
-}
-
-#ifndef BOARD_AR71XX
-#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-static void ssdk_dt_parse_mac_mode(a_uint32_t dev_id,
-		struct device_node *switch_node, ssdk_init_cfg *cfg)
-{
-	const __be32 *mac_mode;
-	a_uint32_t len = 0;
-
-	mac_mode = of_get_property(switch_node, "switch_mac_mode", &len);
-	if (!mac_mode)
-		SSDK_INFO("mac mode doesn't exit!\n");
-	else {
-		cfg->mac_mode = be32_to_cpup(mac_mode);
-		SSDK_INFO("mac mode = 0x%x\n", be32_to_cpup(mac_mode));
-		ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->mac_mode = cfg->mac_mode;
-	}
-
-	mac_mode = of_get_property(switch_node, "switch_mac_mode1", &len);
-	if(!mac_mode)
-		SSDK_INFO("mac mode1 doesn't exit!\n");
-	else {
-		cfg->mac_mode1 = be32_to_cpup(mac_mode);
-		SSDK_INFO("mac mode1 = 0x%x\n", be32_to_cpup(mac_mode));
-		ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->mac_mode1 = cfg->mac_mode1;
-	}
-
-	mac_mode = of_get_property(switch_node, "switch_mac_mode2", &len);
-	if(!mac_mode)
-		SSDK_INFO("mac mode2 doesn't exit!\n");
-	else {
-		cfg->mac_mode2 = be32_to_cpup(mac_mode);
-		SSDK_INFO("mac mode2 = 0x%x\n", be32_to_cpup(mac_mode));
-		ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->mac_mode2 = cfg->mac_mode2;
-	}
-
-	return;
-}
-
-static void ssdk_dt_parse_uniphy(a_uint32_t dev_id)
-{
-	struct device_node *uniphy_node = NULL;
-	a_uint32_t len = 0;
-	const __be32 *reg_cfg;
-
-	/* read uniphy register base and address space */
-	uniphy_node = of_find_node_by_name(NULL, "ess-uniphy");
-	if (!uniphy_node)
-		SSDK_INFO("ess-uniphy DT doesn't exist!\n");
-	else {
-		SSDK_INFO("ess-uniphy DT exist!\n");
-		reg_cfg = of_get_property(uniphy_node, "reg", &len);
-		if(!reg_cfg)
-			SSDK_INFO("uniphy reg address doesn't exist!\n");
-		else {
-			ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->uniphyreg_base_addr = be32_to_cpup(reg_cfg);
-			ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->uniphyreg_size = be32_to_cpup(reg_cfg + 1);
-		}
-		if (of_property_read_string(uniphy_node, "uniphy_access_mode", (const char **)&ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->uniphy_access_mode))
-			SSDK_INFO("uniphy access mode doesn't exist!\n");
-		else {
-			if(!strcmp(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->uniphy_access_mode, "local bus"))
-				ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->uniphy_reg_access_mode = HSL_REG_LOCAL_BUS;
-		}
-	}
-
-	return;
-}
-
-static void ssdk_dt_parse_l1_scheduler_cfg(
-	struct device_node *port_node,
-	a_uint32_t port_id, a_uint32_t dev_id)
-{
-	struct device_node *scheduler_node;
-	struct device_node *child;
-	ssdk_dt_scheduler_cfg *cfg = &(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->scheduler_cfg);
-	a_uint32_t tmp_cfg[4];
-	const __be32 *paddr;
-	a_uint32_t len, i, sp_id;
-
-	scheduler_node = of_find_node_by_name(port_node, "l1scheduler");
-	if (!scheduler_node) {
-		SSDK_ERROR("cannot find l1scheduler node for port\n");
-		return;
-	}
-	for_each_available_child_of_node(scheduler_node, child) {
-		paddr = of_get_property(child, "sp", &len);
-		len /= sizeof(a_uint32_t);
-		if (!paddr) {
-			SSDK_ERROR("error reading sp property\n");
-			return;
-		}
-		if (of_property_read_u32_array(child,
-				"cfg", tmp_cfg, 4)) {
-			SSDK_ERROR("error reading cfg property!\n");
-			return;
-		}
-		for (i = 0; i < len; i++) {
-			sp_id = be32_to_cpup(paddr+i);
-			if (sp_id >= SSDK_L1SCHEDULER_CFG_MAX) {
-				SSDK_ERROR("Invalid parameter for sp(%d)\n",
-					sp_id);
-				return;
-			}
-			cfg->l1cfg[sp_id].valid = 1;
-			cfg->l1cfg[sp_id].port_id = port_id;
-			cfg->l1cfg[sp_id].cpri = tmp_cfg[0];
-			cfg->l1cfg[sp_id].cdrr_id = tmp_cfg[1];
-			cfg->l1cfg[sp_id].epri = tmp_cfg[2];
-			cfg->l1cfg[sp_id].edrr_id = tmp_cfg[3];
-		}
-	}
-}
-
-static void ssdk_dt_parse_l0_queue_cfg(
-	a_uint32_t dev_id,
-	a_uint32_t port_id,
-	struct device_node *node,
-	a_uint8_t *queue_name,
-	a_uint8_t *loop_name)
-{
-	ssdk_dt_scheduler_cfg *cfg = &(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->scheduler_cfg);
-	a_uint32_t tmp_cfg[5];
-	const __be32 *paddr;
-	a_uint32_t len, i, queue_id, pri_loop;
-
-	paddr = of_get_property(node, queue_name, &len);
-	len /= sizeof(a_uint32_t);
-	if (!paddr) {
-		SSDK_ERROR("error reading %s property\n", queue_name);
-		return;
-	}
-	if (of_property_read_u32_array(node, "cfg", tmp_cfg, 5)) {
-		SSDK_ERROR("error reading cfg property!\n");
-		return;
-	}
-	if (of_property_read_u32(node, loop_name, &pri_loop)) {
-		for (i = 0; i < len; i++) {
-			queue_id = be32_to_cpup(paddr+i);
-			if (queue_id >= SSDK_L0SCHEDULER_CFG_MAX) {
-				SSDK_ERROR("Invalid parameter for queue(%d)\n",
-					queue_id);
-				return;
-			}
-			cfg->l0cfg[queue_id].valid = 1;
-			cfg->l0cfg[queue_id].port_id = port_id;
-			cfg->l0cfg[queue_id].sp_id = tmp_cfg[0];
-			cfg->l0cfg[queue_id].cpri = tmp_cfg[1];
-			cfg->l0cfg[queue_id].cdrr_id = tmp_cfg[2];
-			cfg->l0cfg[queue_id].epri = tmp_cfg[3];
-			cfg->l0cfg[queue_id].edrr_id = tmp_cfg[4];
-		}
-	} else {
-		/* should one queue for loop */
-		if (len != 1) {
-			SSDK_ERROR("should one queue for loop!\n");
-			return;
-		}
-		queue_id = be32_to_cpup(paddr);
-		if (queue_id >= SSDK_L0SCHEDULER_CFG_MAX) {
-			SSDK_ERROR("Invalid parameter for queue(%d)\n",
-				queue_id);
-			return;
-		}
-		for (i = 0; i < pri_loop; i++) {
-			cfg->l0cfg[queue_id + i].valid = 1;
-			cfg->l0cfg[queue_id + i].port_id = port_id;
-			cfg->l0cfg[queue_id + i].sp_id = tmp_cfg[0] + i/SSDK_SP_MAX_PRIORITY;
-			cfg->l0cfg[queue_id + i].cpri = tmp_cfg[1] + i%SSDK_SP_MAX_PRIORITY;
-			cfg->l0cfg[queue_id + i].cdrr_id = tmp_cfg[2] + i;
-			cfg->l0cfg[queue_id + i].epri = tmp_cfg[3] + i%SSDK_SP_MAX_PRIORITY;
-			cfg->l0cfg[queue_id + i].edrr_id = tmp_cfg[4] + i;
-		}
-	}
-}
-
-static void ssdk_dt_parse_l0_scheduler_cfg(
-	struct device_node *port_node,
-	a_uint32_t port_id, a_uint32_t dev_id)
-{
-	struct device_node *scheduler_node;
-	struct device_node *child;
-
-	scheduler_node = of_find_node_by_name(port_node, "l0scheduler");
-	if (!scheduler_node) {
-		SSDK_ERROR("Can't find l0scheduler node for port\n");
-		return;
-	}
-	for_each_available_child_of_node(scheduler_node, child) {
-		ssdk_dt_parse_l0_queue_cfg(dev_id, port_id, child,
-				"ucast_queue", "ucast_loop_pri");
-		ssdk_dt_parse_l0_queue_cfg(dev_id, port_id, child,
-				"mcast_queue", "mcast_loop_pri");
-	}
-}
-
-static void ssdk_dt_parse_scheduler_resource(
-	struct device_node *port_node,
-	a_uint32_t dev_id, a_uint32_t port_id)
-{
-	a_uint32_t uq[2], mq[2], l0sp[2], l0cdrr[2];
-	a_uint32_t l0edrr[2], l1cdrr[2], l1edrr[2];
-	ssdk_dt_scheduler_cfg *cfg = &(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->scheduler_cfg);
-
-	if (of_property_read_u32_array(port_node, "ucast_queue", uq, 2)
-		|| of_property_read_u32_array(port_node, "mcast_queue", mq, 2)
-		|| of_property_read_u32_array(port_node, "l0sp", l0sp, 2)
-		|| of_property_read_u32_array(port_node, "l0cdrr", l0cdrr, 2)
-		|| of_property_read_u32_array(port_node, "l0edrr", l0edrr, 2)
-		|| of_property_read_u32_array(port_node, "l1cdrr", l1cdrr, 2)
-		|| of_property_read_u32_array(port_node, "l1edrr", l1edrr, 2)){
-		SSDK_ERROR("error reading port resource scheduler properties\n");
-		return;
-	}
-	cfg->pool[port_id].ucastq_start = uq[0];
-	cfg->pool[port_id].ucastq_end = uq[1];
-	cfg->pool[port_id].mcastq_start = mq[0];
-	cfg->pool[port_id].mcastq_end = mq[1];
-	cfg->pool[port_id].l0sp_start = l0sp[0];
-	cfg->pool[port_id].l0sp_end = l0sp[1];
-	cfg->pool[port_id].l0cdrr_start = l0cdrr[0];
-	cfg->pool[port_id].l0cdrr_end = l0cdrr[1];
-	cfg->pool[port_id].l0edrr_start = l0edrr[0];
-	cfg->pool[port_id].l0edrr_end = l0edrr[1];
-	cfg->pool[port_id].l1cdrr_start = l1cdrr[0];
-	cfg->pool[port_id].l1cdrr_end = l1cdrr[1];
-	cfg->pool[port_id].l1edrr_start = l1edrr[0];
-	cfg->pool[port_id].l1edrr_end = l1edrr[1];
-}
-
-static void ssdk_dt_parse_scheduler_cfg(a_uint32_t dev_id, struct device_node *switch_node)
-{
-	struct device_node *scheduler_node;
-	struct device_node *child;
-	a_uint32_t port_id;
-
-	scheduler_node = of_find_node_by_name(switch_node, "port_scheduler_resource");
-	if (!scheduler_node) {
-		SSDK_ERROR("cannot find port_scheduler_resource node\n");
-		return;
-	}
-	for_each_available_child_of_node(scheduler_node, child) {
-		if (of_property_read_u32(child, "port_id", &port_id)) {
-			SSDK_ERROR("error reading for port_id property!\n");
-			return;
-		}
-		if (port_id >= SSDK_MAX_PORT_NUM) {
-			SSDK_ERROR("invalid parameter for port_id(%d)!\n", port_id);
-			return;
-		}
-		ssdk_dt_parse_scheduler_resource(child, dev_id, port_id);
-	}
-
-	scheduler_node = of_find_node_by_name(switch_node, "port_scheduler_config");
-	if (!scheduler_node) {
-		SSDK_ERROR("cannot find port_scheduler_config node\n");
-		return ;
-	}
-	for_each_available_child_of_node(scheduler_node, child) {
-		if (of_property_read_u32(child, "port_id", &port_id)) {
-			SSDK_ERROR("error reading for port_id property!\n");
-			return;
-		}
-		if (port_id >= SSDK_MAX_PORT_NUM) {
-			SSDK_ERROR("invalid parameter for port_id(%d)!\n", port_id);
-			return;
-		}
-		ssdk_dt_parse_l1_scheduler_cfg(child, port_id, dev_id);
-		ssdk_dt_parse_l0_scheduler_cfg(child, port_id, dev_id);
-	}
-}
-
-static sw_error_t ssdk_dt_parse_phy_info(struct device_node *switch_node, a_uint32_t dev_id)
-{
-	struct device_node *phy_info_node, *port_node;
-	a_uint32_t port_id, phy_addr;
-	a_bool_t phy_c45, phy_combo;
-	sw_error_t rv = SW_OK;
-
-	phy_info_node = of_get_child_by_name(switch_node, "qcom,port_phyinfo");
-	if (!phy_info_node) {
-		SSDK_INFO("qcom,port_phyinfo DT doesn't exist!\n");
-		return SW_NOT_FOUND;
-	}
-
-	for_each_available_child_of_node(phy_info_node, port_node) {
-		if (of_property_read_u32(port_node, "port_id", &port_id) ||
-				of_property_read_u32(port_node, "phy_address", &phy_addr))
-			return SW_BAD_VALUE;
-
-		phy_c45 = of_property_read_bool(port_node,
-				"ethernet-phy-ieee802.3-c45");
-
-		phy_combo = of_property_read_bool(port_node,
-				"ethernet-phy-combo");
-
-		hsl_port_phy_combo_capability_set(dev_id, port_id, phy_combo);
-		hsl_port_phy_c45_capability_set(dev_id, port_id, phy_c45);
-		hsl_phy_address_init(dev_id, port_id, phy_addr);
-	}
-
-	return rv;
-}
-
-static void ssdk_dt_parse_mdio(a_uint32_t dev_id, struct device_node *switch_node)
-{
-	struct device_node *mdio_node = NULL;
-	struct device_node *child = NULL;
-	a_uint32_t len = 0, i = 1;
-	const __be32 *phy_addr;
-	const __be32 * c45_phy;
-
-	/* prefer to get phy info from ess-switch node */
-	if (SW_OK == ssdk_dt_parse_phy_info(switch_node, dev_id))
-		return;
-
-	mdio_node = of_find_node_by_name(NULL, "mdio");
-
-	if (!mdio_node) {
-		SSDK_INFO("mdio DT doesn't exist!\n");
-	}
-	else {
-		SSDK_INFO("mdio DT exist!\n");
-		for_each_available_child_of_node(mdio_node, child) {
-			phy_addr = of_get_property(child, "reg", &len);
-			if (phy_addr) {
-				hsl_phy_address_init(dev_id, i, be32_to_cpup(phy_addr));
-			}
-			c45_phy = of_get_property(child, "compatible", &len);
-			if (c45_phy) {
-				hsl_port_phy_c45_capability_set(dev_id, i, A_TRUE);
-			}
-			i++;
-			if (i >= SW_MAX_NR_PORT) {
-				break;
-			}
-		}
-	}
-	return;
-}
-
-static void ssdk_dt_parse_port_bmp(a_uint32_t dev_id,
-		struct device_node *switch_node, ssdk_init_cfg *cfg)
-{
-	a_uint32_t portbmp = 0;
-
-	if (of_property_read_u32(switch_node, "switch_cpu_bmp", &cfg->port_cfg.cpu_bmp)
-		|| of_property_read_u32(switch_node, "switch_lan_bmp", &cfg->port_cfg.lan_bmp)
-		|| of_property_read_u32(switch_node, "switch_wan_bmp", &cfg->port_cfg.wan_bmp)) {
-		SSDK_ERROR("port_bmp doesn't exist!\n");
-		return;
-	}
-
-	ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->port_cfg.cpu_bmp = cfg->port_cfg.cpu_bmp;
-	ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->port_cfg.lan_bmp = cfg->port_cfg.lan_bmp;
-	ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->port_cfg.wan_bmp = cfg->port_cfg.wan_bmp;
-
-	portbmp = cfg->port_cfg.lan_bmp | cfg->port_cfg.wan_bmp;
-	qca_ssdk_port_bmp_set(dev_id, portbmp);
-
-	return;
-}
-
-static void ssdk_dt_parse_intf_mac(void)
-{
-	struct device_node *dp_node = NULL;
-	a_uint32_t dp = 0;
-	a_uint8_t *maddr = NULL;
-	char dp_name[8] = {0};
-
-	for (dp = 1; dp <= SSDK_MAX_NR_ETH; dp++) {
-		snprintf(dp_name, sizeof(dp_name), "dp%d", dp);
-		dp_node = of_find_node_by_name(NULL, dp_name);
-		if (!dp_node) {
-			continue;
-		}
-		maddr = (a_uint8_t *)of_get_mac_address(dp_node);
-		if (maddr && is_valid_ether_addr(maddr)) {
-			ssdk_dt_global.num_intf_mac++;
-			ether_addr_copy(ssdk_dt_global.intf_mac[dp-1].uc, maddr);
-			SSDK_INFO("%s MAC %02x:%02x:%02x:%02x:%02x:%02x\n",
-				dp_name, maddr[0], maddr[1], maddr[2], maddr[3],
-				maddr[4], maddr[5]);
-		}
-	}
-	return;
-}
-
-static void ssdk_dt_parse_psgmii(ssdk_dt_cfg *ssdk_dt_priv)
-{
-
-	struct device_node *psgmii_node = NULL;
-	const __be32 *reg_cfg;
-	a_uint32_t len = 0;
-
-	psgmii_node = of_find_node_by_name(NULL, "ess-psgmii");
-	if (!psgmii_node) {
-		SSDK_ERROR("cannot find ess-psgmii node\n");
-		return;
-	}
-
-	SSDK_INFO("ess-psgmii DT exist!\n");
-	reg_cfg = of_get_property(psgmii_node, "reg", &len);
-	if(!reg_cfg) {
-		SSDK_ERROR("%s: error reading device node properties for reg\n", psgmii_node->name);
-		return;
-	}
-
-	ssdk_dt_priv->psgmiireg_base_addr = be32_to_cpup(reg_cfg);
-	ssdk_dt_priv->psgmiireg_size = be32_to_cpup(reg_cfg + 1);
-	if (of_property_read_string(psgmii_node, "psgmii_access_mode", (const char **)&ssdk_dt_priv->psgmii_reg_access_str)) {
-		SSDK_ERROR("%s: error reading device node properties for psmgii_access_mode\n", psgmii_node->name);
-		return;
-	}
-	if(!strcmp(ssdk_dt_priv->psgmii_reg_access_str, "local bus"))
-		ssdk_dt_priv->psgmii_reg_access_mode = HSL_REG_LOCAL_BUS;
-
-	return;
-}
-
-static sw_error_t ssdk_dt_parse_access_mode(struct device_node *switch_node,
-		ssdk_dt_cfg *ssdk_dt_priv)
-{
-	const __be32 *reg_cfg;
-	a_uint32_t len = 0;
-
-	if (of_property_read_string(switch_node, "switch_access_mode", (const char **)&ssdk_dt_priv->reg_access_mode)) {
-		SSDK_ERROR("%s: error reading device node properties for switch_access_mode\n", switch_node->name);
-		return SW_BAD_PARAM;
-	}
-
-	SSDK_INFO("switch_access_mode: %s\n", ssdk_dt_priv->reg_access_mode);
-	if(!strcmp(ssdk_dt_priv->reg_access_mode, "local bus")) {
-		ssdk_dt_priv->switch_reg_access_mode = HSL_REG_LOCAL_BUS;
-
-		reg_cfg = of_get_property(switch_node, "reg", &len);
-		if(!reg_cfg) {
-			SSDK_ERROR("%s: error reading device node properties for reg\n", switch_node->name);
-			return SW_BAD_PARAM;
-		}
-		ssdk_dt_priv->switchreg_base_addr = be32_to_cpup(reg_cfg);
-		ssdk_dt_priv->switchreg_size = be32_to_cpup(reg_cfg + 1);
-
-		SSDK_INFO("switchreg_base_addr: 0x%x\n", ssdk_dt_priv->switchreg_base_addr);
-		SSDK_INFO("switchreg_size: 0x%x\n", ssdk_dt_priv->switchreg_size);
-	}
-	else {
-		ssdk_dt_priv->switch_reg_access_mode = HSL_REG_MDIO;
-	}
-
-	return SW_OK;
-
-}
-
-static void ssdk_dt_parse_led(struct device_node *switch_node,
-		ssdk_init_cfg *cfg)
-{
-	struct device_node *child = NULL;
-	const __be32 *led_source, *led_number;
-	a_uint8_t *led_str;
-	a_uint32_t len = 0, i = 0;
-
-	for_each_available_child_of_node(switch_node, child) {
-
-		led_source = of_get_property(child, "source", &len);
-		if (led_source)
-			cfg->led_source_cfg[i].led_source_id = be32_to_cpup(led_source);
-		led_number = of_get_property(child, "led", &len);
-		if (led_number)
-			cfg->led_source_cfg[i].led_num = be32_to_cpup(led_number);
-		if (!of_property_read_string(child, "mode", (const char **)&led_str)) {
-			if (!strcmp(led_str, "normal"))
-			cfg->led_source_cfg[i].led_pattern.mode = LED_PATTERN_MAP_EN;
-			if (!strcmp(led_str, "on"))
-			cfg->led_source_cfg[i].led_pattern.mode = LED_ALWAYS_ON;
-			if (!strcmp(led_str, "blink"))
-			cfg->led_source_cfg[i].led_pattern.mode = LED_ALWAYS_BLINK;
-			if (!strcmp(led_str, "off"))
-			cfg->led_source_cfg[i].led_pattern.mode = LED_ALWAYS_OFF;
-		}
-		if (!of_property_read_string(child, "speed", (const char **)&led_str)) {
-			if (!strcmp(led_str, "10M"))
-			cfg->led_source_cfg[i].led_pattern.map = LED_MAP_10M_SPEED;
-			if (!strcmp(led_str, "100M"))
-			cfg->led_source_cfg[i].led_pattern.map = LED_MAP_100M_SPEED;
-			if (!strcmp(led_str, "100M"))
-			cfg->led_source_cfg[i].led_pattern.map = LED_MAP_1000M_SPEED;
-			if (!strcmp(led_str, "all"))
-			cfg->led_source_cfg[i].led_pattern.map = LED_MAP_ALL_SPEED;
-		}
-		if (!of_property_read_string(child, "freq", (const char **)&led_str)) {
-			if (!strcmp(led_str, "2Hz"))
-			cfg->led_source_cfg[i].led_pattern.freq = LED_BLINK_2HZ;
-			if (!strcmp(led_str, "4Hz"))
-			cfg->led_source_cfg[i].led_pattern.freq = LED_BLINK_4HZ;
-			if (!strcmp(led_str, "8Hz"))
-			cfg->led_source_cfg[i].led_pattern.freq = LED_BLINK_8HZ;
-			if (!strcmp(led_str, "auto"))
-			cfg->led_source_cfg[i].led_pattern.freq = LED_BLINK_TXRX;
-		}
-		i++;
-	}
-	cfg->led_source_num = i;
-	SSDK_INFO("current dts led_source_num is %d\n",cfg->led_source_num);
-
-	return;
-}
-
-static sw_error_t ssdk_dt_get_switch_node(struct device_node **switch_node,
-		a_uint32_t num)
-{
-	struct device_node *switch_instance = NULL;
-	char ess_switch_name[64] = {0};
-
-	if (num == 0)
-		snprintf(ess_switch_name, sizeof(ess_switch_name), "ess-switch");
-	else
-		snprintf(ess_switch_name, sizeof(ess_switch_name), "ess-switch%d", num);
-
-	/*
-	 * Get reference to ESS SWITCH device node from ess-instance node firstly.
-	 */
-	switch_instance = of_find_node_by_name(NULL, "ess-instance");
-	*switch_node = of_find_node_by_name(switch_instance, ess_switch_name);
-	if (!*switch_node) {
-		SSDK_WARN("cannot find ess-switch node\n");
-		return SW_BAD_PARAM;
-	}
-
-	SSDK_INFO("ess-switch DT exist!\n");
-
-	if (!of_device_is_available(*switch_node))
-	{
-		SSDK_WARN("ess-switch node[%s] is disabled\n", ess_switch_name);
-		return SW_DISABLE;
-	}
-
-	return SW_OK;
-}
-
-static sw_error_t ssdk_dt_parse(ssdk_init_cfg *cfg, a_uint32_t num, a_uint32_t *dev_id)
-{
-	sw_error_t rv = SW_OK;
-	struct device_node *switch_node = NULL;
-	ssdk_dt_cfg *ssdk_dt_priv = NULL;
-	a_uint32_t len = 0, mode = 0;
-	const __be32 *device_id;
-
-	rv = ssdk_dt_get_switch_node(&switch_node, num);
-	SW_RTN_ON_ERROR(rv);
-
-	device_id = of_get_property(switch_node, "device_id", &len);
-	if(!device_id)
-		*dev_id = 0;
-	else
-		*dev_id = be32_to_cpup(device_id);
-
-	ssdk_dt_priv = ssdk_dt_global.ssdk_dt_switch_nodes[*dev_id];
-	ssdk_dt_priv->device_id = *dev_id;
-	ssdk_dt_priv->ess_switch_flag = A_TRUE;
-	ssdk_dt_priv->of_node = switch_node;
-	ssdk_dt_priv->ess_clk= ERR_PTR(-ENOENT);
-	ssdk_dt_priv->cmnblk_clk = ERR_PTR(-ENOENT);
-
-	/* parse common dts info */
-	rv = ssdk_dt_parse_access_mode(switch_node, ssdk_dt_priv);
-	SW_RTN_ON_ERROR(rv);
-	ssdk_dt_parse_mac_mode(*dev_id, switch_node, cfg);
-	ssdk_dt_parse_mdio(*dev_id, switch_node);
-	ssdk_dt_parse_port_bmp(*dev_id, switch_node, cfg);
-
-	if (of_device_is_compatible(switch_node, "qcom,ess-switch")) {
-		/* DESS chip */
-		ssdk_dt_parse_led(switch_node, cfg);
-		ssdk_dt_parse_psgmii(ssdk_dt_priv);
-
-		ssdk_dt_priv->ess_clk = of_clk_get_by_name(switch_node, "ess_clk");
-		if (IS_ERR(ssdk_dt_priv->ess_clk))
-			SSDK_INFO("ess_clk doesn't exist!\n");
-	}
-	else if (of_device_is_compatible(switch_node, "qcom,ess-switch-ipq807x")) {
-		/* HPPE chip */
-		ssdk_dt_parse_uniphy(*dev_id);
-		ssdk_dt_parse_scheduler_cfg(*dev_id, switch_node);
-		ssdk_dt_parse_intf_mac();
-
-		ssdk_dt_priv->cmnblk_clk = of_clk_get_by_name(switch_node, "cmn_ahb_clk");
-		if (!of_property_read_u32(switch_node, "tm_tick_mode", &mode))
-			ssdk_dt_priv->tm_tick_mode = mode;
-	}
-	else if (of_device_is_compatible(switch_node, "qcom,ess-switch-qca83xx")) {
-		/* s17/s17c chip */
-		SSDK_INFO("switch node is qca83xx!\n");
-	}
-	else {
-		SSDK_WARN("invalid compatible property\n");
-	}
-
-	return SW_OK;
-}
-
-#endif
-#endif
-
 #ifdef CONFIG_MDIO
 static struct mdio_if_info ssdk_mdio_ctl;
 #endif
@@ -3015,8 +2375,13 @@ static void ssdk_miireg_ioctrl_unregister(void)
 
 static void ssdk_driver_register(a_uint32_t dev_id)
 {
+	hsl_reg_mode reg_mode;
+	a_bool_t flag;
+
+	reg_mode = ssdk_switch_reg_access_mode_get(dev_id);
+
 #ifdef DESS
-	if(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
+	if(reg_mode == HSL_REG_LOCAL_BUS) {
 #ifndef BOARD_AR71XX
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 		platform_driver_register(&ssdk_driver);
@@ -3025,7 +2390,8 @@ static void ssdk_driver_register(a_uint32_t dev_id)
 	}
 #endif
 
-	if(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->switch_reg_access_mode == HSL_REG_MDIO && ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->ess_switch_flag == A_FALSE) {
+	flag = ssdk_ess_switch_flag_get(dev_id);
+	if(reg_mode == HSL_REG_MDIO && flag == A_FALSE) {
 		if(driver_find(qca_phy_driver.name, &mdio_bus_type)){
 			SSDK_ERROR("QCA PHY driver had been Registered\n");
 			return;
@@ -3053,7 +2419,12 @@ static void ssdk_driver_register(a_uint32_t dev_id)
 
 static void ssdk_driver_unregister(a_uint32_t dev_id)
 {
-	if(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->switch_reg_access_mode == HSL_REG_MDIO && ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->ess_switch_flag == A_FALSE) {
+	hsl_reg_mode reg_mode;
+	a_bool_t flag;
+
+	reg_mode= ssdk_switch_reg_access_mode_get(dev_id);
+	flag = ssdk_ess_switch_flag_get(dev_id);
+	if(reg_mode == HSL_REG_MDIO && flag == A_FALSE) {
 		phy_driver_unregister(&qca_phy_driver);
 
 	#if defined(BOARD_AR71XX) && defined(IN_SWCONFIG)
@@ -3061,7 +2432,7 @@ static void ssdk_driver_unregister(a_uint32_t dev_id)
 	#endif
 	}
 
-	if (ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
+	if (reg_mode == HSL_REG_LOCAL_BUS) {
 #ifndef BOARD_AR71XX
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 		platform_driver_unregister(&ssdk_driver);
@@ -3100,7 +2471,10 @@ static int chip_ver_get(a_uint32_t dev_id, ssdk_init_cfg* cfg)
 {
 	int rv = SW_OK;
 	a_uint8_t chip_ver = 0;
-	if(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->switch_reg_access_mode == HSL_REG_MDIO)
+	hsl_reg_mode reg_mode;
+
+	reg_mode= ssdk_switch_reg_access_mode_get(dev_id);
+	if(reg_mode == HSL_REG_MDIO)
 	{
 		chip_ver = (qca_ar8216_mii_read(dev_id, 0)&0xff00)>>8;
 	}
@@ -3439,10 +2813,12 @@ qca_dess_hw_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 	a_uint32_t reg_value = 0;
 	hsl_api_t *p_api;
 	a_uint32_t psgmii_result = 0;
+	a_uint32_t mac_mode;
 
+	mac_mode = ssdk_dt_global_get_mac_mode(dev_id, 0);
 	/*Do Malibu self test to fix packet drop issue firstly*/
-	if ((ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->mac_mode == PORT_WRAPPER_PSGMII) ||
-	    (ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->mac_mode == PORT_WRAPPER_PSGMII_FIBER)) {
+	if ((mac_mode == PORT_WRAPPER_PSGMII) ||
+	    (mac_mode == PORT_WRAPPER_PSGMII_FIBER)) {
 		ssdk_psgmii_self_test(dev_id, A_FALSE, 100, &psgmii_result);
 		clear_self_test_config(dev_id);
 	} else {
@@ -3781,75 +3157,37 @@ static void qca_dess_rfs_init(void)
 }
 #endif
 
-static a_uint32_t ssdk_get_switch_nums(void)
-{
-	struct device_node *switch_instance = NULL;
-	a_uint32_t len = 0;
-	const __be32 *num_devices;
-
-	switch_instance = of_find_node_by_name(NULL, "ess-instance");
-	if (!switch_instance) {
-		return 1;
-	}
-	else {
-		num_devices = of_get_property(switch_instance, "num_devices", &len);
-		if (!num_devices)
-			return 1;
-		else
-			return be32_to_cpup(num_devices);
-	}
-}
-
 static void ssdk_free_priv(void)
 {
-	a_uint32_t dev_id;
-	for (dev_id = 0; dev_id < ssdk_dt_global.num_devices; dev_id++) {
+	a_uint32_t dev_id, dev_num;
+
+	dev_num = ssdk_switch_device_num_get();
+	for (dev_id = 0; dev_id < dev_num; dev_id++) {
 		if (qca_phy_priv_global[dev_id])
 			kfree(qca_phy_priv_global[dev_id]);
-		if (ssdk_dt_global.ssdk_dt_switch_nodes[dev_id])
-			kfree(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]);
 
 		qca_phy_priv_global[dev_id] = NULL;
-		ssdk_dt_global.ssdk_dt_switch_nodes[dev_id] = NULL;
 	}
 
-	if (ssdk_dt_global.ssdk_dt_switch_nodes)
-		kfree(ssdk_dt_global.ssdk_dt_switch_nodes);
 	if (qca_phy_priv_global)
 		kfree(qca_phy_priv_global);
 
-	ssdk_dt_global.ssdk_dt_switch_nodes = NULL;
 	qca_phy_priv_global = NULL;
 
-	ssdk_dt_global.num_devices = 0;
+	ssdk_switch_device_num_exit();
 }
 
-static int ssdk_alloc_priv(void)
+static int ssdk_alloc_priv(a_uint32_t dev_num)
 {
 	int rev = SW_OK;
 	a_uint32_t dev_id;
-	ssdk_dt_global.num_devices = ssdk_get_switch_nums();
-	SSDK_INFO("ess-switch dts node number: %d\n", ssdk_dt_global.num_devices);
 
-	ssdk_dt_global.ssdk_dt_switch_nodes = kzalloc(ssdk_dt_global.num_devices * sizeof(ssdk_dt_cfg *), GFP_KERNEL);
-	if (ssdk_dt_global.ssdk_dt_switch_nodes == NULL) {
-		return -ENOMEM;
-	}
-
-	qca_phy_priv_global = kzalloc(ssdk_dt_global.num_devices * sizeof(struct qca_phy_priv *), GFP_KERNEL);
+	qca_phy_priv_global = kzalloc(dev_num * sizeof(struct qca_phy_priv *), GFP_KERNEL);
 	if (qca_phy_priv_global == NULL) {
 		return -ENOMEM;
 	}
 
-	for (dev_id = 0; dev_id < ssdk_dt_global.num_devices; dev_id++) {
-		ssdk_dt_global.ssdk_dt_switch_nodes[dev_id] = kzalloc(sizeof(ssdk_dt_cfg), GFP_KERNEL);
-		if (ssdk_dt_global.ssdk_dt_switch_nodes[dev_id] == NULL) {
-			return -ENOMEM;
-		}
-		ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->switch_reg_access_mode = HSL_REG_MDIO;
-		ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->psgmii_reg_access_mode = HSL_REG_MDIO;
-		ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->ess_switch_flag = A_FALSE;
-
+	for (dev_id = 0; dev_id < dev_num; dev_id++) {
 		qca_phy_priv_global[dev_id] = kzalloc(sizeof(struct qca_phy_priv), GFP_KERNEL);
 		if (qca_phy_priv_global[dev_id] == NULL) {
 			return -ENOMEM;
@@ -3865,31 +3203,36 @@ static int ssdk_alloc_priv(void)
 
 static int __init regi_init(void)
 {
-	a_uint32_t num = 0, dev_id = 0;
+	a_uint32_t num = 0, dev_id = 0, dev_num = 0;
 	ssdk_init_cfg cfg;
 	garuda_init_spec_cfg chip_spec_cfg;
 	int rv = 0;
 
-	rv = ssdk_alloc_priv();
+	/*init switch device num firstly*/
+	ssdk_switch_device_num_init();
+
+	dev_num = ssdk_switch_device_num_get();
+
+	rv = ssdk_alloc_priv(dev_num);
 	if (rv)
 		goto out;
 
-	for (num = 0; num < ssdk_dt_global.num_devices; num++) {
+	for (num = 0; num < dev_num; num++) {
 		ssdk_cfg_default_init(&cfg);
 
-		#ifndef BOARD_AR71XX
-		#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+#ifndef BOARD_AR71XX
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 		if(SW_DISABLE == ssdk_dt_parse(&cfg, num, &dev_id)) {
 			SSDK_INFO("ess-switch node is unavalilable\n");
 			continue;
 		}
-		#endif
-		#endif
+#endif
+#endif
 
 		/* device id is the array index */
-		qca_phy_priv_global[dev_id]->device_id = ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->device_id;
-		qca_phy_priv_global[dev_id]->ess_switch_flag = ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->ess_switch_flag;
-		qca_phy_priv_global[dev_id]->of_node = ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->of_node;
+		qca_phy_priv_global[dev_id]->device_id = ssdk_device_id_get(dev_id);
+		qca_phy_priv_global[dev_id]->ess_switch_flag = ssdk_ess_switch_flag_get(dev_id);
+		qca_phy_priv_global[dev_id]->of_node = ssdk_dts_node_get(dev_id);
 
 		rv = ssdk_plat_init(&cfg, dev_id);
 		SW_CNTU_ON_ERROR_AND_COND1_OR_GOTO_OUT(rv, -ENODEV);
@@ -3913,7 +3256,7 @@ static int __init regi_init(void)
 			case CHIP_ISIS:
 			case CHIP_ISISC:
 			#if defined (ISISC) || defined (ISIS)
-				if (ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->ess_switch_flag == A_TRUE) {
+				if (qca_phy_priv_global[dev_id]->ess_switch_flag == A_TRUE) {
 					SSDK_INFO("Initializing ISISC!!\n");
 					rv = ssdk_switch_register(dev_id);
 					SW_CNTU_ON_ERROR_AND_COND1_OR_GOTO_OUT(rv, -ENODEV);
@@ -3985,16 +3328,17 @@ out:
 static void __exit
 regi_exit(void)
 {
-	a_uint32_t dev_id;
+	a_uint32_t dev_id, dev_num;
 	sw_error_t rv;
 
-	for (dev_id = 0; dev_id < ssdk_dt_global.num_devices; dev_id++) {
+	dev_num = ssdk_switch_device_num_get();
+	for (dev_id = 0; dev_id < dev_num; dev_id++) {
 		ssdk_driver_unregister(dev_id);
 		if (qca_phy_priv_global[dev_id]->qca_ssdk_sw_dev_registered == A_TRUE)
 			ssdk_switch_unregister(dev_id);
 	}
 
-	rv=ssdk_cleanup();
+	rv = ssdk_cleanup();
 
 	if (rv == 0)
 		SSDK_INFO("qca-ssdk module exit  done!\n");
@@ -4007,7 +3351,8 @@ regi_exit(void)
 
 	ssdk_sysfs_exit();
 	ssdk_miireg_ioctrl_unregister();
-	for (dev_id = 0; dev_id < ssdk_dt_global.num_devices; dev_id++) {
+
+	for (dev_id = 0; dev_id < dev_num; dev_id++) {
 		ssdk_plat_exit(dev_id);
 	}
 

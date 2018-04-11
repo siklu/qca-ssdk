@@ -13,6 +13,7 @@
  */
 
 #include "ssdk_init.h"
+#include "ssdk_dts.h"
 #include "adpt.h"
 #include "adpt_hppe.h"
 #include "fal.h"
@@ -415,15 +416,19 @@ qca_hppe_tdm_hw_init(a_uint32_t dev_id)
 	fal_port_tdm_ctrl_t tdm_ctrl;
 	fal_port_scheduler_cfg_t *scheduler_cfg;
 	fal_port_tdm_tick_cfg_t *bm_cfg;
+	a_uint8_t tm_tick_mode, bm_tick_mode;
 
 	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
 	SW_RTN_ON_NULL(p_api->adpt_port_scheduler_cfg_set);
 	SW_RTN_ON_NULL(p_api->adpt_tdm_tick_num_set);
 
-	if (ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->tm_tick_mode == 0) {
+	tm_tick_mode = ssdk_tm_tick_mode_get(dev_id);
+	bm_tick_mode = ssdk_bm_tick_mode_get(dev_id);
+
+	if (tm_tick_mode == 0) {
 		num = sizeof(port_scheduler0_tbl) / sizeof(fal_port_scheduler_cfg_t);
 		scheduler_cfg = port_scheduler0_tbl;
-	} else if (ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->tm_tick_mode == 1) {
+	} else if (tm_tick_mode == 1) {
 		num = sizeof(port_scheduler1_tbl) / sizeof(fal_port_scheduler_cfg_t);
 		scheduler_cfg = port_scheduler1_tbl;
 	} else {
@@ -438,7 +443,7 @@ qca_hppe_tdm_hw_init(a_uint32_t dev_id)
 	SW_RTN_ON_NULL(p_api->adpt_port_tdm_tick_cfg_set);
 	SW_RTN_ON_NULL(p_api->adpt_port_tdm_ctrl_set);
 
-	if (ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->bm_tick_mode == 0) {
+	if (bm_tick_mode == 0) {
 		num = sizeof(port_tdm0_tbl) / sizeof(fal_port_tdm_tick_cfg_t);
 		bm_cfg = port_tdm0_tbl;
 	} else {
@@ -531,7 +536,7 @@ qca_hppe_qm_hw_init(a_uint32_t dev_id)
 	queue_dst.service_code = 0;
 	for(i = 0; i < SSDK_MAX_PORT_NUM; i++) {
 		queue_dst.dst_port = i;
-		qbase = ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->scheduler_cfg.pool[i].ucastq_start;
+		qbase = ssdk_ucast_queue_start_get(dev_id, i);
 		fal_ucast_queue_base_profile_set(dev_id, &queue_dst, qbase, i);
 	}
 
@@ -575,7 +580,7 @@ qca_hppe_qm_hw_init(a_uint32_t dev_id)
 	 */
 	for (i = 0; i < SSDK_MAX_PORT_NUM; i++) {
 		queue_dst.dst_port = i;
-		qbase = ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->scheduler_cfg.pool[i].ucastq_start;
+		qbase = ssdk_ucast_queue_start_get(dev_id, i);
 		fal_ucast_queue_base_profile_set(dev_id, &queue_dst, qbase, i);
 	}
 
@@ -629,7 +634,7 @@ qca_hppe_qos_scheduler_hw_init(a_uint32_t dev_id)
 	fal_queue_bmp_t queue_bmp;
 	fal_qos_group_t group_sel;
 	fal_qos_pri_precedence_t pri_pre;
-	ssdk_dt_scheduler_cfg *dt_cfg = &(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->scheduler_cfg);
+	ssdk_dt_scheduler_cfg *dt_cfg = ssdk_bootup_shceduler_cfg_get(dev_id);
 
 	memset(&cfg, 0, sizeof(cfg));
 
@@ -700,10 +705,12 @@ qca_hppe_qos_scheduler_hw_init(a_uint32_t dev_id)
 
 sw_error_t qca_hppe_acl_byp_intf_mac_learn(a_uint32_t dev_id)
 {
-	a_uint32_t index = 0;
+	a_uint32_t index = 0, num;
 	fal_acl_rule_t rule = { 0 };
+	a_uint8_t* mac;
 
-	if(0 == ssdk_dt_global.num_intf_mac){
+	num = ssdk_intf_mac_num_get();
+	if(num == 0){
 		return SW_OK;/*No found interface MAC*/
 	}
 
@@ -717,9 +724,10 @@ sw_error_t qca_hppe_acl_byp_intf_mac_learn(a_uint32_t dev_id)
 	fal_acl_list_creat(dev_id, LIST_ID_BYP_FDB_LRN, LIST_PRI_BYP_FDB_LRN);
 
 	for (index = 0; index < SSDK_MAX_NR_ETH; index++) {
-		if(index >= ssdk_dt_global.num_intf_mac)
+		if(index >= num)
 			break;
-		memcpy(rule.src_mac_val.uc, ssdk_dt_global.intf_mac[index].uc, 6);
+		mac = ssdk_intf_macaddr_get(index);
+		memcpy(rule.src_mac_val.uc, mac, 6);
 		memset(rule.src_mac_mask.uc, 0xff, 6);
 		SSDK_DEBUG("%02x:%02x:%02x:%02x:%02x:%02x\n", rule.src_mac_val.uc[0],
 			rule.src_mac_val.uc[1], rule.src_mac_val.uc[2], rule.src_mac_val.uc[3],
