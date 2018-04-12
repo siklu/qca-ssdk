@@ -37,7 +37,7 @@ static sw_error_t qca_hppe_fdb_hw_init(a_uint32_t dev_id)
 		fal_fdb_port_learning_ctrl_set(dev_id, port, A_TRUE, FAL_MAC_FRWRD);
 		fal_fdb_port_stamove_ctrl_set(dev_id, port, A_TRUE, FAL_MAC_FRWRD);
 		fal_portvlan_member_update(dev_id, port, 0x7f);
-		if (port == SSDK_PORT_CPU)
+		if (port == SSDK_PHYSICAL_PORT0 || port == SSDK_PHYSICAL_PORT7)
 			p_api->adpt_port_bridge_txmac_set(dev_id, port, A_TRUE);
 		else
 			p_api->adpt_port_bridge_txmac_set(dev_id, port, A_FALSE);
@@ -158,15 +158,17 @@ qca_hppe_portvlan_hw_init(a_uint32_t dev_id)
 	global_qinq_mode.egress_mode = FAL_QINQ_CTAG_MODE;
 	fal_global_qinq_mode_set(dev_id, &global_qinq_mode);
 
-	/* configure port0 - port7 ingress/egress QinQ role as edge/edge */
+	/* configure port0, port7 ingress/egress QinQ role as core/core */
 	port_qinq_role.mask = 0x3;
 	port_qinq_role.ingress_port_role = FAL_QINQ_CORE_PORT;
 	port_qinq_role.egress_port_role = FAL_QINQ_CORE_PORT;
-	fal_port_qinq_mode_set(dev_id, 0, &port_qinq_role);
+	fal_port_qinq_mode_set(dev_id, SSDK_PHYSICAL_PORT0, &port_qinq_role);
+	fal_port_qinq_mode_set(dev_id, SSDK_PHYSICAL_PORT7, &port_qinq_role);
+	/* configure port1 - port6 ingress/egress QinQ role as edge/edge */
 	port_qinq_role.mask = 0x3;
 	port_qinq_role.ingress_port_role = FAL_QINQ_EDGE_PORT;
 	port_qinq_role.egress_port_role = FAL_QINQ_EDGE_PORT;
-	for (port_id = SSDK_PHYSICAL_PORT1; port_id <= SSDK_PHYSICAL_PORT7;
+	for (port_id = SSDK_PHYSICAL_PORT1; port_id <= SSDK_PHYSICAL_PORT6;
 			port_id++) {
 		fal_port_qinq_mode_set(dev_id, port_id, &port_qinq_role);
 	}
@@ -193,8 +195,12 @@ qca_hppe_portvlan_hw_init(a_uint32_t dev_id)
 	/*stag/ctag egress mode as untouched/untouched*/
 	fal_port_vlantag_egmode_set(dev_id, SSDK_PHYSICAL_PORT0,
 				&vlantag_eg_mode);
+	fal_port_vlantag_egmode_set(dev_id, SSDK_PHYSICAL_PORT7,
+				&vlantag_eg_mode);
 	/*vsi tag mode control to disable*/
 	fal_port_vlantag_vsi_egmode_enable(dev_id, SSDK_PHYSICAL_PORT0,
+				A_FALSE);
+	fal_port_vlantag_vsi_egmode_enable(dev_id, SSDK_PHYSICAL_PORT7,
 				A_FALSE);
 	/*ingress vlan translation mismatched command as forward*/
 	fal_port_vlan_xlt_miss_cmd_set(dev_id, SSDK_PHYSICAL_PORT0,
@@ -202,7 +208,7 @@ qca_hppe_portvlan_hw_init(a_uint32_t dev_id)
 
 	vlantag_eg_mode.stag_mode = FAL_EG_UNMODIFIED;
 	vlantag_eg_mode.ctag_mode = FAL_EG_UNMODIFIED;
-	for (port_id = SSDK_PHYSICAL_PORT1; port_id <= SSDK_PHYSICAL_PORT7;
+	for (port_id = SSDK_PHYSICAL_PORT1; port_id <= SSDK_PHYSICAL_PORT6;
 			port_id++) {
 		/*ingress vlan translation mismatched command as forward*/
 		fal_port_vlan_xlt_miss_cmd_set(dev_id, port_id, FAL_MAC_FRWRD);
