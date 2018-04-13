@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2015, 2017-2018, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -184,6 +184,7 @@ int ssdk_phy_driver_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 				case AQUANTIA_PHY_108:
 				case AQUANTIA_PHY_109:
 				case AQUANTIA_PHY_111:
+				case AQUANTIA_PHY_111B0:
 				case AQUANTIA_PHY_112:
 					phytype = AQUANTIA_PHY_CHIP;
 					break;
