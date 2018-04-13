@@ -69,6 +69,10 @@ aquantia_phy_get_speed(a_uint32_t dev_id, a_uint32_t phy_id,
 
 	link_status = aquantia_phy_get_link_status(dev_id, phy_id);
 	if (link_status != A_TRUE) {
+		/*the speed register(0x4007c800) is not stable when aquantia phy is down,
+		 but some APIs such as aquantia_phy_set_duplex() aquantia_phy_interface_set_mode()
+		 need to get the speed, so set the speed default value as 100M when link down*/
+		*speed = FAL_SPEED_100;
 		return SW_OK;
 	}
 
