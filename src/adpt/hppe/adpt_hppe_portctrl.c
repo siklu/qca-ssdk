@@ -1347,22 +1347,25 @@ adpt_hppe_port_duplex_get(a_uint32_t dev_id, fal_port_t port_id,
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(pduplex);
 
+	if (port_id == SSDK_PHYSICAL_PORT0 || port_id == SSDK_PHYSICAL_PORT7)
+	{
+		*pduplex = FAL_FULL_DUPLEX;
+		return SW_OK;
+	}
+
 	if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
-	  {
+	{
 		return SW_BAD_PARAM;
-	  }
+	}
 
 	/* for those ports without PHY device should be sfp port */
 	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
 	{
-		if (port_id == SSDK_PHYSICAL_PORT0)
-			*pduplex = FAL_FULL_DUPLEX;
-		else {
-			rv = _adpt_phy_status_get_from_ppe(dev_id,
-				port_id, &phy_status);
-			SW_RTN_ON_ERROR (rv);
-			*pduplex = phy_status.duplex;
-		}
+
+		rv = _adpt_phy_status_get_from_ppe(dev_id,
+			port_id, &phy_status);
+		SW_RTN_ON_ERROR (rv);
+		*pduplex = phy_status.duplex;
 
 	}
 	else
@@ -1459,6 +1462,11 @@ adpt_hppe_port_link_status_get(a_uint32_t dev_id, fal_port_t port_id,
 	ADPT_DEV_ID_CHECK(dev_id);
 	ADPT_NULL_POINT_CHECK(status);
 
+	if (port_id == SSDK_PHYSICAL_PORT0 || port_id == SSDK_PHYSICAL_PORT7)
+	{
+		*status = A_TRUE;
+		return SW_OK;
+	}
 	if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_INCL_CPU))
 	{
 		return SW_BAD_PARAM;
@@ -1467,14 +1475,10 @@ adpt_hppe_port_link_status_get(a_uint32_t dev_id, fal_port_t port_id,
 	/* for those ports without PHY device should be sfp port */
 	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id))
 	{
-		if (port_id == SSDK_PHYSICAL_PORT0)
-			*status = A_TRUE;
-		else {
-			rv = _adpt_phy_status_get_from_ppe(dev_id,
-				port_id, &phy_status);
-			SW_RTN_ON_ERROR (rv);
-			*status = (a_bool_t) phy_status.link_status;
-		}
+		rv = _adpt_phy_status_get_from_ppe(dev_id,
+			port_id, &phy_status);
+		SW_RTN_ON_ERROR (rv);
+		*status = (a_bool_t) phy_status.link_status;
 	}
 	else
 	{

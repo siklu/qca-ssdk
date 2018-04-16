@@ -1503,7 +1503,7 @@ static int qca_switchdev_register(struct qca_phy_priv *priv)
 
 	sw_dev->ops = &qca_ar8327_sw_ops;
 	sw_dev->vlans = AR8327_MAX_VLANS;
-	sw_dev->ports = AR8327_NUM_PORTS;
+	sw_dev->ports = SSDK_MAX_PORT_NUM;
 
 	ret = register_switch(sw_dev, NULL);
 	if (ret != SW_OK) {
@@ -1615,7 +1615,7 @@ static int ssdk_switch_register(a_uint32_t dev_id)
 	priv->phy_dbg_write = qca_ar8327_phy_dbg_write;
 	priv->phy_dbg_read = qca_ar8327_phy_dbg_read;
 	priv->phy_mmd_write = qca_ar8327_mmd_write;
-	priv->ports = AR8327_NUM_PORTS;
+	priv->ports = SSDK_MAX_PORT_NUM;
 
 	if (fal_reg_get(dev_id, 0, (a_uint8_t *)&chip_id, 4) == SW_OK) {
 		priv->version = ((chip_id >> 8) & 0xff);
