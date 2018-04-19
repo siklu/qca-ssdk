@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2016-2018, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -369,10 +369,7 @@ extern "C" {
     */
     typedef enum
     {
-        FAL_ACL_BIND_PORT = 0,  /**<   Acl wil work on particular port and virtual port */
-        FAL_ACL_BIND_PORTBITMAP = 1,  /**<   Acl wil work on port bitmap */
-        FAL_ACL_BIND_SERVICE_CODE = 2,  /**<   Acl wil work on service code */
-        FAL_ACL_BIND_L3_IF = 3,  /**<   Acl wil work on l3 interface */
+        FAL_ACL_BIND_PORT = 0,  /**<   Acl wil work on particular port */
     } fal_acl_bind_obj_t;
 
 
