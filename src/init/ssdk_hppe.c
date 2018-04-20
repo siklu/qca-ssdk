@@ -56,40 +56,75 @@ static sw_error_t qca_hppe_fdb_hw_init(a_uint32_t dev_id)
 	return SW_OK;
 }
 
+#ifndef HAWKEYE_CHIP
+static sw_error_t
+qca_hppe_fpga_xgmac_gpio_enable(a_uint32_t dev_id)
+{
+	a_uint32_t val;
+	void __iomem *ppe_gpio_base;
+
+	ppe_gpio_base = ioremap_nocache(0x01008000, 0x100);
+	if (!ppe_gpio_base) {
+		printk("can't get gpio address!\n");
+		return -1;
+	}
+	/* RUMI specific GPIO configuration for enabling XGMAC */
+	writel(0x201, ppe_gpio_base + 0);
+	writel(0x2, ppe_gpio_base + 4);
+	iounmap(ppe_gpio_base);
+	printk("set gpio to enable XGMAC successfully!\n");
+
+	msleep(100);
+
+	val = 0;
+	qca_switch_reg_write(0, 0x000008, (a_uint8_t *)&val, 4);
+
+	return SW_OK;
+}
+static sw_error_t
+qca_hppe_fpga_ports_enable(a_uint32_t dev_id)
+{
+	a_uint32_t i = 0;
+	a_uint32_t val, addr = 0x4000;
+
+	for(i = SSDK_PHYSICAL_PORT1; i < SSDK_PHYSICAL_PORT7; i++) {
+		fal_port_rxfc_status_set(dev_id, i, A_TRUE);
+		fal_port_txfc_status_set(dev_id, i, A_TRUE);
+		fal_port_txmac_status_set (dev_id, i, A_TRUE);
+		fal_port_rxmac_status_set (dev_id, i, A_TRUE);
+	}
+	for (i = 0; i < 2; i ++) {
+		val = 0x00000081;
+		qca_switch_reg_write(0, 0x00003008 + (addr * i), (a_uint8_t *)&val, 4);
+	}
+
+	return SW_OK;
+}
+#endif
+
 static sw_error_t
 qca_hppe_portctrl_hw_init(a_uint32_t dev_id)
 {
 	a_uint32_t i = 0;
 
+#ifndef HAWKEYE_CHIP
+	qca_hppe_fpga_xgmac_gpio_enable(dev_id);
+#endif
 	for(i = SSDK_PHYSICAL_PORT1; i < SSDK_PHYSICAL_PORT7; i++) {
 		qca_hppe_port_mac_type_set(dev_id, i, PORT_GMAC_TYPE);
-#ifdef HAWKEYE_CHIP
 		fal_port_txmac_status_set (dev_id, i, A_FALSE);
 		fal_port_rxmac_status_set (dev_id, i, A_FALSE);
 		fal_port_rxfc_status_set(dev_id, i, A_FALSE);
 		fal_port_txfc_status_set(dev_id, i, A_FALSE);
-#else
-		fal_port_txmac_status_set (dev_id, i, A_TRUE);
-		fal_port_rxmac_status_set (dev_id, i, A_TRUE);
-		fal_port_rxfc_status_set(dev_id, i, A_TRUE);
-		fal_port_txfc_status_set(dev_id, i, A_TRUE);
-#endif
 		fal_port_max_frame_size_set(dev_id, i, SSDK_MAX_FRAME_SIZE);
 	}
 
 	for(i = SSDK_PHYSICAL_PORT5; i < SSDK_PHYSICAL_PORT7; i++) {
 		qca_hppe_port_mac_type_set(dev_id, i, PORT_XGMAC_TYPE);
-#ifdef HAWKEYE_CHIP
 		fal_port_txmac_status_set (dev_id, i, A_FALSE);
 		fal_port_rxmac_status_set (dev_id, i, A_FALSE);
 		fal_port_rxfc_status_set(dev_id, i, A_FALSE);
 		fal_port_txfc_status_set(dev_id, i, A_FALSE);
-#else
-		fal_port_txmac_status_set (dev_id, i, A_TRUE);
-		fal_port_rxmac_status_set (dev_id, i, A_TRUE);
-		fal_port_rxfc_status_set(dev_id, i, A_TRUE);
-		fal_port_txfc_status_set(dev_id, i, A_TRUE);
-#endif
 		fal_port_max_frame_size_set(dev_id, i, SSDK_MAX_FRAME_SIZE);
 	}
 
@@ -832,6 +867,10 @@ sw_error_t qca_hppe_hw_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 	SW_RTN_ON_ERROR(rv);
 	rv = qca_hppe_interface_mode_init(dev_id, cfg->mac_mode, cfg->mac_mode1,
 				cfg->mac_mode2);
+#ifndef HAWKEYE_CHIP
+	rv = qca_hppe_fpga_ports_enable(dev_id);
+#endif
+
 	return rv;
 }
 
