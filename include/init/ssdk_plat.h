@@ -303,7 +303,7 @@ struct qca_phy_priv {
 	a_uint16_t vlan_id[AR8327_MAX_VLANS];
 	a_uint8_t  vlan_table[AR8327_MAX_VLANS];
 	a_uint8_t  vlan_tagged[AR8327_MAX_VLANS];
-	a_uint16_t pvid[AR8327_NUM_PORTS];
+	a_uint16_t pvid[SSDK_MAX_PORT_NUM];
 	a_uint32_t ports;
 	u8 __iomem *hw_addr;
 	u8 __iomem *psgmii_hw_addr;

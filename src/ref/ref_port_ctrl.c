@@ -66,67 +66,56 @@ qca_ar8327_sw_get_port_link(struct switch_dev *dev, int port,
 	a_bool_t status = 0;
 	a_bool_t tx_fc = 0;
 	a_bool_t rx_fc = 0;
-	a_uint32_t ret;
+	sw_error_t ret;
 
 	mutex_lock(&priv->reg_mutex);
 	ret = fal_port_link_status_get(priv->device_id, port, &status);
-	if (ret){
-		mutex_unlock(&priv->reg_mutex);
-		return -1;
+	if (ret == SW_OK) {
+		link->link = status;
+	} else {
+		return 0;
 	}
 
 	ret = fal_port_speed_get(priv->device_id, port, &speed);
-	if (ret){
-		mutex_unlock(&priv->reg_mutex);
-		return -1;
+	if (ret == SW_OK) {
+		if (speed == FAL_SPEED_10) {
+			link->speed = SWITCH_PORT_SPEED_10;
+		} else if (speed == FAL_SPEED_100) {
+			link->speed = SWITCH_PORT_SPEED_100;
+		} else if (speed == FAL_SPEED_1000) {
+			link->speed = SWITCH_PORT_SPEED_1000;
+		#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
+		} else if (speed == FAL_SPEED_2500) {
+			link->speed = SWITCH_PORT_SPEED_2500;
+		} else if (speed == FAL_SPEED_5000) {
+			link->speed = SWITCH_PORT_SPEED_5000;
+		} else if (speed == FAL_SPEED_10000) {
+			link->speed = SWITCH_PORT_SPEED_10000;
+		#endif
+		} else {
+			link->speed = SWITCH_PORT_SPEED_UNKNOWN;
+		}
 	}
 
 	ret = fal_port_duplex_get(priv->device_id, port, &duplex);
-	if (ret){
-		mutex_unlock(&priv->reg_mutex);
-		return -1;
+	if (ret == SW_OK) {
+		if (duplex == FAL_HALF_DUPLEX) {
+			link->duplex = 0; /* HALF */
+		} else if (duplex == FAL_FULL_DUPLEX) {
+			link->duplex = 1; /* FULL */
+		}
 	}
 
 	ret = fal_port_rxfc_status_get(priv->device_id, port, &rx_fc);
-	if (ret){
-		mutex_unlock(&priv->reg_mutex);
-		return -1;
+	if (ret == SW_OK) {
+		link->rx_flow = rx_fc;
 	}
 
 	ret = fal_port_txfc_status_get(priv->device_id, port, &tx_fc);
-	if (ret){
-		mutex_unlock(&priv->reg_mutex);
-		return -1;
+	if (ret == SW_OK) {
+		link->tx_flow = tx_fc;
 	}
 	mutex_unlock(&priv->reg_mutex);
-
-	link->link = status;
-	if (speed == FAL_SPEED_10){
-		link->speed = SWITCH_PORT_SPEED_10;
-	} else if (speed == FAL_SPEED_100){
-		link->speed = SWITCH_PORT_SPEED_100;
-	} else if (speed == FAL_SPEED_1000){
-		link->speed = SWITCH_PORT_SPEED_1000;
-	#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
-	} else if (speed == FAL_SPEED_2500){
-		link->speed = SWITCH_PORT_SPEED_2500;
-	} else if (speed == FAL_SPEED_5000){
-		link->speed = SWITCH_PORT_SPEED_5000;
-	} else if (speed == FAL_SPEED_10000){
-		link->speed = SWITCH_PORT_SPEED_10000;
-	#endif
-	} else {
-		link->speed = SWITCH_PORT_SPEED_UNKNOWN;
-	}
-
-	if (duplex == FAL_HALF_DUPLEX){
-		link->duplex = 0; /* HALF */
-	} else if (duplex == FAL_FULL_DUPLEX){
-		link->duplex = 1; /* FULL */
-	}
-
-	link->rx_flow = rx_fc;
-	link->tx_flow = tx_fc;
 
 	return 0;
 }
