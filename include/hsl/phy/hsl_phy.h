@@ -296,7 +296,6 @@ typedef enum
 
 typedef struct {
 	a_uint32_t phy_address[SW_MAX_NR_PORT];
-	a_uint32_t phy_address_from_dts[SW_MAX_NR_PORT];
 	a_uint32_t phy_type[SW_MAX_NR_PORT];
 	/* fake mdio address is used to register the phy device,
 	 * when the phy is not accessed by the MDIO bus.
@@ -309,23 +308,28 @@ typedef struct {
 
 #define MALIBU5PORT_PHY 0x004DD0B1
 #define MALIBU2PORT_PHY 0x004DD0B2
+
 #define QCA8030_PHY 0x004DD076
 #define QCA8033_PHY 0x004DD074
 #define QCA8035_PHY 0x004DD072
 #define QCA8081_PHY 0x004DD100
+
 #define F1V1_PHY 0x004DD033
 #define F1V2_PHY 0x004DD034
 #define F1V3_PHY 0x004DD035
 #define F1V4_PHY 0x004DD036
 #define F2V1_PHY 0x004DD042
+
 #define AQUANTIA_PHY_107 0x03a1b4e2
 #define AQUANTIA_PHY_108 0x03a1b4f2
 #define AQUANTIA_PHY_109 0x03a1b502
 #define AQUANTIA_PHY_111 0x03a1b610
 #define AQUANTIA_PHY_111B0 0x03a1b612
 #define AQUANTIA_PHY_112 0x03a1b660
+
 #define PHY_805XV2 0x004DD082
 #define PHY_805XV1 0x004DD081
+
 #define SFP_PHY	0xaaaabbbb
 #define SFP_PHY_MASK	0xffffffff
 
@@ -413,9 +417,6 @@ hsl_phydriver_update(a_uint32_t dev_id, a_uint32_t port_id,
 void
 qca_ssdk_phy_address_set(a_uint32_t dev_id, a_uint32_t port_id,
 	a_uint32_t phy_addr);
-
-a_uint32_t
-qca_ssdk_phy_address_from_dts_get(a_uint32_t dev_id, a_uint32_t port_id);
 
 #ifdef __cplusplus
 }
