@@ -2516,7 +2516,7 @@ _adpt_hppe_port_phy_config(a_uint32_t dev_id, a_uint32_t index, a_uint32_t mode)
 			break;
 		case PORT_WRAPPER_QSGMII:
 			rv = _adpt_hppe_port_interface_mode_phy_config(dev_id,
-				SSDK_PHYSICAL_PORT4, PHY_SGMII_BASET);
+				SSDK_PHYSICAL_PORT4, PORT_QSGMII);
 			break;
 		case PORT_WRAPPER_SGMII_CHANNEL0:
 			if(index == SSDK_UNIPHY_INSTANCE1)

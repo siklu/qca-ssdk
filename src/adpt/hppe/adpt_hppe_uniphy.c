@@ -429,7 +429,7 @@ __adpt_hppe_uniphy_qsgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	ADPT_DEV_ID_CHECK(dev_id);
 
 	/* configure malibu phy to qsgmii mode*/
-	hsl_ssdk_phy_mode_set(dev_id, PHY_SGMII_BASET);
+	hsl_ssdk_phy_mode_set(dev_id, PORT_QSGMII);
 
 	/* keep xpcs to reset status */
 	__adpt_hppe_gcc_uniphy_xpcs_reset(dev_id, uniphy_index, A_TRUE);
