@@ -291,7 +291,7 @@ qca_ar8327_sw_hw_apply(struct switch_dev *dev)
 
     mutex_lock(&priv->reg_mutex);
 
-    memset(portmask, 0, sizeof(portmask));
+    memset(portmask, 0, sizeof(*portmask));
     if (!priv->init) {
         /*Handle VLAN 0 entry*/
         if (priv->vlan_id[0] == 0 && priv->vlan_table[0] == 0) {
