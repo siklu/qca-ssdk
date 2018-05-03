@@ -274,7 +274,7 @@ int qca_ssdk_phy_info_init(a_uint32_t dev_id)
 		SSDK_ERROR("phy_information kzalloc failed!\n");
 		return -ENOMEM;
 	}
-	memset(phy_information, 0, sizeof(phy_information));
+	memset(phy_information, 0, sizeof(*phy_information));
 	phy_info[dev_id] = phy_information;
 
 	for (j = 1; j < SW_MAX_NR_PORT; j ++)
