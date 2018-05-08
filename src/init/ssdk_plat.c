@@ -14,6 +14,7 @@
 
 #include "sw.h"
 #include "ssdk_init.h"
+#include "ssdk_dts.h"
 #include "fal_init.h"
 #include "fal.h"
 #include "hsl.h"
@@ -99,7 +100,6 @@
 static struct mii_bus *miibus = NULL;
 
 extern struct qca_phy_priv **qca_phy_priv_global;
-extern ssdk_dt_global_t ssdk_dt_global;
 extern ssdk_chip_type SSDK_CURRENT_CHIP_TYPE;
 
 struct mutex switch_mdio_lock;
@@ -513,6 +513,7 @@ static int miibus_get(a_uint32_t dev_id)
 	struct platform_device *mdio_plat = NULL;
 	struct ipq40xx_mdio_data *mdio_data = NULL;
 	struct qca_phy_priv *priv;
+	hsl_reg_mode reg_mode;
 
 	priv = qca_phy_priv_global[dev_id];
 	switch_node = qca_phy_priv_global[dev_id]->of_node;
@@ -524,7 +525,8 @@ static int miibus_get(a_uint32_t dev_id)
 		}
 	}
 
-	if(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->switch_reg_access_mode == HSL_REG_LOCAL_BUS)
+	reg_mode=ssdk_switch_reg_access_mode_get(dev_id);
+	if(reg_mode == HSL_REG_LOCAL_BUS)
 		mdio_node = of_find_compatible_node(NULL, NULL, "qcom,ipq40xx-mdio");
 	else
 		mdio_node = of_find_compatible_node(NULL, NULL, "virtual,mdio-gpio");
@@ -540,7 +542,7 @@ static int miibus_get(a_uint32_t dev_id)
 		return 1;
 	}
 
-	if(ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->switch_reg_access_mode == HSL_REG_LOCAL_BUS)
+	if(reg_mode == HSL_REG_LOCAL_BUS)
 	{
 		mdio_data = dev_get_drvdata(&mdio_plat->dev);
 		if (!mdio_data) {
@@ -791,12 +793,16 @@ void ssdk_dts_port_scheduler_dump(a_uint32_t dev_id)
 {
 	a_uint32_t i;
 	ssdk_dt_portscheduler_cfg *portscheduler_cfg;
+	ssdk_dt_scheduler_cfg *scheduler_cfg;
 	a_uint8_t srcmsg[7][16];
+
+	scheduler_cfg = ssdk_bootup_shceduler_cfg_get(dev_id);
+
 	printk("===============================port_scheduler_resource===========================\n");
 	printk("portid     ucastq     mcastq     10sp     10cdrr     10edrr     11cdrr     11edrr\n");
 	for (i = 0; i < SSDK_MAX_PORT_NUM; i++)
 	{
-		portscheduler_cfg = &ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->scheduler_cfg.pool[i];
+		portscheduler_cfg = &scheduler_cfg->pool[i];
 		snprintf(srcmsg[0], sizeof(srcmsg[0]), "<%d %d>", portscheduler_cfg->ucastq_start,
 				portscheduler_cfg->ucastq_end);
 		snprintf(srcmsg[1], sizeof(srcmsg[1]), "<%d %d>", portscheduler_cfg->mcastq_start,
@@ -820,11 +826,14 @@ void ssdk_dts_l0scheduler_dump(a_uint32_t dev_id)
 {
 	a_uint32_t i;
 	ssdk_dt_l0scheduler_cfg *scheduler_cfg;
+	ssdk_dt_scheduler_cfg *cfg;
+
+	cfg = ssdk_bootup_shceduler_cfg_get(dev_id);
 	printk("==========================l0scheduler_cfg===========================\n");
 	printk("queue     portid     cpri     cdrr_id     epri     edrr_id     sp_id\n");
 	for (i = 0; i < SSDK_L0SCHEDULER_CFG_MAX; i++)
 	{
-		scheduler_cfg = &ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->scheduler_cfg.l0cfg[i];
+		scheduler_cfg = &cfg->l0cfg[i];
 		if (scheduler_cfg->valid == 1)
 			printk("%5d%11d%9d%12d%9d%12d%10d\n", i, scheduler_cfg->port_id,
 				scheduler_cfg->cpri, scheduler_cfg->cdrr_id, scheduler_cfg->epri,
@@ -836,11 +845,15 @@ void ssdk_dts_l1scheduler_dump(a_uint32_t dev_id)
 {
 	a_uint32_t i;
 	ssdk_dt_l1scheduler_cfg *scheduler_cfg;
+	ssdk_dt_scheduler_cfg *cfg;
+
+	cfg = ssdk_bootup_shceduler_cfg_get(dev_id);
+
 	printk("=====================l1scheduler_cfg=====================\n");
 	printk("flow     portid     cpri     cdrr_id     epri     edrr_id\n");
 	for (i = 0; i < SSDK_L1SCHEDULER_CFG_MAX; i++)
 	{
-		scheduler_cfg = &ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->scheduler_cfg.l1cfg[i];
+		scheduler_cfg = &cfg->l1cfg[i];
 		if (scheduler_cfg->valid == 1)
 			printk("%4d%11d%9d%12d%9d%12d\n", i, scheduler_cfg->port_id,
 				scheduler_cfg->cpri, scheduler_cfg->cdrr_id,
@@ -853,34 +866,56 @@ static ssize_t ssdk_dts_dump(struct device *dev,
 		char *buf)
 {
 	ssize_t count;
-	a_uint32_t dev_id;
-	ssdk_dt_cfg *dt_cfg;
+	a_uint32_t dev_id, dev_num;
+	ssdk_reg_map_info map;
+	hsl_reg_mode mode;
 
 	count = snprintf(buf, (ssize_t)PAGE_SIZE, "\n");
 
-	for (dev_id = 0; dev_id < ssdk_dt_global.num_devices; dev_id ++)
+	dev_num = ssdk_switch_device_num_get();
+	for (dev_id = 0; dev_id < dev_num; dev_id ++)
 	{
-		dt_cfg = ssdk_dt_global.ssdk_dt_switch_nodes[dev_id];
+		ssdk_switch_reg_map_info_get(dev_id, &map);
+		mode = ssdk_switch_reg_access_mode_get(dev_id);
 		printk("=======================================================\n");
 		printk("ess-switch\n");
-		printk("        reg = <0x%x 0x%x>\n", dt_cfg->switchreg_base_addr, dt_cfg->switchreg_size);
-		printk("        switch_access_mode = <%s>\n", dt_cfg->reg_access_mode);
-		printk("        switch_cpu_bmp = <0x%x>\n", dt_cfg->port_cfg.cpu_bmp);
-		printk("        switch_lan_bmp = <0x%x>\n", dt_cfg->port_cfg.lan_bmp);
-		printk("        switch_wan_bmp = <0x%x>\n", dt_cfg->port_cfg.wan_bmp);
-		printk("        switch_mac_mode = <0x%x>\n", dt_cfg->mac_mode);
-		printk("        switch_mac_mode1 = <0x%x>\n", dt_cfg->mac_mode1);
-		printk("        switch_mac_mode2 = <0x%x>\n", dt_cfg->mac_mode2);
-		printk("        bm_tick_mode = <0x%x>\n", dt_cfg->bm_tick_mode);
-		printk("        tm_tick_mode = <0x%x>\n", dt_cfg->tm_tick_mode);
+		printk("        reg = <0x%x 0x%x>\n", map.base_addr, map.size);
+		if (mode == HSL_REG_LOCAL_BUS)
+			printk("        switch_access_mode = <local bus>\n");
+		else if (mode == HSL_REG_MDIO)
+			printk("        switch_access_mode = <mdio bus>\n");
+		else
+			printk("        switch_access_mode = <(null)>\n");
+		printk("        switch_cpu_bmp = <0x%x>\n", ssdk_cpu_bmp_get(dev_id));
+		printk("        switch_lan_bmp = <0x%x>\n", ssdk_lan_bmp_get(dev_id));
+		printk("        switch_wan_bmp = <0x%x>\n", ssdk_wan_bmp_get(dev_id));
+		printk("        switch_mac_mode = <0x%x>\n", ssdk_dt_global_get_mac_mode(dev_id, 0));
+		printk("        switch_mac_mode1 = <0x%x>\n", ssdk_dt_global_get_mac_mode(dev_id, 1));
+		printk("        switch_mac_mode2 = <0x%x>\n", ssdk_dt_global_get_mac_mode(dev_id, 2));
+		printk("        bm_tick_mode = <0x%x>\n", ssdk_bm_tick_mode_get(dev_id));
+		printk("        tm_tick_mode = <0x%x>\n", ssdk_tm_tick_mode_get(dev_id));
 
 		printk("ess-psgmii\n");
-		printk("        reg = <0x%x 0x%x>\n", dt_cfg->psgmiireg_base_addr, dt_cfg->psgmiireg_size);
-		printk("        psgmii_access_mode = <%s>\n", dt_cfg->psgmii_reg_access_str);
+		ssdk_psgmii_reg_map_info_get(dev_id, &map);
+		mode = ssdk_psgmii_reg_access_mode_get(dev_id);
+		printk("        reg = <0x%x 0x%x>\n", map.base_addr, map.size);
+		if (mode == HSL_REG_LOCAL_BUS)
+			printk("        psgmii_access_mode = <local bus>\n");
+		else if (mode == HSL_REG_MDIO)
+			printk("        psgmii_access_mode = <mdio bus>\n");
+		else
+			printk("        psgmii_access_mode = <(null)>\n");
 
 		printk("ess-uniphy\n");
-		printk("        reg = <0x%x 0x%x>\n", dt_cfg->uniphyreg_base_addr, dt_cfg->uniphyreg_size);
-		printk("        uniphy_access_mode = <%s>\n", dt_cfg->uniphy_access_mode);
+		ssdk_uniphy_reg_map_info_get(dev_id, &map);
+		mode = ssdk_uniphy_reg_access_mode_get(dev_id);
+		printk("        reg = <0x%x 0x%x>\n", map.base_addr, map.size);
+		if (mode == HSL_REG_LOCAL_BUS)
+			printk("        uniphy_access_mode = <local bus>\n");
+		else if (mode == HSL_REG_MDIO)
+			printk("        uniphy_access_mode = <mdio bus>\n");
+		else
+			printk("        uniphy_access_mode = <(null)>\n");
 
 		printk("\n");
 		ssdk_dts_port_scheduler_dump(dev_id);
@@ -1098,7 +1133,10 @@ void ssdk_sysfs_exit (void)
 int
 ssdk_plat_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 {
-	ssdk_dt_cfg * dt_cfg;
+	hsl_reg_mode reg_mode;
+	ssdk_reg_map_info map;
+	struct clk *  ess_clk;
+	struct clk *  cmn_clk;
 	#ifdef BOARD_AR71XX
 	int rv = 0;
 	#endif
@@ -1108,10 +1146,11 @@ ssdk_plat_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 	if(miibus_get(dev_id))
 		return -ENODEV;
 
-	dt_cfg = ssdk_dt_global.ssdk_dt_switch_nodes[dev_id];
-	if(dt_cfg->uniphy_reg_access_mode == HSL_REG_LOCAL_BUS) {
-		qca_phy_priv_global[dev_id]->uniphy_hw_addr = ioremap_nocache(dt_cfg->uniphyreg_base_addr,
-									dt_cfg->uniphyreg_size);
+	reg_mode = ssdk_uniphy_reg_access_mode_get(dev_id);
+	if(reg_mode == HSL_REG_LOCAL_BUS) {
+		ssdk_uniphy_reg_map_info_get(dev_id, &map);
+		qca_phy_priv_global[dev_id]->uniphy_hw_addr = ioremap_nocache(map.base_addr,
+									map.size);
 		if (!qca_phy_priv_global[dev_id]->uniphy_hw_addr) {
 			SSDK_ERROR("%s ioremap fail.", __func__);
 			cfg->reg_func.uniphy_reg_set = NULL;
@@ -1121,19 +1160,22 @@ ssdk_plat_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 		cfg->reg_func.uniphy_reg_set = qca_uniphy_reg_write;
 		cfg->reg_func.uniphy_reg_get = qca_uniphy_reg_read;
 	}
-	if(dt_cfg->switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
-		qca_phy_priv_global[dev_id]->hw_addr = ioremap_nocache(dt_cfg->switchreg_base_addr,
-								dt_cfg->switchreg_size);
+	reg_mode = ssdk_switch_reg_access_mode_get(dev_id);
+	if(reg_mode == HSL_REG_LOCAL_BUS) {
+		ssdk_switch_reg_map_info_get(dev_id, &map);
+		qca_phy_priv_global[dev_id]->hw_addr = ioremap_nocache(map.base_addr,
+								map.size);
 		if (!qca_phy_priv_global[dev_id]->hw_addr) {
 			SSDK_ERROR("%s ioremap fail.", __func__);
 			return -1;
 		}
-
-		if (!IS_ERR(dt_cfg->ess_clk)) {
+		ess_clk = ssdk_dts_essclk_get(dev_id);
+		cmn_clk = ssdk_dts_cmnclk_get(dev_id);
+		if (!IS_ERR(ess_clk)) {
 			/* Enable ess clock here */
 			SSDK_ERROR("enable ess clk\n");
-			clk_prepare_enable(dt_cfg->ess_clk);
-		} else if (!IS_ERR(dt_cfg->cmnblk_clk)) {
+			clk_prepare_enable(ess_clk);
+		} else if (!IS_ERR(cmn_clk)) {
 #if defined(HPPE)
 #ifdef HAWKEYE_CHIP
 			ssdk_ppe_clock_init();
@@ -1145,15 +1187,17 @@ ssdk_plat_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 		cfg->reg_mode = HSL_HEADER;
 	}
 
-	if(dt_cfg->psgmii_reg_access_mode == HSL_REG_LOCAL_BUS) {
-		if (!request_mem_region(dt_cfg->psgmiireg_base_addr,
-					dt_cfg->psgmiireg_size, "psgmii_mem")) {
+	reg_mode = ssdk_psgmii_reg_access_mode_get(dev_id);
+	if(reg_mode == HSL_REG_LOCAL_BUS) {
+		ssdk_psgmii_reg_map_info_get(dev_id, &map);
+		if (!request_mem_region(map.base_addr,
+					map.size, "psgmii_mem")) {
 			SSDK_ERROR("%s Unable to request psgmii resource.", __func__);
 			return -1;
 		}
 
-		qca_phy_priv_global[dev_id]->psgmii_hw_addr = ioremap_nocache(dt_cfg->psgmiireg_base_addr,
-								dt_cfg->psgmiireg_size);
+		qca_phy_priv_global[dev_id]->psgmii_hw_addr = ioremap_nocache(map.base_addr,
+								map.size);
 		if (!qca_phy_priv_global[dev_id]->psgmii_hw_addr) {
 			SSDK_ERROR("%s ioremap fail.", __func__);
 			cfg->reg_func.psgmii_reg_set = NULL;
@@ -1165,7 +1209,8 @@ ssdk_plat_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 		cfg->reg_func.psgmii_reg_get = qca_psgmii_reg_read;
 	}
 
-	if(dt_cfg->switch_reg_access_mode == HSL_REG_MDIO) {
+	reg_mode = ssdk_switch_reg_access_mode_get(dev_id);
+	if(reg_mode == HSL_REG_MDIO) {
 		cfg->reg_mode = HSL_MDIO;
 	} else
 		return 0;
@@ -1176,21 +1221,26 @@ ssdk_plat_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 void
 ssdk_plat_exit(a_uint32_t dev_id)
 {
-	ssdk_dt_cfg * dt_cfg;
+	hsl_reg_mode reg_mode;
+	ssdk_reg_map_info map;
+
 	printk("ssdk_plat_exit\n");
 
-	dt_cfg = ssdk_dt_global.ssdk_dt_switch_nodes[dev_id];
-	if (dt_cfg->switch_reg_access_mode == HSL_REG_LOCAL_BUS) {
+	reg_mode = ssdk_switch_reg_access_mode_get(dev_id);
+	if (reg_mode == HSL_REG_LOCAL_BUS) {
 		iounmap(qca_phy_priv_global[dev_id]->hw_addr);
 	}
 
-	if (dt_cfg->psgmii_reg_access_mode == HSL_REG_LOCAL_BUS) {
+	reg_mode = ssdk_psgmii_reg_access_mode_get(dev_id);
+	if (reg_mode == HSL_REG_LOCAL_BUS) {
+		ssdk_psgmii_reg_map_info_get(dev_id, &map);
 		iounmap(qca_phy_priv_global[dev_id]->psgmii_hw_addr);
-		release_mem_region(dt_cfg->psgmiireg_base_addr,
-                                        dt_cfg->psgmiireg_size);
+		release_mem_region(map.base_addr,
+                                        map.size);
 	}
 
-	if (dt_cfg->uniphy_reg_access_mode == HSL_REG_LOCAL_BUS) {
+	reg_mode = ssdk_uniphy_reg_access_mode_get(dev_id);
+	if (reg_mode == HSL_REG_LOCAL_BUS) {
 		iounmap(qca_phy_priv_global[dev_id]->uniphy_hw_addr);
 	}
 }
