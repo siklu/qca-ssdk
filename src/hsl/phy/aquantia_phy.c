@@ -1847,6 +1847,11 @@ aquantia_phy_hw_init(a_uint32_t dev_id,  a_uint32_t port_bmp)
 			phy_data = AQUANTIA_LINK_LED_VALUE;
 			rv = aquantia_phy_reg_write(dev_id, phy_addr, AQUANTIA_MMD_GLOBAL_REGISTERS,
 				AQUANTIA_LINK_LED_STATUS, phy_data);
+			SW_RTN_ON_ERROR(rv);
+			/*add all ability of aq phy*/
+			rv = aquantia_phy_set_autoneg_adv(dev_id, phy_addr,
+				FAL_PHY_ADV_XGE_SPEED_ALL | FAL_PHY_ADV_100TX_FD |
+				FAL_PHY_ADV_1000T_FD);
 		}
 	}
 
