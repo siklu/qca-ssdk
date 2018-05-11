@@ -109,15 +109,8 @@ _adpt_phy_status_get_from_ppe(a_uint32_t dev_id, a_uint32_t port_id,
 						&reg_field);
 	SW_RTN_ON_ERROR (rv);
 
-	if ((reg_field >> 3) & 0x1)
-		phy_status->tx_flowctrl = A_TRUE;
-	else
-		phy_status->tx_flowctrl = A_FALSE;
-
-	if ((reg_field >> 4) & 0x1)
-		phy_status->rx_flowctrl = A_TRUE;
-	else
-		phy_status->rx_flowctrl = A_FALSE;
+	phy_status->tx_flowctrl = A_TRUE;
+	phy_status->rx_flowctrl = A_TRUE;
 
 	if ((reg_field >> 7) & 0x1)
 		phy_status->link_status = PORT_LINK_UP;
