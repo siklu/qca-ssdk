@@ -295,3 +295,6 @@ qca_phy_i2c_write(a_uint32_t dev_id, a_uint32_t phy_addr,
 	return SW_OK;
 }
 
+EXPORT_SYMBOL(qca_phy_i2c_read);
+EXPORT_SYMBOL(qca_phy_i2c_write);
+
