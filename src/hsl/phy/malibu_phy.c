@@ -2047,7 +2047,8 @@ malibu_phy_interface_set_mode(a_uint32_t dev_id, a_uint32_t phy_id, fal_port_int
 		phy_data |= MALIBU_PHY_PSGMII_FX100;
 	} else if (interface_mode == PHY_PSGMII_AMDET) {
 	       phy_data |= MALIBU_PHY_PSGMII_AMDET;
-	} else if (interface_mode == PHY_SGMII_BASET) {
+	} else if (interface_mode == PHY_SGMII_BASET ||
+		interface_mode == PORT_QSGMII) {
 	       phy_data |= MALIBU_PHY_SGMII_BASET;
 	} else if (interface_mode == PHY_PSGMII_FIBER) {
 		phy_data |= MALIBU_PHY_PSGMII_AMDET;
