@@ -1,5 +1,6 @@
 
 include $(PRJ_PATH)/config
+-include $(SYS_PATH)/include/config/auto.conf
 
 ifndef SYS_PATH
   $(error SYS_PATH isn't defined!)

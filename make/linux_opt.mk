@@ -296,6 +296,23 @@ ifeq (KSLIB, $(MODULE_TYPE))
 	TARGET_NAME=arm-openwrt-linux-$(TARGET_SUFFIX)
   endif
 
+  ifeq ($(CONFIG_KASAN_INLINE),y)
+        CALL_THRESHOLD=10000
+  else
+        CALL_THRESHOLD=0
+  endif
+  ifneq ($(CONFIG_KASAN_SHADOW_OFFSET),)
+        SHADOW_OFFSET=$(CONFIG_KASAN_SHADOW_OFFSET)
+  else
+        SHADOW_OFFSET=0xdfffff9000000000
+  endif
+  KASAN_OPTION=-fsanitize=kernel-address -fasan-shadow-offset=$(SHADOW_OFFSET) \
+               --param asan-stack=1 --param asan-globals=1 \
+               --param asan-instrumentation-with-call-threshold=$(CALL_THRESHOLD)
+  ifeq ($(CONFIG_KASAN),y)
+      MODULE_CFLAG += $(KASAN_OPTION)
+  endif
+
   ifeq (3_18, $(OS_VER))
 		MODULE_CFLAG += -DKVER34
 		MODULE_CFLAG += -DKVER32
