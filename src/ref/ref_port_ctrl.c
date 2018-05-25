@@ -73,6 +73,7 @@ qca_ar8327_sw_get_port_link(struct switch_dev *dev, int port,
 	if (ret == SW_OK) {
 		link->link = status;
 	} else {
+		mutex_unlock(&priv->reg_mutex);
 		return 0;
 	}
 
