@@ -201,12 +201,22 @@ sw_error_t
 qca808x_phy_ptp_reference_clock_get(a_uint32_t dev_id,
 		a_uint32_t phy_id, fal_ptp_reference_clock_t *ref_clock);
 
-void qca808x_phy_ptp_init(void);
 void qca808x_phy_ptp_api_ops_init(hsl_phy_ops_t *qca808x_phy_api_ops);
 
-void qca808x_ptp_gm_gps_seconds_sync_enable(int en);
+void qca808x_phydev_init(a_uint32_t dev_id, a_uint32_t port_id);
+void qca808x_phydev_deinit(a_uint32_t dev_id, a_uint32_t port_id);
 
-int qca808x_ptp_gm_gps_seconds_sync_status_get(void);
+a_int32_t qca808x_phy_driver_register(void);
+void qca808x_phy_driver_unregister(void);
+
+void qca808x_ptp_gm_gps_seconds_sync_enable(a_uint32_t dev_id,
+		a_uint32_t phy_addr, a_bool_t en);
+
+a_bool_t qca808x_ptp_gm_gps_seconds_sync_status_get(a_uint32_t dev_id,
+		a_uint32_t phy_addr);
+
+void qca808x_ptp_clock_mode_config(a_uint32_t dev_id,
+		a_uint32_t phy_addr, a_uint16_t clock_mode, a_uint16_t step_mode);
 
 #ifdef __cplusplus
 }

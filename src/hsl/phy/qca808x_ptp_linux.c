@@ -12,197 +12,572 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <linux/mdio.h>
-#include <linux/ethtool.h>
-#include <linux/if_vlan.h>
+#include <linux/version.h>
 #include <linux/phy.h>
+
+#if defined(IN_LINUX_STD_PTP)
+#include <linux/if_vlan.h>
 #include <linux/net_tstamp.h>
 #include <linux/ptp_classify.h>
 #include <linux/ptp_clock_kernel.h>
 #include <linux/kthread.h>
 
-#define PTP_DEV_ID	0
-#define QCA8081_PHY 0x004DD011
-#define PHY_QCA808X_FEATURES	(SUPPORTED_10000baseT_Full | \
-				 SUPPORTED_1000baseT_Full | \
-				 SUPPORTED_100baseT_Full | \
-				 PHY_DEFAULT_FEATURES)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
+#include <linux/time64.h>
+#else
+#include <linux/time.h>
+#define ns_to_timespec64 ns_to_timespec
+#define timespec64_to_ns timespec_to_ns
+#define timespec64 timespec
+#endif
 
-static struct task_struct *gps_seconds_sync_task;
-struct sk_buff_head qca808x_tx_queue;
-struct delayed_work qca808x_ts_work;
-struct delayed_work qca808x_gm_seconds_work, qca808x_gm_nanoseconds_swpll_work;
-unsigned int ptp_type;
-struct phy_device *phy_dev;
-u32 phy_addr, gps_seconds_sync_en;
+#endif
 
-/* used for recording skb PTP header messages */
+#include "hsl.h"
+#include "hsl_phy.h"
+#include "ssdk_plat.h"
+#include "qca808x_phy.h"
+#include "sfp_phy.h"
+
+#include "fal_ptp.h"
+#include "qca808x_ptp.h"
+
+#define QCA808X_PTP_EMBEDDED_MODE   0xa
+#define QCA808X_PTP_MSG_SNYC        0X0
+#define QCA808X_PTP_MSG_DREQ        0X1
+#define QCA808X_PTP_MSG_PREQ        0X2
+#define QCA808X_PTP_MSG_PRESP       0X3
+
+#define SKB_TIMESTAMP_TIMEOUT	2 /* jiffies */
+
+#define PHY_INVALID_DATA            0xffff
+#define QCA808X_INTR_INIT           0xec00
+
+#define QCA808X_PTP_TICK_RATE_125M  8
+#define QCA808X_PTP_TICK_RATE_200M  5
+
+#define QCA808X_PHY_LINK_UP         1
+#define QCA808X_PHY_LINK_DOWN       0
+
+#if defined(IN_LINUX_STD_PTP)
+struct qca808x_ptp_clock;
+#endif
+struct qca808x_phy_info;
 typedef struct {
-	u16 sequence_id;
-	u64 clock_identify;
-	u16 port_number;
-	u8 msg_type;
-} ptp_pkt_info;
+	struct phy_device *phydev;
+	struct qca808x_phy_info *phy_info;
+#if defined(IN_LINUX_STD_PTP)
+	struct qca808x_ptp_clock *clock;
+	struct delayed_work tx_ts_work;
+	struct delayed_work rx_ts_work;
+	/* work for gps sencond sync and ingress trigger time record*/
+	struct delayed_work ts_schedule_work;
+	struct sk_buff_head tx_queue;
+	struct sk_buff_head rx_queue;
+	/* ingress trigger time stamp */
+	a_int32_t ptp_in_trig_nsec;
+	a_bool_t ptp_in_trig_flag;
+#endif
+} qca808x_priv;
 
-typedef enum {
-	RX_DIRECTION = 0,
-	TX_DIRECTION
-} ptp_direction;
+#if defined(IN_LINUX_STD_PTP)
+struct qca808x_ptp_clock{
+	struct ptp_clock_info caps;
+	struct ptp_clock *ptp_clock;
+	struct mutex tsreg_lock;
+	qca808x_priv *priv;
+};
 
-typedef struct{
-        s64 seconds;
-        s32 nanoseconds;
-        s32 fracnanoseconds;
-} ptp_time;
+typedef struct {
+	/* ptp filter class */
+	a_int32_t ptp_type;
+	/* ptp frame type */
+	a_int32_t pkt_type;
+} qca808x_ptp_cb;
+#endif
+
+struct qca808x_phy_info {
+	struct list_head list;
+	a_uint32_t dev_id;
+	/* phy real address,it is the mdio addr or the i2c slave addr */
+	a_uint32_t phy_addr;
+	/* the address of phy device, it is a fake addr for the i2c accessed phy */
+	a_uint32_t phydev_addr;
+	a_uint16_t clock_mode;
+	a_uint16_t step_mode;
+	a_bool_t gps_seconds_sync_en;
+};
+
+static LIST_HEAD(g_qca808x_phy_list);
+
+static struct qca808x_phy_info* qca808x_phy_info_get(a_uint32_t phy_addr)
+{
+	struct qca808x_phy_info *pdata = NULL;
+	list_for_each_entry(pdata, &g_qca808x_phy_list, list) {
+		if (pdata->phydev_addr == phy_addr) {
+			return pdata;
+		}
+	}
+
+	SSDK_ERROR("%s can't get the data for phy addr: %d\n", __func__, phy_addr);
+	return NULL;
+}
+
+void qca808x_ptp_gm_gps_seconds_sync_enable(a_uint32_t dev_id,
+		a_uint32_t phy_addr, a_bool_t en)
+{
+	struct qca808x_phy_info *pdata;
+#if defined(IN_PHY_I2C_MODE)
+	a_uint32_t port_id;
+	port_id = qca_ssdk_phy_addr_to_port(dev_id, phy_addr);
+	if (hsl_port_phy_access_type_get(dev_id, port_id) == PHY_I2C_ACCESS) {
+		phy_addr = qca_ssdk_port_to_phy_mdio_fake_addr(dev_id, port_id);
+	}
+#endif
+
+	pdata = qca808x_phy_info_get(phy_addr);
+	if (pdata) {
+		pdata->gps_seconds_sync_en = en;
+	}
+
+	return;
+}
+
+a_bool_t qca808x_ptp_gm_gps_seconds_sync_status_get(a_uint32_t dev_id,
+		a_uint32_t phy_addr)
+{
+	struct qca808x_phy_info *pdata;
+#if defined(IN_PHY_I2C_MODE)
+	a_uint32_t port_id;
+	port_id = qca_ssdk_phy_addr_to_port(dev_id, phy_addr);
+	if (hsl_port_phy_access_type_get(dev_id, port_id) == PHY_I2C_ACCESS) {
+		phy_addr = qca_ssdk_port_to_phy_mdio_fake_addr(dev_id, port_id);
+	}
+#endif
+
+	pdata = qca808x_phy_info_get(phy_addr);
+	if (pdata) {
+		return pdata->gps_seconds_sync_en;
+	}
+
+	return A_FALSE;
+}
+
+void qca808x_ptp_clock_mode_config(a_uint32_t dev_id,
+		a_uint32_t phy_addr, a_uint16_t clock_mode, a_uint16_t step_mode)
+{
+	struct qca808x_phy_info *pdata;
+#if defined(IN_PHY_I2C_MODE)
+	a_uint32_t port_id;
+	port_id = qca_ssdk_phy_addr_to_port(dev_id, phy_addr);
+	if (hsl_port_phy_access_type_get(dev_id, port_id) == PHY_I2C_ACCESS) {
+		phy_addr = qca_ssdk_port_to_phy_mdio_fake_addr(dev_id, port_id);
+	}
+#endif
+
+	pdata = qca808x_phy_info_get(phy_addr);
+
+	if (pdata) {
+		pdata->clock_mode = clock_mode;
+		pdata->step_mode = step_mode;
+	}
+
+	return;
+}
+
+#if defined(IN_LINUX_STD_PTP)
+static sw_error_t qca808x_ptp_clock_synce_clock_enable(a_uint32_t dev_id,
+		a_uint32_t phy_id, a_bool_t enable)
+{
+	a_uint16_t phy_data, phy_data1;
+	sw_error_t ret = SW_OK;
+
+	phy_data = qca808x_phy_debug_read(dev_id, phy_id,
+			QCA808X_DEBUG_ANA_CLOCK_CTRL_REG);
+
+	phy_data1 = qca808x_phy_mmd_read(dev_id, phy_id, QCA808X_PHY_MMD7_NUM,
+			QCA808X_MMD7_CLOCK_CTRL_REG);
+
+	if (enable == A_TRUE) {
+		/* enable analog synce clock output */
+		phy_data |= QCA808X_ANALOG_PHY_SYNCE_CLOCK_EN;
+		/* enable digital synce clock output */
+		phy_data1 |= QCA808X_DIGITAL_PHY_SYNCE_CLOCK_EN;
+	} else {
+		phy_data &= ~QCA808X_ANALOG_PHY_SYNCE_CLOCK_EN;
+		phy_data1 &= ~QCA808X_DIGITAL_PHY_SYNCE_CLOCK_EN;
+	}
+
+	ret = qca808x_phy_debug_write(dev_id, phy_id,
+			QCA808X_DEBUG_ANA_CLOCK_CTRL_REG, phy_data);
+
+	ret |= qca808x_phy_mmd_write(dev_id, phy_id, QCA808X_PHY_MMD7_NUM,
+			QCA808X_MMD7_CLOCK_CTRL_REG, phy_data1);
+	return ret;
+}
+
+static sw_error_t qca808x_ptp_config_init(a_uint32_t dev_id, a_uint32_t phy_id)
+{
+	fal_ptp_config_t ptp_config;
+	fal_ptp_reference_clock_t ptp_ref_clock;
+	fal_ptp_rx_timestamp_mode_t rx_ts_mode;
+	fal_ptp_time_t ptp_time = {0};
+	sw_error_t ret = SW_OK;
+
+	/* enable ptp OC two-step mode */
+	ptp_config.ptp_en = A_TRUE;
+	ptp_config.clock_mode = FAL_OC_CLOCK_MODE;
+	ptp_config.step_mode = FAL_TWO_STEP_MODE;
+	ret = qca808x_phy_ptp_config_set(dev_id, phy_id, &ptp_config);
+
+	qca808x_ptp_clock_mode_config(dev_id, phy_id, ptp_config.clock_mode,
+			ptp_config.step_mode);
+
+	/* adjust frequency to 8ns(125MHz) */
+	ptp_time.nanoseconds = QCA808X_PTP_TICK_RATE_125M;
+	ret |= qca808x_phy_ptp_rtc_adjfreq_set(dev_id, phy_id, &ptp_time);
+
+	/* use SyncE reference clock */
+	ptp_ref_clock = FAL_REF_CLOCK_SYNCE;
+	ret |= qca808x_phy_ptp_reference_clock_set(dev_id, phy_id, ptp_ref_clock);
+
+	/* use Embed mode to get RX timestamp */
+	rx_ts_mode = FAL_RX_TS_EMBED;
+	ret |= qca808x_phy_ptp_rx_timestamp_mode_set(dev_id, phy_id, rx_ts_mode);
+
+	/* enable SYNCE clock output */
+	ret |= qca808x_ptp_clock_synce_clock_enable(dev_id, phy_id, A_TRUE);
+
+	if (ret != SW_OK) {
+		SSDK_ERROR("%s failed\n", __func__);
+	}
+
+	return ret;
+}
+#endif
 
 static int qca808x_match_phy_device(struct phy_device *phydev)
 {
-	if(phydev->phy_id == QCA8081_PHY)
-		return 1;
-	return 0;
+	return phydev->phy_id == QCA8081_PHY;
 }
 
-static int qca808x_soft_reset(struct phy_device *phydev)
+static sw_error_t qca808x_phy_config_init(struct phy_device *phydev)
 {
-	return 0;
+	a_uint16_t phy_data;
+	a_uint32_t features;
+	a_uint32_t dev_id = 0, phy_id = 0;
+	qca808x_priv *priv = phydev->priv;
+	struct qca808x_phy_info *pdata = priv->phy_info;
+
+	if (!pdata) {
+		return SW_NOT_FOUND;
+	}
+
+	dev_id = pdata->dev_id;
+	phy_id = pdata->phy_addr;
+
+	features = SUPPORTED_TP | SUPPORTED_MII |
+		SUPPORTED_AUI | SUPPORTED_BNC;
+
+	phy_data = qca808x_phy_reg_read(dev_id,
+			phy_id, QCA808X_PHY_STATUS);
+
+	if (phy_data == PHY_INVALID_DATA) {
+		return SW_READ_ERROR;
+	}
+
+	if (phy_data & QCA808X_STATUS_AUTONEG_CAPS) {
+		features |= SUPPORTED_Autoneg;
+	}
+	if (phy_data & QCA808X_STATUS_100X_FD_CAPS) {
+		features |= SUPPORTED_100baseT_Full;
+	}
+	if (phy_data & QCA808X_STATUS_100X_HD_CAPS) {
+		features |= SUPPORTED_100baseT_Half;
+	}
+	if (phy_data & QCA808X_STATUS_10T_FD_CAPS) {
+		features |= SUPPORTED_10baseT_Full;
+	}
+	if (phy_data & QCA808X_STATUS_10T_HD_CAPS) {
+		features |= SUPPORTED_10baseT_Half;
+	}
+
+	if (phy_data & QCA808X_STATUS_EXTENDED_STATUS) {
+		phy_data = qca808x_phy_reg_read(dev_id,
+				phy_id, QCA808X_EXTENDED_STATUS);
+
+		if (phy_data == PHY_INVALID_DATA) {
+			return SW_READ_ERROR;
+		}
+		if (phy_data & QCA808X_STATUS_1000T_FD_CAPS) {
+			features |= SUPPORTED_1000baseT_Full;
+		}
+		if (phy_data & QCA808X_STATUS_1000T_HD_CAPS) {
+			features |= SUPPORTED_1000baseT_Half;
+		}
+	}
+
+	phy_data = qca808x_phy_mmd_read(dev_id, phy_id, QCA808X_PHY_MMD1_NUM,
+			QCA808X_MMD1_PMA_CAP_REG);
+
+	if (phy_data & QCA808X_STATUS_2500T_FD_CAPS) {
+		features |= SUPPORTED_2500baseX_Full;
+	}
+
+	phydev->supported = features;
+	phydev->advertising = features;
+
+	return SW_OK;
 }
 
 static int qca808x_config_init(struct phy_device *phydev)
 {
-	u16 val;
-	phy_addr = phydev->addr;
-	phy_dev = kzalloc(sizeof (struct phy_device), GFP_KERNEL);
-	phy_dev = phydev;
-	if(phydev->phy_id != QCA8081_PHY)
-		return genphy_config_init(phydev);
+	int ret = 0;
+	a_uint32_t dev_id = 0, phy_id = 0;
+	qca808x_priv *priv = phydev->priv;
+	const struct qca808x_phy_info *pdata = priv->phy_info;
 
-	/* enable 1588 */
-	val = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8012);
-	val &= (~(1<<3));
-	val &= (~(1<<8));
-	phy_write_mmd(phydev, MDIO_MMD_PCS, 0x8012, val);
+	if (!pdata) {
+		return SW_FAIL;
+	}
 
-	/* use OC/BC two-step clock */
-	val = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8012);
-	val &= (~(1<<1));
-	val &= (~(1<<2));
-	phy_write_mmd(phydev, MDIO_MMD_PCS, 0x8012, val);
+	dev_id = pdata->dev_id;
+	phy_id = pdata->phy_addr;
 
-	/* adjust frequency to 8ns(125MHz) */
-	phy_write_mmd(phydev, MDIO_MMD_PCS, 0x8036, 0x2000);
-	phy_write_mmd(phydev, MDIO_MMD_PCS, 0x8037, 0);
+#if defined(IN_LINUX_STD_PTP)
+	/* ptp function initialization */
+	ret |= qca808x_ptp_config_init(dev_id, phy_id);
+#endif
 
-	/* use SyncE reference clock */
-	val = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8012);
-	val |= (1<<7);
-	phy_write_mmd(phydev, MDIO_MMD_PCS, 0x8012, val);
-	val = phy_read_mmd(phydev, MDIO_MMD_AN, 0x8017);
-	val &= (~(1<<11));
-	phy_write_mmd(phydev, MDIO_MMD_AN, 0x8017, val);
+	ret |= qca808x_phy_config_init(phydev);
 
-	/* use Embed mode to get RX timestamp */
-	val = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8012);
-	val &= (~(1<<4));
-	phy_write_mmd(phydev, MDIO_MMD_PCS, 0x8012, val);
-	val = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x80f0);
-	val |= (1<<13);
-	phy_write_mmd(phydev, MDIO_MMD_PCS, 0x80f0, val);
-
-	phydev->speed = SPEED_UNKNOWN;
-	phydev->link = PHY_NOLINK;
-	phydev->duplex = DUPLEX_FULL;
-	phydev->autoneg = AUTONEG_ENABLE;
-	phydev->supported = PHY_QCA808X_FEATURES;
-	phydev->advertising = ADVERTISED_10000baseT_Full |
-				ADVERTISED_1000baseT_Full |
-				ADVERTISED_100baseT_Full;
-	return 0;
-}
-
-int qca808x_config_aneg(struct phy_device *phydev)
-{
-	int reg, err;
-	if(phydev->phy_id != QCA8081_PHY)
-		return genphy_config_aneg(phydev);
-
-	reg = phy_read_mmd(phydev, MDIO_MMD_AN, MII_BMCR);
-
-	err = phy_write_mmd(phydev, MDIO_MMD_AN, MII_BMCR,
-			    reg | 0x1000);
-	if (err < 0)
-		return err;
-
-	return 0;
-}
-
-int qca808x_aneg_done(struct phy_device *phydev)
-{
-	int reg;
-	if(phydev->phy_id != QCA8081_PHY)
-		return genphy_aneg_done(phydev);
-
-	reg = phy_read_mmd(phydev, MDIO_MMD_AN, MDIO_STAT1);
-	return (reg < 0) ? reg : (reg & BMSR_ANEGCOMPLETE);
+	return ret;
 }
 
 static int qca808x_config_intr(struct phy_device *phydev)
 {
-	return 0;
+	int err;
+	a_uint16_t phy_data;
+	a_uint32_t dev_id = 0, phy_id = 0;
+	qca808x_priv *priv = phydev->priv;
+	const struct qca808x_phy_info *pdata = priv->phy_info;
+
+	if (!pdata) {
+		return SW_FAIL;
+	}
+
+	dev_id = pdata->dev_id;
+	phy_id = pdata->phy_addr;
+
+	phy_data = qca808x_phy_reg_read(dev_id, phy_id,
+			QCA808X_PHY_INTR_MASK);
+
+	if (phydev->interrupts == PHY_INTERRUPT_ENABLED) {
+		err = qca808x_phy_reg_write(dev_id, phy_id,
+				QCA808X_PHY_INTR_MASK,
+				phy_data | QCA808X_INTR_INIT);
+	} else {
+		err = qca808x_phy_reg_write(dev_id, phy_id,
+				QCA808X_PHY_INTR_MASK, 0);
+	}
+
+	return err;
 }
 
 static int qca808x_ack_interrupt(struct phy_device *phydev)
 {
-	return 0;
-}
+	int err;
+	a_uint32_t dev_id = 0, phy_id = 0;
+	qca808x_priv *priv = phydev->priv;
+	const struct qca808x_phy_info *pdata = priv->phy_info;
 
-int qca808x_read_status(struct phy_device *phydev)
-{
-	int value;
-	if(phydev->phy_id != QCA8081_PHY)
-		return genphy_read_status(phydev);
-
-	value = phy_read(phydev, 17);
-	if (value & 0x0400) {
-		phydev->link = 1;
-	} else {
-		phydev->link = 0;
+	if (!pdata) {
+		return SW_FAIL;
 	}
-	phydev->speed = SPEED_1000;
-	phydev->duplex = DUPLEX_FULL;
 
-	return 0;
+	dev_id = pdata->dev_id;
+	phy_id = pdata->phy_addr;
+
+	err = qca808x_phy_reg_read(dev_id, phy_id,
+			QCA808X_PHY_INTR_STATUS);
+
+	return (err < 0) ? err : 0;
 }
 
-int qca808x_update_link(struct phy_device *phydev)
+/* switch linux negtiation capability to fal avariable */
+static a_uint32_t qca808x_negtiation_cap_get(a_uint32_t advertise)
 {
-	int reg;
-	reg = phy_read(phydev, 17);
-	if (reg & 0x0400)
-		phydev->link = 1;
-	else
-		phydev->link = 0;
+	a_uint32_t autoneg = 0;
+
+	if (advertise & ADVERTISED_Pause) {
+		autoneg |= FAL_PHY_ADV_PAUSE;
+	}
+	if (advertise & ADVERTISED_Asym_Pause) {
+		autoneg |= FAL_PHY_ADV_ASY_PAUSE;
+	}
+	if (advertise & ADVERTISED_10baseT_Half) {
+		autoneg |= FAL_PHY_ADV_10T_HD;
+	}
+	if (advertise & ADVERTISED_10baseT_Full) {
+		autoneg |= FAL_PHY_ADV_10T_FD;
+	}
+	if (advertise & ADVERTISED_100baseT_Half) {
+		autoneg |= FAL_PHY_ADV_100TX_HD;
+	}
+	if (advertise & ADVERTISE_100FULL) {
+		autoneg |= FAL_PHY_ADV_100TX_FD;
+	}
+	if (advertise & ADVERTISED_1000baseT_Full) {
+		autoneg |= FAL_PHY_ADV_1000T_FD;
+	}
+	if (advertise & ADVERTISED_2500baseX_Full) {
+		autoneg |= FAL_PHY_ADV_2500T_FD;
+	}
+
+	return autoneg;
+}
+
+static int qca808x_config_aneg(struct phy_device *phydev)
+{
+	a_uint32_t advertise = 0;
+	a_uint16_t phy_data = 0;
+	int err = 0;
+	a_uint32_t dev_id = 0, phy_id = 0;
+	qca808x_priv *priv = phydev->priv;
+	const struct qca808x_phy_info *pdata = priv->phy_info;
+
+	if (!pdata) {
+		return SW_FAIL;
+	}
+
+	dev_id = pdata->dev_id;
+	phy_id = pdata->phy_addr;
+	if (phydev->autoneg != AUTONEG_ENABLE)
+	{
+		/* force speed */
+		phydev->pause = 0;
+		phydev->asym_pause = 0;
+
+		phy_data = qca808x_phy_reg_read(dev_id, phy_id, QCA808X_PHY_CONTROL);
+		if (phydev->duplex == FAL_FULL_DUPLEX) {
+			phy_data |= QCA808X_CTRL_FULL_DUPLEX;
+		} else {
+			phy_data &= ~QCA808X_CTRL_FULL_DUPLEX;
+		}
+		qca808x_phy_reg_write(dev_id, phy_id, QCA808X_PHY_CONTROL, phy_data);
+		err = qca808x_phy_set_force_speed(dev_id, phy_id, phydev->speed);
+	} else {
+		/* autoneg enabled */
+		advertise = phydev->advertising & phydev->supported;
+		advertise = qca808x_negtiation_cap_get(advertise);
+		err |= qca808x_phy_set_autoneg_adv(dev_id, phy_id, advertise);
+		err |= qca808x_phy_restart_autoneg(dev_id, phy_id);
+	}
+
+	return err;
+}
+
+static int qca808x_aneg_done(struct phy_device *phydev)
+{
+
+	a_uint16_t phy_data;
+	a_uint32_t dev_id = 0, phy_id = 0;
+	qca808x_priv *priv = phydev->priv;
+	const struct qca808x_phy_info *pdata = priv->phy_info;
+
+	if (!pdata) {
+		return SW_FAIL;
+	}
+
+	dev_id = pdata->dev_id;
+	phy_id = pdata->phy_addr;
+
+	phy_data = qca808x_phy_reg_read(dev_id, phy_id,
+			QCA808X_PHY_STATUS);
+
+	return (phy_data < 0) ? phy_data : (phy_data & QCA808X_STATUS_AUTO_NEG_DONE);
+}
+
+static int qca808x_soft_reset(struct phy_device *phydev)
+{
+	a_uint32_t dev_id = 0, phy_id = 0;
+	qca808x_priv *priv = phydev->priv;
+	const struct qca808x_phy_info *pdata = priv->phy_info;
+
+	if (!pdata) {
+		return SW_FAIL;
+	}
+
+	dev_id = pdata->dev_id;
+	phy_id = pdata->phy_addr;
+
+	return qca808x_phy_reset(dev_id, phy_id);
+}
+
+static int qca808x_read_status(struct phy_device *phydev)
+{
+	struct port_phy_status phy_status;
+	a_uint32_t dev_id = 0, phy_id = 0;
+	qca808x_priv *priv = phydev->priv;
+	const struct qca808x_phy_info *pdata = priv->phy_info;
+
+	if (!pdata) {
+		return SW_FAIL;
+	}
+
+	dev_id = pdata->dev_id;
+	phy_id = pdata->phy_addr;
+
+	qca808x_phy_get_status(dev_id, phy_id, &phy_status);
+
+	if (phy_status.link_status) {
+		phydev->link = QCA808X_PHY_LINK_UP;
+	} else {
+		phydev->link = QCA808X_PHY_LINK_DOWN;
+	}
+
+	switch (phy_status.speed) {
+		case FAL_SPEED_2500:
+			phydev->speed = SPEED_2500;
+			break;
+		case FAL_SPEED_1000:
+			phydev->speed = SPEED_1000;
+			break;
+		case FAL_SPEED_100:
+			phydev->speed = SPEED_100;
+			break;
+		default:
+			phydev->speed = SPEED_10;
+			break;
+	}
+
+	if (phy_status.duplex == FAL_FULL_DUPLEX) {
+		phydev->duplex = DUPLEX_FULL;
+	} else {
+		phydev->duplex = DUPLEX_HALF;
+	}
 
 	return 0;
 }
 
-#define SKB_TIMESTAMP_TIMEOUT	2 /* jiffies */
+#if defined(IN_LINUX_STD_PTP)
+void qca808x_pkt_info_get(struct sk_buff *skb,
+		unsigned int type, fal_ptp_pkt_info_t *pkt_info)
+{
+	a_uint16_t *seqid, seqid_pkt;
+	a_uint32_t *clockid;
+	a_uint32_t clockid_lo;
+	a_uint64_t clockid_pkt;
+	a_uint16_t *portid, portid_pkt;
+	a_uint8_t *msgtype, msgtype_pkt;
+	a_uint32_t offset = 0;
+	a_uint8_t *data = skb_mac_header(skb);
 
-struct phy_device qca808x_phydev;
 #define OFF_PTP_CLOCK_ID 20
 #define OFF_PTP_PORT_ID 28
-void qca808x_get_pkt_info(struct sk_buff *skb, unsigned int type, ptp_pkt_info *pkt_info)
-{
-	u16 *seqid, seqid_pkt;
-	u64 *clockid, clockid_pkt;
-	u16 *portid, portid_pkt;
-	u8 *msgtype, msgtype_pkt;
-	unsigned int offset = 0;
-	u8 *data = skb_mac_header(skb);
-
-	/* check sequenceID, messageType, 12 bit hash of offset 20-29 */
-
-	if (type & PTP_CLASS_VLAN)
+	if (type & PTP_CLASS_VLAN) {
 		offset += VLAN_HLEN;
+	}
 
 	switch (type & PTP_CLASS_PMASK) {
 	case PTP_CLASS_IPV4:
@@ -218,17 +593,23 @@ void qca808x_get_pkt_info(struct sk_buff *skb, unsigned int type, ptp_pkt_info *
 		return;
 	}
 
-	if (skb->len + ETH_HLEN < offset + OFF_PTP_SEQUENCE_ID + sizeof(*seqid))
+	if (skb->len + ETH_HLEN < offset +
+			OFF_PTP_SEQUENCE_ID + sizeof(*seqid)) {
 		return;
+	}
 
-	seqid = (u16 *)(data + offset + OFF_PTP_SEQUENCE_ID);
+	seqid = (a_uint16_t *)(data + offset + OFF_PTP_SEQUENCE_ID);
 	seqid_pkt = ntohs(*seqid);
-	clockid  = (u64 *)(data + offset + OFF_PTP_CLOCK_ID);
-	clockid_pkt = ntohs(*clockid);
-	portid = (u16 *)(data + offset + OFF_PTP_PORT_ID);
+	clockid  = (a_uint32_t *)(data + offset + OFF_PTP_CLOCK_ID);
+	clockid_pkt = ntohl(*clockid);
+
+	clockid  = (a_uint32_t *)(data + offset + OFF_PTP_CLOCK_ID + 4);
+	clockid_lo = ntohl(*clockid);
+	clockid_pkt =  (clockid_pkt << 32) | clockid_lo;
+	portid = (a_uint16_t *)(data + offset + OFF_PTP_PORT_ID);
 	portid_pkt = ntohs(*portid);
-	msgtype = (u8 *)(data + offset);
-	msgtype_pkt = ntohs(*clockid) & 0xf;
+	msgtype = (a_uint8_t *)(data + offset);
+	msgtype_pkt = (*msgtype) & 0xf;
 
 	pkt_info->sequence_id = seqid_pkt;
 	pkt_info->clock_identify = clockid_pkt;
@@ -237,140 +618,45 @@ void qca808x_get_pkt_info(struct sk_buff *skb, unsigned int type, ptp_pkt_info *
 	return ;
 }
 
-int
-qca808x_ptp_timestamp_get(ptp_direction direction,
-		ptp_pkt_info *pkt_info, ptp_time *time)
-{
-	u16 seqid0, seqid1, seqid2, seqid3;
-	u16 portid0, portid1, portid2, portid3, portid4;
-	u16 ts0, ts1, ts2, ts3, ts4, ts5, ts6;
-	u64 clock_id;
-	u16 port_num;
-	u8 msgtype;
-	struct phy_device *phydev = phy_dev;
-	portid0 = portid1 = portid2 = portid3 = portid4 = 0;
-	ts0 = ts1 = ts2 = ts3 = ts4 = ts5 = ts6 = 0;
-
-	if (direction == RX_DIRECTION)
-	{
-		seqid0 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8013);
-		seqid1 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8500);
-		seqid2 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x851a);
-		seqid3 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8534);
-
-		if (pkt_info->sequence_id == seqid0)
-		{
-			portid0 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8014);
-			portid1 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8015);
-			portid2 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8016);
-			portid3 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8017);
-			portid4 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8018);
-			ts0 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8019);
-			ts1 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x801a);
-			ts2 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x801b);
-			ts3 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x801c);
-			ts4 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x801d);
-			ts5 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x801e);
-			ts6 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x801f);
-		}
-		else if (pkt_info->sequence_id == seqid1)
-		{
-			portid0 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8501);
-			portid1 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8502);
-			portid2 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8503);
-			portid3 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8504);
-			portid4 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8505);
-			ts0 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8506);
-			ts1 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8507);
-			ts2 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8508);
-			ts3 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8509);
-			ts4 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x850a);
-			ts5 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x850b);
-			ts6 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x850c);
-		}
-		else if (pkt_info->sequence_id == seqid2)
-		{
-			portid0 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x851b);
-			portid1 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x851c);
-			portid2 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x851d);
-			portid3 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x851e);
-			portid4 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x851f);
-			ts0 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8520);
-			ts1 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8521);
-			ts2 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8522);
-			ts3 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8523);
-			ts4 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8524);
-			ts5 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8525);
-			ts6 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8526);
-		}
-		else if (pkt_info->sequence_id == seqid3)
-		{
-			portid0 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8535);
-			portid1 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8536);
-			portid2 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8537);
-			portid3 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8538);
-			portid4 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8539);
-			ts0 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x853a);
-			ts1 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x853b);
-			ts2 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x853c);
-			ts3 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x853d);
-			ts4 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x853e);
-			ts5 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x853f);
-			ts6 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8540);
-		}
-	}
-	else
-	{
-		seqid0 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8020);
-
-		if (pkt_info->sequence_id == seqid0)
-		{
-			portid0 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8021);
-			portid1 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8022);
-			portid2 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8023);
-			portid3 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8024);
-			portid4 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8025);
-			ts0 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8026);
-			ts1 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8027);
-			ts2 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8028);
-			ts3 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x8029);
-			ts4 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x802a);
-			ts5 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x802b);
-			ts6 = phy_read_mmd(phydev, MDIO_MMD_PCS, 0x802c);
-		}
-	}
-
-	clock_id = ((u64)portid0 << 48) | ((u64)portid1 << 32) |
-		((u64)portid2 << 16) | portid3;
-	port_num = portid4;
-	msgtype = ts5 >> 12;
-	if (pkt_info->clock_identify == clock_id && pkt_info->port_number == port_num &&
-		pkt_info->msg_type == msgtype)
-	{
-		time->seconds = ((s64)ts0 << 32) | ((s64)ts1 << 16) | ts2;
-		time->nanoseconds = ((s32)ts3 << 16) | ts4;
-		time->fracnanoseconds = ((s32)((ts5 & 0xfff) << 8)) | ts6;
-
-		return 0;
-	}
-
-	return -1;
-}
-
 static void tx_timestamp_work(struct work_struct *work)
 {
 	struct sk_buff *skb;
-	ptp_pkt_info pkt_info;
-	ptp_time tx_time;
 	struct skb_shared_hwtstamps shhwtstamps;
 	struct timespec64 ts;
-	u64 ns;
+	a_uint64_t ns;
+	a_uint32_t dev_id, phy_id;
+	qca808x_ptp_cb *ptp_cb;
+	const struct qca808x_phy_info *pdata;
+	fal_ptp_pkt_info_t pkt_info;
+	fal_ptp_time_t tx_time = {0};
+	sw_error_t ret = SW_OK;
+	qca808x_priv *priv =
+		container_of(work, qca808x_priv, tx_ts_work.work);
+
+	pdata = priv->phy_info;
+
+	if (!pdata) {
+		return;
+	}
+
+	dev_id = pdata->dev_id;
+	phy_id = pdata->phy_addr;
+
 	memset(&shhwtstamps, 0, sizeof(shhwtstamps));
 
-	while ((skb = skb_dequeue(&qca808x_tx_queue))) {
-		qca808x_get_pkt_info(skb, ptp_type, &pkt_info);
+	while ((skb = skb_dequeue(&priv->tx_queue))) {
+		ptp_cb = (qca808x_ptp_cb *)skb->cb;
+		qca808x_pkt_info_get(skb, ptp_cb->ptp_type, &pkt_info);
 
-		qca808x_ptp_timestamp_get(TX_DIRECTION, &pkt_info, &tx_time);
+		ret = qca808x_phy_ptp_timestamp_get(dev_id, phy_id,
+				FAL_TX_DIRECTION, &pkt_info, &tx_time);
+		if (ret == SW_NOT_FOUND) {
+			SSDK_DEBUG("Fail to get tx_ts: sequence_id:%x, clock_identify:%llx,"
+					" port_number:%x, msg_type:%x\n",
+					pkt_info.sequence_id, pkt_info.clock_identify,
+					pkt_info.port_number, pkt_info.msg_type);
+		}
+
 		ts.tv_sec = tx_time.seconds;
 		ts.tv_nsec = tx_time.nanoseconds;
 
@@ -378,36 +664,121 @@ static void tx_timestamp_work(struct work_struct *work)
 
 		shhwtstamps.hwtstamp = ns_to_ktime(ns);
 		skb_complete_tx_timestamp(skb, &shhwtstamps);
-		return;
 	}
-	schedule_delayed_work(&qca808x_ts_work, SKB_TIMESTAMP_TIMEOUT);
+
+	if (!skb_queue_empty(&priv->tx_queue))
+		schedule_delayed_work(&priv->tx_ts_work, SKB_TIMESTAMP_TIMEOUT);
 }
 
-static void qca808x_gps_second_sync(int *buf)
+static void rx_timestamp_work(struct work_struct *work)
 {
-	ptp_time time;
-	int val;
+	struct sk_buff *skb;
+	struct skb_shared_hwtstamps *shhwtstamps = NULL;
+	struct timespec64 ts;
+	a_uint64_t ns;
+	a_uint32_t dev_id, phy_id;
+	qca808x_ptp_cb *ptp_cb;
+	const struct qca808x_phy_info *pdata;
+	fal_ptp_pkt_info_t pkt_info;
+	fal_ptp_time_t rx_time = {0};
+	sw_error_t ret = SW_OK;
 
+	qca808x_priv *priv =
+		container_of(work, qca808x_priv, rx_ts_work.work);
+
+	pdata = priv->phy_info;
+
+	if (!pdata) {
+		return;
+	}
+	dev_id = pdata->dev_id;
+	phy_id = pdata->phy_addr;
+
+	/* Deliver packets */
+	while ((skb = skb_dequeue(&priv->rx_queue))) {
+		ptp_cb = (qca808x_ptp_cb *)skb->cb;
+		qca808x_pkt_info_get(skb, ptp_cb->ptp_type, &pkt_info);
+
+		ret = qca808x_phy_ptp_timestamp_get(dev_id, phy_id,
+				FAL_RX_DIRECTION, &pkt_info, &rx_time);
+		if (ret == SW_NOT_FOUND) {
+			SSDK_DEBUG("Fail to get rx_ts: sequence_id:%x, clock_identify:%llx, "
+					"port_number:%x, msg_type:%x\n",
+					pkt_info.sequence_id, pkt_info.clock_identify,
+					pkt_info.port_number, pkt_info.msg_type);
+		}
+
+		ts.tv_sec = rx_time.seconds;
+		ts.tv_nsec = rx_time.nanoseconds;
+		ns = timespec64_to_ns(&ts);
+		shhwtstamps = skb_hwtstamps(skb);
+		memset(shhwtstamps, 0, sizeof(*shhwtstamps));
+		shhwtstamps->hwtstamp = ns_to_ktime(ns);
+
+		/* for OC/BC needs record ingress time stamp on receiving
+		 * peer delay request message under one-step mode.
+		 * for TC needs record ingress time stamp on receiving
+		 * the event message */
+		if ((pdata->clock_mode == FAL_P2PTC_CLOCK_MODE) ||
+				(pdata->clock_mode == FAL_OC_CLOCK_MODE &&
+				 pdata->step_mode == FAL_ONE_STEP_MODE &&
+				 ptp_cb->pkt_type == QCA808X_PTP_MSG_PREQ)) {
+			priv->ptp_in_trig_nsec = ts.tv_nsec;
+			priv->ptp_in_trig_flag = A_TRUE;
+		}
+		netif_rx_ni(skb);
+	}
+
+	if (!skb_queue_empty(&priv->rx_queue))
+		schedule_delayed_work(&priv->rx_ts_work, SKB_TIMESTAMP_TIMEOUT);
+}
+
+static void pdelay_ingress_time_sync(struct phy_device *phydev)
+{
+	a_uint32_t dev_id, phy_id;
+	fal_ptp_time_t ingress_trig_time = {0};
+	qca808x_priv *priv = phydev->priv;
+	const struct qca808x_phy_info *pdata = priv->phy_info;
+
+	if (!pdata) {
+		return;
+	}
+	dev_id = pdata->dev_id;
+	phy_id = pdata->phy_addr;
+
+	if (priv->ptp_in_trig_flag) {
+		ingress_trig_time.nanoseconds = priv->ptp_in_trig_nsec;
+		qca808x_phy_ptp_pkt_timestamp_set(dev_id, phy_id, &ingress_trig_time);
+		priv->ptp_in_trig_flag = A_FALSE;
+	}
+}
+
+static void qca808x_gps_second_sync(struct phy_device *phydev, a_int32_t *buf)
+{
+	fal_ptp_time_t time, old_time;
+	a_uint32_t dev_id, phy_id;
+	qca808x_priv *priv = phydev->priv;
+	const struct qca808x_phy_info *pdata = priv->phy_info;
+
+	if (!pdata) {
+		return;
+	}
+	dev_id = pdata->dev_id;
+	phy_id = pdata->phy_addr;
 	/* 0-3: time of week; 4-5: week number; 6-7: UTC offset */
-	time.seconds = ((s64)buf[0] << 24 | buf[1] << 16 | buf[2] << 8 | buf[3]) *
-		(buf[4] << 8 | buf[5]) + (buf[6] << 8 | buf[7]);
+	time.seconds = ((a_int64_t)buf[0] << 24 | buf[1] << 16 |
+			buf[2] << 8 | buf[3]) +
+		((buf[4] << 8 | buf[5]) * 7 * 24 * 3600) +
+		(buf[6] << 8 | buf[7]);
+
 	time.nanoseconds = 0;
 	time.fracnanoseconds = 0;
 
-	phy_write_mmd(&qca808x_phydev,
-			3, 0x803c, time.seconds & 0xffff);
-	phy_write_mmd(&qca808x_phydev,
-			3, 0x803b, (time.seconds>>16) & 0xffff);
-	phy_write_mmd(&qca808x_phydev,
-			3, 0x803a, (time.seconds>>32) & 0xffff);
+	qca808x_phy_ptp_rtc_time_get(dev_id, phy_id, &old_time);
+	time.seconds -= old_time.seconds;
+	qca808x_phy_ptp_rtc_adjtime_set(dev_id, phy_id, &time);
 
-	phy_write_mmd(&qca808x_phydev, 3, 0x8039, 0);
-	phy_write_mmd(&qca808x_phydev, 3, 0x8038, 0);
-
-	val = phy_read_mmd(&qca808x_phydev, 3, 0x8044);
-	val |= 0x1;
-	phy_write_mmd(&qca808x_phydev, 3, 0x8044, val);
-
+	qca808x_ptp_gm_gps_seconds_sync_enable(dev_id, phy_id, A_FALSE);
 	return;
 }
 
@@ -415,17 +786,18 @@ static int
 gps_seconds_sync_thread(void *param)
 {
 	struct file *filp;
-	int nread;
+	a_uint32_t nread;
 	char buff[128];
 	char *dev ="/dev/ttyMSM0";
-	int arr[32], akk[32];
-	int ii = 0, sign = 0, kk = 0, nn = 0;
+	a_int32_t arr[32], akk[32];
+	a_uint32_t ii = 0, sign = 0, kk = 0, nn = 0;
 	mm_segment_t fs;
-	int return_tag = 32;
+	a_int32_t return_tag = 32;
 
 	filp = filp_open(dev, O_RDONLY, 0);
 	if (IS_ERR(filp))
 	{
+		SSDK_ERROR("Open %s error\n", dev);
 		return 0;
 	}
 
@@ -442,22 +814,24 @@ gps_seconds_sync_thread(void *param)
 			buff[nread+1]='\0';
 			for(ii = 0; ii < sizeof(buff); ii++)
 			{
-				if (sign == 0 && !(buff[ii] == 0x10 ||
-							buff[ii] == 0x8f || buff[ii] == 0xab))
+				if (sign == 0 && !(buff[ii] == 0x10 || buff[ii] == 0x8f ||
+							buff[ii] == 0xab)) {
 					nn = 0;
-				else if (sign == 0)
+				} else if (sign == 0) {
 					arr[nn++] = buff[ii];
+				}
 
-				if (sign == 1)
+				if (sign == 1) {
 					akk[kk++] = buff[ii];
+				}
+
 				if (sign == 1 && kk >= 2 && akk[kk-2] == 0x10 && akk[kk-1] == 0x3)
 				{
-					qca808x_gps_second_sync(akk);
-					goto end;
+					qca808x_gps_second_sync((struct phy_device *)param, akk);
+					goto gps_time_sync_exit;
 				}
 				if (sign == 0 && nn >= 3 && arr[nn-3] == 0x10 &&
-						arr[nn-2] == 0x8f && arr[nn-1] == 0xab)
-				{
+						arr[nn-2] == 0x8f && arr[nn-1] == 0xab) {
 					sign = 1;
 				}
 			}
@@ -465,141 +839,189 @@ gps_seconds_sync_thread(void *param)
 		else
 		{
 			set_fs(fs);
-			if (--return_tag <= 0)
+			if (--return_tag <= 0) {
 				break;
+			}
 		}
 	}
-end:
+
+gps_time_sync_exit:
 	filp_close(filp,NULL);
 	return 0;
 }
 
-void qca808x_ptp_gm_gps_seconds_sync_enable(int en)
-{
-	gps_seconds_sync_en = en;
-}
-
-int qca808x_ptp_gm_gps_seconds_sync_status_get(void)
-{
-	return gps_seconds_sync_en;
-}
-
-static void grandmaster_seconds_work_process(struct work_struct *work)
+static void qca808x_ptp_schedule_work(struct work_struct *work)
 {
 	const char gm_seconds_thread_name[] = "gps_seconds_sync";
+	struct task_struct *gps_seconds_sync_task;
+	struct phy_device *phydev;
 
-	if (gps_seconds_sync_en == 1)
-	{
+	const struct qca808x_phy_info *pdata;
+	qca808x_priv *priv = NULL;
+	priv = container_of(work, qca808x_priv, ts_schedule_work.work);
+
+	phydev = priv->phydev;
+	pdata = priv->phy_info;
+
+	if (pdata && pdata->gps_seconds_sync_en == A_TRUE) {
 		gps_seconds_sync_task = kthread_create(gps_seconds_sync_thread,
-				NULL, gm_seconds_thread_name);
-
-		if (IS_ERR(gps_seconds_sync_task))
-		{
+				(void *)phydev, gm_seconds_thread_name);
+		if (IS_ERR(gps_seconds_sync_task)) {
+			SSDK_ERROR("thread: %s create failed\n", gm_seconds_thread_name);
 			return;
 		}
-
 		wake_up_process(gps_seconds_sync_task);
+	}
 
-	}
-	else
-	{
-		schedule_delayed_work(&qca808x_gm_seconds_work, SKB_TIMESTAMP_TIMEOUT);
-	}
+	pdelay_ingress_time_sync(phydev);
+	schedule_delayed_work(&priv->ts_schedule_work, SKB_TIMESTAMP_TIMEOUT);
 }
 
-static void grandmaster_nanoseconds_swpll_work_process(struct work_struct *work)
-{
-	return ;
-}
-
+/******************************************************************************
+*
+* qca808x_ptp_settime - reset the rtc timecounter
+*
+* ptp: the ptp clock info structure
+* ts:  the new rtc timecounter
+*
+*/
 static int qca808x_ptp_settime(struct ptp_clock_info *ptp,
 			       const struct timespec64 *ts)
 {
-	int val;
+	const struct qca808x_phy_info *pdata;
+	struct qca808x_ptp_clock *clock =
+		container_of(ptp, struct qca808x_ptp_clock, caps);
 
-	phy_write_mmd(&qca808x_phydev, 3, 0x8103, ts->tv_sec&0xffff);
-	phy_write_mmd(&qca808x_phydev, 3, 0x8102, (ts->tv_sec>>16)&0xffff);
-	phy_write_mmd(&qca808x_phydev, 3, 0x8101, (ts->tv_sec>>32)&0xffff);
-	phy_write_mmd(&qca808x_phydev, 3, 0x8105, (ts->tv_nsec)&0xffff);
-	phy_write_mmd(&qca808x_phydev, 3, 0x8104, (ts->tv_nsec>>16)&0xffff);
+	fal_ptp_time_t ptp_time = {0};
 
-	val = phy_read_mmd(&qca808x_phydev, 3, 0x8100);
-	val |= 0x1;
-	phy_write_mmd(&qca808x_phydev, 3, 0x8100, val);
+	qca808x_priv *priv = clock->priv;
+	pdata = priv->phy_info;
+
+	if (!pdata) {
+		return SW_FAIL;
+	}
+	ptp_time.seconds = ts->tv_sec;
+	ptp_time.nanoseconds = ts->tv_nsec;
+
+	mutex_lock(&clock->tsreg_lock);
+	qca808x_phy_ptp_rtc_time_set(pdata->dev_id, pdata->phy_addr, &ptp_time);
+	mutex_unlock(&clock->tsreg_lock);
 	return 0;
 }
 
+/******************************************************************************
+*
+* qca808x_ptp_gettime - read the rtc timecounter
+*
+* ptp: the ptp clock info structure
+* ts:  the timespace to hold the current rtc time
+*
+*/
 static int qca808x_ptp_gettime(struct ptp_clock_info *ptp,
 			       struct timespec64 *ts)
 {
-	ts->tv_sec = phy_read_mmd(&qca808x_phydev, 3, 0x803d);
-	ts->tv_sec = (ts->tv_sec)<<16;
-	ts->tv_sec |= phy_read_mmd(&qca808x_phydev, 3, 0x803e);
-	ts->tv_sec = (ts->tv_sec)<<16;
-	ts->tv_sec |= phy_read_mmd(&qca808x_phydev, 3, 0x803f);
+	const struct qca808x_phy_info *pdata;
+	struct qca808x_ptp_clock *clock =
+		container_of(ptp, struct qca808x_ptp_clock, caps);
 
-	ts->tv_nsec = phy_read_mmd(&qca808x_phydev, 3, 0x8040);
-	ts->tv_nsec = (ts->tv_nsec)<<16;
-	ts->tv_nsec |= phy_read_mmd(&qca808x_phydev, 3, 0x8041);
+	fal_ptp_time_t ptp_time = {0};
 
+	qca808x_priv *priv = clock->priv;
+	pdata = priv->phy_info;
+
+	if (!pdata) {
+		return SW_FAIL;
+	}
+	mutex_lock(&clock->tsreg_lock);
+	qca808x_phy_ptp_rtc_time_get(pdata->dev_id, pdata->phy_addr, &ptp_time);
+	mutex_unlock(&clock->tsreg_lock);
+
+	ts->tv_sec = ptp_time.seconds;
+	ts->tv_nsec = ptp_time.nanoseconds;
 	return 0;
 }
+
+/******************************************************************************
+*
+* qca808x_ptp_adjtime - adjust the rtc timecounter offset
+*
+* ptp: the ptp clock info structure
+* delta:  offset to be adjusted per cycle counter
+*
+*/
 static int qca808x_ptp_adjtime(struct ptp_clock_info *ptp, s64 delta)
 {
 	struct timespec64 ts;
-	int val;
+	const struct qca808x_phy_info *pdata;
+	struct qca808x_ptp_clock *clock =
+		container_of(ptp, struct qca808x_ptp_clock, caps);
 
+	fal_ptp_time_t ptp_time = {0};
 
+	qca808x_priv *priv = clock->priv;
+	pdata = priv->phy_info;
+
+	if (!pdata) {
+		return SW_FAIL;
+	}
 	ts = ns_to_timespec64(delta);
+	ptp_time.seconds = ts.tv_sec;
+	ptp_time.nanoseconds = ts.tv_nsec;
 
-	phy_write_mmd(&qca808x_phydev, 3, 0x803c, ts.tv_sec&0xffff);
-	phy_write_mmd(&qca808x_phydev, 3, 0x803b, (ts.tv_sec>>16)&0xffff);
-	phy_write_mmd(&qca808x_phydev, 3, 0x803a, (ts.tv_sec>>32)&0xffff);
-
-	phy_write_mmd(&qca808x_phydev, 3, 0x8039, (ts.tv_nsec)&0xffff);
-	phy_write_mmd(&qca808x_phydev, 3, 0x8038, (ts.tv_nsec>>16)&0xffff);
-
-	val = phy_read_mmd(&qca808x_phydev, 3, 0x8044);
-	val |= 0x1;
-	phy_write_mmd(&qca808x_phydev, 3, 0x8044, val);
+	mutex_lock(&clock->tsreg_lock);
+	qca808x_phy_ptp_rtc_adjtime_set(pdata->dev_id, pdata->phy_addr, &ptp_time);
+	mutex_unlock(&clock->tsreg_lock);
 	return 0;
 }
-#include <linux/math64.h>
+
+/******************************************************************************
+*
+* qca808x_ptp_adjfreq - adjust the frequency of cycle counter
+*
+* ptp: the ptp clock info structure
+* ppb:  parts per billion adjustment from master
+*
+*/
 static int qca808x_ptp_adjfreq(struct ptp_clock_info *ptp, s32 ppb)
 {
-	u64 rate;
-	int neg_adj = 0;
-	u16 hi, lo, ns, val;
+	a_uint64_t rate;
+	a_int32_t neg_adj = 0;
+	a_uint16_t ns;
+	const struct qca808x_phy_info *pdata;
+	struct qca808x_ptp_clock *clock =
+		container_of(ptp, struct qca808x_ptp_clock, caps);
 
+	fal_ptp_time_t ptp_time = {0};
+
+	qca808x_priv *priv = clock->priv;
+	pdata = priv->phy_info;
+
+	if (!pdata) {
+		return SW_FAIL;
+	}
 	if (ppb < 0) {
 		neg_adj = 1;
 		ppb = -ppb;
 	}
 	rate = ppb;
-#if 1
 	rate <<= 20;
+	/* divided by (125000000-ppb/8)/64 */
 	rate = div_u64(rate, 1953125);
-#else
-	rate <<= 20;
-	rate = div_u64(rate, (125000000-ppb/8)/64);
-#endif
 
-	if(neg_adj)
-	{
-		ns = 7;
+	if(neg_adj) {
+		ns = QCA808X_PTP_TICK_RATE_125M - 1;
 		rate = (2<<26)-rate;
 	}
-	else
-	{
-		ns = 8;
+	else {
+		ns = QCA808X_PTP_TICK_RATE_125M;
 	}
 
-	hi = (rate >> 16) & 0x3ff;
-	lo = rate & 0xffff;
-	phy_write_mmd(&qca808x_phydev, MDIO_MMD_PCS, 0x8037, lo);
-	val = (ns<<10)|hi;
-	phy_write_mmd(&qca808x_phydev, MDIO_MMD_PCS, 0x8036, val);
+	ptp_time.nanoseconds = ns;
+	ptp_time.fracnanoseconds = rate;
 
+	mutex_lock(&clock->tsreg_lock);
+	qca808x_phy_ptp_rtc_adjfreq_set(pdata->dev_id, pdata->phy_addr, &ptp_time);
+	mutex_unlock(&clock->tsreg_lock);
 	return 0;
 }
 
@@ -609,63 +1031,69 @@ static int qca808x_ptp_enable(struct ptp_clock_info *ptp,
 	return -EOPNOTSUPP;
 }
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
 static int qca808x_ptp_verify(struct ptp_clock_info *ptp, unsigned int pin,
 			      enum ptp_pin_function func, unsigned int chan)
 {
 	return 1;
 }
+#endif
 
-
-struct ptp_clock *qca808x_ptp_clock;
 static int qca808x_ptp_register(struct phy_device *phydev)
 {
 	int err;
-	static struct ptp_clock_info caps;
+	struct qca808x_ptp_clock *clock;
+	qca808x_priv *priv = phydev->priv;
 
-	caps.max_adj	= 1953124;
-	caps.n_alarm	= 0;
-	caps.n_ext_ts	= 6;
-	caps.n_per_out	= 7;
-	caps.n_pins	= 0;
-	caps.pps		= 0;
-	caps.adjfreq	= qca808x_ptp_adjfreq;
-	caps.adjtime	= qca808x_ptp_adjtime;
-	caps.gettime64	= qca808x_ptp_gettime;
-	caps.settime64	= qca808x_ptp_settime;
-	caps.enable	= qca808x_ptp_enable;
-	caps.verify	= qca808x_ptp_verify;
+	clock = kzalloc(sizeof(struct qca808x_ptp_clock), GFP_KERNEL);
+	if (!clock) {
+		return -ENOMEM;
+	}
 
-	qca808x_ptp_clock = ptp_clock_register(&caps, &phydev->dev);
-	if (IS_ERR(qca808x_ptp_clock)) {
-		err = PTR_ERR(qca808x_ptp_clock);
+	mutex_init(&clock->tsreg_lock);
+	clock->caps.owner = THIS_MODULE;
+	sprintf(clock->caps.name, "qca808x timer");
+	clock->caps.max_adj	= 3124999;
+	clock->caps.n_alarm	= 0;
+	clock->caps.n_ext_ts	= 6;
+	clock->caps.n_per_out	= 7;
+	clock->caps.pps		= 0;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
+	clock->caps.n_pins	= 0;
+	clock->caps.verify	= qca808x_ptp_verify;
+	clock->caps.gettime64	= qca808x_ptp_gettime;
+	clock->caps.settime64	= qca808x_ptp_settime;
+#else
+	clock->caps.gettime	= qca808x_ptp_gettime;
+	clock->caps.settime	= qca808x_ptp_settime;
+#endif
+	clock->caps.adjfreq	= qca808x_ptp_adjfreq;
+	clock->caps.adjtime	= qca808x_ptp_adjtime;
+	clock->caps.enable	= qca808x_ptp_enable;
+
+	clock->ptp_clock = ptp_clock_register(&clock->caps, &phydev->dev);
+	if (IS_ERR(clock->ptp_clock)) {
+		err = PTR_ERR(clock->ptp_clock);
+		kfree(clock);
 		return err;
 	}
-	return 0;
-}
-/* PHY driver probe function */
+	priv->clock = clock;
+	clock->priv = priv;
 
-static int qca808x_phy_probe(struct phy_device *phydev)
-{
-	if(phydev->phy_id != QCA8081_PHY)
-		return 0;
-	memcpy(&qca808x_phydev, phydev, sizeof(*phydev));
-	qca808x_ptp_register(phydev);
-	skb_queue_head_init(&qca808x_tx_queue);
-	INIT_DELAYED_WORK(&qca808x_ts_work, tx_timestamp_work);
-	INIT_DELAYED_WORK(&qca808x_gm_seconds_work, grandmaster_seconds_work_process);
-	INIT_DELAYED_WORK(&qca808x_gm_nanoseconds_swpll_work,
-			grandmaster_nanoseconds_swpll_work_process);
-
-	schedule_delayed_work(&qca808x_gm_seconds_work, SKB_TIMESTAMP_TIMEOUT);
-	schedule_delayed_work(&qca808x_gm_nanoseconds_swpll_work, SKB_TIMESTAMP_TIMEOUT);
+	SSDK_INFO("qca808x ptp clock registered\n");
 	return 0;
 }
 
-static void qca808x_phy_remove(struct phy_device *phydev)
+static void qca808x_ptp_unregister(struct phy_device *phydev)
 {
-	if(phydev->phy_id != QCA8081_PHY)
-		return;
-	skb_queue_purge(&qca808x_tx_queue);
+	qca808x_priv *priv = phydev->priv;
+	struct qca808x_ptp_clock *clock = priv->clock;
+
+	if (clock) {
+		ptp_clock_unregister(clock->ptp_clock);
+		mutex_destroy(&clock->tsreg_lock);
+		kfree(clock);
+	}
 }
 
 static int qca808x_hwtstamp(struct phy_device *phydev, struct ifreq *ifr)
@@ -685,23 +1113,29 @@ static bool qca808x_rxtstamp(struct phy_device *phydev,
 			     struct sk_buff *skb, int type)
 {
 	struct skb_shared_hwtstamps *shhwtstamps = NULL;
-	struct timespec64 ts;
+	struct timespec64 ts = {0};
 	unsigned int offset = 0;
-	u64 ns;
-	u32 *reserved2;
-	u8 *reserved0, *reserved1;
-	u32 *cf1, *cf2;
-	u16 *seqid;
-	u8 *data;
-	ptp_pkt_info pkt_info;
-	ptp_time tx_time;
+	a_uint64_t ns;
+	a_uint32_t *reserved2;
+	a_uint8_t *reserved0, *reserved1;
+	a_uint8_t *msg_type;
+	a_uint32_t *cf1, *cf2;
+	a_uint8_t *data;
+	a_uint8_t embed_val, pkt_type;
+	qca808x_ptp_cb *ptp_cb = (qca808x_ptp_cb *)skb->cb;
+	qca808x_priv *priv = phydev->priv;
+	const struct qca808x_phy_info *pdata = priv->phy_info;
 
+	if (!pdata) {
+		return false;
+	}
 	shhwtstamps = skb_hwtstamps(skb);
 	memset(shhwtstamps, 0, sizeof(*shhwtstamps));
 
 	data = skb_mac_header(skb);
-	if (type & PTP_CLASS_VLAN)
+	if (type & PTP_CLASS_VLAN) {
 		offset += VLAN_HLEN;
+	}
 
 	switch (type & PTP_CLASS_PMASK) {
 	case PTP_CLASS_IPV4:
@@ -723,48 +1157,55 @@ static bool qca808x_rxtstamp(struct phy_device *phydev,
 #define PTP_HDR_RESERVED2_OFFSET	16
 
 	reserved0 = data + offset + PTP_HDR_RESERVED0_OFFSET;
+	msg_type = (a_uint8_t *)(data + offset);
 	reserved1 = data + offset + PTP_HDR_RESERVED1_OFFSET;
-	cf1 = (u32 *)(data + offset + PTP_HDR_CORRECTIONFIELD_OFFSET);
-	cf2 = (u32 *)(data + offset + PTP_HDR_CORRECTIONFIELD_OFFSET + 4);
-	reserved2 = (u32 *)(data + offset + PTP_HDR_RESERVED2_OFFSET);
-	seqid = (u16 *)(data + offset + OFF_PTP_SEQUENCE_ID);
+	cf1 = (a_uint32_t *)(data + offset + PTP_HDR_CORRECTIONFIELD_OFFSET);
+	cf2 = (a_uint32_t *)(data + offset + PTP_HDR_CORRECTIONFIELD_OFFSET + 4);
+	reserved2 = (a_uint32_t *)(data + offset + PTP_HDR_RESERVED2_OFFSET);
 
-	/* check FAL_RX_TS_EMBED or FAL_RX_TS_MDIO */
-	if ((*reserved0 >> 4) == 0xa)
-	{
-		/* RX timestamp embed mode, FAL_RX_TS_EMBED */
+	embed_val = (*reserved0 & 0xf0) >> 4;
+	pkt_type = *msg_type & 0xf;
+
+	if (embed_val == QCA808X_PTP_EMBEDDED_MODE) {
 		ts.tv_sec = ntohl(*reserved2);
-		ts.tv_nsec = ((u32)*reserved1 << 24) | (ntohl(*cf1) >> 8);
+		ts.tv_nsec = ((a_uint32_t)*reserved1 << 24) | (ntohl(*cf1) >> 8);
 
-		/* restore the original correctionfield value */
-		if (((ntohl(*cf1) >> 7) & 0x1) == 1)
+		/* restore the original correctionfield value except for
+		 * the TC one-step mode */
+		if (!(pdata->clock_mode == FAL_P2PTC_CLOCK_MODE &&
+					pdata->step_mode == FAL_ONE_STEP_MODE))
 		{
-			/* correctionnfield is negative */
-			*cf1 = ((u32)0xff << 24) | ((ntohl(*cf1) & 0xff) << 16) |
-				(ntohl(*cf2) >> 16);
+			if (((ntohl(*cf1) >> 7) & 0x1) == 1) {
+				*cf1 = ((a_uint32_t)0xff << 24) |
+					((ntohl(*cf1) & 0xff) << 16) | (ntohl(*cf2) >> 16);
+			} else {
+				*cf1 = ((ntohl(*cf1) & 0xff) << 16) | (ntohl(*cf2) >> 16);
+			}
+
 			*cf1 = htonl(*cf1);
 			*cf2 = (ntohl(*cf2) & 0xffff) << 16;
 			*cf2 = htonl(*cf2);
 		}
-		else
-		{
-			/* correctionfield is positive */
-			*cf1 = ((ntohl(*cf1) & 0xff) << 16) | (ntohl(*cf2) >> 16);
-			*cf1 = htonl(*cf1);
-			*cf2 = (ntohl(*cf2) & 0xffff) << 16;
-			*cf2 = htonl(*cf2);
-		}
-	}
-	else
-	{
-		/* RX timestamp mdio mode, FAL_RX_TS_MDIO */
-		qca808x_get_pkt_info(skb, ptp_type, &pkt_info);
-
-		qca808x_ptp_timestamp_get(RX_DIRECTION, &pkt_info, &tx_time);
-		ts.tv_sec = tx_time.seconds;
-		ts.tv_nsec = tx_time.nanoseconds;
+	} else {
+		ptp_cb->ptp_type = type;
+		ptp_cb->pkt_type = pkt_type;
+		skb_queue_tail(&priv->rx_queue, skb);
+		schedule_delayed_work(&priv->rx_ts_work, 0);
+		return true;
 	}
 	ns = timespec64_to_ns(&ts);
+
+	/* for OC/BC needs record ingress time stamp on receiving
+	 * peer delay request message under one-step mode.
+	 * for TC needs record ingress time stamp on receiving
+	 * the event message */
+	if ((pdata->clock_mode == FAL_P2PTC_CLOCK_MODE) ||
+			(pdata->clock_mode == FAL_OC_CLOCK_MODE &&
+			 pdata->step_mode == FAL_ONE_STEP_MODE &&
+			 pkt_type == QCA808X_PTP_MSG_PREQ)) {
+		priv->ptp_in_trig_nsec = ts.tv_nsec;
+		priv->ptp_in_trig_flag = A_TRUE;
+	}
 
 	shhwtstamps->hwtstamp = ns_to_ktime(ns);
 	netif_rx_ni(skb);
@@ -775,56 +1216,179 @@ static bool qca808x_rxtstamp(struct phy_device *phydev,
 static void qca808x_txtstamp(struct phy_device *phydev,
 			     struct sk_buff *skb, int type)
 {
-	skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
+	qca808x_priv *priv = phydev->priv;
+	qca808x_ptp_cb *ptp_cb = (qca808x_ptp_cb *)skb->cb;
 
-	skb_queue_tail(&qca808x_tx_queue, skb);
-	ptp_type = type;
-	schedule_delayed_work(&qca808x_ts_work, SKB_TIMESTAMP_TIMEOUT);
+	skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
+	skb_queue_tail(&priv->tx_queue, skb);
+	ptp_cb->ptp_type = type;
+	schedule_delayed_work(&priv->tx_ts_work, SKB_TIMESTAMP_TIMEOUT);
 }
 
-static int qca808x_ts_info(struct phy_device *dev, struct ethtool_ts_info *info)
+static int qca808x_ts_info(struct phy_device *phydev,
+		struct ethtool_ts_info *info)
 {
+	qca808x_priv *priv = phydev->priv;
+	const struct qca808x_phy_info *pdata = priv->phy_info;
+
+	if (!pdata) {
+		return 0;
+	}
 	info->so_timestamping =
 		SOF_TIMESTAMPING_TX_HARDWARE |
 		SOF_TIMESTAMPING_RX_HARDWARE |
 		SOF_TIMESTAMPING_RAW_HARDWARE;
 	info->tx_types =
 		(1 << HWTSTAMP_TX_OFF) |
-		(1 << HWTSTAMP_TX_ON) |
-		(1 << HWTSTAMP_TX_ONESTEP_SYNC);
+		(1 << HWTSTAMP_TX_ON);
+
+	if (pdata->step_mode == FAL_ONE_STEP_MODE) {
+		info->tx_types |= (1 << HWTSTAMP_TX_ONESTEP_SYNC);
+	}
+
 	info->rx_filters =
 		(1 << HWTSTAMP_FILTER_NONE) |
 		(1 << HWTSTAMP_FILTER_PTP_V1_L4_EVENT) |
 		(1 << HWTSTAMP_FILTER_PTP_V2_L4_EVENT) |
 		(1 << HWTSTAMP_FILTER_PTP_V2_L2_EVENT) |
 		(1 << HWTSTAMP_FILTER_PTP_V2_EVENT);
+
 	return 0;
+}
+#endif
+
+static int qca808x_phy_probe(struct phy_device *phydev)
+{
+	qca808x_priv *priv;
+	int err = 0;
+
+	priv = kzalloc(sizeof(qca808x_priv), GFP_KERNEL);
+	if (!priv) {
+		return -ENOMEM;
+	}
+
+	priv->phydev = phydev;
+	priv->phy_info = qca808x_phy_info_get(phydev->addr);
+	phydev->priv = priv;
+
+#if defined(IN_LINUX_STD_PTP)
+	INIT_DELAYED_WORK(&priv->tx_ts_work, tx_timestamp_work);
+	INIT_DELAYED_WORK(&priv->rx_ts_work, rx_timestamp_work);
+	skb_queue_head_init(&priv->tx_queue);
+	skb_queue_head_init(&priv->rx_queue);
+
+	err = qca808x_ptp_register(phydev);
+	if (err <0) {
+		SSDK_ERROR("qca808x ptp clock register failed\n");
+		kfree(priv);
+		return err;
+	}
+
+	INIT_DELAYED_WORK(&priv->ts_schedule_work, qca808x_ptp_schedule_work);
+	schedule_delayed_work(&priv->ts_schedule_work, SKB_TIMESTAMP_TIMEOUT);
+#endif
+
+	return err;
+}
+
+static void qca808x_phy_remove(struct phy_device *phydev)
+{
+	qca808x_priv *priv = phydev->priv;
+
+#if defined(IN_LINUX_STD_PTP)
+	cancel_delayed_work_sync(&priv->tx_ts_work);
+	cancel_delayed_work_sync(&priv->rx_ts_work);
+	cancel_delayed_work_sync(&priv->ts_schedule_work);
+	skb_queue_purge(&priv->tx_queue);
+	skb_queue_purge(&priv->rx_queue);
+
+	qca808x_ptp_unregister(phydev);
+#endif
+	kfree(priv);
 }
 
 struct phy_driver qca808x_phy_driver = {
 	.phy_id		= QCA8081_PHY,
-	.phy_id_mask	= 0xfffffff0,
-	.name		= "QCA808X PHY",
-	.features	= PHY_QCA808X_FEATURES,
+	.phy_id_mask    = 0xfffffff0,
+	.name		= "QCA808X ethernet",
+	.features	= PHY_GBIT_FEATURES,
 	.flags		= PHY_HAS_INTERRUPT,
 	.probe		= qca808x_phy_probe,
 	.remove		= qca808x_phy_remove,
-	.soft_reset	= qca808x_soft_reset,
 	.config_init	= qca808x_config_init,
-	.aneg_done	= genphy_aneg_done,
-	.config_aneg	= genphy_config_aneg,
 	.config_intr	= qca808x_config_intr,
+	.config_aneg	= qca808x_config_aneg,
+	.aneg_done	= qca808x_aneg_done,
+	.soft_reset	= qca808x_soft_reset,
 	.ack_interrupt	= qca808x_ack_interrupt,
 	.read_status	= qca808x_read_status,
-	.match_phy_device	= qca808x_match_phy_device,
+	.match_phy_device       = qca808x_match_phy_device,
+#if defined(IN_LINUX_STD_PTP)
 	.ts_info	= qca808x_ts_info,
 	.hwtstamp	= qca808x_hwtstamp,
 	.rxtstamp	= qca808x_rxtstamp,
 	.txtstamp	= qca808x_txtstamp,
-	.driver		= { .owner = THIS_MODULE,},
+#endif
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,9,0))
+	.mdiodrv.driver		= { .owner = THIS_MODULE },
+#else
+	.driver		= { .owner = THIS_MODULE },
+#endif
 };
 
-void qca808x_phy_ptp_init(void)
+a_int32_t qca808x_phy_driver_register(void)
 {
-	phy_driver_register(&qca808x_phy_driver);
+	a_int32_t ret;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,9,0))
+	ret = phy_driver_register(&qca808x_phy_driver, THIS_MODULE);
+#else
+	ret = phy_driver_register(&qca808x_phy_driver);
+#endif
+	return ret;
+}
+
+void qca808x_phy_driver_unregister(void)
+{
+	phy_driver_unregister(&qca808x_phy_driver);
+}
+
+void qca808x_phydev_init(a_uint32_t dev_id, a_uint32_t port_id)
+{
+	struct qca808x_phy_info *pdata;
+	pdata = kzalloc(sizeof(struct qca808x_phy_info), GFP_KERNEL);
+
+	if (!pdata) {
+		return;
+	}
+	list_add_tail(&pdata->list, &g_qca808x_phy_list);
+	pdata->dev_id = dev_id;
+	/* the phy address may be the i2c slave addr or mdio addr */
+	pdata->phy_addr = qca_ssdk_port_to_phy_addr(dev_id, port_id);
+	pdata->phydev_addr = pdata->phy_addr;
+#if defined(IN_PHY_I2C_MODE)
+	/* in i2c mode, need to register a fake phy device
+	 * before the phy driver register */
+	if (hsl_port_phy_access_type_get(dev_id, port_id) == PHY_I2C_ACCESS)
+	{
+		pdata->phydev_addr = qca_ssdk_port_to_phy_mdio_fake_addr(dev_id, port_id);
+		sfp_phy_device_setup(dev_id, port_id, QCA8081_PHY);
+	}
+#endif
+}
+
+void qca808x_phydev_deinit(a_uint32_t dev_id, a_uint32_t port_id)
+{
+	struct qca808x_phy_info *pdata;
+
+#if defined(IN_PHY_I2C_MODE)
+	/* in i2c mode, need to remove the fake phy device
+	 * after the phy driver unregistered */
+	if (hsl_port_phy_access_type_get(dev_id, port_id) == PHY_I2C_ACCESS) {
+		sfp_phy_device_remove(dev_id, port_id);
+	}
+#endif
+	list_for_each_entry(pdata, &g_qca808x_phy_list, list) {
+		list_del(&pdata->list);
+		kfree(pdata);
+	}
 }

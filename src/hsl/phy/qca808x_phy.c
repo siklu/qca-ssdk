@@ -1789,7 +1789,6 @@ static sw_error_t qca808x_phy_api_ops_init(void)
 	qca808x_phy_api_ops->phy_counter_set = qca808x_phy_set_counter;
 	qca808x_phy_api_ops->phy_counter_get = qca808x_phy_get_counter;
 	qca808x_phy_api_ops->phy_counter_show = qca808x_phy_show_counter;
-	qca808x_phy_api_ops->phy_get_status = qca808x_phy_get_status;
 
 	qca808x_phy_ptp_api_ops_init(qca808x_phy_api_ops);
 
@@ -1811,13 +1810,35 @@ static sw_error_t qca808x_phy_api_ops_init(void)
 */
 int qca808x_phy_init(a_uint32_t dev_id, a_uint32_t port_bmp)
 {
-	if(phy_ops_flag == A_FALSE) {
-		if (qca808x_phy_api_ops_init() == SW_OK) {
-			qca808x_phy_ptp_init();
-			phy_ops_flag = A_TRUE;
-		}
+	a_uint32_t port_id = 0;
+	a_int32_t ret = 0;
+
+	if(phy_ops_flag == A_FALSE &&
+			qca808x_phy_api_ops_init() == SW_OK) {
+		phy_ops_flag = A_TRUE;
 	}
 	qca808x_phy_hw_init(dev_id, port_bmp);
 
-	return 0;
+	for (port_id = 0; port_id < SW_MAX_NR_PORT; port_id ++)
+	{
+		if (port_bmp & (0x1 << port_id)) {
+			qca808x_phydev_init(dev_id, port_id);
+		}
+	}
+	ret = qca808x_phy_driver_register();
+
+	return ret;
+}
+
+void qca808x_phy_exit(a_uint32_t dev_id, a_uint32_t port_bmp)
+{
+	a_uint32_t port_id = 0;
+
+	qca808x_phy_driver_unregister();
+	for (port_id = 0; port_id < SW_MAX_NR_PORT; port_id ++)
+	{
+		if (port_bmp & (0x1 << port_id)) {
+			qca808x_phydev_deinit(dev_id, port_id);
+		}
+	}
 }

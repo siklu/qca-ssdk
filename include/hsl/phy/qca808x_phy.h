@@ -114,6 +114,13 @@ extern "C"
 #define QCA808X_PHY_CDT_DIAG_PAIR2      0X8067
 #define QCA808X_PHY_CDT_DIAG_PAIR3      0X8068
 
+	/* SYNCE CLOCK OUTPUT */
+#define QCA808X_DEBUG_ANA_CLOCK_CTRL_REG   0x3e80
+#define QCA808X_ANALOG_PHY_SYNCE_CLOCK_EN  0x20
+
+#define QCA808X_MMD7_CLOCK_CTRL_REG        0x8072
+#define QCA808X_DIGITAL_PHY_SYNCE_CLOCK_EN 0x1
+
   /* PHY Registers Field */
 #define QCA808X_STATUS_LINK_PASS                 0x0400
 
@@ -480,6 +487,8 @@ qca808x_phy_set_force_speed(a_uint32_t dev_id, a_uint32_t phy_id,
 		     fal_port_speed_t speed);
 
 int qca808x_phy_init(a_uint32_t dev_id, a_uint32_t port_bmp);
+
+void qca808x_phy_exit(a_uint32_t dev_id, a_uint32_t port_id);
 
 #ifdef __cplusplus
 }
