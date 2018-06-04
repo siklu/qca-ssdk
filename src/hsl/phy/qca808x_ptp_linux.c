@@ -1198,6 +1198,9 @@ static bool qca808x_rxtstamp(struct phy_device *phydev,
 #define PTP_HDR_RESERVED1_OFFSET	5
 #define PTP_HDR_CORRECTIONFIELD_OFFSET	8
 #define PTP_HDR_RESERVED2_OFFSET	16
+#define PTP_HDR_CORRECTIONFIELD_CPY_SRC 11
+#define PTP_HDR_CORRECTIONFIELD_CPY_DST 9
+#define PTP_HDR_CORRECTIONFIELD_CPY_LEN 5
 
 	reserved0 = data + offset + PTP_HDR_RESERVED0_OFFSET;
 	msg_type = (a_uint8_t *)(data + offset);
@@ -1218,16 +1221,16 @@ static bool qca808x_rxtstamp(struct phy_device *phydev,
 		if (!(pdata->clock_mode == FAL_P2PTC_CLOCK_MODE &&
 					pdata->step_mode == FAL_ONE_STEP_MODE))
 		{
-			if (((ntohl(*cf1) >> 7) & 0x1) == 1) {
-				*cf1 = ((a_uint32_t)0xff << 24) |
-					((ntohl(*cf1) & 0xff) << 16) | (ntohl(*cf2) >> 16);
-			} else {
-				*cf1 = ((ntohl(*cf1) & 0xff) << 16) | (ntohl(*cf2) >> 16);
-			}
-
-			*cf1 = htonl(*cf1);
-			*cf2 = (ntohl(*cf2) & 0xffff) << 16;
-			*cf2 = htonl(*cf2);
+			/* in embeded mode for the rx time stamp, the correction field
+			 * is modfied to keep the low 50 bit of nanosecond and the
+			 * fractional nanoseconds should be dropped
+			 */
+			*reserved0 = *reserved0 & 0xf;
+			memset(data + offset + PTP_HDR_CORRECTIONFIELD_OFFSET, 0, 1);
+			memset(data + offset + PTP_HDR_RESERVED2_OFFSET - 2, 0, 6);
+			memmove(data + offset + PTP_HDR_CORRECTIONFIELD_CPY_DST,
+					data + offset + PTP_HDR_CORRECTIONFIELD_CPY_SRC,
+					PTP_HDR_CORRECTIONFIELD_CPY_LEN);
 		}
 	} else {
 		ptp_cb->ptp_type = type;
