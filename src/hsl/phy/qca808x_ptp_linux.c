@@ -105,6 +105,7 @@ struct qca808x_phy_info {
 	a_uint32_t phydev_addr;
 	a_uint16_t clock_mode;
 	a_uint16_t step_mode;
+	a_int32_t speed;
 	a_bool_t gps_seconds_sync_en;
 };
 
@@ -560,6 +561,40 @@ static int qca808x_read_status(struct phy_device *phydev)
 	return 0;
 }
 
+static void qca808x_link_change_notify(struct phy_device *phydev)
+{
+#if defined(IN_LINUX_STD_PTP)
+	fal_ptp_time_t ptp_cycle_time = {0};
+#endif
+	a_uint32_t nanoseconds = 0;
+	qca808x_priv *priv = phydev->priv;
+	struct qca808x_phy_info *pdata = priv->phy_info;
+
+	if (!pdata) {
+		return;
+	}
+
+	if (pdata->speed != phydev->speed) {
+		if (phydev->speed == SPEED_2500 &&
+				pdata->speed < SPEED_2500) {
+			/* adjust frequency to 5ns(200MHz) */
+			nanoseconds = QCA808X_PTP_TICK_RATE_200M;
+		} else if (pdata->speed == SPEED_2500 &&
+				phydev->speed < SPEED_2500) {
+			/* adjust frequency to 8ns(125MHz) */
+			nanoseconds = QCA808X_PTP_TICK_RATE_125M;
+		}
+		pdata->speed = phydev->speed;
+#if defined(IN_LINUX_STD_PTP)
+		if (nanoseconds != 0) {
+			ptp_cycle_time.nanoseconds = nanoseconds;
+			qca808x_phy_ptp_rtc_adjfreq_set(pdata->dev_id,
+					pdata->phy_addr, &ptp_cycle_time);
+		}
+#endif
+	}
+}
+
 #if defined(IN_LINUX_STD_PTP)
 void qca808x_pkt_info_get(struct sk_buff *skb,
 		unsigned int type, fal_ptp_pkt_info_t *pkt_info)
@@ -985,8 +1020,8 @@ static int qca808x_ptp_adjtime(struct ptp_clock_info *ptp, s64 delta)
 static int qca808x_ptp_adjfreq(struct ptp_clock_info *ptp, s32 ppb)
 {
 	a_uint64_t rate;
-	a_int32_t neg_adj = 0;
-	a_uint16_t ns;
+	a_uint16_t ns, ns_tmp;
+	a_int32_t neg_adj = 0, tmp = 0;
 	const struct qca808x_phy_info *pdata;
 	struct qca808x_ptp_clock *clock =
 		container_of(ptp, struct qca808x_ptp_clock, caps);
@@ -1003,17 +1038,25 @@ static int qca808x_ptp_adjfreq(struct ptp_clock_info *ptp, s32 ppb)
 		neg_adj = 1;
 		ppb = -ppb;
 	}
+
 	rate = ppb;
 	rate <<= 20;
 	/* divided by (125000000-ppb/8)/64 */
-	rate = div_u64(rate, 1953125);
+	if (pdata->speed == FAL_SPEED_2500) {
+		tmp = (ppb/5)/64;
+		ns_tmp = QCA808X_PTP_TICK_RATE_200M;
+		rate = div_u64(rate, 3125000 + tmp);
+	} else {
+		tmp = (ppb/8)/64;
+		ns_tmp = QCA808X_PTP_TICK_RATE_125M;
+		rate = div_u64(rate, 1953125 + tmp);
+	}
 
 	if(neg_adj) {
-		ns = QCA808X_PTP_TICK_RATE_125M - 1;
+		ns = ns_tmp - 1;
 		rate = (2<<26)-rate;
-	}
-	else {
-		ns = QCA808X_PTP_TICK_RATE_125M;
+	} else {
+		ns = ns_tmp;
 	}
 
 	ptp_time.nanoseconds = ns;
@@ -1323,6 +1366,7 @@ struct phy_driver qca808x_phy_driver = {
 	.ack_interrupt	= qca808x_ack_interrupt,
 	.read_status	= qca808x_read_status,
 	.match_phy_device       = qca808x_match_phy_device,
+	.link_change_notify     = qca808x_link_change_notify,
 #if defined(IN_LINUX_STD_PTP)
 	.ts_info	= qca808x_ts_info,
 	.hwtstamp	= qca808x_hwtstamp,
