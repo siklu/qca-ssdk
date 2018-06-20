@@ -43,12 +43,6 @@
 #include "qca808x_ptp.h"
 
 #define QCA808X_PTP_EMBEDDED_MODE   0xa
-#define QCA808X_PTP_MSG_SNYC        0X0
-#define QCA808X_PTP_MSG_DREQ        0X1
-#define QCA808X_PTP_MSG_PREQ        0X2
-#define QCA808X_PTP_MSG_PRESP       0X3
-
-#define SKB_TIMESTAMP_TIMEOUT	2 /* jiffies */
 
 #define PHY_INVALID_DATA            0xffff
 #define QCA808X_INTR_INIT           0xec00
@@ -56,12 +50,16 @@
 #define QCA808X_PTP_TICK_RATE_125M  8
 #define QCA808X_PTP_TICK_RATE_200M  5
 
+#define SKB_TIMESTAMP_TIMEOUT	1 /* jiffies */
+#define GPS_WORK_TIMEOUT	HZ/1000
+
 #define QCA808X_PHY_LINK_UP         1
 #define QCA808X_PHY_LINK_DOWN       0
 
 #if defined(IN_LINUX_STD_PTP)
 struct qca808x_ptp_clock;
 #endif
+
 struct qca808x_phy_info;
 typedef struct {
 	struct phy_device *phydev;
@@ -81,6 +79,20 @@ typedef struct {
 } qca808x_priv;
 
 #if defined(IN_LINUX_STD_PTP)
+enum {
+	PTP_PKT_SEQID_UNMATCHED,
+	PTP_PKT_SEQID_MATCHED,
+	PTP_PKT_SEQID_MATCH_MAX
+};
+
+enum {
+	QCA808X_PTP_MSG_SNYC,
+	QCA808X_PTP_MSG_DREQ,
+	QCA808X_PTP_MSG_PREQ,
+	QCA808X_PTP_MSG_PRESP,
+	QCA808X_PTP_MSG_MAX
+};
+
 struct qca808x_ptp_clock{
 	struct ptp_clock_info caps;
 	struct ptp_clock *ptp_clock;
@@ -94,6 +106,17 @@ typedef struct {
 	/* ptp frame type */
 	a_int32_t pkt_type;
 } qca808x_ptp_cb;
+
+/* statistics for the event packet*/
+typedef struct {
+	/* the counter saves the packet with sequence id
+	 * matched and unmatched */
+	a_uint64_t sync_cnt[PTP_PKT_SEQID_MATCH_MAX];
+	a_uint64_t delay_req_cnt[PTP_PKT_SEQID_MATCH_MAX];
+	a_uint64_t pdelay_req_cnt[PTP_PKT_SEQID_MATCH_MAX];
+	a_uint64_t pdelay_resp_cnt[PTP_PKT_SEQID_MATCH_MAX];
+	a_uint64_t event_pkt_cnt;
+} ptp_packet_stat;
 #endif
 
 struct qca808x_phy_info {
@@ -107,6 +130,11 @@ struct qca808x_phy_info {
 	a_uint16_t step_mode;
 	a_int32_t speed;
 	a_bool_t gps_seconds_sync_en;
+#if defined(IN_LINUX_STD_PTP)
+	/*the statistics array records the counter of
+	 * rx and tx ptp event packet */
+	ptp_packet_stat pkt_stat[2];
+#endif
 };
 
 static LIST_HEAD(g_qca808x_phy_list);
@@ -187,6 +215,93 @@ void qca808x_ptp_clock_mode_config(a_uint32_t dev_id,
 }
 
 #if defined(IN_LINUX_STD_PTP)
+void qca808x_ptp_stat_update(struct qca808x_phy_info *pdata, fal_ptp_direction_t direction,
+		a_int32_t msg_type, a_int32_t seqid_matched)
+{
+	ptp_packet_stat *pkt_stat = NULL;
+
+	if (((direction != FAL_RX_DIRECTION) &&
+				(direction != FAL_TX_DIRECTION)) ||
+			((seqid_matched != PTP_PKT_SEQID_UNMATCHED) &&
+			 (seqid_matched != PTP_PKT_SEQID_MATCHED) &&
+			 (seqid_matched != PTP_PKT_SEQID_MATCH_MAX))) {
+		return;
+	}
+
+	pkt_stat = &pdata->pkt_stat[direction];
+	switch (msg_type) {
+		case QCA808X_PTP_MSG_SNYC:
+			pkt_stat->sync_cnt[seqid_matched]++;
+			break;
+		case QCA808X_PTP_MSG_DREQ:
+			pkt_stat->delay_req_cnt[seqid_matched]++;
+			break;
+		case QCA808X_PTP_MSG_PREQ:
+			pkt_stat->pdelay_req_cnt[seqid_matched]++;
+			break;
+		case QCA808X_PTP_MSG_PRESP:
+			pkt_stat->pdelay_resp_cnt[seqid_matched]++;
+			break;
+		case QCA808X_PTP_MSG_MAX:
+			pkt_stat->event_pkt_cnt++;
+			break;
+		default:
+			SSDK_DEBUG("%s: msg %x is not event frame\n",
+					__func__, msg_type);
+	}
+}
+
+void qca808x_ptp_stat_get(void)
+{
+	int i = 0;
+	struct qca808x_phy_info *pdata = NULL;
+	ptp_packet_stat *pkt_stat;
+
+	list_for_each_entry(pdata, &g_qca808x_phy_list, list) {
+		pkt_stat = pdata->pkt_stat;
+		SSDK_INFO("PHY [%#x] PTP event packet statistics:\n", pdata->phy_addr);
+		for (i=0; i <= FAL_TX_DIRECTION; i++)
+		{
+			if (i == FAL_TX_DIRECTION) {
+				SSDK_INFO("----------TX direction----------\n");
+			} else {
+				SSDK_INFO("----------RX direction----------\n");
+			}
+
+			SSDK_INFO("even sum:    %lld\n",
+					pkt_stat[i].event_pkt_cnt);
+			SSDK_INFO("seq id matched stat:\n");
+			SSDK_INFO("sync:        %lld\n",
+					pkt_stat[i].sync_cnt[PTP_PKT_SEQID_MATCHED]);
+			SSDK_INFO("delay_req:   %lld\n",
+					pkt_stat[i].delay_req_cnt[PTP_PKT_SEQID_MATCHED]);
+			SSDK_INFO("pdelay_req:  %lld\n",
+					pkt_stat[i].pdelay_req_cnt[PTP_PKT_SEQID_MATCHED]);
+			SSDK_INFO("pdelay_resp: %lld\n\n",
+					pkt_stat[i].pdelay_resp_cnt[PTP_PKT_SEQID_MATCHED]);
+
+			SSDK_INFO("seq id unmatched stat:\n");
+			SSDK_INFO("sync:        %lld\n",
+					pkt_stat[i].sync_cnt[PTP_PKT_SEQID_UNMATCHED]);
+			SSDK_INFO("delay_req:   %lld\n",
+					pkt_stat[i].delay_req_cnt[PTP_PKT_SEQID_UNMATCHED]);
+			SSDK_INFO("pdelay_req:  %lld\n",
+					pkt_stat[i].pdelay_req_cnt[PTP_PKT_SEQID_UNMATCHED]);
+			SSDK_INFO("pdelay_resp: %lld\n\n",
+					pkt_stat[i].pdelay_resp_cnt[PTP_PKT_SEQID_UNMATCHED]);
+		}
+	}
+}
+
+void qca808x_ptp_stat_set(void)
+{
+	struct qca808x_phy_info *pdata;
+
+	list_for_each_entry(pdata, &g_qca808x_phy_list, list) {
+		memset(pdata->pkt_stat, 0, sizeof(pdata->pkt_stat));
+	}
+}
+
 static sw_error_t qca808x_ptp_clock_synce_clock_enable(a_uint32_t dev_id,
 		a_uint32_t phy_id, a_bool_t enable)
 {
@@ -661,7 +776,7 @@ static void tx_timestamp_work(struct work_struct *work)
 	a_uint64_t ns;
 	a_uint32_t dev_id, phy_id;
 	qca808x_ptp_cb *ptp_cb;
-	const struct qca808x_phy_info *pdata;
+	struct qca808x_phy_info *pdata;
 	fal_ptp_pkt_info_t pkt_info;
 	fal_ptp_time_t tx_time = {0};
 	sw_error_t ret = SW_OK;
@@ -686,12 +801,16 @@ static void tx_timestamp_work(struct work_struct *work)
 		ret = qca808x_phy_ptp_timestamp_get(dev_id, phy_id,
 				FAL_TX_DIRECTION, &pkt_info, &tx_time);
 		if (ret == SW_NOT_FOUND) {
+			qca808x_ptp_stat_update(pdata, FAL_TX_DIRECTION,
+					pkt_info.msg_type, PTP_PKT_SEQID_UNMATCHED);
 			SSDK_DEBUG("Fail to get tx_ts: sequence_id:%x, clock_identify:%llx,"
 					" port_number:%x, msg_type:%x\n",
 					pkt_info.sequence_id, pkt_info.clock_identify,
 					pkt_info.port_number, pkt_info.msg_type);
+		} else {
+			qca808x_ptp_stat_update(pdata, FAL_TX_DIRECTION,
+					pkt_info.msg_type, PTP_PKT_SEQID_MATCHED);
 		}
-
 		ts.tv_sec = tx_time.seconds;
 		ts.tv_nsec = tx_time.nanoseconds;
 
@@ -713,7 +832,7 @@ static void rx_timestamp_work(struct work_struct *work)
 	a_uint64_t ns;
 	a_uint32_t dev_id, phy_id;
 	qca808x_ptp_cb *ptp_cb;
-	const struct qca808x_phy_info *pdata;
+	struct qca808x_phy_info *pdata;
 	fal_ptp_pkt_info_t pkt_info;
 	fal_ptp_time_t rx_time = {0};
 	sw_error_t ret = SW_OK;
@@ -737,10 +856,15 @@ static void rx_timestamp_work(struct work_struct *work)
 		ret = qca808x_phy_ptp_timestamp_get(dev_id, phy_id,
 				FAL_RX_DIRECTION, &pkt_info, &rx_time);
 		if (ret == SW_NOT_FOUND) {
+			qca808x_ptp_stat_update(pdata, FAL_RX_DIRECTION,
+					pkt_info.msg_type, PTP_PKT_SEQID_UNMATCHED);
 			SSDK_DEBUG("Fail to get rx_ts: sequence_id:%x, clock_identify:%llx, "
 					"port_number:%x, msg_type:%x\n",
 					pkt_info.sequence_id, pkt_info.clock_identify,
 					pkt_info.port_number, pkt_info.msg_type);
+		} else {
+			qca808x_ptp_stat_update(pdata, FAL_RX_DIRECTION,
+					pkt_info.msg_type, PTP_PKT_SEQID_MATCHED);
 		}
 
 		ts.tv_sec = rx_time.seconds;
@@ -750,6 +874,7 @@ static void rx_timestamp_work(struct work_struct *work)
 		memset(shhwtstamps, 0, sizeof(*shhwtstamps));
 		shhwtstamps->hwtstamp = ns_to_ktime(ns);
 
+		netif_rx_ni(skb);
 		/* for OC/BC needs record ingress time stamp on receiving
 		 * peer delay request message under one-step mode.
 		 * for TC needs record ingress time stamp on receiving
@@ -761,7 +886,6 @@ static void rx_timestamp_work(struct work_struct *work)
 			priv->ptp_in_trig_nsec = ts.tv_nsec;
 			priv->ptp_in_trig_flag = A_TRUE;
 		}
-		netif_rx_ni(skb);
 	}
 
 	if (!skb_queue_empty(&priv->rx_queue))
@@ -909,7 +1033,7 @@ static void qca808x_ptp_schedule_work(struct work_struct *work)
 	}
 
 	pdelay_ingress_time_sync(phydev);
-	schedule_delayed_work(&priv->ts_schedule_work, SKB_TIMESTAMP_TIMEOUT);
+	schedule_delayed_work(&priv->ts_schedule_work, GPS_WORK_TIMEOUT);
 }
 
 /******************************************************************************
@@ -1167,7 +1291,7 @@ static bool qca808x_rxtstamp(struct phy_device *phydev,
 	a_uint8_t embed_val, pkt_type;
 	qca808x_ptp_cb *ptp_cb = (qca808x_ptp_cb *)skb->cb;
 	qca808x_priv *priv = phydev->priv;
-	const struct qca808x_phy_info *pdata = priv->phy_info;
+	struct qca808x_phy_info *pdata = priv->phy_info;
 
 	if (!pdata) {
 		return false;
@@ -1212,6 +1336,9 @@ static bool qca808x_rxtstamp(struct phy_device *phydev,
 	embed_val = (*reserved0 & 0xf0) >> 4;
 	pkt_type = *msg_type & 0xf;
 
+	qca808x_ptp_stat_update(pdata, FAL_RX_DIRECTION,
+			QCA808X_PTP_MSG_MAX, PTP_PKT_SEQID_MATCH_MAX);
+
 	if (embed_val == QCA808X_PTP_EMBEDDED_MODE) {
 		ts.tv_sec = ntohl(*reserved2);
 		ts.tv_nsec = ((a_uint32_t)*reserved1 << 24) | (ntohl(*cf1) >> 8);
@@ -1253,6 +1380,9 @@ static bool qca808x_rxtstamp(struct phy_device *phydev,
 		priv->ptp_in_trig_flag = A_TRUE;
 	}
 
+	qca808x_ptp_stat_update(pdata, FAL_RX_DIRECTION,
+			pkt_type, PTP_PKT_SEQID_MATCHED);
+
 	shhwtstamps->hwtstamp = ns_to_ktime(ns);
 	netif_rx_ni(skb);
 	return true;
@@ -1268,6 +1398,8 @@ static void qca808x_txtstamp(struct phy_device *phydev,
 	skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
 	skb_queue_tail(&priv->tx_queue, skb);
 	ptp_cb->ptp_type = type;
+	qca808x_ptp_stat_update(priv->phy_info, FAL_TX_DIRECTION,
+			QCA808X_PTP_MSG_MAX, PTP_PKT_SEQID_MATCH_MAX);
 	schedule_delayed_work(&priv->tx_ts_work, SKB_TIMESTAMP_TIMEOUT);
 }
 
@@ -1331,7 +1463,7 @@ static int qca808x_phy_probe(struct phy_device *phydev)
 	}
 
 	INIT_DELAYED_WORK(&priv->ts_schedule_work, qca808x_ptp_schedule_work);
-	schedule_delayed_work(&priv->ts_schedule_work, SKB_TIMESTAMP_TIMEOUT);
+	schedule_delayed_work(&priv->ts_schedule_work, GPS_WORK_TIMEOUT);
 #endif
 
 	return err;

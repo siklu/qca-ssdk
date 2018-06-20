@@ -1790,7 +1790,7 @@ static sw_error_t qca808x_phy_api_ops_init(void)
 	qca808x_phy_api_ops->phy_counter_get = qca808x_phy_get_counter;
 	qca808x_phy_api_ops->phy_counter_show = qca808x_phy_show_counter;
 
-	qca808x_phy_ptp_api_ops_init(qca808x_phy_api_ops);
+	qca808x_phy_ptp_api_ops_init(&qca808x_phy_api_ops->phy_ptp_ops);
 
 	ret = hsl_phy_api_ops_register(QCA808X_PHY_CHIP, qca808x_phy_api_ops);
 

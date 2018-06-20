@@ -2644,9 +2644,11 @@ qca808x_phy_ptp_interrupt_get(a_uint32_t dev_id,
 	return SW_OK;
 }
 
-void qca808x_phy_ptp_api_ops_init(hsl_phy_ops_t *qca808x_phy_api_ops)
+void qca808x_phy_ptp_api_ops_init(hsl_phy_ptp_ops_t *ptp_ops)
 {
-	hsl_phy_ptp_ops_t *ptp_ops = &qca808x_phy_api_ops->phy_ptp_ops;
+	if (!ptp_ops) {
+		return;
+	}
 	ptp_ops->phy_ptp_security_set = qca808x_phy_ptp_security_set;
 	ptp_ops->phy_ptp_link_delay_set = qca808x_phy_ptp_link_delay_set;
 	ptp_ops->phy_ptp_rx_crc_recalc_status_get = qca808x_phy_ptp_rx_crc_recalc_status_get;
