@@ -513,8 +513,7 @@ static int miibus_get(a_uint32_t dev_id)
 	struct platform_device *mdio_plat = NULL;
 	struct ipq40xx_mdio_data *mdio_data = NULL;
 	struct qca_phy_priv *priv;
-	hsl_reg_mode reg_mode;
-
+	hsl_reg_mode reg_mode = HSL_REG_LOCAL_BUS;
 	priv = qca_phy_priv_global[dev_id];
 	switch_node = qca_phy_priv_global[dev_id]->of_node;
 	if (priv && switch_node) {

@@ -337,7 +337,7 @@ typedef struct {
 #define CABLE_PAIR_B  1
 #define CABLE_PAIR_C  2
 #define CABLE_PAIR_D  3
-
+#define PHY_MDIO_ACCESS 0
 #define PHY_I2C_ACCESS 1
 
 sw_error_t
