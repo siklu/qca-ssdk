@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2017-2018, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -12,7 +12,7 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-
+/*qca808x_start*/
 /**
  * @defgroup scomphy_port_ctrl SCOMPHY_PORT_CONTROL
  * @{
@@ -540,7 +540,7 @@ _scomphy_port_mdix_status_get (a_uint32_t dev_id, fal_port_t port_id,
 
 	return rv;
 }
-
+/*qca808x_end*/
 static sw_error_t
 _scomphy_port_combo_prefer_medium_set (a_uint32_t dev_id, fal_port_t port_id,
 				    fal_port_medium_t phy_medium)
@@ -670,7 +670,7 @@ _scomphy_port_combo_fiber_mode_get (a_uint32_t dev_id, fal_port_t port_id,
 
 	return rv;
 }
-
+/*qca808x_start*/
 static sw_error_t
 _scomphy_port_local_loopback_set (a_uint32_t dev_id, fal_port_t port_id,
 			       a_bool_t enable)
@@ -881,7 +881,7 @@ _scomphy_port_wol_status_get (a_uint32_t dev_id, fal_port_t port_id,
 
 	return rv;
 }
-
+/*qca808x_end*/
 static sw_error_t
 _scomphy_port_interface_mode_set (a_uint32_t dev_id, fal_port_t port_id,
 				fal_port_interface_mode_t  mode)
@@ -935,7 +935,7 @@ _scomphy_port_interface_mode_get (a_uint32_t dev_id, fal_port_t port_id,
 
 	return rv;
 }
-
+/*qca808x_start*/
 static sw_error_t
 _scomphy_port_interface_mode_status_get (a_uint32_t dev_id, fal_port_t port_id,
 				fal_port_interface_mode_t * mode)
@@ -1544,7 +1544,7 @@ scomphy_port_mdix_status_get (a_uint32_t dev_id, fal_port_t port_id,
 	HSL_API_UNLOCK;
 	return rv;
 }
-
+/*qca808x_end*/
 /**
  * @brief Set combo prefer medium on a particular port.
  * @param[in] dev_id device id
@@ -1639,7 +1639,7 @@ scomphy_port_combo_fiber_mode_get (a_uint32_t dev_id, a_uint32_t phy_id,
 	HSL_API_UNLOCK;
 	return rv;
 }
-
+/*qca808x_start*/
 /**
  * @brief Set phy local loop back on a particular port.
  * @param[in] dev_id device id
@@ -1820,7 +1820,7 @@ scomphy_port_magic_frame_mac_get (a_uint32_t dev_id, fal_port_t port_id,
 	HSL_API_UNLOCK;
 	return rv;
 }
-
+/*qca808x_end*/
 /**
  * @brief Set phy interface mode.
  * @param[in] dev_id device id
@@ -1856,7 +1856,7 @@ scomphy_port_interface_mode_get (a_uint32_t dev_id, fal_port_t port_id,
 	HSL_API_UNLOCK;
 	return rv;
 }
-
+/*qca808x_start*/
 /**
  * @brief Set phy interface mode status.
  * @param[in] dev_id device id
@@ -2017,11 +2017,13 @@ scomphy_port_ctrl_init(a_uint32_t dev_id)
 	p_api->port_mdix_set = scomphy_port_mdix_set;
 	p_api->port_mdix_get = scomphy_port_mdix_get;
 	p_api->port_mdix_status_get = scomphy_port_mdix_status_get;
+/*qca808x_end*/
 	p_api->port_combo_prefer_medium_set = scomphy_port_combo_prefer_medium_set;
 	p_api->port_combo_prefer_medium_get = scomphy_port_combo_prefer_medium_get;
 	p_api->port_combo_medium_status_get = scomphy_port_combo_medium_status_get;
 	p_api->port_combo_fiber_mode_set = scomphy_port_combo_fiber_mode_set;
 	p_api->port_combo_fiber_mode_get = scomphy_port_combo_fiber_mode_get;
+/*qca808x_start*/
 	p_api->port_local_loopback_set = scomphy_port_local_loopback_set;
 	p_api->port_local_loopback_get = scomphy_port_local_loopback_get;
 	p_api->port_remote_loopback_set = scomphy_port_remote_loopback_set;
@@ -2032,8 +2034,10 @@ scomphy_port_ctrl_init(a_uint32_t dev_id)
 	p_api->port_wol_status_get = scomphy_port_wol_status_get;
 	p_api->port_magic_frame_mac_set = scomphy_port_magic_frame_mac_set;
 	p_api->port_magic_frame_mac_get = scomphy_port_magic_frame_mac_get;
+/*qca808x_end*/
 	p_api->port_interface_mode_set = scomphy_port_interface_mode_set;
 	p_api->port_interface_mode_get = scomphy_port_interface_mode_get;
+/*qca808x_start*/
 	p_api->port_interface_mode_status_get = scomphy_port_interface_mode_status_get;
 	p_api->port_counter_set = scomphy_port_counter_set;
 	p_api->port_counter_get = scomphy_port_counter_get;
@@ -2050,4 +2054,4 @@ scomphy_port_ctrl_init(a_uint32_t dev_id)
 /**
  * @}
  */
-
+/*qca808x_end*/
