@@ -57,6 +57,7 @@
 #define QCA808X_PHY_LINK_DOWN       0
 
 #if defined(IN_LINUX_STD_PTP)
+#define HWTSTAMP_TX_ONESTEP_P2P     (HWTSTAMP_TX_ONESTEP_SYNC + 1)
 struct qca808x_ptp_clock;
 #endif
 
@@ -65,6 +66,8 @@ typedef struct {
 	struct phy_device *phydev;
 	struct qca808x_phy_info *phy_info;
 #if defined(IN_LINUX_STD_PTP)
+	a_int32_t hwts_tx_type;
+	a_int32_t hwts_rx_type;
 	struct qca808x_ptp_clock *clock;
 	struct delayed_work tx_ts_work;
 	struct delayed_work rx_ts_work;
@@ -711,6 +714,37 @@ static void qca808x_link_change_notify(struct phy_device *phydev)
 }
 
 #if defined(IN_LINUX_STD_PTP)
+static a_uint8_t* skb_ptp_header(struct sk_buff *skb, int type)
+{
+	a_uint8_t *data = skb_mac_header(skb);
+	a_uint32_t offset = 0;
+
+	if (type & PTP_CLASS_VLAN) {
+		offset += VLAN_HLEN;
+	}
+
+	switch (type & PTP_CLASS_PMASK) {
+		case PTP_CLASS_IPV4:
+			offset += ETH_HLEN + IPV4_HLEN(data + offset) + UDP_HLEN;
+			break;
+		case PTP_CLASS_IPV6:
+			offset += ETH_HLEN + IP6_HLEN + UDP_HLEN;
+			break;
+		case PTP_CLASS_L2:
+			offset += ETH_HLEN;
+			break;
+		default:
+			return NULL;
+	}
+
+	if (skb->len + ETH_HLEN < offset +
+			OFF_PTP_SEQUENCE_ID + sizeof(a_uint16_t)) {
+		return NULL;
+	}
+
+	return data + offset;
+}
+
 void qca808x_pkt_info_get(struct sk_buff *skb,
 		unsigned int type, fal_ptp_pkt_info_t *pkt_info)
 {
@@ -719,47 +753,28 @@ void qca808x_pkt_info_get(struct sk_buff *skb,
 	a_uint32_t clockid_lo;
 	a_uint64_t clockid_pkt;
 	a_uint16_t *portid, portid_pkt;
-	a_uint8_t *msgtype, msgtype_pkt;
-	a_uint32_t offset = 0;
-	a_uint8_t *data = skb_mac_header(skb);
+	a_uint8_t msgtype_pkt;
+	a_uint8_t *ptp_header = NULL;
+
+	ptp_header = skb_ptp_header(skb, type);
+	if (!ptp_header) {
+		return;
+	}
 
 #define OFF_PTP_CLOCK_ID 20
 #define OFF_PTP_PORT_ID 28
-	if (type & PTP_CLASS_VLAN) {
-		offset += VLAN_HLEN;
-	}
 
-	switch (type & PTP_CLASS_PMASK) {
-	case PTP_CLASS_IPV4:
-		offset += ETH_HLEN + IPV4_HLEN(data + offset) + UDP_HLEN;
-		break;
-	case PTP_CLASS_IPV6:
-		offset += ETH_HLEN + IP6_HLEN + UDP_HLEN;
-		break;
-	case PTP_CLASS_L2:
-		offset += ETH_HLEN;
-		break;
-	default:
-		return;
-	}
-
-	if (skb->len + ETH_HLEN < offset +
-			OFF_PTP_SEQUENCE_ID + sizeof(*seqid)) {
-		return;
-	}
-
-	seqid = (a_uint16_t *)(data + offset + OFF_PTP_SEQUENCE_ID);
+	seqid = (a_uint16_t *)(ptp_header + OFF_PTP_SEQUENCE_ID);
 	seqid_pkt = ntohs(*seqid);
-	clockid  = (a_uint32_t *)(data + offset + OFF_PTP_CLOCK_ID);
+	clockid  = (a_uint32_t *)(ptp_header + OFF_PTP_CLOCK_ID);
 	clockid_pkt = ntohl(*clockid);
 
-	clockid  = (a_uint32_t *)(data + offset + OFF_PTP_CLOCK_ID + 4);
+	clockid  = (a_uint32_t *)(ptp_header + OFF_PTP_CLOCK_ID + 4);
 	clockid_lo = ntohl(*clockid);
 	clockid_pkt =  (clockid_pkt << 32) | clockid_lo;
-	portid = (a_uint16_t *)(data + offset + OFF_PTP_PORT_ID);
+	portid = (a_uint16_t *)(ptp_header + OFF_PTP_PORT_ID);
 	portid_pkt = ntohs(*portid);
-	msgtype = (a_uint8_t *)(data + offset);
-	msgtype_pkt = (*msgtype) & 0xf;
+	msgtype_pkt = (*ptp_header) & 0xf;
 
 	pkt_info->sequence_id = seqid_pkt;
 	pkt_info->clock_identify = clockid_pkt;
@@ -1305,13 +1320,41 @@ static void qca808x_ptp_unregister(struct phy_device *phydev)
 static int qca808x_hwtstamp(struct phy_device *phydev, struct ifreq *ifr)
 {
 	struct hwtstamp_config cfg;
+	qca808x_priv *priv = phydev->priv;
+
 	if (copy_from_user(&cfg, ifr->ifr_data, sizeof(cfg)))
 		return -EFAULT;
 	if (cfg.flags) /* reserved for future extensions */
 		return -EINVAL;
 
-	if (cfg.tx_type < 0 || cfg.tx_type > HWTSTAMP_TX_ONESTEP_SYNC)
+	if (cfg.tx_type < 0 || cfg.tx_type > HWTSTAMP_TX_ONESTEP_P2P)
 		return -ERANGE;
+
+	priv->hwts_tx_type = cfg.tx_type;
+
+	switch (cfg.rx_filter) {
+		case HWTSTAMP_FILTER_NONE:
+			priv->hwts_rx_type = PTP_CLASS_NONE;
+			break;
+		case HWTSTAMP_FILTER_PTP_V2_EVENT:
+		case HWTSTAMP_FILTER_PTP_V2_SYNC:
+		case HWTSTAMP_FILTER_PTP_V2_DELAY_REQ:
+			priv->hwts_rx_type = PTP_CLASS_L4 | PTP_CLASS_L2;
+			break;
+		case HWTSTAMP_FILTER_PTP_V2_L4_EVENT:
+		case HWTSTAMP_FILTER_PTP_V2_L4_SYNC:
+		case HWTSTAMP_FILTER_PTP_V2_L4_DELAY_REQ:
+			priv->hwts_rx_type = PTP_CLASS_L4;
+			break;
+		case HWTSTAMP_FILTER_PTP_V2_L2_EVENT:
+		case HWTSTAMP_FILTER_PTP_V2_L2_SYNC:
+		case HWTSTAMP_FILTER_PTP_V2_L2_DELAY_REQ:
+			priv->hwts_rx_type = PTP_CLASS_L2;
+			break;
+		default:
+			return -ERANGE;
+	}
+
 	return copy_to_user(ifr->ifr_data, &cfg, sizeof(cfg)) ? -EFAULT : 0;
 }
 
@@ -1320,14 +1363,12 @@ static bool qca808x_rxtstamp(struct phy_device *phydev,
 {
 	struct skb_shared_hwtstamps *shhwtstamps = NULL;
 	struct timespec64 ts = {0};
-	unsigned int offset = 0;
 	a_bool_t ingress_trig_flag = A_FALSE;
 	a_uint64_t ns;
 	a_uint32_t *reserved2;
 	a_uint8_t *reserved0, *reserved1;
-	a_uint8_t *msg_type;
 	a_uint32_t *cf1, *cf2;
-	a_uint8_t *data;
+	a_uint8_t *ptp_header;
 	a_uint8_t embed_val, pkt_type;
 	qca808x_ptp_cb *ptp_cb = (qca808x_ptp_cb *)skb->cb;
 	qca808x_priv *priv = phydev->priv;
@@ -1336,27 +1377,18 @@ static bool qca808x_rxtstamp(struct phy_device *phydev,
 	if (!pdata) {
 		return false;
 	}
-	shhwtstamps = skb_hwtstamps(skb);
-	memset(shhwtstamps, 0, sizeof(*shhwtstamps));
 
-	data = skb_mac_header(skb);
-	if (type & PTP_CLASS_VLAN) {
-		offset += VLAN_HLEN;
-	}
-
-	switch (type & PTP_CLASS_PMASK) {
-	case PTP_CLASS_IPV4:
-		offset += ETH_HLEN + IPV4_HLEN(data + offset) + UDP_HLEN;
-		break;
-	case PTP_CLASS_IPV6:
-		offset += ETH_HLEN + IP6_HLEN + UDP_HLEN;
-		break;
-	case PTP_CLASS_L2:
-		offset += ETH_HLEN;
-		break;
-	default:
+	if (priv->hwts_rx_type == PTP_CLASS_NONE ||
+			(type & priv->hwts_rx_type) == PTP_CLASS_NONE) {
 		return false;
 	}
+
+	ptp_header = skb_ptp_header(skb, type);
+	if (!ptp_header) {
+		return false;
+	}
+	shhwtstamps = skb_hwtstamps(skb);
+	memset(shhwtstamps, 0, sizeof(*shhwtstamps));
 
 #define PTP_HDR_RESERVED0_OFFSET	1
 #define PTP_HDR_RESERVED1_OFFSET	5
@@ -1366,15 +1398,14 @@ static bool qca808x_rxtstamp(struct phy_device *phydev,
 #define PTP_HDR_CORRECTIONFIELD_CPY_DST 9
 #define PTP_HDR_CORRECTIONFIELD_CPY_LEN 5
 
-	reserved0 = data + offset + PTP_HDR_RESERVED0_OFFSET;
-	msg_type = (a_uint8_t *)(data + offset);
-	reserved1 = data + offset + PTP_HDR_RESERVED1_OFFSET;
-	cf1 = (a_uint32_t *)(data + offset + PTP_HDR_CORRECTIONFIELD_OFFSET);
-	cf2 = (a_uint32_t *)(data + offset + PTP_HDR_CORRECTIONFIELD_OFFSET + 4);
-	reserved2 = (a_uint32_t *)(data + offset + PTP_HDR_RESERVED2_OFFSET);
+	reserved0 = ptp_header + PTP_HDR_RESERVED0_OFFSET;
+	reserved1 = ptp_header + PTP_HDR_RESERVED1_OFFSET;
+	cf1 = (a_uint32_t *)(ptp_header + PTP_HDR_CORRECTIONFIELD_OFFSET);
+	cf2 = (a_uint32_t *)(ptp_header + PTP_HDR_CORRECTIONFIELD_OFFSET + 4);
+	reserved2 = (a_uint32_t *)(ptp_header + PTP_HDR_RESERVED2_OFFSET);
 
 	embed_val = (*reserved0 & 0xf0) >> 4;
-	pkt_type = *msg_type & 0xf;
+	pkt_type = *ptp_header & 0xf;
 
 	qca808x_ptp_stat_update(pdata, FAL_RX_DIRECTION,
 			QCA808X_PTP_MSG_MAX, PTP_PKT_SEQID_MATCH_MAX);
@@ -1426,10 +1457,10 @@ static bool qca808x_rxtstamp(struct phy_device *phydev,
 			 * fractional nanoseconds should be dropped
 			 */
 			*reserved0 = *reserved0 & 0xf;
-			memset(data + offset + PTP_HDR_CORRECTIONFIELD_OFFSET, 0, 1);
-			memset(data + offset + PTP_HDR_RESERVED2_OFFSET - 2, 0, 6);
-			memmove(data + offset + PTP_HDR_CORRECTIONFIELD_CPY_DST,
-					data + offset + PTP_HDR_CORRECTIONFIELD_CPY_SRC,
+			memset(ptp_header + PTP_HDR_CORRECTIONFIELD_OFFSET, 0, 1);
+			memset(ptp_header + PTP_HDR_RESERVED2_OFFSET - 2, 0, 6);
+			memmove(ptp_header + PTP_HDR_CORRECTIONFIELD_CPY_DST,
+					ptp_header + PTP_HDR_CORRECTIONFIELD_CPY_SRC,
 					PTP_HDR_CORRECTIONFIELD_CPY_LEN);
 		}
 	} else {
@@ -1454,8 +1485,39 @@ static bool qca808x_rxtstamp(struct phy_device *phydev,
 static void qca808x_txtstamp(struct phy_device *phydev,
 			     struct sk_buff *skb, int type)
 {
+	a_uint8_t msg_type;
 	qca808x_priv *priv = phydev->priv;
 	qca808x_ptp_cb *ptp_cb = (qca808x_ptp_cb *)skb->cb;
+	a_uint8_t *ptp_header = skb_ptp_header(skb, type);
+
+	if (!ptp_header) {
+		kfree_skb(skb);
+		return;
+	}
+
+	msg_type = *ptp_header & 0xf;
+	switch (priv->hwts_tx_type) {
+		case HWTSTAMP_TX_ONESTEP_SYNC:
+			if (msg_type == QCA808X_PTP_MSG_SYNC) {
+				kfree_skb(skb);
+				return;
+			}
+			break;
+		case HWTSTAMP_TX_ONESTEP_P2P:
+			if (msg_type == QCA808X_PTP_MSG_PRESP ||
+					msg_type == QCA808X_PTP_MSG_SYNC) {
+				kfree_skb(skb);
+				return;
+			}
+			break;
+		case HWTSTAMP_TX_ON:
+			break;
+			/* enqueue skb to get tx timestamp */
+		case HWTSTAMP_TX_OFF:
+		default:
+			kfree_skb(skb);
+			return;
+	}
 
 	skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
 	skb_queue_tail(&priv->tx_queue, skb);
@@ -1469,22 +1531,21 @@ static int qca808x_ts_info(struct phy_device *phydev,
 		struct ethtool_ts_info *info)
 {
 	qca808x_priv *priv = phydev->priv;
-	const struct qca808x_phy_info *pdata = priv->phy_info;
+	struct qca808x_ptp_clock *clock = priv->clock;
 
-	if (!pdata) {
-		return 0;
+	if (clock) {
+		info->phc_index = ptp_clock_index(clock->ptp_clock);
 	}
+
 	info->so_timestamping =
 		SOF_TIMESTAMPING_TX_HARDWARE |
 		SOF_TIMESTAMPING_RX_HARDWARE |
 		SOF_TIMESTAMPING_RAW_HARDWARE;
 	info->tx_types =
 		(1 << HWTSTAMP_TX_OFF) |
-		(1 << HWTSTAMP_TX_ON);
-
-	if (pdata->step_mode == FAL_ONE_STEP_MODE) {
-		info->tx_types |= (1 << HWTSTAMP_TX_ONESTEP_SYNC);
-	}
+		(1 << HWTSTAMP_TX_ON) |
+		(1 << HWTSTAMP_TX_ONESTEP_SYNC) |
+		(1 << HWTSTAMP_TX_ONESTEP_P2P);
 
 	info->rx_filters =
 		(1 << HWTSTAMP_FILTER_NONE) |
