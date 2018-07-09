@@ -1389,7 +1389,7 @@ struct ptp_misc_config_reg {
 	a_uint16_t  cf_from_pkt_en:1;
 	a_uint16_t  embed_ingress_time_en:1;
 	a_uint16_t  drop_next_preamble_en:1;
-	a_uint16_t  p2p_tc_offload:1;
+	a_uint16_t  tc_offload:1;
 };
 
 union ptp_misc_config_reg_u {

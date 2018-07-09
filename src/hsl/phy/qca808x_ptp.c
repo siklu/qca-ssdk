@@ -60,19 +60,20 @@ qca808x_phy_ptp_config_set(a_uint32_t dev_id,
 		if (config->clock_mode == FAL_P2PTC_CLOCK_MODE)
 		{
 			ptp_backup_reg.bf.p2p_tc_en = PTP_REG_BIT_TRUE;
-			if (config->step_mode == FAL_ONE_STEP_MODE &&
-				ptp_misc_config_reg.bf.embed_ingress_time_en == PTP_REG_BIT_TRUE)
-			{
-				ptp_misc_config_reg.bf.p2p_tc_offload = PTP_REG_BIT_TRUE;
-			}
-			else
-			{
-				ptp_misc_config_reg.bf.p2p_tc_offload = PTP_REG_BIT_FALSE;
-			}
 		}
 		else
 		{
 			ptp_backup_reg.bf.p2p_tc_en = PTP_REG_BIT_FALSE;
+		}
+
+		if (config->step_mode == FAL_ONE_STEP_MODE &&
+		    ptp_misc_config_reg.bf.embed_ingress_time_en == PTP_REG_BIT_TRUE)
+		{
+			ptp_misc_config_reg.bf.tc_offload = PTP_REG_BIT_TRUE;
+		}
+		else
+		{
+			ptp_misc_config_reg.bf.tc_offload = PTP_REG_BIT_FALSE;
 		}
 
 		if (config->step_mode == FAL_ONE_STEP_MODE)

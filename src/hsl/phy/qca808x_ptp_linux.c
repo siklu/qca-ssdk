@@ -68,13 +68,13 @@ typedef struct {
 	struct qca808x_ptp_clock *clock;
 	struct delayed_work tx_ts_work;
 	struct delayed_work rx_ts_work;
-	/* work for gps sencond sync and ingress trigger time record*/
+	/* work for writing ingress time to register */
+	struct delayed_work ingress_trig_work;
+	a_int32_t ingress_time;
+	/* work for gps sencond sync */
 	struct delayed_work ts_schedule_work;
 	struct sk_buff_head tx_queue;
 	struct sk_buff_head rx_queue;
-	/* ingress trigger time stamp */
-	a_int32_t ptp_in_trig_nsec;
-	a_bool_t ptp_in_trig_flag;
 #endif
 } qca808x_priv;
 
@@ -86,7 +86,7 @@ enum {
 };
 
 enum {
-	QCA808X_PTP_MSG_SNYC,
+	QCA808X_PTP_MSG_SYNC,
 	QCA808X_PTP_MSG_DREQ,
 	QCA808X_PTP_MSG_PREQ,
 	QCA808X_PTP_MSG_PRESP,
@@ -230,7 +230,7 @@ void qca808x_ptp_stat_update(struct qca808x_phy_info *pdata, fal_ptp_direction_t
 
 	pkt_stat = &pdata->pkt_stat[direction];
 	switch (msg_type) {
-		case QCA808X_PTP_MSG_SNYC:
+		case QCA808X_PTP_MSG_SYNC:
 			pkt_stat->sync_cnt[seqid_matched]++;
 			break;
 		case QCA808X_PTP_MSG_DREQ:
@@ -824,6 +824,32 @@ static void tx_timestamp_work(struct work_struct *work)
 		schedule_delayed_work(&priv->tx_ts_work, SKB_TIMESTAMP_TIMEOUT);
 }
 
+static void ptp_ingress_time_sync(a_uint32_t phy_addr, a_uint32_t ingress_time,
+		a_bool_t forward)
+{
+	fal_ptp_time_t ingress_trig_time = {0};
+	struct qca808x_phy_info *pdata = NULL;
+
+	ingress_trig_time.nanoseconds = ingress_time;
+
+	if (forward == A_FALSE) {
+		list_for_each_entry(pdata, &g_qca808x_phy_list, list) {
+			if (pdata->phydev_addr == phy_addr) {
+				qca808x_phy_ptp_pkt_timestamp_set(pdata->dev_id,
+						pdata->phy_addr, &ingress_trig_time);
+				break;
+			}
+		}
+	} else {
+		list_for_each_entry(pdata, &g_qca808x_phy_list, list) {
+			if (pdata->phydev_addr != phy_addr) {
+				qca808x_phy_ptp_pkt_timestamp_set(pdata->dev_id,
+						pdata->phy_addr, &ingress_trig_time);
+			}
+		}
+	}
+}
+
 static void rx_timestamp_work(struct work_struct *work)
 {
 	struct sk_buff *skb;
@@ -875,41 +901,28 @@ static void rx_timestamp_work(struct work_struct *work)
 		shhwtstamps->hwtstamp = ns_to_ktime(ns);
 
 		netif_rx_ni(skb);
-		/* for OC/BC needs record ingress time stamp on receiving
+		/* OC/BC needs record ingress time stamp on receiving
 		 * peer delay request message under one-step mode.
-		 * for TC needs record ingress time stamp on receiving
-		 * the event message */
-		if ((pdata->clock_mode == FAL_P2PTC_CLOCK_MODE) ||
-				(pdata->clock_mode == FAL_OC_CLOCK_MODE &&
-				 pdata->step_mode == FAL_ONE_STEP_MODE &&
-				 ptp_cb->pkt_type == QCA808X_PTP_MSG_PREQ)) {
-			priv->ptp_in_trig_nsec = ts.tv_nsec;
-			priv->ptp_in_trig_flag = A_TRUE;
+		 * TC one step mode should use the embeded mode for offloading
+		 * function.
+		 */
+		if (pdata->step_mode == FAL_ONE_STEP_MODE) {
+			switch (pdata->clock_mode) {
+				case FAL_OC_CLOCK_MODE:
+				case FAL_BC_CLOCK_MODE:
+					if (pkt_info.msg_type == QCA808X_PTP_MSG_PREQ) {
+						ptp_ingress_time_sync(phy_id,
+								ts.tv_nsec, A_FALSE);
+					}
+					break;
+				default:
+					break;
+			}
 		}
 	}
 
 	if (!skb_queue_empty(&priv->rx_queue))
 		schedule_delayed_work(&priv->rx_ts_work, SKB_TIMESTAMP_TIMEOUT);
-}
-
-static void pdelay_ingress_time_sync(struct phy_device *phydev)
-{
-	a_uint32_t dev_id, phy_id;
-	fal_ptp_time_t ingress_trig_time = {0};
-	qca808x_priv *priv = phydev->priv;
-	const struct qca808x_phy_info *pdata = priv->phy_info;
-
-	if (!pdata) {
-		return;
-	}
-	dev_id = pdata->dev_id;
-	phy_id = pdata->phy_addr;
-
-	if (priv->ptp_in_trig_flag) {
-		ingress_trig_time.nanoseconds = priv->ptp_in_trig_nsec;
-		qca808x_phy_ptp_pkt_timestamp_set(dev_id, phy_id, &ingress_trig_time);
-		priv->ptp_in_trig_flag = A_FALSE;
-	}
 }
 
 static void qca808x_gps_second_sync(struct phy_device *phydev, a_int32_t *buf)
@@ -1032,8 +1045,34 @@ static void qca808x_ptp_schedule_work(struct work_struct *work)
 		wake_up_process(gps_seconds_sync_task);
 	}
 
-	pdelay_ingress_time_sync(phydev);
 	schedule_delayed_work(&priv->ts_schedule_work, GPS_WORK_TIMEOUT);
+}
+
+static void ingress_trig_time_work(struct work_struct *work)
+{
+	const struct qca808x_phy_info *pdata;
+	qca808x_priv *priv =
+		container_of(work, qca808x_priv, ingress_trig_work.work);
+
+	pdata = priv->phy_info;
+
+	switch (pdata->clock_mode) {
+		case FAL_P2PTC_CLOCK_MODE:
+			/* p2p tc one step just use ingress trig time for pdelay resp */
+			ptp_ingress_time_sync(pdata->phy_addr, priv->ingress_time, A_FALSE);
+			break;
+		case FAL_E2ETC_CLOCK_MODE:
+			ptp_ingress_time_sync(pdata->phy_addr, priv->ingress_time, A_TRUE);
+			break;
+		case FAL_OC_CLOCK_MODE:
+		case FAL_BC_CLOCK_MODE:
+			ptp_ingress_time_sync(pdata->phy_addr, priv->ingress_time, A_FALSE);
+			break;
+		default:
+			break;
+	}
+
+	return;
 }
 
 /******************************************************************************
@@ -1219,7 +1258,7 @@ static int qca808x_ptp_register(struct phy_device *phydev)
 
 	mutex_init(&clock->tsreg_lock);
 	clock->caps.owner = THIS_MODULE;
-	sprintf(clock->caps.name, "qca808x timer");
+	sprintf(clock->caps.name, "qca808x timer %x", phydev->addr);
 	clock->caps.max_adj	= 3124999;
 	clock->caps.n_alarm	= 0;
 	clock->caps.n_ext_ts	= 6;
@@ -1282,6 +1321,7 @@ static bool qca808x_rxtstamp(struct phy_device *phydev,
 	struct skb_shared_hwtstamps *shhwtstamps = NULL;
 	struct timespec64 ts = {0};
 	unsigned int offset = 0;
+	a_bool_t ingress_trig_flag = A_FALSE;
 	a_uint64_t ns;
 	a_uint32_t *reserved2;
 	a_uint8_t *reserved0, *reserved1;
@@ -1343,9 +1383,42 @@ static bool qca808x_rxtstamp(struct phy_device *phydev,
 		ts.tv_sec = ntohl(*reserved2);
 		ts.tv_nsec = ((a_uint32_t)*reserved1 << 24) | (ntohl(*cf1) >> 8);
 
+		if (pdata->step_mode == FAL_ONE_STEP_MODE) {
+			switch (pdata->clock_mode) {
+				case FAL_P2PTC_CLOCK_MODE:
+					/* message sync with the timestamp inserted into the ptp
+					 * header, do not use the ingress_trig_time register, the
+					 * ingress time will be acquired from ptp header.
+					 * the ingress time should be recorded in the local phy
+					 * for the pdelay request message.
+					 */
+					if (pkt_type == QCA808X_PTP_MSG_PREQ) {
+						ingress_trig_flag = A_TRUE;
+					}
+					break;
+				case FAL_E2ETC_CLOCK_MODE:
+					ingress_trig_flag = A_TRUE;
+					break;
+				case FAL_OC_CLOCK_MODE:
+				case FAL_BC_CLOCK_MODE:
+					if (pkt_type == QCA808X_PTP_MSG_PREQ) {
+						ingress_trig_flag = A_TRUE;
+					}
+					break;
+				default:
+					break;
+			}
+			if (ingress_trig_flag == A_TRUE) {
+				priv->ingress_time = ts.tv_nsec;
+				schedule_delayed_work(&priv->ingress_trig_work, 0);
+			}
+		}
+
 		/* restore the original correctionfield value except for
-		 * the TC one-step mode */
-		if (!(pdata->clock_mode == FAL_P2PTC_CLOCK_MODE &&
+		 * the TC one-step mode offloading*/
+		if (!(((pdata->clock_mode == FAL_P2PTC_CLOCK_MODE &&
+					pkt_type == QCA808X_PTP_MSG_SYNC) ||
+					pdata->clock_mode == FAL_E2ETC_CLOCK_MODE) &&
 					pdata->step_mode == FAL_ONE_STEP_MODE))
 		{
 			/* in embeded mode for the rx time stamp, the correction field
@@ -1368,23 +1441,12 @@ static bool qca808x_rxtstamp(struct phy_device *phydev,
 	}
 	ns = timespec64_to_ns(&ts);
 
-	/* for OC/BC needs record ingress time stamp on receiving
-	 * peer delay request message under one-step mode.
-	 * for TC needs record ingress time stamp on receiving
-	 * the event message */
-	if ((pdata->clock_mode == FAL_P2PTC_CLOCK_MODE) ||
-			(pdata->clock_mode == FAL_OC_CLOCK_MODE &&
-			 pdata->step_mode == FAL_ONE_STEP_MODE &&
-			 pkt_type == QCA808X_PTP_MSG_PREQ)) {
-		priv->ptp_in_trig_nsec = ts.tv_nsec;
-		priv->ptp_in_trig_flag = A_TRUE;
-	}
-
 	qca808x_ptp_stat_update(pdata, FAL_RX_DIRECTION,
 			pkt_type, PTP_PKT_SEQID_MATCHED);
 
 	shhwtstamps->hwtstamp = ns_to_ktime(ns);
 	netif_rx_ni(skb);
+
 	return true;
 }
 
@@ -1462,6 +1524,7 @@ static int qca808x_phy_probe(struct phy_device *phydev)
 		return err;
 	}
 
+	INIT_DELAYED_WORK(&priv->ingress_trig_work, ingress_trig_time_work);
 	INIT_DELAYED_WORK(&priv->ts_schedule_work, qca808x_ptp_schedule_work);
 	schedule_delayed_work(&priv->ts_schedule_work, GPS_WORK_TIMEOUT);
 #endif
@@ -1476,6 +1539,7 @@ static void qca808x_phy_remove(struct phy_device *phydev)
 #if defined(IN_LINUX_STD_PTP)
 	cancel_delayed_work_sync(&priv->tx_ts_work);
 	cancel_delayed_work_sync(&priv->rx_ts_work);
+	cancel_delayed_work_sync(&priv->ingress_trig_work);
 	cancel_delayed_work_sync(&priv->ts_schedule_work);
 	skb_queue_purge(&priv->tx_queue);
 	skb_queue_purge(&priv->rx_queue);
