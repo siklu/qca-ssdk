@@ -12,6 +12,7 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <linux/kconfig.h>
 #include <linux/version.h>
 #include <linux/phy.h>
 
@@ -41,6 +42,7 @@
 
 #include "fal_ptp.h"
 #include "qca808x_ptp.h"
+#include "qca808x_ptp_reg.h"
 
 #define QCA808X_PTP_EMBEDDED_MODE   0xa
 
@@ -50,8 +52,8 @@
 #define QCA808X_PTP_TICK_RATE_125M  8
 #define QCA808X_PTP_TICK_RATE_200M  5
 
-#define SKB_TIMESTAMP_TIMEOUT	1 /* jiffies */
-#define GPS_WORK_TIMEOUT	HZ/1000
+#define SKB_TIMESTAMP_TIMEOUT       1 /* jiffies */
+#define GPS_WORK_TIMEOUT            HZ/1000
 
 #define QCA808X_PHY_LINK_UP         1
 #define QCA808X_PHY_LINK_DOWN       0
@@ -375,11 +377,6 @@ static sw_error_t qca808x_ptp_config_init(a_uint32_t dev_id, a_uint32_t phy_id)
 }
 #endif
 
-static int qca808x_match_phy_device(struct phy_device *phydev)
-{
-	return phydev->phy_id == QCA8081_PHY;
-}
-
 static sw_error_t qca808x_phy_config_init(struct phy_device *phydev)
 {
 	a_uint16_t phy_data;
@@ -452,6 +449,7 @@ static sw_error_t qca808x_phy_config_init(struct phy_device *phydev)
 static int qca808x_config_init(struct phy_device *phydev)
 {
 	int ret = 0;
+#if defined(IN_LINUX_STD_PTP)
 	a_uint32_t dev_id = 0, phy_id = 0;
 	qca808x_priv *priv = phydev->priv;
 	const struct qca808x_phy_info *pdata = priv->phy_info;
@@ -463,7 +461,6 @@ static int qca808x_config_init(struct phy_device *phydev)
 	dev_id = pdata->dev_id;
 	phy_id = pdata->phy_addr;
 
-#if defined(IN_LINUX_STD_PTP)
 	/* ptp function initialization */
 	ret |= qca808x_ptp_config_init(dev_id, phy_id);
 #endif
@@ -617,22 +614,6 @@ static int qca808x_aneg_done(struct phy_device *phydev)
 	return (phy_data < 0) ? phy_data : (phy_data & QCA808X_STATUS_AUTO_NEG_DONE);
 }
 
-static int qca808x_soft_reset(struct phy_device *phydev)
-{
-	a_uint32_t dev_id = 0, phy_id = 0;
-	qca808x_priv *priv = phydev->priv;
-	const struct qca808x_phy_info *pdata = priv->phy_info;
-
-	if (!pdata) {
-		return SW_FAIL;
-	}
-
-	dev_id = pdata->dev_id;
-	phy_id = pdata->phy_addr;
-
-	return qca808x_phy_reset(dev_id, phy_id);
-}
-
 static int qca808x_read_status(struct phy_device *phydev)
 {
 	struct port_phy_status phy_status;
@@ -679,12 +660,34 @@ static int qca808x_read_status(struct phy_device *phydev)
 	return 0;
 }
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
+static int qca808x_match_phy_device(struct phy_device *phydev)
+{
+	return phydev->phy_id == QCA8081_PHY;
+}
+
+static int qca808x_soft_reset(struct phy_device *phydev)
+{
+	a_uint32_t dev_id = 0, phy_id = 0;
+	qca808x_priv *priv = phydev->priv;
+	const struct qca808x_phy_info *pdata = priv->phy_info;
+
+	if (!pdata) {
+		return SW_FAIL;
+	}
+
+	dev_id = pdata->dev_id;
+	phy_id = pdata->phy_addr;
+
+	return qca808x_phy_reset(dev_id, phy_id);
+}
+
 static void qca808x_link_change_notify(struct phy_device *phydev)
 {
 #if defined(IN_LINUX_STD_PTP)
 	fal_ptp_time_t ptp_cycle_time = {0};
 #endif
-	a_uint32_t nanoseconds = 0;
+	a_uint32_t nanoseconds;
 	qca808x_priv *priv = phydev->priv;
 	struct qca808x_phy_info *pdata = priv->phy_info;
 
@@ -692,6 +695,7 @@ static void qca808x_link_change_notify(struct phy_device *phydev)
 		return;
 	}
 
+	nanoseconds = 0;
 	if (pdata->speed != phydev->speed) {
 		if (phydev->speed == SPEED_2500 &&
 				pdata->speed < SPEED_2500) {
@@ -712,6 +716,7 @@ static void qca808x_link_change_notify(struct phy_device *phydev)
 #endif
 	}
 }
+#endif
 
 #if defined(IN_LINUX_STD_PTP)
 static a_uint8_t* skb_ptp_header(struct sk_buff *skb, int type)
@@ -795,6 +800,8 @@ static void tx_timestamp_work(struct work_struct *work)
 	fal_ptp_pkt_info_t pkt_info;
 	fal_ptp_time_t tx_time = {0};
 	sw_error_t ret = SW_OK;
+	a_uint16_t times = 0;
+	a_uint16_t seqid = 0;
 	qca808x_priv *priv =
 		container_of(work, qca808x_priv, tx_ts_work.work);
 
@@ -813,8 +820,20 @@ static void tx_timestamp_work(struct work_struct *work)
 		ptp_cb = (qca808x_ptp_cb *)skb->cb;
 		qca808x_pkt_info_get(skb, ptp_cb->ptp_type, &pkt_info);
 
+		times = 0;
+		do {
+			/* poll the seqid of the transmitted ptp packet to
+			 * acquire the correspoding tx time stamp.
+			 */
+			seqid = qca808x_phy_mmd_read(dev_id, phy_id, QCA808X_PHY_MMD3_NUM,
+					PTP_TX_SEQID_REG_ADDRESS);
+			udelay(1);
+			times++;
+		} while (seqid != pkt_info.sequence_id && times < 100);
+
 		ret = qca808x_phy_ptp_timestamp_get(dev_id, phy_id,
 				FAL_TX_DIRECTION, &pkt_info, &tx_time);
+
 		if (ret == SW_NOT_FOUND) {
 			qca808x_ptp_stat_update(pdata, FAL_TX_DIRECTION,
 					pkt_info.msg_type, PTP_PKT_SEQID_UNMATCHED);
@@ -1457,11 +1476,11 @@ static bool qca808x_rxtstamp(struct phy_device *phydev,
 			 * fractional nanoseconds should be dropped
 			 */
 			*reserved0 = *reserved0 & 0xf;
-			memset(ptp_header + PTP_HDR_CORRECTIONFIELD_OFFSET, 0, 1);
-			memset(ptp_header + PTP_HDR_RESERVED2_OFFSET - 2, 0, 6);
 			memmove(ptp_header + PTP_HDR_CORRECTIONFIELD_CPY_DST,
 					ptp_header + PTP_HDR_CORRECTIONFIELD_CPY_SRC,
 					PTP_HDR_CORRECTIONFIELD_CPY_LEN);
+			memset(ptp_header + PTP_HDR_CORRECTIONFIELD_OFFSET, 0, 1);
+			memset(ptp_header + PTP_HDR_RESERVED2_OFFSET - 2, 0, 6);
 		}
 	} else {
 		ptp_cb->ptp_type = type;
@@ -1480,7 +1499,6 @@ static bool qca808x_rxtstamp(struct phy_device *phydev,
 
 	return true;
 }
-
 
 static void qca808x_txtstamp(struct phy_device *phydev,
 			     struct sk_buff *skb, int type)
@@ -1524,9 +1542,10 @@ static void qca808x_txtstamp(struct phy_device *phydev,
 	ptp_cb->ptp_type = type;
 	qca808x_ptp_stat_update(priv->phy_info, FAL_TX_DIRECTION,
 			QCA808X_PTP_MSG_MAX, PTP_PKT_SEQID_MATCH_MAX);
-	schedule_delayed_work(&priv->tx_ts_work, SKB_TIMESTAMP_TIMEOUT);
+	schedule_delayed_work(&priv->tx_ts_work, 0);
 }
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
 static int qca808x_ts_info(struct phy_device *phydev,
 		struct ethtool_ts_info *info)
 {
@@ -1556,6 +1575,7 @@ static int qca808x_ts_info(struct phy_device *phydev,
 
 	return 0;
 }
+#endif
 #endif
 
 static int qca808x_phy_probe(struct phy_device *phydev)
@@ -1622,13 +1642,17 @@ struct phy_driver qca808x_phy_driver = {
 	.config_intr	= qca808x_config_intr,
 	.config_aneg	= qca808x_config_aneg,
 	.aneg_done	= qca808x_aneg_done,
-	.soft_reset	= qca808x_soft_reset,
 	.ack_interrupt	= qca808x_ack_interrupt,
 	.read_status	= qca808x_read_status,
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
+	.soft_reset	= qca808x_soft_reset,
 	.match_phy_device       = qca808x_match_phy_device,
 	.link_change_notify     = qca808x_link_change_notify,
+#endif
 #if defined(IN_LINUX_STD_PTP)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
 	.ts_info	= qca808x_ts_info,
+#endif
 	.hwtstamp	= qca808x_hwtstamp,
 	.rxtstamp	= qca808x_rxtstamp,
 	.txtstamp	= qca808x_txtstamp,
