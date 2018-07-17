@@ -2132,8 +2132,6 @@ extern void napt_procfs_exit(void);
 
 void host_helper_init(a_uint32_t portbmp)
 {
-	int i;
-
 	REG_GET(0, 0, (a_uint8_t *)&nat_chip_ver, 4);
 
 	/* header len 4 with type 0xaaaa */
@@ -2147,12 +2145,6 @@ void host_helper_init(a_uint32_t portbmp)
 		CPU_VID_EN_SET(0, A_TRUE);
 		/* set RM_RTD_PPPOE_EN, 0xc00 bit0 */
 		RTD_PPPOE_EN_SET(0, A_TRUE);
-		/* Enable ARP ack frame as management frame. */
-		for (i=1; i<6; i++)
-		{
-			PORT_ARP_ACK_STATUS_SET(0, i, A_TRUE);
-		}
-		MISC_ARP_CMD_SET(0, FAL_MAC_FRWRD);
 		/* Avoid ARP response storm for HUB, now this fix only apply on PORT5 */
 		#if 0
 		MISC_ARP_SP_NOT_FOUND_SET(0, FAL_MAC_RDT_TO_CPU);
