@@ -1339,7 +1339,15 @@ static void qca808x_ptp_unregister(struct phy_device *phydev)
 static int qca808x_hwtstamp(struct phy_device *phydev, struct ifreq *ifr)
 {
 	struct hwtstamp_config cfg;
+	sw_error_t ret = SW_OK;
+	fal_ptp_config_t ptp_config = {0};
 	qca808x_priv *priv = phydev->priv;
+	struct qca808x_phy_info *pdata = priv->phy_info;
+	struct qca808x_ptp_clock *clock = priv->clock;
+
+	if (!pdata || !clock) {
+		return -EFAULT;
+	}
 
 	if (copy_from_user(&cfg, ifr->ifr_data, sizeof(cfg)))
 		return -EFAULT;
@@ -1373,6 +1381,37 @@ static int qca808x_hwtstamp(struct phy_device *phydev, struct ifreq *ifr)
 		default:
 			return -ERANGE;
 	}
+
+	mutex_lock(&clock->tsreg_lock);
+	ret = qca808x_phy_ptp_config_get(pdata->dev_id, pdata->phy_addr, &ptp_config);
+	if (ret != SW_OK) {
+		mutex_unlock(&clock->tsreg_lock);
+		return -EFAULT;
+	}
+	switch (priv->hwts_tx_type) {
+		case HWTSTAMP_TX_ON:
+			ptp_config.ptp_en = A_TRUE;
+			ptp_config.step_mode = FAL_TWO_STEP_MODE;
+			break;
+		case HWTSTAMP_TX_ONESTEP_SYNC:
+		case HWTSTAMP_TX_ONESTEP_P2P:
+			ptp_config.ptp_en = A_TRUE;
+			ptp_config.step_mode = FAL_ONE_STEP_MODE;
+			break;
+		case HWTSTAMP_TX_OFF:
+		default:
+			ptp_config.ptp_en = A_FALSE;
+			ptp_config.step_mode = FAL_TWO_STEP_MODE;
+			break;
+	}
+	ret = qca808x_phy_ptp_config_set(pdata->dev_id, pdata->phy_addr, &ptp_config);
+	mutex_unlock(&clock->tsreg_lock);
+	if (ret != SW_OK) {
+		return -EFAULT;
+	}
+
+	pdata->clock_mode = ptp_config.clock_mode;
+	pdata->step_mode = ptp_config.step_mode;
 
 	return copy_to_user(ifr->ifr_data, &cfg, sizeof(cfg)) ? -EFAULT : 0;
 }
@@ -1517,6 +1556,7 @@ static void qca808x_txtstamp(struct phy_device *phydev,
 	switch (priv->hwts_tx_type) {
 		case HWTSTAMP_TX_ONESTEP_SYNC:
 			if (msg_type == QCA808X_PTP_MSG_SYNC) {
+				skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
 				kfree_skb(skb);
 				return;
 			}
@@ -1524,6 +1564,7 @@ static void qca808x_txtstamp(struct phy_device *phydev,
 		case HWTSTAMP_TX_ONESTEP_P2P:
 			if (msg_type == QCA808X_PTP_MSG_PRESP ||
 					msg_type == QCA808X_PTP_MSG_SYNC) {
+				skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
 				kfree_skb(skb);
 				return;
 			}
@@ -1706,7 +1747,7 @@ void qca808x_phydev_init(a_uint32_t dev_id, a_uint32_t port_id)
 
 void qca808x_phydev_deinit(a_uint32_t dev_id, a_uint32_t port_id)
 {
-	struct qca808x_phy_info *pdata;
+	struct qca808x_phy_info *pdata, *pnext;
 
 #if defined(IN_PHY_I2C_MODE)
 	/* in i2c mode, need to remove the fake phy device
@@ -1715,7 +1756,7 @@ void qca808x_phydev_deinit(a_uint32_t dev_id, a_uint32_t port_id)
 		sfp_phy_device_remove(dev_id, port_id);
 	}
 #endif
-	list_for_each_entry(pdata, &g_qca808x_phy_list, list) {
+	list_for_each_entry_safe(pdata, pnext, &g_qca808x_phy_list, list) {
 		list_del(&pdata->list);
 		kfree(pdata);
 	}

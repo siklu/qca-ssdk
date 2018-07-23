@@ -1881,17 +1881,17 @@ _qca808x_phy_ptp_enhanced_timestamp_engine_rx_get(a_uint32_t dev_id,
 
 	SW_RTN_ON_ERROR(qca808x_ptp_rx_filt_mac_da0_reg_get(dev_id,
 				phy_id, &ptp_rx_filt_mac_da0_reg));
-	ts_engine->dmac_addr.uc[0] = ptp_rx_filt_mac_da0_reg.bf.mac_addr << 8;
+	ts_engine->dmac_addr.uc[0] = ptp_rx_filt_mac_da0_reg.bf.mac_addr >> 8;
 	ts_engine->dmac_addr.uc[1] = ptp_rx_filt_mac_da0_reg.bf.mac_addr & 0xff;
 
 	SW_RTN_ON_ERROR(qca808x_ptp_rx_filt_mac_da1_reg_get(dev_id,
 				phy_id, &ptp_rx_filt_mac_da1_reg));
-	ts_engine->dmac_addr.uc[2] = ptp_rx_filt_mac_da1_reg.bf.mac_addr << 8;
+	ts_engine->dmac_addr.uc[2] = ptp_rx_filt_mac_da1_reg.bf.mac_addr >> 8;
 	ts_engine->dmac_addr.uc[3] = ptp_rx_filt_mac_da1_reg.bf.mac_addr & 0xff;
 
 	SW_RTN_ON_ERROR(qca808x_ptp_rx_filt_mac_da2_reg_get(dev_id,
 				phy_id, &ptp_rx_filt_mac_da2_reg));
-	ts_engine->dmac_addr.uc[4] = ptp_rx_filt_mac_da2_reg.bf.mac_addr << 8;
+	ts_engine->dmac_addr.uc[4] = ptp_rx_filt_mac_da2_reg.bf.mac_addr >> 8;
 	ts_engine->dmac_addr.uc[5] = ptp_rx_filt_mac_da2_reg.bf.mac_addr & 0xff;
 
 	SW_RTN_ON_ERROR(qca808x_ptp_rx_filt_layer4_protocol_reg_get(dev_id,
@@ -2132,17 +2132,17 @@ _qca808x_phy_ptp_enhanced_timestamp_engine_tx_get(a_uint32_t dev_id,
 
 	SW_RTN_ON_ERROR(qca808x_ptp_tx_filt_mac_da0_reg_get(dev_id,
 				phy_id, &ptp_tx_filt_mac_da0_reg));
-	ts_engine->dmac_addr.uc[0] = ptp_tx_filt_mac_da0_reg.bf.mac_addr << 8;
+	ts_engine->dmac_addr.uc[0] = ptp_tx_filt_mac_da0_reg.bf.mac_addr >> 8;
 	ts_engine->dmac_addr.uc[1] = ptp_tx_filt_mac_da0_reg.bf.mac_addr & 0xff;
 
 	SW_RTN_ON_ERROR(qca808x_ptp_tx_filt_mac_da1_reg_get(dev_id,
 				phy_id, &ptp_tx_filt_mac_da1_reg));
-	ts_engine->dmac_addr.uc[2] = ptp_tx_filt_mac_da1_reg.bf.mac_addr << 8;
+	ts_engine->dmac_addr.uc[2] = ptp_tx_filt_mac_da1_reg.bf.mac_addr >> 8;
 	ts_engine->dmac_addr.uc[3] = ptp_tx_filt_mac_da1_reg.bf.mac_addr & 0xff;
 
 	SW_RTN_ON_ERROR(qca808x_ptp_tx_filt_mac_da2_reg_get(dev_id,
 				phy_id, &ptp_tx_filt_mac_da2_reg));
-	ts_engine->dmac_addr.uc[4] = ptp_tx_filt_mac_da2_reg.bf.mac_addr << 8;
+	ts_engine->dmac_addr.uc[4] = ptp_tx_filt_mac_da2_reg.bf.mac_addr >> 8;
 	ts_engine->dmac_addr.uc[5] = ptp_tx_filt_mac_da2_reg.bf.mac_addr & 0xff;
 
 	SW_RTN_ON_ERROR(qca808x_ptp_tx_filt_layer4_protocol_reg_get(dev_id,

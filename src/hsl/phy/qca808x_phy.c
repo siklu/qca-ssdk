@@ -11,6 +11,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+/*qca808x_start*/
 #include "sw.h"
 #include "fal_port_ctrl.h"
 #include "hsl_api.h"
@@ -18,7 +19,9 @@
 #include "hsl_phy.h"
 #include "ssdk_plat.h"
 #include "qca808x_phy.h"
+/*qca808x_end*/
 #include "qca808x_ptp.h"
+/*qca808x_start*/
 
 #define PHY_INVALID_DATA 0xffff
 #define PHY_RTN_ON_READ_ERROR(phy_data) \
@@ -1790,8 +1793,10 @@ static sw_error_t qca808x_phy_api_ops_init(void)
 	qca808x_phy_api_ops->phy_counter_get = qca808x_phy_get_counter;
 	qca808x_phy_api_ops->phy_counter_show = qca808x_phy_show_counter;
 
+/*qca808x_end*/
 	qca808x_phy_ptp_api_ops_init(&qca808x_phy_api_ops->phy_ptp_ops);
 
+/*qca808x_start*/
 	ret = hsl_phy_api_ops_register(QCA808X_PHY_CHIP, qca808x_phy_api_ops);
 
 	if (ret == SW_OK) {
@@ -1810,7 +1815,9 @@ static sw_error_t qca808x_phy_api_ops_init(void)
 */
 int qca808x_phy_init(a_uint32_t dev_id, a_uint32_t port_bmp)
 {
+/*qca808x_end*/
 	a_uint32_t port_id = 0;
+/*qca808x_start*/
 	a_int32_t ret = 0;
 
 	if(phy_ops_flag == A_FALSE &&
@@ -1819,6 +1826,7 @@ int qca808x_phy_init(a_uint32_t dev_id, a_uint32_t port_bmp)
 	}
 	qca808x_phy_hw_init(dev_id, port_bmp);
 
+/*qca808x_end*/
 	for (port_id = 0; port_id < SW_MAX_NR_PORT; port_id ++)
 	{
 		if (port_bmp & (0x1 << port_id)) {
@@ -1827,11 +1835,13 @@ int qca808x_phy_init(a_uint32_t dev_id, a_uint32_t port_bmp)
 	}
 	ret = qca808x_phy_driver_register();
 
+/*qca808x_start*/
 	return ret;
 }
 
 void qca808x_phy_exit(a_uint32_t dev_id, a_uint32_t port_bmp)
 {
+/*qca808x_end*/
 	a_uint32_t port_id = 0;
 
 	qca808x_phy_driver_unregister();
@@ -1841,4 +1851,6 @@ void qca808x_phy_exit(a_uint32_t dev_id, a_uint32_t port_bmp)
 			qca808x_phydev_deinit(dev_id, port_id);
 		}
 	}
+/*qca808x_start*/
 }
+/*qca808x_end*/

@@ -82,7 +82,7 @@ phy_driver_instance_t ssdk_phy_driver[] =
 	#endif
 	#ifdef IN_QCA808X_PHY
 /*qca808x_start*/
-	{QCA808X_PHY_CHIP, {0}, NULL, qca808x_phy_init, NULL},
+	{QCA808X_PHY_CHIP, {0}, NULL, qca808x_phy_init, qca808x_phy_exit},
 /*qca808x_end*/
 	#else
 	{QCA808X_PHY_CHIP, {0}, NULL, NULL, NULL},
