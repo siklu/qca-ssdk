@@ -21,9 +21,6 @@
 #include <linux/version.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
-/*qca808x_start*/
-#include <linux/phy.h>
-
 #if defined(IN_SWCONFIG)
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 #include <linux/switch.h>
@@ -31,6 +28,8 @@
 #include <net/switch.h>
 #endif
 #endif
+/*qca808x_start*/
+#include <linux/phy.h>
 
 #ifndef BIT
 #define BIT(_n)			(1UL << (_n))
