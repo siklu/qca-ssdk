@@ -865,6 +865,7 @@ sw_error_t
 qca808x_phy_ptp_rtc_adjfreq_set(a_uint32_t dev_id,
 		a_uint32_t phy_id, fal_ptp_time_t *time)
 {
+	union ptp_rtc_ext_conf_reg_u ptp_rtc_ext_conf_reg = {0};
 	union ptp_rtc_inc0_reg_u ptp_rtc_inc0_reg = {0};
 	union ptp_rtc_inc1_reg_u ptp_rtc_inc1_reg = {0};
 
@@ -876,6 +877,10 @@ qca808x_phy_ptp_rtc_adjfreq_set(a_uint32_t dev_id,
 	SW_RTN_ON_ERROR(qca808x_ptp_rtc_inc1_reg_get(dev_id, phy_id, &ptp_rtc_inc1_reg));
 	ptp_rtc_inc1_reg.bf.ptp_rtc_inc_nfs = time->fracnanoseconds & 0xffff;
 	SW_RTN_ON_ERROR(qca808x_ptp_rtc_inc1_reg_set(dev_id, phy_id, &ptp_rtc_inc1_reg));
+
+	SW_RTN_ON_ERROR(qca808x_ptp_rtc_ext_conf_reg_get(dev_id, phy_id, &ptp_rtc_ext_conf_reg));
+	ptp_rtc_ext_conf_reg.bf.set_incval_valid = PTP_REG_BIT_TRUE;
+	SW_RTN_ON_ERROR(qca808x_ptp_rtc_ext_conf_reg_set(dev_id, phy_id, &ptp_rtc_ext_conf_reg));
 
 	return SW_OK;
 }

@@ -48,6 +48,7 @@
 
 #define PHY_INVALID_DATA            0xffff
 #define QCA808X_INTR_INIT           0xec00
+#define QCA808X_INCVAL_SYNC_MODE    0x8
 
 #define QCA808X_PTP_TICK_RATE_125M  8
 #define QCA808X_PTP_TICK_RATE_200M  5
@@ -337,6 +338,27 @@ static sw_error_t qca808x_ptp_clock_synce_clock_enable(a_uint32_t dev_id,
 	return ret;
 }
 
+static sw_error_t qca808x_ptp_clock_incval_mode_set(a_uint32_t dev_id,
+		a_uint32_t phy_id, a_bool_t enable)
+{
+	a_uint16_t phy_data;
+	sw_error_t ret = SW_OK;
+
+	phy_data = qca808x_phy_mmd_read(dev_id, phy_id, QCA808X_PHY_MMD3_NUM,
+			PTP_RTC_EXT_CONF_REG_ADDRESS);
+
+	if (enable == A_TRUE) {
+		phy_data |= QCA808X_INCVAL_SYNC_MODE;
+	} else {
+		phy_data &= ~QCA808X_INCVAL_SYNC_MODE;
+	}
+
+	ret = qca808x_phy_mmd_write(dev_id, phy_id, QCA808X_PHY_MMD3_NUM,
+			PTP_RTC_EXT_CONF_REG_ADDRESS, phy_data);
+
+	return ret;
+}
+
 static sw_error_t qca808x_ptp_config_init(a_uint32_t dev_id, a_uint32_t phy_id)
 {
 	fal_ptp_config_t ptp_config;
@@ -353,6 +375,9 @@ static sw_error_t qca808x_ptp_config_init(a_uint32_t dev_id, a_uint32_t phy_id)
 
 	qca808x_ptp_clock_mode_config(dev_id, phy_id, ptp_config.clock_mode,
 			ptp_config.step_mode);
+
+	/* set rtc clock to synchronization */
+	ret |= qca808x_ptp_clock_incval_mode_set(dev_id, phy_id, A_TRUE);
 
 	/* adjust frequency to 8ns(125MHz) */
 	ptp_time.nanoseconds = QCA808X_PTP_TICK_RATE_125M;
@@ -1249,7 +1274,7 @@ static int qca808x_ptp_adjfreq(struct ptp_clock_info *ptp, s32 ppb)
 		rate = div_u64(rate, 1953125 + tmp);
 	}
 
-	if(neg_adj) {
+	if(neg_adj && rate != 0) {
 		ns = ns_tmp - 1;
 		rate = (2<<26)-rate;
 	} else {
