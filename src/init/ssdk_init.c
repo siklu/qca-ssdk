@@ -67,6 +67,7 @@
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,1,0))
 /*qca808x_start*/
 #include <linux/of.h>
+#include <linux/of_platform.h>
 #include <linux/of_net.h>
 #include <linux/of_address.h>
 #include <linux/reset.h>
@@ -1854,6 +1855,12 @@ char ssdk_driver_name[] = "ess_ssdk";
 
 static int ssdk_probe(struct platform_device *pdev)
 {
+	struct device_node *np;
+
+	np = of_node_get(pdev->dev.of_node);
+	if (of_device_is_compatible(np, "qcom,ess-instance"))
+		return of_platform_populate(np, NULL, NULL, &pdev->dev);
+
 	ess_rst = devm_reset_control_get(&pdev->dev, "ess_rst");
 	ess_mac_clock_disable[0] = devm_reset_control_get(&pdev->dev, "ess_mac1_clk_dis");
 	ess_mac_clock_disable[1] = devm_reset_control_get(&pdev->dev, "ess_mac2_clk_dis");
@@ -1890,9 +1897,10 @@ static int ssdk_probe(struct platform_device *pdev)
 }
 
 static const struct of_device_id ssdk_of_mtable[] = {
-        {.compatible = "qcom,ess-switch" },
+	{.compatible = "qcom,ess-switch" },
 	{.compatible = "qcom,ess-switch-ipq807x" },
-        {}
+	{.compatible = "qcom,ess-instance" },
+	{}
 };
 
 static struct platform_driver ssdk_driver = {
