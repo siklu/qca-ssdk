@@ -486,14 +486,6 @@ sw_error_t
 qca808x_phy_set_force_speed(a_uint32_t dev_id, a_uint32_t phy_id,
 		     fal_port_speed_t speed);
 
-void qca808x_phydev_init(a_uint32_t dev_id, a_uint32_t port_id);
-
-void qca808x_phydev_deinit(a_uint32_t dev_id, a_uint32_t port_id);
-
-a_int32_t qca808x_phy_driver_register(void);
-
-void qca808x_phy_driver_unregister(void);
-
 int qca808x_phy_init(a_uint32_t dev_id, a_uint32_t port_bmp);
 
 void qca808x_phy_exit(a_uint32_t dev_id, a_uint32_t port_id);

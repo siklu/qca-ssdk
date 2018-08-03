@@ -49,10 +49,15 @@ endif
 
 ifeq (TRUE, $(IN_QCA808X_PHY))
     SRC_LIST += qca808x_phy.c
+    SRC_LIST += qca808x.c
 ifeq (TRUE, $(IN_PTP))
     SRC_LIST += qca808x_ptp.c
     SRC_LIST += qca808x_ptp_api.c
-    SRC_LIST += qca808x_ptp_linux.c
+ifeq ($(CONFIG_PTP_1588_CLOCK), y)
+ifeq ($(CONFIG_NETWORK_PHY_TIMESTAMPING), y)
+    SRC_LIST += qca808x_phc.c
+endif
+endif
 endif
 endif
 

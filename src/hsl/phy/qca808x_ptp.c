@@ -96,7 +96,9 @@ qca808x_phy_ptp_config_set(a_uint32_t dev_id,
 		ptp_misc_config_reg.bf.pkt_one_step_en = PTP_REG_BIT_FALSE;
 	}
 	ptp_misc_config_reg.bf.cf_from_pkt_en = PTP_REG_BIT_TRUE;
+#if defined(IN_LINUX_STD_PTP)
 	qca808x_ptp_clock_mode_config(dev_id, phy_id, config->clock_mode, config->step_mode);
+#endif
 	SW_RTN_ON_ERROR(qca808x_ptp_main_conf_reg_set(dev_id, phy_id, &ptp_main_conf_reg));
 	SW_RTN_ON_ERROR(qca808x_ptp_misc_config_reg_set(dev_id, phy_id, &ptp_misc_config_reg));
 	SW_RTN_ON_ERROR(qca808x_ptp_backup_reg_set(dev_id, phy_id, &ptp_backup_reg));
@@ -806,11 +808,13 @@ qca808x_phy_ptp_grandmaster_mode_set(a_uint32_t dev_id,
 	SW_RTN_ON_ERROR(qca808x_ptp_gm_conf0_reg_set(dev_id, phy_id, &ptp_gm_conf0_reg));
 	SW_RTN_ON_ERROR(qca808x_ptp_gm_conf1_reg_set(dev_id, phy_id, &ptp_gm_conf1_reg));
 
+#if defined(IN_LINUX_STD_PTP)
 	if (gm_mode->grandmaster_second_sync_en == A_TRUE) {
 		qca808x_ptp_gm_gps_seconds_sync_enable(dev_id, phy_id, A_TRUE);
 	} else {
 		qca808x_ptp_gm_gps_seconds_sync_enable(dev_id, phy_id, A_FALSE);
 	}
+#endif
 
 	return SW_OK;
 }
@@ -843,11 +847,13 @@ qca808x_phy_ptp_grandmaster_mode_get(a_uint32_t dev_id,
 	gm_mode->right_shift_in_ki = ptp_gm_conf1_reg.bf.gm_ki_ldn >> 5;
 	gm_mode->ki_value = ptp_gm_conf1_reg.bf.gm_ki_ldn & 0x1f;
 
+#if defined(IN_LINUX_STD_PTP)
 	if (qca808x_ptp_gm_gps_seconds_sync_status_get(dev_id, phy_id) == A_TRUE) {
 		gm_mode->grandmaster_second_sync_en = A_TRUE;
 	} else {
 		gm_mode->grandmaster_second_sync_en = A_FALSE;
 	}
+#endif
 
 	return SW_OK;
 }
@@ -876,7 +882,7 @@ qca808x_phy_ptp_rtc_time_get(a_uint32_t dev_id,
 
 	SW_RTN_ON_ERROR(qca808x_ptp_rtc5_reg_get(dev_id, phy_id, &ptp_rtc5_reg));
 	SW_RTN_ON_ERROR(qca808x_ptp_rtc6_reg_get(dev_id, phy_id, &ptp_rtc6_reg));
-	time->fracnanoseconds = (ptp_rtc5_reg.bf.ptp_rtc_nfsec << 16) |
+	time->fracnanoseconds = (ptp_rtc5_reg.bf.ptp_rtc_nfsec << 4) |
 		ptp_rtc6_reg.bf.ptp_rtc_nfsec;
 
 	return SW_OK;

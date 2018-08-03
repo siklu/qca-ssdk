@@ -203,6 +203,7 @@ qca808x_phy_ptp_reference_clock_get(a_uint32_t dev_id,
 
 void qca808x_phy_ptp_api_ops_init(hsl_phy_ptp_ops_t *phy_ptp_ops);
 
+#if defined(IN_LINUX_STD_PTP)
 void qca808x_ptp_gm_gps_seconds_sync_enable(a_uint32_t dev_id,
 		a_uint32_t phy_addr, a_bool_t en);
 
@@ -215,6 +216,7 @@ void qca808x_ptp_clock_mode_config(a_uint32_t dev_id,
 void qca808x_ptp_stat_get(void);
 
 void qca808x_ptp_stat_set(void);
+#endif
 #ifdef __cplusplus
 }
 #endif				/* __cplusplus */
