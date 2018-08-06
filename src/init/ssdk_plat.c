@@ -11,20 +11,23 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
+/*qca808x_start*/
 #include "sw.h"
 #include "ssdk_init.h"
-#include "ssdk_dts.h"
 #include "fal_init.h"
 #include "fal.h"
 #include "hsl.h"
 #include "hsl_dev.h"
 #include "ssdk_init.h"
+/*qca808x_end*/
+#include "ssdk_dts.h"
 #ifdef HPPE
 #include "hppe_init.h"
 #endif
 #include <linux/kconfig.h>
+/*qca808x_start*/
 #include <linux/version.h>
+/*qca808x_end*/
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/phy.h>
@@ -39,6 +42,7 @@
 #include <linux/clk.h>
 #include <linux/delay.h>
 #include <linux/string.h>
+
 #if defined(ISIS) ||defined(ISISC) ||defined(GARUDA)
 #include <f1_phy.h>
 #endif
@@ -48,6 +52,7 @@
 #ifdef IN_MALIBU_PHY
 #include <malibu_phy.h>
 #endif
+/*qca808x_start*/
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,1,0))
 #include <linux/of.h>
 #include <linux/of_mdio.h>
@@ -64,6 +69,7 @@
 #include <drivers/net/ethernet/atheros/ag71xx/ag71xx.h>
 #endif
 #include "ssdk_plat.h"
+/*qca808x_end*/
 #include "ssdk_clk.h"
 #include "ref_vlan.h"
 #include "ref_fdb.h"
@@ -96,10 +102,11 @@
 #endif
 
 #include "adpt.h"
+/*qca808x_start*/
 
 extern struct qca_phy_priv **qca_phy_priv_global;
 extern ssdk_chip_type SSDK_CURRENT_CHIP_TYPE;
-
+/*qca808x_end*/
 struct mutex switch_mdio_lock;
 
 #ifdef BOARD_IPQ806X
@@ -109,8 +116,10 @@ struct mutex switch_mdio_lock;
 #ifdef BOARD_AR71XX
 #define PLATFORM_MDIO_BUS_NAME		"ag71xx-mdio"
 #endif
+/*qca808x_start*/
 #define MDIO_BUS_0					0
 #define MDIO_BUS_1					1
+/*qca808x_end*/
 #define PLATFORM_MDIO_BUS_NUM		MDIO_BUS_0
 
 #define ISIS_CHIP_ID 0x18
@@ -126,8 +135,9 @@ static int switch_chip_id = ISIS_CHIP_ID;
 static int switch_chip_reg = ISIS_CHIP_REG;
 
 static int ssdk_dev_id = 0;
-
+/*qca808x_start*/
 a_uint32_t ssdk_log_level = SSDK_LOG_LEVEL_DEFAULT;
+/*qca808x_end*/
 
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 struct ag71xx_mdio {
@@ -214,6 +224,7 @@ qca_ar8216_mii_write(a_uint32_t dev_id, a_uint32_t reg, a_uint32_t val)
 	mutex_unlock(&switch_mdio_lock);
 }
 
+/*qca808x_start*/
 a_bool_t
 phy_addr_validation_check(a_uint32_t phy_addr)
 {
@@ -228,12 +239,13 @@ static struct mii_bus *
 ssdk_phy_miibus_get(a_uint32_t dev_id, a_uint32_t phy_addr)
 {
 	struct mii_bus *bus = NULL;
-
+/*qca808x_end*/
 #ifndef BOARD_AR71XX
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 	bus = ssdk_dts_miibus_get(dev_id, phy_addr);
 #endif
 #endif
+/*qca808x_start*/
 	if (!bus)
 		bus = qca_phy_priv_global[dev_id]->miibus;
 
@@ -365,7 +377,7 @@ u16 qca_phy_mmd_read(u32 dev_id, u32 phy_id,
 			QCA_MII_MMD_DATA, &value);
 	return value;
 }
-
+/*qca808x_end*/
 sw_error_t
 qca_switch_reg_read(a_uint32_t dev_id, a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
 {
@@ -522,16 +534,18 @@ qca_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t uniphy_index,
 }
 #ifdef HAWKEYE_CHIP
 #ifndef BOARD_AR71XX
+/*qca808x_start*/
 static int miibus_get(a_uint32_t dev_id)
 {
+/*qca808x_end*/
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+/*qca808x_start*/
 	struct device_node *mdio_node = NULL;
 	struct device_node *switch_node = NULL;
 	struct platform_device *mdio_plat = NULL;
 	struct ipq40xx_mdio_data *mdio_data = NULL;
 	struct qca_phy_priv *priv;
-	hsl_reg_mode reg_mode;
-
+	hsl_reg_mode reg_mode = HSL_REG_LOCAL_BUS;
 	priv = qca_phy_priv_global[dev_id];
 	switch_node = qca_phy_priv_global[dev_id]->of_node;
 	if (switch_node) {
@@ -541,8 +555,9 @@ static int miibus_get(a_uint32_t dev_id)
 			return 0;
 		}
 	}
-
+/*qca808x_end*/
 	reg_mode=ssdk_switch_reg_access_mode_get(dev_id);
+/*qca808x_start*/
 	if(reg_mode == HSL_REG_LOCAL_BUS)
 		mdio_node = of_find_compatible_node(NULL, NULL, "qcom,ipq40xx-mdio");
 	else
@@ -565,7 +580,7 @@ static int miibus_get(a_uint32_t dev_id)
 		if (!mdio_data) {
 			SSDK_ERROR("cannot get mdio_data reference from device data\n");
 			return 1;
-        		}
+		}
 		priv->miibus = mdio_data->mii_bus;
 	}
 	else
@@ -575,6 +590,7 @@ static int miibus_get(a_uint32_t dev_id)
 		SSDK_ERROR("cannot get mii bus reference from device data\n");
 		return 1;
 	}
+/*qca808x_end*/
 #else
 	struct device *miidev;
 	char busid[MII_BUS_ID_SIZE];
@@ -597,8 +613,10 @@ static int miibus_get(a_uint32_t dev_id)
 		return 1;
 	}
 #endif
+/*qca808x_start*/
 	return 0;
 }
+/*qca808x_end*/
 #else
 static int miibus_get(a_uint32_t dev_id)
 {
@@ -665,7 +683,6 @@ static int miibus_get(a_uint32_t dev_id)
 	return 0;
 }
 #endif
-
 #endif
 
 struct mii_bus *ssdk_miibus_get_by_device(a_uint32_t dev_id)
@@ -1160,10 +1177,11 @@ void ssdk_sysfs_exit (void)
 	kobject_put(ssdk_sys);
 }
 
-
+/*qca808x_start*/
 int
 ssdk_plat_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 {
+/*qca808x_end*/
 	hsl_reg_mode reg_mode;
 	ssdk_reg_map_info map;
 	struct clk *  ess_clk;
@@ -1171,12 +1189,16 @@ ssdk_plat_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 	#ifdef BOARD_AR71XX
 	int rv = 0;
 	#endif
+/*qca808x_start*/
 	printk("ssdk_plat_init start\n");
+/*qca808x_end*/
 	mutex_init(&switch_mdio_lock);
 
 #ifdef HAWKEYE_CHIP
+/*qca808x_start*/
 	if(miibus_get(dev_id))
 		return -ENODEV;
+/*qca808x_end*/
 #endif
 
 	reg_mode = ssdk_uniphy_reg_access_mode_get(dev_id);
@@ -1247,6 +1269,7 @@ ssdk_plat_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 		cfg->reg_mode = HSL_MDIO;
 	} else
 		return 0;
+/*qca808x_start*/
 
 	return 0;
 }
@@ -1254,11 +1277,12 @@ ssdk_plat_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 void
 ssdk_plat_exit(a_uint32_t dev_id)
 {
+/*qca808x_end*/
 	hsl_reg_mode reg_mode;
 	ssdk_reg_map_info map;
-
+/*qca808x_start*/
 	printk("ssdk_plat_exit\n");
-
+/*qca808x_end*/
 	reg_mode = ssdk_switch_reg_access_mode_get(dev_id);
 	if (reg_mode == HSL_REG_LOCAL_BUS) {
 		iounmap(qca_phy_priv_global[dev_id]->hw_addr);
@@ -1276,5 +1300,7 @@ ssdk_plat_exit(a_uint32_t dev_id)
 	if (reg_mode == HSL_REG_LOCAL_BUS) {
 		iounmap(qca_phy_priv_global[dev_id]->uniphy_hw_addr);
 	}
+/*qca808x_start*/
 }
+/*qca808x_end*/
 
