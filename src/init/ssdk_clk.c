@@ -402,6 +402,41 @@ static void ssdk_ppe_cmnblk_init(void)
 
 	iounmap(gcc_pll_base);
 }
+
+#define NSS_PPE_RESET_ADDR	0x01868014
+#define NSS_PPE_RESET_SIZE	0x4
+#define NSS_PPE_PORT5_RESET	0x10000C00
+#define NSS_PPE_PORT6_RESET	0x20003000
+
+void qca_gcc_port_mac_clock_reset(
+	a_uint32_t dev_id,
+	a_uint32_t port_id)
+{
+	void __iomem *gcc_port_mac_reset = NULL;
+	a_uint32_t reg_val;
+
+	gcc_port_mac_reset = ioremap_nocache(NSS_PPE_RESET_ADDR,
+		NSS_PPE_RESET_SIZE);
+	if (!gcc_port_mac_reset) {
+		SSDK_ERROR("can't map gcc port mac reset address!\n");
+		return;
+	}
+	reg_val = readl(gcc_port_mac_reset);
+	if (port_id == SSDK_PHYSICAL_PORT5)
+		reg_val = reg_val | NSS_PPE_PORT5_RESET;
+	else
+		reg_val = reg_val | NSS_PPE_PORT6_RESET;
+	writel(reg_val, gcc_port_mac_reset);
+	msleep(150);
+	if (port_id == SSDK_PHYSICAL_PORT5)
+		reg_val = reg_val & (~NSS_PPE_PORT5_RESET);
+	else
+		reg_val = reg_val & (~NSS_PPE_PORT6_RESET);
+	writel(reg_val, gcc_port_mac_reset);
+	msleep(150);
+
+	iounmap(gcc_port_mac_reset);
+}
 #endif
 
 static
