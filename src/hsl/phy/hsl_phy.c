@@ -11,10 +11,11 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
+/*qca808x_start*/
 #include "sw.h"
 #include "hsl_phy.h"
 #include "hsl.h"
+/*qca808x_end*/
 #if defined(ISIS) ||defined(ISISC) ||defined(GARUDA)
 #include <f1_phy.h>
 #endif
@@ -34,8 +35,11 @@
 #include <sfp_phy.h>
 #endif
 #ifdef IN_QCA808X_PHY
+/*qca808x_start*/
 #include <qca808x_phy.h>
+/*qca808x_end*/
 #endif
+/*qca808x_start*/
 #include "sw.h"
 #include "ssdk_plat.h"
 
@@ -45,6 +49,7 @@ a_uint32_t port_bmp[SW_MAX_NR_DEV] = {0};
 
 phy_driver_instance_t ssdk_phy_driver[] =
 {
+/*qca808x_end*/
 	#if defined(ISIS) ||defined(ISISC) ||defined(GARUDA)
 	{F1_PHY_CHIP, {0}, NULL, f1_phy_init, NULL},
 	#else
@@ -76,10 +81,13 @@ phy_driver_instance_t ssdk_phy_driver[] =
 	{SFP_PHY_CHIP, {0}, NULL, NULL, NULL},
 	#endif
 	#ifdef IN_QCA808X_PHY
-	{QCA808X_PHY_CHIP, {0}, NULL, qca808x_phy_init, NULL},
+/*qca808x_start*/
+	{QCA808X_PHY_CHIP, {0}, NULL, qca808x_phy_init, qca808x_phy_exit},
+/*qca808x_end*/
 	#else
 	{QCA808X_PHY_CHIP, {0}, NULL, NULL, NULL},
 	#endif
+/*qca808x_start*/
 	{MAX_PHY_CHIP, {0}, NULL, NULL, NULL}
 };
 sw_error_t hsl_phy_api_ops_register(phy_type_t phy_type, hsl_phy_ops_t * phy_api_ops)
@@ -178,6 +186,7 @@ phy_type_t hsl_phytype_get_by_phyid(a_uint32_t dev_id, a_uint32_t phy_id)
 
 	switch (phy_id)
 	{
+/*qca808x_end*/
 		case F1V1_PHY:
 		case F1V2_PHY:
 		case F1V3_PHY:
@@ -207,6 +216,7 @@ phy_type_t hsl_phytype_get_by_phyid(a_uint32_t dev_id, a_uint32_t phy_id)
 		case SFP_PHY:
 			phytype = SFP_PHY_CHIP;
 			break;
+/*qca808x_start*/
 		case QCA8081_PHY:
 			phytype = QCA808X_PHY_CHIP;
 			break;
@@ -216,7 +226,7 @@ phy_type_t hsl_phytype_get_by_phyid(a_uint32_t dev_id, a_uint32_t phy_id)
 
 	return phytype;
 }
-
+/*qca808x_end*/
 sw_error_t hsl_phydriver_update(a_uint32_t dev_id, a_uint32_t port_id,
 	a_uint32_t mode)
 {
@@ -237,8 +247,14 @@ sw_error_t hsl_phydriver_update(a_uint32_t dev_id, a_uint32_t port_id,
 	{
 		return SW_NOT_SUPPORTED;
 	}
-	cfg.reg_func.mdio_get = reduce_hsl_phy_get;
-
+	if (hsl_port_phy_access_type_get(dev_id, port_id) == PHY_I2C_ACCESS)
+	{
+		cfg.reg_func.i2c_get = hsl_phy_i2c_get;
+	}
+	else
+	{
+		cfg.reg_func.mdio_get = reduce_hsl_phy_get;
+	}
 	phy_id = hsl_phyid_get(dev_id, port_id, &cfg);
 	phytype = hsl_phytype_get_by_phyid(dev_id, phy_id);
 	SSDK_DEBUG("port_id is %x, phy_id is %x, phy_type is:%x\n",
@@ -251,7 +267,7 @@ sw_error_t hsl_phydriver_update(a_uint32_t dev_id, a_uint32_t port_id,
 
 	return SW_OK;
 }
-
+/*qca808x_start*/
 int ssdk_phy_driver_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 {
 
@@ -269,9 +285,9 @@ int ssdk_phy_driver_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 				phy_info[dev_id]->phy_type[i] = phytype;
 				ssdk_phy_driver[phytype].port_bmp[dev_id] |= (0x1 << i);
 			} else {
-				SSDK_INFO("dev_id = %d, phy_adress = %d, phy_id = 0x%x phy\
-				type doesn't match\n",dev_id, phy_info[dev_id]->phy_address[i],
-				phy_id);
+				SSDK_INFO("dev_id = %d, phy_adress = %d, phy_id = 0x%x phy"
+					"type doesn't match\n", dev_id,
+					phy_info[dev_id]->phy_address[i], phy_id);
 			}
 		}
 	}
@@ -284,6 +300,40 @@ int ssdk_phy_driver_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 	}
 	return 0;
 }
+
+#ifdef QCA808X_PORTS_INFO
+typedef struct {
+	a_uint32_t port_id;
+	a_uint32_t phy_address;
+	a_uint8_t phy_access_type;
+} qca808x_phy_info_t;
+/*5 is port_id, 0x1c is qca808x phy address, PHY_MDIO_ACCESS is mdio
+mode to access qca808x phy, PHY_I2C_ACCESS is I2C mode to access
+qca808x phy*/
+static qca808x_phy_info_t qca808x_phy_info[] = {
+	{5,0x7c,PHY_I2C_ACCESS}
+};
+static int qca_ssdk_qca808x_phy_info_init(a_uint32_t dev_id)
+{
+	a_uint32_t port_bmp = 0, port_id = 0, port_index = 0, port_index_max = 0;
+
+	port_index_max = sizeof(qca808x_phy_info)/(sizeof(qca808x_phy_info_t));
+	for(port_index = 0; port_index < port_index_max; port_index++) {
+		port_id = qca808x_phy_info[port_index].port_id;
+		port_bmp |= (1 << port_id);
+		/*qca808x phy address*/
+		phy_info[dev_id]->phy_address[port_id] =
+			qca808x_phy_info[port_index].phy_address;
+		/*qca808x access mode, 1:i2c, 0:mdio*/
+		phy_info[dev_id]->phy_access_type[port_id] =
+			qca808x_phy_info[port_index].phy_access_type;
+	}
+	qca_ssdk_port_bmp_set(dev_id, port_bmp);
+
+	return 0;
+}
+#endif
+
 int qca_ssdk_phy_info_init(a_uint32_t dev_id)
 {
 	a_uint32_t j = 0;
@@ -308,6 +358,9 @@ int qca_ssdk_phy_info_init(a_uint32_t dev_id)
 			phy_info[dev_id]->phy_address[j] = j - 1;
 		}
 	}
+#ifdef QCA808X_PORTS_INFO
+	qca_ssdk_qca808x_phy_info_init(dev_id);
+#endif
 
 	return 0;
 }
@@ -317,7 +370,7 @@ void qca_ssdk_port_bmp_init(a_uint32_t dev_id)
 
 	return;
 }
-
+/*qca808x_end*/
 void hsl_phy_address_init(a_uint32_t dev_id, a_uint32_t i,
 			a_uint32_t value)
 {
@@ -325,7 +378,7 @@ void hsl_phy_address_init(a_uint32_t dev_id, a_uint32_t i,
 
 	return;
 }
-
+/*qca808x_start*/
 void qca_ssdk_port_bmp_set(a_uint32_t dev_id, a_uint32_t value)
 {
 	port_bmp[dev_id] = value;
@@ -338,7 +391,7 @@ a_uint32_t qca_ssdk_port_bmp_get(a_uint32_t dev_id)
 
 	return port_bmp[dev_id];
 }
-
+/*qca808x_end*/
 a_uint32_t qca_ssdk_phy_type_port_bmp_get(a_uint32_t dev_id,
 				phy_type_t phy_type)
 {
@@ -382,7 +435,7 @@ qca_ssdk_phy_mdio_fake_addr_to_port(a_uint32_t dev_id, a_uint32_t phy_mdio_fake_
 	SSDK_ERROR("doesn't match port_id to specified phy_mdio_fake_addr !\n");
 	return 0;
 }
-
+/*qca808x_start*/
 a_uint32_t
 qca_ssdk_port_to_phy_addr(a_uint32_t dev_id, a_uint32_t port_id)
 {
@@ -444,7 +497,7 @@ hsl_port_phy_access_type_set(a_uint32_t dev_id, a_uint32_t port_id,
 
 	return;
 }
-
+/*qca808x_end*/
 void
 hsl_port_phy_c45_capability_set(a_uint32_t dev_id, a_uint32_t port_id,
 		a_bool_t enable)
@@ -497,6 +550,7 @@ hsl_ssdk_phy_mode_set(a_uint32_t dev_id, fal_port_interface_mode_t mode)
 
 	return SW_OK;
 }
+/*qca808x_start*/
 sw_error_t ssdk_phy_driver_cleanup(void)
 {
 	a_uint32_t i = 0, j = 0;
@@ -525,4 +579,4 @@ sw_error_t ssdk_phy_driver_cleanup(void)
 	}
 	return SW_OK;
 }
-
+/*qca808x_end*/

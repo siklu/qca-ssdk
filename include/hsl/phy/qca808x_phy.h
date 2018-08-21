@@ -82,7 +82,7 @@ extern "C"
 #define QCA808X_PHY_MMD3_WOL_MAGIC_MAC_CTRL3        0x804c
 #define QCA808X_PHY_MMD3_WOL_CTRL                   0x8012
 #define QCA808X_PHY_MMD3_ADDR_8023AZ_TIMER_CTRL     0x804e
-#define QCA808X_PHY_MMD3_ADDR_8023AZ_CLD_CTRL       0x8007
+#define QCA808X_PHY_MMD3_ADDR_CLD_CTRL7             0x8007
 #define QCA808X_PHY_MMD3_ADDR_CLD_CTRL5             0x8005
 #define QCA808X_PHY_MMD3_ADDR_CLD_CTRL3             0x8003
 
@@ -113,6 +113,13 @@ extern "C"
 #define QCA808X_PHY_CDT_DIAG_PAIR1      0X8066
 #define QCA808X_PHY_CDT_DIAG_PAIR2      0X8067
 #define QCA808X_PHY_CDT_DIAG_PAIR3      0X8068
+
+	/* SYNCE CLOCK OUTPUT */
+#define QCA808X_DEBUG_ANA_CLOCK_CTRL_REG   0x3e80
+#define QCA808X_ANALOG_PHY_SYNCE_CLOCK_EN  0x20
+
+#define QCA808X_MMD7_CLOCK_CTRL_REG        0x8072
+#define QCA808X_DIGITAL_PHY_SYNCE_CLOCK_EN 0x1
 
   /* PHY Registers Field */
 #define QCA808X_STATUS_LINK_PASS                 0x0400
@@ -373,6 +380,21 @@ extern "C"
 
 #define QCA808X_PHY_FRAME_CHECK_EN              0x0001
 #define QCA808X_PHY_XMIT_MAC_CNT_SELFCLR        0x0002
+a_uint16_t
+qca808x_phy_reg_read(a_uint32_t dev_id, a_uint32_t phy_id, a_uint32_t reg_id);
+
+sw_error_t
+qca808x_phy_reg_write(a_uint32_t dev_id, a_uint32_t phy_id,
+		a_uint32_t reg_id, a_uint16_t reg_val);
+
+sw_error_t
+qca808x_phy_mmd_write(a_uint32_t dev_id, a_uint32_t phy_id,
+		a_uint16_t mmd_num, a_uint16_t reg_id,
+		a_uint16_t reg_val);
+
+a_uint16_t
+qca808x_phy_mmd_read(a_uint32_t dev_id, a_uint32_t phy_id,
+		a_uint16_t mmd_num, a_uint16_t reg_id);
 
 a_uint16_t
 qca808x_phy_reg_read(a_uint32_t dev_id, a_uint32_t phy_id, a_uint32_t reg_id);
@@ -395,6 +417,9 @@ reg_val);
 a_uint16_t
 qca808x_phy_mmd_read(a_uint32_t dev_id, a_uint32_t phy_id,
 		a_uint16_t mmd_num, a_uint16_t reg_id);
+
+#define QCA808X_PHY_8023AZ_AFE_CTRL_MASK        0x01f0
+#define QCA808X_PHY_8023AZ_AFE_EN               0x0190
 
 sw_error_t
 qca808x_phy_set_duplex (a_uint32_t dev_id, a_uint32_t phy_id,
@@ -461,7 +486,17 @@ sw_error_t
 qca808x_phy_set_force_speed(a_uint32_t dev_id, a_uint32_t phy_id,
 		     fal_port_speed_t speed);
 
+void qca808x_phydev_init(a_uint32_t dev_id, a_uint32_t port_id);
+
+void qca808x_phydev_deinit(a_uint32_t dev_id, a_uint32_t port_id);
+
+a_int32_t qca808x_phy_driver_register(void);
+
+void qca808x_phy_driver_unregister(void);
+
 int qca808x_phy_init(a_uint32_t dev_id, a_uint32_t port_bmp);
+
+void qca808x_phy_exit(a_uint32_t dev_id, a_uint32_t port_id);
 
 #ifdef __cplusplus
 }

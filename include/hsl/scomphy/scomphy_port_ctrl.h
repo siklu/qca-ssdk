@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2017-2018, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -12,7 +12,7 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-
+/*qca808x_start*/
 #ifndef _SCOMPHY_PORT_CTRL_H_
 #define _SCOMPHY_PORT_CTRL_H_
 
@@ -28,13 +28,15 @@ sw_error_t scomphy_port_ctrl_init (a_uint32_t dev_id);
 sw_error_t
 scomphy_port_reset (a_uint32_t dev_id, fal_port_t port_id);
 
-
+/*qca808x_end*/
 #ifdef IN_PORTCONTROL
+/*qca808x_start*/
 #define SCOMPHY_PORT_CTRL_INIT(rv, dev_id) \
     { \
         rv = scomphy_port_ctrl_init(dev_id); \
         SW_RTN_ON_ERROR(rv); \
     }
+/*qca808x_end*/
 #else
 #define SCOMPHY_PORT_CTRL_INIT(rv, dev_id)
 #endif
@@ -220,8 +222,9 @@ HSL_LOCAL sw_error_t
 scomphy_port_counter_show (a_uint32_t dev_id, fal_port_t port_id,
 		fal_port_counter_info_t * counter_info);
 #endif
-
+/*qca808x_start*/
 #ifdef __cplusplus
 }
 #endif				/* __cplusplus */
 #endif				/* _SCOMPHY_PORT_CTRL_H_ */
+/*qca808x_end*/

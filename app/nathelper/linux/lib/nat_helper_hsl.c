@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2015, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015, 2018, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -37,6 +37,7 @@
 #include "../napt_acl.h"
 
 int nat_chip_ver = 0;
+a_bool_t napt_add_bypass_check = A_TRUE;
 
 /* support 4 different interfaces (or 4 VLANs) */
 static fal_intf_mac_entry_t global_if_mac_entry[MAX_INTF_NUM] = {{0}};
@@ -728,38 +729,42 @@ nat_hw_pub_ip_del(a_uint32_t index)
 a_int32_t
 napt_hw_add(napt_entry_t *napt)
 {
-    a_int32_t ret = 0;
-    fal_napt_entry_t fal_napt = {0};
+	a_int32_t ret = 0;
+	fal_napt_entry_t fal_napt = {0};
 	fal_host_entry_t host_entry = {0};
+	a_uint32_t next_hop = 0;
 
-    napt_entry_cp(&fal_napt, napt);
+	napt_entry_cp(&fal_napt, napt);
 
-    fal_napt.flags |= FAL_NAT_ENTRY_TRANS_IPADDR_INDEX;
-    fal_napt.counter_en = 1;
-    fal_napt.counter_id = nat_hw_debug_counter_get();
-    fal_napt.action = FAL_MAC_FRWRD;
+	fal_napt.flags |= FAL_NAT_ENTRY_TRANS_IPADDR_INDEX;
+	fal_napt.counter_en = 1;
+	fal_napt.counter_id = nat_hw_debug_counter_get();
+	fal_napt.action = FAL_MAC_FRWRD;
 
-	/*check arp entry*/
-	host_entry.flags = FAL_IP_IP4_ADDR;
-	host_entry.ip4_addr = fal_napt.src_addr;
-	ret = IP_HOST_GET(0, FAL_IP_ENTRY_IPADDR_EN, &host_entry);
-	if (ret) {
-		printk("can not find src host entry!\n");
-		return ret;
-	}
-	if (nf_athrs17_hnat_wan_type != NF_S17_WAN_TYPE_PPPOE) {
-		host_entry.ip4_addr = fal_napt.dst_addr;
+	if (!napt_add_bypass_check) {
+		/*check arp entry*/
+		host_entry.flags = FAL_IP_IP4_ADDR;
+		host_entry.ip4_addr = fal_napt.src_addr;
 		ret = IP_HOST_GET(0, FAL_IP_ENTRY_IPADDR_EN, &host_entry);
 		if (ret) {
-			printk("can not find dst host entry!\n");
+			HNAT_ERR_PRINTK("can not find src host entry!\n");
 			return ret;
+		}
+		if (nf_athrs17_hnat_wan_type != NF_S17_WAN_TYPE_PPPOE) {
+			next_hop = get_next_hop(fal_napt.dst_addr, fal_napt.src_addr);
+			host_entry.ip4_addr =  next_hop ? next_hop : fal_napt.dst_addr;
+			ret = IP_HOST_GET(0, FAL_IP_ENTRY_IPADDR_EN, &host_entry);
+			if (ret) {
+				HNAT_ERR_PRINTK("can not find dst host entry!\n");
+				return ret;
+			}
 		}
 	}
 
-    ret = NAPT_ADD(0, &fal_napt);
+	ret = NAPT_ADD(0, &fal_napt);
 
-    napt->entry_id = fal_napt.entry_id;
-    return ret;
+	napt->entry_id = fal_napt.entry_id;
+	return ret;
 }
 
 a_int32_t
@@ -908,6 +913,20 @@ napt_hw_get_by_index(napt_entry_t *napt, a_uint16_t hw_index)
     }
 
     return 0;
+}
+
+a_int32_t napt_hw_get_by_sip(a_uint32_t sip)
+{
+	fal_napt_entry_t napt;
+
+	memset(&napt, 0, sizeof(fal_napt_entry_t));
+	napt.entry_id = FAL_NEXT_ENTRY_FIRST_ID;
+	napt.src_addr = sip;
+	if (fal_napt_next(0, FAL_NAT_ENTRY_SOURCE_IP_EN, &napt) == SW_OK) {
+		return 0;
+	}
+
+	return -1;
 }
 
 a_uint32_t

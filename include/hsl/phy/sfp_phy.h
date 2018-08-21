@@ -23,6 +23,9 @@ extern "C"
 
 #define SFP_ANEG_DONE	0x20
 
+int sfp_phy_device_setup(a_uint32_t dev_id, a_uint32_t port_id, a_uint32_t phy_id);
+void sfp_phy_device_remove(a_uint32_t dev_id, a_uint32_t port);
+
 int sfp_phy_init(a_uint32_t dev_id, a_uint32_t port_bmp);
 void sfp_phy_exit(a_uint32_t dev_id, a_uint32_t port_bmp);
 
