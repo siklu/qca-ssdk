@@ -103,7 +103,9 @@ static sw_error_t adpt_hppe_module_func_register(a_uint32_t dev_id, a_uint32_t m
 			rv = adpt_hppe_misc_init(dev_id);
 			break;
 		case FAL_MODULE_PTP:
+#if defined(IN_PTP)
 			rv = adpt_hppe_ptp_init(dev_id);
+#endif
 			break;
 		default:
 			break;

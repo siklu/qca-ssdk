@@ -301,9 +301,11 @@ ifeq (4, $(GCC_VER))
   MODULE_CFLAG += -DGCCV4
 endif
 
+ifeq (TRUE, $(IN_PTP))
 ifeq ($(CONFIG_PTP_1588_CLOCK), y)
 ifeq ($(CONFIG_NETWORK_PHY_TIMESTAMPING), y)
 	MODULE_CFLAG += -DIN_LINUX_STD_PTP
+endif
 endif
 endif
 
