@@ -277,11 +277,11 @@ qca808x_phy_ptp_rx_timestamp_mode_get(a_uint32_t dev_id,
 }
 
 sw_error_t
-qca808x_phy_ptp_timestamp_get(a_uint32_t dev_id,
-		a_uint32_t phy_id, fal_ptp_direction_t direction,
+qca808x_phy_ptp_rx_timestamp0_get(a_uint32_t dev_id, a_uint32_t phy_id,
 		fal_ptp_pkt_info_t *pkt_info, fal_ptp_time_t *time)
 {
 	union ptp_rx_seqid0_reg_u ptp_rx_seqid0_reg = {0};
+
 	union ptp_rx_portid0_0_reg_u ptp_rx_portid0_0_reg = {0};
 	union ptp_rx_portid0_1_reg_u ptp_rx_portid0_1_reg = {0};
 	union ptp_rx_portid0_2_reg_u ptp_rx_portid0_2_reg = {0};
@@ -294,7 +294,76 @@ qca808x_phy_ptp_timestamp_get(a_uint32_t dev_id,
 	union ptp_rx_ts0_4_reg_u ptp_rx_ts0_4_reg = {0};
 	union ptp_rx_ts0_5_reg_u ptp_rx_ts0_5_reg = {0};
 	union ptp_rx_ts0_6_reg_u ptp_rx_ts0_6_reg = {0};
+
+	a_uint64_t clock_id;
+	a_uint32_t port_num, msgtype;
+
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_seqid0_reg_get(dev_id, phy_id, &ptp_rx_seqid0_reg));
+	if (pkt_info->sequence_id != ptp_rx_seqid0_reg.bf.rx_seqid)
+	{
+		return SW_NOT_FOUND;
+	}
+
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_portid0_0_reg_get(dev_id,
+				phy_id, &ptp_rx_portid0_0_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_portid0_1_reg_get(dev_id,
+				phy_id, &ptp_rx_portid0_1_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_portid0_2_reg_get(dev_id,
+				phy_id, &ptp_rx_portid0_2_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_portid0_3_reg_get(dev_id,
+				phy_id, &ptp_rx_portid0_3_reg));
+
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_portid0_4_reg_get(dev_id,
+				phy_id, &ptp_rx_portid0_4_reg));
+
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_ts0_0_reg_get(dev_id,
+				phy_id, &ptp_rx_ts0_0_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_ts0_1_reg_get(dev_id,
+				phy_id, &ptp_rx_ts0_1_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_ts0_2_reg_get(dev_id,
+				phy_id, &ptp_rx_ts0_2_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_ts0_3_reg_get(dev_id,
+				phy_id, &ptp_rx_ts0_3_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_ts0_4_reg_get(dev_id,
+				phy_id, &ptp_rx_ts0_4_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_ts0_5_reg_get(dev_id,
+				phy_id, &ptp_rx_ts0_5_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_ts0_6_reg_get(dev_id,
+				phy_id, &ptp_rx_ts0_6_reg));
+
+	clock_id = ((a_uint64_t)ptp_rx_portid0_0_reg.bf.rx_portid << 48) |
+		((a_uint64_t)ptp_rx_portid0_1_reg.bf.rx_portid << 32) |
+		((a_uint64_t)ptp_rx_portid0_2_reg.bf.rx_portid << 16) |
+		ptp_rx_portid0_3_reg.bf.rx_portid;
+	port_num = ptp_rx_portid0_4_reg.bf.rx_portid;
+	msgtype = ptp_rx_ts0_5_reg.bf.rx_msg_type;
+
+	if (pkt_info->clock_identify == clock_id &&
+			pkt_info->port_number == port_num &&
+			pkt_info->msg_type == msgtype)
+	{
+		time->seconds =
+			((a_int64_t)ptp_rx_ts0_0_reg.bf.rx_ts_sec << 32) |
+			((a_int64_t)ptp_rx_ts0_1_reg.bf.rx_ts_sec << 16) |
+			ptp_rx_ts0_2_reg.bf.rx_ts_sec;
+		time->nanoseconds =
+			((a_int32_t)ptp_rx_ts0_3_reg.bf.rx_ts_nsec << 16) |
+			ptp_rx_ts0_4_reg.bf.rx_ts_nsec;
+		time->fracnanoseconds =
+			((a_int32_t)ptp_rx_ts0_5_reg.bf.rx_ts_nfsec << 8) |
+			ptp_rx_ts0_6_reg.bf.rx_ts_nfsec;
+
+		return SW_OK;
+	}
+	return SW_NOT_FOUND;
+}
+
+sw_error_t
+qca808x_phy_ptp_rx_timestamp1_get(a_uint32_t dev_id, a_uint32_t phy_id,
+		fal_ptp_pkt_info_t *pkt_info, fal_ptp_time_t *time)
+{
 	union ptp_rx_seqid1_reg_u ptp_rx_seqid1_reg = {0};
+
 	union ptp_rx_portid1_0_reg_u ptp_rx_portid1_0_reg = {0};
 	union ptp_rx_portid1_1_reg_u ptp_rx_portid1_1_reg = {0};
 	union ptp_rx_portid1_2_reg_u ptp_rx_portid1_2_reg = {0};
@@ -307,6 +376,72 @@ qca808x_phy_ptp_timestamp_get(a_uint32_t dev_id,
 	union ptp_rx_ts1_4_reg_u ptp_rx_ts1_4_reg = {0};
 	union ptp_rx_ts1_5_reg_u ptp_rx_ts1_5_reg = {0};
 	union ptp_rx_ts1_6_reg_u ptp_rx_ts1_6_reg = {0};
+
+	a_uint64_t clock_id;
+	a_uint32_t port_num, msgtype;
+
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_seqid1_reg_get(dev_id, phy_id, &ptp_rx_seqid1_reg));
+	if (pkt_info->sequence_id != ptp_rx_seqid1_reg.bf.rx_seqid)
+	{
+		return SW_NOT_FOUND;
+	}
+
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_portid1_0_reg_get(dev_id,
+				phy_id, &ptp_rx_portid1_0_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_portid1_1_reg_get(dev_id,
+				phy_id, &ptp_rx_portid1_1_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_portid1_2_reg_get(dev_id,
+				phy_id, &ptp_rx_portid1_2_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_portid1_3_reg_get(dev_id,
+				phy_id, &ptp_rx_portid1_3_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_portid1_4_reg_get(dev_id,
+				phy_id, &ptp_rx_portid1_4_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_ts1_0_reg_get(dev_id,
+				phy_id, &ptp_rx_ts1_0_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_ts1_1_reg_get(dev_id,
+				phy_id, &ptp_rx_ts1_1_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_ts1_2_reg_get(dev_id,
+				phy_id, &ptp_rx_ts1_2_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_ts1_3_reg_get(dev_id,
+				phy_id, &ptp_rx_ts1_3_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_ts1_4_reg_get(dev_id,
+				phy_id, &ptp_rx_ts1_4_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_ts1_5_reg_get(dev_id,
+				phy_id, &ptp_rx_ts1_5_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_ts1_6_reg_get(dev_id,
+				phy_id, &ptp_rx_ts1_6_reg));
+
+	clock_id = ((a_uint64_t)ptp_rx_portid1_0_reg.bf.rx_portid << 48) |
+		((a_uint64_t)ptp_rx_portid1_1_reg.bf.rx_portid << 32) |
+		((a_uint64_t)ptp_rx_portid1_2_reg.bf.rx_portid << 16) |
+		ptp_rx_portid1_3_reg.bf.rx_portid;
+
+	port_num = ptp_rx_portid1_4_reg.bf.rx_portid;
+	msgtype = ptp_rx_ts1_5_reg.bf.rx_msg_type;
+	if (pkt_info->clock_identify == clock_id &&
+			pkt_info->port_number == port_num &&
+			pkt_info->msg_type == msgtype)
+	{
+		time->seconds =
+			((a_int64_t)ptp_rx_ts1_0_reg.bf.rx_ts_sec << 32) |
+			((a_int64_t)ptp_rx_ts1_1_reg.bf.rx_ts_sec << 16) |
+			ptp_rx_ts1_2_reg.bf.rx_ts_sec;
+		time->nanoseconds =
+			((a_int32_t)ptp_rx_ts1_3_reg.bf.rx_ts_nsec << 16) |
+			ptp_rx_ts1_4_reg.bf.rx_ts_nsec;
+		time->fracnanoseconds =
+			((a_int32_t)ptp_rx_ts1_5_reg.bf.rx_ts_nfsec << 8) |
+			ptp_rx_ts1_6_reg.bf.rx_ts_nfsec;
+
+		return SW_OK;
+	}
+	return SW_NOT_FOUND;
+}
+
+sw_error_t
+qca808x_phy_ptp_rx_timestamp2_get(a_uint32_t dev_id, a_uint32_t phy_id,
+		fal_ptp_pkt_info_t *pkt_info, fal_ptp_time_t *time)
+{
 	union ptp_rx_seqid2_reg_u ptp_rx_seqid2_reg = {0};
 	union ptp_rx_portid2_0_reg_u ptp_rx_portid2_0_reg = {0};
 	union ptp_rx_portid2_1_reg_u ptp_rx_portid2_1_reg = {0};
@@ -320,6 +455,72 @@ qca808x_phy_ptp_timestamp_get(a_uint32_t dev_id,
 	union ptp_rx_ts2_4_reg_u ptp_rx_ts2_4_reg = {0};
 	union ptp_rx_ts2_5_reg_u ptp_rx_ts2_5_reg = {0};
 	union ptp_rx_ts2_6_reg_u ptp_rx_ts2_6_reg = {0};
+
+	a_uint64_t clock_id;
+	a_uint32_t port_num, msgtype;
+
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_seqid2_reg_get(dev_id, phy_id, &ptp_rx_seqid2_reg));
+	if (pkt_info->sequence_id != ptp_rx_seqid2_reg.bf.rx_seqid)
+	{
+		return SW_NOT_FOUND;
+	}
+
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_portid2_0_reg_get(dev_id,
+				phy_id, &ptp_rx_portid2_0_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_portid2_1_reg_get(dev_id,
+				phy_id, &ptp_rx_portid2_1_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_portid2_2_reg_get(dev_id,
+				phy_id, &ptp_rx_portid2_2_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_portid2_3_reg_get(dev_id,
+				phy_id, &ptp_rx_portid2_3_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_portid2_4_reg_get(dev_id,
+				phy_id, &ptp_rx_portid2_4_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_ts2_0_reg_get(dev_id,
+				phy_id, &ptp_rx_ts2_0_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_ts2_1_reg_get(dev_id,
+				phy_id, &ptp_rx_ts2_1_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_ts2_2_reg_get(dev_id,
+				phy_id, &ptp_rx_ts2_2_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_ts2_3_reg_get(dev_id,
+				phy_id, &ptp_rx_ts2_3_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_ts2_4_reg_get(dev_id,
+				phy_id, &ptp_rx_ts2_4_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_ts2_5_reg_get(dev_id,
+				phy_id, &ptp_rx_ts2_5_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_ts2_6_reg_get(dev_id,
+				phy_id, &ptp_rx_ts2_6_reg));
+
+	clock_id = ((a_uint64_t)ptp_rx_portid2_0_reg.bf.rx_portid << 48) |
+		((a_uint64_t)ptp_rx_portid2_1_reg.bf.rx_portid << 32) |
+		((a_uint64_t)ptp_rx_portid2_2_reg.bf.rx_portid << 16) |
+		ptp_rx_portid2_3_reg.bf.rx_portid;
+	port_num = ptp_rx_portid2_4_reg.bf.rx_portid;
+	msgtype = ptp_rx_ts2_5_reg.bf.rx_msg_type;
+
+	if (pkt_info->clock_identify == clock_id &&
+			pkt_info->port_number == port_num &&
+			pkt_info->msg_type == msgtype)
+	{
+		time->seconds =
+			((a_int64_t)ptp_rx_ts2_0_reg.bf.rx_ts_sec << 32) |
+			((a_int64_t)ptp_rx_ts2_1_reg.bf.rx_ts_sec << 16) |
+			ptp_rx_ts2_2_reg.bf.rx_ts_sec;
+		time->nanoseconds =
+			((a_int32_t)ptp_rx_ts2_3_reg.bf.rx_ts_nsec << 16) |
+			ptp_rx_ts2_4_reg.bf.rx_ts_nsec;
+		time->fracnanoseconds =
+			((a_int32_t)ptp_rx_ts2_5_reg.bf.rx_ts_nfsec << 8) |
+			ptp_rx_ts2_6_reg.bf.rx_ts_nfsec;
+
+		return SW_OK;
+	}
+	return SW_NOT_FOUND;
+}
+
+sw_error_t
+qca808x_phy_ptp_rx_timestamp3_get(a_uint32_t dev_id, a_uint32_t phy_id,
+		fal_ptp_pkt_info_t *pkt_info, fal_ptp_time_t *time)
+{
 	union ptp_rx_seqid3_reg_u ptp_rx_seqid3_reg = {0};
 	union ptp_rx_portid3_0_reg_u ptp_rx_portid3_0_reg = {0};
 	union ptp_rx_portid3_1_reg_u ptp_rx_portid3_1_reg = {0};
@@ -334,6 +535,69 @@ qca808x_phy_ptp_timestamp_get(a_uint32_t dev_id,
 	union ptp_rx_ts3_5_reg_u ptp_rx_ts3_5_reg = {0};
 	union ptp_rx_ts3_6_reg_u ptp_rx_ts3_6_reg = {0};
 
+	a_uint64_t clock_id;
+	a_uint32_t port_num, msgtype;
+
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_seqid3_reg_get(dev_id, phy_id, &ptp_rx_seqid3_reg));
+	if (pkt_info->sequence_id != ptp_rx_seqid3_reg.bf.rx_seqid)
+	{
+		return SW_NOT_FOUND;
+	}
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_portid3_0_reg_get(dev_id,
+				phy_id, &ptp_rx_portid3_0_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_portid3_1_reg_get(dev_id,
+				phy_id, &ptp_rx_portid3_1_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_portid3_2_reg_get(dev_id,
+				phy_id, &ptp_rx_portid3_2_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_portid3_3_reg_get(dev_id,
+				phy_id, &ptp_rx_portid3_3_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_portid3_4_reg_get(dev_id,
+				phy_id, &ptp_rx_portid3_4_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_ts3_0_reg_get(dev_id,
+				phy_id, &ptp_rx_ts3_0_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_ts3_1_reg_get(dev_id,
+				phy_id, &ptp_rx_ts3_1_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_ts3_2_reg_get(dev_id,
+				phy_id, &ptp_rx_ts3_2_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_ts3_3_reg_get(dev_id,
+				phy_id, &ptp_rx_ts3_3_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_ts3_4_reg_get(dev_id,
+				phy_id, &ptp_rx_ts3_4_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_ts3_5_reg_get(dev_id,
+				phy_id, &ptp_rx_ts3_5_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_ts3_6_reg_get(dev_id,
+				phy_id, &ptp_rx_ts3_6_reg));
+
+	clock_id = ((a_uint64_t)ptp_rx_portid3_0_reg.bf.rx_portid << 48) |
+		((a_uint64_t)ptp_rx_portid3_1_reg.bf.rx_portid << 32) |
+		((a_uint64_t)ptp_rx_portid3_2_reg.bf.rx_portid << 16) |
+		ptp_rx_portid3_3_reg.bf.rx_portid;
+	port_num = ptp_rx_portid3_4_reg.bf.rx_portid;
+	msgtype = ptp_rx_ts3_5_reg.bf.rx_msg_type;
+	if (pkt_info->clock_identify == clock_id &&
+			pkt_info->port_number == port_num &&
+			pkt_info->msg_type == msgtype)
+	{
+		time->seconds =
+			((a_int64_t)ptp_rx_ts3_0_reg.bf.rx_ts_sec << 32) |
+			((a_int64_t)ptp_rx_ts3_1_reg.bf.rx_ts_sec << 16) |
+			ptp_rx_ts3_2_reg.bf.rx_ts_sec;
+		time->nanoseconds =
+			((a_int32_t)ptp_rx_ts3_3_reg.bf.rx_ts_nsec << 16) |
+			ptp_rx_ts3_4_reg.bf.rx_ts_nsec;
+		time->fracnanoseconds =
+			((a_int32_t)ptp_rx_ts3_5_reg.bf.rx_ts_nfsec << 8) |
+			ptp_rx_ts3_6_reg.bf.rx_ts_nfsec;
+
+		return SW_OK;
+	}
+	return SW_NOT_FOUND;
+}
+
+sw_error_t
+qca808x_phy_ptp_tx_timestamp0_get(a_uint32_t dev_id, a_uint32_t phy_id,
+		fal_ptp_pkt_info_t *pkt_info, fal_ptp_time_t *time)
+{
 	union ptp_tx_seqid_reg_u ptp_tx_seqid_reg = {0};
 	union ptp_tx_portid0_reg_u ptp_tx_portid0_reg = {0};
 	union ptp_tx_portid1_reg_u ptp_tx_portid1_reg = {0};
@@ -351,276 +615,110 @@ qca808x_phy_ptp_timestamp_get(a_uint32_t dev_id,
 	a_uint64_t clock_id;
 	a_uint32_t port_num, msgtype;
 
+	SW_RTN_ON_ERROR(qca808x_ptp_tx_seqid_reg_get(dev_id, phy_id, &ptp_tx_seqid_reg));
+	if (pkt_info->sequence_id != ptp_tx_seqid_reg.bf.tx_seqid)
+	{
+		return SW_NOT_FOUND;
+	}
+
+	SW_RTN_ON_ERROR(qca808x_ptp_tx_portid0_reg_get(dev_id,
+				phy_id, &ptp_tx_portid0_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_tx_portid1_reg_get(dev_id,
+				phy_id, &ptp_tx_portid1_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_tx_portid2_reg_get(dev_id,
+				phy_id, &ptp_tx_portid2_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_tx_portid3_reg_get(dev_id,
+				phy_id, &ptp_tx_portid3_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_tx_portid4_reg_get(dev_id,
+				phy_id, &ptp_tx_portid4_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_tx_ts0_reg_get(dev_id,
+				phy_id, &ptp_tx_ts0_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_tx_ts1_reg_get(dev_id,
+				phy_id, &ptp_tx_ts1_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_tx_ts2_reg_get(dev_id,
+				phy_id, &ptp_tx_ts2_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_tx_ts3_reg_get(dev_id,
+				phy_id, &ptp_tx_ts3_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_tx_ts4_reg_get(dev_id,
+				phy_id, &ptp_tx_ts4_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_tx_ts5_reg_get(dev_id,
+				phy_id, &ptp_tx_ts5_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_tx_ts6_reg_get(dev_id,
+				phy_id, &ptp_tx_ts6_reg));
+	clock_id = ((a_uint64_t)ptp_tx_portid0_reg.bf.tx_portid << 48) |
+		((a_uint64_t)ptp_tx_portid1_reg.bf.tx_portid << 32) |
+		((a_uint64_t)ptp_tx_portid2_reg.bf.tx_portid << 16) |
+		ptp_tx_portid3_reg.bf.tx_portid;
+	port_num = ptp_tx_portid4_reg.bf.tx_portid;
+	msgtype = ptp_tx_ts5_reg.bf.tx_msg_type;
+	if (pkt_info->clock_identify == clock_id &&
+			pkt_info->port_number == port_num &&
+			pkt_info->msg_type == msgtype)
+	{
+		time->seconds =
+			((a_int64_t)ptp_tx_ts0_reg.bf.tx_ts_sec << 32) |
+			((a_int64_t)ptp_tx_ts1_reg.bf.tx_ts_sec << 16) |
+			ptp_tx_ts2_reg.bf.tx_ts_sec;
+		time->nanoseconds =
+			((a_int32_t)ptp_tx_ts3_reg.bf.tx_ts_nsec << 16) |
+			ptp_tx_ts4_reg.bf.tx_ts_nsec;
+		time->fracnanoseconds =
+			((a_int32_t)ptp_tx_ts5_reg.bf.tx_ts_nfsec << 8) |
+			ptp_tx_ts6_reg.bf.tx_ts_nfsec;
+
+		return SW_OK;
+	}
+	return SW_NOT_FOUND;
+}
+
+sw_error_t
+qca808x_phy_ptp_timestamp_get(a_uint32_t dev_id,
+		a_uint32_t phy_id, fal_ptp_direction_t direction,
+		fal_ptp_pkt_info_t *pkt_info, fal_ptp_time_t *time)
+{
+	sw_error_t ret = SW_NOT_FOUND;
+	a_uint32_t seq = 0;
 	if (direction == FAL_RX_DIRECTION)
 	{
-		SW_RTN_ON_ERROR(qca808x_ptp_rx_seqid0_reg_get(dev_id, phy_id, &ptp_rx_seqid0_reg));
-		SW_RTN_ON_ERROR(qca808x_ptp_rx_seqid1_reg_get(dev_id, phy_id, &ptp_rx_seqid1_reg));
-		SW_RTN_ON_ERROR(qca808x_ptp_rx_seqid2_reg_get(dev_id, phy_id, &ptp_rx_seqid2_reg));
-		SW_RTN_ON_ERROR(qca808x_ptp_rx_seqid3_reg_get(dev_id, phy_id, &ptp_rx_seqid3_reg));
-
-		if (pkt_info->sequence_id == ptp_rx_seqid0_reg.bf.rx_seqid)
-		{
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_portid0_0_reg_get(dev_id,
-						phy_id, &ptp_rx_portid0_0_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_portid0_1_reg_get(dev_id,
-						phy_id, &ptp_rx_portid0_1_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_portid0_2_reg_get(dev_id,
-						phy_id, &ptp_rx_portid0_2_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_portid0_3_reg_get(dev_id,
-						phy_id, &ptp_rx_portid0_3_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_portid0_4_reg_get(dev_id,
-						phy_id, &ptp_rx_portid0_4_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_ts0_0_reg_get(dev_id,
-						phy_id, &ptp_rx_ts0_0_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_ts0_1_reg_get(dev_id,
-						phy_id, &ptp_rx_ts0_1_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_ts0_2_reg_get(dev_id,
-						phy_id, &ptp_rx_ts0_2_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_ts0_3_reg_get(dev_id,
-						phy_id, &ptp_rx_ts0_3_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_ts0_4_reg_get(dev_id,
-						phy_id, &ptp_rx_ts0_4_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_ts0_5_reg_get(dev_id,
-						phy_id, &ptp_rx_ts0_5_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_ts0_6_reg_get(dev_id,
-						phy_id, &ptp_rx_ts0_6_reg));
-
-			clock_id = ((a_uint64_t)ptp_rx_portid0_0_reg.bf.rx_portid << 48) |
-				((a_uint64_t)ptp_rx_portid0_1_reg.bf.rx_portid << 32) |
-				((a_uint64_t)ptp_rx_portid0_2_reg.bf.rx_portid << 16) |
-				ptp_rx_portid0_3_reg.bf.rx_portid;
-			port_num = ptp_rx_portid0_4_reg.bf.rx_portid;
-			msgtype = ptp_rx_ts0_5_reg.bf.rx_msg_type;
-			if (pkt_info->clock_identify == clock_id &&
-					pkt_info->port_number == port_num &&
-					pkt_info->msg_type == msgtype)
-			{
-				time->seconds =
-					((a_int64_t)ptp_rx_ts0_0_reg.bf.rx_ts_sec << 32) |
-					((a_int64_t)ptp_rx_ts0_1_reg.bf.rx_ts_sec << 16) |
-					ptp_rx_ts0_2_reg.bf.rx_ts_sec;
-				time->nanoseconds =
-					((a_int32_t)ptp_rx_ts0_3_reg.bf.rx_ts_nsec << 16) |
-					ptp_rx_ts0_4_reg.bf.rx_ts_nsec;
-				time->fracnanoseconds =
-					((a_int32_t)ptp_rx_ts0_5_reg.bf.rx_ts_nfsec << 8) |
-					ptp_rx_ts0_6_reg.bf.rx_ts_nfsec;
-
-				return SW_OK;
+		for (seq = 0; seq < 4; seq++) {
+			switch (seq) {
+				case 0:
+					ret = qca808x_phy_ptp_rx_timestamp0_get(dev_id, phy_id,
+							pkt_info, time);
+					if (ret == SW_OK) {
+						return ret;
+					}
+					break;
+				case 1:
+					ret = qca808x_phy_ptp_rx_timestamp1_get(dev_id, phy_id,
+							pkt_info, time);
+					if (ret == SW_OK) {
+						return ret;
+					}
+					break;
+				case 2:
+					ret = qca808x_phy_ptp_rx_timestamp2_get(dev_id, phy_id,
+							pkt_info, time);
+					if (ret == SW_OK) {
+						return ret;
+					}
+					break;
+				case 3:
+					ret = qca808x_phy_ptp_rx_timestamp3_get(dev_id, phy_id,
+							pkt_info, time);
+					if (ret == SW_OK) {
+						return ret;
+					}
+					break;
+				default:
+					break;
 			}
 		}
-		if (pkt_info->sequence_id == ptp_rx_seqid1_reg.bf.rx_seqid)
-		{
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_portid1_0_reg_get(dev_id,
-						phy_id, &ptp_rx_portid1_0_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_portid1_1_reg_get(dev_id,
-						phy_id, &ptp_rx_portid1_1_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_portid1_2_reg_get(dev_id,
-						phy_id, &ptp_rx_portid1_2_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_portid1_3_reg_get(dev_id,
-						phy_id, &ptp_rx_portid1_3_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_portid1_4_reg_get(dev_id,
-						phy_id, &ptp_rx_portid1_4_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_ts1_0_reg_get(dev_id,
-						phy_id, &ptp_rx_ts1_0_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_ts1_1_reg_get(dev_id,
-						phy_id, &ptp_rx_ts1_1_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_ts1_2_reg_get(dev_id,
-						phy_id, &ptp_rx_ts1_2_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_ts1_3_reg_get(dev_id,
-						phy_id, &ptp_rx_ts1_3_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_ts1_4_reg_get(dev_id,
-						phy_id, &ptp_rx_ts1_4_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_ts1_5_reg_get(dev_id,
-						phy_id, &ptp_rx_ts1_5_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_ts1_6_reg_get(dev_id,
-						phy_id, &ptp_rx_ts1_6_reg));
-
-			clock_id = ((a_uint64_t)ptp_rx_portid1_0_reg.bf.rx_portid << 48) |
-				((a_uint64_t)ptp_rx_portid1_1_reg.bf.rx_portid << 32) |
-				((a_uint64_t)ptp_rx_portid1_2_reg.bf.rx_portid << 16) |
-				ptp_rx_portid1_3_reg.bf.rx_portid;
-
-			port_num = ptp_rx_portid1_4_reg.bf.rx_portid;
-			msgtype = ptp_rx_ts1_5_reg.bf.rx_msg_type;
-			if (pkt_info->clock_identify == clock_id &&
-					pkt_info->port_number == port_num &&
-				pkt_info->msg_type == msgtype)
-			{
-				time->seconds =
-					((a_int64_t)ptp_rx_ts1_0_reg.bf.rx_ts_sec << 32) |
-					((a_int64_t)ptp_rx_ts1_1_reg.bf.rx_ts_sec << 16) |
-					ptp_rx_ts1_2_reg.bf.rx_ts_sec;
-				time->nanoseconds =
-					((a_int32_t)ptp_rx_ts1_3_reg.bf.rx_ts_nsec << 16) |
-					ptp_rx_ts1_4_reg.bf.rx_ts_nsec;
-				time->fracnanoseconds =
-					((a_int32_t)ptp_rx_ts1_5_reg.bf.rx_ts_nfsec << 8) |
-					ptp_rx_ts1_6_reg.bf.rx_ts_nfsec;
-
-				return SW_OK;
-			}
-		}
-		if (pkt_info->sequence_id == ptp_rx_seqid2_reg.bf.rx_seqid)
-		{
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_portid2_0_reg_get(dev_id,
-						phy_id, &ptp_rx_portid2_0_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_portid2_1_reg_get(dev_id,
-						phy_id, &ptp_rx_portid2_1_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_portid2_2_reg_get(dev_id,
-						phy_id, &ptp_rx_portid2_2_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_portid2_3_reg_get(dev_id,
-						phy_id, &ptp_rx_portid2_3_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_portid2_4_reg_get(dev_id,
-						phy_id, &ptp_rx_portid2_4_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_ts2_0_reg_get(dev_id,
-						phy_id, &ptp_rx_ts2_0_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_ts2_1_reg_get(dev_id,
-						phy_id, &ptp_rx_ts2_1_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_ts2_2_reg_get(dev_id,
-						phy_id, &ptp_rx_ts2_2_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_ts2_3_reg_get(dev_id,
-						phy_id, &ptp_rx_ts2_3_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_ts2_4_reg_get(dev_id,
-						phy_id, &ptp_rx_ts2_4_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_ts2_5_reg_get(dev_id,
-						phy_id, &ptp_rx_ts2_5_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_ts2_6_reg_get(dev_id,
-						phy_id, &ptp_rx_ts2_6_reg));
-
-			clock_id = ((a_uint64_t)ptp_rx_portid2_0_reg.bf.rx_portid << 48) |
-				((a_uint64_t)ptp_rx_portid2_1_reg.bf.rx_portid << 32) |
-				((a_uint64_t)ptp_rx_portid2_2_reg.bf.rx_portid << 16) |
-				ptp_rx_portid2_3_reg.bf.rx_portid;
-			port_num = ptp_rx_portid2_4_reg.bf.rx_portid;
-			msgtype = ptp_rx_ts2_5_reg.bf.rx_msg_type;
-
-			if (pkt_info->clock_identify == clock_id &&
-					pkt_info->port_number == port_num &&
-					pkt_info->msg_type == msgtype)
-			{
-				time->seconds =
-					((a_int64_t)ptp_rx_ts2_0_reg.bf.rx_ts_sec << 32) |
-					((a_int64_t)ptp_rx_ts2_1_reg.bf.rx_ts_sec << 16) |
-					ptp_rx_ts2_2_reg.bf.rx_ts_sec;
-				time->nanoseconds =
-					((a_int32_t)ptp_rx_ts2_3_reg.bf.rx_ts_nsec << 16) |
-					ptp_rx_ts2_4_reg.bf.rx_ts_nsec;
-				time->fracnanoseconds =
-					((a_int32_t)ptp_rx_ts2_5_reg.bf.rx_ts_nfsec << 8) |
-					ptp_rx_ts2_6_reg.bf.rx_ts_nfsec;
-
-				return SW_OK;
-			}
-		}
-		if (pkt_info->sequence_id == ptp_rx_seqid3_reg.bf.rx_seqid)
-		{
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_portid3_0_reg_get(dev_id,
-						phy_id, &ptp_rx_portid3_0_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_portid3_1_reg_get(dev_id,
-						phy_id, &ptp_rx_portid3_1_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_portid3_2_reg_get(dev_id,
-						phy_id, &ptp_rx_portid3_2_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_portid3_3_reg_get(dev_id,
-						phy_id, &ptp_rx_portid3_3_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_portid3_4_reg_get(dev_id,
-						phy_id, &ptp_rx_portid3_4_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_ts3_0_reg_get(dev_id,
-						phy_id, &ptp_rx_ts3_0_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_ts3_1_reg_get(dev_id,
-						phy_id, &ptp_rx_ts3_1_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_ts3_2_reg_get(dev_id,
-						phy_id, &ptp_rx_ts3_2_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_ts3_3_reg_get(dev_id,
-						phy_id, &ptp_rx_ts3_3_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_ts3_4_reg_get(dev_id,
-						phy_id, &ptp_rx_ts3_4_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_ts3_5_reg_get(dev_id,
-						phy_id, &ptp_rx_ts3_5_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_rx_ts3_6_reg_get(dev_id,
-						phy_id, &ptp_rx_ts3_6_reg));
-
-			clock_id = ((a_uint64_t)ptp_rx_portid3_0_reg.bf.rx_portid << 48) |
-				((a_uint64_t)ptp_rx_portid3_1_reg.bf.rx_portid << 32) |
-				((a_uint64_t)ptp_rx_portid3_2_reg.bf.rx_portid << 16) |
-				ptp_rx_portid3_3_reg.bf.rx_portid;
-			port_num = ptp_rx_portid3_4_reg.bf.rx_portid;
-			msgtype = ptp_rx_ts3_5_reg.bf.rx_msg_type;
-			if (pkt_info->clock_identify == clock_id &&
-					pkt_info->port_number == port_num &&
-					pkt_info->msg_type == msgtype)
-			{
-				time->seconds =
-					((a_int64_t)ptp_rx_ts3_0_reg.bf.rx_ts_sec << 32) |
-					((a_int64_t)ptp_rx_ts3_1_reg.bf.rx_ts_sec << 16) |
-					ptp_rx_ts3_2_reg.bf.rx_ts_sec;
-				time->nanoseconds =
-					((a_int32_t)ptp_rx_ts3_3_reg.bf.rx_ts_nsec << 16) |
-					ptp_rx_ts3_4_reg.bf.rx_ts_nsec;
-				time->fracnanoseconds =
-					((a_int32_t)ptp_rx_ts3_5_reg.bf.rx_ts_nfsec << 8) |
-					ptp_rx_ts3_6_reg.bf.rx_ts_nfsec;
-
-				return SW_OK;
-			}
-		}
-	}
-	else
-	{
-		SW_RTN_ON_ERROR(qca808x_ptp_tx_seqid_reg_get(dev_id, phy_id, &ptp_tx_seqid_reg));
-		if (pkt_info->sequence_id == ptp_tx_seqid_reg.bf.tx_seqid)
-		{
-			SW_RTN_ON_ERROR(qca808x_ptp_tx_portid0_reg_get(dev_id,
-						phy_id, &ptp_tx_portid0_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_tx_portid1_reg_get(dev_id,
-						phy_id, &ptp_tx_portid1_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_tx_portid2_reg_get(dev_id,
-						phy_id, &ptp_tx_portid2_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_tx_portid3_reg_get(dev_id,
-						phy_id, &ptp_tx_portid3_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_tx_portid4_reg_get(dev_id,
-						phy_id, &ptp_tx_portid4_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_tx_ts0_reg_get(dev_id,
-						phy_id, &ptp_tx_ts0_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_tx_ts1_reg_get(dev_id,
-						phy_id, &ptp_tx_ts1_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_tx_ts2_reg_get(dev_id,
-						phy_id, &ptp_tx_ts2_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_tx_ts3_reg_get(dev_id,
-						phy_id, &ptp_tx_ts3_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_tx_ts4_reg_get(dev_id,
-						phy_id, &ptp_tx_ts4_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_tx_ts5_reg_get(dev_id,
-						phy_id, &ptp_tx_ts5_reg));
-			SW_RTN_ON_ERROR(qca808x_ptp_tx_ts6_reg_get(dev_id,
-						phy_id, &ptp_tx_ts6_reg));
-			clock_id = ((a_uint64_t)ptp_tx_portid0_reg.bf.tx_portid << 48) |
-				((a_uint64_t)ptp_tx_portid1_reg.bf.tx_portid << 32) |
-				((a_uint64_t)ptp_tx_portid2_reg.bf.tx_portid << 16) |
-				ptp_tx_portid3_reg.bf.tx_portid;
-			port_num = ptp_tx_portid4_reg.bf.tx_portid;
-			msgtype = ptp_tx_ts5_reg.bf.tx_msg_type;
-			if (pkt_info->clock_identify == clock_id &&
-					pkt_info->port_number == port_num &&
-					pkt_info->msg_type == msgtype)
-			{
-				time->seconds =
-					((a_int64_t)ptp_tx_ts0_reg.bf.tx_ts_sec << 32) |
-					((a_int64_t)ptp_tx_ts1_reg.bf.tx_ts_sec << 16) |
-					ptp_tx_ts2_reg.bf.tx_ts_sec;
-				time->nanoseconds =
-					((a_int32_t)ptp_tx_ts3_reg.bf.tx_ts_nsec << 16) |
-					ptp_tx_ts4_reg.bf.tx_ts_nsec;
-				time->fracnanoseconds =
-					((a_int32_t)ptp_tx_ts5_reg.bf.tx_ts_nfsec << 8) |
-					ptp_tx_ts6_reg.bf.tx_ts_nfsec;
-
-				return SW_OK;
-			}
-		}
+	} else {
+		ret = qca808x_phy_ptp_tx_timestamp0_get(dev_id, phy_id, pkt_info, time);
 	}
 
-	return SW_NOT_FOUND;
+	return ret;
 }
 
 sw_error_t
@@ -1819,9 +1917,86 @@ qca808x_phy_ptp_enhanced_timestamp_engine_set(a_uint32_t dev_id,
 }
 
 sw_error_t
+_qca808x_phy_ptp_enhanced_timestamp_engine_rx_com_ts_get(a_uint32_t dev_id, a_uint32_t phy_id,
+		fal_ptp_enhanced_ts_engine_t *ts_engine)
+{
+	sw_error_t ret = SW_OK;
+
+	union ptp_rx_com_timestamp0_reg_u ptp_rx_com_timestamp0_reg = {0};
+	union ptp_rx_com_timestamp1_reg_u ptp_rx_com_timestamp1_reg = {0};
+	union ptp_rx_com_timestamp2_reg_u ptp_rx_com_timestamp2_reg = {0};
+	union ptp_rx_com_timestamp3_reg_u ptp_rx_com_timestamp3_reg = {0};
+	union ptp_rx_com_timestamp4_reg_u ptp_rx_com_timestamp4_reg = {0};
+	union ptp_rx_com_frac_nano_reg_u ptp_rx_com_frac_nano_reg = {0};
+
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_com_timestamp0_reg_get(dev_id,
+				phy_id, &ptp_rx_com_timestamp0_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_com_timestamp1_reg_get(dev_id,
+				phy_id, &ptp_rx_com_timestamp1_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_com_timestamp2_reg_get(dev_id,
+				phy_id, &ptp_rx_com_timestamp2_reg));
+	ts_engine->timestamp.seconds =
+		((a_int64_t)ptp_rx_com_timestamp0_reg.bf.com_ts << 32) |
+		(ptp_rx_com_timestamp1_reg.bf.com_ts << 16) | ptp_rx_com_timestamp2_reg.bf.com_ts;
+
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_com_timestamp3_reg_get(dev_id,
+				phy_id, &ptp_rx_com_timestamp3_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_com_timestamp4_reg_get(dev_id,
+				phy_id, &ptp_rx_com_timestamp4_reg));
+	ts_engine->timestamp.nanoseconds = (ptp_rx_com_timestamp3_reg.bf.com_ts << 16) |
+		ptp_rx_com_timestamp4_reg.bf.com_ts;
+
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_com_frac_nano_reg_get(dev_id,
+				phy_id, &ptp_rx_com_frac_nano_reg));
+	ts_engine->timestamp.fracnanoseconds = ptp_rx_com_frac_nano_reg.bf.frac_nano;
+
+	return ret;
+}
+
+sw_error_t
+_qca808x_phy_ptp_enhanced_timestamp_engine_rx_com_ts_pre_get(a_uint32_t dev_id, a_uint32_t phy_id,
+		fal_ptp_enhanced_ts_engine_t *ts_engine)
+{
+	sw_error_t ret = SW_OK;
+	union ptp_rx_com_timestamp_pre0_reg_u ptp_rx_com_timestamp_pre0_reg = {0};
+	union ptp_rx_com_timestamp_pre1_reg_u ptp_rx_com_timestamp_pre1_reg = {0};
+	union ptp_rx_com_timestamp_pre2_reg_u ptp_rx_com_timestamp_pre2_reg = {0};
+	union ptp_rx_com_timestamp_pre3_reg_u ptp_rx_com_timestamp_pre3_reg = {0};
+	union ptp_rx_com_timestamp_pre4_reg_u ptp_rx_com_timestamp_pre4_reg = {0};
+	union ptp_rx_com_frac_nano_pre_reg_u ptp_rx_com_frac_nano_pre_reg = {0};
+
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_com_timestamp_pre0_reg_get(dev_id,
+				phy_id, &ptp_rx_com_timestamp_pre0_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_com_timestamp_pre1_reg_get(dev_id,
+				phy_id, &ptp_rx_com_timestamp_pre1_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_com_timestamp_pre2_reg_get(dev_id,
+				phy_id, &ptp_rx_com_timestamp_pre2_reg));
+	ts_engine->timestamp_pre.seconds =
+		((a_int64_t)ptp_rx_com_timestamp_pre0_reg.bf.com_ts_pre << 32) |
+		(ptp_rx_com_timestamp_pre1_reg.bf.com_ts_pre << 16) |
+		ptp_rx_com_timestamp_pre2_reg.bf.com_ts_pre;
+
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_com_timestamp_pre3_reg_get(dev_id,
+				phy_id, &ptp_rx_com_timestamp_pre3_reg));
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_com_timestamp_pre4_reg_get(dev_id,
+				phy_id, &ptp_rx_com_timestamp_pre4_reg));
+	ts_engine->timestamp_pre.nanoseconds =
+		(ptp_rx_com_timestamp_pre3_reg.bf.com_ts_pre << 16) |
+		ptp_rx_com_timestamp_pre4_reg.bf.com_ts_pre;
+
+	SW_RTN_ON_ERROR(qca808x_ptp_rx_com_frac_nano_pre_reg_get(dev_id,
+				phy_id, &ptp_rx_com_frac_nano_pre_reg));
+	ts_engine->timestamp_pre.fracnanoseconds =
+		ptp_rx_com_frac_nano_pre_reg.bf.frac_nano_pre;
+
+	return ret;
+}
+
+sw_error_t
 _qca808x_phy_ptp_enhanced_timestamp_engine_rx_get(a_uint32_t dev_id,
 		a_uint32_t phy_id, fal_ptp_enhanced_ts_engine_t *ts_engine)
 {
+	sw_error_t ret = SW_OK;
 	union ptp_rx_com_ts_ctrl_reg_u ctrl_reg = {0};
 	union ptp_rx_filt_mac_da0_reg_u ptp_rx_filt_mac_da0_reg = {0};
 	union ptp_rx_filt_mac_da1_reg_u ptp_rx_filt_mac_da1_reg = {0};
@@ -1841,18 +2016,6 @@ _qca808x_phy_ptp_enhanced_timestamp_engine_rx_get(a_uint32_t dev_id,
 	union ptp_rx_filt_udp_port_reg_u ptp_rx_filt_udp_port_reg = {0};
 	union ptp_rx_com_ts_status_reg_u ptp_rx_com_ts_status_reg = {0};
 	union ptp_rx_com_ts_status_pre_reg_u ptp_rx_com_ts_status_pre_reg = {0};
-	union ptp_rx_com_timestamp0_reg_u ptp_rx_com_timestamp0_reg = {0};
-	union ptp_rx_com_timestamp1_reg_u ptp_rx_com_timestamp1_reg = {0};
-	union ptp_rx_com_timestamp2_reg_u ptp_rx_com_timestamp2_reg = {0};
-	union ptp_rx_com_timestamp3_reg_u ptp_rx_com_timestamp3_reg = {0};
-	union ptp_rx_com_timestamp4_reg_u ptp_rx_com_timestamp4_reg = {0};
-	union ptp_rx_com_frac_nano_reg_u ptp_rx_com_frac_nano_reg = {0};
-	union ptp_rx_com_timestamp_pre0_reg_u ptp_rx_com_timestamp_pre0_reg = {0};
-	union ptp_rx_com_timestamp_pre1_reg_u ptp_rx_com_timestamp_pre1_reg = {0};
-	union ptp_rx_com_timestamp_pre2_reg_u ptp_rx_com_timestamp_pre2_reg = {0};
-	union ptp_rx_com_timestamp_pre3_reg_u ptp_rx_com_timestamp_pre3_reg = {0};
-	union ptp_rx_com_timestamp_pre4_reg_u ptp_rx_com_timestamp_pre4_reg = {0};
-	union ptp_rx_com_frac_nano_pre_reg_u ptp_rx_com_frac_nano_pre_reg = {0};
 	union ptp_rx_y1731_identify_reg_u ptp_rx_y1731_identify_reg = {0};
 	union ptp_rx_y1731_identify_pre_reg_u ptp_rx_y1731_identify_pre_reg = {0};
 
@@ -2029,52 +2192,17 @@ _qca808x_phy_ptp_enhanced_timestamp_engine_rx_get(a_uint32_t dev_id,
 				phy_id, &ptp_rx_y1731_identify_pre_reg));
 	ts_engine->y1731_identity_pre = ptp_rx_y1731_identify_pre_reg.bf.identify_pre;
 
-	SW_RTN_ON_ERROR(qca808x_ptp_rx_com_timestamp0_reg_get(dev_id,
-				phy_id, &ptp_rx_com_timestamp0_reg));
-	SW_RTN_ON_ERROR(qca808x_ptp_rx_com_timestamp1_reg_get(dev_id,
-				phy_id, &ptp_rx_com_timestamp1_reg));
-	SW_RTN_ON_ERROR(qca808x_ptp_rx_com_timestamp2_reg_get(dev_id,
-				phy_id, &ptp_rx_com_timestamp2_reg));
-	ts_engine->timestamp.seconds =
-		((a_int64_t)ptp_rx_com_timestamp0_reg.bf.com_ts << 32) |
-		(ptp_rx_com_timestamp1_reg.bf.com_ts << 16) | ptp_rx_com_timestamp2_reg.bf.com_ts;
+	ret = _qca808x_phy_ptp_enhanced_timestamp_engine_rx_com_ts_get(dev_id, phy_id,
+			ts_engine);
+	if (ret != SW_OK)
+	{
+		return ret;
+	}
 
-	SW_RTN_ON_ERROR(qca808x_ptp_rx_com_timestamp3_reg_get(dev_id,
-				phy_id, &ptp_rx_com_timestamp3_reg));
-	SW_RTN_ON_ERROR(qca808x_ptp_rx_com_timestamp4_reg_get(dev_id,
-				phy_id, &ptp_rx_com_timestamp4_reg));
-	ts_engine->timestamp.nanoseconds = (ptp_rx_com_timestamp3_reg.bf.com_ts << 16) |
-		ptp_rx_com_timestamp4_reg.bf.com_ts;
+	ret = _qca808x_phy_ptp_enhanced_timestamp_engine_rx_com_ts_pre_get(dev_id, phy_id,
+			ts_engine);
 
-	SW_RTN_ON_ERROR(qca808x_ptp_rx_com_frac_nano_reg_get(dev_id,
-				phy_id, &ptp_rx_com_frac_nano_reg));
-	ts_engine->timestamp.fracnanoseconds = ptp_rx_com_frac_nano_reg.bf.frac_nano;
-
-	SW_RTN_ON_ERROR(qca808x_ptp_rx_com_timestamp_pre0_reg_get(dev_id,
-				phy_id, &ptp_rx_com_timestamp_pre0_reg));
-	SW_RTN_ON_ERROR(qca808x_ptp_rx_com_timestamp_pre1_reg_get(dev_id,
-				phy_id, &ptp_rx_com_timestamp_pre1_reg));
-	SW_RTN_ON_ERROR(qca808x_ptp_rx_com_timestamp_pre2_reg_get(dev_id,
-				phy_id, &ptp_rx_com_timestamp_pre2_reg));
-	ts_engine->timestamp_pre.seconds =
-		((a_int64_t)ptp_rx_com_timestamp_pre0_reg.bf.com_ts_pre << 32) |
-		(ptp_rx_com_timestamp_pre1_reg.bf.com_ts_pre << 16) |
-		ptp_rx_com_timestamp_pre2_reg.bf.com_ts_pre;
-
-	SW_RTN_ON_ERROR(qca808x_ptp_rx_com_timestamp_pre3_reg_get(dev_id,
-				phy_id, &ptp_rx_com_timestamp_pre3_reg));
-	SW_RTN_ON_ERROR(qca808x_ptp_rx_com_timestamp_pre4_reg_get(dev_id,
-				phy_id, &ptp_rx_com_timestamp_pre4_reg));
-	ts_engine->timestamp_pre.nanoseconds =
-		(ptp_rx_com_timestamp_pre3_reg.bf.com_ts_pre << 16) |
-		ptp_rx_com_timestamp_pre4_reg.bf.com_ts_pre;
-
-	SW_RTN_ON_ERROR(qca808x_ptp_rx_com_frac_nano_pre_reg_get(dev_id,
-				phy_id, &ptp_rx_com_frac_nano_pre_reg));
-	ts_engine->timestamp_pre.fracnanoseconds =
-		ptp_rx_com_frac_nano_pre_reg.bf.frac_nano_pre;
-
-	return SW_OK;
+	return ret;
 }
 
 sw_error_t
