@@ -367,8 +367,8 @@ static sw_error_t qca808x_ptp_config_init(a_uint32_t dev_id, a_uint32_t phy_id)
 	fal_ptp_time_t ptp_time = {0};
 	sw_error_t ret = SW_OK;
 
-	/* enable ptp OC two-step mode */
-	ptp_config.ptp_en = A_TRUE;
+	/* set ptp OC two-step mode */
+	ptp_config.ptp_en = A_FALSE;
 	ptp_config.clock_mode = FAL_OC_CLOCK_MODE;
 	ptp_config.step_mode = FAL_TWO_STEP_MODE;
 	ret = qca808x_phy_ptp_config_set(dev_id, phy_id, &ptp_config);
@@ -376,8 +376,8 @@ static sw_error_t qca808x_ptp_config_init(a_uint32_t dev_id, a_uint32_t phy_id)
 	qca808x_ptp_clock_mode_config(dev_id, phy_id, ptp_config.clock_mode,
 			ptp_config.step_mode);
 
-	/* set rtc clock to synchronization */
-	ret |= qca808x_ptp_clock_incval_mode_set(dev_id, phy_id, A_TRUE);
+	/* set rtc clock to asynchronization */
+	ret |= qca808x_ptp_clock_incval_mode_set(dev_id, phy_id, A_FALSE);
 
 	/* adjust frequency to 8ns(125MHz) */
 	ptp_time.nanoseconds = QCA808X_PTP_TICK_RATE_125M;
