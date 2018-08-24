@@ -36,6 +36,10 @@
 #define QCA808X_PTP_TICK_RATE_125M   8
 #define QCA808X_PTP_TICK_RATE_200M   5
 
+#ifndef SUPPORTED_PTP
+#define SUPPORTED_PTP               (1 << 31)
+#endif
+
 #define SKB_TIMESTAMP_TIMEOUT        1 /* jiffies */
 #define GPS_WORK_TIMEOUT             HZ
 
@@ -992,6 +996,13 @@ int qca808x_hwtstamp(struct phy_device *phydev, struct ifreq *ifr)
 
 	pdata->clock_mode = ptp_config.clock_mode;
 	pdata->step_mode = ptp_config.step_mode;
+	if (ptp_info->hwts_rx_type != PTP_CLASS_NONE) {
+		phydev->supported |= SUPPORTED_PTP;
+		phydev->advertising |= SUPPORTED_PTP;
+	} else {
+		phydev->supported &= ~SUPPORTED_PTP;
+		phydev->advertising &= ~SUPPORTED_PTP;
+	}
 
 	return copy_to_user(ifr->ifr_data, &cfg, sizeof(cfg)) ? -EFAULT : 0;
 }
