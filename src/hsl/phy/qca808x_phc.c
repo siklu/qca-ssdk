@@ -997,36 +997,53 @@ int qca808x_hwtstamp(struct phy_device *phydev, struct ifreq *ifr)
 }
 
 bool qca808x_rxtstamp(struct phy_device *phydev,
-			     struct sk_buff *skb, int type)
+			     struct sk_buff *nskb, int type)
 {
 	struct skb_shared_hwtstamps *shhwtstamps = NULL;
 	struct timespec64 ts = {0};
 	a_bool_t ingress_trig_flag = A_FALSE;
 	a_uint64_t ns;
+	a_int32_t ptp_class;
 	a_uint32_t *reserved2;
 	a_uint8_t *reserved0, *reserved1;
 	a_uint32_t *cf1, *cf2;
 	a_uint8_t *ptp_header;
 	a_uint8_t embed_val, pkt_type;
-	qca808x_ptp_cb *ptp_cb = (qca808x_ptp_cb *)skb->cb;
+	qca808x_ptp_cb *ptp_cb = (qca808x_ptp_cb *)nskb->cb;
 	qca808x_priv *priv = phydev->priv;
 	struct qca808x_phy_info *pdata = priv->phy_info;
 	struct qca808x_ptp_info *ptp_info = &priv->ptp_info;
 
-	if (!pdata) {
+	if (ptp_info->hwts_rx_type == PTP_CLASS_NONE || !pdata) {
 		return false;
 	}
 
-	if (ptp_info->hwts_rx_type == PTP_CLASS_NONE ||
-			(type & ptp_info->hwts_rx_type) == PTP_CLASS_NONE) {
+	/* The PTP_CLASS_NONE is passed, which indicates that the
+	 * PTP class is not determined, calling ptp_classify_raw to
+	 * classfy the packet.
+	 */
+	if (type == PTP_CLASS_NONE) {
+		__skb_push(nskb, ETH_HLEN);
+		/* dissecting the packet content to get ptp class */
+		ptp_class = ptp_classify_raw(nskb);
+		__skb_pull(nskb, ETH_HLEN);
+		if (ptp_class == PTP_CLASS_NONE) {
+			/* this case should not happen, only ptp event packet passed */
+			SSDK_ERROR("%s: No PTP event packet received\n", __func__);
+			return false;
+		}
+		type = ptp_class;
+	}
+
+	if ((ptp_info->hwts_rx_type & type) == PTP_CLASS_NONE) {
 		return false;
 	}
 
-	ptp_header = skb_ptp_header(skb, type);
+	ptp_header = skb_ptp_header(nskb, type);
 	if (!ptp_header) {
 		return false;
 	}
-	shhwtstamps = skb_hwtstamps(skb);
+	shhwtstamps = skb_hwtstamps(nskb);
 	memset(shhwtstamps, 0, sizeof(*shhwtstamps));
 
 #define PTP_HDR_RESERVED0_OFFSET	1
@@ -1101,7 +1118,7 @@ bool qca808x_rxtstamp(struct phy_device *phydev,
 	} else {
 		ptp_cb->ptp_type = type;
 		ptp_cb->pkt_type = pkt_type;
-		skb_queue_tail(&ptp_info->rx_queue, skb);
+		skb_queue_tail(&ptp_info->rx_queue, nskb);
 		schedule_delayed_work(&ptp_info->rx_ts_work, 0);
 		return true;
 	}
@@ -1111,25 +1128,48 @@ bool qca808x_rxtstamp(struct phy_device *phydev,
 			pkt_type, PTP_PKT_SEQID_MATCHED);
 
 	shhwtstamps->hwtstamp = ns_to_ktime(ns);
-	netif_rx_ni(skb);
+	netif_rx_ni(nskb);
 
 	return true;
 }
 
 void qca808x_txtstamp(struct phy_device *phydev,
-			     struct sk_buff *skb, int type)
+			     struct sk_buff *org_skb, int type)
 {
 	a_uint8_t msg_type;
+	struct sk_buff *skb;
+	qca808x_ptp_cb *ptp_cb;
+	a_uint8_t *ptp_header;
+	a_int32_t ptp_class;
 	qca808x_priv *priv = phydev->priv;
 	struct qca808x_ptp_info *ptp_info = &priv->ptp_info;
-	qca808x_ptp_cb *ptp_cb = (qca808x_ptp_cb *)skb->cb;
-	a_uint8_t *ptp_header = skb_ptp_header(skb, type);
 
+	/* The PTP_CLASS_NONE is passed, which indicates that the
+	 * PTP class is not determined, calling ptp_classify_raw to
+	 * classfy the packet.
+	 */
+	if (type == PTP_CLASS_NONE) {
+		ptp_class = ptp_classify_raw(org_skb);
+		if (ptp_class == PTP_CLASS_NONE) {
+			return;
+		}
+		skb = skb_clone_sk(org_skb);
+		if (!skb) {
+			SSDK_ERROR("%s: skb_clone_sk failed\n", __func__);
+			return;
+		}
+		type = ptp_class;
+	} else {
+		skb = org_skb;
+	}
+
+	ptp_header = skb_ptp_header(skb, type);
 	if (!ptp_header) {
 		kfree_skb(skb);
 		return;
 	}
 
+	ptp_cb = (qca808x_ptp_cb *)skb->cb;
 	msg_type = *ptp_header & 0xf;
 	switch (ptp_info->hwts_tx_type) {
 		case HWTSTAMP_TX_ONESTEP_SYNC:
