@@ -978,7 +978,11 @@ typedef sw_error_t (*adpt_ptp_interrupt_set_func)(a_uint32_t dev_id,
 typedef sw_error_t (*adpt_ptp_interrupt_get_func)(a_uint32_t dev_id,
 		a_uint32_t port_id, fal_ptp_interrupt_t *interrupt);
 
-
+typedef struct
+{
+	ssdk_chip_type chip_type;
+	a_uint32_t chip_revision;
+}adpt_chip_ver_t;
 typedef struct
 {
 	a_uint32_t adpt_fdb_func_bitmap[2];
