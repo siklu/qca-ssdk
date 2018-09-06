@@ -309,11 +309,6 @@ static int qca808x_read_status(struct phy_device *phydev)
 }
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
-static int qca808x_match_phy_device(struct phy_device *phydev)
-{
-	return phydev->phy_id == QCA8081_PHY;
-}
-
 static int qca808x_soft_reset(struct phy_device *phydev)
 {
 	a_uint32_t dev_id = 0, phy_id = 0;
@@ -385,7 +380,6 @@ struct phy_driver qca808x_phy_driver = {
 	.read_status	= qca808x_read_status,
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
 	.soft_reset	= qca808x_soft_reset,
-	.match_phy_device       = qca808x_match_phy_device,
 	.link_change_notify     = qca808x_link_change_notify,
 #endif
 #if defined(IN_LINUX_STD_PTP)
@@ -435,10 +429,18 @@ void qca808x_phydev_init(a_uint32_t dev_id, a_uint32_t port_id)
 #if defined(IN_PHY_I2C_MODE)
 	/* in i2c mode, need to register a fake phy device
 	 * before the phy driver register */
-	if (hsl_port_phy_access_type_get(dev_id, port_id) == PHY_I2C_ACCESS)
-	{
+	if (hsl_port_phy_access_type_get(dev_id, port_id) == PHY_I2C_ACCESS) {
+		a_uint16_t org_id = 0, rev_id = 0;
+		a_uint32_t phy_id = 0;
+		sw_error_t ret = SW_OK;
+		ret = qca808x_phy_get_phy_id(dev_id, pdata->phy_addr, &org_id, &rev_id);
+		if (ret != SW_OK) {
+			SSDK_ERROR("%s fail to get phy id\n", __func__);
+			return;
+		}
+		phy_id = ((org_id & 0xffff) << 16) | (rev_id & 0xffff);
 		pdata->phydev_addr = qca_ssdk_port_to_phy_mdio_fake_addr(dev_id, port_id);
-		sfp_phy_device_setup(dev_id, port_id, QCA8081_PHY);
+		sfp_phy_device_setup(dev_id, port_id, phy_id);
 	}
 #endif
 }
