@@ -225,6 +225,7 @@ extern "C" {
 	SW_PTP_TRIGGER,
 	SW_PTP_CAPTURE,
 	SW_PTP_INTERRUPT,
+	SW_PORT_EEE_CONFIG,
     } sw_data_type_e;
 
     typedef struct
