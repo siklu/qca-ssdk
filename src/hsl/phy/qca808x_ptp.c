@@ -95,7 +95,6 @@ qca808x_phy_ptp_config_set(a_uint32_t dev_id,
 	{
 		ptp_misc_config_reg.bf.pkt_one_step_en = PTP_REG_BIT_FALSE;
 	}
-	ptp_misc_config_reg.bf.cf_from_pkt_en = PTP_REG_BIT_TRUE;
 #if defined(IN_LINUX_STD_PTP)
 	qca808x_ptp_clock_mode_config(dev_id, phy_id, config->clock_mode, config->step_mode);
 #endif
@@ -239,11 +238,13 @@ qca808x_phy_ptp_rx_timestamp_mode_set(a_uint32_t dev_id,
 	{
 		ptp_main_conf_reg.bf.ts_attach_mode = PTP_REG_BIT_FALSE;
 		ptp_misc_config_reg.bf.embed_ingress_time_en = PTP_REG_BIT_FALSE;
+		ptp_misc_config_reg.bf.cf_from_pkt_en = PTP_REG_BIT_TRUE;
 	}
 	else
 	{
 		ptp_main_conf_reg.bf.ts_attach_mode = PTP_REG_BIT_FALSE;
 		ptp_misc_config_reg.bf.embed_ingress_time_en = PTP_REG_BIT_TRUE;
+		ptp_misc_config_reg.bf.cf_from_pkt_en = PTP_REG_BIT_FALSE;
 	}
 	SW_RTN_ON_ERROR(qca808x_ptp_main_conf_reg_set(dev_id, phy_id, &ptp_main_conf_reg));
 	SW_RTN_ON_ERROR(qca808x_ptp_misc_config_reg_set(dev_id, phy_id, &ptp_misc_config_reg));

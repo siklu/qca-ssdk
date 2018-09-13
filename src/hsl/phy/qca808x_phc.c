@@ -36,6 +36,11 @@
 #define QCA808X_PTP_TICK_RATE_125M   8
 #define QCA808X_PTP_TICK_RATE_200M   5
 
+#define PTP_HDR_RESERVED0_OFFSET	1
+#define PTP_HDR_RESERVED1_OFFSET	5
+#define PTP_HDR_CORRECTIONFIELD_OFFSET	8
+#define PTP_HDR_RESERVED2_OFFSET	16
+
 #ifndef SUPPORTED_PTP
 #define SUPPORTED_PTP               (1 << 31)
 #endif
@@ -527,7 +532,6 @@ static void rx_timestamp_work(struct work_struct *work)
 		memset(shhwtstamps, 0, sizeof(*shhwtstamps));
 		shhwtstamps->hwtstamp = ns_to_ktime(ns);
 
-		netif_rx_ni(skb);
 		/* OC/BC needs record ingress time stamp on receiving
 		 * peer delay request message under one-step mode.
 		 * TC one step mode should use the embeded mode for offloading
@@ -546,6 +550,7 @@ static void rx_timestamp_work(struct work_struct *work)
 					break;
 			}
 		}
+		netif_rx_ni(skb);
 	}
 
 	if (!skb_queue_empty(&ptp_data->rx_queue))
@@ -852,6 +857,11 @@ static int qca808x_ptp_adjfreq(struct ptp_clock_info *ptp, s32 ppb)
 		ns = ns_tmp;
 	}
 
+	/* remove the redundant bits, only 26 bits for fracnanoseconds */
+	while (rate & 0xfc000000) {
+		rate >>= 1;
+	}
+
 	ptp_time.nanoseconds = ns;
 	ptp_time.fracnanoseconds = rate;
 
@@ -1014,10 +1024,12 @@ bool qca808x_rxtstamp(struct phy_device *phydev,
 	struct timespec64 ts = {0};
 	a_bool_t ingress_trig_flag = A_FALSE;
 	a_uint64_t ns;
+	a_int64_t *correction;
+	a_uint16_t *seqid;
 	a_int32_t ptp_class;
 	a_uint32_t *reserved2;
 	a_uint8_t *reserved0, *reserved1;
-	a_uint32_t *cf1, *cf2;
+	a_uint32_t *cf1;
 	a_uint8_t *ptp_header;
 	a_uint8_t embed_val, pkt_type;
 	qca808x_ptp_cb *ptp_cb = (qca808x_ptp_cb *)nskb->cb;
@@ -1057,10 +1069,6 @@ bool qca808x_rxtstamp(struct phy_device *phydev,
 	shhwtstamps = skb_hwtstamps(nskb);
 	memset(shhwtstamps, 0, sizeof(*shhwtstamps));
 
-#define PTP_HDR_RESERVED0_OFFSET	1
-#define PTP_HDR_RESERVED1_OFFSET	5
-#define PTP_HDR_CORRECTIONFIELD_OFFSET	8
-#define PTP_HDR_RESERVED2_OFFSET	16
 #define PTP_HDR_CORRECTIONFIELD_CPY_SRC 11
 #define PTP_HDR_CORRECTIONFIELD_CPY_DST 9
 #define PTP_HDR_CORRECTIONFIELD_CPY_LEN 5
@@ -1068,7 +1076,8 @@ bool qca808x_rxtstamp(struct phy_device *phydev,
 	reserved0 = ptp_header + PTP_HDR_RESERVED0_OFFSET;
 	reserved1 = ptp_header + PTP_HDR_RESERVED1_OFFSET;
 	cf1 = (a_uint32_t *)(ptp_header + PTP_HDR_CORRECTIONFIELD_OFFSET);
-	cf2 = (a_uint32_t *)(ptp_header + PTP_HDR_CORRECTIONFIELD_OFFSET + 4);
+	correction = (a_uint64_t *)(ptp_header + PTP_HDR_CORRECTIONFIELD_OFFSET);
+	seqid = (a_uint16_t *)(ptp_header + OFF_PTP_SEQUENCE_ID);
 	reserved2 = (a_uint32_t *)(ptp_header + PTP_HDR_RESERVED2_OFFSET);
 
 	embed_val = (*reserved0 & 0xf0) >> 4;
@@ -1089,11 +1098,17 @@ bool qca808x_rxtstamp(struct phy_device *phydev,
 					/* message sync with the timestamp inserted into the ptp
 					 * header, do not use the ingress_trig_time register, the
 					 * ingress time will be acquired from ptp header.
-					 * the ingress time should be recorded in the local phy
-					 * for the pdelay request message.
+					 * the ingress time of pdealy request msg should be
+					 * recorded and will be copied the corresponding pdealy
+					 * response msg.
 					 */
 					if (pkt_type == QCA808X_PTP_MSG_PREQ) {
-						ingress_trig_flag = A_TRUE;
+						ptp_info->embeded_ts.reserved0 = *reserved0;
+						ptp_info->embeded_ts.reserved1 = *reserved1;
+						ptp_info->embeded_ts.reserved2 = *reserved2;
+						ptp_info->embeded_ts.correction = *correction;
+						ptp_info->embeded_ts.seqid = *seqid;
+						ptp_info->embeded_ts.msg_type = pkt_type;
 					}
 					break;
 				case FAL_E2ETC_CLOCK_MODE:
@@ -1151,6 +1166,10 @@ void qca808x_txtstamp(struct phy_device *phydev,
 	struct sk_buff *skb;
 	qca808x_ptp_cb *ptp_cb;
 	a_uint8_t *ptp_header;
+	a_int64_t *correction;
+	a_uint32_t *reserved2;
+	a_uint8_t *reserved0, *reserved1;
+	a_uint16_t *seqid;
 	a_int32_t ptp_class;
 	qca808x_priv *priv = phydev->priv;
 	struct qca808x_ptp_info *ptp_info = &priv->ptp_info;
@@ -1181,6 +1200,11 @@ void qca808x_txtstamp(struct phy_device *phydev,
 	}
 
 	ptp_cb = (qca808x_ptp_cb *)skb->cb;
+	seqid = (a_uint16_t *)(ptp_header + OFF_PTP_SEQUENCE_ID);
+	reserved0 = ptp_header + PTP_HDR_RESERVED0_OFFSET;
+	reserved1 = ptp_header + PTP_HDR_RESERVED1_OFFSET;
+	reserved2 = (a_uint32_t *)(ptp_header + PTP_HDR_RESERVED2_OFFSET);
+	correction = (a_uint64_t *)(ptp_header + PTP_HDR_CORRECTIONFIELD_OFFSET);
 	msg_type = *ptp_header & 0xf;
 	switch (ptp_info->hwts_tx_type) {
 		case HWTSTAMP_TX_ONESTEP_SYNC:
@@ -1191,11 +1215,23 @@ void qca808x_txtstamp(struct phy_device *phydev,
 			}
 			break;
 		case HWTSTAMP_TX_ONESTEP_P2P:
-			if (msg_type == QCA808X_PTP_MSG_PRESP ||
-					msg_type == QCA808X_PTP_MSG_SYNC) {
-				skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
-				kfree_skb(skb);
-				return;
+			switch (msg_type) {
+				case QCA808X_PTP_MSG_PRESP:
+					if (ptp_info->embeded_ts.seqid == *seqid &&
+							ptp_info->embeded_ts.msg_type ==
+							QCA808X_PTP_MSG_PREQ) {
+						*reserved0 = ptp_info->embeded_ts.reserved0;
+						*reserved1 = ptp_info->embeded_ts.reserved1;
+						*reserved2 = ptp_info->embeded_ts.reserved2;
+						*correction = ptp_info->embeded_ts.correction;
+					}
+					/* fall down */
+				case QCA808X_PTP_MSG_SYNC:
+					skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
+					kfree_skb(skb);
+					return;
+				default:
+					break;
 			}
 			break;
 		case HWTSTAMP_TX_ON:
@@ -1239,7 +1275,6 @@ int qca808x_ts_info(struct phy_device *phydev,
 
 	info->rx_filters =
 		(1 << HWTSTAMP_FILTER_NONE) |
-		(1 << HWTSTAMP_FILTER_PTP_V1_L4_EVENT) |
 		(1 << HWTSTAMP_FILTER_PTP_V2_L4_EVENT) |
 		(1 << HWTSTAMP_FILTER_PTP_V2_L2_EVENT) |
 		(1 << HWTSTAMP_FILTER_PTP_V2_EVENT);

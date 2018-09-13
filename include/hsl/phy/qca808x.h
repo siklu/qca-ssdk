@@ -56,6 +56,15 @@ typedef struct {
 	a_uint64_t event_pkt_cnt;
 } ptp_packet_stat;
 
+typedef struct {
+	a_uint8_t reserved0;
+	a_uint8_t reserved1;
+	a_uint8_t msg_type;
+	a_uint16_t seqid;
+	a_uint32_t reserved2;
+	a_int64_t correction;
+} qca808x_embeded_ts;
+
 struct qca808x_ptp_info {
 	a_int32_t hwts_tx_type;
 	a_int32_t hwts_rx_type;
@@ -67,7 +76,7 @@ struct qca808x_ptp_info {
 	a_int32_t ingress_time;
 	struct sk_buff_head tx_queue;
 	struct sk_buff_head rx_queue;
-
+	qca808x_embeded_ts embeded_ts;
 };
 #endif
 
