@@ -20,6 +20,10 @@
 #include "ref_vsi.h"
 #include "ssdk_clk.h"
 
+#if defined(IN_PTP)
+#include "hsl_phy.h"
+#endif
+
 static sw_error_t qca_hppe_vsi_hw_init(a_uint32_t dev_id)
 {
        return ppe_vsi_init(dev_id);
@@ -973,6 +977,140 @@ sw_error_t qca_hppe_acl_byp_intf_mac_learn(a_uint32_t dev_id)
 	return SW_OK;
 }
 
+#if defined(IN_PTP)
+sw_error_t qca_hppe_acl_remark_ptp_servcode(a_uint32_t dev_id) {
+#define LIST_ID_L2_TAG_SERVICE_CODE_PTP 58
+#define LIST_ID_L4_TAG_SERVICE_CODE_PTP 59
+#define LIST_PRI_TAG_SERVICE_CODE_PTP   1
+#define PTP_EVENT_PKT_SERVICE_CODE      0x9
+#define PTP_EV_PORT                     319
+#define PTP_MSG_SYNC                    0
+#define PTP_MSG_PRESP                   3
+
+	sw_error_t ret;
+	fal_func_ctrl_t func_ctrl, func_ctrl_old;
+	fal_servcode_config_t servcode_conf;
+	fal_acl_rule_t entry = {0};
+	a_uint32_t index = 0, msg_type = 0;
+	a_uint32_t ptp_port_bmp = 0;
+
+	/* only marking ptp packet with service code for the qca808x phy */
+	ptp_port_bmp = qca_ssdk_phy_type_port_bmp_get(dev_id, QCA808X_PHY_CHIP);
+
+	/* Not found the PHY with ptp feature */
+	if (ptp_port_bmp == 0) {
+		return SW_OK;
+	}
+
+	/* Create PTP ACL L2 list */
+	ret = fal_acl_list_creat(dev_id, LIST_ID_L2_TAG_SERVICE_CODE_PTP,
+			LIST_PRI_TAG_SERVICE_CODE_PTP);
+	SW_RTN_ON_ERROR(ret);
+
+	/* Set up UDF0 profile */
+	ret = fal_acl_udf_profile_set(dev_id, FAL_ACL_UDF_NON_IP, 0, FAL_ACL_UDF_TYPE_L3, 0);
+	SW_RTN_ON_ERROR(ret);
+
+	/* Tag service code for PTP packet */
+	entry.service_code = PTP_EVENT_PKT_SERVICE_CODE;
+	entry.pri = LIST_PRI_TAG_SERVICE_CODE_PTP;
+	FAL_ACTION_FLG_SET(entry.action_flg, FAL_ACL_ACTION_SERVICE_CODE);
+	FAL_ACTION_FLG_SET(entry.action_flg, FAL_ACL_ACTION_PERMIT);
+
+	/* L2 PTP packet */
+	entry.rule_type = FAL_ACL_RULE_MAC;
+
+	/* L2 PTP ethernet type 0x88f7 */
+	entry.ethtype_val = ETH_P_1588;
+	entry.ethtype_mask = 0xffff;
+	FAL_FIELD_FLG_SET(entry.field_flg, FAL_ACL_FIELD_MAC_ETHTYPE);
+
+	for (msg_type = PTP_MSG_SYNC; msg_type <= PTP_MSG_PRESP; msg_type++) {
+		/* L2 UDF0 for msg type */
+		entry.udf0_op = FAL_ACL_FIELD_MASK;
+		entry.udf0_val = (msg_type << 0x8);
+		entry.udf0_mask = 0x0f00;
+		FAL_FIELD_FLG_SET(entry.field_flg, FAL_ACL_FIELD_UDF0);
+
+		/* Add PTP L2 rule to ACL list */
+		ret = fal_acl_rule_add(dev_id, LIST_ID_L2_TAG_SERVICE_CODE_PTP,
+				index++, 1, &entry);
+		SW_RTN_ON_ERROR(ret);
+	}
+
+	/* Unset L2 PTP ethernet type 0x88f7 */
+	index = 0;
+	FAL_FIELD_FLG_CLR(entry.field_flg, FAL_ACL_FIELD_UDF0);
+	FAL_FIELD_FLG_CLR(entry.field_flg, FAL_ACL_FIELD_MAC_ETHTYPE);
+
+	/* Create PTP ACL L4 list */
+	ret = fal_acl_list_creat(dev_id, LIST_ID_L4_TAG_SERVICE_CODE_PTP,
+			LIST_PRI_TAG_SERVICE_CODE_PTP);
+	SW_RTN_ON_ERROR(ret);
+
+	/* IPv4 PTP packet */
+	entry.rule_type = FAL_ACL_RULE_IP4;
+	entry.is_ip_mask = 1;
+	entry.is_ip_val = A_TRUE;
+	FAL_FIELD_FLG_SET(entry.field_flg, FAL_ACL_FIELD_IP);
+	entry.is_ipv6_mask = 1;
+	entry.is_ipv6_val = A_FALSE;
+	FAL_FIELD_FLG_SET(entry.field_flg, FAL_ACL_FIELD_IPV6);
+
+	/* PTP over UDP protocol */
+	entry.ip_proto_val = IPPROTO_UDP;
+	entry.ip_proto_mask = 0xff;
+	FAL_FIELD_FLG_SET(entry.field_flg, FAL_ACL_FIELD_IP_PROTO);
+
+	/* PTP UDP dest port 319 */
+	entry.dest_l4port_op = FAL_ACL_FIELD_MASK;
+	entry.dest_l4port_val = PTP_EV_PORT;
+	entry.dest_l4port_mask = 0xffff;
+	FAL_FIELD_FLG_SET(entry.field_flg, FAL_ACL_FIELD_L4_DPORT);
+
+	/* Add PTP IPv4 rule to ACL list */
+	ret = fal_acl_rule_add(dev_id, LIST_ID_L4_TAG_SERVICE_CODE_PTP, index++, 1, &entry);
+	SW_RTN_ON_ERROR(ret);
+
+	/* IPv6 PTP packet */
+	entry.rule_type = FAL_ACL_RULE_IP6;
+	entry.is_ipv6_val = A_TRUE;
+
+	/* Add PTP IPv6 rule to ACL list */
+	ret = fal_acl_rule_add(dev_id, LIST_ID_L4_TAG_SERVICE_CODE_PTP, index++, 1, &entry);
+	SW_RTN_ON_ERROR(ret);
+
+	/* Bind PTP ACL list to port bmp */
+	ret = fal_acl_list_bind(dev_id, LIST_ID_L2_TAG_SERVICE_CODE_PTP,
+			FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORTBITMAP, ptp_port_bmp);
+	SW_RTN_ON_ERROR(ret);
+	ret = fal_acl_list_bind(dev_id, LIST_ID_L4_TAG_SERVICE_CODE_PTP,
+			FAL_ACL_DIREC_IN, FAL_ACL_BIND_PORTBITMAP, ptp_port_bmp);
+	SW_RTN_ON_ERROR(ret);
+
+	/* enable service code module temporarily */
+	ret = fal_module_func_ctrl_get(dev_id, FAL_MODULE_SERVCODE, &func_ctrl_old);
+	SW_RTN_ON_ERROR(ret);
+	func_ctrl.bitmap[0] = (1<<FUNC_SERVCODE_CONFIG_SET) | (1<<FUNC_SERVCODE_CONFIG_GET);
+	ret = fal_module_func_ctrl_set(dev_id, FAL_MODULE_SERVCODE, &func_ctrl);
+	SW_RTN_ON_ERROR(ret);
+
+	/* configure the next service code of ptp service code, which
+	 * is needed for EDMA receiving the packet with service code.
+	 */
+	ret = fal_servcode_config_get(dev_id, PTP_EVENT_PKT_SERVICE_CODE, &servcode_conf);
+	SW_RTN_ON_ERROR(ret);
+	servcode_conf.next_service_code = PTP_EVENT_PKT_SERVICE_CODE;
+	ret = fal_servcode_config_set(dev_id, PTP_EVENT_PKT_SERVICE_CODE, &servcode_conf);
+	SW_RTN_ON_ERROR(ret);
+
+	/* restore service code module feature bitmap */
+	ret = fal_module_func_ctrl_set(dev_id, FAL_MODULE_SERVCODE, &func_ctrl_old);
+
+	return ret;
+}
+#endif
+
 static sw_error_t
 qca_hppe_interface_mode_init(a_uint32_t dev_id, a_uint32_t mode0, a_uint32_t mode1, a_uint32_t mode2)
 {
@@ -1070,6 +1208,11 @@ sw_error_t qca_hppe_hw_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 	SW_RTN_ON_ERROR(rv);
 	rv = qca_hppe_acl_byp_intf_mac_learn(dev_id);
 	SW_RTN_ON_ERROR(rv);
+#if defined(IN_PTP)
+	rv = qca_hppe_acl_remark_ptp_servcode(dev_id);
+	SW_RTN_ON_ERROR(rv);
+#endif
+
 	rv = qca_hppe_interface_mode_init(dev_id, cfg->mac_mode, cfg->mac_mode1,
 				cfg->mac_mode2);
 #ifndef HAWKEYE_CHIP
