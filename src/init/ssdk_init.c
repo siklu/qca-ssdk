@@ -1898,6 +1898,7 @@ static int ssdk_probe(struct platform_device *pdev)
 
 static const struct of_device_id ssdk_of_mtable[] = {
 	{.compatible = "qcom,ess-switch" },
+	{.compatible = "qcom,ess-switch-ipq60xx" },
 	{.compatible = "qcom,ess-switch-ipq807x" },
 	{.compatible = "qcom,ess-instance" },
 	{}
