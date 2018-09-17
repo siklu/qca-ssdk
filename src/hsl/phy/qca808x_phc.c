@@ -29,6 +29,7 @@
 
 #include "qca808x_ptp.h"
 #include "qca808x_ptp_reg.h"
+#include "qca808x_ptp_api.h"
 
 #define QCA808X_PTP_EMBEDDED_MODE    0xa
 
@@ -806,32 +807,12 @@ static int qca808x_ptp_adjtime(struct ptp_clock_info *ptp, s64 delta)
 	return 0;
 }
 
-/******************************************************************************
-*
-* qca808x_ptp_adjfreq - adjust the frequency of cycle counter
-*
-* ptp: the ptp clock info structure
-* ppb:  parts per billion adjustment from master
-*
-*/
-static int qca808x_ptp_adjfreq(struct ptp_clock_info *ptp, s32 ppb)
+static void qca808x_ppb_to_freq (a_int32_t speed, a_int32_t ppb, fal_ptp_time_t *ptp_time)
 {
 	a_uint64_t rate;
 	a_uint16_t ns, ns_tmp;
 	a_int32_t neg_adj = 0, tmp = 0;
-	const struct qca808x_phy_info *pdata;
-	struct qca808x_ptp_clock *clock =
-		container_of(ptp, struct qca808x_ptp_clock, caps);
 
-	fal_ptp_time_t ptp_time = {0};
-
-	qca808x_priv *priv = clock->priv;
-	struct phy_device *phydev = priv->phydev;
-	pdata = priv->phy_info;
-
-	if (!pdata || !phydev) {
-		return SW_FAIL;
-	}
 	if (ppb < 0) {
 		neg_adj = 1;
 		ppb = -ppb;
@@ -839,8 +820,8 @@ static int qca808x_ptp_adjfreq(struct ptp_clock_info *ptp, s32 ppb)
 
 	rate = ppb;
 	rate <<= 20;
-	/* divided by (125000000-ppb/8)/64 */
-	if (phydev->speed == FAL_SPEED_2500) {
+	/* divided by (200Mhz-ppb/8)/64 */
+	if (speed == FAL_SPEED_2500) {
 		tmp = (ppb/5)/64;
 		ns_tmp = QCA808X_PTP_TICK_RATE_200M;
 		rate = div_u64(rate, 3125000 + tmp);
@@ -862,11 +843,86 @@ static int qca808x_ptp_adjfreq(struct ptp_clock_info *ptp, s32 ppb)
 		rate >>= 1;
 	}
 
-	ptp_time.nanoseconds = ns;
-	ptp_time.fracnanoseconds = rate;
+	ptp_time->seconds = 0;
+	ptp_time->nanoseconds = ns;
+	ptp_time->fracnanoseconds = rate;
+
+	return;
+}
+
+static void qca808x_ptp_adjfreq_sync(a_uint32_t phy_addr,
+		a_int32_t ppb, fal_ptp_time_t ptp_time_org)
+{
+	fal_ptp_reference_clock_t ref_clock = FAL_REF_CLOCK_LOCAL;
+	fal_ptp_time_t ptp_time = {0};
+	struct qca808x_phy_info *pdata = NULL;
+	sw_error_t ret = SW_OK;
+	a_uint32_t gm_mode = 0;
+
+	/*
+	 * In BC mode, the SYNC clock, PPS and Toduart PINs are connected,
+	 * the adjust frequency should be same among the ports to guaranteeing
+	 * the RTC consistent.
+	 */
+	list_for_each_entry(pdata, &g_qca808x_phy_list, list) {
+		if (pdata->phydev_addr != phy_addr) {
+			ret = qca808x_ptp_gm_conf0_reg_grandmaster_mode_get(pdata->dev_id,
+					pdata->phy_addr, &gm_mode);
+			/* The grandmaster mode should be configured to sync RTC */
+			if (ret == SW_OK && gm_mode == PTP_REG_BIT_TRUE) {
+				ptp_time = ptp_time_org;
+				ret = qca808x_phy_ptp_reference_clock_get(pdata->dev_id,
+						pdata->phy_addr, &ref_clock);
+				/*
+				 * BC ports share the same RTC clock in the external mode
+				 * so the adjust frequency should be also same, otherwise
+				 * the ppb should be converted to the corresponding value
+				 * of the adjust frequency.
+				 */
+				if (ret == SW_OK && ref_clock != FAL_REF_CLOCK_EXTERNAL) {
+					qca808x_ppb_to_freq(pdata->speed, ppb, &ptp_time);
+				}
+				qca808x_phy_ptp_rtc_adjfreq_set(pdata->dev_id,
+						pdata->phy_addr, &ptp_time);
+			}
+		}
+	}
+
+	return;
+}
+
+/******************************************************************************
+*
+* qca808x_ptp_adjfreq - adjust the frequency of cycle counter
+*
+* ptp: the ptp clock info structure
+* ppb:  parts per billion adjustment from master
+*
+*/
+static int qca808x_ptp_adjfreq(struct ptp_clock_info *ptp, s32 ppb)
+{
+	const struct qca808x_phy_info *pdata;
+	struct qca808x_ptp_clock *clock =
+		container_of(ptp, struct qca808x_ptp_clock, caps);
+
+	fal_ptp_time_t ptp_time = {0};
+
+	qca808x_priv *priv = clock->priv;
+	struct phy_device *phydev = priv->phydev;
+	pdata = priv->phy_info;
+
+	if (!pdata || !phydev) {
+		return SW_FAIL;
+	}
+
+	qca808x_ppb_to_freq(pdata->speed, ppb, &ptp_time);
 
 	mutex_lock(&clock->tsreg_lock);
 	qca808x_phy_ptp_rtc_adjfreq_set(pdata->dev_id, pdata->phy_addr, &ptp_time);
+	if (pdata->clock_mode == FAL_BC_CLOCK_MODE) {
+		/* Keep RTC time consistent among BC ports */
+		qca808x_ptp_adjfreq_sync(pdata->phy_addr, ppb, ptp_time);
+	}
 	mutex_unlock(&clock->tsreg_lock);
 	return 0;
 }
@@ -977,11 +1033,7 @@ int qca808x_hwtstamp(struct phy_device *phydev, struct ifreq *ifr)
 	}
 
 	mutex_lock(&clock->tsreg_lock);
-	ret = qca808x_phy_ptp_config_get(pdata->dev_id, pdata->phy_addr, &ptp_config);
-	if (ret != SW_OK) {
-		mutex_unlock(&clock->tsreg_lock);
-		return -EFAULT;
-	}
+	ptp_config.clock_mode = pdata->clock_mode;
 	switch (ptp_info->hwts_tx_type) {
 		case HWTSTAMP_TX_ON:
 			ptp_config.ptp_en = A_TRUE;
@@ -1004,7 +1056,6 @@ int qca808x_hwtstamp(struct phy_device *phydev, struct ifreq *ifr)
 		return -EFAULT;
 	}
 
-	pdata->clock_mode = ptp_config.clock_mode;
 	pdata->step_mode = ptp_config.step_mode;
 	if (ptp_info->hwts_rx_type != PTP_CLASS_NONE) {
 		phydev->supported |= SUPPORTED_PTP;
