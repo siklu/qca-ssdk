@@ -4277,11 +4277,9 @@ adpt_hppe_port_interface_mode_switch(a_uint32_t dev_id, a_uint32_t port_id)
 		SW_RTN_ON_ERROR(rv);
 
 		if (port_mode_new == PHY_SGMII_BASET) {
-			adpt_hppe_gcc_uniphy_clock_status_set(dev_id, port_id, A_TRUE);
 			rv = adpt_hppe_uniphy_mode_set(dev_id,
 				uniphy_index, PORT_WRAPPER_SGMII_CHANNEL0);
 			SW_RTN_ON_ERROR(rv);
-			adpt_hppe_gcc_uniphy_clock_status_set(dev_id, port_id, A_FALSE);
 			ssdk_dt_global_set_mac_mode(dev_id,
 				uniphy_index, PORT_WRAPPER_SGMII_CHANNEL0);
 			qca_hppe_port_mac_type_set(dev_id, port_id, PORT_GMAC_TYPE);
@@ -4293,11 +4291,9 @@ adpt_hppe_port_interface_mode_switch(a_uint32_t dev_id, a_uint32_t port_id)
 			SW_RTN_ON_ERROR(rv);
 
 		} else if (port_mode_new == PORT_USXGMII) {
-			adpt_hppe_gcc_uniphy_clock_status_set(dev_id, port_id, A_TRUE);
 			rv = adpt_hppe_uniphy_mode_set(dev_id,
 				uniphy_index, PORT_WRAPPER_USXGMII);
 			SW_RTN_ON_ERROR(rv);
-			adpt_hppe_gcc_uniphy_clock_status_set(dev_id, port_id, A_FALSE);
 			ssdk_dt_global_set_mac_mode(dev_id,
 				uniphy_index, PORT_WRAPPER_USXGMII);
 			qca_hppe_port_mac_type_set(dev_id, port_id, PORT_XGMAC_TYPE);
@@ -4369,6 +4365,8 @@ qca_hppe_mac_sw_sync_task(struct qca_phy_priv *priv)
 			/* disable rx mac */
 			adpt_hppe_port_rxmac_status_set(priv->device_id, port_id, A_FALSE);
 			priv->port_old_link[port_id - 1] = phy_status.link_status;
+			/* switch interface mode if necessary */
+			adpt_hppe_port_interface_mode_switch(priv->device_id, port_id);
 #ifdef IN_FDB
 			adpt_hppe_fdb_del_by_port(priv->device_id, port_id, !(FAL_FDB_DEL_STATIC));
 #endif
@@ -4382,15 +4380,13 @@ qca_hppe_mac_sw_sync_task(struct qca_phy_priv *priv)
 			status = adpt_hppe_port_phy_status_change(priv, port_id, phy_status);
 			/* disable txmac */
 			adpt_hppe_port_txmac_status_set(priv->device_id, port_id, A_FALSE);
-
+			/* switch interface mode if necessary */
+			adpt_hppe_port_interface_mode_switch(priv->device_id, port_id);
 			if (status == A_TRUE)
 			{
 				adpt_hppe_gcc_uniphy_clock_status_set(priv->device_id, port_id, A_FALSE);
 				if ((a_uint32_t)phy_status.speed != priv->port_old_speed[port_id - 1])
 				{
-					/* switch interface mode if necessary */
-					adpt_hppe_port_interface_mode_switch(priv->device_id, port_id);
-
 					/* configure gcc speed clock according to port current speed */
 					adpt_hppe_gcc_port_speed_clock_set(priv->device_id, port_id, phy_status.speed);
 
