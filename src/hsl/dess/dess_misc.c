@@ -1086,10 +1086,10 @@ _dess_port_link_intr_mask_set(a_uint32_t dev_id, a_uint32_t port_id, a_uint32_t 
         return SW_BAD_PARAM;
     }
 
-  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 
-  if (NULL == phy_drv->phy_intr_mask_set)
-    return SW_NOT_SUPPORTED;
+    if (NULL == phy_drv->phy_intr_mask_set)
+        return SW_NOT_SUPPORTED;
 
     rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
     SW_RTN_ON_ERROR(rv);
@@ -1112,10 +1112,10 @@ _dess_port_link_intr_mask_get(a_uint32_t dev_id, a_uint32_t port_id, a_uint32_t 
         return SW_BAD_PARAM;
     }
 
-  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 
-  if (NULL == phy_drv->phy_intr_mask_get)
-    return SW_NOT_SUPPORTED;
+    if (NULL == phy_drv->phy_intr_mask_get)
+        return SW_NOT_SUPPORTED;
 
     rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
     SW_RTN_ON_ERROR(rv);
@@ -1139,15 +1139,15 @@ _dess_port_link_intr_status_get(a_uint32_t dev_id, a_uint32_t port_id, a_uint32_
         return SW_BAD_PARAM;
     }
 
-  SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
+    SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 
-  if (NULL == phy_drv->phy_intr_status_get)
-    return SW_NOT_SUPPORTED;
+    if (NULL == phy_drv->phy_intr_status_get)
+        return SW_NOT_SUPPORTED;
 
     rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
     SW_RTN_ON_ERROR(rv);
 
-     rv = phy_drv->phy_intr_status_get(dev_id, phy_id, intr_mask_flag);
+    rv = phy_drv->phy_intr_status_get(dev_id, phy_id, intr_mask_flag);
     return rv;
 }
 

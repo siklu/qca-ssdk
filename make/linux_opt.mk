@@ -378,6 +378,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
 	    MODULE_INC += -I$(SYS_PATH) \
               -I$(TOOL_PATH)/../lib/gcc/$(TARGET_NAME)/$(GCC_VERSION)/include/ \
               -I$(TOOL_PATH)/../../lib/armv7a-vfp-neon-rdk-linux-gnueabi/gcc/arm-rdk-linux-gnueabi/4.8.4/include/ \
+	      -I$(TOOL_PATH)/../../lib/arm-rdk-linux-musleabi/gcc/arm-rdk-linux-musleabi/6.4.0/include/ \
               -I$(SYS_PATH)/include \
               -I$(SYS_PATH)/source/include \
               -I$(SYS_PATH)/source/arch/arm/mach-msm/include \
@@ -386,11 +387,18 @@ ifeq (KSLIB, $(MODULE_TYPE))
               -I$(SYS_PATH)/arch/arm/include \
               -I$(SYS_PATH)/source/arch/arm/include/asm \
               -I$(SYS_PATH)/arch/arm/include/generated \
+	      -I$(SYS_PATH)/source/include/uapi \
               -I$(SYS_PATH)/include/generated/uapi \
               -I$(SYS_PATH)/include/uapi \
               -I$(SYS_PATH)/arch/arm/include/uapi \
-              -I$(SYS_PATH)/source/arch/arm/include/asm/mach \
-	          -include $(SYS_PATH)/include/linux/kconfig.h
+              -I$(SYS_PATH)/source/arch/arm/include/asm/mach
+
+	      ifneq ($(wildcard $(SYS_PATH)/include/linux/kconfig.h),)
+	          MODULE_INC += -include $(SYS_PATH)/include/linux/kconfig.h
+	      else
+	          MODULE_INC += -include $(KERNEL_SRC)/include/linux/kconfig.h
+	      endif
+
             else
             MODULE_INC += -I$(SYS_PATH) \
               -I$(TOOL_PATH)/../lib/gcc/$(TARGET_NAME)/$(GCC_VERSION)/include/ \

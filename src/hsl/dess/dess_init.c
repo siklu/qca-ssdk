@@ -123,15 +123,15 @@ dess_portproperty_init(a_uint32_t dev_id)
     hsl_port_prop_t p_type;
     hsl_dev_t *pdev = NULL;
     fal_port_t port_id;
-	enum ssdk_port_wrapper_cfg cfg;
-	a_uint32_t bitmap = 0;
+    enum ssdk_port_wrapper_cfg cfg;
+    a_uint32_t bitmap = 0;
 
     pdev = hsl_dev_ptr_get(dev_id);
     if (pdev == NULL)
         return SW_NOT_INITIALIZED;
 
-	cfg = dess_get_port_config();
-	bitmap = dess_pbmp_5[cfg];
+    cfg = dess_get_port_config();
+    bitmap = dess_pbmp_5[cfg];
 
     /* for port property set, SSDK should not generate some limitations */
     for (port_id = 0; port_id < SW_MAX_NR_PORT; port_id++)
