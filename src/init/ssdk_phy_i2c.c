@@ -102,6 +102,7 @@ qca_phy_i2c_mii_write(a_uint32_t dev_id, a_uint32_t phy_addr,
 	return SW_OK;
 }
 
+#ifdef IN_PHY_I2C_MODE
 /******************************************************************************
 *
 * _qca_phy_i2c_mmd_read - mmd register i2c read
@@ -295,3 +296,4 @@ qca_phy_i2c_write(a_uint32_t dev_id, a_uint32_t phy_addr,
 	return SW_OK;
 }
 
+#endif
