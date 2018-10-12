@@ -82,6 +82,11 @@
 #include "ssdk_uci.h"
 #endif
 
+#include "hsl_phy.h"
+#ifdef IN_LINUX_STD_PTP
+#include "qca808x_ptp.h"
+#endif
+
 #ifdef IN_IP
 #if defined (CONFIG_NF_FLOW_COOKIE)
 #include "fal_flowcookie.h"
@@ -1069,6 +1074,27 @@ fail:
 	return -EINVAL;
 }
 
+#ifdef IN_LINUX_STD_PTP
+static ssize_t ssdk_ptp_counter_get(struct device *dev,
+		struct device_attribute *attr,
+		char *buf)
+{
+	ssize_t count;
+
+	count = snprintf(buf, (ssize_t)PAGE_SIZE, "\n");
+	qca808x_ptp_stat_get();
+	return count;
+}
+
+static ssize_t ssdk_ptp_counter_set(struct device *dev,
+		struct device_attribute *attr,
+		const char *buf, size_t count)
+{
+	qca808x_ptp_stat_set();
+	return count;
+}
+#endif
+
 static const struct device_attribute ssdk_dev_id_attr =
 	__ATTR(dev_id, 0660, ssdk_dev_id_get, ssdk_dev_id_set);
 static const struct device_attribute ssdk_log_level_attr =
@@ -1083,6 +1109,10 @@ static const struct device_attribute ssdk_phy_write_reg_attr =
 	__ATTR(phy_write_reg, 0660, NULL, ssdk_phy_write_reg_set);
 static const struct device_attribute ssdk_phy_read_reg_attr =
 	__ATTR(phy_read_reg, 0660, ssdk_phy_read_reg_get, ssdk_phy_read_reg_set);
+#ifdef IN_LINUX_STD_PTP
+static const struct device_attribute ssdk_ptp_counter_attr =
+	__ATTR(ptp_packet_counter, 0660, ssdk_ptp_counter_get, ssdk_ptp_counter_set);
+#endif
 struct kobject *ssdk_sys = NULL;
 
 int ssdk_sysfs_init (void)
@@ -1145,8 +1175,21 @@ int ssdk_sysfs_init (void)
 		goto CLEANUP_7;
 	}
 
+#ifdef IN_LINUX_STD_PTP
+	/* create /sys/ssdk/ptp_packet_counter file */
+	ret = sysfs_create_file(ssdk_sys, &ssdk_ptp_counter_attr.attr);
+	if (ret) {
+		printk("Failed to register SSDK ptp counter file\n");
+		goto CLEANUP_8;
+	}
+#endif
+
 	return 0;
 
+#ifdef IN_LINUX_STD_PTP
+CLEANUP_8:
+	sysfs_remove_file(ssdk_sys, &ssdk_phy_read_reg_attr.attr);
+#endif
 CLEANUP_7:
 	sysfs_remove_file(ssdk_sys, &ssdk_phy_write_reg_attr.attr);
 CLEANUP_6:
@@ -1167,6 +1210,9 @@ CLEANUP_1:
 
 void ssdk_sysfs_exit (void)
 {
+#ifdef IN_LINUX_STD_PTP
+	sysfs_remove_file(ssdk_sys, &ssdk_ptp_counter_attr.attr);
+#endif
 	sysfs_remove_file(ssdk_sys, &ssdk_phy_read_reg_attr.attr);
 	sysfs_remove_file(ssdk_sys, &ssdk_phy_write_reg_attr.attr);
 	sysfs_remove_file(ssdk_sys, &ssdk_dts_dump_attr.attr);

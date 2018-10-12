@@ -37,6 +37,8 @@
 #include "ssdk_init.h"
 #include "ssdk_dts.h"
 #include "ssdk_clk.h"
+#include "adpt_hppe.h"
+#include "adpt_cppe_portctrl.h"
 
 #define PORT4_PCS_SEL_GMII_FROM_PCS0 1
 #define PORT4_PCS_SEL_RGMII 0
@@ -72,6 +74,8 @@
 
 #define PHY_PORT_TO_BM_PORT(port)	(port + 7)
 #define GMAC_IPG_CHECK 0xc
+#define LPI_EEE_TIMER_FREQUENCY 300  /* 300MHZ*/
+#define LPI_EEE_TIMER_UNIT 256
 
 /* This register is used to adjust the write timing for reserving
  * some bandwidth of the memory to read operation.
@@ -2172,6 +2176,46 @@ _adpt_hppe_port_mux_mac_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t po
 
 	return rv;
 }
+#ifdef HAWKEYE_CHIP
+static sw_error_t
+adpt_hppe_port_xgmac_promiscuous_mode_set(a_uint32_t dev_id,
+	a_uint32_t port_id)
+{
+	sw_error_t rv = 0;
+
+	port_id = HPPE_TO_XGMAC_PORT_ID(port_id);
+
+	rv = hppe_mac_packet_filter_pr_set(dev_id, port_id, PROMISCUOUS_MODE);
+
+	SW_RTN_ON_ERROR (rv);
+
+	rv = hppe_mac_packet_filter_pcf_set(dev_id, port_id, PASS_CONTROL_PACKET);
+
+	return rv;
+}
+static sw_error_t
+adpt_hppe_port_speed_change_mac_reset(a_uint32_t dev_id, a_uint32_t port_id)
+{
+	a_uint32_t uniphy_index = 0, mode = 0;
+	sw_error_t rv = 0;
+
+	if (port_id == HPPE_MUX_PORT1) {
+		uniphy_index = SSDK_UNIPHY_INSTANCE1;
+	} else if (port_id == HPPE_MUX_PORT2) {
+		uniphy_index = SSDK_UNIPHY_INSTANCE2;
+	} else {
+		return SW_OK;
+	}
+	mode = ssdk_dt_global_get_mac_mode(dev_id, uniphy_index);
+	if (mode == PORT_WRAPPER_USXGMII) {
+		ssdk_port_mac_clock_reset(dev_id, port_id);
+		/*restore xgmac's pr and pcf setting after reset operation*/
+		rv = adpt_hppe_port_xgmac_promiscuous_mode_set(dev_id,
+			port_id);
+	}
+	return rv;
+}
+#endif
 sw_error_t
 adpt_hppe_port_mac_speed_set(a_uint32_t dev_id, a_uint32_t port_id,
 				fal_port_speed_t speed)
@@ -2195,7 +2239,6 @@ adpt_hppe_port_mac_speed_set(a_uint32_t dev_id, a_uint32_t port_id,
 	}
 	return rv;
 }
-
 static sw_error_t
 _adpt_hppe_port_mux_set(a_uint32_t dev_id, fal_port_t port_id,
 	a_uint32_t mode1, a_uint32_t mode2)
@@ -2228,8 +2271,13 @@ _adpt_hppe_port_mux_set(a_uint32_t dev_id, fal_port_t port_id,
 			rv = adpt_hppe_port_mac_duplex_set(dev_id, port_id, FAL_FULL_DUPLEX);
 		}
 	}
-	if ((port_type == PORT_GMAC_TYPE) ||(port_type == PORT_XGMAC_TYPE))
-		 _adpt_hppe_port_mux_mac_set(dev_id, port_id, port_type);
+	if ((port_type == PORT_GMAC_TYPE) ||(port_type == PORT_XGMAC_TYPE)) {
+		if (adpt_hppe_chip_revision_get(dev_id) == HPPE_REVISION) {
+		 	rv = _adpt_hppe_port_mux_mac_set(dev_id, port_id, port_type);
+		} else if (adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) {
+			rv = _adpt_cppe_port_mux_mac_set(dev_id, port_id, port_type);
+		}
+	}
 
 	return rv;
 }
@@ -3341,6 +3389,43 @@ adpt_hppe_port_interface_3az_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t
 	return SW_OK;
 }
 
+sw_error_t
+adpt_hppe_port_promisc_mode_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
+{
+	sw_error_t rv = SW_OK;
+	union port_bridge_ctrl_u port_bridge_ctrl = {0};
+
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	rv = hppe_port_bridge_ctrl_get(dev_id, port_id, &port_bridge_ctrl);
+
+	if( rv != SW_OK )
+		return rv;
+
+	port_bridge_ctrl.bf.promisc_en = enable;
+
+	return hppe_port_bridge_ctrl_set(dev_id, port_id, &port_bridge_ctrl);
+}
+
+sw_error_t
+adpt_hppe_port_promisc_mode_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable)
+{
+	sw_error_t rv = SW_OK;
+	union port_bridge_ctrl_u port_bridge_ctrl = {0};
+
+	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(enable);
+
+	rv = hppe_port_bridge_ctrl_get(dev_id, port_id, &port_bridge_ctrl);
+
+	if( rv != SW_OK )
+		return rv;
+
+	*enable = port_bridge_ctrl.bf.promisc_en;
+
+	return SW_OK;
+}
+
 static sw_error_t
 adpt_hppe_port_bridge_txmac_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
@@ -3463,6 +3548,138 @@ adpt_hppe_port_flowctrl_forcemode_get(a_uint32_t dev_id,
 
 	*enable = (priv->port_tx_flowctrl_forcemode[port_id - 1] &
 		priv->port_rx_flowctrl_forcemode[port_id - 1]);
+
+	return rv;
+}
+static a_uint32_t port_lpi_sleep_timer[SW_MAX_NR_DEV][SSDK_PHYSICAL_PORT6] = {
+	{218, 218, 218, 218, 218, 218},
+	{218, 218, 218, 218, 218, 218},
+	{218, 218, 218, 218, 218, 218},
+}; /* unit is us*/
+static a_uint32_t port_lpi_wakeup_timer[SW_MAX_NR_DEV][SSDK_PHYSICAL_PORT6] = {
+	{27, 27, 27, 27, 27, 27},
+	{27, 27, 27, 27, 27, 27},
+	{27, 27, 27, 27, 27, 27},
+}; /* unit is us*/
+static sw_error_t
+adpt_hppe_port_interface_eee_cfg_set(a_uint32_t dev_id, fal_port_t port_id,
+	fal_port_eee_cfg_t *port_eee_cfg)
+{
+	sw_error_t rv = 0;
+	union lpi_enable_u lpi_enable = {0};
+	union lpi_port_timer_u lpi_port_timer = {0};
+	a_uint32_t phy_id = 0;
+	a_uint32_t adv, enable;
+	hsl_phy_ops_t *phy_drv;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	if ((port_id < SSDK_PHYSICAL_PORT1) || (port_id > SSDK_PHYSICAL_PORT6)) {
+		return SW_BAD_PARAM;
+	}
+	if (port_eee_cfg->enable) {
+		adv = port_eee_cfg->advertisement;
+	} else {
+		adv = 0;
+	}
+	if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_PHY)) {
+		return SW_BAD_PARAM;
+	}
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id)) {
+		return SW_NOT_SUPPORTED;
+	}
+
+	SW_RTN_ON_NULL(phy_drv = hsl_phy_api_ops_get(dev_id, port_id));
+	if (NULL == phy_drv->phy_eee_adv_set) {
+		return SW_NOT_SUPPORTED;
+	}
+
+	rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
+	SW_RTN_ON_ERROR (rv);
+
+	rv = phy_drv->phy_eee_adv_set(dev_id, phy_id, adv);
+	SW_RTN_ON_ERROR (rv);
+
+	hppe_lpi_enable_get(dev_id, port_id, &lpi_enable);
+
+	enable = port_eee_cfg->lpi_tx_enable;
+	lpi_enable.val &= ~(0x1 << (port_id - 1));
+	lpi_enable.val |= (enable << (port_id - 1));
+	hppe_lpi_enable_set(dev_id, port_id, &lpi_enable);
+
+	lpi_port_timer.bf.lpi_port_wakeup_timer =
+		(port_eee_cfg->lpi_wakeup_timer * LPI_EEE_TIMER_FREQUENCY) /LPI_EEE_TIMER_UNIT;
+	lpi_port_timer.bf.lpi_port_sleep_timer =
+		(port_eee_cfg->lpi_sleep_timer * LPI_EEE_TIMER_FREQUENCY) /LPI_EEE_TIMER_UNIT;
+	rv = hppe_lpi_timer_set(dev_id, port_id, &lpi_port_timer);
+	SW_RTN_ON_ERROR (rv);
+	port_lpi_wakeup_timer[dev_id][port_id - 1] = port_eee_cfg->lpi_wakeup_timer;
+	port_lpi_sleep_timer[dev_id][port_id - 1] = port_eee_cfg->lpi_sleep_timer;
+
+	return rv;
+}
+static sw_error_t
+adpt_hppe_port_interface_eee_cfg_get(a_uint32_t dev_id, fal_port_t port_id,
+	fal_port_eee_cfg_t *port_eee_cfg)
+{
+	sw_error_t rv = 0;
+	union lpi_enable_u lpi_enable = {0};
+	a_uint32_t phy_id = 0;
+	hsl_phy_ops_t *phy_drv;
+	a_uint32_t adv, lp_adv, cap, status;
+
+	if ((port_id < SSDK_PHYSICAL_PORT1) || (port_id > SSDK_PHYSICAL_PORT6)) {
+		return SW_BAD_PARAM;
+	}
+
+	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(port_eee_cfg);
+	memset(port_eee_cfg, 0, sizeof(*port_eee_cfg));
+
+	if (A_TRUE != hsl_port_prop_check(dev_id, port_id, HSL_PP_PHY)) {
+		return SW_BAD_PARAM;
+	}
+	if (A_FALSE == _adpt_hppe_port_phy_connected (dev_id, port_id)) {
+		return SW_NOT_SUPPORTED;
+	}
+
+	SW_RTN_ON_NULL (phy_drv =hsl_phy_api_ops_get (dev_id, port_id));
+	if ((NULL == phy_drv->phy_eee_adv_get) || (NULL == phy_drv->phy_eee_partner_adv_get) ||
+		(NULL == phy_drv->phy_eee_cap_get) || (NULL == phy_drv->phy_eee_status_get)) {
+		return SW_NOT_SUPPORTED;
+	}
+
+	rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
+	SW_RTN_ON_ERROR (rv);
+
+	rv = phy_drv->phy_eee_adv_get(dev_id, phy_id, &adv);
+	SW_RTN_ON_ERROR (rv);
+	port_eee_cfg->advertisement = adv;
+	rv = phy_drv->phy_eee_partner_adv_get(dev_id, phy_id, &lp_adv);
+	SW_RTN_ON_ERROR (rv);
+	port_eee_cfg->link_partner_advertisement = lp_adv;
+	rv = phy_drv->phy_eee_cap_get(dev_id, phy_id, &cap);
+	SW_RTN_ON_ERROR (rv);
+	port_eee_cfg->capability = cap;
+	rv = phy_drv->phy_eee_status_get(dev_id, phy_id, &status);
+	SW_RTN_ON_ERROR (rv);
+	port_eee_cfg->eee_status = status;
+
+	if (port_eee_cfg->advertisement) {
+		port_eee_cfg->enable = A_TRUE;
+	} else {
+		port_eee_cfg->enable = A_FALSE;
+	}
+	rv = hppe_lpi_enable_get(dev_id, port_id, &lpi_enable);
+	SW_RTN_ON_ERROR (rv);
+
+	if(((lpi_enable.val >> (port_id - 1)) & 0x1) == A_TRUE) {
+		port_eee_cfg->lpi_tx_enable = A_TRUE;
+	} else {
+		port_eee_cfg->lpi_tx_enable = A_FALSE;
+	}
+	port_eee_cfg->lpi_wakeup_timer =  port_lpi_wakeup_timer[dev_id][port_id - 1];
+	port_eee_cfg->lpi_sleep_timer = port_lpi_sleep_timer[dev_id][port_id - 1];
 
 	return rv;
 }
@@ -4045,11 +4262,10 @@ qca_hppe_mac_sw_sync_task(struct qca_phy_priv *priv)
 			SSDK_DEBUG("Port %d change to link down status\n", port_id);
 			/* first check uniphy auto-neg complete interrupt to usxgmii */
 			adpt_hppe_uniphy_autoneg_status_check(priv->device_id, port_id);
-			/* disable mac */
-			adpt_hppe_port_txmac_status_set(priv->device_id, port_id, A_FALSE);
-			adpt_hppe_port_rxmac_status_set(priv->device_id, port_id, A_FALSE);
 			/* disable ppe port bridge txmac */
 			adpt_hppe_port_bridge_txmac_set(priv->device_id, port_id, A_FALSE);
+			/* disable rx mac */
+			adpt_hppe_port_rxmac_status_set(priv->device_id, port_id, A_FALSE);
 			priv->port_old_link[port_id - 1] = phy_status.link_status;
 			continue;
 		}
@@ -4059,11 +4275,11 @@ qca_hppe_mac_sw_sync_task(struct qca_phy_priv *priv)
 		{
 			SSDK_DEBUG("Port %d change to link up status\n", port_id);
 			status = adpt_hppe_port_phy_status_change(priv, port_id, phy_status);
+			/*disable tx mac*/
+			adpt_hppe_port_txmac_status_set(priv->device_id, port_id, A_FALSE);
 			if (status == A_TRUE)
 			{
 				adpt_hppe_gcc_uniphy_clock_status_set(priv->device_id,
-						port_id, A_FALSE);
-				adpt_hppe_gcc_mac_clock_status_set(priv->device_id,
 						port_id, A_FALSE);
 				if ((a_uint32_t)phy_status.speed !=
 						priv->port_old_speed[port_id - 1])
@@ -4082,6 +4298,9 @@ qca_hppe_mac_sw_sync_task(struct qca_phy_priv *priv)
 					/* config uniphy speed to usxgmii mode */
 					adpt_hppe_uniphy_speed_set(priv->device_id, port_id,
 							phy_status.speed);
+
+					/* reset port mac when speed change under usxgmii mode */
+					adpt_hppe_port_speed_change_mac_reset(priv->device_id, port_id);
 
 					/* config mac speed */
 					adpt_hppe_port_mac_speed_set(priv->device_id, port_id,
@@ -4144,16 +4363,14 @@ qca_hppe_mac_sw_sync_task(struct qca_phy_priv *priv)
 							priv->port_old_rx_flowctrl[port_id-1]);
 					}
 				}
-				adpt_hppe_gcc_mac_clock_status_set(priv->device_id,
-						port_id, A_TRUE);
 				adpt_hppe_gcc_uniphy_clock_status_set(priv->device_id,
 						port_id, A_TRUE);
 				adpt_hppe_uniphy_port_adapter_reset(priv->device_id, port_id);
 			}
 			/* enable mac and ppe txmac*/
-			adpt_hppe_port_bridge_txmac_set(priv->device_id, port_id, A_TRUE);
 			adpt_hppe_port_txmac_status_set(priv->device_id, port_id, A_TRUE);
 			adpt_hppe_port_rxmac_status_set(priv->device_id, port_id, A_TRUE);
+			adpt_hppe_port_bridge_txmac_set(priv->device_id, port_id, A_TRUE);
 			priv->port_old_link[port_id - 1] = phy_status.link_status;
 		}
 		SSDK_DEBUG("polling task PPE port %d link status is %d and speed is %d\n",
@@ -4173,77 +4390,82 @@ void adpt_hppe_port_ctrl_func_bitmap_init(a_uint32_t dev_id)
 	if(p_adpt_api == NULL)
 		return;
 
-	p_adpt_api->adpt_port_ctrl_func_bitmap[0] = ((1 << FUNC_ADPT_PORT_LOCAL_LOOPBACK_GET)|
-						(1 << FUNC_ADPT_PORT_AUTONEG_RESTART)|
-						(1 << FUNC_ADPT_PORT_DUPLEX_SET)|
-						(1 << FUNC_ADPT_PORT_RXMAC_STATUS_GET)|
-						(1 << FUNC_ADPT_PORT_CDT)|
-						(1 << FUNC_ADPT_PORT_TXMAC_STATUS_SET)|
-						(1 << FUNC_ADPT_PORT_COMBO_FIBER_MODE_SET)|
-						(1 << FUNC_ADPT_PORT_COMBO_MEDIUM_STATUS_GET)|
-						(1 << FUNC_ADPT_PORT_MAGIC_FRAME_MAC_SET)|
-						(1 << FUNC_ADPT_PORT_POWERSAVE_SET)|
-						(1 << FUNC_ADPT_PORT_HIBERNATE_SET)|
-						(1 << FUNC_ADPT_PORT_8023AZ_GET)|
-						(1 << FUNC_ADPT_PORT_RXFC_STATUS_GET)|
-						(1 << FUNC_ADPT_PORT_TXFC_STATUS_GET)|
-						(1 << FUNC_ADPT_PORT_REMOTE_LOOPBACK_SET)|
-						(1 << FUNC_ADPT_PORT_FLOWCTRL_SET)|
-						(1 << FUNC_ADPT_PORT_MRU_SET)|
-						(1 << FUNC_ADPT_PORT_AUTONEG_STATUS_GET)|
-						(1 << FUNC_ADPT_PORT_TXMAC_STATUS_GET)|
-						(1 << FUNC_ADPT_PORT_MDIX_GET)|
-						(1 << FUNC_ADPT_PORTS_LINK_STATUS_GET)|
-						(1 << FUNC_ADPT_PORT_MAC_LOOPBACK_SET)|
-						(1 << FUNC_ADPT_PORT_PHY_ID_GET)|
-						(1 << FUNC_ADPT_PORT_MRU_GET)|
-						(1 << FUNC_ADPT_PORT_POWER_ON)|
-						(1 << FUNC_ADPT_PORT_SPEED_SET)|
-						(1 << FUNC_ADPT_PORT_INTERFACE_MODE_GET)|
-						(1 << FUNC_ADPT_PORT_DUPLEX_GET)|
-						(1 << FUNC_ADPT_PORT_AUTONEG_ADV_GET)|
-						(1 << FUNC_ADPT_PORT_MDIX_STATUS_GET)|
-						(1 << FUNC_ADPT_PORT_MTU_SET)|
-						(1 << FUNC_ADPT_PORT_LINK_STATUS_GET));
+	p_adpt_api->adpt_port_ctrl_func_bitmap[0] = \
+		((1 << FUNC_ADPT_PORT_LOCAL_LOOPBACK_GET)|
+		(1 << FUNC_ADPT_PORT_AUTONEG_RESTART)|
+		(1 << FUNC_ADPT_PORT_DUPLEX_SET)|
+		(1 << FUNC_ADPT_PORT_RXMAC_STATUS_GET)|
+		(1 << FUNC_ADPT_PORT_CDT)|
+		(1 << FUNC_ADPT_PORT_TXMAC_STATUS_SET)|
+		(1 << FUNC_ADPT_PORT_COMBO_FIBER_MODE_SET)|
+		(1 << FUNC_ADPT_PORT_COMBO_MEDIUM_STATUS_GET)|
+		(1 << FUNC_ADPT_PORT_MAGIC_FRAME_MAC_SET)|
+		(1 << FUNC_ADPT_PORT_POWERSAVE_SET)|
+		(1 << FUNC_ADPT_PORT_HIBERNATE_SET)|
+		(1 << FUNC_ADPT_PORT_8023AZ_GET)|
+		(1 << FUNC_ADPT_PORT_RXFC_STATUS_GET)|
+		(1 << FUNC_ADPT_PORT_TXFC_STATUS_GET)|
+		(1 << FUNC_ADPT_PORT_REMOTE_LOOPBACK_SET)|
+		(1 << FUNC_ADPT_PORT_FLOWCTRL_SET)|
+		(1 << FUNC_ADPT_PORT_MRU_SET)|
+		(1 << FUNC_ADPT_PORT_AUTONEG_STATUS_GET)|
+		(1 << FUNC_ADPT_PORT_TXMAC_STATUS_GET)|
+		(1 << FUNC_ADPT_PORT_MDIX_GET)|
+		(1 << FUNC_ADPT_PORTS_LINK_STATUS_GET)|
+		(1 << FUNC_ADPT_PORT_MAC_LOOPBACK_SET)|
+		(1 << FUNC_ADPT_PORT_PHY_ID_GET)|
+		(1 << FUNC_ADPT_PORT_MRU_GET)|
+		(1 << FUNC_ADPT_PORT_POWER_ON)|
+		(1 << FUNC_ADPT_PORT_SPEED_SET)|
+		(1 << FUNC_ADPT_PORT_INTERFACE_MODE_GET)|
+		(1 << FUNC_ADPT_PORT_DUPLEX_GET)|
+		(1 << FUNC_ADPT_PORT_AUTONEG_ADV_GET)|
+		(1 << FUNC_ADPT_PORT_MDIX_STATUS_GET)|
+		(1 << FUNC_ADPT_PORT_MTU_SET)|
+		(1 << FUNC_ADPT_PORT_LINK_STATUS_GET));
 
-	p_adpt_api->adpt_port_ctrl_func_bitmap[1] = ((1 << (FUNC_ADPT_PORT_8023AZ_SET % 32))|
-						(1 << (FUNC_ADPT_PORT_POWERSAVE_GET % 32))|
-						(1 << (FUNC_ADPT_PORT_COMBO_PREFER_MEDIUM_GET % 32))|
-						(1 << (FUNC_ADPT_PORT_COMBO_PREFER_MEDIUM_SET % 32))|
-						(1 << (FUNC_ADPT_PORT_POWER_OFF % 32))|
-						(1 << (FUNC_ADPT_PORT_TXFC_STATUS_SET % 32))|
-						(1 << (FUNC_ADPT_PORT_COUNTER_SET % 32))|
-						(1 << (FUNC_ADPT_PORT_COMBO_FIBER_MODE_GET % 32))|
-						(1 << (FUNC_ADPT_PORT_LOCAL_LOOPBACK_SET % 32))|
-						(1 << (FUNC_ADPT_PORT_WOL_STATUS_SET % 32))|
-						(1 << (FUNC_ADPT_PORT_MAGIC_FRAME_MAC_GET % 32))|
-						(1 << (FUNC_ADPT_PORT_FLOWCTRL_GET % 32))|
-						(1 << (FUNC_ADPT_PORT_RXMAC_STATUS_SET % 32))|
-						(1 << (FUNC_ADPT_PORT_COUNTER_GET % 32))|
-						(1 << (FUNC_ADPT_PORT_INTERFACE_MODE_SET % 32))|
-						(1 << (FUNC_ADPT_PORT_MAC_LOOPBACK_GET % 32))|
-						(1 << (FUNC_ADPT_PORT_HIBERNATE_GET % 32))|
-						(1 << (FUNC_ADPT_PORT_AUTONEG_ADV_SET % 32))|
-						(1 << (FUNC_ADPT_PORT_REMOTE_LOOPBACK_GET % 32))|
-						(1 << (FUNC_ADPT_PORT_COUNTER_SHOW % 32))|
-						(1 << (FUNC_ADPT_PORT_AUTONEG_ENABLE % 32))|
-						(1 << (FUNC_ADPT_PORT_MTU_GET % 32))|
-						(1 << (FUNC_ADPT_PORT_INTERFACE_MODE_STATUS_GET % 32))|
-						(1 << (FUNC_ADPT_PORT_RESET % 32))|
-						(1 << (FUNC_ADPT_PORT_RXFC_STATUS_SET % 32))|
-						(1 << (FUNC_ADPT_PORT_SPEED_GET % 32))|
-						(1 << (FUNC_ADPT_PORT_MDIX_SET % 32))|
-						(1 << (FUNC_ADPT_PORT_WOL_STATUS_GET % 32))|
-						(1 << (FUNC_ADPT_PORT_MAX_FRAME_SIZE_SET % 32))|
-						(1 << (FUNC_ADPT_PORT_MAX_FRAME_SIZE_GET % 32))|
-						(1 << (FUNC_ADPT_PORT_SOURCE_FILTER_GET % 32))|
-						(1 << (FUNC_ADPT_PORT_SOURCE_FILTER_SET % 32)));
+	p_adpt_api->adpt_port_ctrl_func_bitmap[1] = \
+		((1 << (FUNC_ADPT_PORT_8023AZ_SET % 32))|
+		(1 << (FUNC_ADPT_PORT_POWERSAVE_GET % 32))|
+		(1 << (FUNC_ADPT_PORT_COMBO_PREFER_MEDIUM_GET % 32))|
+		(1 << (FUNC_ADPT_PORT_COMBO_PREFER_MEDIUM_SET % 32))|
+		(1 << (FUNC_ADPT_PORT_POWER_OFF % 32))|
+		(1 << (FUNC_ADPT_PORT_TXFC_STATUS_SET % 32))|
+		(1 << (FUNC_ADPT_PORT_COUNTER_SET % 32))|
+		(1 << (FUNC_ADPT_PORT_COMBO_FIBER_MODE_GET % 32))|
+		(1 << (FUNC_ADPT_PORT_LOCAL_LOOPBACK_SET % 32))|
+		(1 << (FUNC_ADPT_PORT_WOL_STATUS_SET % 32))|
+		(1 << (FUNC_ADPT_PORT_MAGIC_FRAME_MAC_GET % 32))|
+		(1 << (FUNC_ADPT_PORT_FLOWCTRL_GET % 32))|
+		(1 << (FUNC_ADPT_PORT_RXMAC_STATUS_SET % 32))|
+		(1 << (FUNC_ADPT_PORT_COUNTER_GET % 32))|
+		(1 << (FUNC_ADPT_PORT_INTERFACE_MODE_SET % 32))|
+		(1 << (FUNC_ADPT_PORT_MAC_LOOPBACK_GET % 32))|
+		(1 << (FUNC_ADPT_PORT_HIBERNATE_GET % 32))|
+		(1 << (FUNC_ADPT_PORT_AUTONEG_ADV_SET % 32))|
+		(1 << (FUNC_ADPT_PORT_REMOTE_LOOPBACK_GET % 32))|
+		(1 << (FUNC_ADPT_PORT_COUNTER_SHOW % 32))|
+		(1 << (FUNC_ADPT_PORT_AUTONEG_ENABLE % 32))|
+		(1 << (FUNC_ADPT_PORT_MTU_GET % 32))|
+		(1 << (FUNC_ADPT_PORT_INTERFACE_MODE_STATUS_GET % 32))|
+		(1 << (FUNC_ADPT_PORT_RESET % 32))|
+		(1 << (FUNC_ADPT_PORT_RXFC_STATUS_SET % 32))|
+		(1 << (FUNC_ADPT_PORT_SPEED_GET % 32))|
+		(1 << (FUNC_ADPT_PORT_MDIX_SET % 32))|
+		(1 << (FUNC_ADPT_PORT_WOL_STATUS_GET % 32))|
+		(1 << (FUNC_ADPT_PORT_MAX_FRAME_SIZE_SET % 32))|
+		(1 << (FUNC_ADPT_PORT_MAX_FRAME_SIZE_GET % 32))|
+		(1 << (FUNC_ADPT_PORT_SOURCE_FILTER_GET % 32))|
+		(1 << (FUNC_ADPT_PORT_SOURCE_FILTER_SET % 32)));
 
-	p_adpt_api->adpt_port_ctrl_func_bitmap[2] = ((1 << (FUNC_ADPT_PORT_INTERFACE_MODE_APPLY% 32))|
-						(1 << (FUNC_ADPT_PORT_INTERFACE_3AZ_STATUS_SET% 32))|
-						(1 << (FUNC_ADPT_PORT_INTERFACE_3AZ_STATUS_GET% 32))|
-						(1 << (FUNC_ADPT_PORT_FLOWCTRL_FORCEMODE_SET% 32))|
-						(1 << (FUNC_ADPT_PORT_FLOWCTRL_FORCEMODE_GET% 32)));
+	p_adpt_api->adpt_port_ctrl_func_bitmap[2] = \
+		((1 << (FUNC_ADPT_PORT_INTERFACE_MODE_APPLY% 32))|
+		(1 << (FUNC_ADPT_PORT_INTERFACE_3AZ_STATUS_SET% 32))|
+		(1 << (FUNC_ADPT_PORT_INTERFACE_3AZ_STATUS_GET% 32))|
+		(1 << (FUNC_ADPT_PORT_PROMISC_MODE_SET% 32))|
+		(1 << (FUNC_ADPT_PORT_PROMISC_MODE_GET% 32))|
+		(1 << (FUNC_ADPT_PORT_FLOWCTRL_FORCEMODE_SET% 32))|
+		(1 << (FUNC_ADPT_PORT_FLOWCTRL_FORCEMODE_GET% 32)));
 
 	return;
 
@@ -4321,6 +4543,8 @@ static void adpt_hppe_port_ctrl_func_unregister(a_uint32_t dev_id, adpt_api_t *p
 	p_adpt_api->adpt_port_source_filter_set = NULL;
 	p_adpt_api->adpt_port_interface_3az_status_set = NULL;
 	p_adpt_api->adpt_port_interface_3az_status_get = NULL;
+	p_adpt_api->adpt_port_promisc_mode_set = NULL;
+	p_adpt_api->adpt_port_promisc_mode_get = NULL;
 	p_adpt_api->adpt_port_flowctrl_forcemode_set = NULL;
 	p_adpt_api->adpt_port_flowctrl_forcemode_get = NULL;
 
@@ -4367,9 +4591,11 @@ sw_error_t adpt_hppe_port_ctrl_init(a_uint32_t dev_id)
 	{
 		p_adpt_api->adpt_port_combo_fiber_mode_set = adpt_hppe_port_combo_fiber_mode_set;
 	}
-	if(p_adpt_api->adpt_port_ctrl_func_bitmap[0] & (1 << FUNC_ADPT_PORT_COMBO_MEDIUM_STATUS_GET))
+	if(p_adpt_api->adpt_port_ctrl_func_bitmap[0] &
+		(1 << FUNC_ADPT_PORT_COMBO_MEDIUM_STATUS_GET))
 	{
-		p_adpt_api->adpt_port_combo_medium_status_get = adpt_hppe_port_combo_medium_status_get;
+		p_adpt_api->adpt_port_combo_medium_status_get =
+			adpt_hppe_port_combo_medium_status_get;
 	}
 	if(p_adpt_api->adpt_port_ctrl_func_bitmap[0] & (1 << FUNC_ADPT_PORT_MAGIC_FRAME_MAC_SET))
 	{
@@ -4476,19 +4702,24 @@ sw_error_t adpt_hppe_port_ctrl_init(a_uint32_t dev_id)
 	{
 		p_adpt_api->adpt_port_powersave_get = adpt_hppe_port_powersave_get;
 	}
-	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] & (1 <<  (FUNC_ADPT_PORT_COMBO_PREFER_MEDIUM_GET % 32)))
+	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] &
+		(1 <<  (FUNC_ADPT_PORT_COMBO_PREFER_MEDIUM_GET % 32)))
 	{
-		p_adpt_api->adpt_port_combo_prefer_medium_get = adpt_hppe_port_combo_prefer_medium_get;
+		p_adpt_api->adpt_port_combo_prefer_medium_get =
+			adpt_hppe_port_combo_prefer_medium_get;
 	}
-	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] & (1 <<  (FUNC_ADPT_PORT_COMBO_PREFER_MEDIUM_SET % 32)))
+	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] &
+		(1 <<  (FUNC_ADPT_PORT_COMBO_PREFER_MEDIUM_SET % 32)))
 	{
-		p_adpt_api->adpt_port_combo_prefer_medium_set = adpt_hppe_port_combo_prefer_medium_set;
+		p_adpt_api->adpt_port_combo_prefer_medium_set =
+			adpt_hppe_port_combo_prefer_medium_set;
 	}
 	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] & (1 <<  (FUNC_ADPT_PORT_POWER_OFF % 32)))
 	{
 		p_adpt_api->adpt_port_power_off = adpt_hppe_port_power_off;
 	}
-	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] & (1 <<  (FUNC_ADPT_PORT_TXFC_STATUS_SET  % 32)))
+	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] &
+		(1 <<  (FUNC_ADPT_PORT_TXFC_STATUS_SET  % 32)))
 	{
 		p_adpt_api->adpt_port_txfc_status_set = adpt_hppe_port_txfc_status_set;
 	}
@@ -4496,11 +4727,13 @@ sw_error_t adpt_hppe_port_ctrl_init(a_uint32_t dev_id)
 	{
 		p_adpt_api->adpt_port_counter_set = adpt_hppe_port_counter_set;
 	}
-	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] & (1 <<  (FUNC_ADPT_PORT_COMBO_FIBER_MODE_GET % 32)))
+	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] &
+		(1 <<  (FUNC_ADPT_PORT_COMBO_FIBER_MODE_GET % 32)))
 	{
 		p_adpt_api->adpt_port_combo_fiber_mode_get = adpt_hppe_port_combo_fiber_mode_get;
 	}
-	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] & (1 <<  (FUNC_ADPT_PORT_LOCAL_LOOPBACK_SET % 32)))
+	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] &
+		(1 <<  (FUNC_ADPT_PORT_LOCAL_LOOPBACK_SET % 32)))
 	{
 		p_adpt_api->adpt_port_local_loopback_set = adpt_hppe_port_local_loopback_set;
 	}
@@ -4508,7 +4741,8 @@ sw_error_t adpt_hppe_port_ctrl_init(a_uint32_t dev_id)
 	{
 		p_adpt_api->adpt_port_wol_status_set = adpt_hppe_port_wol_status_set;
 	}
-	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] & (1 <<  (FUNC_ADPT_PORT_MAGIC_FRAME_MAC_GET % 32)))
+	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] &
+		(1 <<  (FUNC_ADPT_PORT_MAGIC_FRAME_MAC_GET % 32)))
 	{
 		p_adpt_api->adpt_port_magic_frame_mac_get = adpt_hppe_port_magic_frame_mac_get;
 	}
@@ -4516,7 +4750,8 @@ sw_error_t adpt_hppe_port_ctrl_init(a_uint32_t dev_id)
 	{
 		p_adpt_api->adpt_port_flowctrl_get = adpt_hppe_port_flowctrl_get;
 	}
-	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] & (1 <<  (FUNC_ADPT_PORT_RXMAC_STATUS_SET % 32)))
+	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] &
+		(1 <<  (FUNC_ADPT_PORT_RXMAC_STATUS_SET % 32)))
 	{
 		p_adpt_api->adpt_port_rxmac_status_set = adpt_hppe_port_rxmac_status_set;
 	}
@@ -4524,11 +4759,13 @@ sw_error_t adpt_hppe_port_ctrl_init(a_uint32_t dev_id)
 	{
 		p_adpt_api->adpt_port_counter_get = adpt_hppe_port_counter_get;
 	}
-	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] & (1 <<  (FUNC_ADPT_PORT_INTERFACE_MODE_SET % 32)))
+	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] &
+		(1 <<  (FUNC_ADPT_PORT_INTERFACE_MODE_SET % 32)))
 	{
 		p_adpt_api->adpt_port_interface_mode_set = adpt_hppe_port_interface_mode_set;
 	}
-	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] & (1 <<  (FUNC_ADPT_PORT_MAC_LOOPBACK_GET % 32)))
+	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] &
+		(1 <<  (FUNC_ADPT_PORT_MAC_LOOPBACK_GET % 32)))
 	{
 		p_adpt_api->adpt_port_mac_loopback_get = adpt_hppe_port_mac_loopback_get;
 	}
@@ -4536,11 +4773,13 @@ sw_error_t adpt_hppe_port_ctrl_init(a_uint32_t dev_id)
 	{
 		p_adpt_api->adpt_port_hibernate_get = adpt_hppe_port_hibernate_get;
 	}
-	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] & (1 <<  (FUNC_ADPT_PORT_AUTONEG_ADV_SET % 32)))
+	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] &
+		(1 <<  (FUNC_ADPT_PORT_AUTONEG_ADV_SET % 32)))
 	{
 		p_adpt_api->adpt_port_autoneg_adv_set = adpt_hppe_port_autoneg_adv_set;
 	}
-	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] & (1 <<  (FUNC_ADPT_PORT_REMOTE_LOOPBACK_GET % 32)))
+	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] &
+		(1 <<  (FUNC_ADPT_PORT_REMOTE_LOOPBACK_GET % 32)))
 	{
 		p_adpt_api->adpt_port_remote_loopback_get = adpt_hppe_port_remote_loopback_get;
 	}
@@ -4556,15 +4795,18 @@ sw_error_t adpt_hppe_port_ctrl_init(a_uint32_t dev_id)
 	{
 		p_adpt_api->adpt_port_mtu_get = adpt_hppe_port_mtu_get;
 	}
-	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] & (1 <<  (FUNC_ADPT_PORT_INTERFACE_MODE_STATUS_GET % 32)))
+	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] &
+		(1 <<  (FUNC_ADPT_PORT_INTERFACE_MODE_STATUS_GET % 32)))
 	{
-		p_adpt_api->adpt_port_interface_mode_status_get = adpt_hppe_port_interface_mode_status_get;
+		p_adpt_api->adpt_port_interface_mode_status_get =
+			adpt_hppe_port_interface_mode_status_get;
 	}
 	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] & (1 <<  (FUNC_ADPT_PORT_RESET % 32)))
 	{
 		p_adpt_api->adpt_port_reset = adpt_hppe_port_reset;
 	}
-	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] & (1 <<  (FUNC_ADPT_PORT_RXFC_STATUS_SET % 32)))
+	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] &
+		(1 <<  (FUNC_ADPT_PORT_RXFC_STATUS_SET % 32)))
 	{
 		p_adpt_api->adpt_port_rxfc_status_set = adpt_hppe_port_rxfc_status_set;
 	}
@@ -4580,44 +4822,64 @@ sw_error_t adpt_hppe_port_ctrl_init(a_uint32_t dev_id)
 	{
 		p_adpt_api->adpt_port_wol_status_get = adpt_hppe_port_wol_status_get;
 	}
-	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] & (1 <<  (FUNC_ADPT_PORT_MAX_FRAME_SIZE_SET % 32)))
+	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] &
+		(1 <<  (FUNC_ADPT_PORT_MAX_FRAME_SIZE_SET % 32)))
 	{
 		p_adpt_api->adpt_port_max_frame_size_set = adpt_hppe_port_max_frame_size_set;
 	}
-	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] & (1 <<  (FUNC_ADPT_PORT_MAX_FRAME_SIZE_GET % 32)))
+	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] &
+		(1 <<  (FUNC_ADPT_PORT_MAX_FRAME_SIZE_GET % 32)))
 	{
 		p_adpt_api->adpt_port_max_frame_size_get = adpt_hppe_port_max_frame_size_get;
 	}
-	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] & (1 <<  (FUNC_ADPT_PORT_SOURCE_FILTER_GET % 32)))
+	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] &
+		(1 <<  (FUNC_ADPT_PORT_SOURCE_FILTER_GET % 32)))
 	{
 		p_adpt_api->adpt_port_source_filter_get = adpt_hppe_port_source_filter_get;
 	}
-	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] & (1 <<  (FUNC_ADPT_PORT_SOURCE_FILTER_SET % 32)))
+	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] &
+		(1 <<  (FUNC_ADPT_PORT_SOURCE_FILTER_SET % 32)))
 	{
 		p_adpt_api->adpt_port_source_filter_set = adpt_hppe_port_source_filter_set;
 	}
 
-	if(p_adpt_api->adpt_port_ctrl_func_bitmap[2] & (1 <<  (FUNC_ADPT_PORT_INTERFACE_MODE_APPLY% 32)))
+	if(p_adpt_api->adpt_port_ctrl_func_bitmap[2] &
+		(1 <<  (FUNC_ADPT_PORT_INTERFACE_MODE_APPLY% 32)))
 	{
 		p_adpt_api->adpt_port_interface_mode_apply = adpt_hppe_port_interface_mode_apply;
 	}
-	if(p_adpt_api->adpt_port_ctrl_func_bitmap[2] & (1 <<  (FUNC_ADPT_PORT_INTERFACE_3AZ_STATUS_SET% 32)))
+	if(p_adpt_api->adpt_port_ctrl_func_bitmap[2] &
+		(1 <<  (FUNC_ADPT_PORT_INTERFACE_3AZ_STATUS_SET% 32)))
 	{
 		p_adpt_api->adpt_port_interface_3az_status_set = adpt_hppe_port_interface_3az_set;
 	}
-	if(p_adpt_api->adpt_port_ctrl_func_bitmap[2] & (1 <<  (FUNC_ADPT_PORT_INTERFACE_3AZ_STATUS_GET% 32)))
+	if(p_adpt_api->adpt_port_ctrl_func_bitmap[2] &
+		(1 <<  (FUNC_ADPT_PORT_INTERFACE_3AZ_STATUS_GET% 32)))
 	{
 		p_adpt_api->adpt_port_interface_3az_status_get = adpt_hppe_port_interface_3az_get;
 	}
-	if(p_adpt_api->adpt_port_ctrl_func_bitmap[2] & (1 <<  (FUNC_ADPT_PORT_FLOWCTRL_FORCEMODE_SET% 32)))
+	if(p_adpt_api->adpt_port_ctrl_func_bitmap[2] &
+		(1 <<  (FUNC_ADPT_PORT_PROMISC_MODE_SET% 32)))
 	{
-		p_adpt_api->adpt_port_flowctrl_forcemode_set = adpt_hppe_port_flowctrl_forcemode_set;
+		p_adpt_api->adpt_port_promisc_mode_set = adpt_hppe_port_promisc_mode_set;
 	}
-	if(p_adpt_api->adpt_port_ctrl_func_bitmap[2] & (1 <<  (FUNC_ADPT_PORT_FLOWCTRL_FORCEMODE_GET% 32)))
+	if(p_adpt_api->adpt_port_ctrl_func_bitmap[2] &
+		(1 <<  (FUNC_ADPT_PORT_PROMISC_MODE_GET% 32)))
 	{
-		p_adpt_api->adpt_port_flowctrl_forcemode_get = adpt_hppe_port_flowctrl_forcemode_get;
+		p_adpt_api->adpt_port_promisc_mode_get = adpt_hppe_port_promisc_mode_get;
 	}
-
+	if(p_adpt_api->adpt_port_ctrl_func_bitmap[2] &
+		(1 <<  (FUNC_ADPT_PORT_FLOWCTRL_FORCEMODE_SET% 32)))
+	{
+		p_adpt_api->adpt_port_flowctrl_forcemode_set =
+			adpt_hppe_port_flowctrl_forcemode_set;
+	}
+	if(p_adpt_api->adpt_port_ctrl_func_bitmap[2] &
+		(1 <<  (FUNC_ADPT_PORT_FLOWCTRL_FORCEMODE_GET% 32)))
+	{
+		p_adpt_api->adpt_port_flowctrl_forcemode_get =
+			adpt_hppe_port_flowctrl_forcemode_get;
+	}
 	p_adpt_api->adpt_port_mux_mac_type_set = adpt_hppe_port_mux_mac_type_set;
 	p_adpt_api->adpt_port_mac_speed_set = adpt_hppe_port_mac_speed_set;
 	p_adpt_api->adpt_port_mac_duplex_set = adpt_hppe_port_mac_duplex_set;
@@ -4625,6 +4887,8 @@ sw_error_t adpt_hppe_port_ctrl_init(a_uint32_t dev_id)
 	p_adpt_api->adpt_port_polling_sw_sync_set = qca_hppe_mac_sw_sync_task;
 #endif
 	p_adpt_api->adpt_port_bridge_txmac_set = adpt_hppe_port_bridge_txmac_set;
+	p_adpt_api->adpt_port_interface_eee_cfg_set = adpt_hppe_port_interface_eee_cfg_set;
+	p_adpt_api->adpt_port_interface_eee_cfg_get = adpt_hppe_port_interface_eee_cfg_get;
 
 	return SW_OK;
 }

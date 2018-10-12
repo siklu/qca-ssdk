@@ -12,25 +12,31 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef _SFP_PHY_H_
-#define _SFP_PHY_H_
+
+/**
+ * @defgroup
+ * @{
+ */
+#ifndef _ADPT_CPPE_PORTCTRLH_
+#define _ADPT_CPPE_PORTCTRLH_
 
 #ifdef __cplusplus
-extern "C"
-{
-#endif				/* __cplusplus */
+extern "C" {
+#endif                          /* __cplusplus */
 
+#define CPPE_PORT3_PCS_SEL_PCS0_CHANNEL2 0
+#define CPPE_PORT3_PCS_SEL_PCS0_CHANNEL4 1
+#define CPPE_PORT4_PCS_SEL_PCS0_CHANNEL3 0
+#define CPPE_PORT4_PCS_SEL_PCS0_SGMIIPLUS 1
+#define CPPE_PORT5_PCS_SEL_PCS0_CHANNEL4 0
+#define CPPE_PORT5_PCS_SEL_PCS1_CHANNEL0 1
+#define CPPE_PORT5_GMAC_SEL_GMAC 0
+#define CPPE_PORT5_GMAC_SEL_XGMAC 1
 
-#define SFP_ANEG_DONE	0x20
-
-int sfp_phy_device_setup(a_uint32_t dev_id, a_uint32_t port_id, a_uint32_t phy_id);
-void sfp_phy_device_remove(a_uint32_t dev_id, a_uint32_t port);
-
-int sfp_phy_init(a_uint32_t dev_id, a_uint32_t port_bmp);
-void sfp_phy_exit(a_uint32_t dev_id, a_uint32_t port_bmp);
+sw_error_t
+_adpt_cppe_port_mux_mac_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t port_type);
 
 #ifdef __cplusplus
 }
-#endif				/* __cplusplus */
-#endif				/* _SFP_PHY_H_ */
-
+#endif                          /* __cplusplus */
+#endif

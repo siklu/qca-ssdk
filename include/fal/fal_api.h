@@ -20,9 +20,10 @@
 #ifdef __cplusplus
 extern "C" {
 #endif                          /* __cplusplus */
-
+/*qca808x_end*/
 #ifdef IN_PORTCONTROL
 #ifndef IN_PORTCONTROL_MINI
+/*qca808x_start*/
 #define PORTCONTROL_API \
     SW_API_DEF(SW_API_PT_DUPLEX_GET, fal_port_duplex_get), \
     SW_API_DEF(SW_API_PT_DUPLEX_SET, fal_port_duplex_set), \
@@ -119,7 +120,11 @@ extern "C" {
     SW_API_DEF(SW_API_PT_FRAME_MAX_SIZE_GET, fal_port_max_frame_size_get), \
     SW_API_DEF(SW_API_PT_FRAME_MAX_SIZE_SET, fal_port_max_frame_size_set), \
     SW_API_DEF(SW_API_PT_INTERFACE_3AZ_STATUS_SET, fal_port_interface_3az_status_set), \
-    SW_API_DEF(SW_API_PT_INTERFACE_3AZ_STATUS_GET, fal_port_interface_3az_status_get),
+    SW_API_DEF(SW_API_PT_INTERFACE_3AZ_STATUS_GET, fal_port_interface_3az_status_get), \
+    SW_API_DEF(SW_API_PT_PROMISC_MODE_SET, fal_port_promisc_mode_set),  \
+    SW_API_DEF(SW_API_PT_PROMISC_MODE_GET, fal_port_promisc_mode_get), \
+    SW_API_DEF(SW_API_PT_INTERFACE_EEE_CFG_SET, fal_port_interface_eee_cfg_set),  \
+    SW_API_DEF(SW_API_PT_INTERFACE_EEE_CFG_GET, fal_port_interface_eee_cfg_get),
 /*qca808x_start*/
 /*end of PORTCONTROL_API*/
 #define PORTCONTROL_API_PARAM \
@@ -218,9 +223,14 @@ extern "C" {
     SW_API_DESC(SW_API_PT_FRAME_MAX_SIZE_GET) \
     SW_API_DESC(SW_API_PT_FRAME_MAX_SIZE_SET) \
     SW_API_DESC(SW_API_PT_INTERFACE_3AZ_STATUS_SET)  \
-    SW_API_DESC(SW_API_PT_INTERFACE_3AZ_STATUS_GET)
+    SW_API_DESC(SW_API_PT_INTERFACE_3AZ_STATUS_GET) \
+    SW_API_DESC(SW_API_PT_PROMISC_MODE_SET)  \
+    SW_API_DESC(SW_API_PT_PROMISC_MODE_GET) \
+    SW_API_DESC(SW_API_PT_INTERFACE_EEE_CFG_SET)  \
+    SW_API_DESC(SW_API_PT_INTERFACE_EEE_CFG_GET)
 /*qca808x_start*/
 /*end of PORTCONTROL_API_PARAM*/
+/*qca808x_end*/
 #else
 #define PORTCONTROL_API \
     SW_API_DEF(SW_API_PT_DUPLEX_SET, fal_port_duplex_set), \
@@ -228,20 +238,16 @@ extern "C" {
     SW_API_DEF(SW_API_PT_AN_ENABLE, fal_port_autoneg_enable), \
     SW_API_DEF(SW_API_PT_AN_RESTART, fal_port_autoneg_restart), \
     SW_API_DEF(SW_API_PT_AN_ADV_SET, fal_port_autoneg_adv_set), \
-/*qca808x_end*/\
     SW_API_DEF(SW_API_PT_LINK_MODE_SET, fal_port_link_forcemode_set),   \
     SW_API_DEF(SW_API_PT_TXHDR_SET, fal_port_txhdr_mode_set), \
     SW_API_DEF(SW_API_PT_RXHDR_SET, fal_port_rxhdr_mode_set), \
     SW_API_DEF(SW_API_HEADER_TYPE_SET, fal_header_type_set),  \
     SW_API_DEF(SW_API_TXMAC_STATUS_SET, fal_port_txmac_status_set), \
     SW_API_DEF(SW_API_RXMAC_STATUS_SET, fal_port_rxmac_status_set), \
-/*qca808x_start*/\
     SW_API_DEF(SW_API_PT_POWER_OFF, fal_port_power_off), \
     SW_API_DEF(SW_API_PT_POWER_ON, fal_port_power_on), \
-/*qca808x_end*/\
     SW_API_DEF(SW_API_TXFC_STATUS_SET, fal_port_txfc_status_set),   \
     SW_API_DEF(SW_API_RXFC_STATUS_SET, fal_port_rxfc_status_set),
-/*qca808x_start*/
 /*end of PORTCONTROL_API*/
 #define PORTCONTROL_API_PARAM \
     SW_API_DESC(SW_API_PT_DUPLEX_SET) \
@@ -249,20 +255,16 @@ extern "C" {
     SW_API_DESC(SW_API_PT_AN_ENABLE) \
     SW_API_DESC(SW_API_PT_AN_RESTART) \
     SW_API_DESC(SW_API_PT_AN_ADV_SET) \
-/*qca808x_end*/\
     SW_API_DESC(SW_API_PT_LINK_MODE_SET) \
     SW_API_DESC(SW_API_PT_TXHDR_SET) \
     SW_API_DESC(SW_API_PT_RXHDR_SET) \
     SW_API_DESC(SW_API_HEADER_TYPE_SET) \
     SW_API_DESC(SW_API_TXMAC_STATUS_SET) \
     SW_API_DESC(SW_API_RXMAC_STATUS_SET) \
-/*qca808x_start*/\
     SW_API_DESC(SW_API_PT_POWER_OFF) \
     SW_API_DESC(SW_API_PT_POWER_ON) \
-/*qca808x_end*/\
     SW_API_DESC(SW_API_TXFC_STATUS_SET) \
     SW_API_DESC(SW_API_RXFC_STATUS_SET)
-/*qca808x_start*/\
 /*end of PORTCONTROL_API_PARAM*/
 #endif
 
@@ -270,7 +272,6 @@ extern "C" {
 #define PORTCONTROL_API
 #define PORTCONTROL_API_PARAM
 #endif
-/*qca808x_end*/
 #ifdef IN_VLAN
 #define VLAN_API \
     SW_API_DEF(SW_API_VLAN_ADD, fal_vlan_create), \
@@ -1979,6 +1980,104 @@ extern "C" {
 #define POLICER_API
 #define POLICER_API_PARAM
 #endif
+
+#ifdef IN_PTP
+#define PTP_API \
+    SW_API_DEF(SW_API_PTP_CONFIG_SET, fal_ptp_config_set), \
+    SW_API_DEF(SW_API_PTP_CONFIG_GET, fal_ptp_config_get), \
+    SW_API_DEF(SW_API_PTP_REFERENCE_CLOCK_SET, fal_ptp_reference_clock_set), \
+    SW_API_DEF(SW_API_PTP_REFERENCE_CLOCK_GET, fal_ptp_reference_clock_get), \
+    SW_API_DEF(SW_API_PTP_RX_TIMESTAMP_MODE_SET, fal_ptp_rx_timestamp_mode_set), \
+    SW_API_DEF(SW_API_PTP_RX_TIMESTAMP_MODE_GET, fal_ptp_rx_timestamp_mode_get), \
+    SW_API_DEF(SW_API_PTP_TIMESTAMP_GET, fal_ptp_timestamp_get), \
+    SW_API_DEF(SW_API_PTP_PKT_TIMESTAMP_SET, fal_ptp_pkt_timestamp_set), \
+    SW_API_DEF(SW_API_PTP_PKT_TIMESTAMP_GET, fal_ptp_pkt_timestamp_get), \
+    SW_API_DEF(SW_API_PTP_GRANDMASTER_MODE_SET, fal_ptp_grandmaster_mode_set), \
+    SW_API_DEF(SW_API_PTP_GRANDMASTER_MODE_GET, fal_ptp_grandmaster_mode_get), \
+    SW_API_DEF(SW_API_PTP_RTC_TIME_SET, fal_ptp_rtc_time_set), \
+    SW_API_DEF(SW_API_PTP_RTC_TIME_GET, fal_ptp_rtc_time_get), \
+    SW_API_DEF(SW_API_PTP_RTC_TIME_CLEAR, fal_ptp_rtc_time_clear), \
+    SW_API_DEF(SW_API_PTP_RTC_ADJTIME_SET, fal_ptp_rtc_adjtime_set), \
+    SW_API_DEF(SW_API_PTP_RTC_ADJFREQ_SET, fal_ptp_rtc_adjfreq_set), \
+    SW_API_DEF(SW_API_PTP_RTC_ADJFREQ_GET, fal_ptp_rtc_adjfreq_get), \
+    SW_API_DEF(SW_API_PTP_LINK_DELAY_SET, fal_ptp_link_delay_set), \
+    SW_API_DEF(SW_API_PTP_LINK_DELAY_GET, fal_ptp_link_delay_get), \
+    SW_API_DEF(SW_API_PTP_SECURITY_SET, fal_ptp_security_set), \
+    SW_API_DEF(SW_API_PTP_SECURITY_GET, fal_ptp_security_get), \
+    SW_API_DEF(SW_API_PTP_PPS_SIGNAL_CONTROL_SET, fal_ptp_pps_signal_control_set), \
+    SW_API_DEF(SW_API_PTP_PPS_SIGNAL_CONTROL_GET, fal_ptp_pps_signal_control_get), \
+    SW_API_DEF(SW_API_PTP_RX_CRC_RECALC_SET, fal_ptp_rx_crc_recalc_enable), \
+    SW_API_DEF(SW_API_PTP_RX_CRC_RECALC_GET, fal_ptp_rx_crc_recalc_status_get), \
+    SW_API_DEF(SW_API_PTP_ASYM_CORRECTION_SET, fal_ptp_asym_correction_set), \
+    SW_API_DEF(SW_API_PTP_ASYM_CORRECTION_GET, fal_ptp_asym_correction_get), \
+    SW_API_DEF(SW_API_PTP_OUTPUT_WAVEFORM_SET, fal_ptp_output_waveform_set), \
+    SW_API_DEF(SW_API_PTP_OUTPUT_WAVEFORM_GET, fal_ptp_output_waveform_get), \
+    SW_API_DEF(SW_API_PTP_RTC_TIME_SNAPSHOT_SET, fal_ptp_rtc_time_snapshot_enable), \
+    SW_API_DEF(SW_API_PTP_RTC_TIME_SNAPSHOT_GET, fal_ptp_rtc_time_snapshot_status_get), \
+    SW_API_DEF(SW_API_PTP_INCREMENT_SYNC_FROM_CLOCK_SET, \
+		    fal_ptp_increment_sync_from_clock_enable), \
+    SW_API_DEF(SW_API_PTP_INCREMENT_SYNC_FROM_CLOCK_GET, \
+		    fal_ptp_increment_sync_from_clock_status_get), \
+    SW_API_DEF(SW_API_PTP_TOD_UART_SET, fal_ptp_tod_uart_set), \
+    SW_API_DEF(SW_API_PTP_TOD_UART_GET, fal_ptp_tod_uart_get), \
+    SW_API_DEF(SW_API_PTP_ENHANCED_TIMESTAMP_ENGINE_SET, fal_ptp_enhanced_timestamp_engine_set), \
+    SW_API_DEF(SW_API_PTP_ENHANCED_TIMESTAMP_ENGINE_GET, fal_ptp_enhanced_timestamp_engine_get), \
+    SW_API_DEF(SW_API_PTP_TRIGGER_SET, fal_ptp_trigger_set), \
+    SW_API_DEF(SW_API_PTP_TRIGGER_GET, fal_ptp_trigger_get), \
+    SW_API_DEF(SW_API_PTP_CAPTURE_SET, fal_ptp_capture_set), \
+    SW_API_DEF(SW_API_PTP_CAPTURE_GET, fal_ptp_capture_get), \
+    SW_API_DEF(SW_API_PTP_INTERRUPT_SET, fal_ptp_interrupt_set), \
+    SW_API_DEF(SW_API_PTP_INTERRUPT_GET, fal_ptp_interrupt_get),
+
+#define PTP_API_PARAM \
+    SW_API_DESC(SW_API_PTP_CONFIG_SET) \
+    SW_API_DESC(SW_API_PTP_CONFIG_GET) \
+    SW_API_DESC(SW_API_PTP_REFERENCE_CLOCK_SET) \
+    SW_API_DESC(SW_API_PTP_REFERENCE_CLOCK_GET) \
+    SW_API_DESC(SW_API_PTP_RX_TIMESTAMP_MODE_SET) \
+    SW_API_DESC(SW_API_PTP_RX_TIMESTAMP_MODE_GET) \
+    SW_API_DESC(SW_API_PTP_TIMESTAMP_GET) \
+    SW_API_DESC(SW_API_PTP_PKT_TIMESTAMP_SET) \
+    SW_API_DESC(SW_API_PTP_PKT_TIMESTAMP_GET) \
+    SW_API_DESC(SW_API_PTP_GRANDMASTER_MODE_SET) \
+    SW_API_DESC(SW_API_PTP_GRANDMASTER_MODE_GET) \
+    SW_API_DESC(SW_API_PTP_RTC_TIME_SET) \
+    SW_API_DESC(SW_API_PTP_RTC_TIME_GET) \
+    SW_API_DESC(SW_API_PTP_RTC_TIME_CLEAR) \
+    SW_API_DESC(SW_API_PTP_RTC_ADJTIME_SET) \
+    SW_API_DESC(SW_API_PTP_RTC_ADJFREQ_SET) \
+    SW_API_DESC(SW_API_PTP_RTC_ADJFREQ_GET) \
+    SW_API_DESC(SW_API_PTP_LINK_DELAY_SET) \
+    SW_API_DESC(SW_API_PTP_LINK_DELAY_GET) \
+    SW_API_DESC(SW_API_PTP_SECURITY_SET) \
+    SW_API_DESC(SW_API_PTP_SECURITY_GET) \
+    SW_API_DESC(SW_API_PTP_PPS_SIGNAL_CONTROL_SET) \
+    SW_API_DESC(SW_API_PTP_PPS_SIGNAL_CONTROL_GET) \
+    SW_API_DESC(SW_API_PTP_RX_CRC_RECALC_SET) \
+    SW_API_DESC(SW_API_PTP_RX_CRC_RECALC_GET) \
+    SW_API_DESC(SW_API_PTP_ASYM_CORRECTION_SET) \
+    SW_API_DESC(SW_API_PTP_ASYM_CORRECTION_GET) \
+    SW_API_DESC(SW_API_PTP_OUTPUT_WAVEFORM_SET) \
+    SW_API_DESC(SW_API_PTP_OUTPUT_WAVEFORM_GET) \
+    SW_API_DESC(SW_API_PTP_RTC_TIME_SNAPSHOT_SET) \
+    SW_API_DESC(SW_API_PTP_RTC_TIME_SNAPSHOT_GET) \
+    SW_API_DESC(SW_API_PTP_INCREMENT_SYNC_FROM_CLOCK_SET) \
+    SW_API_DESC(SW_API_PTP_INCREMENT_SYNC_FROM_CLOCK_GET) \
+    SW_API_DESC(SW_API_PTP_TOD_UART_SET) \
+    SW_API_DESC(SW_API_PTP_TOD_UART_GET) \
+    SW_API_DESC(SW_API_PTP_ENHANCED_TIMESTAMP_ENGINE_SET) \
+    SW_API_DESC(SW_API_PTP_ENHANCED_TIMESTAMP_ENGINE_GET) \
+    SW_API_DESC(SW_API_PTP_TRIGGER_SET) \
+    SW_API_DESC(SW_API_PTP_TRIGGER_GET) \
+    SW_API_DESC(SW_API_PTP_CAPTURE_SET) \
+    SW_API_DESC(SW_API_PTP_CAPTURE_GET) \
+    SW_API_DESC(SW_API_PTP_INTERRUPT_SET) \
+    SW_API_DESC(SW_API_PTP_INTERRUPT_GET)
+#else
+#define PTP_API
+#define PTP_API_PARAM
+#endif
+
 /*qca808x_start*/
 #define SSDK_API \
 /*qca808x_end*/\
@@ -2019,8 +2118,9 @@ extern "C" {
     CTRLPKT_API \
     SERVCODE_API \
     RSS_HASH_API \
-	POLICER_API \
-	SHAPER_API \
+    POLICER_API \
+    SHAPER_API \
+    PTP_API \
 /*qca808x_start*/\
     SW_API_DEF(SW_API_MAX, NULL),
 
@@ -2029,13 +2129,16 @@ extern "C" {
 /*qca808x_end*/\
     SW_PARAM_DEF(SW_API_SWITCH_RESET, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"), \
     SW_PARAM_DEF(SW_API_SSDK_CFG, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"), \
-    SW_PARAM_DEF(SW_API_SSDK_CFG, SW_SSDK_CFG, sizeof(ssdk_cfg_t), SW_PARAM_PTR|SW_PARAM_OUT, "ssdk configuration"), \
+    SW_PARAM_DEF(SW_API_SSDK_CFG, SW_SSDK_CFG, sizeof(ssdk_cfg_t), \
+		    SW_PARAM_PTR|SW_PARAM_OUT, "ssdk configuration"), \
     SW_PARAM_DEF(SW_API_MODULE_FUNC_CTRL_SET, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"), \
     SW_PARAM_DEF(SW_API_MODULE_FUNC_CTRL_SET, SW_MODULE, 4, SW_PARAM_IN, "Module"), \
-    SW_PARAM_DEF(SW_API_MODULE_FUNC_CTRL_SET, SW_FUNC_CTRL, sizeof(fal_func_ctrl_t), SW_PARAM_PTR|SW_PARAM_IN, "Function bitmap"), \
+    SW_PARAM_DEF(SW_API_MODULE_FUNC_CTRL_SET, SW_FUNC_CTRL, sizeof(fal_func_ctrl_t), \
+		    SW_PARAM_PTR|SW_PARAM_IN, "Function bitmap"), \
     SW_PARAM_DEF(SW_API_MODULE_FUNC_CTRL_GET, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"), \
     SW_PARAM_DEF(SW_API_MODULE_FUNC_CTRL_GET, SW_MODULE, 4, SW_PARAM_IN, "Module"), \
-    SW_PARAM_DEF(SW_API_MODULE_FUNC_CTRL_GET, SW_FUNC_CTRL, sizeof(fal_func_ctrl_t), SW_PARAM_PTR|SW_PARAM_OUT, "Function bitmap"), \
+    SW_PARAM_DEF(SW_API_MODULE_FUNC_CTRL_GET, SW_FUNC_CTRL, sizeof(fal_func_ctrl_t), \
+		    SW_PARAM_PTR|SW_PARAM_OUT, "Function bitmap"), \
     MIB_API_PARAM \
     LEAKY_API_PARAM \
     MISC_API_PARAM \
@@ -2069,8 +2172,9 @@ extern "C" {
     CTRLPKT_API_PARAM \
     SERVCODE_API_PARAM \
     RSS_HASH_API_PARAM \
-	POLICER_API_PARAM \
-	SHAPER_API_PARAM \
+    POLICER_API_PARAM \
+    SHAPER_API_PARAM \
+    PTP_API_PARAM \
 /*qca808x_start*/\
     SW_PARAM_DEF(SW_API_MAX, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"),
 

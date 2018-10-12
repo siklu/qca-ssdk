@@ -1898,6 +1898,7 @@ static int ssdk_probe(struct platform_device *pdev)
 
 static const struct of_device_id ssdk_of_mtable[] = {
 	{.compatible = "qcom,ess-switch" },
+	{.compatible = "qcom,ess-switch-ipq60xx" },
 	{.compatible = "qcom,ess-switch-ipq807x" },
 	{.compatible = "qcom,ess-instance" },
 	{}
@@ -2477,10 +2478,13 @@ static int chip_is_scomphy(a_uint32_t dev_id, ssdk_init_cfg* cfg)
 		if (port_bmp & 0x1) {
 			phy_id = hsl_phyid_get(dev_id, port_id, cfg);
 			switch (phy_id) {
+/*qca808x_end*/
 				case QCA8030_PHY:
 				case QCA8033_PHY:
 				case QCA8035_PHY:
+/*qca808x_start*/
 				case QCA8081_PHY:
+				case QCA8081_PHY_V1_1:
 					cfg->chip_type = CHIP_SCOMPHY;
 					rv = SW_OK;
 					break;
@@ -2499,6 +2503,7 @@ static int chip_ver_get(a_uint32_t dev_id, ssdk_init_cfg* cfg)
 {
 	int rv = SW_OK;
 	a_uint8_t chip_ver = 0;
+	a_uint8_t chip_revision = 0;
 /*qca808x_end*/
 	hsl_reg_mode reg_mode;
 
@@ -2511,6 +2516,7 @@ static int chip_ver_get(a_uint32_t dev_id, ssdk_init_cfg* cfg)
 		a_uint32_t reg_val = 0;
 		qca_switch_reg_read(dev_id,0,(a_uint8_t *)&reg_val, 4);
 		chip_ver = (reg_val&0xff00)>>8;
+		chip_revision = reg_val&0xff;
 	}
 /*qca808x_start*/
 	if(chip_ver == QCA_VER_AR8227)
@@ -2521,8 +2527,15 @@ static int chip_ver_get(a_uint32_t dev_id, ssdk_init_cfg* cfg)
 		cfg->chip_type = CHIP_ISIS;
 	else if(chip_ver == QCA_VER_DESS)
 		cfg->chip_type = CHIP_DESS;
-	else if(chip_ver == QCA_VER_HPPE)
+	else if(chip_ver == QCA_VER_HPPE) {
 		cfg->chip_type = CHIP_HPPE;
+		#ifdef HAWKEYE_CHIP
+		cfg->chip_revision = chip_revision;
+		#else
+		cfg->chip_revision = 1;/*cypress for debug*/
+		#endif
+
+	}
 	else {
 		/* try single phy without switch connected */
 		rv = chip_is_scomphy(dev_id, cfg);
@@ -3240,8 +3253,8 @@ static int ssdk_alloc_priv(a_uint32_t dev_num)
 		qca_phy_priv_global[dev_id]->qca_ssdk_sw_dev_registered = A_FALSE;
 		qca_phy_priv_global[dev_id]->ess_switch_flag = A_FALSE;
 /*qca808x_start*/
-		qca_ssdk_phy_info_init(dev_id);
 		qca_ssdk_port_bmp_init(dev_id);
+		qca_ssdk_phy_info_init(dev_id);
 	}
 
 	return rev;

@@ -27,6 +27,13 @@ extern "C" {
 #define UNIPHY2_SOFT_RESET_ID	"uniphy2_soft_rst"
 #define UNIPHY2_XPCS_RESET_ID	"uniphy2_xpcs_rst"
 
+#define SSDK_PORT1_RESET_ID	"nss_port1_rst"
+#define SSDK_PORT2_RESET_ID	"nss_port2_rst"
+#define SSDK_PORT3_RESET_ID	"nss_port3_rst"
+#define SSDK_PORT4_RESET_ID	"nss_port4_rst"
+#define SSDK_PORT5_RESET_ID	"nss_port5_rst"
+#define SSDK_PORT6_RESET_ID	"nss_port6_rst"
+
 enum ssdk_rst_action {
         SSDK_RESET_DEASSERT      = 0,
         SSDK_RESET_ASSERT        = 1
@@ -162,6 +169,10 @@ enum unphy_clk_type {
 #define SGMII_SPEED_100M_CLK	25000000
 #define SGMII_SPEED_1000M_CLK	125000000
 
+#define CPPE_XGMAC_CLK_REG	0x0194900c
+#define CPPE_XGMAC_CLK_SIZE	0x10
+#define CPPE_XGMAC_CLK_ENABLE	0x20
+
 enum {
 	UNIPHY_RX = 0,
 	UNIPHY_TX,
@@ -170,6 +181,11 @@ enum {
 void ssdk_uniphy_reset(
 	a_uint32_t dev_id,
 	enum unphy_rst_type rst_type,
+	a_uint32_t action);
+
+void ssdk_port_reset(
+	a_uint32_t dev_id,
+	a_uint32_t port_id,
 	a_uint32_t action);
 
 #if defined(HPPE)
@@ -193,6 +209,11 @@ ssdk_port_speed_clock_set(
 	a_uint32_t rate);
 
 void ssdk_ppe_reset_init(void);
+sw_error_t
+qca_cppe_fpga_xgmac_clock_enable(a_uint32_t dev_id);
+void ssdk_port_mac_clock_reset(
+	a_uint32_t dev_id,
+	a_uint32_t port_id);
 #endif
 
 #ifdef __cplusplus

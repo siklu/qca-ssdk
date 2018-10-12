@@ -199,6 +199,10 @@ ifeq (TRUE, $(HAWKEYE_CHIP))
   MODULE_CFLAG += -DHAWKEYE_CHIP
 endif
 
+ifeq (TRUE, $(IN_PTP))
+  MODULE_CFLAG += -DIN_PTP
+endif
+
 ifneq (TRUE, $(FAL))
   MODULE_CFLAG += -DHSL_STANDALONG
 endif
@@ -284,6 +288,7 @@ endif
 ifneq (,$(findstring HPPE, $(SUPPORT_CHIP)))
   MODULE_INC   += -I$(PRJ_PATH)/include/hsl/hppe
   MODULE_INC   += -I$(PRJ_PATH)/include/adpt/hppe
+  MODULE_INC   += -I$(PRJ_PATH)/include/adpt/cppe
   MODULE_CFLAG += -DHPPE
 endif
 
@@ -295,6 +300,12 @@ endif
 # check for GCC version
 ifeq (4, $(GCC_VER))
   MODULE_CFLAG += -DGCCV4
+endif
+
+ifeq (TRUE, $(IN_PTP))
+ifeq ($(CONFIG_PTP_1588_CLOCK), y)
+	MODULE_CFLAG += -DIN_LINUX_STD_PTP
+endif
 endif
 
 ifeq (KSLIB, $(MODULE_TYPE))

@@ -49,6 +49,14 @@ endif
 
 ifeq (TRUE, $(IN_QCA808X_PHY))
     SRC_LIST += qca808x_phy.c
+    SRC_LIST += qca808x.c
+ifeq (TRUE, $(IN_PTP))
+    SRC_LIST += qca808x_ptp.c
+    SRC_LIST += qca808x_ptp_api.c
+ifeq ($(CONFIG_PTP_1588_CLOCK), y)
+    SRC_LIST += qca808x_phc.c
+endif
+endif
 endif
 
 ifeq (TRUE, $(IN_SFP_PHY))

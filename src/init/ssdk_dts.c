@@ -872,7 +872,8 @@ sw_error_t ssdk_dt_parse(ssdk_init_cfg *cfg, a_uint32_t num, a_uint32_t *dev_id)
 		if (IS_ERR(ssdk_dt_priv->ess_clk))
 			SSDK_INFO("ess_clk doesn't exist!\n");
 	}
-	else if (of_device_is_compatible(switch_node, "qcom,ess-switch-ipq807x")) {
+	else if (of_device_is_compatible(switch_node, "qcom,ess-switch-ipq807x") ||
+		 of_device_is_compatible(switch_node, "qcom,ess-switch-ipq60xx")) {
 		/* HPPE chip */
 		ssdk_dt_parse_uniphy(*dev_id);
 		ssdk_dt_parse_scheduler_cfg(*dev_id, switch_node);

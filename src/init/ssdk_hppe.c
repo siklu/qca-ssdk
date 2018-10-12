@@ -32,7 +32,6 @@ static sw_error_t qca_hppe_fdb_hw_init(a_uint32_t dev_id)
 
 	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
 	SW_RTN_ON_NULL(p_api->adpt_port_bridge_txmac_set);
-	SW_RTN_ON_NULL(p_api->adpt_fdb_port_promisc_mode_set);
 
 	for(port = SSDK_PHYSICAL_PORT0; port <= SSDK_PHYSICAL_PORT7; port++) {
 		fal_fdb_port_learning_ctrl_set(dev_id, port, A_TRUE, FAL_MAC_FRWRD);
@@ -47,7 +46,7 @@ static sw_error_t qca_hppe_fdb_hw_init(a_uint32_t dev_id)
 			p_api->adpt_port_bridge_txmac_set(dev_id, port, A_TRUE);
 #endif
 		}
-		p_api->adpt_fdb_port_promisc_mode_set(dev_id, port, A_TRUE);
+		fal_port_promisc_mode_set(dev_id, port, A_TRUE);
 	}
 
 	fal_fdb_aging_ctrl_set(dev_id, A_TRUE);
@@ -86,14 +85,21 @@ qca_hppe_fpga_ports_enable(a_uint32_t dev_id)
 {
 	a_uint32_t i = 0;
 	a_uint32_t val, addr = 0x4000;
+	a_uint32_t port_max = SSDK_PHYSICAL_PORT7;
+	a_uint32_t xgmac_max = 2;
 
-	for(i = SSDK_PHYSICAL_PORT1; i < SSDK_PHYSICAL_PORT7; i++) {
+	if(adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) {
+		port_max = SSDK_PHYSICAL_PORT6;
+		xgmac_max = 1;
+	}
+
+	for(i = SSDK_PHYSICAL_PORT1; i < port_max; i++) {
 		fal_port_rxfc_status_set(dev_id, i, A_TRUE);
 		fal_port_txfc_status_set(dev_id, i, A_TRUE);
 		fal_port_txmac_status_set (dev_id, i, A_TRUE);
 		fal_port_rxmac_status_set (dev_id, i, A_TRUE);
 	}
-	for (i = 0; i < 2; i ++) {
+	for (i = 0; i < xgmac_max; i ++) {
 		val = 0x00000081;
 		qca_switch_reg_write(0, 0x00003008 + (addr * i), (a_uint8_t *)&val, 4);
 	}
@@ -106,11 +112,22 @@ static sw_error_t
 qca_hppe_portctrl_hw_init(a_uint32_t dev_id)
 {
 	a_uint32_t i = 0;
+	a_uint32_t port_max = SSDK_PHYSICAL_PORT7;
 
+	if(adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) {
+		SSDK_INFO("Cypress PPE port initializing\n");
+		port_max = SSDK_PHYSICAL_PORT6;
 #ifndef HAWKEYE_CHIP
-	qca_hppe_fpga_xgmac_gpio_enable(dev_id);
+		qca_cppe_fpga_xgmac_clock_enable(dev_id);
 #endif
-	for(i = SSDK_PHYSICAL_PORT1; i < SSDK_PHYSICAL_PORT7; i++) {
+	} else {
+		SSDK_INFO("Hawkeye PPE port initializing\n");
+		port_max = SSDK_PHYSICAL_PORT7;
+#ifndef HAWKEYE_CHIP
+		qca_hppe_fpga_xgmac_gpio_enable(dev_id);
+#endif
+	}
+	for(i = SSDK_PHYSICAL_PORT1; i < port_max; i++) {
 		qca_hppe_port_mac_type_set(dev_id, i, PORT_GMAC_TYPE);
 		fal_port_txmac_status_set (dev_id, i, A_FALSE);
 		fal_port_rxmac_status_set (dev_id, i, A_FALSE);
@@ -119,7 +136,7 @@ qca_hppe_portctrl_hw_init(a_uint32_t dev_id)
 		fal_port_max_frame_size_set(dev_id, i, SSDK_MAX_FRAME_SIZE);
 	}
 
-	for(i = SSDK_PHYSICAL_PORT5; i < SSDK_PHYSICAL_PORT7; i++) {
+	for(i = SSDK_PHYSICAL_PORT5; i < port_max; i++) {
 		qca_hppe_port_mac_type_set(dev_id, i, PORT_XGMAC_TYPE);
 		fal_port_txmac_status_set (dev_id, i, A_FALSE);
 		fal_port_rxmac_status_set (dev_id, i, A_FALSE);
@@ -343,6 +360,59 @@ fal_port_scheduler_cfg_t port_scheduler1_tbl[] = {
 	{0x50, 6, 0},
 };
 
+fal_port_scheduler_cfg_t cppe_port_scheduler0_tbl[] = {
+	{0xb7, 0, 6},
+	{0xbe, 3, 0},
+	{0xde, 6, 5},
+	{0xdd, 0, 1},
+	{0xbd, 5, 6},
+	{0xbe, 1, 0},
+	{0xee, 6, 4},
+	{0xcf, 0, 5},
+	{0x9f, 4, 6},
+	{0xbe, 5, 0},
+	{0x7e, 6, 7},
+	{0x5f, 0, 5},
+	{0x9f, 7, 6},
+	{0xbe, 5, 0},
+	{0xfa, 6, 2},
+	{0xbb, 0, 6},
+	{0x9f, 2, 5},
+	{0xcf, 6, 4},
+	{0xee, 5, 0},
+	{0xbe, 4, 6},
+	{0x3f, 0, 7},
+	{0x5f, 6, 5},
+	{0xde, 7, 0},
+	{0xbe, 5, 6},
+	{0xb7, 0, 3},
+	{0xe7, 6, 4},
+	{0xee, 3, 0},
+	{0xbe, 4, 6},
+	{0x9f, 0, 5},
+	{0xdd, 6, 1},
+	{0xfc, 5, 0},
+	{0xbe, 1, 6},
+	{0x9f, 0, 5},
+	{0x5f, 6, 7},
+	{0x7e, 5, 0},
+	{0xbe, 7, 6},
+	{0xaf, 0, 4},
+	{0xcf, 6, 5},
+	{0x9f, 4, 6},
+	{0xbe, 5, 0},
+	{0xfa, 6, 2},
+	{0xdb, 0, 5},
+	{0x9f, 2, 6},
+	{0xbe, 5, 0},
+	{0x7e, 6, 7},
+	{0x6f, 0, 4},
+	{0xaf, 7, 6},
+	{0x9f, 4, 5},
+	{0xde, 6, 0},
+	{0xf6, 5, 3},
+};
+
 fal_port_tdm_tick_cfg_t port_tdm0_tbl[] = {
 	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
 	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
@@ -442,6 +512,105 @@ fal_port_tdm_tick_cfg_t port_tdm0_tbl[] = {
 	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
 };
 
+fal_port_tdm_tick_cfg_t cppe_port_tdm0_tbl[] = {
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 4},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 1},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 4},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 2},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 3},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 4},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 4},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 1},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 4},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 2},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 3},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 0},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 4},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 5},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 6},
+	{1, FAL_PORT_TDB_DIR_INGRESS, 7},
+	{1, FAL_PORT_TDB_DIR_EGRESS, 7},
+};
+
 static sw_error_t
 qca_hppe_tdm_hw_init(a_uint32_t dev_id)
 {
@@ -461,8 +630,15 @@ qca_hppe_tdm_hw_init(a_uint32_t dev_id)
 	bm_tick_mode = ssdk_bm_tick_mode_get(dev_id);
 
 	if (tm_tick_mode == 0) {
-		num = sizeof(port_scheduler0_tbl) / sizeof(fal_port_scheduler_cfg_t);
-		scheduler_cfg = port_scheduler0_tbl;
+		if (adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) {
+			num = sizeof(cppe_port_scheduler0_tbl) /
+				sizeof(fal_port_scheduler_cfg_t);
+			scheduler_cfg = cppe_port_scheduler0_tbl;
+		} else {
+			num = sizeof(port_scheduler0_tbl) /
+				sizeof(fal_port_scheduler_cfg_t);
+			scheduler_cfg = port_scheduler0_tbl;
+		}
 	} else if (tm_tick_mode == 1) {
 		num = sizeof(port_scheduler1_tbl) / sizeof(fal_port_scheduler_cfg_t);
 		scheduler_cfg = port_scheduler1_tbl;
@@ -479,8 +655,15 @@ qca_hppe_tdm_hw_init(a_uint32_t dev_id)
 	SW_RTN_ON_NULL(p_api->adpt_port_tdm_ctrl_set);
 
 	if (bm_tick_mode == 0) {
-		num = sizeof(port_tdm0_tbl) / sizeof(fal_port_tdm_tick_cfg_t);
-		bm_cfg = port_tdm0_tbl;
+		if (adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) {
+			num = sizeof(cppe_port_tdm0_tbl) /
+				sizeof(fal_port_tdm_tick_cfg_t);
+			bm_cfg = cppe_port_tdm0_tbl;
+		} else {
+			num = sizeof(port_tdm0_tbl) /
+				sizeof(fal_port_tdm_tick_cfg_t);
+			bm_cfg = port_tdm0_tbl;
+		}
 	} else {
 		return SW_BAD_VALUE;
 	}
@@ -782,6 +965,7 @@ qca_hppe_interface_mode_init(a_uint32_t dev_id, a_uint32_t mode0, a_uint32_t mod
 	adpt_api_t *p_api;
 	sw_error_t rv = SW_OK;
 	fal_port_t port_id;
+	a_uint32_t port_max = SSDK_PHYSICAL_PORT7;
 
 	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
 	SW_RTN_ON_NULL(p_api->adpt_port_mux_mac_type_set);
@@ -798,7 +982,13 @@ qca_hppe_interface_mode_init(a_uint32_t dev_id, a_uint32_t mode0, a_uint32_t mod
 	rv = p_api->adpt_uniphy_mode_set(dev_id, SSDK_UNIPHY_INSTANCE2, mode2);
 	SW_RTN_ON_ERROR(rv);
 #endif
-	for(port_id = SSDK_PHYSICAL_PORT1; port_id <=SSDK_PHYSICAL_PORT6; port_id++) {
+
+	if(adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) {
+		port_max = SSDK_PHYSICAL_PORT6;
+	} else {
+		port_max = SSDK_PHYSICAL_PORT7;
+	}
+	for(port_id = SSDK_PHYSICAL_PORT1; port_id < port_max; port_id++) {
 		rv = p_api->adpt_port_mux_mac_type_set(dev_id, port_id, mode0, mode1, mode2);
 		if(rv != SW_OK) {
 			SSDK_ERROR("port_id:%d, mode0:%d, mode1:%d, mode2:%d\n", port_id, mode0, mode1, mode2);
