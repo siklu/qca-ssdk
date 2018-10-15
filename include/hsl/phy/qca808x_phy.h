@@ -390,7 +390,7 @@ extern "C"
 #define QCA808X_PHY_XMIT_MAC_CNT_SELFCLR        0x0002
 
 #define QCA808X_PHY_8023AZ_AFE_CTRL_MASK        0x01f0
-#define QCA808X_PHY_8023AZ_AFE_EN               0x0190
+#define QCA808X_PHY_8023AZ_AFE_EN               0x0090
 
 a_uint16_t
 qca808x_phy_reg_read(a_uint32_t dev_id, a_uint32_t phy_id, a_uint32_t reg_id);
