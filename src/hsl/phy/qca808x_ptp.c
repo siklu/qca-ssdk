@@ -2775,12 +2775,12 @@ qca808x_phy_ptp_interrupt_get(a_uint32_t dev_id,
 	SW_RTN_ON_ERROR(qca808x_ptp_imr_reg_get(dev_id, phy_id, &ptp_imr_reg));
 	SW_RTN_ON_ERROR(qca808x_ptp_ext_imr_reg_get(dev_id, phy_id, &ptp_ext_imr_reg));
 	interrupt->intr_mask = ((ptp_imr_reg.bf.mask_bmp >> 2) & 0x7) |
-			((ptp_ext_imr_reg.bf.mask_bmp & 0x7fff) << 3);
+			((ptp_ext_imr_reg.bf.mask_bmp & 0x7ff) << 3);
 
 	SW_RTN_ON_ERROR(qca808x_ptp_isr_reg_get(dev_id, phy_id, &ptp_isr_reg));
 	SW_RTN_ON_ERROR(qca808x_ptp_ext_isr_reg_get(dev_id, phy_id, &ptp_ext_isr_reg));
 	interrupt->intr_status = ((ptp_isr_reg.bf.status_bmp >> 2) & 0x7) |
-			((ptp_ext_isr_reg.bf.status_bmp & 0x7fff) << 3);
+			((ptp_ext_isr_reg.bf.status_bmp & 0x7ff) << 3);
 
 	return SW_OK;
 }
