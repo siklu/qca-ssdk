@@ -89,6 +89,7 @@ extern "C"
 #define QCA808X_PHY_MMD3_ADDR_CLD_CTRL7             0x8007
 #define QCA808X_PHY_MMD3_ADDR_CLD_CTRL5             0x8005
 #define QCA808X_PHY_MMD3_ADDR_CLD_CTRL3             0x8003
+#define QCA808X_PHY_MMD3_AZ_TRAINING_CTRL           0x8008
 
 #define QCA808X_PHY_HIBERNATION_CFG       0x8000
 #define QCA808X_PHY_HIBERNATION_STAT_EN   0x0800
@@ -99,6 +100,7 @@ extern "C"
 
 #define QCA808X_PHY_8023AZ_EEE_1000BT     0x0004
 #define QCA808X_PHY_8023AZ_EEE_100BT      0x0002
+#define QCA808X_PHY_MMD3_AZ_TRAINING_VAL  0x1c32
 
 #define QCA808X_PHY_MDIX          0x0020
 #define QCA808X_PHY_MDIX_AUTO     0x0060
@@ -440,7 +442,7 @@ qca808x_phy_mmd_read(a_uint32_t dev_id, a_uint32_t phy_id,
 		a_uint16_t mmd_num, a_uint16_t reg_id);
 
 #define QCA808X_PHY_8023AZ_AFE_CTRL_MASK        0x01f0
-#define QCA808X_PHY_8023AZ_AFE_EN               0x0190
+#define QCA808X_PHY_8023AZ_AFE_EN               0x0090
 
 sw_error_t
 qca808x_phy_set_duplex (a_uint32_t dev_id, a_uint32_t phy_id,
