@@ -237,12 +237,14 @@ qca808x_phy_ptp_rx_timestamp_mode_set(a_uint32_t dev_id,
 	if (ts_mode == FAL_RX_TS_MDIO)
 	{
 		ptp_main_conf_reg.bf.ts_attach_mode = PTP_REG_BIT_FALSE;
+		ptp_main_conf_reg.bf.ipv6_embed_force_checksum_zero = PTP_REG_BIT_FALSE;
 		ptp_misc_config_reg.bf.embed_ingress_time_en = PTP_REG_BIT_FALSE;
 		ptp_misc_config_reg.bf.cf_from_pkt_en = PTP_REG_BIT_TRUE;
 	}
 	else
 	{
 		ptp_main_conf_reg.bf.ts_attach_mode = PTP_REG_BIT_FALSE;
+		ptp_main_conf_reg.bf.ipv6_embed_force_checksum_zero = PTP_REG_BIT_TRUE;
 		ptp_misc_config_reg.bf.embed_ingress_time_en = PTP_REG_BIT_TRUE;
 		ptp_misc_config_reg.bf.cf_from_pkt_en = PTP_REG_BIT_FALSE;
 	}

@@ -13,7 +13,10 @@
  */
 
 #include "qca808x.h"
+
+#if defined(IN_PHY_I2C_MODE)
 #include "sfp_phy.h"
+#endif
 
 #define PHY_INVALID_DATA            0xffff
 #define QCA808X_INTR_INIT           0xec00
