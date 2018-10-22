@@ -29,6 +29,10 @@
 #include "hppe_portctrl_reg.h"
 #include "hppe_portctrl.h"
 #include "adpt.h"
+#include "adpt_hppe.h"
+#if defined(CPPE)
+#include "adpt_cppe_qm.h"
+#endif
 
 #define SERVICE_CODE_QUEUE_OFFSET   2048
 #define CPU_CODE_QUEUE_OFFSET         1024
@@ -1159,7 +1163,7 @@ adpt_hppe_qm_enqueue_ctrl_get(
 	return SW_OK;
 }
 
-sw_error_t
+static sw_error_t
 adpt_hppe_qm_port_source_profile_set(
 		a_uint32_t dev_id, fal_port_t port, a_uint32_t src_profile)
 {
@@ -1175,6 +1179,26 @@ adpt_hppe_qm_port_source_profile_set(
 }
 
 sw_error_t
+adpt_ppe_qm_port_source_profile_set(
+		a_uint32_t dev_id, fal_port_t port, a_uint32_t src_profile)
+{
+	a_uint32_t chip_ver = 0;
+
+	chip_ver = adpt_hppe_chip_revision_get(dev_id);
+	if (chip_ver == CPPE_REVISION) {
+#if defined(CPPE)
+		return adpt_cppe_qm_port_source_profile_set(dev_id, port,
+				src_profile);
+#endif
+	} else {
+		return adpt_hppe_qm_port_source_profile_set(dev_id, port,
+				src_profile);
+	}
+
+	return SW_NOT_SUPPORTED;
+}
+
+static sw_error_t
 adpt_hppe_qm_port_source_profile_get(
 		a_uint32_t dev_id, fal_port_t port, a_uint32_t *src_profile)
 {
@@ -1189,6 +1213,26 @@ adpt_hppe_qm_port_source_profile_get(
 				src_profile);
 }
 #endif
+
+sw_error_t
+adpt_ppe_qm_port_source_profile_get(
+		a_uint32_t dev_id, fal_port_t port, a_uint32_t *src_profile)
+{
+	a_uint32_t chip_ver = 0;
+
+	chip_ver = adpt_hppe_chip_revision_get(dev_id);
+	if (chip_ver == CPPE_REVISION) {
+#if defined(CPPE)
+		return adpt_cppe_qm_port_source_profile_get(dev_id, port,
+				src_profile);
+#endif
+	} else {
+		return adpt_hppe_qm_port_source_profile_get(dev_id, port,
+				src_profile);
+	}
+
+	return SW_NOT_SUPPORTED;
+}
 
 void adpt_hppe_qm_func_bitmap_init(a_uint32_t dev_id)
 {
@@ -1356,11 +1400,10 @@ sw_error_t adpt_hppe_qm_init(a_uint32_t dev_id)
 	if (p_adpt_api->adpt_qm_func_bitmap[0] & (1 << FUNC_QM_ENQUEUE_CTRL_GET))
 		p_adpt_api->adpt_qm_enqueue_ctrl_get = adpt_hppe_qm_enqueue_ctrl_get;
 	if (p_adpt_api->adpt_qm_func_bitmap[0] & (1 << FUNC_QM_PORT_SRCPROFILE_GET))
-		p_adpt_api->adpt_qm_port_source_profile_get = adpt_hppe_qm_port_source_profile_get;
+		p_adpt_api->adpt_qm_port_source_profile_get = adpt_ppe_qm_port_source_profile_get;
 	if (p_adpt_api->adpt_qm_func_bitmap[1] & (1 << (FUNC_QM_PORT_SRCPROFILE_SET % 32)))
-		p_adpt_api->adpt_qm_port_source_profile_set = adpt_hppe_qm_port_source_profile_set;
+		p_adpt_api->adpt_qm_port_source_profile_set = adpt_ppe_qm_port_source_profile_set;
 #endif
-
 
 	return SW_OK;
 }
