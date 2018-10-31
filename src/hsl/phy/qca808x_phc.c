@@ -123,11 +123,9 @@ void qca808x_ptp_stat_update(struct qca808x_phy_info *pdata, fal_ptp_direction_t
 {
 	ptp_packet_stat *pkt_stat = NULL;
 
-	if (((direction != FAL_RX_DIRECTION) &&
-				(direction != FAL_TX_DIRECTION)) ||
-			((seqid_matched != PTP_PKT_SEQID_UNMATCHED) &&
-			 (seqid_matched != PTP_PKT_SEQID_MATCHED) &&
-			 (seqid_matched != PTP_PKT_SEQID_MATCH_MAX))) {
+	if (((direction != FAL_RX_DIRECTION) && (direction != FAL_TX_DIRECTION)) ||
+			(seqid_matched < PTP_PKT_SEQID_UNMATCHED) ||
+			(seqid_matched >= PTP_PKT_SEQID_MATCH_MAX)) {
 		return;
 	}
 
@@ -1135,7 +1133,7 @@ bool qca808x_rxtstamp(struct phy_device *phydev,
 	pkt_type = *ptp_header & 0xf;
 
 	qca808x_ptp_stat_update(pdata, FAL_RX_DIRECTION,
-			QCA808X_PTP_MSG_MAX, PTP_PKT_SEQID_MATCH_MAX);
+			QCA808X_PTP_MSG_MAX, PTP_PKT_SEQID_UNMATCHED);
 
 	if (embed_val == QCA808X_PTP_EMBEDDED_MODE) {
 		ts.tv_sec = ntohl(*reserved2);
@@ -1298,7 +1296,7 @@ void qca808x_txtstamp(struct phy_device *phydev,
 	skb_queue_tail(&ptp_info->tx_queue, skb);
 	ptp_cb->ptp_type = type;
 	qca808x_ptp_stat_update(priv->phy_info, FAL_TX_DIRECTION,
-			QCA808X_PTP_MSG_MAX, PTP_PKT_SEQID_MATCH_MAX);
+			QCA808X_PTP_MSG_MAX, PTP_PKT_SEQID_UNMATCHED);
 	schedule_delayed_work(&ptp_info->tx_ts_work, 0);
 }
 
@@ -1348,7 +1346,7 @@ static int qca808x_ptp_register(struct phy_device *phydev)
 
 	mutex_init(&clock->tsreg_lock);
 	clock->caps.owner = THIS_MODULE;
-	sprintf(clock->caps.name, "qca808x timer %x", phydev->addr);
+	snprintf(clock->caps.name, sizeof(clock->caps.name), "qca808x timer %x", phydev->addr);
 	clock->caps.max_adj	= 3124999;
 	clock->caps.n_alarm	= 0;
 	clock->caps.n_ext_ts	= 6;
