@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2014-2015, 2017-2018, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2014-2015, 2017-2019, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -186,19 +186,23 @@ enum {
 #define QCA_PHY_MIB_WORK_DELAY	120000
 #define QCA_MIB_ITEM_NUMBER	41
 
-#define SSDK_MAX_UNIPHY_INSTANCE 3
-#define SSDK_UNIPHY_INSTANCE0	0
-#define SSDK_UNIPHY_INSTANCE1	1
-#define SSDK_UNIPHY_INSTANCE2	2
+#define SSDK_MAX_UNIPHY_INSTANCE        3
+#define SSDK_UNIPHY_INSTANCE0           0
+#define SSDK_UNIPHY_INSTANCE1           1
+#define SSDK_UNIPHY_INSTANCE2           2
+#define SSDK_UNIPHY_CHANNEL0            0
+#define SSDK_UNIPHY_CHANNEL1            1
+#define SSDK_UNIPHY_CHANNEL4            4
+
 /*qca808x_start*/
-#define SSDK_PHYSICAL_PORT0	0
-#define SSDK_PHYSICAL_PORT1	1
-#define SSDK_PHYSICAL_PORT2	2
-#define SSDK_PHYSICAL_PORT3	3
-#define SSDK_PHYSICAL_PORT4	4
-#define SSDK_PHYSICAL_PORT5	5
-#define SSDK_PHYSICAL_PORT6	6
-#define SSDK_PHYSICAL_PORT7	7
+#define SSDK_PHYSICAL_PORT0             0
+#define SSDK_PHYSICAL_PORT1             1
+#define SSDK_PHYSICAL_PORT2             2
+#define SSDK_PHYSICAL_PORT3             3
+#define SSDK_PHYSICAL_PORT4             4
+#define SSDK_PHYSICAL_PORT5             5
+#define SSDK_PHYSICAL_PORT6             6
+#define SSDK_PHYSICAL_PORT7             7
 /*qca808x_end*/
 #define SSDK_GLOBAL_INT0_ACL_INI_INT        (1<<29)
 #define SSDK_GLOBAL_INT0_LOOKUP_INI_INT     (1<<28)

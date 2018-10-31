@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2017, 2019, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -20,30 +20,32 @@
 #ifndef _HPPE_UNIPHY_H_
 #define _HPPE_UNIPHY_H_
 
-#define UNIPHY_OFFSET_CALIB_4_MAX_ENTRY	3
-#define UNIPHY_MODE_CTRL_MAX_ENTRY	3
-#define UNIPHY_CHANNEL0_INPUT_OUTPUT_4_MAX_ENTRY	3
-#define UNIPHY_CHANNEL1_INPUT_OUTPUT_4_MAX_ENTRY	3
-#define UNIPHY_CHANNEL2_INPUT_OUTPUT_4_MAX_ENTRY	3
-#define UNIPHY_CHANNEL3_INPUT_OUTPUT_4_MAX_ENTRY	3
-#define UNIPHY_CHANNEL4_INPUT_OUTPUT_4_MAX_ENTRY	3
-#define SR_XS_PCS_KR_STS1_MAX_ENTRY	3
-#define VR_XS_PCS_DIG_CTRL1_MAX_ENTRY	3
-#define SR_MII_CTRL_MAX_ENTRY	3
-#define VR_MII_AN_CTRL_MAX_ENTRY	3
-#define VR_MII_AN_INTR_STS_MAX_ENTRY	3
+#define UNIPHY_OFFSET_CALIB_4_MAX_ENTRY                 3
+#define UNIPHY_MODE_CTRL_MAX_ENTRY                      3
+#define UNIPHY_CHANNEL0_INPUT_OUTPUT_4_MAX_ENTRY        3
+#define UNIPHY_CHANNEL1_INPUT_OUTPUT_4_MAX_ENTRY        3
+#define UNIPHY_CHANNEL2_INPUT_OUTPUT_4_MAX_ENTRY        3
+#define UNIPHY_CHANNEL3_INPUT_OUTPUT_4_MAX_ENTRY        3
+#define UNIPHY_CHANNEL4_INPUT_OUTPUT_4_MAX_ENTRY        3
+#define SR_XS_PCS_KR_STS1_MAX_ENTRY                     3
+#define VR_XS_PCS_DIG_CTRL1_MAX_ENTRY                   3
+#define SR_MII_CTRL_MAX_ENTRY                           3
+#define VR_MII_AN_CTRL_MAX_ENTRY                        3
+#define VR_MII_AN_INTR_STS_MAX_ENTRY                    3
 
-#define UNIPHY_PLL_CONTROL_VCO_RELATED_SELECTION_MAX_ENTRY	3
-#define UNIPHY_TX_AC_JTAG_MUX_DRIVER_SELECTION_MAX_ENTRY	3
-#define UNIPHY_RESISTOR_CALIBRATION_1_MAX_ENTRY	3
-#define UNIPHY_PLL_VCO_RELATED_CONTROL_1_MAX_ENTRY	3
-#define UNIPHY_RX_AFE_2_MAX_ENTRY	3
-#define BANDGAP_IP_MBIAS_2_MAX_ENTRY	4
-#define LDO_0P9V_RELATED_1_MAX_ENTRY	4
-#define OTP_VTT_LDO_RELATED_MAX_ENTRY	4
-#define OTP_TEMPERATURE_COMPENSATE_1_MAX_ENTRY	4
-#define PLL_VCO_RELATED_CONTROL_1_MAX_ENTRY	4
-#define PLL_CONTROL_VCO_RELATED_SELECTION_2_MAX_ENTRY	4
+#define UNIPHY_PLL_CONTROL_VCO_RELATED_SELECTION_MAX_ENTRY      3
+#define UNIPHY_TX_AC_JTAG_MUX_DRIVER_SELECTION_MAX_ENTRY        3
+#define UNIPHY_RESISTOR_CALIBRATION_1_MAX_ENTRY         3
+#define UNIPHY_PLL_VCO_RELATED_CONTROL_1_MAX_ENTRY      3
+#define UNIPHY_RX_AFE_2_MAX_ENTRY                       3
+#define BANDGAP_IP_MBIAS_2_MAX_ENTRY                    4
+#define LDO_0P9V_RELATED_1_MAX_ENTRY                    4
+#define OTP_VTT_LDO_RELATED_MAX_ENTRY                   4
+#define OTP_TEMPERATURE_COMPENSATE_1_MAX_ENTRY          4
+#define PLL_VCO_RELATED_CONTROL_1_MAX_ENTRY             4
+#define PLL_CONTROL_VCO_RELATED_SELECTION_2_MAX_ENTRY   4
+#define UNIPHY_MISC2_PHY_MODE_MAX_ENTRY                 4
+#define UNIPHY_PLL_POWER_ON_AND_RESET_INC_MAX_ENTRY     4
 
 sw_error_t
 hppe_uniphy_offset_calib_4_get(
@@ -359,13 +361,13 @@ hppe_uniphy_mode_ctrl_newaddedfromhere_ch0_psgmii_qsgmii_set(
 		a_uint32_t value);
 
 sw_error_t
-hppe_uniphy_mode_ctrl_newaddedfromhere_ch0_athr_csco_mode_25m_get(
+hppe_uniphy_mode_ctrl_newaddedfromhere_ch0_autoneg_mode_get(
 		a_uint32_t dev_id,
 		a_uint32_t index,
 		a_uint32_t *value);
 
 sw_error_t
-hppe_uniphy_mode_ctrl_newaddedfromhere_ch0_athr_csco_mode_25m_set(
+hppe_uniphy_mode_ctrl_newaddedfromhere_ch0_autoneg_mode_set(
 		a_uint32_t dev_id,
 		a_uint32_t index,
 		a_uint32_t value);
@@ -2409,6 +2411,30 @@ hppe_pll_control_vco_related_selection_2_cmn_mmd1_reg_src_cmn_pll_fbclk_div_set(
 		a_uint32_t dev_id,
 		a_uint32_t index,
 		a_uint32_t value);
+
+sw_error_t
+hppe_uniphy_phy_mode_ctrl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union uniphy_misc2_phy_mode_u *value);
+
+sw_error_t
+hppe_uniphy_phy_mode_ctrl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union uniphy_misc2_phy_mode_u *value);
+
+sw_error_t
+hppe_uniphy_pll_reset_ctrl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union pll_power_on_and_reset_u *value);
+
+sw_error_t
+hppe_uniphy_pll_reset_ctrl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union pll_power_on_and_reset_u *value);
 
 #endif
 

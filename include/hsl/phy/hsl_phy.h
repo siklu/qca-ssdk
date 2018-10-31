@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2017-2018, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2015, 2017-2019, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -522,44 +522,44 @@ typedef struct {
 	a_bool_t phy_combo[SW_MAX_NR_PORT];
 } phy_info_t;
 /*qca808x_end*/
-#define MALIBU5PORT_PHY 0x004DD0B1
-#define MALIBU2PORT_PHY 0x004DD0B2
-#define QCA8030_PHY 0x004DD076
-#define QCA8033_PHY 0x004DD074
-#define QCA8035_PHY 0x004DD072
+#define MALIBU5PORT_PHY         0x004DD0B1
+#define MALIBU2PORT_PHY         0x004DD0B2
+#define QCA8030_PHY             0x004DD076
+#define QCA8033_PHY             0x004DD074
+#define QCA8035_PHY             0x004DD072
 /*qca808x_start*/
-#define QCA8081_PHY 0x004DD100
-#define QCA8081_PHY_V1_1 0x004DD101
-#define INVALID_PHY_ID 0
+#define QCA8081_PHY             0x004DD100
+#define QCA8081_PHY_V1_1        0x004DD101
+#define INVALID_PHY_ID          0
 
 /*qca808x_end*/
-#define F1V1_PHY 0x004DD033
-#define F1V2_PHY 0x004DD034
-#define F1V3_PHY 0x004DD035
-#define F1V4_PHY 0x004DD036
-#define F2V1_PHY 0x004DD042
-#define AQUANTIA_PHY_107 0x03a1b4e2
-#define AQUANTIA_PHY_108 0x03a1b4f2
-#define AQUANTIA_PHY_109 0x03a1b502
-#define AQUANTIA_PHY_111 0x03a1b610
-#define AQUANTIA_PHY_111B0 0x03a1b612
-#define AQUANTIA_PHY_112 0x03a1b660
-#define PHY_805XV2 0x004DD082
-#define PHY_805XV1 0x004DD081
+#define F1V1_PHY                0x004DD033
+#define F1V2_PHY                0x004DD034
+#define F1V3_PHY                0x004DD035
+#define F1V4_PHY                0x004DD036
+#define F2V1_PHY                0x004DD042
+#define AQUANTIA_PHY_107        0x03a1b4e2
+#define AQUANTIA_PHY_108        0x03a1b4f2
+#define AQUANTIA_PHY_109        0x03a1b502
+#define AQUANTIA_PHY_111        0x03a1b610
+#define AQUANTIA_PHY_111B0      0x03a1b612
+#define AQUANTIA_PHY_112        0x03a1b660
+#define PHY_805XV2              0x004DD082
+#define PHY_805XV1              0x004DD081
 /*qca808x_start*/
-#define SFP_PHY	0xaaaabbbb
+#define SFP_PHY                 0xaaaabbbb
 /*qca808x_end*/
-#define SFP_PHY_MASK	0xffffffff
+#define SFP_PHY_MASK            0xffffffff
 
-#define CABLE_PAIR_A  0
-#define CABLE_PAIR_B  1
-#define CABLE_PAIR_C  2
-#define CABLE_PAIR_D  3
+#define CABLE_PAIR_A            0
+#define CABLE_PAIR_B            1
+#define CABLE_PAIR_C            2
+#define CABLE_PAIR_D            3
 /*qca808x_start*/
-#define PHY_MDIO_ACCESS 0
-#define PHY_I2C_ACCESS 1
+#define PHY_MDIO_ACCESS         0
+#define PHY_I2C_ACCESS          1
 
-#define INVALID_PHY_ADDR 0xff
+#define INVALID_PHY_ADDR        0xff
 
 sw_error_t
 hsl_phy_api_ops_register(phy_type_t phy_type, hsl_phy_ops_t * phy_api_ops);
@@ -624,11 +624,15 @@ hsl_port_phy_access_type_set(a_uint32_t dev_id, a_uint32_t port_id,
 		a_uint8_t access_type);
 /*qca808x_end*/
 sw_error_t
-hsl_ssdk_phy_serdes_reset(a_uint32_t dev_id);
+hsl_port_phy_serdes_reset(a_uint32_t dev_id);
 
 sw_error_t
-hsl_ssdk_phy_mode_set(a_uint32_t dev_id, fal_port_interface_mode_t mode);
+hsl_port_phy_mode_set(a_uint32_t dev_id, fal_port_interface_mode_t mode);
 phy_type_t hsl_phy_type_get(a_uint32_t dev_id, a_uint32_t port_id);
+
+a_uint32_t
+hsl_port_phyid_get(a_uint32_t dev_id, fal_port_t port_id);
+
 /*qca808x_start*/
 sw_error_t ssdk_phy_driver_cleanup(void);
 /*qca808x_end*/

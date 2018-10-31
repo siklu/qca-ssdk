@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2017, 2019, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -46,13 +46,32 @@ extern "C" {
 #define HPPE_UNIPHY_BASE1	0x10000
 #define HPPE_UNIPHY_BASE2	0x20000
 #define HPPE_UNIPHY_MAX_DIRECT_ACCESS_REG	0x7fff
-#define HPPE_UNIPHY_INDIRECT_REG_ADDR  0x83fc
+#define HPPE_UNIPHY_INDIRECT_REG_ADDR   0x83fc
 #define HPPE_UNIPHY_INDIRECT_HIGH_ADDR  0x1fff00
-#define HPPE_UNIPHY_INDIRECT_LOW_ADDR  0xff
-#define HPPE_UNIPHY_INDIRECT_DATA  0x20
-#define UNIPHY_CALIBRATION_DONE 0x1
-#define UNIPHY_10GR_LINKUP 0x1
-#define UNIPHY_10GR_LINK_LOSS 0x7
+#define HPPE_UNIPHY_INDIRECT_LOW_ADDR   0xff
+#define HPPE_UNIPHY_INDIRECT_DATA       0x20
+#define UNIPHY_CALIBRATION_DONE         0x1
+#define UNIPHY_10GR_LINKUP              0x1
+#define UNIPHY_10GR_LINK_LOSS           0x7
+#define UNIPHY_ATHEROS_NEGOTIATION      0x0
+#define UNIPHY_STANDARD_NEGOTIATION     0x1
+#define UNIPHY_CH0_QSGMII_SGMII_MODE    0x0
+#define UNIPHY_CH0_PSGMII_MODE          0x1
+#define UNIPHY_CH0_SGMII_MODE           0x0
+#define UNIPHY_CH0_QSGMII_MODE          0x1
+#define UNIPHY_SGMII_MODE_ENABLE        0x1
+#define UNIPHY_SGMII_MODE_DISABLE       0x0
+#define UNIPHY_SGMIIPLUS_MODE_ENABLE    0x1
+#define UNIPHY_SGMIIPLUS_MODE_DISABLE   0x0
+#define UNIPHY_XPCS_MODE_ENABLE         0x1
+#define UNIPHY_XPCS_MODE_DISABLE        0x0
+#define UNIPHY_PHY_SGMII_MODE           0x3
+#define UNIPHY_PHY_SGMIIPLUS_MODE       0x5
+#define UNIPHY_SGMII_CHANNEL1_DISABLE   0x0
+#define UNIPHY_SGMII_CHANNEL1_ENABLE    0x1
+#define UNIPHY_SGMII_CHANNEL4_DISABLE   0x0
+#define UNIPHY_SGMII_CHANNEL4_ENABLE    0x1
+
 
 #define SGMII_1000M_SOURCE1_CLOCK1 0x101
 #define SGMII_100M_SOURCE1_CLOCK1 0x109
