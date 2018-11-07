@@ -191,7 +191,7 @@ static a_uint32_t qca808x_negtiation_cap_get(a_uint32_t advertise)
 	if (advertise & ADVERTISED_100baseT_Half) {
 		autoneg |= FAL_PHY_ADV_100TX_HD;
 	}
-	if (advertise & ADVERTISE_100FULL) {
+	if (advertise & ADVERTISED_100baseT_Full) {
 		autoneg |= FAL_PHY_ADV_100TX_FD;
 	}
 	if (advertise & ADVERTISED_1000baseT_Full) {
@@ -226,6 +226,7 @@ static int qca808x_config_aneg(struct phy_device *phydev)
 		phydev->asym_pause = 0;
 
 		phy_data = qca808x_phy_reg_read(dev_id, phy_id, QCA808X_PHY_CONTROL);
+		phy_data &= ~QCA808X_CTRL_AUTONEGOTIATION_ENABLE;
 		if (phydev->duplex == FAL_FULL_DUPLEX) {
 			phy_data |= QCA808X_CTRL_FULL_DUPLEX;
 		} else {
