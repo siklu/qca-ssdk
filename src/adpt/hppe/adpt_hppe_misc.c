@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2017, 2019, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -28,11 +28,12 @@
 #include "hppe_policer.h"
 #include "hppe_qm_reg.h"
 #include "hppe_qm.h"
+#include "adpt_hppe.h"
 #include "adpt.h"
+#if defined(CPPE)
+#include "adpt_cppe_misc.h"
+#endif
 
-#define VP_PORT_MAX_ID	255
-#define VP_PORT_MIN_ID	64
-#define PHYSICAL_PORT_MAX_ID	7
 
 #ifndef IN_MISC_MINI
 char cpucode[][85] = {
@@ -320,28 +321,19 @@ char dropcode[][75] = {
 };
 
 sw_error_t
-adpt_hppe_debug_port_counter_enable(a_uint32_t dev_id, fal_port_t port_id, fal_counter_en_t * cnt_en)
+adpt_hppe_debug_port_counter_enable(a_uint32_t dev_id, fal_port_t port_id,
+		fal_counter_en_t *cnt_en)
 {
 	union mru_mtu_ctrl_tbl_u mru_mtu_ctrl_tbl;
 	union mc_mtu_ctrl_tbl_u mc_mtu_ctrl_tbl;
 	union port_eg_vlan_u port_eg_vlan;
 
 	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(cnt_en);
 
 	port_id = FAL_PORT_ID_VALUE(port_id);
 
-	if (port_id > VP_PORT_MAX_ID)
-		return SW_OUT_OF_RANGE;
-
-	if (port_id > PHYSICAL_PORT_MAX_ID)
-	{
-		SW_RTN_ON_ERROR(hppe_mru_mtu_ctrl_tbl_get(dev_id, port_id, &mru_mtu_ctrl_tbl));
-		mru_mtu_ctrl_tbl.bf.rx_cnt_en = cnt_en->rx_counter_en;
-		mru_mtu_ctrl_tbl.bf.tx_cnt_en = cnt_en->vp_uni_tx_counter_en;
-		SW_RTN_ON_ERROR(hppe_mru_mtu_ctrl_tbl_set(dev_id, port_id, &mru_mtu_ctrl_tbl));
-	}
-	else
-	{
+	if (port_id < SSDK_MAX_PORT_NUM) {
 		SW_RTN_ON_ERROR(hppe_mru_mtu_ctrl_tbl_get(dev_id, port_id, &mru_mtu_ctrl_tbl));
 		SW_RTN_ON_ERROR(hppe_mc_mtu_ctrl_tbl_get(dev_id, port_id, &mc_mtu_ctrl_tbl));
 		SW_RTN_ON_ERROR(hppe_port_eg_vlan_get(dev_id, port_id, &port_eg_vlan));
@@ -353,12 +345,39 @@ adpt_hppe_debug_port_counter_enable(a_uint32_t dev_id, fal_port_t port_id, fal_c
 		SW_RTN_ON_ERROR(hppe_mc_mtu_ctrl_tbl_set(dev_id, port_id, &mc_mtu_ctrl_tbl));
 		SW_RTN_ON_ERROR(hppe_port_eg_vlan_set(dev_id, port_id, &port_eg_vlan));
 	}
+	else if (port_id >= SSDK_MAX_PORT_NUM &&
+			port_id < SSDK_MAX_VIRTUAL_PORT_NUM) {
+		SW_RTN_ON_ERROR(hppe_mru_mtu_ctrl_tbl_get(dev_id, port_id, &mru_mtu_ctrl_tbl));
+		mru_mtu_ctrl_tbl.bf.rx_cnt_en = cnt_en->rx_counter_en;
+		mru_mtu_ctrl_tbl.bf.tx_cnt_en = cnt_en->vp_uni_tx_counter_en;
+		SW_RTN_ON_ERROR(hppe_mru_mtu_ctrl_tbl_set(dev_id, port_id, &mru_mtu_ctrl_tbl));
+	} else {
+		return SW_OUT_OF_RANGE;
+	}
 
 	return SW_OK;
 }
 
 sw_error_t
-adpt_hppe_debug_port_counter_status_get(a_uint32_t dev_id, fal_port_t port_id, fal_counter_en_t * cnt_en)
+adpt_ppe_debug_port_counter_enable(a_uint32_t dev_id, fal_port_t port_id,
+		fal_counter_en_t *cnt_en)
+{
+	a_uint32_t chip_ver = 0;
+
+	chip_ver = adpt_hppe_chip_revision_get(dev_id);
+#if defined(CPPE)
+	if (chip_ver == CPPE_REVISION) {
+		return adpt_cppe_debug_port_counter_enable(dev_id, port_id, cnt_en);
+	} else
+#endif
+	{
+		return adpt_hppe_debug_port_counter_enable(dev_id, port_id, cnt_en);
+	}
+}
+
+sw_error_t
+adpt_hppe_debug_port_counter_status_get(a_uint32_t dev_id, fal_port_t port_id,
+		fal_counter_en_t *cnt_en)
 {
 	union mru_mtu_ctrl_tbl_u mru_mtu_ctrl_tbl;
 	union mc_mtu_ctrl_tbl_u mc_mtu_ctrl_tbl;
@@ -369,17 +388,7 @@ adpt_hppe_debug_port_counter_status_get(a_uint32_t dev_id, fal_port_t port_id, f
 
 	port_id = FAL_PORT_ID_VALUE(port_id);
 
-	if (port_id >= MRU_MTU_CTRL_TBL_MAX_ENTRY)
-		return SW_OUT_OF_RANGE;
-
-	if (port_id > PHYSICAL_PORT_MAX_ID)
-	{
-		SW_RTN_ON_ERROR(hppe_mru_mtu_ctrl_tbl_get(dev_id, port_id, &mru_mtu_ctrl_tbl));
-		cnt_en->rx_counter_en = mru_mtu_ctrl_tbl.bf.rx_cnt_en;
-		cnt_en->vp_uni_tx_counter_en = mru_mtu_ctrl_tbl.bf.tx_cnt_en;
-	}
-	else
-	{
+	if (port_id < SSDK_MAX_PORT_NUM) {
 		SW_RTN_ON_ERROR(hppe_mru_mtu_ctrl_tbl_get(dev_id, port_id, &mru_mtu_ctrl_tbl));
 		SW_RTN_ON_ERROR(hppe_mc_mtu_ctrl_tbl_get(dev_id, port_id, &mc_mtu_ctrl_tbl));
 		SW_RTN_ON_ERROR(hppe_port_eg_vlan_get(dev_id, port_id, &port_eg_vlan));
@@ -387,9 +396,33 @@ adpt_hppe_debug_port_counter_status_get(a_uint32_t dev_id, fal_port_t port_id, f
 		cnt_en->vp_uni_tx_counter_en = mru_mtu_ctrl_tbl.bf.tx_cnt_en;
 		cnt_en->port_mc_tx_counter_en = mc_mtu_ctrl_tbl.bf.tx_cnt_en;
 		cnt_en->port_tx_counter_en = port_eg_vlan.bf.tx_counting_en;
+	} else if (port_id >= SSDK_MAX_PORT_NUM &&
+			port_id < SSDK_MAX_VIRTUAL_PORT_NUM) {
+		SW_RTN_ON_ERROR(hppe_mru_mtu_ctrl_tbl_get(dev_id, port_id, &mru_mtu_ctrl_tbl));
+		cnt_en->rx_counter_en = mru_mtu_ctrl_tbl.bf.rx_cnt_en;
+		cnt_en->vp_uni_tx_counter_en = mru_mtu_ctrl_tbl.bf.tx_cnt_en;
+	} else {
+		return SW_OUT_OF_RANGE;
 	}
 
 	return SW_OK;
+}
+
+sw_error_t
+adpt_ppe_debug_port_counter_status_get(a_uint32_t dev_id, fal_port_t port_id,
+		fal_counter_en_t *cnt_en)
+{
+	a_uint32_t chip_ver = 0;
+
+	chip_ver = adpt_hppe_chip_revision_get(dev_id);
+#if defined(CPPE)
+	if (chip_ver == CPPE_REVISION) {
+		return adpt_cppe_debug_port_counter_status_get(dev_id, port_id, cnt_en);
+	} else
+#endif
+	{
+		return adpt_hppe_debug_port_counter_status_get(dev_id, port_id, cnt_en);
+	}
 }
 
 sw_error_t
@@ -959,11 +992,13 @@ sw_error_t adpt_hppe_misc_init(a_uint32_t dev_id)
 
 	p_adpt_api = adpt_api_ptr_get(dev_id);
 
-	if(p_adpt_api == NULL)
+	if(p_adpt_api == NULL) {
 		return SW_FAIL;
+	}
+
 #ifndef IN_MISC_MINI
-	p_adpt_api->adpt_debug_port_counter_enable = adpt_hppe_debug_port_counter_enable;
-	p_adpt_api->adpt_debug_port_counter_status_get = adpt_hppe_debug_port_counter_status_get;
+	p_adpt_api->adpt_debug_port_counter_enable = adpt_ppe_debug_port_counter_enable;
+	p_adpt_api->adpt_debug_port_counter_status_get = adpt_ppe_debug_port_counter_status_get;
 
 	p_adpt_api->adpt_debug_counter_set = adpt_hppe_debug_counter_set;
 	p_adpt_api->adpt_debug_counter_get = adpt_hppe_debug_counter_get;
