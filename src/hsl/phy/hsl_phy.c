@@ -167,6 +167,9 @@ a_uint32_t hsl_phyid_get(a_uint32_t dev_id,
 				phy_info[dev_id]->phy_address[port_id], reg_pad | 2, &org_id);
 		cfg->reg_func.i2c_get(dev_id,
 				phy_info[dev_id]->phy_address[port_id], reg_pad | 3, &rev_id);
+		if(((org_id << 16) | rev_id) == INVALID_PHY_ID) {
+			return QCA8081_PHY_V1_1;
+		}
 	}
 	else
 #endif

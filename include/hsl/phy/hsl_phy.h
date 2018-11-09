@@ -530,6 +530,8 @@ typedef struct {
 /*qca808x_start*/
 #define QCA8081_PHY 0x004DD100
 #define QCA8081_PHY_V1_1 0x004DD101
+#define INVALID_PHY_ID 0
+
 /*qca808x_end*/
 #define F1V1_PHY 0x004DD033
 #define F1V2_PHY 0x004DD034
