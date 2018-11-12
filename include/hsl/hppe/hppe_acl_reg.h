@@ -828,7 +828,9 @@ struct ipo_action {
 	a_uint32_t  cpu_code_en:1;
 	a_uint32_t  cpu_code:8;
 	a_uint32_t  metadata_en:1;
-	a_uint32_t  _reserved0:14;
+	a_uint32_t  dscp_tc_mask:8;
+	a_uint32_t  qos_res_prec:3;
+	a_uint32_t  _reserved0:3;
 };
 
 union ipo_action_u {

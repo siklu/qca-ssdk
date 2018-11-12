@@ -8270,7 +8270,15 @@ parse_acl_rule(struct switch_val *val)
 			rule.dscp = tmpdata;
 			FAL_ACTION_FLG_SET(rule.action_flg,
 					FAL_ACL_ACTION_REMARK_DSCP);
-		} else if(!strcmp(ext_value_p->option_name, "vlan_priority_of_remark")) {
+		}
+#if defined(CPPE)
+		else if(!strcmp(ext_value_p->option_name, "dscp_of_remark_mask")) {
+			cmd_data_check_uint8((char*)ext_value_p->option_value,
+						&tmpdata, sizeof(tmpdata));
+			rule.dscp_mask = tmpdata;
+		}
+#endif
+		else if(!strcmp(ext_value_p->option_name, "vlan_priority_of_remark")) {
 			cmd_data_check_uint8((char*)ext_value_p->option_value,
 						&tmpdata, sizeof(tmpdata));
 			rule.up = tmpdata;
