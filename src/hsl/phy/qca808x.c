@@ -441,6 +441,9 @@ void qca808x_phydev_init(a_uint32_t dev_id, a_uint32_t port_id)
 			SSDK_ERROR("%s fail to get phy id\n", __func__);
 			return;
 		}
+                if(phy_id == INVALID_PHY_ID) {
+                        phy_id = QCA8081_PHY_V1_1;
+                }
 		pdata->phydev_addr = qca_ssdk_port_to_phy_mdio_fake_addr(dev_id, port_id);
 		sfp_phy_device_setup(dev_id, port_id, phy_id);
 	}
