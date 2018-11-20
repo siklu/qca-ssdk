@@ -508,6 +508,8 @@ sw_error_t qca808x_phy_reset(a_uint32_t dev_id, a_uint32_t phy_id);
 sw_error_t
 qca808x_phy_set_force_speed(a_uint32_t dev_id, a_uint32_t phy_id,
 		     fal_port_speed_t speed);
+sw_error_t qca808x_phy_poweroff(a_uint32_t dev_id, a_uint32_t phy_id);
+sw_error_t qca808x_phy_poweron(a_uint32_t dev_id, a_uint32_t phy_id);
 
 int qca808x_phy_init(a_uint32_t dev_id, a_uint32_t port_bmp);
 

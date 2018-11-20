@@ -312,6 +312,38 @@ static int qca808x_read_status(struct phy_device *phydev)
 	return 0;
 }
 
+static int qca808x_suspend(struct phy_device *phydev)
+{
+	a_uint32_t dev_id = 0, phy_id = 0;
+	qca808x_priv *priv = phydev->priv;
+	const struct qca808x_phy_info *pdata = priv->phy_info;
+
+	if (!pdata) {
+		return SW_FAIL;
+	}
+
+	dev_id = pdata->dev_id;
+	phy_id = pdata->phy_addr;
+
+	return qca808x_phy_poweroff(dev_id, phy_id);
+}
+
+static int qca808x_resume(struct phy_device *phydev)
+{
+	a_uint32_t dev_id = 0, phy_id = 0;
+	qca808x_priv *priv = phydev->priv;
+	const struct qca808x_phy_info *pdata = priv->phy_info;
+
+	if (!pdata) {
+		return SW_FAIL;
+	}
+
+	dev_id = pdata->dev_id;
+	phy_id = pdata->phy_addr;
+
+	return qca808x_phy_poweron(dev_id, phy_id);
+}
+
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
 static int qca808x_soft_reset(struct phy_device *phydev)
 {
@@ -382,6 +414,8 @@ struct phy_driver qca808x_phy_driver = {
 	.aneg_done	= qca808x_aneg_done,
 	.ack_interrupt	= qca808x_ack_interrupt,
 	.read_status	= qca808x_read_status,
+	.suspend	= qca808x_suspend,
+	.resume		= qca808x_resume,
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
 	.soft_reset	= qca808x_soft_reset,
 	.link_change_notify     = qca808x_link_change_notify,
