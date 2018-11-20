@@ -43,70 +43,114 @@ static sw_error_t adpt_hppe_module_func_register(a_uint32_t dev_id, a_uint32_t m
 	switch (module)
 	{
 		case FAL_MODULE_ACL:
+#if defined(IN_ACL)
 			rv = adpt_hppe_acl_init(dev_id);
+#endif
 			break;
 		case FAL_MODULE_VSI:
+#if defined(IN_VSI)
 			rv = adpt_hppe_vsi_init(dev_id);
+#endif
 			break;
 		case FAL_MODULE_IP:
+#if defined(IN_IP)
 			rv = adpt_hppe_ip_init(dev_id);
+#endif
 			break;
 		case FAL_MODULE_FLOW:
+#if defined(IN_FLOW)
 			rv = adpt_hppe_flow_init(dev_id);
+#endif
 			break;
 		case FAL_MODULE_QM:
+#if defined(IN_QM)
 			rv = adpt_hppe_qm_init(dev_id);
+#endif
 			break;
 		case FAL_MODULE_QOS:
+#if defined(IN_QOS)
 			rv = adpt_hppe_qos_init(dev_id);
+#endif
 			break;
 		case FAL_MODULE_BM:
+#if defined(IN_BM)
 			rv = adpt_hppe_bm_init(dev_id);
+#endif
 			break;
 		case FAL_MODULE_SERVCODE:
+#if defined(IN_SERVCODE)
 			rv = adpt_hppe_servcode_init( dev_id);
+#endif
 			break;
 		case FAL_MODULE_RSS_HASH:
+#if defined(IN_RSS_HASH)
 			rv = adpt_hppe_rss_hash_init( dev_id);
+#endif
 			break;
 		case FAL_MODULE_PPPOE:
+#if defined(IN_PPPOE)
 			rv = adpt_hppe_pppoe_init(dev_id);
+#endif
 			break;
 		case FAL_MODULE_PORTCTRL:
+#if defined(IN_PORTCONTROL)
 			rv = adpt_hppe_port_ctrl_init(dev_id);
+#endif
 			break;
 		case FAL_MODULE_SHAPER:
+#if defined(IN_SHAPER)
 			rv = adpt_hppe_shaper_init( dev_id);
+#endif
 			break;
 		case FAL_MODULE_MIB:
+#if defined(IN_MIB)
 			rv = adpt_hppe_mib_init(dev_id);
+#endif
 			break;
 		case FAL_MODULE_MIRROR:
+#if defined(IN_MIRROR)
 			rv = adpt_hppe_mirror_init( dev_id);
+#endif
 			break;
 		case FAL_MODULE_FDB:
+#if defined(IN_FDB)
 			rv = adpt_hppe_fdb_init(dev_id);
+#endif
 			break;
 		case FAL_MODULE_STP:
+#if defined(IN_STP)
 			rv = adpt_hppe_stp_init(dev_id);
+#endif
 			break;
 		case FAL_MODULE_TRUNK:
+#if defined(IN_TRUNK)
 			rv = adpt_hppe_trunk_init( dev_id);
+#endif
 			break;
 		case FAL_MODULE_PORTVLAN:
+#if defined(IN_PORTVLAN)
 			rv = adpt_hppe_portvlan_init(dev_id);
+#endif
 			break;
 		case FAL_MODULE_CTRLPKT:
+#if defined(IN_CTRLPKT)
 			rv = adpt_hppe_ctrlpkt_init( dev_id);
+#endif
 			break;
 		case FAL_MODULE_SEC:
+#if defined(IN_SEC)
 			rv = adpt_hppe_sec_init(dev_id);
+#endif
 			break;
 		case FAL_MODULE_POLICER:
+#if defined(IN_POLICER)
 			rv = adpt_hppe_policer_init(dev_id);
+#endif
 			break;
 		case FAL_MODULE_MISC:
+#if defined(IN_MISC)
 			rv = adpt_hppe_misc_init(dev_id);
+#endif
 			break;
 		case FAL_MODULE_PTP:
 #if defined(IN_PTP)
@@ -396,115 +440,157 @@ sw_error_t adpt_module_func_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 		#if defined(HPPE)
 		case CHIP_HPPE:
 			g_adpt_api[dev_id]->adpt_mirror_func_bitmap = 0;
+#if defined(IN_MIRROR)
 			adpt_hppe_mirror_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_MIRROR);
 			SW_RTN_ON_ERROR(rv);
+#endif
 
 			g_adpt_api[dev_id]->adpt_fdb_func_bitmap[0] = 0;
 			g_adpt_api[dev_id]->adpt_fdb_func_bitmap[1] = 0;
+#if defined(IN_FDB)
 			adpt_hppe_fdb_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_FDB);
 			SW_RTN_ON_ERROR(rv);
+#endif
 
 			g_adpt_api[dev_id]->adpt_stp_func_bitmap = 0;
+#if defined(IN_STP)
 			adpt_hppe_stp_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_STP);
 			SW_RTN_ON_ERROR(rv);
+#endif
 
 			g_adpt_api[dev_id]->adpt_trunk_func_bitmap = 0;
+#if defined(IN_TRUNK)
 			adpt_hppe_trunk_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_TRUNK);
 			SW_RTN_ON_ERROR(rv);
+#endif
 
 			g_adpt_api[dev_id]->adpt_portvlan_func_bitmap[0] = 0;
 			g_adpt_api[dev_id]->adpt_portvlan_func_bitmap[1] = 0;
+#if defined(IN_PORTVLAN)
 			adpt_hppe_portvlan_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_PORTVLAN);
 			SW_RTN_ON_ERROR(rv);
+#endif
 
 			g_adpt_api[dev_id]->adpt_ctrlpkt_func_bitmap = 0;
+#if defined(IN_CTRLPKT)
 			adpt_hppe_ctrlpkt_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_CTRLPKT);
 			SW_RTN_ON_ERROR(rv);
+#endif
 
 			g_adpt_api[dev_id]->adpt_sec_func_bitmap = 0;
+#if defined(IN_SEC)
 			adpt_hppe_sec_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_SEC);
 			SW_RTN_ON_ERROR(rv);
+#endif
 
 			g_adpt_api[dev_id]->adpt_acl_func_bitmap = 0;
+#if defined(IN_ACL)
 			adpt_hppe_acl_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_ACL);
 			SW_RTN_ON_ERROR(rv);
+#endif
 
 			g_adpt_api[dev_id]->adpt_vsi_func_bitmap = 0;
+#if defined(IN_VSI)
 			adpt_hppe_vsi_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_VSI);
 			SW_RTN_ON_ERROR(rv);
+#endif
 
 			g_adpt_api[dev_id]->adpt_ip_func_bitmap[0] = 0;
 			g_adpt_api[dev_id]->adpt_ip_func_bitmap[1] = 0;
+#if defined(IN_IP)
 			adpt_hppe_ip_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_IP);
 			SW_RTN_ON_ERROR(rv);
+#endif
 
 			g_adpt_api[dev_id]->adpt_flow_func_bitmap = 0;
+#if defined(IN_FLOW)
 			adpt_hppe_flow_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_FLOW);
 			SW_RTN_ON_ERROR(rv);
+#endif
 
 			g_adpt_api[dev_id]->adpt_qm_func_bitmap[0] = 0;
 			g_adpt_api[dev_id]->adpt_qm_func_bitmap[1] = 0;
+#if defined(IN_QM)
 			adpt_hppe_qm_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_QM);
 			SW_RTN_ON_ERROR(rv);
+#endif
 
 			g_adpt_api[dev_id]->adpt_qos_func_bitmap = 0;
+#if defined(IN_QOS)
 			adpt_hppe_qos_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_QOS);
 			SW_RTN_ON_ERROR(rv);
+#endif
 
 			g_adpt_api[dev_id]->adpt_bm_func_bitmap = 0;
+#if defined(IN_BM)
 			adpt_hppe_bm_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_BM);
 			SW_RTN_ON_ERROR(rv);
+#endif
 
 			g_adpt_api[dev_id]->adpt_servcode_func_bitmap = 0;
+#if defined(IN_SERVCODE)
 			adpt_hppe_servcode_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_SERVCODE);
 			SW_RTN_ON_ERROR(rv);
+#endif
 
 			g_adpt_api[dev_id]->adpt_rss_hash_func_bitmap = 0;
+#if defined(IN_RSS_HASH)
 			adpt_hppe_rss_hash_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_RSS_HASH);
 			SW_RTN_ON_ERROR(rv);
+#endif
 
 			g_adpt_api[dev_id]->adpt_pppoe_func_bitmap = 0;
+#if defined(IN_PPPOE)
 			adpt_hppe_pppoe_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_PPPOE);
 			SW_RTN_ON_ERROR(rv);
+#endif
 
 			g_adpt_api[dev_id]->adpt_port_ctrl_func_bitmap[0] = 0;
 			g_adpt_api[dev_id]->adpt_port_ctrl_func_bitmap[1] = 0;
 			g_adpt_api[dev_id]->adpt_port_ctrl_func_bitmap[2] = 0;
+#if defined(IN_PORTCONTROL)
 			adpt_hppe_port_ctrl_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_PORTCTRL);
 			SW_RTN_ON_ERROR(rv);
+#endif
 
 			g_adpt_api[dev_id]->adpt_shaper_func_bitmap = 0;
+#if defined(IN_SHAPER)
 			adpt_hppe_shaper_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_SHAPER);
 			SW_RTN_ON_ERROR(rv);
+#endif
 
 			g_adpt_api[dev_id]->adpt_mib_func_bitmap = 0;
+#if defined(IN_MIB)
 			adpt_hppe_mib_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_MIB);
 			SW_RTN_ON_ERROR(rv);
+#endif
 
 			g_adpt_api[dev_id]->adpt_policer_func_bitmap = 0;
+#if defined(IN_POLICER)
 			adpt_hppe_policer_func_bitmap_init(dev_id);
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_POLICER);
 			SW_RTN_ON_ERROR(rv);
+#endif
 
 			break;
 		#endif

@@ -21,15 +21,14 @@
 #include "ssdk_clk.h"
 #include "hsl_phy.h"
 
-#if defined(IN_PTP)
-#include "hsl_phy.h"
-#endif
-
+#if defined(IN_VSI)
 static sw_error_t qca_hppe_vsi_hw_init(a_uint32_t dev_id)
 {
        return ppe_vsi_init(dev_id);
 }
+#endif
 
+#if defined(IN_FDB)
 static sw_error_t qca_hppe_fdb_hw_init(a_uint32_t dev_id)
 {
 	a_uint32_t port = 0;
@@ -59,7 +58,9 @@ static sw_error_t qca_hppe_fdb_hw_init(a_uint32_t dev_id)
 
 	return SW_OK;
 }
+#endif
 
+#if defined(IN_CTRLPKT)
 #define RFDB_PROFILE_ID_STP 31
 static sw_error_t qca_hppe_ctlpkt_hw_init(a_uint32_t dev_id)
 {
@@ -89,6 +90,7 @@ static sw_error_t qca_hppe_ctlpkt_hw_init(a_uint32_t dev_id)
 
 	return rv;
 }
+#endif
 
 #ifndef HAWKEYE_CHIP
 static sw_error_t
@@ -143,6 +145,7 @@ qca_hppe_fpga_ports_enable(a_uint32_t dev_id)
 }
 #endif
 
+#if defined(IN_PORTCONTROL)
 static sw_error_t
 qca_hppe_portctrl_hw_init(a_uint32_t dev_id)
 {
@@ -182,7 +185,9 @@ qca_hppe_portctrl_hw_init(a_uint32_t dev_id)
 
 	return SW_OK;
 }
+#endif
 
+#if defined(IN_POLICER)
 static sw_error_t
 qca_hppe_policer_hw_init(a_uint32_t dev_id)
 {
@@ -196,7 +201,9 @@ qca_hppe_policer_hw_init(a_uint32_t dev_id)
 
 	return SW_OK;
 }
+#endif
 
+#if defined(IN_SHAPER)
 static sw_error_t
 qca_hppe_shaper_hw_init(a_uint32_t dev_id)
 {
@@ -235,7 +242,9 @@ qca_hppe_shaper_hw_init(a_uint32_t dev_id)
 
 	return SW_OK;
 }
+#endif
 
+#if defined(IN_PORTVLAN)
 static sw_error_t
 qca_hppe_portvlan_hw_init(a_uint32_t dev_id)
 {
@@ -313,7 +322,9 @@ qca_hppe_portvlan_hw_init(a_uint32_t dev_id)
 
 	return SW_OK;
 }
+#endif
 
+#if defined(IN_BM) && defined(IN_QOS)
 fal_port_scheduler_cfg_t port_scheduler0_tbl[] = {
 	{0xee, 6, 0},
 	{0xde, 4, 5},
@@ -712,7 +723,9 @@ qca_hppe_tdm_hw_init(a_uint32_t dev_id)
 	SSDK_INFO("tdm setup num=%d\n", num);
 	return SW_OK;
 }
+#endif
 
+#if defined(IN_BM)
 static sw_error_t
 qca_hppe_bm_hw_init(a_uint32_t dev_id)
 {
@@ -747,7 +760,9 @@ qca_hppe_bm_hw_init(a_uint32_t dev_id)
 	}
 	return SW_OK;
 }
+#endif
 
+#if defined(IN_QM)
 static sw_error_t
 qca_hppe_qm_hw_init(a_uint32_t dev_id)
 {
@@ -893,7 +908,9 @@ qca_hppe_qm_hw_init(a_uint32_t dev_id)
 
 	return SW_OK;
 }
+#endif
 
+#if defined(IN_QOS)
 static sw_error_t
 qca_hppe_qos_scheduler_hw_init(a_uint32_t dev_id)
 {
@@ -967,7 +984,9 @@ qca_hppe_qos_scheduler_hw_init(a_uint32_t dev_id)
 
 	return SW_OK;
 }
+#endif
 
+#if defined(IN_ACL)
 #define LIST_ID_BYP_FDB_LRN 63/*reserved for bypass fdb learning*/
 #define LIST_PRI_BYP_FDB_LRN 32
 
@@ -1141,6 +1160,7 @@ sw_error_t qca_hppe_acl_remark_ptp_servcode(a_uint32_t dev_id) {
 	return ret;
 }
 #endif
+#endif
 
 static sw_error_t
 qca_hppe_interface_mode_init(a_uint32_t dev_id, a_uint32_t mode0, a_uint32_t mode1, a_uint32_t mode2)
@@ -1184,6 +1204,7 @@ qca_hppe_interface_mode_init(a_uint32_t dev_id, a_uint32_t mode0, a_uint32_t mod
 }
 
 
+#if defined(IN_FLOW)
 static sw_error_t
 qca_hppe_flow_hw_init(a_uint32_t dev_id)
 {
@@ -1204,6 +1225,7 @@ qca_hppe_flow_hw_init(a_uint32_t dev_id)
 	}
 	return SW_OK;
 }
+#endif
 
 sw_error_t qca_hppe_hw_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 {
@@ -1215,40 +1237,65 @@ sw_error_t qca_hppe_hw_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 	rv = qca_switch_init(dev_id);
 	SW_RTN_ON_ERROR(rv);
 
+#if defined(IN_BM)
 	rv = qca_hppe_bm_hw_init(dev_id);
 	SW_RTN_ON_ERROR(rv);
+#endif
+#if defined(IN_QM)
 	rv = qca_hppe_qm_hw_init(dev_id);
 	SW_RTN_ON_ERROR(rv);
+#endif
+#if defined(IN_QOS)
 	rv = qca_hppe_qos_scheduler_hw_init(dev_id);
 	SW_RTN_ON_ERROR(rv);
+#endif
+#if defined(IN_BM) && defined(IN_QOS)
 	rv = qca_hppe_tdm_hw_init(dev_id);
 	SW_RTN_ON_ERROR(rv);
+#endif
+#if defined(IN_FDB)
 	rv= qca_hppe_fdb_hw_init(dev_id);
 	SW_RTN_ON_ERROR(rv);
+#endif
+#if defined(IN_VSI)
 	rv= qca_hppe_vsi_hw_init(dev_id);
 	SW_RTN_ON_ERROR(rv);
+#endif
+#if defined(IN_PORTVLAN)
 	rv = qca_hppe_portvlan_hw_init(dev_id);
 	SW_RTN_ON_ERROR(rv);
+#endif
+#if defined(IN_PORTCONTROL)
 	rv = qca_hppe_portctrl_hw_init(dev_id);
 	SW_RTN_ON_ERROR(rv);
+#endif
+#if defined(IN_POLICER)
 	rv = qca_hppe_policer_hw_init(dev_id);
 	SW_RTN_ON_ERROR(rv);
+#endif
+#if defined(IN_SHAPER)
 	rv = qca_hppe_shaper_hw_init(dev_id);
 	SW_RTN_ON_ERROR(rv);
+#endif
+#if defined(IN_FLOW)
 	rv = qca_hppe_flow_hw_init(dev_id);
 	SW_RTN_ON_ERROR(rv);
+#endif
+#if defined(IN_ACL)
 	rv = qca_hppe_acl_byp_intf_mac_learn(dev_id);
 	SW_RTN_ON_ERROR(rv);
 #if defined(IN_PTP)
 	rv = qca_hppe_acl_remark_ptp_servcode(dev_id);
 	SW_RTN_ON_ERROR(rv);
 #endif
-
+#endif
 	rv = qca_hppe_interface_mode_init(dev_id, cfg->mac_mode, cfg->mac_mode1,
 				cfg->mac_mode2);
 	SW_RTN_ON_ERROR(rv);
+#if defined(IN_CTRLPKT)
 	rv = qca_hppe_ctlpkt_hw_init(dev_id);
 	SW_RTN_ON_ERROR(rv);
+#endif
 #ifndef HAWKEYE_CHIP
 	rv = qca_hppe_fpga_ports_enable(dev_id);
 #endif
