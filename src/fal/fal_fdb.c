@@ -76,7 +76,6 @@ _fal_fdb_entry_flush(a_uint32_t dev_id, a_uint32_t flag)
     return rv;
 }
 
-#ifndef IN_FDB_MINI
 static sw_error_t
 _fal_fdb_entry_del_byport(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t flag)
 {
@@ -125,7 +124,6 @@ _fal_fdb_entry_del_bymac(a_uint32_t dev_id, const fal_fdb_entry_t * entry)
     rv = p_api->fdb_del_by_mac(dev_id, entry);
     return rv;
 }
-#endif
 
 static sw_error_t
 _fal_fdb_entry_getfirst(a_uint32_t dev_id, fal_fdb_entry_t * entry)
@@ -175,7 +173,7 @@ _fal_fdb_entry_getnext(a_uint32_t dev_id, fal_fdb_entry_t * entry)
     rv = p_api->fdb_next(dev_id, entry);
     return rv;
 }
-
+#endif
 
 static sw_error_t
 _fal_fdb_entry_search(a_uint32_t dev_id, fal_fdb_entry_t * entry)
@@ -200,7 +198,6 @@ _fal_fdb_entry_search(a_uint32_t dev_id, fal_fdb_entry_t * entry)
     rv = p_api->fdb_find(dev_id, entry);
     return rv;
 }
-#endif
 
 static sw_error_t
 _fal_fdb_port_learn_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
@@ -250,6 +247,7 @@ _fal_fdb_port_learn_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable
     rv = p_api->port_learn_get(dev_id, port_id, enable);
     return rv;
 }
+#endif
 
 static sw_error_t
 _fal_fdb_port_learning_ctrl_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable, fal_fwd_cmd_t cmd)
@@ -266,6 +264,7 @@ _fal_fdb_port_learning_ctrl_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t 
     return rv;
 }
 
+#ifndef IN_FDB_MINI
 static sw_error_t
 _fal_fdb_port_learning_ctrl_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable, fal_fwd_cmd_t *cmd)
 {
@@ -280,6 +279,7 @@ _fal_fdb_port_learning_ctrl_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t 
     rv = p_api->adpt_fdb_port_newaddr_lrn_get(dev_id, port_id, enable, cmd);
     return rv;
 }
+#endif
 
 static sw_error_t
 _fal_fdb_port_stamove_ctrl_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable, fal_fwd_cmd_t cmd)
@@ -296,6 +296,7 @@ _fal_fdb_port_stamove_ctrl_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t e
     return rv;
 }
 
+#ifndef IN_FDB_MINI
 static sw_error_t
 _fal_fdb_port_stamove_ctrl_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable, fal_fwd_cmd_t *cmd)
 {
@@ -310,6 +311,7 @@ _fal_fdb_port_stamove_ctrl_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *
     rv = p_api->adpt_fdb_port_stamove_get(dev_id, port_id, enable, cmd);
     return rv;
 }
+#endif
 
 static sw_error_t
 _fal_fdb_aging_ctrl_set(a_uint32_t dev_id, a_bool_t enable)
@@ -335,7 +337,7 @@ _fal_fdb_aging_ctrl_set(a_uint32_t dev_id, a_bool_t enable)
     return rv;
 }
 
-
+#ifndef IN_FDB_MINI
 static sw_error_t
 _fal_fdb_aging_ctrl_get(a_uint32_t dev_id, a_bool_t * enable)
 {
@@ -870,6 +872,7 @@ _fal_fdb_rfs_del(a_uint32_t dev_id, const fal_fdb_rfs_t * entry)
 	rv = p_api->fdb_rfs_del(dev_id, entry);
 	return rv;
 }
+#endif
 
 sw_error_t
 _fal_fdb_learning_ctrl_set(a_uint32_t dev_id, a_bool_t enable)
@@ -885,6 +888,8 @@ _fal_fdb_learning_ctrl_set(a_uint32_t dev_id, a_bool_t enable)
     rv = p_api->adpt_fdb_learn_ctrl_set(dev_id, enable);
     return rv;
 }
+
+#ifndef IN_FDB_MINI
 sw_error_t
 _fal_fdb_learning_ctrl_get(a_uint32_t dev_id, a_bool_t * enable)
 {
@@ -942,6 +947,7 @@ _fal_fdb_port_maclimit_ctrl_get(a_uint32_t dev_id, fal_port_t port_id, fal_macli
     rv = p_api->adpt_fdb_port_maclimit_ctrl_get(dev_id, port_id, maclimit_ctrl);
     return rv;
 }
+#endif
 sw_error_t
 _fal_fdb_entry_del_byfid(a_uint32_t dev_id, a_uint16_t fid, a_uint32_t flag)
 {
@@ -956,7 +962,7 @@ _fal_fdb_entry_del_byfid(a_uint32_t dev_id, a_uint16_t fid, a_uint32_t flag)
     rv = p_api->adpt_fdb_del_by_fid(dev_id, fid, flag);
     return rv;
 }
-
+#ifndef IN_FDB_MINI
 /*insert flag for inner fal, don't remove it*/
 
 /**
@@ -997,7 +1003,6 @@ fal_fdb_entry_flush(a_uint32_t dev_id, a_uint32_t flag)
     return rv;
 }
 
-#ifndef IN_FDB_MINI
 /**
  * @brief Delete Fdb entries on a particular port
  *   @details   Comments:
@@ -1038,7 +1043,6 @@ fal_fdb_entry_del_bymac(a_uint32_t dev_id, const fal_fdb_entry_t * entry)
     FAL_API_UNLOCK;
     return rv;
 }
-#endif
 
 /**
  * @brief Get first Fdb entry from particular device
@@ -1076,6 +1080,7 @@ fal_fdb_entry_getnext(a_uint32_t dev_id, fal_fdb_entry_t * entry)
     FAL_API_UNLOCK;
     return rv;
 }
+#endif
 
 /**
  * @brief Find a particular Fdb entry from device through mac address.
@@ -1096,7 +1101,6 @@ fal_fdb_entry_search(a_uint32_t dev_id, fal_fdb_entry_t * entry)
     FAL_API_UNLOCK;
     return rv;
 }
-#endif
 
 /**
  * @brief Set dynamic address and station move learning status on a particular port.
@@ -1137,6 +1141,7 @@ fal_fdb_port_learn_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t * enable)
     FAL_API_UNLOCK;
     return rv;
 }
+#endif
 
 /**
  * @brief Set dynamic address learning and forward command on a particular port.
@@ -1157,6 +1162,7 @@ fal_fdb_port_learning_ctrl_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t e
     return rv;
 }
 
+#ifndef IN_FDB_MINI
 /**
  * @brief Get dynamic address learning and forward command on a particular port.
  * @param[in] dev_id device id
@@ -1175,6 +1181,7 @@ fal_fdb_port_learning_ctrl_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *
     FAL_API_UNLOCK;
     return rv;
 }
+#endif
 
 /**
  * @brief Set station move learning and forward command on a particular port.
@@ -1195,6 +1202,7 @@ fal_fdb_port_stamove_ctrl_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t en
     return rv;
 }
 
+#ifndef IN_FDB_MINI
 /**
  * @brief Get station move learning and forward command on a particular port.
  * @param[in] dev_id device id
@@ -1213,6 +1221,7 @@ fal_fdb_port_stamove_ctrl_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *e
     FAL_API_UNLOCK;
     return rv;
 }
+#endif
 
 /**
  * @brief Set dynamic address aging status on particular device.
@@ -1234,6 +1243,7 @@ fal_fdb_aging_ctrl_set(a_uint32_t dev_id, a_bool_t enable)
     return rv;
 }
 
+#ifndef IN_FDB_MINI
 /**
  * @brief Get dynamic address aging status on particular device.
  * @param[in] dev_id device id
@@ -1769,6 +1779,8 @@ fal_fdb_learning_ctrl_set(a_uint32_t dev_id, a_bool_t enable)
     FAL_API_UNLOCK;
     return rv;
 }
+
+#ifndef IN_FDB_MINI
 sw_error_t
 fal_fdb_learning_ctrl_get(a_uint32_t dev_id, a_bool_t * enable)
 {
@@ -1810,6 +1822,7 @@ fal_fdb_port_maclimit_ctrl_get(a_uint32_t dev_id, fal_port_t port_id, fal_maclim
     FAL_API_UNLOCK;
     return rv;
 }
+#endif
 sw_error_t
 fal_fdb_entry_del_byfid(a_uint32_t dev_id, a_uint16_t fid, a_uint32_t flag)
 {
@@ -1821,34 +1834,47 @@ fal_fdb_entry_del_byfid(a_uint32_t dev_id, a_uint16_t fid, a_uint32_t flag)
     return rv;
 }
 
-
 #ifndef IN_FDB_MINI
 
     EXPORT_SYMBOL(fal_fdb_entry_add);
 
+#endif
+
     EXPORT_SYMBOL(fal_fdb_entry_del_byport);
+
 
     EXPORT_SYMBOL(fal_fdb_entry_del_bymac);
 
+
     EXPORT_SYMBOL(fal_fdb_entry_search);
+
+#ifndef IN_FDB_MINI
 
     EXPORT_SYMBOL(fal_fdb_port_learn_get);
 
-    EXPORT_SYMBOL(fal_fdb_port_learning_ctrl_set);
-
 #endif
+
+    EXPORT_SYMBOL(fal_fdb_port_learning_ctrl_set);
 
     EXPORT_SYMBOL(fal_fdb_entry_flush);
 
     EXPORT_SYMBOL(fal_fdb_entry_getfirst);
 
+#ifndef IN_FDB_MINI
+
     EXPORT_SYMBOL(fal_fdb_entry_getnext);
+
+#endif
 
     EXPORT_SYMBOL(fal_fdb_port_learn_set);
 
     EXPORT_SYMBOL(fal_fdb_learning_ctrl_set);
 
+#ifndef IN_FDB_MINI
+
     EXPORT_SYMBOL(fal_fdb_learning_ctrl_get);
+
+#endif
 
     EXPORT_SYMBOL(fal_fdb_entry_getnext_byindex);
 
@@ -1860,11 +1886,19 @@ fal_fdb_entry_del_byfid(a_uint32_t dev_id, a_uint16_t fid, a_uint32_t flag)
 
     EXPORT_SYMBOL(fal_fdb_port_learning_ctrl_get);
 
+#endif
+
     EXPORT_SYMBOL(fal_fdb_port_stamove_ctrl_set);
+
+#ifndef IN_FDB_MINI
 
     EXPORT_SYMBOL(fal_fdb_port_stamove_ctrl_get);
 
+#endif
+
     EXPORT_SYMBOL(fal_fdb_aging_ctrl_set);
+
+#ifndef IN_FDB_MINI
 
     EXPORT_SYMBOL(fal_fdb_aging_ctrl_get);
 
@@ -1890,10 +1924,15 @@ fal_fdb_entry_del_byfid(a_uint32_t dev_id, a_uint16_t fid, a_uint32_t flag)
 
     EXPORT_SYMBOL(fal_fdb_port_maclimit_ctrl_get);
 
-    EXPORT_SYMBOL(fal_fdb_entry_del_byfid);
 #endif
 
+    EXPORT_SYMBOL(fal_fdb_entry_del_byfid);
+
+#ifndef IN_FDB_MINI
+
     EXPORT_SYMBOL(fal_fdb_port_learned_mac_counter_get);
+
+#endif
 
 /*insert flag for outter fal, don't remove it*/
 
