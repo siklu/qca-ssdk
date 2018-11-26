@@ -320,10 +320,14 @@ static sw_data_type_t sw_data_type[] =
     SW_TYPE_DEF(SW_FLOW_GLOBAL, (param_check_t)cmd_data_check_flow_global, NULL),
     SW_TYPE_DEF(SW_FLOW_HOST, (param_check_t)cmd_data_check_flow_host, NULL),
     #endif
+    #ifdef IN_PORTCONTROL
+    #ifndef IN_PORTCONTROL_MINI
     SW_TYPE_DEF(SW_MTU_INFO, NULL, NULL),
     SW_TYPE_DEF(SW_MRU_INFO, NULL, NULL),
     SW_TYPE_DEF(SW_MTU_ENTRY, (param_check_t)cmd_data_check_mtu_entry, NULL),
     SW_TYPE_DEF(SW_MRU_ENTRY, (param_check_t)cmd_data_check_mru_entry, NULL),
+    #endif
+    #endif
     SW_TYPE_DEF(SW_ACL_UDF_PKT_TYPE, NULL, NULL),
     #ifdef IN_SHAPER
     SW_TYPE_DEF(SW_PORT_SHAPER_TOKEN_CONFIG, (param_check_t)cmd_data_check_port_shaper_token_config, NULL),
