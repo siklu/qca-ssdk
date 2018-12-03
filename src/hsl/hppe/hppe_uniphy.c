@@ -37,7 +37,7 @@ hppe_uniphy_offset_calib_4_get(
 				index * UNIPHY_OFFSET_CALIB_4_INC,
 				&value->val);
 }
-
+#ifndef IN_UNIPHY_MINI
 sw_error_t
 hppe_uniphy_offset_calib_4_set(
 		a_uint32_t dev_id,
@@ -50,7 +50,7 @@ hppe_uniphy_offset_calib_4_set(
 				index * UNIPHY_OFFSET_CALIB_4_INC,
 				value->val);
 }
-
+#endif
 sw_error_t
 hppe_uniphy_mode_ctrl_get(
 		a_uint32_t dev_id,
@@ -260,7 +260,7 @@ hppe_sr_xs_pcs_kr_sts1_get(
 				index * SR_XS_PCS_KR_STS1_INC,
 				&value->val);
 }
-
+#ifndef IN_UNIPHY_MINI
 sw_error_t
 hppe_sr_xs_pcs_kr_sts1_set(
 		a_uint32_t dev_id,
@@ -273,7 +273,7 @@ hppe_sr_xs_pcs_kr_sts1_set(
 				index * SR_XS_PCS_KR_STS1_INC,
 				value->val);
 }
-
+#endif
 sw_error_t
 hppe_vr_xs_pcs_dig_ctrl1_get(
 		a_uint32_t dev_id,
@@ -399,7 +399,7 @@ hppe_uniphy_offset_calib_4_mmd1_reg_cal_rep_time_get(
 	*value = reg_val.bf.mmd1_reg_cal_rep_time;
 	return ret;
 }
-
+#ifndef IN_UNIPHY_MINI
 sw_error_t
 hppe_uniphy_offset_calib_4_mmd1_reg_cal_rep_time_set(
 		a_uint32_t dev_id,
@@ -6056,5 +6056,5 @@ hppe_pll_control_vco_related_selection_2_cmn_mmd1_reg_src_cmn_pll_fbclk_div_set(
 	ret = hppe_pll_control_vco_related_selection_2_set(dev_id, index, &reg_val);
 	return ret;
 }
-
+#endif
 
