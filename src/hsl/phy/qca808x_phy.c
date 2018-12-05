@@ -544,7 +544,7 @@ a_bool_t qca808x_phy_get_link_status(a_uint32_t dev_id, a_uint32_t phy_id)
 		return A_FALSE;
 	}
 }
-
+#ifndef IN_PORTCONTROL_MINI
 /******************************************************************************
 *
 * qca808x_phy_cdt - cable diagnostic test
@@ -870,7 +870,7 @@ qca808x_phy_get_remote_loopback(a_uint32_t dev_id, a_uint32_t phy_id,
 	return SW_OK;
 
 }
-
+#endif
 /******************************************************************************
 *
 * qca808x_set_autoneg_adv - set the phy autoneg Advertisement
@@ -1124,7 +1124,7 @@ sw_error_t qca808x_phy_poweron(a_uint32_t dev_id, a_uint32_t phy_id)
 
 	return rv;
 }
-
+#ifndef IN_PORTCONTROL_MINI
 /******************************************************************************
 *
 * qca808x_phy_set_802.3az
@@ -1403,7 +1403,7 @@ _qca808x_phy_get_hibernate_status(a_uint32_t dev_id, a_uint32_t phy_id,
 
 	return SW_OK;
 }
-
+#endif
 /******************************************************************************
 *
 * qca808x_phy_interface mode set
@@ -1472,7 +1472,7 @@ qca808x_phy_interface_get_mode_status(a_uint32_t dev_id, a_uint32_t phy_id,
 
 	return SW_OK;
 }
-
+#ifndef IN_PORTCONTROL_MINI
 /******************************************************************************
 *
 * qca808x_phy_set_intr_mask - Set interrupt mask with the
@@ -1714,6 +1714,7 @@ qca808x_phy_show_counter(a_uint32_t dev_id, a_uint32_t phy_id,
 
 	return SW_OK;
 }
+#endif
 /******************************************************************************
 *
 * qca808x_phy_set_eee_advertisement
@@ -1947,6 +1948,7 @@ static sw_error_t qca808x_phy_api_ops_init(void)
 	qca808x_phy_api_ops->phy_autoneg_adv_get = qca808x_phy_get_autoneg_adv;
 	qca808x_phy_api_ops->phy_link_status_get = qca808x_phy_get_link_status;
 	qca808x_phy_api_ops->phy_reset = qca808x_phy_reset;
+#ifndef IN_PORTCONTROL_MINI
 	qca808x_phy_api_ops->phy_cdt = qca808x_phy_cdt;
 	qca808x_phy_api_ops->phy_mdix_set = qca808x_phy_set_mdix;
 	qca808x_phy_api_ops->phy_mdix_get = qca808x_phy_get_mdix;
@@ -1955,9 +1957,11 @@ static sw_error_t qca808x_phy_api_ops_init(void)
 	qca808x_phy_api_ops->phy_local_loopback_get = qca808x_phy_get_local_loopback;
 	qca808x_phy_api_ops->phy_remote_loopback_set = qca808x_phy_set_remote_loopback;
 	qca808x_phy_api_ops->phy_remote_loopback_get = qca808x_phy_get_remote_loopback;
+#endif
 	qca808x_phy_api_ops->phy_id_get = qca808x_phy_get_phy_id;
 	qca808x_phy_api_ops->phy_power_off = qca808x_phy_poweroff;
 	qca808x_phy_api_ops->phy_power_on = qca808x_phy_poweron;
+#ifndef IN_PORTCONTROL_MINI
 	qca808x_phy_api_ops->phy_8023az_set = qca808x_phy_set_8023az;
 	qca808x_phy_api_ops->phy_8023az_get = qca808x_phy_get_8023az;
 	qca808x_phy_api_ops->phy_hibernation_set = qca808x_phy_set_hibernate;
@@ -1966,15 +1970,18 @@ static sw_error_t qca808x_phy_api_ops_init(void)
 	qca808x_phy_api_ops->phy_magic_frame_mac_get = qca808x_phy_get_magic_frame_mac;
 	qca808x_phy_api_ops->phy_wol_status_set = qca808x_phy_set_wol_status;
 	qca808x_phy_api_ops->phy_wol_status_get = qca808x_phy_get_wol_status;
+#endif
 	qca808x_phy_api_ops->phy_interface_mode_set = qca808x_phy_interface_set_mode;
 	qca808x_phy_api_ops->phy_interface_mode_get = qca808x_phy_interface_get_mode;
 	qca808x_phy_api_ops->phy_interface_mode_status_get = qca808x_phy_interface_get_mode_status;
+#ifndef IN_PORTCONTROL_MINI
 	qca808x_phy_api_ops->phy_intr_mask_set = qca808x_phy_set_intr_mask;
 	qca808x_phy_api_ops->phy_intr_mask_get = qca808x_phy_get_intr_mask;
 	qca808x_phy_api_ops->phy_intr_status_get = qca808x_phy_get_intr_status;
 	qca808x_phy_api_ops->phy_counter_set = qca808x_phy_set_counter;
 	qca808x_phy_api_ops->phy_counter_get = qca808x_phy_get_counter;
 	qca808x_phy_api_ops->phy_counter_show = qca808x_phy_show_counter;
+#endif
 	qca808x_phy_api_ops->phy_eee_adv_set = qca808x_phy_set_eee_adv;
 	qca808x_phy_api_ops->phy_eee_adv_get = qca808x_phy_get_eee_adv;
 	qca808x_phy_api_ops->phy_eee_partner_adv_get = qca808x_phy_get_eee_partner_adv;

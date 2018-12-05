@@ -382,7 +382,7 @@ qca803x_phy_get_autoneg_adv (a_uint32_t dev_id, a_uint32_t phy_id,
 			a_uint32_t * autoneg);
 
 a_bool_t qca803x_phy_autoneg_status (a_uint32_t dev_id, a_uint32_t phy_id);
-
+#ifndef IN_PORTCONTROL_MINI
 sw_error_t
 qca803x_phy_intr_mask_set (a_uint32_t dev_id, a_uint32_t phy_id,
 		      a_uint32_t intr_mask_flag);
@@ -398,7 +398,7 @@ qca803x_phy_intr_status_get (a_uint32_t dev_id, a_uint32_t phy_id,
 sw_error_t
 qca803x_phy_get_phy_id(a_uint32_t dev_id, a_uint32_t phy_id,
 		a_uint32_t *phy_data);
-
+#endif
 int qca803x_phy_init(a_uint32_t dev_id, a_uint32_t port_bmp);
 
 #ifdef __cplusplus

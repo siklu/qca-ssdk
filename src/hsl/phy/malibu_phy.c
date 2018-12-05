@@ -340,7 +340,7 @@ malibu_phy_get_duplex(a_uint32_t dev_id, a_uint32_t phy_id,
 
 	return SW_OK;
 }
-
+#ifndef IN_PORTCONTROL_MINI
 /******************************************************************************
 *
 * malibu_phy_reset - reset the phy
@@ -360,7 +360,7 @@ sw_error_t malibu_phy_reset(a_uint32_t dev_id, a_uint32_t phy_id)
 
 	return SW_OK;
 }
-
+#endif
 /******************************************************************************
 *
 * malibu_phy_set_powersave - set power saving status
@@ -421,7 +421,7 @@ malibu_phy_set_powersave(a_uint32_t dev_id, a_uint32_t phy_id, a_bool_t enable)
 
 	return SW_OK;
 }
-
+#ifndef IN_PORTCONTROL_MINI
 /******************************************************************************
 *
 * malibu_phy_get_powersave - get power saving status
@@ -453,7 +453,7 @@ malibu_phy_get_powersave(a_uint32_t dev_id, a_uint32_t phy_id,
 	}
 	return SW_OK;
 }
-
+#endif
 /******************************************************************************
 *
 * malibu_phy_set_802.3az
@@ -542,7 +542,7 @@ malibu_phy_set_hibernate(a_uint32_t dev_id, a_uint32_t phy_id, a_bool_t enable)
 
 	return SW_OK;
 }
-
+#ifndef IN_PORTCONTROL_MINI
 /******************************************************************************
 *
 * malibu_phy_get_hibernate - get hibernate status
@@ -1195,7 +1195,7 @@ a_bool_t malibu_phy_speed_duplex_resolved(a_uint32_t dev_id, a_uint32_t phy_id)
 
 	return A_TRUE;
 }
-
+#endif
 /******************************************************************************
 *
 * malibu_phy_off - power off the phy 
@@ -1259,7 +1259,7 @@ sw_error_t malibu_phy_poweron(a_uint32_t dev_id, a_uint32_t phy_id)
 
 	return SW_OK;
 }
-
+#ifndef IN_PORTCONTROL_MINI
 /******************************************************************************
 *
 * malibu_phy_get_ability - get the phy ability
@@ -1361,7 +1361,7 @@ malibu_phy_get_partner_ability(a_uint32_t dev_id, a_uint32_t phy_id,
 
 	return SW_OK;
 }
-
+#endif
 /******************************************************************************
 *
 * malibu_phy_status - test to see if the specified phy link is alive
@@ -1892,7 +1892,7 @@ malibu_phy_get_phy_id(a_uint32_t dev_id, a_uint32_t phy_id,
 
 	return SW_OK;
 }
-
+#ifndef IN_PORTCONTROL_MINI
 /******************************************************************************
 *
 * malibu_phy_set wol frame mac address
@@ -2004,7 +2004,7 @@ malibu_phy_get_wol_status(a_uint32_t dev_id, a_uint32_t phy_id, a_bool_t * enabl
 
 	return SW_OK;
 }
-
+#endif
 /******************************************************************************
 *
 * malibu_serdes_reset - malibu psgmii serdes reset
@@ -2188,7 +2188,7 @@ malibu_phy_interface_get_mode_status(a_uint32_t dev_id, a_uint32_t phy_id, fal_p
 
 	return SW_OK;
 }
-
+#ifndef IN_PORTCONTROL_MINI
 /******************************************************************************
 *
 * malibu_phy_intr_mask_set - Set interrupt mask with the
@@ -2447,7 +2447,7 @@ malibu_phy_show_counter(a_uint32_t dev_id, a_uint32_t phy_id,
 
 	return SW_OK;
 }
-
+#endif
 /******************************************************************************
 *
 * malibu_phy_get status
@@ -2761,9 +2761,10 @@ static int malibu_phy_api_ops_init(void)
 	}
 
 	phy_api_ops_init(MALIBU_PHY_CHIP);
-
+#ifndef IN_PORTCONTROL_MINI
 	malibu_phy_api_ops->phy_hibernation_set = malibu_phy_set_hibernate;
 	malibu_phy_api_ops->phy_hibernation_get = malibu_phy_get_hibernate;
+#endif
 	malibu_phy_api_ops->phy_speed_get = malibu_phy_get_speed;
 	malibu_phy_api_ops->phy_speed_set = malibu_phy_set_speed;
 	malibu_phy_api_ops->phy_duplex_get = malibu_phy_get_duplex;
@@ -2773,10 +2774,13 @@ static int malibu_phy_api_ops_init(void)
 	malibu_phy_api_ops->phy_autoneg_status_get = malibu_phy_autoneg_status;
 	malibu_phy_api_ops->phy_autoneg_adv_set = malibu_phy_set_autoneg_adv;
 	malibu_phy_api_ops->phy_autoneg_adv_get = malibu_phy_get_autoneg_adv;
+#ifndef IN_PORTCONTROL_MINI
 	malibu_phy_api_ops->phy_powersave_set = malibu_phy_set_powersave;
 	malibu_phy_api_ops->phy_powersave_get = malibu_phy_get_powersave;
 	malibu_phy_api_ops->phy_cdt = malibu_phy_cdt;
+#endif
 	malibu_phy_api_ops->phy_link_status_get = malibu_phy_get_link_status;
+#ifndef IN_PORTCONTROL_MINI
 	malibu_phy_api_ops->phy_mdix_set = malibu_phy_set_mdix;
 	malibu_phy_api_ops->phy_mdix_get = malibu_phy_get_mdix;
 	malibu_phy_api_ops->phy_mdix_status_get = malibu_phy_get_mdix_status;
@@ -2792,28 +2796,35 @@ static int malibu_phy_api_ops_init(void)
 	malibu_phy_api_ops->phy_combo_fiber_mode_set = malibu_phy_set_combo_fiber_mode;
 	malibu_phy_api_ops->phy_combo_fiber_mode_get = malibu_phy_get_combo_fiber_mode;
 	malibu_phy_api_ops->phy_reset = malibu_phy_reset;
+#endif
 	malibu_phy_api_ops->phy_power_off = malibu_phy_poweroff;
 	malibu_phy_api_ops->phy_power_on = 	malibu_phy_poweron;
+#ifndef IN_PORTCONTROL_MINI
 	malibu_phy_api_ops->phy_id_get = malibu_phy_get_phy_id;
+#endif
 	malibu_phy_api_ops->phy_reg_write = malibu_phy_reg_write;
 	malibu_phy_api_ops->phy_reg_read = malibu_phy_reg_read;
 	malibu_phy_api_ops->phy_debug_write = malibu_phy_debug_write;
 	malibu_phy_api_ops->phy_debug_read = malibu_phy_debug_read;
 	malibu_phy_api_ops->phy_mmd_write = malibu_phy_mmd_write;
 	malibu_phy_api_ops->phy_mmd_read = malibu_phy_mmd_read;
+#ifndef IN_PORTCONTROL_MINI
 	malibu_phy_api_ops->phy_magic_frame_mac_set = malibu_phy_set_magic_frame_mac;
 	malibu_phy_api_ops->phy_magic_frame_mac_get = malibu_phy_get_magic_frame_mac;
 	malibu_phy_api_ops->phy_wol_status_set = malibu_phy_set_wol_status;
 	malibu_phy_api_ops->phy_wol_status_get = malibu_phy_get_wol_status;
+#endif
 	malibu_phy_api_ops->phy_interface_mode_set = malibu_phy_interface_set_mode;
 	malibu_phy_api_ops->phy_interface_mode_get = malibu_phy_interface_get_mode;
 	malibu_phy_api_ops->phy_interface_mode_status_get = malibu_phy_interface_get_mode_status;
+#ifndef IN_PORTCONTROL_MINI
 	malibu_phy_api_ops->phy_intr_mask_set = malibu_phy_intr_mask_set;
 	malibu_phy_api_ops->phy_intr_mask_get = malibu_phy_intr_mask_get;
 	malibu_phy_api_ops->phy_intr_status_get = malibu_phy_intr_status_get;
 	malibu_phy_api_ops->phy_counter_set = malibu_phy_set_counter;
 	malibu_phy_api_ops->phy_counter_get = malibu_phy_get_counter;
 	malibu_phy_api_ops->phy_counter_show = malibu_phy_show_counter;
+#endif
 	malibu_phy_api_ops->phy_serdes_reset = malibu_phy_serdes_reset;
 	malibu_phy_api_ops->phy_get_status = malibu_phy_get_status;
 	malibu_phy_api_ops->phy_eee_adv_set = malibu_phy_set_eee_adv;
