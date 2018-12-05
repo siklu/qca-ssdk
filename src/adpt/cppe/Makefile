@@ -9,7 +9,7 @@ ifeq (TRUE, $(IN_PORTCONTROL))
   SRC_LIST += adpt_cppe_portctrl.c
 endif
 
-ifeq (, $(findstring HPPE, $(SUPPORT_CHIP)))
+ifeq (, $(findstring CPPE, $(SUPPORT_CHIP)))
   SRC_LIST=
 endif
 
