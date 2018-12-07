@@ -510,6 +510,7 @@ typedef struct
 
 	/*new add acl action for IPQ60xx*/
 	a_uint8_t dscp_mask;/*modify dscp mask,IPQ60xx support*/
+	a_uint8_t qos_res_prec;/*qos res prec,IPQ60xx support*/
 } fal_acl_rule_t;
 
 
