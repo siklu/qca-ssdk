@@ -11,6 +11,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+/*qca808x_start*/
 #include "sw.h"
 #include "ssdk_phy_i2c.h"
 #include <linux/i2c.h>
@@ -295,7 +296,9 @@ qca_phy_i2c_write(a_uint32_t dev_id, a_uint32_t phy_addr,
 
 	return SW_OK;
 }
-
+/*qca808x_end*/
 EXPORT_SYMBOL(qca_phy_i2c_read);
 EXPORT_SYMBOL(qca_phy_i2c_write);
+/*qca808x_start*/
 #endif
+/*qca808x_start*/
