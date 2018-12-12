@@ -145,6 +145,7 @@ hppe_l0_shp_cfg_tbl_set(
 				3);
 }
 
+#ifndef IN_SHAPER_MINI
 sw_error_t
 hppe_l0_comp_tbl_get(
 		a_uint32_t dev_id,
@@ -167,6 +168,7 @@ hppe_l0_comp_tbl_set(
 {
 	return SW_NOT_SUPPORTED;
 }
+#endif
 
 sw_error_t
 hppe_l0_comp_cfg_tbl_get(
@@ -225,6 +227,7 @@ hppe_l1_shp_credit_tbl_set(
 				2);
 }
 
+#ifndef IN_SHAPER_MINI
 sw_error_t
 hppe_l1_shp_cfg_tbl_get(
 		a_uint32_t dev_id,
@@ -238,6 +241,7 @@ hppe_l1_shp_cfg_tbl_get(
 				value->val,
 				3);
 }
+#endif
 
 sw_error_t
 hppe_l1_shp_cfg_tbl_set(
@@ -254,6 +258,7 @@ hppe_l1_shp_cfg_tbl_set(
 }
 
 
+#ifndef IN_SHAPER_MINI
 sw_error_t
 hppe_l1_comp_tbl_get(
 		a_uint32_t dev_id,
@@ -276,6 +281,7 @@ hppe_l1_comp_tbl_set(
 {
 	return SW_NOT_SUPPORTED;
 }
+#endif
 
 sw_error_t
 hppe_l1_comp_cfg_tbl_get(
@@ -389,6 +395,7 @@ hppe_psch_shp_cfg_tbl_set(
 				2);
 }
 
+#ifndef IN_SHAPER_MINI
 sw_error_t
 hppe_psch_comp_tbl_get(
 		a_uint32_t dev_id,
@@ -412,6 +419,7 @@ hppe_psch_comp_tbl_set(
 {
 	return SW_NOT_SUPPORTED;
 }
+#endif
 
 sw_error_t
 hppe_psch_comp_cfg_tbl_get(
@@ -463,6 +471,7 @@ hppe_ipg_pre_len_cfg_set(
 				value->val);
 }
 
+#ifndef IN_SHAPER_MINI
 sw_error_t
 hppe_ipg_pre_len_cfg_ipg_pre_len_get(
 		a_uint32_t dev_id,
@@ -2384,4 +2393,4 @@ hppe_psch_comp_cfg_tbl_shaper_meter_len_set(
 	ret = hppe_psch_comp_cfg_tbl_set(dev_id, index, &reg_val);
 	return ret;
 }
-
+#endif

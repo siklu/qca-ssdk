@@ -98,6 +98,7 @@ enum
 };
 
 
+#ifndef IN_POLICER_MINI
 sw_error_t
 fal_port_policer_entry_set(a_uint32_t dev_id, fal_port_t port_id,
 		fal_policer_config_t *policer, fal_policer_action_t *action);
@@ -123,15 +124,8 @@ fal_acl_policer_counter_get(a_uint32_t dev_id, a_uint32_t index,
 		fal_policer_counter_t *counter);
 
 sw_error_t
-fal_port_policer_compensation_byte_set(a_uint32_t dev_id, fal_port_t port_id,
-		a_uint32_t length);
-
-sw_error_t
 fal_port_policer_compensation_byte_get(a_uint32_t dev_id, fal_port_t port_id,
 		a_uint32_t *length);
-
-sw_error_t
-fal_policer_timeslot_set(a_uint32_t dev_id, a_uint32_t timeslot);
 
 sw_error_t
 fal_policer_timeslot_get(a_uint32_t dev_id, a_uint32_t *timeslot);
@@ -139,6 +133,15 @@ fal_policer_timeslot_get(a_uint32_t dev_id, a_uint32_t *timeslot);
 sw_error_t
 fal_policer_global_counter_get(a_uint32_t dev_id,
 		fal_policer_global_counter_t *counter);
+
+#endif
+
+sw_error_t
+fal_port_policer_compensation_byte_set(a_uint32_t dev_id, fal_port_t port_id,
+		a_uint32_t length);
+
+sw_error_t
+fal_policer_timeslot_set(a_uint32_t dev_id, a_uint32_t timeslot);
 
 #ifdef __cplusplus
 }

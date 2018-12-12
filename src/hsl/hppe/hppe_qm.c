@@ -117,6 +117,7 @@ hppe_eg_mirror_priority_ctrl_set(
 				value->val);
 }
 
+#ifndef IN_QM_MINI
 sw_error_t
 hppe_ucast_default_hash_get(
 		a_uint32_t dev_id,
@@ -736,6 +737,7 @@ hppe_ucast_queue_map_tbl_get(
 				index * UCAST_QUEUE_MAP_TBL_INC,
 				&value->val);
 }
+#endif
 
 sw_error_t
 hppe_ucast_queue_map_tbl_set(
@@ -750,6 +752,7 @@ hppe_ucast_queue_map_tbl_set(
 				value->val);
 }
 
+#ifndef IN_QM_MINI
 sw_error_t
 hppe_ucast_hash_map_tbl_get(
 		a_uint32_t dev_id,
@@ -861,6 +864,7 @@ hppe_ac_mseq_tbl_set(
 				index * AC_MSEQ_TBL_INC,
 				value->val);
 }
+#endif
 
 sw_error_t
 hppe_ac_uni_queue_cfg_tbl_get(
@@ -946,6 +950,7 @@ hppe_ac_grp_cfg_tbl_set(
 				3);
 }
 
+#ifndef IN_QM_MINI
 sw_error_t
 hppe_ac_uni_queue_cnt_tbl_get(
 		a_uint32_t dev_id,
@@ -1128,6 +1133,7 @@ hppe_oq_enq_opr_tbl_get(
 				index * OQ_ENQ_OPR_TBL_INC,
 				&value->val);
 }
+#endif
 
 sw_error_t
 hppe_oq_enq_opr_tbl_set(
@@ -1142,6 +1148,7 @@ hppe_oq_enq_opr_tbl_set(
 				value->val);
 }
 
+#ifndef IN_QM_MINI
 sw_error_t
 hppe_oq_deq_opr_tbl_get(
 		a_uint32_t dev_id,
@@ -9612,4 +9619,4 @@ hppe_queue_tx_counter_tbl_tx_packets_set(
 	ret = hppe_queue_tx_counter_tbl_set(dev_id, index, &reg_val);
 	return ret;
 }
-
+#endif

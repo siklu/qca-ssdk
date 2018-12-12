@@ -80,11 +80,31 @@ enum
 };
 
 sw_error_t
-fal_port_shaper_set(a_uint32_t dev_id, fal_port_t port_id,
-		fal_shaper_config_t * shaper);
+fal_queue_shaper_token_number_set(a_uint32_t dev_id,a_uint32_t queue_id,
+		fal_shaper_token_number_t *token_number);
 
 sw_error_t
-fal_port_shaper_get(a_uint32_t dev_id, fal_port_t port_id,
+fal_flow_shaper_token_number_set(a_uint32_t dev_id, a_uint32_t flow_id,
+		fal_shaper_token_number_t *token_number);
+
+sw_error_t
+fal_port_shaper_token_number_set(a_uint32_t dev_id, fal_port_t port_id,
+		fal_shaper_token_number_t *token_number);
+
+sw_error_t
+fal_port_shaper_timeslot_set(a_uint32_t dev_id, a_uint32_t timeslot);
+
+sw_error_t
+fal_queue_shaper_timeslot_set(a_uint32_t dev_id, a_uint32_t timeslot);
+
+sw_error_t
+fal_flow_shaper_timeslot_set(a_uint32_t dev_id, a_uint32_t timeslot);
+
+sw_error_t
+fal_shaper_ipg_preamble_length_set(a_uint32_t dev_id, a_uint32_t ipg_pre_length);
+
+sw_error_t
+fal_port_shaper_set(a_uint32_t dev_id, fal_port_t port_id,
 		fal_shaper_config_t * shaper);
 
 sw_error_t
@@ -99,20 +119,17 @@ sw_error_t
 fal_flow_shaper_set(a_uint32_t dev_id, a_uint32_t flow_id,
 		fal_shaper_config_t * shaper);
 
+#ifndef IN_SHAPER_MINI
+sw_error_t
+fal_port_shaper_get(a_uint32_t dev_id, fal_port_t port_id,
+		fal_shaper_config_t * shaper);
+
 sw_error_t
 fal_flow_shaper_get(a_uint32_t dev_id, a_uint32_t flow_id,
 		fal_shaper_config_t * shaper);
 
 sw_error_t
-fal_queue_shaper_token_number_set(a_uint32_t dev_id,a_uint32_t queue_id,
-		fal_shaper_token_number_t *token_number);
-
-sw_error_t
 fal_queue_shaper_token_number_get(a_uint32_t dev_id, a_uint32_t queue_id,
-		fal_shaper_token_number_t *token_number);
-
-sw_error_t
-fal_flow_shaper_token_number_set(a_uint32_t dev_id, a_uint32_t flow_id,
 		fal_shaper_token_number_t *token_number);
 
 sw_error_t
@@ -120,36 +137,21 @@ fal_flow_shaper_token_number_get(a_uint32_t dev_id, a_uint32_t flow_id,
 		fal_shaper_token_number_t *token_number);
 
 sw_error_t
-fal_port_shaper_token_number_set(a_uint32_t dev_id, fal_port_t port_id,
-		fal_shaper_token_number_t *token_number);
-
-sw_error_t
 fal_port_shaper_token_number_get(a_uint32_t dev_id, fal_port_t port_id,
 		fal_shaper_token_number_t *token_number);
-
-sw_error_t
-fal_port_shaper_timeslot_set(a_uint32_t dev_id, a_uint32_t timeslot);
 
 sw_error_t
 fal_port_shaper_timeslot_get(a_uint32_t dev_id, a_uint32_t *timeslot);
 
 sw_error_t
-fal_queue_shaper_timeslot_set(a_uint32_t dev_id, a_uint32_t timeslot);
-
-sw_error_t
 fal_queue_shaper_timeslot_get(a_uint32_t dev_id, a_uint32_t *timeslot);
-
-sw_error_t
-fal_flow_shaper_timeslot_set(a_uint32_t dev_id, a_uint32_t timeslot);
 
 sw_error_t
 fal_flow_shaper_timeslot_get(a_uint32_t dev_id, a_uint32_t *timeslot);
 
 sw_error_t
-fal_shaper_ipg_preamble_length_set(a_uint32_t dev_id, a_uint32_t ipg_pre_length);
-
-sw_error_t
 fal_shaper_ipg_preamble_length_get(a_uint32_t dev_id, a_uint32_t *ipg_pre_length);
+#endif
 
 
 #ifdef __cplusplus

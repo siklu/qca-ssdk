@@ -23,6 +23,7 @@
 #include "hppe_bm_reg.h"
 #include "hppe_bm.h"
 
+#ifndef IN_BM_MINI
 sw_error_t
 hppe_fb_fifo_cfg_get(
 		a_uint32_t dev_id,
@@ -216,6 +217,7 @@ hppe_port_fc_mode_get(
 				index * PORT_FC_MODE_INC,
 				&value->val);
 }
+#endif
 
 sw_error_t
 hppe_port_fc_mode_set(
@@ -230,6 +232,7 @@ hppe_port_fc_mode_set(
 				value->val);
 }
 
+#ifndef IN_BM_MINI
 sw_error_t
 hppe_port_fc_status_get(
 		a_uint32_t dev_id,
@@ -268,6 +271,7 @@ hppe_port_group_id_get(
 				index * PORT_GROUP_ID_INC,
 				&value->val);
 }
+#endif
 
 sw_error_t
 hppe_port_group_id_set(
@@ -282,6 +286,7 @@ hppe_port_group_id_set(
 				value->val);
 }
 
+#ifndef IN_BM_MINI
 sw_error_t
 hppe_port_cnt_get(
 		a_uint32_t dev_id,
@@ -368,6 +373,7 @@ hppe_shared_group_cfg_get(
 				index * SHARED_GROUP_CFG_INC,
 				&value->val);
 }
+#endif
 
 sw_error_t
 hppe_shared_group_cfg_set(
@@ -382,6 +388,7 @@ hppe_shared_group_cfg_set(
 				value->val);
 }
 
+#ifndef IN_BM_MINI
 sw_error_t
 hppe_port_profile_cnt_en_get(
 		a_uint32_t dev_id,
@@ -743,6 +750,7 @@ hppe_tot_react_in_profile_cnt_set(
 				NSS_BM_CSR_BASE_ADDR + TOT_REACT_IN_PROFILE_CNT_ADDRESS,
 				value->val);
 }
+#endif
 
 sw_error_t
 hppe_port_fc_cfg_get(
@@ -772,6 +780,7 @@ hppe_port_fc_cfg_set(
 				2);
 }
 
+#ifndef IN_BM_MINI
 sw_error_t
 hppe_llm_get(
 		a_uint32_t dev_id,
@@ -3015,4 +3024,4 @@ hppe_dm_pkt_data_set(
 	ret = hppe_dm_set(dev_id, index, &reg_val);
 	return ret;
 }
-
+#endif

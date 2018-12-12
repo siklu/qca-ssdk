@@ -109,6 +109,10 @@ ifeq (TRUE, $(IN_FLOW))
   MODULE_CFLAG += -DIN_FLOW
 endif
 
+ifeq (TRUE, $(IN_FLOW_MINI))
+  MODULE_CFLAG += -DIN_FLOW_MINI
+endif
+
 ifeq (TRUE, $(IN_SFE))
   MODULE_CFLAG += -DIN_SFE
 endif
@@ -123,6 +127,10 @@ endif
 
 ifeq (TRUE, $(IN_QM))
   MODULE_CFLAG += -DIN_QM
+endif
+
+ifeq (TRUE, $(IN_QM_MINI))
+  MODULE_CFLAG += -DIN_QM_MINI
 endif
 
 ifeq (TRUE, $(IN_NAT_HELPER))
@@ -179,6 +187,10 @@ ifeq (TRUE, $(IN_VSI))
   MODULE_CFLAG += -DIN_VSI
 endif
 
+ifeq (TRUE, $(IN_VSI_MINI))
+  MODULE_CFLAG += -DIN_VSI_MINI
+endif
+
 ifeq (TRUE, $(IN_PPPOE))
   MODULE_CFLAG += -DIN_PPPOE
 endif
@@ -187,12 +199,28 @@ ifeq (TRUE, $(IN_BM))
   MODULE_CFLAG += -DIN_BM
 endif
 
+ifeq (TRUE, $(IN_BM_MINI))
+  MODULE_CFLAG += -DIN_BM_MINI
+endif
+
 ifeq (TRUE, $(IN_SHAPER))
   MODULE_CFLAG += -DIN_SHAPER
 endif
 
+ifeq (TRUE, $(IN_SHAPER_MINI))
+  MODULE_CFLAG += -DIN_SHAPER_MINI
+endif
+
 ifeq (TRUE, $(IN_POLICER))
   MODULE_CFLAG += -DIN_POLICER
+endif
+
+ifeq (TRUE, $(IN_POLICER_MINI))
+  MODULE_CFLAG += -DIN_POLICER_MINI
+endif
+
+ifeq (TRUE, $(IN_UNIPHY_MINI))
+  MODULE_CFLAG += -DIN_UNIPHY_MINI
 endif
 
 ifeq (TRUE, $(HAWKEYE_CHIP))

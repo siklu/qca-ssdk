@@ -70,6 +70,7 @@ _fal_queue_shaper_token_number_set(a_uint32_t dev_id,a_uint32_t queue_id,
     rv = p_api->adpt_queue_shaper_token_number_set(dev_id, queue_id, token_number);
     return rv;
 }
+#ifndef IN_SHAPER_MINI
 sw_error_t
 _fal_port_shaper_get(a_uint32_t dev_id, fal_port_t port_id,
 		fal_shaper_config_t * shaper)
@@ -113,6 +114,7 @@ _fal_port_shaper_timeslot_get(a_uint32_t dev_id, a_uint32_t *timeslot)
     rv = p_api->adpt_port_shaper_time_slot_get(dev_id, timeslot);
     return rv;
 }
+#endif
 sw_error_t
 _fal_flow_shaper_timeslot_set(a_uint32_t dev_id, a_uint32_t timeslot)
 {
@@ -142,6 +144,7 @@ _fal_port_shaper_token_number_set(a_uint32_t dev_id, fal_port_t port_id,
     rv = p_api->adpt_port_shaper_token_number_set(dev_id, port_id, token_number);
     return rv;
 }
+#ifndef IN_SHAPER_MINI
 sw_error_t
 _fal_queue_shaper_token_number_get(a_uint32_t dev_id, a_uint32_t queue_id,
 		fal_shaper_token_number_t *token_number)
@@ -186,6 +189,7 @@ _fal_port_shaper_token_number_get(a_uint32_t dev_id, fal_port_t port_id,
     rv = p_api->adpt_port_shaper_token_number_get(dev_id, port_id, token_number);
     return rv;
 }
+#endif
 sw_error_t
 _fal_flow_shaper_token_number_set(a_uint32_t dev_id, a_uint32_t flow_id,
 		fal_shaper_token_number_t *token_number)
@@ -201,6 +205,7 @@ _fal_flow_shaper_token_number_set(a_uint32_t dev_id, a_uint32_t flow_id,
     rv = p_api->adpt_flow_shaper_token_number_set(dev_id, flow_id, token_number);
     return rv;
 }
+#ifndef IN_SHAPER_MINI
 sw_error_t
 _fal_flow_shaper_token_number_get(a_uint32_t dev_id, a_uint32_t flow_id,
 		fal_shaper_token_number_t *token_number)
@@ -216,6 +221,7 @@ _fal_flow_shaper_token_number_get(a_uint32_t dev_id, a_uint32_t flow_id,
     rv = p_api->adpt_flow_shaper_token_number_get(dev_id, flow_id, token_number);
     return rv;
 }
+#endif
 sw_error_t
 _fal_port_shaper_set(a_uint32_t dev_id, fal_port_t port_id,
 		fal_shaper_config_t * shaper)
@@ -245,6 +251,7 @@ _fal_port_shaper_timeslot_set(a_uint32_t dev_id, a_uint32_t timeslot)
     rv = p_api->adpt_port_shaper_time_slot_set(dev_id, timeslot);
     return rv;
 }
+#ifndef IN_SHAPER_MINI
 sw_error_t
 _fal_flow_shaper_get(a_uint32_t dev_id, a_uint32_t flow_id,
 		fal_shaper_config_t * shaper)
@@ -260,6 +267,7 @@ _fal_flow_shaper_get(a_uint32_t dev_id, a_uint32_t flow_id,
     rv = p_api->adpt_flow_shaper_get(dev_id, flow_id, shaper);
     return rv;
 }
+#endif
 sw_error_t
 _fal_queue_shaper_set(a_uint32_t dev_id,a_uint32_t queue_id,
 		fal_shaper_config_t * shaper)
@@ -305,6 +313,7 @@ _fal_shaper_ipg_preamble_length_set(a_uint32_t dev_id, a_uint32_t ipg_pre_length
     return rv;
 }
 
+#ifndef IN_SHAPER_MINI
 sw_error_t
 _fal_shaper_ipg_preamble_length_get(a_uint32_t dev_id, a_uint32_t *ipg_pre_length)
 {
@@ -319,6 +328,7 @@ _fal_shaper_ipg_preamble_length_get(a_uint32_t dev_id, a_uint32_t *ipg_pre_lengt
     rv = p_api->adpt_shaper_ipg_preamble_length_get(dev_id, ipg_pre_length);
     return rv;
 }
+#endif
 
 /*insert flag for inner fal, don't remove it*/
 
@@ -355,6 +365,7 @@ fal_queue_shaper_token_number_set(a_uint32_t dev_id,a_uint32_t queue_id,
     FAL_API_UNLOCK;
     return rv;
 }
+#ifndef IN_SHAPER_MINI
 sw_error_t
 fal_port_shaper_get(a_uint32_t dev_id, fal_port_t port_id,
 		fal_shaper_config_t * shaper)
@@ -386,6 +397,7 @@ fal_port_shaper_timeslot_get(a_uint32_t dev_id, a_uint32_t *timeslot)
     FAL_API_UNLOCK;
     return rv;
 }
+#endif
 sw_error_t
 fal_flow_shaper_timeslot_set(a_uint32_t dev_id, a_uint32_t timeslot)
 {
@@ -407,6 +419,7 @@ fal_port_shaper_token_number_set(a_uint32_t dev_id, fal_port_t port_id,
     FAL_API_UNLOCK;
     return rv;
 }
+#ifndef IN_SHAPER_MINI
 sw_error_t
 fal_queue_shaper_token_number_get(a_uint32_t dev_id, a_uint32_t queue_id,
 		fal_shaper_token_number_t *token_number)
@@ -439,6 +452,7 @@ fal_port_shaper_token_number_get(a_uint32_t dev_id, fal_port_t port_id,
     FAL_API_UNLOCK;
     return rv;
 }
+#endif
 sw_error_t
 fal_flow_shaper_token_number_set(a_uint32_t dev_id, a_uint32_t flow_id,
 		fal_shaper_token_number_t *token_number)
@@ -450,6 +464,7 @@ fal_flow_shaper_token_number_set(a_uint32_t dev_id, a_uint32_t flow_id,
     FAL_API_UNLOCK;
     return rv;
 }
+#ifndef IN_SHAPER_MINI
 sw_error_t
 fal_flow_shaper_token_number_get(a_uint32_t dev_id, a_uint32_t flow_id,
 		fal_shaper_token_number_t *token_number)
@@ -461,6 +476,7 @@ fal_flow_shaper_token_number_get(a_uint32_t dev_id, a_uint32_t flow_id,
     FAL_API_UNLOCK;
     return rv;
 }
+#endif
 sw_error_t
 fal_port_shaper_set(a_uint32_t dev_id, fal_port_t port_id,
 		fal_shaper_config_t * shaper)
@@ -482,6 +498,7 @@ fal_port_shaper_timeslot_set(a_uint32_t dev_id, a_uint32_t timeslot)
     FAL_API_UNLOCK;
     return rv;
 }
+#ifndef IN_SHAPER_MINI
 sw_error_t
 fal_flow_shaper_get(a_uint32_t dev_id, a_uint32_t flow_id,
 		fal_shaper_config_t * shaper)
@@ -493,6 +510,7 @@ fal_flow_shaper_get(a_uint32_t dev_id, a_uint32_t flow_id,
     FAL_API_UNLOCK;
     return rv;
 }
+#endif
 sw_error_t
 fal_queue_shaper_set(a_uint32_t dev_id,a_uint32_t queue_id,
 		fal_shaper_config_t * shaper)
@@ -524,6 +542,7 @@ fal_shaper_ipg_preamble_length_set(a_uint32_t dev_id, a_uint32_t ipg_pre_length)
     FAL_API_UNLOCK;
     return rv;
 }
+#ifndef IN_SHAPER_MINI
 sw_error_t
 fal_shaper_ipg_preamble_length_get(a_uint32_t dev_id, a_uint32_t *ipg_pre_length)
 {
@@ -534,45 +553,49 @@ fal_shaper_ipg_preamble_length_get(a_uint32_t dev_id, a_uint32_t *ipg_pre_length
     FAL_API_UNLOCK;
     return rv;
 }
-
-EXPORT_SYMBOL(fal_port_shaper_set);
-
-EXPORT_SYMBOL(fal_port_shaper_get);
-
-EXPORT_SYMBOL(fal_queue_shaper_set);
-
-EXPORT_SYMBOL(fal_queue_shaper_get);
-
-EXPORT_SYMBOL(fal_flow_shaper_set);
-
-EXPORT_SYMBOL(fal_flow_shaper_get);
-
-EXPORT_SYMBOL(fal_queue_shaper_token_number_set);
-
-EXPORT_SYMBOL(fal_queue_shaper_token_number_get);
+#endif
 
 EXPORT_SYMBOL(fal_flow_shaper_token_number_set);
 
-EXPORT_SYMBOL(fal_flow_shaper_token_number_get);
+EXPORT_SYMBOL(fal_queue_shaper_token_number_set);
 
 EXPORT_SYMBOL(fal_port_shaper_token_number_set);
 
-EXPORT_SYMBOL(fal_port_shaper_token_number_get);
-
 EXPORT_SYMBOL(fal_port_shaper_timeslot_set);
-
-EXPORT_SYMBOL(fal_port_shaper_timeslot_get);
-
-EXPORT_SYMBOL(fal_queue_shaper_timeslot_set);
-
-EXPORT_SYMBOL(fal_queue_shaper_timeslot_get);
 
 EXPORT_SYMBOL(fal_flow_shaper_timeslot_set);
 
-EXPORT_SYMBOL(fal_flow_shaper_timeslot_get);
+EXPORT_SYMBOL(fal_queue_shaper_timeslot_set);
 
 EXPORT_SYMBOL(fal_shaper_ipg_preamble_length_set);
 
+EXPORT_SYMBOL(fal_port_shaper_set);
+
+EXPORT_SYMBOL(fal_queue_shaper_get);
+
+EXPORT_SYMBOL(fal_queue_shaper_set);
+
+EXPORT_SYMBOL(fal_flow_shaper_set);
+
+#ifndef IN_SHAPER_MINI
+
+EXPORT_SYMBOL(fal_port_shaper_get);
+
+EXPORT_SYMBOL(fal_flow_shaper_get);
+
+EXPORT_SYMBOL(fal_queue_shaper_token_number_get);
+
+EXPORT_SYMBOL(fal_flow_shaper_token_number_get);
+
+EXPORT_SYMBOL(fal_port_shaper_token_number_get);
+
+EXPORT_SYMBOL(fal_port_shaper_timeslot_get);
+
+EXPORT_SYMBOL(fal_queue_shaper_timeslot_get);
+
+EXPORT_SYMBOL(fal_flow_shaper_timeslot_get);
+
 EXPORT_SYMBOL(fal_shaper_ipg_preamble_length_get);
+#endif
 
 /*insert flag for outter fal, don't remove it*/

@@ -150,6 +150,7 @@ enum  {
 	FUNC_FLOW_ENTRY_NEXT
 };
 
+#ifndef IN_FLOW_MINI
 sw_error_t
 fal_flow_status_set(a_uint32_t dev_id, a_bool_t enable);
 
@@ -161,6 +162,7 @@ fal_flow_age_timer_set(a_uint32_t dev_id, fal_flow_age_timer_t *age_timer);
 
 sw_error_t
 fal_flow_age_timer_get(a_uint32_t dev_id, fal_flow_age_timer_t *age_timer);
+#endif
 
 sw_error_t
 fal_flow_mgmt_set(
@@ -176,6 +178,7 @@ fal_flow_mgmt_get(
 		fal_flow_direction_t dir,
 		fal_flow_mgmt_t *mgmt);
 
+#ifndef IN_FLOW_MINI
 sw_error_t
 fal_flow_entry_add(
 		a_uint32_t dev_id,
@@ -227,6 +230,7 @@ sw_error_t
 fal_flow_global_cfg_set(
 		a_uint32_t dev_id,
 		fal_flow_global_cfg_t *cfg);
+#endif
 
 #ifdef __cplusplus
 }

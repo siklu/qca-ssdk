@@ -51,6 +51,7 @@ hppe_meter_cmpst_length_reg_set(
 				value->val);
 }
 
+#ifndef IN_POLICER_MINI
 sw_error_t
 hppe_pc_drop_bypass_reg_get(
 		a_uint32_t dev_id,
@@ -105,6 +106,7 @@ hppe_time_slot_reg_get(
 				INGRESS_POLICER_BASE_ADDR + TIME_SLOT_REG_ADDRESS,
 				&value->val);
 }
+#endif
 
 sw_error_t
 hppe_time_slot_reg_set(
@@ -117,6 +119,7 @@ hppe_time_slot_reg_set(
 				value->val);
 }
 
+#ifndef IN_POLICER_MINI
 sw_error_t
 hppe_pc_dbg_addr_reg_get(
 		a_uint32_t dev_id,
@@ -353,6 +356,7 @@ hppe_pc_global_cnt_tbl_set(
 				value->val,
 				3);
 }
+#endif
 
 sw_error_t
 hppe_drop_cpu_cnt_tbl_get(
@@ -381,7 +385,6 @@ hppe_drop_cpu_cnt_tbl_set(
 				value->val,
 				3);
 }
-
 
 sw_error_t
 hppe_port_tx_drop_cnt_tbl_get(
@@ -467,6 +470,7 @@ hppe_vlan_dev_cnt_tbl_set(
 				3);
 }
 
+#ifndef IN_POLICER_MINI
 sw_error_t
 hppe_meter_cmpst_length_reg_cmpst_length_get(
 		a_uint32_t dev_id,
@@ -2921,4 +2925,4 @@ hppe_vlan_dev_cnt_tbl_rx_pkt_cnt_set(
 	ret = hppe_vlan_dev_cnt_tbl_set(dev_id, index, &reg_val);
 	return ret;
 }
-
+#endif
