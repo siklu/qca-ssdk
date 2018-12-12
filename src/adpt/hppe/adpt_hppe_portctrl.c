@@ -3541,6 +3541,62 @@ adpt_hppe_port_source_filter_set(a_uint32_t dev_id,
 
 	return hppe_port_in_forward_set(dev_id, port_id, &port_in_forward);
 }
+
+sw_error_t
+adpt_ppe_port_source_filter_get(a_uint32_t dev_id,
+				fal_port_t port_id, a_bool_t * enable)
+{
+	ADPT_DEV_ID_CHECK(dev_id);
+#ifdef CPPE
+	if (adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) {
+		return adpt_cppe_port_source_filter_get(dev_id, port_id, enable);
+	}
+#endif
+	return adpt_hppe_port_source_filter_get(dev_id, port_id, enable);
+}
+
+sw_error_t
+adpt_ppe_port_source_filter_set(a_uint32_t dev_id,
+				fal_port_t port_id, a_bool_t enable)
+
+{
+	ADPT_DEV_ID_CHECK(dev_id);
+#ifdef CPPE
+	if (adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) {
+		return adpt_cppe_port_source_filter_set(dev_id, port_id, enable);
+	}
+#endif
+	return adpt_hppe_port_source_filter_set(dev_id, port_id, enable);
+}
+
+sw_error_t
+adpt_ppe_port_source_filter_config_get(a_uint32_t dev_id,
+				fal_port_t port_id, fal_src_filter_config_t* src_filter_config)
+{
+	ADPT_DEV_ID_CHECK(dev_id);
+#ifdef CPPE
+	if (adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) {
+		return adpt_cppe_port_source_filter_config_get(dev_id, port_id,
+				src_filter_config);
+	}
+#endif
+	return SW_NOT_SUPPORTED;
+}
+
+sw_error_t
+adpt_ppe_port_source_filter_config_set(a_uint32_t dev_id,
+				fal_port_t port_id, fal_src_filter_config_t *src_filter_config)
+
+{
+	ADPT_DEV_ID_CHECK(dev_id);
+#ifdef CPPE
+	if (adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) {
+		return adpt_cppe_port_source_filter_config_set(dev_id, port_id, src_filter_config);
+	}
+#endif
+	return SW_NOT_SUPPORTED;
+}
+
 static sw_error_t
 adpt_hppe_port_interface_3az_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
@@ -5170,12 +5226,12 @@ sw_error_t adpt_hppe_port_ctrl_init(a_uint32_t dev_id)
 	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] &
 		(1 <<  (FUNC_ADPT_PORT_SOURCE_FILTER_GET % 32)))
 	{
-		p_adpt_api->adpt_port_source_filter_get = adpt_hppe_port_source_filter_get;
+		p_adpt_api->adpt_port_source_filter_get = adpt_ppe_port_source_filter_get;
 	}
 	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] &
 		(1 <<  (FUNC_ADPT_PORT_SOURCE_FILTER_SET % 32)))
 	{
-		p_adpt_api->adpt_port_source_filter_set = adpt_hppe_port_source_filter_set;
+		p_adpt_api->adpt_port_source_filter_set = adpt_ppe_port_source_filter_set;
 	}
 	if(p_adpt_api->adpt_port_ctrl_func_bitmap[2] &
 		(1 <<  (FUNC_ADPT_PORT_INTERFACE_MODE_APPLY% 32)))
@@ -5219,6 +5275,8 @@ sw_error_t adpt_hppe_port_ctrl_init(a_uint32_t dev_id)
 		p_adpt_api->adpt_port_flowctrl_forcemode_get =
 			adpt_hppe_port_flowctrl_forcemode_get;
 	}
+	p_adpt_api->adpt_port_source_filter_config_get = adpt_ppe_port_source_filter_config_get;
+	p_adpt_api->adpt_port_source_filter_config_set = adpt_ppe_port_source_filter_config_set;
 #endif
 	p_adpt_api->adpt_port_mux_mac_type_set = adpt_hppe_port_mux_mac_type_set;
 	p_adpt_api->adpt_port_mac_speed_set = adpt_hppe_port_mac_speed_set;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2015-2018, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015-2019, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -1895,6 +1895,40 @@ _fal_port_source_filter_set(a_uint32_t dev_id,
 }
 
 static sw_error_t
+_fal_port_source_filter_config_set(a_uint32_t dev_id,
+	fal_port_t port_id, fal_src_filter_config_t *src_filter_config)
+{
+	adpt_api_t *p_api;
+	sw_error_t rv = SW_OK;
+
+	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+	if (NULL == p_api->adpt_port_source_filter_config_set)
+		return SW_NOT_SUPPORTED;
+
+	rv = p_api->adpt_port_source_filter_config_set(dev_id, port_id,
+			src_filter_config);
+	return rv;
+}
+
+static sw_error_t
+_fal_port_source_filter_config_get(a_uint32_t dev_id,
+	fal_port_t port_id, fal_src_filter_config_t *src_filter_config)
+{
+	adpt_api_t *p_api;
+	sw_error_t rv = SW_OK;
+
+	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
+
+	if (NULL == p_api->adpt_port_source_filter_config_get)
+		return SW_NOT_SUPPORTED;
+
+	rv = p_api->adpt_port_source_filter_config_get(dev_id, port_id,
+			src_filter_config);
+	return rv;
+}
+
+static sw_error_t
 _fal_port_interface_3az_status_set(a_uint32_t dev_id, fal_port_t port_id,
 		a_bool_t enable)
 {
@@ -3531,6 +3565,30 @@ fal_port_source_filter_enable(a_uint32_t dev_id,
 }
 
 sw_error_t
+fal_port_source_filter_config_set(a_uint32_t dev_id,
+		fal_port_t port_id, fal_src_filter_config_t *src_filter_config)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_API_LOCK;
+    rv = _fal_port_source_filter_config_set(dev_id, port_id, src_filter_config);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
+fal_port_source_filter_config_get(a_uint32_t dev_id,
+		fal_port_t port_id, fal_src_filter_config_t *src_filter_config)
+{
+    sw_error_t rv = SW_OK;
+
+    FAL_API_LOCK;
+    rv = _fal_port_source_filter_config_get(dev_id, port_id, src_filter_config);
+    FAL_API_UNLOCK;
+    return rv;
+}
+
+sw_error_t
 fal_port_interface_3az_status_set(a_uint32_t dev_id, fal_port_t port_id,
 		a_bool_t enable)
 {
@@ -3678,6 +3736,8 @@ EXPORT_SYMBOL(fal_port_interface_mode_get );
 EXPORT_SYMBOL(fal_port_interface_mode_status_get );
 EXPORT_SYMBOL(fal_port_source_filter_enable);
 EXPORT_SYMBOL(fal_port_source_filter_status_get);
+EXPORT_SYMBOL(fal_port_source_filter_config_get);
+EXPORT_SYMBOL(fal_port_source_filter_config_set);
 #endif
 EXPORT_SYMBOL(fal_port_max_frame_size_set);
 EXPORT_SYMBOL(fal_port_max_frame_size_get);

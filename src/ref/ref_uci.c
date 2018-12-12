@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, 2015, 2017-2018, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2013, 2015, 2017-2019, The Linux Foundation. All rights reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -2481,6 +2481,36 @@ parse_port_eeecfg(struct switch_val *val)
 			rv = -1;
 			break;
 		}
+		parameter_length++;
+		switch_ext_p = switch_ext_p->next;
+	}
+
+	return rv;
+}
+
+static int
+parse_port_srcfiltercfg(struct switch_val *val)
+{
+	struct switch_ext *switch_ext_p, *ext_value_p;
+	int rv = 0;
+	switch_ext_p = val->value.ext_val;
+	while(switch_ext_p) {
+		ext_value_p = switch_ext_p;
+
+		if(!strcmp(ext_value_p->option_name, "name")) {
+			switch_ext_p = switch_ext_p->next;
+			continue;
+		} else if(!strcmp(ext_value_p->option_name, "port_id")) {
+			val_ptr[0] = (char*)ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "srcfilter_enable")) {
+			val_ptr[1] = (char*)ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "srcfilter_mode")) {
+			val_ptr[2] = (char*)ext_value_p->option_value;
+		} else {
+			rv = -1;
+			break;
+		}
+
 		parameter_length++;
 		switch_ext_p = switch_ext_p->next;
 	}
@@ -10631,6 +10661,8 @@ parse_port(const char *command_name, struct switch_val *val)
 		rv = parse_port_promiscmode(val);
 	} else if(!strcmp(command_name, "Eeecfg")) {
 		rv = parse_port_eeecfg(val);
+	}else if(!strcmp(command_name, "Srcfiltercfg")) {
+		rv = parse_port_srcfiltercfg(val);
 	}
 	#endif
 

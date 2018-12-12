@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, 2015-2018, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2013, 2015-2019, The Linux Foundation. All rights reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -661,6 +661,7 @@ struct sub_cmd_des_t g_port_des[] =
 	{"interface3az", "set", SW_API_PT_INTERFACE_3AZ_STATUS_SET, NULL},
 	{"promiscmode", "set",   SW_API_PT_PROMISC_MODE_SET, NULL},
 	{"eeecfg", "set", SW_API_PT_INTERFACE_EEE_CFG_SET, NULL},
+	{"srcfiltercfg", "set",   SW_API_PT_SOURCE_FILTER_CONFIG_SET, NULL},
 	#endif
 	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
 };

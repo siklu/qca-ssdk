@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2015-2018, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015-2019, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -391,6 +391,16 @@ typedef struct {
 	fal_fwd_cmd_t 	action;
 } fal_mru_ctrl_t;
 
+typedef enum {
+	FAL_SRC_FILTER_MODE_VP = 0,
+	FAL_SRC_FILTER_MODE_PHYSICAL = 1,
+} fal_src_filter_mode_t;
+
+typedef struct {
+	a_bool_t	src_filter_enable;
+	fal_src_filter_mode_t	src_filter_mode;
+} fal_src_filter_config_t;
+
 sw_error_t
 fal_port_max_frame_size_set(a_uint32_t dev_id, fal_port_t port_id,
 		a_uint32_t max_frame);
@@ -737,6 +747,15 @@ fal_port_source_filter_status_get(a_uint32_t dev_id,
 sw_error_t
 fal_port_source_filter_enable(a_uint32_t dev_id,
 				fal_port_t port_id, a_bool_t enable);
+
+sw_error_t
+fal_port_source_filter_config_get(a_uint32_t dev_id,
+	fal_port_t port_id, fal_src_filter_config_t * src_filter_config);
+
+sw_error_t
+fal_port_source_filter_config_set(a_uint32_t dev_id,
+	fal_port_t port_id, fal_src_filter_config_t *src_filter_config);
+
 sw_error_t
 fal_port_interface_3az_status_set(a_uint32_t dev_id, fal_port_t port_id,
 		a_bool_t enable);

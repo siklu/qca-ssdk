@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2018, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2019, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -311,6 +311,10 @@ typedef sw_error_t (*adpt_port_interface_eee_cfg_set_func)(a_uint32_t dev_id,
 			fal_port_t port_id, fal_port_eee_cfg_t *port_eee_cfg);
 typedef sw_error_t (*adpt_port_interface_eee_cfg_get_func)(a_uint32_t dev_id,
 			fal_port_t port_id, fal_port_eee_cfg_t *port_eee_cfg);
+typedef sw_error_t (*adpt_port_source_filter_config_set_func)(a_uint32_t dev_id,
+			fal_port_t port_id, fal_src_filter_config_t *src_filter_config);
+typedef sw_error_t (*adpt_port_source_filter_config_get_func)(a_uint32_t dev_id,
+			fal_port_t port_id, fal_src_filter_config_t *src_filter_config);
 
 // mirror
 typedef sw_error_t (*adpt_mirr_port_in_set_func)(a_uint32_t dev_id, fal_port_t port_id,
@@ -1134,7 +1138,8 @@ typedef struct
 	adpt_port_promisc_mode_get_func adpt_port_promisc_mode_get;
 	adpt_port_interface_eee_cfg_set_func adpt_port_interface_eee_cfg_set;
 	adpt_port_interface_eee_cfg_get_func adpt_port_interface_eee_cfg_get;
-
+	adpt_port_source_filter_config_set_func adpt_port_source_filter_config_set;
+	adpt_port_source_filter_config_get_func adpt_port_source_filter_config_get;
 
 // mirror
 	a_uint32_t adpt_mirror_func_bitmap;

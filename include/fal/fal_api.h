@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2015-2018, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015-2019, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -124,7 +124,9 @@ extern "C" {
     SW_API_DEF(SW_API_PT_PROMISC_MODE_SET, fal_port_promisc_mode_set),  \
     SW_API_DEF(SW_API_PT_PROMISC_MODE_GET, fal_port_promisc_mode_get), \
     SW_API_DEF(SW_API_PT_INTERFACE_EEE_CFG_SET, fal_port_interface_eee_cfg_set),  \
-    SW_API_DEF(SW_API_PT_INTERFACE_EEE_CFG_GET, fal_port_interface_eee_cfg_get),
+    SW_API_DEF(SW_API_PT_INTERFACE_EEE_CFG_GET, fal_port_interface_eee_cfg_get),  \
+    SW_API_DEF(SW_API_PT_SOURCE_FILTER_CONFIG_GET, fal_port_source_filter_config_get), \
+    SW_API_DEF(SW_API_PT_SOURCE_FILTER_CONFIG_SET, fal_port_source_filter_config_set),
 /*qca808x_start*/
 /*end of PORTCONTROL_API*/
 #define PORTCONTROL_API_PARAM \
@@ -227,7 +229,9 @@ extern "C" {
     SW_API_DESC(SW_API_PT_PROMISC_MODE_SET)  \
     SW_API_DESC(SW_API_PT_PROMISC_MODE_GET) \
     SW_API_DESC(SW_API_PT_INTERFACE_EEE_CFG_SET)  \
-    SW_API_DESC(SW_API_PT_INTERFACE_EEE_CFG_GET)
+    SW_API_DESC(SW_API_PT_INTERFACE_EEE_CFG_GET)  \
+    SW_API_DESC(SW_API_PT_SOURCE_FILTER_CONFIG_GET) \
+    SW_API_DESC(SW_API_PT_SOURCE_FILTER_CONFIG_SET)
 /*qca808x_start*/
 /*end of PORTCONTROL_API_PARAM*/
 /*qca808x_end*/

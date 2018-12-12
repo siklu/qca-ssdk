@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, 2015-2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2013, 2015-2017, 2019, The Linux Foundation. All rights reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -289,6 +289,7 @@ static sw_data_type_t sw_data_type[] =
     SW_TYPE_DEF(SW_CROSSOVER_STATUS, cmd_data_check_crossover_status, NULL),
     SW_TYPE_DEF(SW_PREFER_MEDIUM, cmd_data_check_prefer_medium, NULL),
     SW_TYPE_DEF(SW_FIBER_MODE, cmd_data_check_fiber_mode, NULL),
+    SW_TYPE_DEF(SW_SRC_FILTER_CONFIG, cmd_data_check_src_filter_config, NULL),
     SW_TYPE_DEF(SW_MTU_ENTRY, (param_check_t)cmd_data_check_mtu_entry, NULL),
     SW_TYPE_DEF(SW_MRU_ENTRY, (param_check_t)cmd_data_check_mru_entry, NULL),
 #endif
@@ -865,6 +866,86 @@ cmd_data_check_fiber_mode(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
     }
 
     return SW_OK;
+}
+
+sw_error_t
+cmd_data_check_source_filter_mode(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
+{
+	if (cmd_str == NULL)
+	{
+		return SW_BAD_PARAM;
+	}
+	if (!strncasecmp(cmd_str, "virtual_port", 15))
+	{
+		*arg_val = FAL_SRC_FILTER_MODE_VP;
+	}
+	else if (!strncasecmp(cmd_str, "physical_port", 15))
+	{
+		*arg_val = FAL_SRC_FILTER_MODE_PHYSICAL;
+	}
+	else
+	{
+		return SW_BAD_VALUE;
+	}
+
+	return SW_OK;
+}
+
+sw_error_t
+cmd_data_check_src_filter_config(char *cmd_str, a_uint32_t *arg_val, a_uint32_t size)
+{
+	char *cmd;
+	sw_error_t rv;
+	fal_src_filter_config_t src_filter_config;
+
+	aos_mem_zero(&src_filter_config, sizeof (fal_src_filter_config_t));
+
+	do
+	{
+		cmd = get_sub_cmd("src_filter_enable", "enable");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			rv = cmd_data_check_enable(cmd, &(src_filter_config.src_filter_enable),
+					sizeof (a_bool_t));
+			SW_RTN_ON_ERROR(rv);
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	do
+	{
+		cmd = get_sub_cmd("srcfilter_mode", "virtual_port");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+		if (!strncasecmp(cmd, "quit", 4))
+		{
+			return SW_BAD_VALUE;
+		}
+		else if (!strncasecmp(cmd, "help", 4))
+		{
+			rv = SW_BAD_VALUE;
+		}
+		else
+		{
+			cmd_data_check_source_filter_mode(cmd, &(src_filter_config.src_filter_mode),
+				sizeof(a_uint32_t));
+		}
+	}
+	while (talk_mode && (SW_OK != rv));
+
+	*(fal_src_filter_config_t *)arg_val = src_filter_config;
+
+	return SW_OK;
 }
 
 sw_error_t
