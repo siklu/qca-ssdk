@@ -262,6 +262,7 @@ hppe_port_vlan_config_set(
 				value->val);
 }
 
+#ifndef IN_PORTVLAN_MINI
 sw_error_t
 hppe_iv_dbg_addr_get(
 		a_uint32_t dev_id,
@@ -324,6 +325,7 @@ hppe_eco_reserve_set(
 				INGRESS_VLAN_BASE_ADDR + ECO_RESERVE_ADDRESS,
 				value->val);
 }
+#endif
 
 sw_error_t
 hppe_xlt_rule_tbl_get(
@@ -875,6 +877,7 @@ hppe_port_vlan_config_port_tag_fltr_cmd_set(
 	return ret;
 }
 
+#ifndef IN_PORTVLAN_MINI
 sw_error_t
 hppe_iv_dbg_addr_dbg_addr_get(
 		a_uint32_t dev_id,
@@ -953,6 +956,7 @@ hppe_eco_reserve_eco_res_set(
 	ret = hppe_eco_reserve_set(dev_id, &reg_val);
 	return ret;
 }
+#endif
 
 sw_error_t
 hppe_xlt_rule_tbl_ckey_vid_get(

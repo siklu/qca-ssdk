@@ -155,16 +155,16 @@ sw_error_t cmd_data_check_ledpattern(char *info, void * val, a_uint32_t size);
 #ifdef IN_PORTVLAN
 sw_error_t
 cmd_data_check_invlan_mode(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size);
-#ifndef IN_PORTVLAN_MINI
 sw_error_t
 cmd_data_check_vlan_propagation(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size);
+#ifndef IN_PORTVLAN_MINI
 sw_error_t
 cmd_data_check_vlan_translation(char *info, fal_vlan_trans_entry_t *val, a_uint32_t size);
+#endif
 sw_error_t
 cmd_data_check_qinq_mode(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size);
 sw_error_t
 cmd_data_check_qinq_role(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size);
-#endif
 #endif
 #ifdef IN_PORTCONTROL
 sw_error_t
