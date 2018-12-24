@@ -34,7 +34,20 @@ extern "C" {
 #define CPPE_PORT5_GMAC_SEL_XGMAC 1
 
 sw_error_t
-_adpt_cppe_port_mux_mac_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t port_type);
+_adpt_cppe_port_mux_mac_set(a_uint32_t dev_id, fal_port_t port_id,
+		a_uint32_t port_type);
+sw_error_t
+adpt_cppe_port_mru_set(a_uint32_t dev_id, fal_port_t port_id,
+		fal_mru_ctrl_t *ctrl);
+sw_error_t
+adpt_cppe_port_mru_get(a_uint32_t dev_id, fal_port_t port_id,
+		fal_mru_ctrl_t *ctrl);
+sw_error_t
+adpt_cppe_port_mtu_set(a_uint32_t dev_id, fal_port_t port_id,
+		fal_mtu_ctrl_t *ctrl);
+sw_error_t
+adpt_cppe_port_mtu_get(a_uint32_t dev_id, fal_port_t port_id,
+		fal_mtu_ctrl_t *ctrl);
 
 #ifdef __cplusplus
 }

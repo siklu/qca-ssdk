@@ -38,7 +38,9 @@
 #include "ssdk_dts.h"
 #include "ssdk_clk.h"
 #include "adpt_hppe.h"
+#if defined(CPPE)
 #include "adpt_cppe_portctrl.h"
+#endif
 #include "sfp_phy.h"
 
 #define PORT4_PCS_SEL_GMII_FROM_PCS0 1
@@ -902,6 +904,25 @@ adpt_hppe_port_mru_set(a_uint32_t dev_id, fal_port_t port_id,
 }
 
 sw_error_t
+adpt_ppe_port_mru_set(a_uint32_t dev_id, fal_port_t port_id,
+		fal_mru_ctrl_t *ctrl)
+{
+	a_uint32_t chip_ver = 0;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(ctrl);
+
+	chip_ver = adpt_hppe_chip_revision_get(dev_id);
+	if (chip_ver == CPPE_REVISION) {
+#if defined(CPPE)
+		return adpt_cppe_port_mru_set(dev_id, port_id, ctrl);
+#endif
+	} else {
+		return adpt_hppe_port_mru_set(dev_id, port_id, ctrl);
+	}
+}
+
+sw_error_t
 adpt_hppe_port_mtu_set(a_uint32_t dev_id, fal_port_t port_id,
 		fal_mtu_ctrl_t *ctrl)
 {
@@ -923,6 +944,25 @@ adpt_hppe_port_mtu_set(a_uint32_t dev_id, fal_port_t port_id,
 	}
 
 	return SW_OK;
+}
+
+sw_error_t
+adpt_ppe_port_mtu_set(a_uint32_t dev_id, fal_port_t port_id,
+		fal_mtu_ctrl_t *ctrl)
+{
+	a_uint32_t chip_ver = 0;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(ctrl);
+
+	chip_ver = adpt_hppe_chip_revision_get(dev_id);
+	if (chip_ver == CPPE_REVISION) {
+#if defined(CPPE)
+		return adpt_cppe_port_mtu_set(dev_id, port_id, ctrl);
+#endif
+	} else {
+		return adpt_hppe_port_mtu_set(dev_id, port_id, ctrl);
+	}
 }
 
 sw_error_t
@@ -1297,6 +1337,25 @@ adpt_hppe_port_mru_get(a_uint32_t dev_id, fal_port_t port_id,
 	ctrl->action = (fal_fwd_cmd_t)mru_mtu_ctrl_tbl.bf.mru_cmd;
 
 	return SW_OK;
+}
+
+sw_error_t
+adpt_ppe_port_mru_get(a_uint32_t dev_id, fal_port_t port_id,
+		fal_mru_ctrl_t *ctrl)
+{
+	a_uint32_t chip_ver = 0;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(ctrl);
+
+	chip_ver = adpt_hppe_chip_revision_get(dev_id);
+	if (chip_ver == CPPE_REVISION) {
+#if defined(CPPE)
+		return adpt_cppe_port_mru_get(dev_id, port_id, ctrl);
+#endif
+	} else {
+		return adpt_hppe_port_mru_get(dev_id, port_id, ctrl);
+	}
 }
 
 sw_error_t
@@ -3182,6 +3241,25 @@ adpt_hppe_port_mtu_get(a_uint32_t dev_id, fal_port_t port_id,
 }
 
 sw_error_t
+adpt_ppe_port_mtu_get(a_uint32_t dev_id, fal_port_t port_id,
+		fal_mtu_ctrl_t *ctrl)
+{
+	a_uint32_t chip_ver = 0;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(ctrl);
+
+	chip_ver = adpt_hppe_chip_revision_get(dev_id);
+	if (chip_ver == CPPE_REVISION) {
+#if defined(CPPE)
+		return adpt_cppe_port_mtu_get(dev_id, port_id, ctrl);
+#endif
+	} else {
+		return adpt_hppe_port_mtu_get(dev_id, port_id, ctrl);
+	}
+}
+
+sw_error_t
 adpt_hppe_port_interface_mode_status_get(a_uint32_t dev_id, fal_port_t port_id,
 			      fal_port_interface_mode_t * mode)
 {
@@ -3873,43 +3951,58 @@ adpt_hppe_uniphy_psgmii_port_reset(a_uint32_t dev_id, a_uint32_t uniphy_index,
 
 	if (port_id == SSDK_PHYSICAL_PORT1)
 	{
-		hppe_uniphy_channel0_input_output_4_get(dev_id, uniphy_index, &uniphy_channel0_input_output_4);
+		hppe_uniphy_channel0_input_output_4_get(dev_id, uniphy_index,
+			&uniphy_channel0_input_output_4);
 		uniphy_channel0_input_output_4.bf.newaddedfromhere_ch0_adp_sw_rstn = 0;
-		hppe_uniphy_channel0_input_output_4_set(dev_id, uniphy_index, &uniphy_channel0_input_output_4);
+		hppe_uniphy_channel0_input_output_4_set(dev_id, uniphy_index,
+			&uniphy_channel0_input_output_4);
 		uniphy_channel0_input_output_4.bf.newaddedfromhere_ch0_adp_sw_rstn = 1;
-		hppe_uniphy_channel0_input_output_4_set(dev_id, uniphy_index, &uniphy_channel0_input_output_4);
+		hppe_uniphy_channel0_input_output_4_set(dev_id, uniphy_index,
+			&uniphy_channel0_input_output_4);
 	}
 	else if (port_id == SSDK_PHYSICAL_PORT2)
 	{
-		hppe_uniphy_channel1_input_output_4_get(dev_id, uniphy_index, &uniphy_channel1_input_output_4);
+		hppe_uniphy_channel1_input_output_4_get(dev_id, uniphy_index,
+			&uniphy_channel1_input_output_4);
 		uniphy_channel1_input_output_4.bf.newaddedfromhere_ch1_adp_sw_rstn = 0;
-		hppe_uniphy_channel1_input_output_4_set(dev_id, uniphy_index, &uniphy_channel1_input_output_4);
+		hppe_uniphy_channel1_input_output_4_set(dev_id, uniphy_index,
+			&uniphy_channel1_input_output_4);
 		uniphy_channel1_input_output_4.bf.newaddedfromhere_ch1_adp_sw_rstn = 1;
-		hppe_uniphy_channel1_input_output_4_set(dev_id, uniphy_index, &uniphy_channel1_input_output_4);
+		hppe_uniphy_channel1_input_output_4_set(dev_id, uniphy_index,
+			&uniphy_channel1_input_output_4);
 	}
 	else if (port_id == SSDK_PHYSICAL_PORT3)
 	{
-		hppe_uniphy_channel2_input_output_4_get(dev_id, uniphy_index, &uniphy_channel2_input_output_4);
+		hppe_uniphy_channel2_input_output_4_get(dev_id, uniphy_index,
+			&uniphy_channel2_input_output_4);
 		uniphy_channel2_input_output_4.bf.newaddedfromhere_ch2_adp_sw_rstn = 0;
-		hppe_uniphy_channel2_input_output_4_set(dev_id, uniphy_index, &uniphy_channel2_input_output_4);
+		hppe_uniphy_channel2_input_output_4_set(dev_id, uniphy_index,
+			&uniphy_channel2_input_output_4);
 		uniphy_channel2_input_output_4.bf.newaddedfromhere_ch2_adp_sw_rstn = 1;
-		hppe_uniphy_channel2_input_output_4_set(dev_id, uniphy_index, &uniphy_channel2_input_output_4);
+		hppe_uniphy_channel2_input_output_4_set(dev_id, uniphy_index,
+			&uniphy_channel2_input_output_4);
 	}
 	else if (port_id == SSDK_PHYSICAL_PORT4)
 	{
-		hppe_uniphy_channel3_input_output_4_get(dev_id, uniphy_index, &uniphy_channel3_input_output_4);
+		hppe_uniphy_channel3_input_output_4_get(dev_id, uniphy_index,
+			&uniphy_channel3_input_output_4);
 		uniphy_channel3_input_output_4.bf.newaddedfromhere_ch3_adp_sw_rstn = 0;
-		hppe_uniphy_channel3_input_output_4_set(dev_id, uniphy_index, &uniphy_channel3_input_output_4);
+		hppe_uniphy_channel3_input_output_4_set(dev_id, uniphy_index,
+			&uniphy_channel3_input_output_4);
 		uniphy_channel3_input_output_4.bf.newaddedfromhere_ch3_adp_sw_rstn = 1;
-		hppe_uniphy_channel3_input_output_4_set(dev_id, uniphy_index, &uniphy_channel3_input_output_4);
+		hppe_uniphy_channel3_input_output_4_set(dev_id, uniphy_index,
+			&uniphy_channel3_input_output_4);
 	}
 	else if (port_id == SSDK_PHYSICAL_PORT5)
 	{
-		hppe_uniphy_channel4_input_output_4_get(dev_id, uniphy_index, &uniphy_channel4_input_output_4);
+		hppe_uniphy_channel4_input_output_4_get(dev_id, uniphy_index,
+			&uniphy_channel4_input_output_4);
 		uniphy_channel4_input_output_4.bf.newaddedfromhere_ch4_adp_sw_rstn = 0;
-		hppe_uniphy_channel4_input_output_4_set(dev_id, uniphy_index, &uniphy_channel4_input_output_4);
+		hppe_uniphy_channel4_input_output_4_set(dev_id, uniphy_index,
+			&uniphy_channel4_input_output_4);
 		uniphy_channel4_input_output_4.bf.newaddedfromhere_ch4_adp_sw_rstn = 1;
-		hppe_uniphy_channel4_input_output_4_set(dev_id, uniphy_index, &uniphy_channel4_input_output_4);
+		hppe_uniphy_channel4_input_output_4_set(dev_id, uniphy_index,
+			&uniphy_channel4_input_output_4);
 	}
 
 	return;
@@ -4792,7 +4885,7 @@ sw_error_t adpt_hppe_port_ctrl_init(a_uint32_t dev_id)
 	}
 	if(p_adpt_api->adpt_port_ctrl_func_bitmap[0] & (1 << FUNC_ADPT_PORT_MRU_SET))
 	{
-		p_adpt_api->adpt_port_mru_set = adpt_hppe_port_mru_set;
+		p_adpt_api->adpt_port_mru_set = adpt_ppe_port_mru_set;
 	}
 	if(p_adpt_api->adpt_port_ctrl_func_bitmap[0] & (1 << FUNC_ADPT_PORT_AUTONEG_STATUS_GET))
 	{
@@ -4820,7 +4913,7 @@ sw_error_t adpt_hppe_port_ctrl_init(a_uint32_t dev_id)
 	}
 	if(p_adpt_api->adpt_port_ctrl_func_bitmap[0] & (1 << FUNC_ADPT_PORT_MRU_GET))
 	{
-		p_adpt_api->adpt_port_mru_get = adpt_hppe_port_mru_get;
+		p_adpt_api->adpt_port_mru_get = adpt_ppe_port_mru_get;
 	}
 	if(p_adpt_api->adpt_port_ctrl_func_bitmap[0] & (1 << FUNC_ADPT_PORT_POWER_ON))
 	{
@@ -4848,7 +4941,7 @@ sw_error_t adpt_hppe_port_ctrl_init(a_uint32_t dev_id)
 	}
 	if(p_adpt_api->adpt_port_ctrl_func_bitmap[0] & (1 << FUNC_ADPT_PORT_MTU_SET))
 	{
-		p_adpt_api->adpt_port_mtu_set = adpt_hppe_port_mtu_set;
+		p_adpt_api->adpt_port_mtu_set = adpt_ppe_port_mtu_set;
 	}
 	if(p_adpt_api->adpt_port_ctrl_func_bitmap[0] & (1 << FUNC_ADPT_PORT_LINK_STATUS_GET))
 	{
@@ -4954,7 +5047,7 @@ sw_error_t adpt_hppe_port_ctrl_init(a_uint32_t dev_id)
 	}
 	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] & (1 <<  (FUNC_ADPT_PORT_MTU_GET % 32)))
 	{
-		p_adpt_api->adpt_port_mtu_get = adpt_hppe_port_mtu_get;
+		p_adpt_api->adpt_port_mtu_get = adpt_ppe_port_mtu_get;
 	}
 	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] &
 		(1 <<  (FUNC_ADPT_PORT_INTERFACE_MODE_STATUS_GET % 32)))
