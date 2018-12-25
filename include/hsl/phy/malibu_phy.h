@@ -571,7 +571,7 @@ extern "C"
     MALIBU_PHY_COPPER_PAGES = 1
 				       /**< copper pages */
   } malibu_phy_reg_pages_t;
-
+#ifndef IN_PORTCONTROL_MINI
     sw_error_t
     malibu_phy_set_powersave (a_uint32_t dev_id, a_uint32_t phy_id,
 			      a_bool_t enable);
@@ -593,7 +593,7 @@ extern "C"
 		    a_uint32_t mdi_pair,
 		    fal_cable_status_t * cable_status,
 		    a_uint32_t * cable_len);
-
+#endif
     sw_error_t
     malibu_phy_set_duplex (a_uint32_t dev_id, a_uint32_t phy_id,
 			   fal_port_duplex_t duplex);
@@ -628,7 +628,7 @@ extern "C"
 				a_uint32_t * autoneg);
 
     a_bool_t malibu_phy_autoneg_status (a_uint32_t dev_id, a_uint32_t phy_id);
-
+#ifndef IN_PORTCONTROL_MINI
     sw_error_t
     malibu_phy_intr_mask_set (a_uint32_t dev_id, a_uint32_t phy_id,
 			      a_uint32_t intr_mask_flag);
@@ -652,11 +652,11 @@ extern "C"
   sw_error_t
   malibu_phy_show_counter (a_uint32_t dev_id, a_uint32_t phy_id,
 			 fal_port_counter_info_t * counter_info);
-
+#endif
   sw_error_t
   malibu_phy_get_8023az(a_uint32_t dev_id, a_uint32_t phy_id,
 			a_bool_t * enable);
-
+#ifndef IN_PORTCONTROL_MINI
   sw_error_t
   malibu_phy_set_8023az(a_uint32_t dev_id, a_uint32_t phy_id,
 			a_bool_t enable);
@@ -664,7 +664,7 @@ extern "C"
   sw_error_t
   malibu_phy_get_phy_id(a_uint32_t dev_id, a_uint32_t phy_id,
 		  a_uint32_t *phy_data);
-
+#endif
   int malibu_phy_init(a_uint32_t dev_id, a_uint32_t port_bmp);
 
 #ifdef __cplusplus

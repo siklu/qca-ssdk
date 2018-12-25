@@ -327,7 +327,7 @@ extern "C"
     AQUANTIA_PHY_COPPER_PAGES = 1
 				       /**< copper pages */
   } AQUANTIA_PHY_reg_pages_t;
-
+#ifndef IN_PORTCONTROL_MINI
 sw_error_t
    aquantia_phy_set_powersave (a_uint32_t dev_id, a_uint32_t phy_id,
 			      a_bool_t enable);
@@ -341,7 +341,7 @@ sw_error_t
 		    a_uint32_t mdi_pair,
 		    fal_cable_status_t * cable_status,
 		    a_uint32_t * cable_len);
-
+#endif
 sw_error_t
    aquantia_phy_set_duplex (a_uint32_t dev_id, a_uint32_t phy_id,
 			   fal_port_duplex_t duplex);
@@ -377,7 +377,7 @@ sw_error_t
 
 a_bool_t
    aquantia_phy_autoneg_status (a_uint32_t dev_id, a_uint32_t phy_id);
-
+#ifndef IN_PORTCONTROL_MINI
 sw_error_t
    aquantia_phy_intr_mask_set (a_uint32_t dev_id, a_uint32_t phy_id,
 			      a_uint32_t intr_mask_flag);
@@ -385,7 +385,7 @@ sw_error_t
 sw_error_t
    aquantia_phy_intr_mask_get (a_uint32_t dev_id, a_uint32_t phy_id,
 			      a_uint32_t * intr_mask_flag);
-
+#endif
 int aquantia_phy_init(a_uint32_t dev_id, a_uint32_t port_bmp);
 
 #ifdef __cplusplus
