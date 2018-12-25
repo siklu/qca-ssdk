@@ -154,14 +154,11 @@ enum {
     fal_fdb_entry_flush(a_uint32_t dev_id, a_uint32_t flag);
 
 
-#ifndef IN_FDB_MINI
     sw_error_t
     fal_fdb_entry_del_byport(a_uint32_t dev_id, a_uint32_t port_id, a_uint32_t flag);
 
-
     sw_error_t
     fal_fdb_entry_del_bymac(a_uint32_t dev_id, const fal_fdb_entry_t *entry);
-#endif
 
     sw_error_t
     fal_fdb_entry_getfirst(a_uint32_t dev_id, fal_fdb_entry_t * entry);
@@ -170,11 +167,11 @@ enum {
 #ifndef IN_FDB_MINI
     sw_error_t
     fal_fdb_entry_getnext(a_uint32_t dev_id, fal_fdb_entry_t * entry);
-
+#endif
 
     sw_error_t
     fal_fdb_entry_search(a_uint32_t dev_id, fal_fdb_entry_t * entry);
-#endif
+
 
 sw_error_t
     fal_fdb_port_learn_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable);
@@ -183,32 +180,38 @@ sw_error_t
 #ifndef IN_FDB_MINI
     sw_error_t
     fal_fdb_port_learn_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable);
-
+#endif
     sw_error_t
     fal_fdb_port_learning_ctrl_set(a_uint32_t dev_id, fal_port_t port_id,
                                  a_bool_t enable, fal_fwd_cmd_t cmd);
-
+#ifndef IN_FDB_MINI
     sw_error_t
     fal_fdb_port_learning_ctrl_get(a_uint32_t dev_id, fal_port_t port_id,
                                  a_bool_t *enable, fal_fwd_cmd_t *cmd);
+#endif
 
     sw_error_t
     fal_fdb_port_stamove_ctrl_set(a_uint32_t dev_id, fal_port_t port_id,
                                  a_bool_t enable, fal_fwd_cmd_t cmd);
 
+#ifndef IN_FDB_MINI
     sw_error_t
     fal_fdb_port_stamove_ctrl_get(a_uint32_t dev_id, fal_port_t port_id,
                                  a_bool_t *enable, fal_fwd_cmd_t *cmd);
+#endif
 
     sw_error_t
     fal_fdb_aging_ctrl_set(a_uint32_t dev_id, a_bool_t enable);
 
+#ifndef IN_FDB_MINI
     sw_error_t
     fal_fdb_aging_ctrl_get(a_uint32_t dev_id, a_bool_t * enable);
+#endif
 
     sw_error_t
     fal_fdb_learning_ctrl_set(a_uint32_t dev_id, a_bool_t enable);
 
+#ifndef IN_FDB_MINI
     sw_error_t
     fal_fdb_learning_ctrl_get(a_uint32_t dev_id, a_bool_t * enable);
 
@@ -305,10 +308,10 @@ sw_error_t
 
     sw_error_t
     fal_fdb_port_maclimit_ctrl_get(a_uint32_t dev_id, fal_port_t port_id, fal_maclimit_ctrl_t * maclimit_ctrl);
+#endif
 
     sw_error_t
     fal_fdb_entry_del_byfid(a_uint32_t dev_id, a_uint16_t fid, a_uint32_t flag);
-#endif
 
 #define fal_fdb_add 	fal_fdb_entry_add
 #define fal_fdb_del_all	fal_fdb_entry_flush

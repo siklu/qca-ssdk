@@ -523,7 +523,7 @@ adpt_hppe_fdb_first(a_uint32_t dev_id, fal_fdb_entry_t * entry)
 
 	return rv;
 }
-
+#ifndef IN_FDB_MINI
 sw_error_t
 adpt_hppe_fdb_next(a_uint32_t dev_id, fal_fdb_entry_t * entry)
 {
@@ -541,7 +541,7 @@ adpt_hppe_fdb_next(a_uint32_t dev_id, fal_fdb_entry_t * entry)
 
 	return rv;
 }
-
+#endif
 sw_error_t
 adpt_hppe_fdb_add(a_uint32_t dev_id, const fal_fdb_entry_t * entry)
 {
@@ -673,7 +673,7 @@ adpt_hppe_fdb_del_all(a_uint32_t dev_id, a_uint32_t flag)
 
 	return SW_OK;
 }
-
+#ifndef IN_FDB_MINI
 sw_error_t
 adpt_hppe_fdb_transfer(a_uint32_t dev_id, fal_port_t old_port, fal_port_t new_port,
                      a_uint32_t fid, fal_fdb_op_t * option)
@@ -731,7 +731,7 @@ adpt_hppe_fdb_transfer(a_uint32_t dev_id, fal_port_t old_port, fal_port_t new_po
 
 	return SW_OK;
 }
-
+#endif
 sw_error_t
 adpt_hppe_fdb_find(a_uint32_t dev_id, fal_fdb_entry_t * entry)
 {
@@ -783,7 +783,7 @@ adpt_hppe_fdb_iterate(a_uint32_t dev_id, a_uint32_t * iterator, fal_fdb_entry_t 
 	*iterator = entry_index + 1;
 	return SW_OK;
 }
-
+#ifndef IN_FDB_MINI
 sw_error_t
 adpt_hppe_fdb_age_time_set(a_uint32_t dev_id, a_uint32_t * time)
 {
@@ -818,7 +818,7 @@ adpt_hppe_fdb_age_time_get(a_uint32_t dev_id, a_uint32_t * time)
 
 	return SW_OK;
 }
-
+#endif
 sw_error_t
 adpt_hppe_fdb_extend_first(a_uint32_t dev_id, fal_fdb_op_t * option,
                          fal_fdb_entry_t * entry)
@@ -870,7 +870,7 @@ adpt_hppe_fdb_learn_ctrl_set(a_uint32_t dev_id, a_bool_t enable)
 
 	return hppe_l2_global_conf_set(dev_id, &l2_global_conf);
 }
-
+#ifndef IN_FDB_MINI
 sw_error_t
 adpt_hppe_fdb_learn_ctrl_get(a_uint32_t dev_id, a_bool_t * enable)
 {
@@ -1070,7 +1070,7 @@ adpt_hppe_fdb_port_del(a_uint32_t dev_id, a_uint32_t fid, fal_mac_addr_t * addr,
 
 	return rv;
 }
-
+#endif
 sw_error_t
 adpt_hppe_fdb_port_learn_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable)
 {
@@ -1089,7 +1089,7 @@ adpt_hppe_fdb_port_learn_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t ena
 
 	return hppe_port_bridge_ctrl_set(dev_id, port_id, &port_bridge_ctrl);
 }
-
+#ifndef IN_FDB_MINI
 sw_error_t
 adpt_hppe_fdb_port_learn_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable)
 {
@@ -1108,7 +1108,7 @@ adpt_hppe_fdb_port_learn_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *en
 
 	return SW_OK;
 }
-
+#endif
 sw_error_t
 adpt_hppe_fdb_port_newaddr_lrn_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable, fal_fwd_cmd_t cmd)
 {
@@ -1128,7 +1128,7 @@ adpt_hppe_fdb_port_newaddr_lrn_set(a_uint32_t dev_id, fal_port_t port_id, a_bool
 
 	return hppe_port_bridge_ctrl_set(dev_id, port_id, &port_bridge_ctrl);
 }
-
+#ifndef IN_FDB_MINI
 sw_error_t
 adpt_hppe_fdb_port_newaddr_lrn_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable, fal_fwd_cmd_t *cmd)
 {
@@ -1150,7 +1150,7 @@ adpt_hppe_fdb_port_newaddr_lrn_get(a_uint32_t dev_id, fal_port_t port_id, a_bool
 
 	return SW_OK;
 }
-
+#endif
 sw_error_t
 adpt_hppe_fdb_port_stamove_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t enable, fal_fwd_cmd_t cmd)
 {
@@ -1170,7 +1170,7 @@ adpt_hppe_fdb_port_stamove_set(a_uint32_t dev_id, fal_port_t port_id, a_bool_t e
 
 	return hppe_port_bridge_ctrl_set(dev_id, port_id, &port_bridge_ctrl);
 }
-
+#ifndef IN_FDB_MINI
 sw_error_t
 adpt_hppe_fdb_port_stamove_get(a_uint32_t dev_id, fal_port_t port_id, a_bool_t *enable, fal_fwd_cmd_t *cmd)
 {
@@ -1249,7 +1249,7 @@ adpt_hppe_port_fdb_learn_exceed_cmd_get(a_uint32_t dev_id, fal_port_t port_id,
 
 	return SW_OK;
 }
-
+#endif
 sw_error_t
 adpt_hppe_fdb_age_ctrl_set(a_uint32_t dev_id, a_bool_t enable)
 {
@@ -1267,7 +1267,7 @@ adpt_hppe_fdb_age_ctrl_set(a_uint32_t dev_id, a_bool_t enable)
 
 	return hppe_l2_global_conf_set(dev_id, &l2_global_conf);
 }
-
+#ifndef IN_FDB_MINI
 sw_error_t
 adpt_hppe_fdb_age_ctrl_get(a_uint32_t dev_id, a_bool_t * enable)
 {
@@ -1286,7 +1286,7 @@ adpt_hppe_fdb_age_ctrl_get(a_uint32_t dev_id, a_bool_t * enable)
 
 	return SW_OK;
 }
-
+#endif
 sw_error_t
 adpt_hppe_fdb_del_by_fid(a_uint32_t dev_id, a_uint16_t fid, a_uint32_t flag)
 {
@@ -1428,8 +1428,10 @@ sw_error_t adpt_hppe_fdb_init(a_uint32_t dev_id)
 
 	if (p_adpt_api->adpt_fdb_func_bitmap[0] & (1 << FUNC_FDB_ENTRY_GETFIRST))
 		p_adpt_api->adpt_fdb_first = adpt_hppe_fdb_first;
+#ifndef IN_FDB_MINI
 	if (p_adpt_api->adpt_fdb_func_bitmap[0] & (1 << FUNC_FDB_ENTRY_GETNEXT))
 		p_adpt_api->adpt_fdb_next = adpt_hppe_fdb_next;
+#endif
 	if (p_adpt_api->adpt_fdb_func_bitmap[0] & (1 << FUNC_FDB_ENTRY_ADD))
 		p_adpt_api->adpt_fdb_add = adpt_hppe_fdb_add;
 	if (p_adpt_api->adpt_fdb_func_bitmap[0] & (1 << FUNC_FDB_ENTRY_DEL_BYPORT))
@@ -1438,22 +1440,27 @@ sw_error_t adpt_hppe_fdb_init(a_uint32_t dev_id)
 		p_adpt_api->adpt_fdb_del_by_mac = adpt_hppe_fdb_del_by_mac;
 	if (p_adpt_api->adpt_fdb_func_bitmap[0] & (1 << FUNC_FDB_ENTRY_FLUSH))
 		p_adpt_api->adpt_fdb_del_all = adpt_hppe_fdb_del_all;
+#ifndef IN_FDB_MINI
 	if (p_adpt_api->adpt_fdb_func_bitmap[0] & (1 << FUNC_FDB_ENTRY_UPDATE_BYPORT))
 		p_adpt_api->adpt_fdb_transfer = adpt_hppe_fdb_transfer;
+#endif
 	if (p_adpt_api->adpt_fdb_func_bitmap[0] & (1 << FUNC_FDB_ENTRY_SEARCH))
 		p_adpt_api->adpt_fdb_find = adpt_hppe_fdb_find;
 	if (p_adpt_api->adpt_fdb_func_bitmap[0] & (1 << FUNC_FDB_ENTRY_GETNEXT_BYINDEX))
 		p_adpt_api->adpt_fdb_iterate = adpt_hppe_fdb_iterate;
+#ifndef IN_FDB_MINI
 	if (p_adpt_api->adpt_fdb_func_bitmap[0] & (1 << FUNC_FDB_AGING_TIME_SET))
 		p_adpt_api->adpt_fdb_age_time_set = adpt_hppe_fdb_age_time_set;
 	if (p_adpt_api->adpt_fdb_func_bitmap[0] & (1 << FUNC_FDB_AGING_TIME_GET))
 		p_adpt_api->adpt_fdb_age_time_get = adpt_hppe_fdb_age_time_get;
+#endif
 	if (p_adpt_api->adpt_fdb_func_bitmap[0] & (1 << FUNC_FDB_ENTRY_EXTEND_GETFIRST))
 		p_adpt_api->adpt_fdb_extend_first = adpt_hppe_fdb_extend_first;
 	if (p_adpt_api->adpt_fdb_func_bitmap[0] & (1 << FUNC_FDB_ENTRY_EXTEND_GETNEXT))
 		p_adpt_api->adpt_fdb_extend_next = adpt_hppe_fdb_extend_next;
 	if (p_adpt_api->adpt_fdb_func_bitmap[0] & (1 << FUNC_FDB_LEARNING_CTRL_SET))
 		p_adpt_api->adpt_fdb_learn_ctrl_set = adpt_hppe_fdb_learn_ctrl_set;
+#ifndef IN_FDB_MINI
 	if (p_adpt_api->adpt_fdb_func_bitmap[0] & (1 << FUNC_FDB_LEARNING_CTRL_GET))
 		p_adpt_api->adpt_fdb_learn_ctrl_get = adpt_hppe_fdb_learn_ctrl_get;
 	if (p_adpt_api->adpt_fdb_func_bitmap[0] & (1 << FUNC_PORT_FDB_LEARN_LIMIT_SET))
@@ -1464,16 +1471,22 @@ sw_error_t adpt_hppe_fdb_init(a_uint32_t dev_id)
 		p_adpt_api->adpt_fdb_port_add = adpt_hppe_fdb_port_add;
 	if (p_adpt_api->adpt_fdb_func_bitmap[0] & (1 << FUNC_FDB_PORT_DEL))
 		p_adpt_api->adpt_fdb_port_del = adpt_hppe_fdb_port_del;
+#endif
 	if (p_adpt_api->adpt_fdb_func_bitmap[0] & (1 << FUNC_FDB_PORT_LEARN_SET))
 		p_adpt_api->adpt_fdb_port_learn_set = adpt_hppe_fdb_port_learn_set;
+#ifndef IN_FDB_MINI
 	if (p_adpt_api->adpt_fdb_func_bitmap[0] & (1 << FUNC_FDB_PORT_LEARN_GET))
 		p_adpt_api->adpt_fdb_port_learn_get = adpt_hppe_fdb_port_learn_get;
+#endif
 	if (p_adpt_api->adpt_fdb_func_bitmap[0] & (1 << FUNC_FDB_PORT_LEARNING_CTRL_SET))
 		p_adpt_api->adpt_fdb_port_newaddr_lrn_set = adpt_hppe_fdb_port_newaddr_lrn_set;
+#ifndef IN_FDB_MINI
 	if (p_adpt_api->adpt_fdb_func_bitmap[0] & (1 << FUNC_FDB_PORT_LEARNING_CTRL_GET))
 		p_adpt_api->adpt_fdb_port_newaddr_lrn_get = adpt_hppe_fdb_port_newaddr_lrn_get;
+#endif
 	if (p_adpt_api->adpt_fdb_func_bitmap[0] & (1 << FUNC_FDB_PORT_STAMOVE_CTRL_SET))
 		p_adpt_api->adpt_fdb_port_stamove_set = adpt_hppe_fdb_port_stamove_set;
+#ifndef IN_FDB_MINI
 	if (p_adpt_api->adpt_fdb_func_bitmap[0] & (1 << FUNC_FDB_PORT_STAMOVE_CTRL_GET))
 		p_adpt_api->adpt_fdb_port_stamove_get = adpt_hppe_fdb_port_stamove_get;
 	if (p_adpt_api->adpt_fdb_func_bitmap[0] & (1 << FUNC_FDB_PORT_LEARNED_MAC_COUNTER_GET))
@@ -1482,14 +1495,17 @@ sw_error_t adpt_hppe_fdb_init(a_uint32_t dev_id)
 		p_adpt_api->adpt_port_fdb_learn_exceed_cmd_set = adpt_hppe_port_fdb_learn_exceed_cmd_set;
 	if (p_adpt_api->adpt_fdb_func_bitmap[0] & (1 << FUNC_PORT_FDB_LEARN_EXCEED_CMD_GET))
 		p_adpt_api->adpt_port_fdb_learn_exceed_cmd_get = adpt_hppe_port_fdb_learn_exceed_cmd_get;
+#endif
 	if (p_adpt_api->adpt_fdb_func_bitmap[0] & (1 << FUNC_FDB_AGING_CTRL_SET))
 		p_adpt_api->adpt_fdb_age_ctrl_set = adpt_hppe_fdb_age_ctrl_set;
+#ifndef IN_FDB_MINI
 	if (p_adpt_api->adpt_fdb_func_bitmap[0] & (1 << FUNC_FDB_AGING_CTRL_GET))
 		p_adpt_api->adpt_fdb_age_ctrl_get = adpt_hppe_fdb_age_ctrl_get;
 	if (p_adpt_api->adpt_fdb_func_bitmap[0] & (1 << FUNC_FDB_PORT_MACLIMIT_CTRL_SET))
 		p_adpt_api->adpt_fdb_port_maclimit_ctrl_set = adpt_hppe_fdb_port_maclimit_ctrl_set;
 	if (p_adpt_api->adpt_fdb_func_bitmap[0] & (1 << FUNC_FDB_PORT_MACLIMIT_CTRL_GET))
 		p_adpt_api->adpt_fdb_port_maclimit_ctrl_get = adpt_hppe_fdb_port_maclimit_ctrl_get;
+#endif
 	if (p_adpt_api->adpt_fdb_func_bitmap[1] & (1 << (FUNC_FDB_DEL_BY_FID % 32)))
 		p_adpt_api->adpt_fdb_del_by_fid = adpt_hppe_fdb_del_by_fid;
 
