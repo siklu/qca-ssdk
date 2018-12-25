@@ -72,7 +72,7 @@ adpt_hppe_l1_flow_map_get(a_uint32_t dev_id,
 
 	return SW_OK;
 }
-
+#ifndef IN_QOS_MINI
 sw_error_t
 adpt_hppe_qos_port_mode_pri_set(a_uint32_t dev_id, fal_port_t port_id,
 				fal_qos_mode_t mode, a_uint32_t pri)
@@ -118,7 +118,7 @@ adpt_hppe_qos_port_mode_pri_get(a_uint32_t dev_id, fal_port_t port_id,
 	
 	return SW_OK;
 }
-
+#endif
 sw_error_t
 adpt_hppe_qos_port_pri_set(a_uint32_t dev_id, fal_port_t port_id,
 					fal_qos_pri_precedence_t *pri)
@@ -689,7 +689,7 @@ adpt_hppe_tdm_tick_num_set(a_uint32_t dev_id, a_uint32_t tick_num)
 	tdm_depth_cfg.bf.tdm_depth = tick_num;
 	return hppe_tdm_depth_cfg_set(dev_id, &tdm_depth_cfg);
 }
-
+#ifndef IN_QOS_MINI
 sw_error_t
 adpt_hppe_tdm_tick_num_get(a_uint32_t dev_id, a_uint32_t *tick_num)
 {
@@ -703,7 +703,7 @@ adpt_hppe_tdm_tick_num_get(a_uint32_t dev_id, a_uint32_t *tick_num)
 
 	return SW_OK;
 }
-
+#endif
 sw_error_t
 adpt_hppe_port_scheduler_cfg_reset(a_uint32_t dev_id,
 				fal_port_t port_id)
@@ -764,7 +764,7 @@ adpt_hppe_port_scheduler_cfg_set(a_uint32_t dev_id,
 	psch_tdm_cfg.bf.des_port = cfg->de_scheduler_port;
 	return hppe_psch_tdm_cfg_tbl_set(dev_id, tick_index, &psch_tdm_cfg);
 }
-
+#ifndef IN_QOS_MINI
 sw_error_t
 adpt_hppe_port_scheduler_cfg_get(a_uint32_t dev_id,
 				a_uint32_t tick_index,
@@ -782,7 +782,7 @@ adpt_hppe_port_scheduler_cfg_get(a_uint32_t dev_id,
 
 	return SW_OK;
 }
-
+#endif
 sw_error_t
 adpt_hppe_scheduler_dequeue_ctrl_get(a_uint32_t dev_id,
 				a_uint32_t queue_id,
@@ -973,20 +973,26 @@ sw_error_t adpt_hppe_qos_init(a_uint32_t dev_id)
 		p_adpt_api->adpt_ring_queue_map_get = adpt_hppe_ring_queue_map_get;
 	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_TDM_TICK_NUM_SET))
 		p_adpt_api->adpt_tdm_tick_num_set = adpt_hppe_tdm_tick_num_set;
+#ifndef IN_QOS_MINI
 	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_TDM_TICK_NUM_GET))
 		p_adpt_api->adpt_tdm_tick_num_get = adpt_hppe_tdm_tick_num_get;
+#endif
 	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_PORT_SCHEDULER_CFG_SET))
 		p_adpt_api->adpt_port_scheduler_cfg_set = adpt_hppe_port_scheduler_cfg_set;
+#ifndef IN_QOS_MINI
 	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_PORT_SCHEDULER_CFG_GET))
 		p_adpt_api->adpt_port_scheduler_cfg_get = adpt_hppe_port_scheduler_cfg_get;
+#endif
 	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_SCHEDULER_DEQUEUE_CTRL_GET))
 		p_adpt_api->adpt_scheduler_dequeue_ctrl_get = adpt_hppe_scheduler_dequeue_ctrl_get;
 	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_SCHEDULER_DEQUEUE_CTRL_SET))
 		p_adpt_api->adpt_scheduler_dequeue_ctrl_set = adpt_hppe_scheduler_dequeue_ctrl_set;
+#ifndef IN_QOS_MINI
 	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_QOS_PORT_MODE_PRI_GET))
 		p_adpt_api->adpt_qos_port_mode_pri_get = adpt_hppe_qos_port_mode_pri_get;
 	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_QOS_PORT_MODE_PRI_SET))
 		p_adpt_api->adpt_qos_port_mode_pri_set = adpt_hppe_qos_port_mode_pri_set;
+#endif
 	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_QOS_PORT_SCHEDULER_CFG_RESET))
 		p_adpt_api->adpt_port_scheduler_cfg_reset = adpt_hppe_port_scheduler_cfg_reset;
 	if (p_adpt_api->adpt_qos_func_bitmap & (1 << FUNC_QOS_PORT_SCHEDULER_RESOURCE_GET))

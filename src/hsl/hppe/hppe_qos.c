@@ -218,7 +218,7 @@ hppe_port_qos_ctrl_set(
 				index * PORT_QOS_CTRL_INC,
 				value->val);
 }
-
+#ifndef IN_QOS_MINI
 sw_error_t
 hppe_tdm_depth_cfg_get(
 		a_uint32_t dev_id,
@@ -229,7 +229,7 @@ hppe_tdm_depth_cfg_get(
 				TRAFFIC_MANAGER_BASE_ADDR + TDM_DEPTH_CFG_ADDRESS,
 				&value->val);
 }
-
+#endif
 sw_error_t
 hppe_tdm_depth_cfg_set(
 		a_uint32_t dev_id,
@@ -240,7 +240,7 @@ hppe_tdm_depth_cfg_set(
 				TRAFFIC_MANAGER_BASE_ADDR + TDM_DEPTH_CFG_ADDRESS,
 				value->val);
 }
-
+#ifndef IN_QOS_MINI
 sw_error_t
 hppe_min_max_mode_cfg_get(
 		a_uint32_t dev_id,
@@ -347,7 +347,7 @@ hppe_eco_reserve_1_set(
 				TRAFFIC_MANAGER_BASE_ADDR + ECO_RESERVE_1_ADDRESS,
 				value->val);
 }
-
+#endif
 sw_error_t
 hppe_l0_flow_map_tbl_get(
 		a_uint32_t dev_id,
@@ -459,7 +459,7 @@ hppe_l0_flow_port_map_tbl_set(
 				index * L0_FLOW_PORT_MAP_TBL_INC,
 				value->val);
 }
-
+#ifndef IN_QOS_MINI
 sw_error_t
 hppe_l0_c_drr_head_tbl_get(
 		a_uint32_t dev_id,
@@ -743,7 +743,7 @@ hppe_l0_flow_status_tbl_set(
 {
 	return SW_NOT_SUPPORTED;
 }
-
+#endif
 sw_error_t
 hppe_ring_q_map_tbl_get(
 		a_uint32_t dev_id,
@@ -771,7 +771,7 @@ hppe_ring_q_map_tbl_set(
 				value->val,
 				10);
 }
-
+#ifndef IN_QOS_MINI
 sw_error_t
 hppe_rfc_block_tbl_get(
 		a_uint32_t dev_id,
@@ -819,7 +819,7 @@ hppe_rfc_status_tbl_set(
 {
 	return SW_NOT_SUPPORTED;
 }
-
+#endif
 sw_error_t
 hppe_deq_dis_tbl_get(
 		a_uint32_t dev_id,
@@ -973,7 +973,7 @@ hppe_l1_c_drr_head_tbl_get(
 				value->val,
 				2);
 }
-
+#ifndef IN_QOS_MINI
 sw_error_t
 hppe_l1_c_drr_head_tbl_set(
 		a_uint32_t dev_id,
@@ -1306,7 +1306,7 @@ hppe_psch_tdm_cfg_tbl_get(
 				index * PSCH_TDM_CFG_TBL_INC,
 				&value->val);
 }
-
+#endif
 sw_error_t
 hppe_psch_tdm_cfg_tbl_set(
 		a_uint32_t dev_id,
@@ -1319,7 +1319,7 @@ hppe_psch_tdm_cfg_tbl_set(
 				index * PSCH_TDM_CFG_TBL_INC,
 				value->val);
 }
-
+#ifndef IN_QOS_MINI
 sw_error_t
 hppe_tdm_depth_cfg_tdm_depth_get(
 		a_uint32_t dev_id,
@@ -4545,3 +4545,4 @@ hppe_dscp_qos_group_1_qos_info_set(
 	ret = hppe_dscp_qos_group_1_set(dev_id, index, &reg_val);
 	return ret;
 }
+#endif
