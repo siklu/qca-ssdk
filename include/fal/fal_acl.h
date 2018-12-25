@@ -507,6 +507,9 @@ typedef struct
 	a_uint8_t cpu_code;/*cpu code*/
 	a_uint64_t match_bytes;/*rule match bytes counter*/
 	/*Only IPQ807x support End*/
+
+	/*new add acl action for IPQ60xx*/
+	a_uint8_t dscp_mask;/*modify dscp mask,IPQ60xx support*/
 } fal_acl_rule_t;
 
 
