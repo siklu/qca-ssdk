@@ -399,6 +399,7 @@ sw_error_t
 fal_port_max_frame_size_get(a_uint32_t dev_id, fal_port_t port_id,
 		a_uint32_t *max_frame);
 
+#ifndef IN_PORTCONTROL_MINI
 sw_error_t
 fal_port_mtu_set(a_uint32_t dev_id, fal_port_t port_id,
 		fal_mtu_ctrl_t *ctrl);
@@ -414,6 +415,8 @@ fal_port_mru_set(a_uint32_t dev_id, fal_port_t port_id,
 sw_error_t
 fal_port_mru_get(a_uint32_t dev_id, fal_port_t port_id,
 		fal_mru_ctrl_t *ctrl);
+#endif
+
 /*qca808x_start*/
 sw_error_t
 fal_port_duplex_set(a_uint32_t dev_id, fal_port_t port_id,
@@ -448,6 +451,7 @@ sw_error_t
 fal_port_autoneg_adv_get(a_uint32_t dev_id, fal_port_t port_id,
 				     a_uint32_t * autoadv);
 /*qca808x_end*/
+#ifndef IN_PORTCONTROL_MINI
 sw_error_t
 fal_port_hdr_status_set(a_uint32_t dev_id, fal_port_t port_id,
 				    a_bool_t enable);
@@ -455,11 +459,11 @@ fal_port_hdr_status_set(a_uint32_t dev_id, fal_port_t port_id,
 sw_error_t
 fal_port_hdr_status_get(a_uint32_t dev_id, fal_port_t port_id,
 				    a_bool_t * enable);
-
+#endif
 sw_error_t
 fal_port_flowctrl_set(a_uint32_t dev_id, fal_port_t port_id,
 				  a_bool_t enable);
-
+#ifndef IN_PORTCONTROL_MINI
 sw_error_t
 fal_port_flowctrl_get(a_uint32_t dev_id, fal_port_t port_id,
 				  a_bool_t * enable);
@@ -471,56 +475,57 @@ fal_port_mac_loopback_set(a_uint32_t dev_id, fal_port_t port_id,
 sw_error_t
 fal_port_mac_loopback_get(a_uint32_t dev_id, fal_port_t port_id,
 				 a_bool_t * enable);
-
+#endif
 sw_error_t
 fal_port_flowctrl_forcemode_set(a_uint32_t dev_id,
 					    fal_port_t port_id,
 					    a_bool_t enable);
+#ifndef IN_PORTCONTROL_MINI
 sw_error_t
 fal_port_flowctrl_forcemode_get(a_uint32_t dev_id,
 					    fal_port_t port_id,
 					    a_bool_t * enable);
-
+#endif
 sw_error_t
 fal_port_rxhdr_mode_set(a_uint32_t dev_id, fal_port_t port_id,
 				    fal_port_header_mode_t mode);
-
+#ifndef IN_PORTCONTROL_MINI
 sw_error_t
 fal_port_rxhdr_mode_get(a_uint32_t dev_id, fal_port_t port_id,
 				    fal_port_header_mode_t * mode);
-
+#endif
 sw_error_t
 fal_port_txhdr_mode_set(a_uint32_t dev_id, fal_port_t port_id,
 				    fal_port_header_mode_t mode);
-
+#ifndef IN_PORTCONTROL_MINI
 sw_error_t
 fal_port_txhdr_mode_get(a_uint32_t dev_id, fal_port_t port_id,
 				    fal_port_header_mode_t * mode);
-
+#endif
 sw_error_t
 fal_header_type_set(a_uint32_t dev_id, a_bool_t enable,
 				a_uint32_t type);
-
+#ifndef IN_PORTCONTROL_MINI
 sw_error_t
 fal_header_type_get(a_uint32_t dev_id, a_bool_t * enable,
 				a_uint32_t * type);
-
+#endif
 sw_error_t
 fal_port_txmac_status_set(a_uint32_t dev_id, fal_port_t port_id,
 				      a_bool_t enable);
-
+#ifndef IN_PORTCONTROL_MINI
 sw_error_t
 fal_port_txmac_status_get(a_uint32_t dev_id, fal_port_t port_id,
 				      a_bool_t * enable);
-
+#endif
 sw_error_t
 fal_port_rxmac_status_set(a_uint32_t dev_id, fal_port_t port_id,
 				      a_bool_t enable);
-
+#ifndef IN_PORTCONTROL_MINI
 sw_error_t
 fal_port_rxmac_status_get(a_uint32_t dev_id, fal_port_t port_id,
 				      a_bool_t * enable);
-
+#endif
 sw_error_t
 fal_port_txfc_status_set(a_uint32_t dev_id, fal_port_t port_id,
 				     a_bool_t enable);
@@ -536,7 +541,7 @@ fal_port_rxfc_status_set(a_uint32_t dev_id, fal_port_t port_id,
 sw_error_t
 fal_port_rxfc_status_get(a_uint32_t dev_id, fal_port_t port_id,
 				     a_bool_t * enable);
-
+#ifndef IN_PORTCONTROL_MINI
 sw_error_t
 fal_port_bp_status_set(a_uint32_t dev_id, fal_port_t port_id,
 				   a_bool_t enable);
@@ -544,7 +549,7 @@ fal_port_bp_status_set(a_uint32_t dev_id, fal_port_t port_id,
 sw_error_t
 fal_port_bp_status_get(a_uint32_t dev_id, fal_port_t port_id,
 				   a_bool_t * enable);
-
+#endif
 sw_error_t
 fal_port_link_forcemode_set(a_uint32_t dev_id, fal_port_t port_id,
 					a_bool_t enable);
@@ -556,7 +561,7 @@ fal_port_link_forcemode_get(a_uint32_t dev_id, fal_port_t port_id,
 sw_error_t
 fal_port_link_status_get(a_uint32_t dev_id, fal_port_t port_id,
 				     a_bool_t * status);
-
+#ifndef IN_PORTCONTROL_MINI
 sw_error_t
 fal_ports_link_status_get(a_uint32_t dev_id, a_uint32_t * status);
 /*qca808x_end*/
@@ -667,13 +672,13 @@ fal_port_remote_loopback_get(a_uint32_t dev_id, fal_port_t port_id,
 					 a_bool_t * enable);
 sw_error_t
 fal_port_reset(a_uint32_t dev_id, fal_port_t port_id);
-
+#endif
 sw_error_t
 fal_port_power_off(a_uint32_t dev_id, fal_port_t port_id);
 
 sw_error_t
 fal_port_power_on(a_uint32_t dev_id, fal_port_t port_id);
-
+#ifndef IN_PORTCONTROL_MINI
 sw_error_t
 fal_port_magic_frame_mac_set(a_uint32_t dev_id, fal_port_t port_id,
 				   fal_mac_addr_t * mac);
@@ -721,7 +726,10 @@ fal_debug_phycounter_get(a_uint32_t dev_id, fal_port_t port_id,
 sw_error_t
 fal_debug_phycounter_show(a_uint32_t dev_id, fal_port_t port_id,
 				 fal_port_counter_info_t * port_counter_info);
+#endif
 /*qca808x_end*/
+
+#ifndef IN_PORTCONTROL_MINI
 sw_error_t
 fal_port_source_filter_status_get(a_uint32_t dev_id,
 				fal_port_t port_id, a_bool_t * enable);
@@ -736,11 +744,13 @@ fal_port_interface_3az_status_set(a_uint32_t dev_id, fal_port_t port_id,
 sw_error_t
 fal_port_interface_3az_status_get(a_uint32_t dev_id, fal_port_t port_id,
 		a_bool_t * enable);
-sw_error_t
-fal_port_promisc_mode_set(a_uint32_t dev_id,fal_port_t port_id,a_bool_t enable);
+
 sw_error_t
 fal_port_promisc_mode_get(a_uint32_t dev_id,fal_port_t port_id,a_bool_t *enable);
+#endif
 
+sw_error_t
+fal_port_promisc_mode_set(a_uint32_t dev_id,fal_port_t port_id,a_bool_t enable);
 sw_error_t
 fal_port_interface_eee_cfg_set(a_uint32_t dev_id, fal_port_t port_id,
 	fal_port_eee_cfg_t *port_eee_cfg);

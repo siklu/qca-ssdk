@@ -2468,8 +2468,6 @@ parse_port_eeecfg(struct switch_val *val)
 	return rv;
 }
 
-#endif
-
 static int
 parse_port_framemaxsize(struct switch_val *val)
 {
@@ -2585,7 +2583,7 @@ parse_port_srcfilter(struct switch_val *val)
 
 	return rv;
 }
-
+#endif
 #endif
 
 #ifdef IN_PORTVLAN
