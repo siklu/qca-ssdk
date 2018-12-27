@@ -7782,7 +7782,7 @@ cmd_data_check_fdb_rfs(char *cmd_str, void * val, a_uint32_t size)
 	return SW_OK;
 }
 #endif
-#ifdef IN_NAT
+#if defined(IN_IP) || defined(IN_NAT)
 sw_error_t
 cmd_data_check_flow_cookie(char *cmd_str, void * val, a_uint32_t size)
 {

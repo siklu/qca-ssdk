@@ -1271,6 +1271,7 @@ extern "C" {
 #endif
 
 #ifdef IN_IP
+#ifndef IN_IP_MINI
 #define IP_API \
     SW_API_DEF(SW_API_IP_HOST_ADD, fal_ip_host_add), \
     SW_API_DEF(SW_API_IP_HOST_DEL, fal_ip_host_del), \
@@ -1422,6 +1423,10 @@ extern "C" {
     SW_API_DESC(SW_API_IP_VSI_MC_MODE_GET) \
     SW_API_DESC(SW_API_GLOBAL_CTRL_GET) \
     SW_API_DESC(SW_API_GLOBAL_CTRL_SET)
+#else
+#define IP_API
+#define IP_API_PARAM
+#endif
 #else
 #define IP_API
 #define IP_API_PARAM

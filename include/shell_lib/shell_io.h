@@ -310,7 +310,7 @@ cmd_data_check_ip_mcmode(char *cmd_str, void * val, a_uint32_t size);
 sw_error_t
 cmd_data_check_ip_global(char *cmd_str, void * val, a_uint32_t size);
 #endif
-#ifdef IN_NAT
+#if defined(IN_IP) || defined(IN_NAT)
 sw_error_t
 cmd_data_check_flow_cookie(char *cmd_str, void * val, a_uint32_t size);
 

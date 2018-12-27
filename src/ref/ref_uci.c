@@ -5600,6 +5600,7 @@ parse_misc_pppoeen(struct switch_val *val)
 #endif
 
 #ifdef IN_IP
+#ifndef IN_IP_MINI
 static int
 parse_ip_hostentry(struct switch_val *val)
 {
@@ -6788,7 +6789,7 @@ parse_ip_globalctrl(struct switch_val *val)
 
 	return rv;
 }
-
+#endif
 #endif
 
 #ifdef IN_NAT
@@ -10925,6 +10926,7 @@ static int
 parse_ip(const char *command_name, struct switch_val *val)
 {
 	int rv = -1;
+#ifndef IN_IP_MINI
 	if(!strcmp(command_name, "Hostentry")) {
 		rv = parse_ip_hostentry(val);
 	} else if(!strcmp(command_name, "Intfentry")) {
@@ -10994,7 +10996,7 @@ parse_ip(const char *command_name, struct switch_val *val)
 	} else if (!strcmp(command_name, "Hostentry")) {
 		rv = parse_ip_hostentry(val);
 	}
-
+#endif
 	return rv;
 }
 #endif
