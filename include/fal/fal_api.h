@@ -653,7 +653,6 @@ extern "C" {
     SW_API_DESC(SW_API_ACL_RULE_SRC_FILTER_STS_GET)\
     SW_API_DESC(SW_API_ACL_UDF_SET)    \
     SW_API_DESC(SW_API_ACL_UDF_GET)
-
 #else
 #define ACL_API
 #define ACL_API_PARAM
@@ -1429,6 +1428,7 @@ extern "C" {
 #endif
 
 #ifdef IN_FLOW
+#ifndef IN_FLOW_MINI
 #define FLOW_API \
     SW_API_DEF(SW_API_FLOW_STATUS_SET, fal_flow_status_set), \
     SW_API_DEF(SW_API_FLOW_STATUS_GET, fal_flow_status_get), \
@@ -1462,6 +1462,15 @@ extern "C" {
     SW_API_DESC(SW_API_FLOW_HOST_GET) \
     SW_API_DESC(SW_API_FLOW_HOST_DEL) \
     SW_API_DESC(SW_API_FLOWENTRY_NEXT)
+#else
+#define FLOW_API \
+    SW_API_DEF(SW_API_FLOW_CTRL_SET, fal_flow_mgmt_set), \
+    SW_API_DEF(SW_API_FLOW_CTRL_GET, fal_flow_mgmt_get),
+
+#define FLOW_API_PARAM \
+    SW_API_DESC(SW_API_FLOW_CTRL_SET) \
+    SW_API_DESC(SW_API_FLOW_CTRL_GET)
+#endif
 #else
 #define FLOW_API
 #define FLOW_API_PARAM
@@ -1609,6 +1618,7 @@ extern "C" {
 #endif
 
 #ifdef IN_VSI
+#ifndef IN_VSI_MINI
 #define VSI_API \
     SW_API_DEF(SW_API_VSI_ALLOC, ppe_vsi_alloc), \
     SW_API_DEF(SW_API_VSI_FREE, ppe_vsi_free), \
@@ -1643,13 +1653,39 @@ extern "C" {
     SW_API_DESC(SW_API_VSI_MEMBER_GET) \
     SW_API_DESC(SW_API_VSI_COUNTER_GET) \
     SW_API_DESC(SW_API_VSI_COUNTER_CLEANUP)
+#else
+#define VSI_API \
+    SW_API_DEF(SW_API_VSI_ALLOC, ppe_vsi_alloc), \
+    SW_API_DEF(SW_API_VSI_FREE, ppe_vsi_free), \
+    SW_API_DEF(SW_API_PORT_VSI_SET, fal_port_vsi_set), \
+    SW_API_DEF(SW_API_PORT_VLAN_VSI_SET, ppe_port_vlan_vsi_set), \
+    SW_API_DEF(SW_API_PORT_VLAN_VSI_GET, ppe_port_vlan_vsi_get), \
+    SW_API_DEF(SW_API_VSI_TBL_DUMP, ppe_vsi_tbl_dump), \
+    SW_API_DEF(SW_API_VSI_NEWADDR_LRN_SET, fal_vsi_newaddr_lrn_set), \
+    SW_API_DEF(SW_API_VSI_STAMOVE_SET, fal_vsi_stamove_set), \
+    SW_API_DEF(SW_API_VSI_MEMBER_SET, fal_vsi_member_set), \
+    SW_API_DEF(SW_API_VSI_MEMBER_GET, fal_vsi_member_get),
 
+
+#define VSI_API_PARAM \
+    SW_API_DESC(SW_API_VSI_ALLOC)  \
+    SW_API_DESC(SW_API_VSI_FREE)  \
+    SW_API_DESC(SW_API_PORT_VSI_SET)  \
+    SW_API_DESC(SW_API_PORT_VLAN_VSI_SET)  \
+    SW_API_DESC(SW_API_PORT_VLAN_VSI_GET)  \
+    SW_API_DESC(SW_API_VSI_TBL_DUMP) \
+    SW_API_DESC(SW_API_VSI_NEWADDR_LRN_SET) \
+    SW_API_DESC(SW_API_VSI_STAMOVE_SET) \
+    SW_API_DESC(SW_API_VSI_MEMBER_SET) \
+    SW_API_DESC(SW_API_VSI_MEMBER_GET)
+#endif
 #else
 #define VSI_API
 #define VSI_API_PARAM
 #endif
 
 #ifdef IN_QM
+#ifndef IN_QM_MINI
 #define QM_API \
     SW_API_DEF(SW_API_UCAST_QUEUE_BASE_PROFILE_SET, fal_ucast_queue_base_profile_set), \
     SW_API_DEF(SW_API_UCAST_QUEUE_BASE_PROFILE_GET, fal_ucast_queue_base_profile_get), \
@@ -1719,7 +1755,29 @@ extern "C" {
     SW_API_DESC(SW_API_QM_ENQUEUE_CTRL_GET) \
     SW_API_DESC(SW_API_QM_SOURCE_PROFILE_SET) \
     SW_API_DESC(SW_API_QM_SOURCE_PROFILE_GET)
+#else
+#define QM_API \
+    SW_API_DEF(SW_API_UCAST_QUEUE_BASE_PROFILE_SET, fal_ucast_queue_base_profile_set), \
+    SW_API_DEF(SW_API_QUEUE_FLUSH, fal_queue_flush), \
+    SW_API_DEF(SW_API_AC_CTRL_SET, fal_ac_ctrl_set), \
+    SW_API_DEF(SW_API_AC_PRE_BUFFER_SET, fal_ac_prealloc_buffer_set), \
+    SW_API_DEF(SW_API_QUEUE_GROUP_SET, fal_ac_queue_group_set), \
+    SW_API_DEF(SW_API_STATIC_THRESH_SET, fal_ac_static_threshold_set), \
+    SW_API_DEF(SW_API_DYNAMIC_THRESH_SET, fal_ac_dynamic_threshold_set), \
+    SW_API_DEF(SW_API_GOURP_BUFFER_SET, fal_ac_group_buffer_set), \
+    SW_API_DEF(SW_API_QM_ENQUEUE_CTRL_SET, fal_qm_enqueue_ctrl_set),
 
+#define QM_API_PARAM \
+    SW_API_DESC(SW_API_UCAST_QUEUE_BASE_PROFILE_SET) \
+    SW_API_DESC(SW_API_QUEUE_FLUSH) \
+    SW_API_DESC(SW_API_AC_CTRL_SET) \
+    SW_API_DESC(SW_API_AC_PRE_BUFFER_SET) \
+    SW_API_DESC(SW_API_QUEUE_GROUP_SET) \
+    SW_API_DESC(SW_API_STATIC_THRESH_SET) \
+    SW_API_DESC(SW_API_DYNAMIC_THRESH_SET) \
+    SW_API_DESC(SW_API_GOURP_BUFFER_SET) \
+    SW_API_DESC(SW_API_QM_ENQUEUE_CTRL_SET)
+#endif
 #else
 #define QM_API
 #define QM_API_PARAM
@@ -1769,6 +1827,7 @@ extern "C" {
 #endif
 
 #ifdef IN_BM
+#ifndef IN_BM_MINI
 #define BM_API \
     SW_API_DEF(SW_API_BM_CTRL_SET, fal_port_bm_ctrl_set), \
     SW_API_DEF(SW_API_BM_CTRL_GET, fal_port_bm_ctrl_get), \
@@ -1798,7 +1857,21 @@ extern "C" {
     SW_API_DESC(SW_API_BM_DYNAMIC_THRESH_SET) \
     SW_API_DESC(SW_API_BM_DYNAMIC_THRESH_GET) \
     SW_API_DESC(SW_API_BM_PORT_COUNTER_GET)
+#else
+#define BM_API \
+    SW_API_DEF(SW_API_BM_CTRL_SET, fal_port_bm_ctrl_set), \
+    SW_API_DEF(SW_API_BM_PORTGROUP_MAP_SET, fal_port_bufgroup_map_set), \
+    SW_API_DEF(SW_API_BM_GROUP_BUFFER_SET, fal_bm_bufgroup_buffer_set), \
+    SW_API_DEF(SW_API_BM_PORT_RSVBUFFER_SET, fal_bm_port_reserved_buffer_set), \
+    SW_API_DEF(SW_API_BM_DYNAMIC_THRESH_SET, fal_bm_port_dynamic_thresh_set),
 
+#define BM_API_PARAM \
+    SW_API_DESC(SW_API_BM_CTRL_SET) \
+    SW_API_DESC(SW_API_BM_PORTGROUP_MAP_SET) \
+    SW_API_DESC(SW_API_BM_GROUP_BUFFER_SET) \
+    SW_API_DESC(SW_API_BM_PORT_RSVBUFFER_SET) \
+    SW_API_DESC(SW_API_BM_DYNAMIC_THRESH_SET)
+#endif
 #else
 #define BM_API
 #define BM_API_PARAM
@@ -1898,6 +1971,7 @@ extern "C" {
 #endif
 
 #ifdef IN_SHAPER
+#ifndef IN_SHAPER_MINI
 #define SHAPER_API \
     SW_API_DEF(SW_API_PORT_SHAPER_TIMESLOT_SET, fal_port_shaper_timeslot_set), \
     SW_API_DEF(SW_API_PORT_SHAPER_TIMESLOT_GET, fal_port_shaper_timeslot_get), \
@@ -1942,13 +2016,41 @@ extern "C" {
     SW_API_DESC(SW_API_QUEUE_SHAPER_GET) \
     SW_API_DESC(SW_API_SHAPER_IPG_PRE_SET) \
     SW_API_DESC(SW_API_SHAPER_IPG_PRE_GET)
+#else
+#define SHAPER_API \
+    SW_API_DEF(SW_API_PORT_SHAPER_TIMESLOT_SET, fal_port_shaper_timeslot_set), \
+    SW_API_DEF(SW_API_FLOW_SHAPER_TIMESLOT_SET, fal_flow_shaper_timeslot_set), \
+    SW_API_DEF(SW_API_QUEUE_SHAPER_TIMESLOT_SET, fal_queue_shaper_timeslot_set), \
+    SW_API_DEF(SW_API_PORT_SHAPER_TOKEN_NUMBER_SET, fal_port_shaper_token_number_set), \
+    SW_API_DEF(SW_API_FLOW_SHAPER_TOKEN_NUMBER_SET, fal_flow_shaper_token_number_set), \
+    SW_API_DEF(SW_API_QUEUE_SHAPER_TOKEN_NUMBER_SET, fal_queue_shaper_token_number_set), \
+    SW_API_DEF(SW_API_PORT_SHAPER_SET, fal_port_shaper_set), \
+    SW_API_DEF(SW_API_FLOW_SHAPER_SET, fal_flow_shaper_set), \
+    SW_API_DEF(SW_API_QUEUE_SHAPER_SET, fal_queue_shaper_set), \
+    SW_API_DEF(SW_API_QUEUE_SHAPER_GET,fal_queue_shaper_get), \
+    SW_API_DEF(SW_API_SHAPER_IPG_PRE_SET, fal_shaper_ipg_preamble_length_set),
 
+
+#define SHAPER_API_PARAM \
+    SW_API_DESC(SW_API_PORT_SHAPER_TIMESLOT_SET)  \
+    SW_API_DESC(SW_API_FLOW_SHAPER_TIMESLOT_SET)  \
+    SW_API_DESC(SW_API_QUEUE_SHAPER_TIMESLOT_SET)  \
+    SW_API_DESC(SW_API_PORT_SHAPER_TOKEN_NUMBER_SET) \
+    SW_API_DESC(SW_API_FLOW_SHAPER_TOKEN_NUMBER_SET) \
+    SW_API_DESC(SW_API_QUEUE_SHAPER_TOKEN_NUMBER_SET) \
+    SW_API_DESC(SW_API_PORT_SHAPER_SET) \
+    SW_API_DESC(SW_API_FLOW_SHAPER_SET) \
+    SW_API_DESC(SW_API_QUEUE_SHAPER_SET) \
+    SW_API_DESC(SW_API_QUEUE_SHAPER_GET) \
+    SW_API_DESC(SW_API_SHAPER_IPG_PRE_SET)
+#endif
 #else
 #define SHAPER_API
 #define SHAPER_API_PARAM
 #endif
 
 #ifdef IN_POLICER
+#ifndef IN_POLICER_MINI
 #define POLICER_API \
     SW_API_DEF(SW_API_POLICER_TIMESLOT_SET, fal_policer_timeslot_set), \
     SW_API_DEF(SW_API_POLICER_TIMESLOT_GET, fal_policer_timeslot_get), \
@@ -1975,7 +2077,16 @@ extern "C" {
     SW_API_DESC(SW_API_POLICER_ACL_ENTRY_SET) \
     SW_API_DESC(SW_API_POLICER_ACL_ENTRY_GET) \
     SW_API_DESC(SW_API_POLICER_GLOBAL_COUNTER_GET)
+#else
+#define POLICER_API \
+    SW_API_DEF(SW_API_POLICER_TIMESLOT_SET, fal_policer_timeslot_set), \
+    SW_API_DEF(SW_API_POLICER_COMPENSATION_SET, fal_port_policer_compensation_byte_set),
 
+
+#define POLICER_API_PARAM \
+    SW_API_DESC(SW_API_POLICER_TIMESLOT_SET)  \
+    SW_API_DESC(SW_API_POLICER_COMPENSATION_SET)
+#endif
 #else
 #define POLICER_API
 #define POLICER_API_PARAM

@@ -683,6 +683,7 @@ adpt_hppe_queue_shaper_token_number_set(a_uint32_t dev_id,a_uint32_t queue_id,
 
 	return SW_OK;
 }
+#ifndef IN_SHAPER_MINI
 sw_error_t
 adpt_hppe_port_shaper_get(a_uint32_t dev_id, fal_port_t port_id,
 		fal_shaper_config_t * shaper)
@@ -767,6 +768,7 @@ adpt_hppe_port_shaper_time_slot_get(a_uint32_t dev_id, a_uint32_t *time_slot)
 
 	return SW_OK;
 }
+#endif
 
 sw_error_t
 adpt_hppe_flow_shaper_time_slot_set(a_uint32_t dev_id, a_uint32_t time_slot)
@@ -822,6 +824,7 @@ adpt_hppe_port_shaper_token_number_set(a_uint32_t dev_id, fal_port_t port_id,
 
 	return SW_OK;
 }
+#ifndef IN_SHAPER_MINI
 sw_error_t
 adpt_hppe_queue_shaper_token_number_get(a_uint32_t dev_id, a_uint32_t queue_id,
 		fal_shaper_token_number_t *token_number)
@@ -897,6 +900,7 @@ adpt_hppe_port_shaper_token_number_get(a_uint32_t dev_id, fal_port_t port_id,
 
 	return SW_OK;
 }
+#endif
 
 sw_error_t
 adpt_hppe_flow_shaper_token_number_set(a_uint32_t dev_id, a_uint32_t flow_id,
@@ -922,6 +926,7 @@ adpt_hppe_flow_shaper_token_number_set(a_uint32_t dev_id, a_uint32_t flow_id,
 
 	return SW_OK;
 }
+#ifndef IN_SHAPER_MINI
 sw_error_t
 adpt_hppe_flow_shaper_token_number_get(a_uint32_t dev_id, a_uint32_t flow_id,
 		fal_shaper_token_number_t *token_number)
@@ -944,10 +949,12 @@ adpt_hppe_flow_shaper_token_number_get(a_uint32_t dev_id, a_uint32_t flow_id,
 	token_number->c_token_number_negative_en = l1_shp_credit_tbl.bf.c_shaper_credit_neg;
 	token_number->c_token_number = l1_shp_credit_tbl.bf.c_shaper_credit;
 	token_number->e_token_number_negative_en = l1_shp_credit_tbl.bf.e_shaper_credit_neg;
-	token_number->e_token_number = l1_shp_credit_tbl.bf.e_shaper_credit_0 | (l1_shp_credit_tbl.bf.e_shaper_credit_1 << 1);
+	token_number->e_token_number = l1_shp_credit_tbl.bf.e_shaper_credit_0 |
+		(l1_shp_credit_tbl.bf.e_shaper_credit_1 << 1);
 
 	return SW_OK;
 }
+#endif
 
 sw_error_t
 adpt_hppe_flow_shaper_set(a_uint32_t dev_id, a_uint32_t flow_id,
@@ -1167,6 +1174,7 @@ adpt_hppe_port_shaper_time_slot_set(a_uint32_t dev_id, a_uint32_t time_slot)
 	return SW_OK;
 
 }
+#ifndef IN_SHAPER_MINI
 sw_error_t
 adpt_hppe_flow_shaper_get(a_uint32_t dev_id, a_uint32_t flow_id,
 		fal_shaper_config_t * shaper)
@@ -1229,6 +1237,7 @@ adpt_hppe_flow_shaper_get(a_uint32_t dev_id, a_uint32_t flow_id,
 
 	return SW_OK;
 }
+#endif
 
 sw_error_t
 adpt_hppe_queue_shaper_set(a_uint32_t dev_id,a_uint32_t queue_id,
@@ -1386,6 +1395,7 @@ adpt_hppe_shaper_ipg_preamble_length_set(a_uint32_t dev_id, a_uint32_t ipg_pre_l
 	return SW_OK;
 }
 
+#ifndef IN_SHAPER_MINI
 sw_error_t
 adpt_hppe_shaper_ipg_preamble_length_get(a_uint32_t dev_id, a_uint32_t *ipg_pre_length)
 {
@@ -1405,6 +1415,7 @@ adpt_hppe_shaper_ipg_preamble_length_get(a_uint32_t dev_id, a_uint32_t *ipg_pre_
 
 	return SW_OK;
 }
+#endif
 
 void adpt_hppe_shaper_func_bitmap_init(a_uint32_t dev_id)
 {
@@ -1481,18 +1492,7 @@ sw_error_t adpt_hppe_shaper_init(a_uint32_t dev_id)
 
 	adpt_hppe_shaper_func_unregister(dev_id, p_adpt_api);
 
-	if(p_adpt_api->adpt_shaper_func_bitmap & (1 << FUNC_ADPT_FLOW_SHAPER_SET))
-	{
-		p_adpt_api->adpt_flow_shaper_set = adpt_hppe_flow_shaper_set;
-	}
-	if(p_adpt_api->adpt_shaper_func_bitmap & (1 << FUNC_ADPT_QUEUE_SHAPER_GET))
-	{
-		p_adpt_api->adpt_queue_shaper_get = adpt_hppe_queue_shaper_get;
-	}
-	if(p_adpt_api->adpt_shaper_func_bitmap & (1 << FUNC_ADPT_QUEUE_SHAPER_TOKEN_NUMBER_SET))
-	{
-		p_adpt_api->adpt_queue_shaper_token_number_set = adpt_hppe_queue_shaper_token_number_set;
-	}
+#ifndef IN_SHAPER_MINI
 	if(p_adpt_api->adpt_shaper_func_bitmap & (1 << FUNC_ADPT_PORT_SHAPER_GET))
 	{
 		p_adpt_api->adpt_port_shaper_get = adpt_hppe_port_shaper_get;
@@ -1505,17 +1505,10 @@ sw_error_t adpt_hppe_shaper_init(a_uint32_t dev_id)
 	{
 		p_adpt_api->adpt_port_shaper_time_slot_get = adpt_hppe_port_shaper_time_slot_get;
 	}
-	if(p_adpt_api->adpt_shaper_func_bitmap & (1 << FUNC_ADPT_FLOW_SHAPER_TIME_SLOT_SET))
-	{
-		p_adpt_api->adpt_flow_shaper_time_slot_set = adpt_hppe_flow_shaper_time_slot_set;
-	}
-	if(p_adpt_api->adpt_shaper_func_bitmap & (1 << FUNC_ADPT_PORT_SHAPER_TOKEN_NUMBER_SET))
-	{
-		p_adpt_api->adpt_port_shaper_token_number_set = adpt_hppe_port_shaper_token_number_set;
-	}
 	if(p_adpt_api->adpt_shaper_func_bitmap & (1 << FUNC_ADPT_QUEUE_SHAPER_TOKEN_NUMBER_GET))
 	{
-		p_adpt_api->adpt_queue_shaper_token_number_get = adpt_hppe_queue_shaper_token_number_get;
+		p_adpt_api->adpt_queue_shaper_token_number_get =
+			adpt_hppe_queue_shaper_token_number_get;
 	}
 	if(p_adpt_api->adpt_shaper_func_bitmap & (1 << FUNC_ADPT_QUEUE_SHAPER_TIME_SLOT_GET))
 	{
@@ -1523,43 +1516,71 @@ sw_error_t adpt_hppe_shaper_init(a_uint32_t dev_id)
 	}
 	if(p_adpt_api->adpt_shaper_func_bitmap & (1 << FUNC_ADPT_PORT_SHAPER_TOKEN_NUMBER_GET))
 	{
-		p_adpt_api->adpt_port_shaper_token_number_get = adpt_hppe_port_shaper_token_number_get;
-	}
-	if(p_adpt_api->adpt_shaper_func_bitmap & (1 << FUNC_ADPT_FLOW_SHAPER_TOKEN_NUMBER_SET))
-	{
-		p_adpt_api->adpt_flow_shaper_token_number_set = adpt_hppe_flow_shaper_token_number_set;
+		p_adpt_api->adpt_port_shaper_token_number_get =
+			adpt_hppe_port_shaper_token_number_get;
 	}
 	if(p_adpt_api->adpt_shaper_func_bitmap & (1 << FUNC_ADPT_FLOW_SHAPER_TOKEN_NUMBER_GET))
 	{
-		p_adpt_api->adpt_flow_shaper_token_number_get = adpt_hppe_flow_shaper_token_number_get;
-	}
-	if(p_adpt_api->adpt_shaper_func_bitmap & (1 << FUNC_ADPT_PORT_SHAPER_SET))
-	{
-		p_adpt_api->adpt_port_shaper_set = adpt_hppe_port_shaper_set;
-	}
-	if(p_adpt_api->adpt_shaper_func_bitmap & (1 << FUNC_ADPT_PORT_SHAPER_TIME_SLOT_SET))
-	{
-		p_adpt_api->adpt_port_shaper_time_slot_set = adpt_hppe_port_shaper_time_slot_set;
+		p_adpt_api->adpt_flow_shaper_token_number_get =
+			adpt_hppe_flow_shaper_token_number_get;
 	}
 	if(p_adpt_api->adpt_shaper_func_bitmap & (1 << FUNC_ADPT_FLOW_SHAPER_GET))
 	{
 		p_adpt_api->adpt_flow_shaper_get = adpt_hppe_flow_shaper_get;
 	}
+	if(p_adpt_api->adpt_shaper_func_bitmap & (1 << FUNC_ADPT_SHAPER_IPG_PREAMBLE_LENGTH_GET))
+	{
+		p_adpt_api->adpt_shaper_ipg_preamble_length_get =
+			adpt_hppe_shaper_ipg_preamble_length_get;
+	}
+#endif
+	if(p_adpt_api->adpt_shaper_func_bitmap & (1 << FUNC_ADPT_FLOW_SHAPER_SET))
+	{
+		p_adpt_api->adpt_flow_shaper_set = adpt_hppe_flow_shaper_set;
+	}
 	if(p_adpt_api->adpt_shaper_func_bitmap & (1 << FUNC_ADPT_QUEUE_SHAPER_SET))
 	{
 		p_adpt_api->adpt_queue_shaper_set = adpt_hppe_queue_shaper_set;
 	}
-	if(p_adpt_api->adpt_shaper_func_bitmap & (1 << FUNC_ADPT_QUEUE_SHAPER_TIME_SLOT_SET))
+	if(p_adpt_api->adpt_shaper_func_bitmap & (1 << FUNC_ADPT_QUEUE_SHAPER_GET))
 	{
-		p_adpt_api->adpt_queue_shaper_time_slot_set = adpt_hppe_queue_shaper_time_slot_set;
+		p_adpt_api->adpt_queue_shaper_get = adpt_hppe_queue_shaper_get;
+	}
+	if(p_adpt_api->adpt_shaper_func_bitmap & (1 << FUNC_ADPT_PORT_SHAPER_SET))
+	{
+		p_adpt_api->adpt_port_shaper_set = adpt_hppe_port_shaper_set;
 	}
 	if(p_adpt_api->adpt_shaper_func_bitmap & (1 << FUNC_ADPT_SHAPER_IPG_PREAMBLE_LENGTH_SET))
 	{
-		p_adpt_api->adpt_shaper_ipg_preamble_length_set = adpt_hppe_shaper_ipg_preamble_length_set;
+		p_adpt_api->adpt_shaper_ipg_preamble_length_set =
+			adpt_hppe_shaper_ipg_preamble_length_set;
 	}
-	if(p_adpt_api->adpt_shaper_func_bitmap & (1 << FUNC_ADPT_SHAPER_IPG_PREAMBLE_LENGTH_GET))
+	if(p_adpt_api->adpt_shaper_func_bitmap & (1 << FUNC_ADPT_QUEUE_SHAPER_TOKEN_NUMBER_SET))
 	{
-		p_adpt_api->adpt_shaper_ipg_preamble_length_get = adpt_hppe_shaper_ipg_preamble_length_get;
+		p_adpt_api->adpt_queue_shaper_token_number_set =
+			adpt_hppe_queue_shaper_token_number_set;
+	}
+	if(p_adpt_api->adpt_shaper_func_bitmap & (1 << FUNC_ADPT_PORT_SHAPER_TOKEN_NUMBER_SET))
+	{
+		p_adpt_api->adpt_port_shaper_token_number_set =
+			adpt_hppe_port_shaper_token_number_set;
+	}
+	if(p_adpt_api->adpt_shaper_func_bitmap & (1 << FUNC_ADPT_FLOW_SHAPER_TOKEN_NUMBER_SET))
+	{
+		p_adpt_api->adpt_flow_shaper_token_number_set =
+			adpt_hppe_flow_shaper_token_number_set;
+	}
+	if(p_adpt_api->adpt_shaper_func_bitmap & (1 << FUNC_ADPT_PORT_SHAPER_TIME_SLOT_SET))
+	{
+		p_adpt_api->adpt_port_shaper_time_slot_set = adpt_hppe_port_shaper_time_slot_set;
+	}
+	if(p_adpt_api->adpt_shaper_func_bitmap & (1 << FUNC_ADPT_FLOW_SHAPER_TIME_SLOT_SET))
+	{
+		p_adpt_api->adpt_flow_shaper_time_slot_set = adpt_hppe_flow_shaper_time_slot_set;
+	}
+	if(p_adpt_api->adpt_shaper_func_bitmap & (1 << FUNC_ADPT_QUEUE_SHAPER_TIME_SLOT_SET))
+	{
+		p_adpt_api->adpt_queue_shaper_time_slot_set = adpt_hppe_queue_shaper_time_slot_set;
 	}
 
 	return SW_OK;

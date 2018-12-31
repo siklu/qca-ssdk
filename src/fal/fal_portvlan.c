@@ -2493,15 +2493,6 @@ fal_port_vlan_counter_cleanup(a_uint32_t dev_id, a_uint32_t cnt_index)
 }
 
 EXPORT_SYMBOL(fal_port_invlan_mode_set);
-EXPORT_SYMBOL(fal_port_invlan_mode_get);
-EXPORT_SYMBOL(fal_port_vlan_trans_add);
-EXPORT_SYMBOL(fal_port_vlan_trans_del);
-EXPORT_SYMBOL(fal_port_vlan_trans_get);
-EXPORT_SYMBOL(fal_qinq_mode_set);
-EXPORT_SYMBOL(fal_qinq_mode_get);
-EXPORT_SYMBOL(fal_port_qinq_role_set);
-EXPORT_SYMBOL(fal_port_qinq_role_get);
-EXPORT_SYMBOL(fal_port_vlan_trans_iterate);
 EXPORT_SYMBOL(fal_global_qinq_mode_set);
 EXPORT_SYMBOL(fal_global_qinq_mode_get);
 EXPORT_SYMBOL(fal_port_qinq_mode_set);
@@ -2533,4 +2524,15 @@ EXPORT_SYMBOL(fal_port_vlan_counter_cleanup);
 EXPORT_SYMBOL(fal_portvlan_member_add);
 EXPORT_SYMBOL(fal_portvlan_member_del);
 EXPORT_SYMBOL(fal_portvlan_member_update);
+#ifndef IN_PORTVLAN_MINI
+EXPORT_SYMBOL(fal_qinq_mode_set);
+EXPORT_SYMBOL(fal_qinq_mode_get);
+EXPORT_SYMBOL(fal_port_qinq_role_set);
+EXPORT_SYMBOL(fal_port_qinq_role_get);
+EXPORT_SYMBOL(fal_port_vlan_trans_iterate);
+EXPORT_SYMBOL(fal_port_vlan_trans_add);
+EXPORT_SYMBOL(fal_port_vlan_trans_del);
+EXPORT_SYMBOL(fal_port_vlan_trans_get);
 EXPORT_SYMBOL(fal_portvlan_member_get);
+EXPORT_SYMBOL(fal_port_invlan_mode_get);
+#endif

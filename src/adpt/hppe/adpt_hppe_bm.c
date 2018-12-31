@@ -25,6 +25,7 @@
 #include "hppe_portctrl.h"
 #include "adpt.h"
 
+#ifndef IN_BM_MINI
 sw_error_t
 adpt_hppe_port_bufgroup_map_get(a_uint32_t dev_id, fal_port_t port,
 			a_uint8_t *group)
@@ -132,6 +133,7 @@ adpt_hppe_port_bm_ctrl_get(a_uint32_t dev_id, fal_port_t port, a_bool_t *enable)
 
 	return SW_OK;
 }
+#endif
 
 sw_error_t
 adpt_hppe_bm_bufgroup_buffer_set(a_uint32_t dev_id, a_uint8_t group,
@@ -169,6 +171,7 @@ adpt_hppe_port_bufgroup_map_set(a_uint32_t dev_id, fal_port_t port,
 	return SW_OK;
 }
 
+#ifndef IN_BM_MINI
 sw_error_t
 adpt_hppe_bm_port_static_thresh_get(a_uint32_t dev_id, fal_port_t port,
 			fal_bm_static_cfg_t *cfg)
@@ -193,6 +196,7 @@ adpt_hppe_bm_port_static_thresh_get(a_uint32_t dev_id, fal_port_t port,
 
 	return SW_OK;
 }
+#endif
 
 sw_error_t
 adpt_hppe_bm_port_reserved_buffer_set(a_uint32_t dev_id, fal_port_t port,
@@ -303,6 +307,7 @@ adpt_hppe_port_tdm_tick_cfg_set(a_uint32_t dev_id, a_uint32_t tick_index,
 	return hppe_tdm_cfg_set(dev_id, tick_index, &tdm_cfg);
 }
 
+#ifndef IN_BM_MINI
 sw_error_t
 adpt_hppe_bm_port_counter_get(a_uint32_t dev_id, fal_port_t port,
 			fal_bm_port_counter_t *counter)
@@ -341,6 +346,7 @@ adpt_hppe_bm_port_counter_get(a_uint32_t dev_id, fal_port_t port,
 
 	return SW_OK;
 }
+#endif
 
 void adpt_hppe_bm_func_bitmap_init(a_uint32_t dev_id)
 {
@@ -405,6 +411,7 @@ sw_error_t adpt_hppe_bm_init(a_uint32_t dev_id)
 
 	adpt_hppe_bm_func_unregister(dev_id, p_adpt_api);
 
+#ifndef IN_BM_MINI
 	if (p_adpt_api->adpt_bm_func_bitmap & (1 << FUNC_PORT_BUFGROUP_MAP_GET))
 		p_adpt_api->adpt_port_bufgroup_map_get = adpt_hppe_port_bufgroup_map_get;
 	if (p_adpt_api->adpt_bm_func_bitmap & (1 << FUNC_BM_PORT_RESERVED_BUFFER_GET))
@@ -415,12 +422,15 @@ sw_error_t adpt_hppe_bm_init(a_uint32_t dev_id)
 		p_adpt_api->adpt_bm_port_dynamic_thresh_get = adpt_hppe_bm_port_dynamic_thresh_get;
 	if (p_adpt_api->adpt_bm_func_bitmap & (1 << FUNC_PORT_BM_CTRL_GET))
 		p_adpt_api->adpt_port_bm_ctrl_get = adpt_hppe_port_bm_ctrl_get;
+	if (p_adpt_api->adpt_bm_func_bitmap & (1 << FUNC_BM_PORT_STATIC_THRESH_GET))
+		p_adpt_api->adpt_bm_port_static_thresh_get = adpt_hppe_bm_port_static_thresh_get;
+	if (p_adpt_api->adpt_bm_func_bitmap & (1 << FUNC_BM_PORT_COUNTER_GET))
+		p_adpt_api->adpt_bm_port_counter_get = adpt_hppe_bm_port_counter_get;
+#endif
 	if (p_adpt_api->adpt_bm_func_bitmap & (1 << FUNC_BM_BUFGROUP_BUFFER_SET))
 		p_adpt_api->adpt_bm_bufgroup_buffer_set = adpt_hppe_bm_bufgroup_buffer_set;
 	if (p_adpt_api->adpt_bm_func_bitmap & (1 << FUNC_PORT_BUFGROUP_MAP_SET))
 		p_adpt_api->adpt_port_bufgroup_map_set = adpt_hppe_port_bufgroup_map_set;
-	if (p_adpt_api->adpt_bm_func_bitmap & (1 << FUNC_BM_PORT_STATIC_THRESH_GET))
-		p_adpt_api->adpt_bm_port_static_thresh_get = adpt_hppe_bm_port_static_thresh_get;
 	if (p_adpt_api->adpt_bm_func_bitmap & (1 << FUNC_BM_PORT_RESERVED_BUFFER_SET))
 		p_adpt_api->adpt_bm_port_reserved_buffer_set = adpt_hppe_bm_port_reserved_buffer_set;
 	if (p_adpt_api->adpt_bm_func_bitmap & (1 << FUNC_BM_PORT_STATIC_THRESH_SET))
@@ -433,8 +443,6 @@ sw_error_t adpt_hppe_bm_init(a_uint32_t dev_id)
 		p_adpt_api->adpt_port_tdm_ctrl_set = adpt_hppe_port_tdm_ctrl_set;
 	if (p_adpt_api->adpt_bm_func_bitmap & (1 << FUNC_PORT_TDM_TICK_CFG_SET))
 		p_adpt_api->adpt_port_tdm_tick_cfg_set = adpt_hppe_port_tdm_tick_cfg_set;
-	if (p_adpt_api->adpt_bm_func_bitmap & (1 << FUNC_BM_PORT_COUNTER_GET))
-		p_adpt_api->adpt_bm_port_counter_get = adpt_hppe_bm_port_counter_get;
 
 	return SW_OK;
 }

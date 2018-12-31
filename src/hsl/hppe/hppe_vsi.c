@@ -51,6 +51,7 @@ hppe_vsi_tbl_set(
 				2);
 }
 
+#ifndef IN_VSI_MINI
 sw_error_t
 hppe_vsi_tbl_umc_bitmap_get(
 		a_uint32_t dev_id,
@@ -298,6 +299,7 @@ hppe_vsi_tbl_station_move_fwd_cmd_set(
 	ret = hppe_vsi_tbl_set(dev_id, index, &reg_val);
 	return ret;
 }
+#endif
 
 sw_error_t
 hppe_vlan_cnt_tbl_get(
@@ -327,6 +329,7 @@ hppe_vlan_cnt_tbl_set(
 				3);
 }
 
+#ifndef IN_VSI_MINI
 sw_error_t
 hppe_vlan_cnt_tbl_rx_byte_cnt_get(
 		a_uint32_t dev_id,
@@ -390,6 +393,7 @@ hppe_vlan_cnt_tbl_rx_pkt_cnt_set(
 	ret = hppe_vlan_cnt_tbl_set(dev_id, index, &reg_val);
 	return ret;
 }
+#endif
 
 
 sw_error_t
@@ -420,6 +424,7 @@ hppe_eg_vsi_counter_tbl_set(
 				3);
 }
 
+#ifndef IN_VSI_MINI
 sw_error_t
 hppe_eg_vsi_counter_tbl_tx_bytes_get(
 		a_uint32_t dev_id,
@@ -483,6 +488,7 @@ hppe_eg_vsi_counter_tbl_tx_packets_set(
 	ret = hppe_eg_vsi_counter_tbl_set(dev_id, index, &reg_val);
 	return ret;
 }
+#endif
 
 sw_error_t
 hppe_pre_l2_cnt_tbl_get(
@@ -511,6 +517,7 @@ hppe_pre_l2_cnt_tbl_set(
 				value->val,
 				5);
 }
+#ifndef IN_VSI_MINI
 sw_error_t
 hppe_pre_l2_cnt_tbl_rx_drop_byte_cnt_get(
 		a_uint32_t dev_id,
@@ -640,5 +647,4 @@ hppe_pre_l2_cnt_tbl_rx_drop_pkt_cnt_set(
 	ret = hppe_pre_l2_cnt_tbl_set(dev_id, index, &reg_val);
 	return ret;
 }
-
-
+#endif

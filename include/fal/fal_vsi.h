@@ -87,8 +87,22 @@ fal_vsi_free(a_uint32_t dev_id, a_uint32_t vsi);
 sw_error_t
 fal_port_vsi_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vsi_id);
 
+#ifndef IN_VSI_MINI
 sw_error_t
 fal_port_vsi_get(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t *vsi_id);
+
+sw_error_t
+fal_vsi_stamove_get(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_stamove_t *stamove);
+
+sw_error_t
+fal_vsi_newaddr_lrn_get(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_newaddr_lrn_t *newaddr_lrn);
+
+sw_error_t
+fal_vsi_counter_get(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_counter_t *counter);
+
+sw_error_t
+fal_vsi_counter_cleanup(a_uint32_t dev_id, a_uint32_t vsi_id);
+#endif
 
 sw_error_t
 fal_port_vlan_vsi_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t stag_vid, a_uint32_t ctag_vid, a_uint32_t vsi_id);
@@ -103,25 +117,13 @@ sw_error_t
 fal_vsi_newaddr_lrn_set(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_newaddr_lrn_t *newaddr_lrn);
 
 sw_error_t
-fal_vsi_newaddr_lrn_get(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_newaddr_lrn_t *newaddr_lrn);
-
-sw_error_t
 fal_vsi_stamove_set(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_stamove_t *stamove);
-
-sw_error_t
-fal_vsi_stamove_get(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_stamove_t *stamove);
 
 sw_error_t
 fal_vsi_member_set(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_member_t *vsi_member);
 
 sw_error_t
 fal_vsi_member_get(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_member_t *vsi_member);
-
-sw_error_t
-fal_vsi_counter_get(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_counter_t *counter);
-
-sw_error_t
-fal_vsi_counter_cleanup(a_uint32_t dev_id, a_uint32_t vsi_id);
 
 
 #ifdef __cplusplus

@@ -26,6 +26,7 @@
 #include <linux/module.h>
 
 
+#ifndef IN_POLICER_MINI
 sw_error_t
 _fal_acl_policer_counter_get(a_uint32_t dev_id, a_uint32_t index,
 		fal_policer_counter_t *counter)
@@ -130,6 +131,7 @@ _fal_policer_timeslot_get(a_uint32_t dev_id, a_uint32_t *timeslot)
     rv = p_api->adpt_policer_time_slot_get(dev_id, timeslot);
     return rv;
 }
+#endif
 sw_error_t
 _fal_policer_timeslot_set(a_uint32_t dev_id, a_uint32_t timeslot)
 {
@@ -145,6 +147,7 @@ _fal_policer_timeslot_set(a_uint32_t dev_id, a_uint32_t timeslot)
     return rv;
 }
 
+#ifndef IN_POLICER_MINI
 sw_error_t
 _fal_port_policer_compensation_byte_get(a_uint32_t dev_id, a_uint32_t port_id,
 		a_uint32_t *length)
@@ -160,6 +163,7 @@ _fal_port_policer_compensation_byte_get(a_uint32_t dev_id, a_uint32_t port_id,
     rv = p_api->adpt_port_compensation_byte_get(dev_id, port_id, length);
     return rv;
 }
+#endif
 sw_error_t
 _fal_port_policer_compensation_byte_set(a_uint32_t dev_id, a_uint32_t port_id,
 			a_uint32_t length)
@@ -177,6 +181,7 @@ _fal_port_policer_compensation_byte_set(a_uint32_t dev_id, a_uint32_t port_id,
     return rv;
 }
 
+#ifndef IN_POLICER_MINI
 sw_error_t
 _fal_policer_global_counter_get(a_uint32_t dev_id,
 		fal_policer_global_counter_t *counter)
@@ -271,6 +276,7 @@ fal_policer_timeslot_get(a_uint32_t dev_id, a_uint32_t *timeslot)
     FAL_API_UNLOCK;
     return rv;
 }
+#endif
 sw_error_t
 fal_policer_timeslot_set(a_uint32_t dev_id, a_uint32_t timeslot)
 {
@@ -282,6 +288,7 @@ fal_policer_timeslot_set(a_uint32_t dev_id, a_uint32_t timeslot)
     return rv;
 }
 
+#ifndef IN_POLICER_MINI
 sw_error_t
 fal_port_policer_compensation_byte_get(a_uint32_t dev_id, fal_port_t port_id,
 				a_uint32_t *length)
@@ -293,6 +300,7 @@ fal_port_policer_compensation_byte_get(a_uint32_t dev_id, fal_port_t port_id,
     FAL_API_UNLOCK;
     return rv;
 }
+#endif
 sw_error_t
 fal_port_policer_compensation_byte_set(a_uint32_t dev_id, fal_port_t port_id,
 			a_uint32_t length)
@@ -304,6 +312,7 @@ fal_port_policer_compensation_byte_set(a_uint32_t dev_id, fal_port_t port_id,
     FAL_API_UNLOCK;
     return rv;
 }
+#ifndef IN_POLICER_MINI
 sw_error_t
 fal_policer_global_counter_get(a_uint32_t dev_id,
 		fal_policer_global_counter_t *counter)
@@ -315,7 +324,9 @@ fal_policer_global_counter_get(a_uint32_t dev_id,
     FAL_API_UNLOCK;
     return rv;
 }
+#endif
 
+#ifndef IN_POLICER_MINI
 EXPORT_SYMBOL(fal_acl_policer_counter_get);
 EXPORT_SYMBOL(fal_port_policer_counter_get);
 EXPORT_SYMBOL(fal_port_policer_entry_get);
@@ -323,11 +334,10 @@ EXPORT_SYMBOL(fal_port_policer_entry_set);
 EXPORT_SYMBOL(fal_acl_policer_entry_get);
 EXPORT_SYMBOL(fal_acl_policer_entry_set);
 EXPORT_SYMBOL(fal_policer_timeslot_get);
-EXPORT_SYMBOL(fal_policer_timeslot_set);
 EXPORT_SYMBOL(fal_port_policer_compensation_byte_get);
-EXPORT_SYMBOL(fal_port_policer_compensation_byte_set);
 EXPORT_SYMBOL(fal_policer_global_counter_get);
-
+#endif
+EXPORT_SYMBOL(fal_policer_timeslot_set);
+EXPORT_SYMBOL(fal_port_policer_compensation_byte_set);
 
 /*insert flag for outter fal, don't remove it*/
-

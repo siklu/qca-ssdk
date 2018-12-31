@@ -22,6 +22,7 @@
 #include "hsl_api.h"
 #include "adpt.h"
 
+#ifndef IN_QM_MINI
 sw_error_t
 _fal_ucast_hash_map_set(
 		a_uint32_t dev_id,
@@ -92,6 +93,7 @@ _fal_port_mcast_priority_class_get(
 	rv = p_api->adpt_port_mcast_priority_class_get(dev_id, port, priority, queue_class);
 	return rv;
 }
+#endif
 sw_error_t
 _fal_ac_dynamic_threshold_set(
 		a_uint32_t dev_id,
@@ -126,6 +128,7 @@ _fal_ac_prealloc_buffer_set(
 	rv = p_api->adpt_ac_prealloc_buffer_set(dev_id, obj, num);
 	return rv;
 }
+#ifndef IN_QM_MINI
 sw_error_t
 _fal_ucast_default_hash_get(
 		a_uint32_t dev_id,
@@ -245,6 +248,7 @@ _fal_ucast_hash_map_get(
 	rv = p_api->adpt_ucast_hash_map_get(dev_id, profile, rss_hash, queue_hash);
 	return rv;
 }
+#endif
 sw_error_t
 _fal_ac_static_threshold_set(
 		a_uint32_t dev_id,
@@ -279,6 +283,7 @@ _fal_ac_queue_group_set(
 	rv = p_api->adpt_ac_queue_group_set(dev_id, queue_id, group_id);
 	return rv;
 }
+#ifndef IN_QM_MINI
 sw_error_t
 _fal_ac_group_buffer_get(
 		a_uint32_t dev_id,
@@ -313,6 +318,7 @@ _fal_mcast_cpu_code_class_get(
 	rv = p_api->adpt_mcast_cpu_code_class_get(dev_id, cpu_code, queue_class);
 	return rv;
 }
+#endif
 sw_error_t
 _fal_ac_ctrl_set(
 		a_uint32_t dev_id,
@@ -330,6 +336,7 @@ _fal_ac_ctrl_set(
 	rv = p_api->adpt_ac_ctrl_set(dev_id, obj, cfg);
 	return rv;
 }
+#ifndef IN_QM_MINI
 sw_error_t
 _fal_ucast_priority_class_get(
 		a_uint32_t dev_id,
@@ -348,6 +355,7 @@ _fal_ucast_priority_class_get(
 	rv = p_api->adpt_ucast_priority_class_get(dev_id, profile, priority, class);
 	return rv;
 }
+#endif
 sw_error_t
 _fal_queue_flush(
 		a_uint32_t dev_id,
@@ -365,6 +373,7 @@ _fal_queue_flush(
 	rv = p_api->adpt_queue_flush(dev_id, port, queue_id);
 	return rv;
 }
+#ifndef IN_QM_MINI
 sw_error_t
 _fal_mcast_cpu_code_class_set(
 		a_uint32_t dev_id,
@@ -417,6 +426,7 @@ _fal_ac_static_threshold_get(
 	rv = p_api->adpt_ac_static_threshold_get(dev_id, obj, cfg);
 	return rv;
 }
+#endif
 sw_error_t
 _fal_ucast_queue_base_profile_set(
 		a_uint32_t dev_id,
@@ -452,6 +462,7 @@ _fal_ac_group_buffer_set(
 	return rv;
 }
 
+#ifndef IN_QM_MINI
 sw_error_t
 _fal_queue_counter_ctrl_set(a_uint32_t dev_id, a_bool_t cnt_en)
 {
@@ -514,6 +525,7 @@ _fal_queue_counter_cleanup(a_uint32_t dev_id, a_uint32_t queue_id)
 	rv = p_api->adpt_queue_counter_cleanup(dev_id, queue_id);
 	return rv;
 }
+#endif
 
 sw_error_t
 _fal_qm_enqueue_ctrl_set(a_uint32_t dev_id, a_uint32_t queue_id, a_bool_t enable)
@@ -530,6 +542,7 @@ _fal_qm_enqueue_ctrl_set(a_uint32_t dev_id, a_uint32_t queue_id, a_bool_t enable
 	return rv;
 }
 
+#ifndef IN_QM_MINI
 sw_error_t
 _fal_qm_enqueue_ctrl_get(a_uint32_t dev_id, a_uint32_t queue_id, a_bool_t *enable)
 {
@@ -630,6 +643,7 @@ fal_port_mcast_priority_class_get(
 	FAL_API_UNLOCK;
 	return rv;
 }
+#endif
 sw_error_t
 fal_ac_dynamic_threshold_set(
 		a_uint32_t dev_id,
@@ -656,6 +670,7 @@ fal_ac_prealloc_buffer_set(
 	FAL_API_UNLOCK;
 	return rv;
 }
+#ifndef IN_QM_MINI
 sw_error_t
 fal_ucast_default_hash_get(
 		a_uint32_t dev_id,
@@ -747,6 +762,7 @@ fal_ucast_hash_map_get(
 	FAL_API_UNLOCK;
 	return rv;
 }
+#endif
 sw_error_t
 fal_ac_static_threshold_set(
 		a_uint32_t dev_id,
@@ -773,6 +789,7 @@ fal_ac_queue_group_set(
 	FAL_API_UNLOCK;
 	return rv;
 }
+#ifndef IN_QM_MINI
 sw_error_t
 fal_ac_group_buffer_get(
 		a_uint32_t dev_id,
@@ -799,6 +816,7 @@ fal_mcast_cpu_code_class_get(
 	FAL_API_UNLOCK;
 	return rv;
 }
+#endif
 sw_error_t
 fal_ac_ctrl_set(
 		a_uint32_t dev_id,
@@ -812,6 +830,7 @@ fal_ac_ctrl_set(
 	FAL_API_UNLOCK;
 	return rv;
 }
+#ifndef IN_QM_MINI
 sw_error_t
 fal_ucast_priority_class_get(
 		a_uint32_t dev_id,
@@ -826,6 +845,7 @@ fal_ucast_priority_class_get(
 	FAL_API_UNLOCK;
 	return rv;
 }
+#endif
 sw_error_t
 fal_queue_flush(
 		a_uint32_t dev_id,
@@ -839,6 +859,7 @@ fal_queue_flush(
 	FAL_API_UNLOCK;
 	return rv;
 }
+#ifndef IN_QM_MINI
 sw_error_t
 fal_mcast_cpu_code_class_set(
 		a_uint32_t dev_id,
@@ -879,6 +900,7 @@ fal_ac_static_threshold_get(
 	FAL_API_UNLOCK;
 	return rv;
 }
+#endif
 sw_error_t
 fal_ucast_queue_base_profile_set(
 		a_uint32_t dev_id,
@@ -906,6 +928,7 @@ fal_ac_group_buffer_set(
 	return rv;
 }
 
+#ifndef IN_QM_MINI
 sw_error_t
 fal_queue_counter_ctrl_set(a_uint32_t dev_id, a_bool_t cnt_en)
 {
@@ -952,6 +975,7 @@ fal_queue_counter_cleanup(a_uint32_t dev_id, a_uint32_t queue_id)
 	FAL_API_UNLOCK;
 	return rv;
 }
+#endif
 
 sw_error_t
 fal_qm_enqueue_ctrl_set(a_uint32_t dev_id, a_uint32_t queue_id, a_bool_t enable)
@@ -964,6 +988,7 @@ fal_qm_enqueue_ctrl_set(a_uint32_t dev_id, a_uint32_t queue_id, a_bool_t enable)
 	return rv;
 }
 
+#ifndef IN_QM_MINI
 sw_error_t
 fal_qm_enqueue_ctrl_get(a_uint32_t dev_id, a_uint32_t queue_id, a_bool_t *enable)
 {
@@ -995,40 +1020,44 @@ fal_qm_port_source_profile_get(a_uint32_t dev_id, fal_port_t port, a_uint32_t *s
 	FAL_API_UNLOCK;
 	return rv;
 }
+#endif
 
+EXPORT_SYMBOL(fal_ac_ctrl_set);
+
+EXPORT_SYMBOL(fal_ac_prealloc_buffer_set);
+
+EXPORT_SYMBOL(fal_ac_queue_group_set);
+
+EXPORT_SYMBOL(fal_ac_static_threshold_set);
+
+EXPORT_SYMBOL(fal_ac_dynamic_threshold_set);
+
+EXPORT_SYMBOL(fal_ac_group_buffer_set);
+
+EXPORT_SYMBOL(fal_ucast_queue_base_profile_set);
+
+EXPORT_SYMBOL(fal_queue_flush);
+
+EXPORT_SYMBOL(fal_qm_enqueue_ctrl_set);
+
+#ifndef IN_QM_MINI
 EXPORT_SYMBOL(fal_qm_port_source_profile_set);
 
 EXPORT_SYMBOL(fal_qm_port_source_profile_get);
 
-EXPORT_SYMBOL(fal_qm_enqueue_ctrl_set);
-
 EXPORT_SYMBOL(fal_qm_enqueue_ctrl_get);
-
-EXPORT_SYMBOL(fal_ac_ctrl_set);
 
 EXPORT_SYMBOL(fal_ac_ctrl_get);
 
-EXPORT_SYMBOL(fal_ac_prealloc_buffer_set);
-
 EXPORT_SYMBOL(fal_ac_prealloc_buffer_get);
-
-EXPORT_SYMBOL(fal_ac_queue_group_set);
 
 EXPORT_SYMBOL(fal_ac_queue_group_get);
 
-EXPORT_SYMBOL(fal_ac_static_threshold_set);
-
 EXPORT_SYMBOL(fal_ac_static_threshold_get);
-
-EXPORT_SYMBOL(fal_ac_dynamic_threshold_set);
 
 EXPORT_SYMBOL(fal_ac_dynamic_threshold_get);
 
-EXPORT_SYMBOL(fal_ac_group_buffer_set);
-
 EXPORT_SYMBOL(fal_ac_group_buffer_get);
-
-EXPORT_SYMBOL(fal_ucast_queue_base_profile_set);
 
 EXPORT_SYMBOL(fal_ucast_queue_base_profile_get);
 
@@ -1048,8 +1077,6 @@ EXPORT_SYMBOL(fal_port_mcast_priority_class_set);
 
 EXPORT_SYMBOL(fal_port_mcast_priority_class_get);
 
-EXPORT_SYMBOL(fal_queue_flush);
-
 EXPORT_SYMBOL(fal_queue_counter_ctrl_set);
 
 EXPORT_SYMBOL(fal_queue_counter_ctrl_get);
@@ -1057,5 +1084,6 @@ EXPORT_SYMBOL(fal_queue_counter_ctrl_get);
 EXPORT_SYMBOL(fal_queue_counter_get);
 
 EXPORT_SYMBOL(fal_queue_counter_cleanup);
+#endif
 
 /*insert flag for outter fal, don't remove it*/
