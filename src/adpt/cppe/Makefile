@@ -9,6 +9,14 @@ ifeq (TRUE, $(IN_PORTCONTROL))
   SRC_LIST += adpt_cppe_portctrl.c
 endif
 
+ifeq (TRUE, $(IN_QM))
+  SRC_LIST += adpt_cppe_qm.c
+endif
+
+ifeq (TRUE, $(IN_QOS))
+  SRC_LIST += adpt_cppe_qos.c
+endif
+
 ifeq (, $(findstring CPPE, $(SUPPORT_CHIP)))
   SRC_LIST=
 endif
