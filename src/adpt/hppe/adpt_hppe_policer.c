@@ -106,6 +106,7 @@ hppe_policer_burst_size[NR_ADPT_HPPE_POLICER_METER_UNIT][NR_ADPT_HPPE_POLICER_ME
 	},
 };
 
+#ifndef IN_POLICER_MINI
 sw_error_t
 adpt_hppe_acl_policer_counter_get(a_uint32_t dev_id, a_uint32_t index,
 		fal_policer_counter_t *counter)
@@ -301,6 +302,7 @@ __adpt_hppe_policer_bucket_size_to_burst_size(a_uint32_t bucket_size,
 
 	return SW_OK;
 }
+#endif
 
 static sw_error_t
 __adpt_hppe_policer_max_rate(a_uint32_t time_slot)
@@ -361,7 +363,8 @@ __adpt_hppe_policer_max_burst_size(void)
 	for (j = 0; j < 8; j++)
 	{
 		/*max size unit is 1/1000 byte based*/
-		temp = ((a_uint64_t)(ADPT_HPPE_POLICER_BURST_SIZE_UNIT)) * ADPT_HPPE_POLICER_BUCKET_SIZE_MAX;
+		temp = ((a_uint64_t)(ADPT_HPPE_POLICER_BURST_SIZE_UNIT)) *
+			ADPT_HPPE_POLICER_BUCKET_SIZE_MAX;
 		do_div(temp, hppe_policer_token_unit[i][j]);
 		hppe_policer_burst_size[i][j].burst_size_max = (a_uint64_t)(temp * 1000);
 
@@ -369,8 +372,12 @@ __adpt_hppe_policer_max_burst_size(void)
 		do_div(temp1, ADPT_HPPE_POLICER_BUCKET_SIZE_MAX);
 		hppe_policer_burst_size[i][j].burst_size_1bit = temp1;
 
-	//	printk("policer byte hppe_max_burst_size generating =%llu\n", hppe_policer_burst_size[i][j].burst_size_max);
-	//	printk("policer byte hppe_max_burst_size step  =%llu\n", hppe_policer_burst_size[i][j].burst_size_1bit);
+		/*
+		printk("policer byte hppe_max_burst_size generating =%llu\n",
+				hppe_policer_burst_size[i][j].burst_size_max);
+		printk("policer byte hppe_max_burst_size step  =%llu\n",
+				hppe_policer_burst_size[i][j].burst_size_1bit);
+		*/
 
 	}
 
@@ -378,7 +385,8 @@ __adpt_hppe_policer_max_burst_size(void)
 	for (j = 0; j < 8; j++)
 	{
 		/* max size unit is 1/1000 frame based */
-		temp = ((a_uint64_t)(ADPT_HPPE_POLICER_BURST_SIZE_UNIT)) * ADPT_HPPE_POLICER_BUCKET_SIZE_MAX;
+		temp = ((a_uint64_t)(ADPT_HPPE_POLICER_BURST_SIZE_UNIT)) *
+			ADPT_HPPE_POLICER_BUCKET_SIZE_MAX;
 		do_div(temp, hppe_policer_token_unit[i][j]);
 		hppe_policer_burst_size[i][j].burst_size_max = (a_uint64_t)(temp * 1000);
 
@@ -386,14 +394,19 @@ __adpt_hppe_policer_max_burst_size(void)
 		do_div(temp1, ADPT_HPPE_POLICER_BUCKET_SIZE_MAX);
 		hppe_policer_burst_size[i][j].burst_size_1bit = temp1;
 
-	//	printk("policer frame hppe_max_burst_size generating =%llu\n", hppe_policer_burst_size[i][j].burst_size_max);
-	//	printk("policer frame hppe_max_burst_size step  =%llu\n", hppe_policer_burst_size[i][j].burst_size_1bit);
+		/*
+		printk("policer frame hppe_max_burst_size generating =%llu\n",
+				hppe_policer_burst_size[i][j].burst_size_max);
+		printk("policer frame hppe_max_burst_size step  =%llu\n",
+				hppe_policer_burst_size[i][j].burst_size_1bit);
+		*/
 
 	}
 
 	return SW_OK;
 }
 
+#ifndef IN_POLICER_MINI
 static sw_error_t
 __adpt_hppe_policer_two_bucket_parameter_select(a_uint64_t c_rate,
 						a_uint64_t c_burst_size,
@@ -875,6 +888,7 @@ adpt_hppe_policer_time_slot_get(a_uint32_t dev_id, a_uint32_t *time_slot)
 
 	return SW_OK;
 }
+#endif
 
 sw_error_t
 adpt_hppe_port_compensation_byte_set(a_uint32_t dev_id, fal_port_t port_id,
@@ -918,6 +932,7 @@ adpt_hppe_policer_time_slot_set(a_uint32_t dev_id, a_uint32_t time_slot)
 
 	return SW_OK;
 }
+#ifndef IN_POLICER_MINI
 sw_error_t
 adpt_hppe_policer_global_counter_get(a_uint32_t dev_id,
 		fal_policer_global_counter_t *counter)
@@ -932,20 +947,24 @@ adpt_hppe_policer_global_counter_get(a_uint32_t dev_id,
 	hppe_pc_global_cnt_tbl_get(dev_id, index, &pc_global_cnt_tbl);
 	counter->policer_drop_packet_counter = pc_global_cnt_tbl.bf.pkt_cnt;
 	counter->policer_drop_byte_counter = pc_global_cnt_tbl.bf.byte_cnt_1;
-	counter->policer_drop_byte_counter = (counter->policer_drop_byte_counter << 32) | pc_global_cnt_tbl.bf.byte_cnt_0;
+	counter->policer_drop_byte_counter = (counter->policer_drop_byte_counter << 32) |
+		pc_global_cnt_tbl.bf.byte_cnt_0;
 
 	hppe_pc_global_cnt_tbl_get(dev_id, index + 1, &pc_global_cnt_tbl);
 	counter->policer_forward_packet_counter = pc_global_cnt_tbl.bf.pkt_cnt;
 	counter->policer_forward_byte_counter = pc_global_cnt_tbl.bf.byte_cnt_1;
-	counter->policer_forward_byte_counter = (counter->policer_forward_byte_counter << 32) | pc_global_cnt_tbl.bf.byte_cnt_0;
+	counter->policer_forward_byte_counter = (counter->policer_forward_byte_counter << 32) |
+		pc_global_cnt_tbl.bf.byte_cnt_0;
 
 	hppe_pc_global_cnt_tbl_get(dev_id, index + 2, &pc_global_cnt_tbl);
 	counter->policer_bypass_packet_counter = pc_global_cnt_tbl.bf.pkt_cnt;
 	counter->policer_bypass_byte_counter = pc_global_cnt_tbl.bf.byte_cnt_1;
-	counter->policer_bypass_byte_counter = (counter->policer_bypass_byte_counter << 32) | pc_global_cnt_tbl.bf.byte_cnt_0;
+	counter->policer_bypass_byte_counter = (counter->policer_bypass_byte_counter << 32) |
+		pc_global_cnt_tbl.bf.byte_cnt_0;
 
 	return SW_OK;
 }
+#endif
 
 void adpt_hppe_policer_func_bitmap_init(a_uint32_t dev_id)
 {
@@ -1005,6 +1024,7 @@ sw_error_t adpt_hppe_policer_init(a_uint32_t dev_id)
 
 	adpt_hppe_policer_func_unregister(dev_id, p_adpt_api);
 
+#ifndef IN_POLICER_MINI
 	if(p_adpt_api->adpt_policer_func_bitmap & (1 << FUNC_ADPT_ACL_POLICER_COUNTER_GET))
 	{
 		p_adpt_api->adpt_acl_policer_counter_get = adpt_hppe_acl_policer_counter_get;
@@ -1037,6 +1057,11 @@ sw_error_t adpt_hppe_policer_init(a_uint32_t dev_id)
 	{
 		p_adpt_api->adpt_policer_time_slot_get = adpt_hppe_policer_time_slot_get;
 	}
+	if(p_adpt_api->adpt_policer_func_bitmap & (1 << FUNC_ADPT_POLICER_GLOBAL_COUNTER_GET))
+	{
+		p_adpt_api->adpt_policer_global_counter_get = adpt_hppe_policer_global_counter_get;
+	}
+#endif
 	if(p_adpt_api->adpt_policer_func_bitmap & (1 << FUNC_ADPT_PORT_COMPENSATION_BYTE_SET))
 	{
 		p_adpt_api->adpt_port_compensation_byte_set = adpt_hppe_port_compensation_byte_set;
@@ -1044,10 +1069,6 @@ sw_error_t adpt_hppe_policer_init(a_uint32_t dev_id)
 	if(p_adpt_api->adpt_policer_func_bitmap & (1 << FUNC_ADPT_POLICER_TIME_SLOT_SET))
 	{
 		p_adpt_api->adpt_policer_time_slot_set = adpt_hppe_policer_time_slot_set;
-	}
-	if(p_adpt_api->adpt_policer_func_bitmap & (1 << FUNC_ADPT_POLICER_GLOBAL_COUNTER_GET))
-	{
-		p_adpt_api->adpt_policer_global_counter_get = adpt_hppe_policer_global_counter_get;
 	}
 
 	return SW_OK;

@@ -34,6 +34,7 @@
 #define VP_PORT_MIN_ID	64
 #define PHYSICAL_PORT_MAX_ID	7
 
+#ifndef IN_MISC_MINI
 char cpucode[][85] = {
 "Forwarding to CPU",
 "Unkown L2 protocol exception redirect/copy to CPU",
@@ -951,7 +952,7 @@ adpt_hppe_debug_counter_get(a_bool_t show_type)
 
 	return SW_OK;
 }
-
+#endif
 sw_error_t adpt_hppe_misc_init(a_uint32_t dev_id)
 {
 	adpt_api_t *p_adpt_api = NULL;
@@ -960,13 +961,13 @@ sw_error_t adpt_hppe_misc_init(a_uint32_t dev_id)
 
 	if(p_adpt_api == NULL)
 		return SW_FAIL;
-
+#ifndef IN_MISC_MINI
 	p_adpt_api->adpt_debug_port_counter_enable = adpt_hppe_debug_port_counter_enable;
 	p_adpt_api->adpt_debug_port_counter_status_get = adpt_hppe_debug_port_counter_status_get;
 
 	p_adpt_api->adpt_debug_counter_set = adpt_hppe_debug_counter_set;
 	p_adpt_api->adpt_debug_counter_get = adpt_hppe_debug_counter_get;
-
+#endif
 	return SW_OK;
 }
 

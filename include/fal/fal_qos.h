@@ -64,6 +64,9 @@ typedef struct {
 	a_int8_t preheader_pri;
 	a_uint8_t flow_pri;
 	a_uint8_t acl_pri;
+	a_uint8_t post_acl_pri;
+	a_bool_t pcp_pri_force;
+	a_bool_t dscp_pri_force;
 } fal_qos_pri_precedence_t;
 
 typedef struct {
@@ -78,6 +81,13 @@ typedef struct {
 	a_uint8_t internal_pri;
 	a_uint8_t internal_dscp;
 	a_uint8_t internal_dp;
+	a_uint8_t dscp_mask;
+	a_bool_t dscp_en;
+	a_bool_t pcp_en;
+	a_bool_t dei_en;
+	a_bool_t pri_en;
+	a_bool_t dp_en;
+	a_uint8_t qos_prec; /* resolution precedence */
 } fal_qos_cosmap_t;
 
 typedef enum {
@@ -264,76 +274,71 @@ typedef struct {
 sw_error_t
     fal_qos_port_mode_get(a_uint32_t dev_id, fal_port_t port_id,
                           fal_qos_mode_t mode, a_bool_t * enable);
-#endif
+
     sw_error_t
     fal_qos_port_mode_pri_set(a_uint32_t dev_id, fal_port_t port_id,
                               fal_qos_mode_t mode, a_uint32_t pri);
 
 
-#ifndef IN_QOS_MINI
     sw_error_t
     fal_qos_port_mode_pri_get(a_uint32_t dev_id, fal_port_t port_id,
                               fal_qos_mode_t mode, a_uint32_t * pri);
-#endif
+
 
     sw_error_t
     fal_qos_port_default_up_set(a_uint32_t dev_id, fal_port_t port_id,
                                 a_uint32_t up);
 
 
-#ifndef IN_QOS_MINI
     sw_error_t
     fal_qos_port_default_up_get(a_uint32_t dev_id, fal_port_t port_id,
                                 a_uint32_t * up);
-#endif
+
     sw_error_t
     fal_qos_port_sch_mode_set(a_uint32_t dev_id, a_uint32_t port_id,
                               fal_sch_mode_t mode, const a_uint32_t weight[]);
 
-#ifndef IN_QOS_MINI
     sw_error_t
     fal_qos_port_sch_mode_get(a_uint32_t dev_id, a_uint32_t port_id,
                               fal_sch_mode_t * mode, a_uint32_t weight[]);
-#endif
+
     sw_error_t
     fal_qos_port_default_spri_set(a_uint32_t dev_id, fal_port_t port_id,
                                   a_uint32_t spri);
 
-#ifndef IN_QOS_MINI
     sw_error_t
     fal_qos_port_default_spri_get(a_uint32_t dev_id, fal_port_t port_id,
                                   a_uint32_t * spri);
-#endif
+
     sw_error_t
     fal_qos_port_default_cpri_set(a_uint32_t dev_id, fal_port_t port_id,
                                   a_uint32_t cpri);
 
-#ifndef IN_QOS_MINI
     sw_error_t
     fal_qos_port_default_cpri_get(a_uint32_t dev_id, fal_port_t port_id,
                                   a_uint32_t * cpri);
-#endif
+
     sw_error_t
     fal_qos_port_force_spri_status_set(a_uint32_t dev_id, fal_port_t port_id,
                                        a_bool_t enable);
-#ifndef IN_QOS_MINI
+
     sw_error_t
     fal_qos_port_force_spri_status_get(a_uint32_t dev_id, fal_port_t port_id,
                                        a_bool_t* enable);
-#endif
+
     sw_error_t
     fal_qos_port_force_cpri_status_set(a_uint32_t dev_id, fal_port_t port_id,
                                        a_bool_t enable);
-#ifndef IN_QOS_MINI
+
     sw_error_t
     fal_qos_port_force_cpri_status_get(a_uint32_t dev_id, fal_port_t port_id,
                                        a_bool_t* enable);
-#endif
+
     sw_error_t
     fal_qos_queue_remark_table_set(a_uint32_t dev_id, fal_port_t port_id,
                                    fal_queue_t queue_id, a_uint32_t tbl_id, a_bool_t enable);
 
-#ifndef IN_QOS_MINI
+
     sw_error_t
     fal_qos_queue_remark_table_get(a_uint32_t dev_id, fal_port_t port_id,
                                    fal_queue_t queue_id, a_uint32_t * tbl_id, a_bool_t * enable);

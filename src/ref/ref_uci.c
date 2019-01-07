@@ -567,6 +567,12 @@ parse_qos_ptpri(struct switch_val *val)
 			val_ptr[4] = (char*)ext_value_p->option_value;
 		} else if (!strcmp(ext_value_p->option_name, "aclprec")) {
 			val_ptr[5] = (char*)ext_value_p->option_value;
+		}  else if (!strcmp(ext_value_p->option_name, "postaclprec")) {
+			val_ptr[6] = (char*)ext_value_p->option_value;
+		}  else if (!strcmp(ext_value_p->option_name, "pcpprecforce")) {
+			val_ptr[7] = (char*)ext_value_p->option_value;
+		}  else if (!strcmp(ext_value_p->option_name, "dscpprecforce")) {
+			val_ptr[8] = (char*)ext_value_p->option_value;
 		}  else {
 			rv = -1;
 			break;
@@ -638,6 +644,20 @@ parse_qos_pcpmap(struct switch_val *val)
 			val_ptr[5] = (char*)ext_value_p->option_value;
 		} else if (!strcmp(ext_value_p->option_name, "internaldropprec")) {
 			val_ptr[6] = (char*)ext_value_p->option_value;
+		}  else if (!strcmp(ext_value_p->option_name, "dscpmask")) {
+			val_ptr[7] = (char*)ext_value_p->option_value;
+		}  else if (!strcmp(ext_value_p->option_name, "dscpen")) {
+			val_ptr[8] = (char*)ext_value_p->option_value;
+		}  else if (!strcmp(ext_value_p->option_name, "pcpen")) {
+			val_ptr[9] = (char*)ext_value_p->option_value;
+		}  else if (!strcmp(ext_value_p->option_name, "deien")) {
+			val_ptr[10] = (char*)ext_value_p->option_value;
+		}  else if (!strcmp(ext_value_p->option_name, "prien")) {
+			val_ptr[11] = (char*)ext_value_p->option_value;
+		}  else if (!strcmp(ext_value_p->option_name, "dpen")) {
+			val_ptr[12] = (char*)ext_value_p->option_value;
+		}  else if (!strcmp(ext_value_p->option_name, "qosprec")) {
+			val_ptr[13] = (char*)ext_value_p->option_value;
 		}  else {
 			rv = -1;
 			break;
@@ -2468,8 +2488,6 @@ parse_port_eeecfg(struct switch_val *val)
 	return rv;
 }
 
-#endif
-
 static int
 parse_port_framemaxsize(struct switch_val *val)
 {
@@ -2585,7 +2603,7 @@ parse_port_srcfilter(struct switch_val *val)
 
 	return rv;
 }
-
+#endif
 #endif
 
 #ifdef IN_PORTVLAN
@@ -8270,7 +8288,15 @@ parse_acl_rule(struct switch_val *val)
 			rule.dscp = tmpdata;
 			FAL_ACTION_FLG_SET(rule.action_flg,
 					FAL_ACL_ACTION_REMARK_DSCP);
-		} else if(!strcmp(ext_value_p->option_name, "vlan_priority_of_remark")) {
+		}
+#if defined(CPPE)
+		else if(!strcmp(ext_value_p->option_name, "dscp_of_remark_mask")) {
+			cmd_data_check_uint8((char*)ext_value_p->option_value,
+						&tmpdata, sizeof(tmpdata));
+			rule.dscp_mask = tmpdata;
+		}
+#endif
+		else if(!strcmp(ext_value_p->option_name, "vlan_priority_of_remark")) {
 			cmd_data_check_uint8((char*)ext_value_p->option_value,
 						&tmpdata, sizeof(tmpdata));
 			rule.up = tmpdata;

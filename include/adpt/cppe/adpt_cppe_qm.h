@@ -17,39 +17,23 @@
  * @defgroup
  * @{
  */
-#ifndef _ADPT_CPPE_PORTCTRLH_
-#define _ADPT_CPPE_PORTCTRLH_
+#ifndef _ADPT_CPPE_QM_H_
+#define _ADPT_CPPE_QM_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif                          /* __cplusplus */
 
-#define CPPE_PORT3_PCS_SEL_PCS0_CHANNEL2 0
-#define CPPE_PORT3_PCS_SEL_PCS0_CHANNEL4 1
-#define CPPE_PORT4_PCS_SEL_PCS0_CHANNEL3 0
-#define CPPE_PORT4_PCS_SEL_PCS0_SGMIIPLUS 1
-#define CPPE_PORT5_PCS_SEL_PCS0_CHANNEL4 0
-#define CPPE_PORT5_PCS_SEL_PCS1_CHANNEL0 1
-#define CPPE_PORT5_GMAC_SEL_GMAC 0
-#define CPPE_PORT5_GMAC_SEL_XGMAC 1
-
 sw_error_t
-_adpt_cppe_port_mux_mac_set(a_uint32_t dev_id, fal_port_t port_id,
-		a_uint32_t port_type);
+adpt_cppe_qm_port_source_profile_set(
+		a_uint32_t dev_id, fal_port_t port, a_uint32_t src_profile);
 sw_error_t
-adpt_cppe_port_mru_set(a_uint32_t dev_id, fal_port_t port_id,
-		fal_mru_ctrl_t *ctrl);
-sw_error_t
-adpt_cppe_port_mru_get(a_uint32_t dev_id, fal_port_t port_id,
-		fal_mru_ctrl_t *ctrl);
-sw_error_t
-adpt_cppe_port_mtu_set(a_uint32_t dev_id, fal_port_t port_id,
-		fal_mtu_ctrl_t *ctrl);
-sw_error_t
-adpt_cppe_port_mtu_get(a_uint32_t dev_id, fal_port_t port_id,
-		fal_mtu_ctrl_t *ctrl);
+adpt_cppe_qm_port_source_profile_get(
+		a_uint32_t dev_id, fal_port_t port, a_uint32_t *src_profile);
 
 #ifdef __cplusplus
 }
 #endif                          /* __cplusplus */
 #endif
+
+

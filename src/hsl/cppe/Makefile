@@ -1,20 +1,14 @@
-LOC_DIR=src/adpt/cppe
-LIB=ADPT
+LOC_DIR=src/hsl/cppe
+LIB=HSL
 
 include $(PRJ_PATH)/make/config.mk
 
-SRC_LIST=
-
 ifeq (TRUE, $(IN_PORTCONTROL))
-  SRC_LIST += adpt_cppe_portctrl.c
-endif
-
-ifeq (TRUE, $(IN_QM))
-  SRC_LIST += adpt_cppe_qm.c
+  SRC_LIST+=cppe_portctrl.c
 endif
 
 ifeq (TRUE, $(IN_QOS))
-  SRC_LIST += adpt_cppe_qos.c
+  SRC_LIST+=cppe_qos.c
 endif
 
 ifeq (, $(findstring CPPE, $(SUPPORT_CHIP)))

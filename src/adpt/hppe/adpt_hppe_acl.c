@@ -19,6 +19,7 @@
  */
 #include "sw.h"
 #include "adpt.h"
+#include "adpt_hppe.h"
 #include "hppe_acl_reg.h"
 #include "hppe_acl.h"
 
@@ -998,7 +999,8 @@ static sw_error_t _adpt_hppe_acl_ipv6_rule_hw_2_sw(a_uint32_t is_ip_da, a_uint32
 
 			rule->dest_ip6_val.ul[3] = ipv6rule->ip_ext_1<<16|ipv6rule->ip_port;
 			rule->dest_ip6_val.ul[2] |= (ipv6rule->ip_ext_2)&0xffff;
-			rule->dest_ip6_mask.ul[3] = ipv6rule_mask->ip_ext_1_mask<<16|ipv6rule_mask->ip_port_mask;
+			rule->dest_ip6_mask.ul[3] =
+				ipv6rule_mask->ip_ext_1_mask<<16|ipv6rule_mask->ip_port_mask;
 			rule->dest_ip6_mask.ul[2] |= (ipv6rule_mask->ip_ext_2_mask)&0xffff;
 		}
 		else if(ip_bit_range == 1)
@@ -1012,7 +1014,8 @@ static sw_error_t _adpt_hppe_acl_ipv6_rule_hw_2_sw(a_uint32_t is_ip_da, a_uint32
 			rule->dest_ip6_val.ul[2] |= (ipv6rule->ip_port<<16)&0xffff0000;
 			rule->dest_ip6_val.ul[1] = ipv6rule->ip_ext_2<<16|ipv6rule->ip_ext_1;
 			rule->dest_ip6_mask.ul[2] |= (ipv6rule_mask->ip_port_mask<<16)&0xffff0000;
-			rule->dest_ip6_mask.ul[1] = ipv6rule_mask->ip_ext_2_mask<<16|ipv6rule_mask->ip_ext_1_mask;
+			rule->dest_ip6_mask.ul[1] =
+				ipv6rule_mask->ip_ext_2_mask<<16|ipv6rule_mask->ip_ext_1_mask;
 		}
 		else if(ip_bit_range == 2)
 		{
@@ -1020,8 +1023,10 @@ static sw_error_t _adpt_hppe_acl_ipv6_rule_hw_2_sw(a_uint32_t is_ip_da, a_uint32
 				|| ipv6rule_mask->ip_ext_2_mask)
 			{
 				FAL_FIELD_FLG_SET(rule->field_flg, FAL_ACL_FIELD_IP6_DIP);
-				rule->dest_ip6_val.ul[0] = ipv6rule->ip_ext_2<<16|ipv6rule->ip_ext_1;
-				rule->dest_ip6_mask.ul[0] = ipv6rule_mask->ip_ext_2_mask<<16|ipv6rule_mask->ip_ext_1_mask;
+				rule->dest_ip6_val.ul[0] =
+					ipv6rule->ip_ext_2<<16|ipv6rule->ip_ext_1;
+				rule->dest_ip6_mask.ul[0] = ipv6rule_mask->ip_ext_2_mask<<16|
+					ipv6rule_mask->ip_ext_1_mask;
 			}
 			if(ipv6rule_mask->ip_port_mask)
 			{
@@ -1066,7 +1071,8 @@ static sw_error_t _adpt_hppe_acl_ipv6_rule_hw_2_sw(a_uint32_t is_ip_da, a_uint32
 			}
 			rule->src_ip6_val.ul[3] = ipv6rule->ip_ext_1<<16|ipv6rule->ip_port;
 			rule->src_ip6_val.ul[2] |= (ipv6rule->ip_ext_2)&0xffff;
-			rule->src_ip6_mask.ul[3] = ipv6rule_mask->ip_ext_1_mask<<16|ipv6rule_mask->ip_port_mask;
+			rule->src_ip6_mask.ul[3] =
+				ipv6rule_mask->ip_ext_1_mask<<16|ipv6rule_mask->ip_port_mask;
 			rule->src_ip6_mask.ul[2] |= (ipv6rule_mask->ip_ext_2_mask)&0xffff;
 		}
 		else if(ip_bit_range == 1)
@@ -1080,7 +1086,8 @@ static sw_error_t _adpt_hppe_acl_ipv6_rule_hw_2_sw(a_uint32_t is_ip_da, a_uint32
 			rule->src_ip6_val.ul[2] |= (ipv6rule->ip_port<<16)&0xffff0000;
 			rule->src_ip6_val.ul[1] = ipv6rule->ip_ext_2<<16|ipv6rule->ip_ext_1;
 			rule->src_ip6_mask.ul[2] |= (ipv6rule_mask->ip_port_mask<<16)&0xffff0000;
-			rule->src_ip6_mask.ul[1] = ipv6rule_mask->ip_ext_2_mask<<16|ipv6rule_mask->ip_ext_1_mask;
+			rule->src_ip6_mask.ul[1] =
+				ipv6rule_mask->ip_ext_2_mask<<16|ipv6rule_mask->ip_ext_1_mask;
 		}
 		else if(ip_bit_range == 2)
 		{
@@ -1089,7 +1096,8 @@ static sw_error_t _adpt_hppe_acl_ipv6_rule_hw_2_sw(a_uint32_t is_ip_da, a_uint32
 			{
 				FAL_FIELD_FLG_SET(rule->field_flg, FAL_ACL_FIELD_IP6_SIP);
 				rule->src_ip6_val.ul[0] = ipv6rule->ip_ext_2<<16|ipv6rule->ip_ext_1;
-				rule->src_ip6_mask.ul[0] = ipv6rule_mask->ip_ext_2_mask<<16|ipv6rule_mask->ip_ext_1_mask;
+				rule->src_ip6_mask.ul[0] = ipv6rule_mask->ip_ext_2_mask<<16|
+					ipv6rule_mask->ip_ext_1_mask;
 			}
 			if(ipv6rule_mask->ip_port_mask)
 			{
@@ -1446,6 +1454,12 @@ _adpt_hppe_acl_action_hw_2_sw(a_uint32_t dev_id,union ipo_action_u *hw_act, fal_
 	{
 		FAL_ACTION_FLG_SET(rule->action_flg, FAL_ACL_ACTION_REMARK_DSCP);
 		rule->dscp = hw_act->bf.dscp_tc;
+#if defined(CPPE)
+		if(adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION)
+		{
+			rule->dscp_mask = hw_act->bf.dscp_tc_mask;
+		}
+#endif
 	}
 	if(hw_act->bf.int_dp_change_en == 1)
 	{
@@ -2906,6 +2920,12 @@ _adpt_hppe_acl_action_sw_2_hw(a_uint32_t dev_id,fal_acl_rule_t *rule, union ipo_
 	{
 		hw_act->bf.dscp_tc_change_en = 1;
 		hw_act->bf.dscp_tc = rule->dscp;
+#if defined(CPPE)
+		if(adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION)
+		{
+			hw_act->bf.dscp_tc_mask = rule->dscp_mask;
+		}
+#endif
 	}
 	if(FAL_ACTION_FLG_TST(rule->action_flg, FAL_ACL_ACTION_INT_DP))
 	{

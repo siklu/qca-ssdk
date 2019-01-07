@@ -106,6 +106,7 @@ hppe_mac_packet_filter_set(
 				index * MAC_PACKET_FILTER_INC,
 				value->val);
 }
+#ifndef IN_PORTCONTROL_MINI
 
 sw_error_t
 hppe_mac_watchdog_timeout_get(
@@ -190,7 +191,7 @@ hppe_mac_rx_eth_type_match_set(
 				index * MAC_RX_ETH_TYPE_MATCH_INC,
 				value->val);
 }
-
+#endif
 sw_error_t
 hppe_mac_q0_tx_flow_ctrl_get(
 		a_uint32_t dev_id,
@@ -246,6 +247,7 @@ hppe_mac_rx_flow_ctrl_set(
 				index * MAC_RX_FLOW_CTRL_INC,
 				value->val);
 }
+#ifndef IN_PORTCONTROL_MINI
 
 sw_error_t
 hppe_mac_interrupt_status_get(
@@ -982,7 +984,7 @@ hppe_mac_tx_configuration_jd_get(
 	*value = reg_val.bf.jd;
 	return ret;
 }
-
+#endif
 sw_error_t
 hppe_mac_tx_configuration_jd_set(
 		a_uint32_t dev_id,
@@ -999,6 +1001,7 @@ hppe_mac_tx_configuration_jd_set(
 	ret = hppe_mac_tx_configuration_set(dev_id, index, &reg_val);
 	return ret;
 }
+#ifndef IN_PORTCONTROL_MINI
 
 sw_error_t
 hppe_mac_rx_configuration_lm_get(
@@ -1137,7 +1140,7 @@ hppe_mac_rx_configuration_gmpslce_get(
 	*value = reg_val.bf.gmpslce;
 	return ret;
 }
-
+#endif
 sw_error_t
 hppe_mac_rx_configuration_gmpslce_set(
 		a_uint32_t dev_id,
@@ -1154,6 +1157,7 @@ hppe_mac_rx_configuration_gmpslce_set(
 	ret = hppe_mac_rx_configuration_set(dev_id, index, &reg_val);
 	return ret;
 }
+#ifndef IN_PORTCONTROL_MINI
 
 sw_error_t
 hppe_mac_rx_configuration_hdsms_get(
@@ -1278,7 +1282,7 @@ hppe_mac_rx_configuration_ipc_set(
 	ret = hppe_mac_rx_configuration_set(dev_id, index, &reg_val);
 	return ret;
 }
-
+#endif
 sw_error_t
 hppe_mac_rx_configuration_gpsl_get(
 		a_uint32_t dev_id,
@@ -1309,6 +1313,7 @@ hppe_mac_rx_configuration_gpsl_set(
 	ret = hppe_mac_rx_configuration_set(dev_id, index, &reg_val);
 	return ret;
 }
+#ifndef IN_PORTCONTROL_MINI
 
 sw_error_t
 hppe_mac_rx_configuration_re_get(
@@ -1416,7 +1421,7 @@ hppe_mac_rx_configuration_wd_get(
 	*value = reg_val.bf.wd;
 	return ret;
 }
-
+#endif
 sw_error_t
 hppe_mac_rx_configuration_wd_set(
 		a_uint32_t dev_id,
@@ -1433,6 +1438,7 @@ hppe_mac_rx_configuration_wd_set(
 	ret = hppe_mac_rx_configuration_set(dev_id, index, &reg_val);
 	return ret;
 }
+#ifndef IN_PORTCONTROL_MINI
 
 sw_error_t
 hppe_mac_rx_configuration_acs_get(
@@ -1509,7 +1515,7 @@ hppe_mac_packet_filter_pcf_get(
 	*value = reg_val.bf.pcf;
 	return ret;
 }
-
+#endif
 sw_error_t
 hppe_mac_packet_filter_pcf_set(
 		a_uint32_t dev_id,
@@ -1526,6 +1532,7 @@ hppe_mac_packet_filter_pcf_set(
 	ret = hppe_mac_packet_filter_set(dev_id, index, &reg_val);
 	return ret;
 }
+#ifndef IN_PORTCONTROL_MINI
 
 sw_error_t
 hppe_mac_packet_filter_hmc_get(
@@ -1881,7 +1888,7 @@ hppe_mac_packet_filter_pr_get(
 	*value = reg_val.bf.pr;
 	return ret;
 }
-
+#endif
 sw_error_t
 hppe_mac_packet_filter_pr_set(
 		a_uint32_t dev_id,
@@ -1898,6 +1905,7 @@ hppe_mac_packet_filter_pr_set(
 	ret = hppe_mac_packet_filter_set(dev_id, index, &reg_val);
 	return ret;
 }
+#ifndef IN_PORTCONTROL_MINI
 
 sw_error_t
 hppe_mac_packet_filter_ipfe_get(
@@ -6063,3 +6071,4 @@ hppe_mmc_transmit_interrupt_enable_txmcgbfie_set(
 {
 	return SW_NOT_SUPPORTED;
 }
+#endif

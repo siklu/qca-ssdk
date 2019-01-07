@@ -78,7 +78,7 @@ hppe_mac_speed_set(
 				index * MAC_SPEED_INC,
 				value->val);
 }
-
+#ifndef IN_PORTCONTROL_MINI
 sw_error_t
 hppe_gol_mac_addr0_get(
 		a_uint32_t dev_id,
@@ -190,7 +190,7 @@ hppe_mac_ctrl1_set(
 				index * MAC_CTRL1_INC,
 				value->val);
 }
-
+#endif
 sw_error_t
 hppe_mac_ctrl2_get(
 		a_uint32_t dev_id,
@@ -246,7 +246,7 @@ hppe_mac_dbg_ctrl_set(
 				index * MAC_DBG_CTRL_INC,
 				value->val);
 }
-
+#ifndef IN_PORTCONTROL_MINI
 sw_error_t
 hppe_mac_dbg_addr_get(
 		a_uint32_t dev_id,
@@ -298,6 +298,7 @@ hppe_mac_dbg_data_set(
 {
 	return SW_NOT_SUPPORTED;
 }
+#endif
 
 sw_error_t
 hppe_mac_jumbo_size_get(
@@ -355,6 +356,7 @@ hppe_mru_mtu_ctrl_tbl_set(
 				2);
 }
 
+#if ((!defined(IN_PORTCONTROL_MINI)) || (!defined(IN_MISC_MINI)))
 sw_error_t
 hppe_mc_mtu_ctrl_tbl_get(
 		a_uint32_t dev_id,
@@ -382,6 +384,7 @@ hppe_mc_mtu_ctrl_tbl_set(
 				index * MC_MTU_CTRL_TBL_INC,
 				value->val);
 }
+#endif
 
 sw_error_t
 hppe_tdm_ctrl_get(
@@ -404,7 +407,7 @@ hppe_tdm_ctrl_set(
 				NSS_PRX_CSR_BASE_ADDR + TDM_CTRL_ADDRESS,
 				value->val);
 }
-
+#ifndef IN_PORTCONTROL_MINI
 sw_error_t
 hppe_rx_fifo_cfg_get(
 		a_uint32_t dev_id,
@@ -447,6 +450,7 @@ hppe_tdm_cfg_get(
 				index * TDM_CFG_INC,
 				&value->val);
 }
+#endif
 
 sw_error_t
 hppe_tdm_cfg_set(
@@ -475,6 +479,7 @@ hppe_drop_stat_get(
 				3);
 }
 
+#ifndef IN_MISC_MINI
 sw_error_t
 hppe_drop_stat_set(
 		a_uint32_t dev_id,
@@ -488,7 +493,9 @@ hppe_drop_stat_set(
 				value->val,
 				3);
 }
+#endif
 
+#ifndef IN_PORTCONTROL_MINI
 sw_error_t
 hppe_mac_enable_txmac_en_get(
 		a_uint32_t dev_id,
@@ -1680,7 +1687,7 @@ hppe_mac_ctrl2_mac_tx_thd_get(
 	*value = reg_val.bf.mac_tx_thd;
 	return ret;
 }
-
+#endif
 sw_error_t
 hppe_mac_ctrl2_mac_tx_thd_set(
 		a_uint32_t dev_id,
@@ -1697,7 +1704,7 @@ hppe_mac_ctrl2_mac_tx_thd_set(
 	ret = hppe_mac_ctrl2_set(dev_id, index, &reg_val);
 	return ret;
 }
-
+#ifndef IN_PORTCONTROL_MINI
 sw_error_t
 hppe_mac_ctrl2_crc_rsv_en_get(
 		a_uint32_t dev_id,
@@ -1742,7 +1749,7 @@ hppe_mac_ctrl2_crs_sel_get(
 	*value = reg_val.bf.crs_sel;
 	return ret;
 }
-
+#endif
 sw_error_t
 hppe_mac_ctrl2_crs_sel_set(
 		a_uint32_t dev_id,
@@ -1759,7 +1766,7 @@ hppe_mac_ctrl2_crs_sel_set(
 	ret = hppe_mac_ctrl2_set(dev_id, index, &reg_val);
 	return ret;
 }
-
+#ifndef IN_PORTCONTROL_MINI
 sw_error_t
 hppe_mac_ctrl2_ipg_dec_len_get(
 		a_uint32_t dev_id,
@@ -1804,7 +1811,7 @@ hppe_mac_ctrl2_maxfr_get(
 	*value = reg_val.bf.maxfr;
 	return ret;
 }
-
+#endif
 sw_error_t
 hppe_mac_ctrl2_maxfr_set(
 		a_uint32_t dev_id,
@@ -1821,6 +1828,7 @@ hppe_mac_ctrl2_maxfr_set(
 	ret = hppe_mac_ctrl2_set(dev_id, index, &reg_val);
 	return ret;
 }
+#ifndef IN_PORTCONTROL_MINI
 
 sw_error_t
 hppe_mac_ctrl2_mac_lpi_tx_idle_get(
@@ -1959,7 +1967,7 @@ hppe_mac_dbg_ctrl_hihg_ipg_get(
 	*value = reg_val.bf.hihg_ipg;
 	return ret;
 }
-
+#endif
 sw_error_t
 hppe_mac_dbg_ctrl_hihg_ipg_set(
 		a_uint32_t dev_id,
@@ -1976,7 +1984,7 @@ hppe_mac_dbg_ctrl_hihg_ipg_set(
 	ret = hppe_mac_dbg_ctrl_set(dev_id, index, &reg_val);
 	return ret;
 }
-
+#ifndef IN_PORTCONTROL_MINI
 sw_error_t
 hppe_mac_dbg_ctrl_mac_ipg_ctrl_get(
 		a_uint32_t dev_id,
@@ -2123,7 +2131,7 @@ hppe_mac_dbg_data_mac_debug_data_set(
 {
 	return SW_NOT_SUPPORTED;
 }
-
+#endif
 sw_error_t
 hppe_mac_jumbo_size_mac_jumbo_size_get(
 		a_uint32_t dev_id,
@@ -2154,7 +2162,7 @@ hppe_mac_jumbo_size_mac_jumbo_size_set(
 	ret = hppe_mac_jumbo_size_set(dev_id, index, &reg_val);
 	return ret;
 }
-
+#ifndef IN_PORTCONTROL_MINI
 sw_error_t
 hppe_mru_mtu_ctrl_tbl_mtu_cmd_get(
 		a_uint32_t dev_id,
@@ -2309,6 +2317,7 @@ hppe_mru_mtu_ctrl_tbl_mru_set(
 	ret = hppe_mru_mtu_ctrl_tbl_set(dev_id, index, &reg_val);
 	return ret;
 }
+#endif
 
 sw_error_t
 hppe_mru_mtu_ctrl_tbl_src_profile_get(
@@ -2341,6 +2350,7 @@ hppe_mru_mtu_ctrl_tbl_src_profile_set(
 	return ret;
 }
 
+#ifndef IN_PORTCONTROL_MINI
 sw_error_t
 hppe_mc_mtu_ctrl_tbl_mtu_cmd_get(
 		a_uint32_t dev_id,
@@ -2644,7 +2654,7 @@ hppe_tdm_cfg_dir_set(
 	ret = hppe_tdm_cfg_set(dev_id, index, &reg_val);
 	return ret;
 }
-
+#endif
 sw_error_t
 hppe_port_in_forward_get(
 		a_uint32_t dev_id,
@@ -2672,7 +2682,7 @@ hppe_port_in_forward_set(
 				index * PORT_IN_FORWARD_INC,
 				value->val);
 }
-
+#ifndef IN_PORTCONTROL_MINI
 sw_error_t
 hppe_port_in_forward_source_filtering_bypass_get(
 		a_uint32_t dev_id,
@@ -2703,7 +2713,9 @@ hppe_port_in_forward_source_filtering_bypass_set(
 	ret = hppe_port_in_forward_set(dev_id, index, &reg_val);
 	return ret;
 }
+#endif
 
+#ifndef IN_MISC_MINI
 sw_error_t
 hppe_drop_stat_bytes_get(
 		a_uint32_t dev_id,
@@ -2767,7 +2779,9 @@ hppe_drop_stat_pkts_set(
 	ret = hppe_drop_stat_set(dev_id, index, &reg_val);
 	return ret;
 }
+#endif
 
+#if ((!defined(IN_PORTCONTROL_MINI)) || (!defined(IN_MISC_MINI)))
 sw_error_t
 hppe_port_tx_counter_tbl_reg_get(
 		a_uint32_t dev_id,
@@ -2847,17 +2861,6 @@ hppe_epe_dbg_in_cnt_reg_set(
 }
 
 sw_error_t
-hppe_epe_dbg_out_cnt_reg_get(
-		a_uint32_t dev_id,
-		union epe_dbg_out_cnt_reg_u *value)
-{
-	return hppe_reg_get(
-				dev_id,
-				NSS_PTX_CSR_BASE_ADDR + EPE_DBG_OUT_CNT_REG_ADDRESS,
-				&value->val);
-}
-
-sw_error_t
 hppe_epe_dbg_out_cnt_reg_set(
 		a_uint32_t dev_id,
 		union epe_dbg_out_cnt_reg_u *value)
@@ -2866,6 +2869,19 @@ hppe_epe_dbg_out_cnt_reg_set(
 				dev_id,
 				NSS_PTX_CSR_BASE_ADDR + EPE_DBG_OUT_CNT_REG_ADDRESS,
 				value->val);
+}
+#endif
+
+#ifndef IN_PORTCONTROL_MINI
+sw_error_t
+hppe_epe_dbg_out_cnt_reg_get(
+		a_uint32_t dev_id,
+		union epe_dbg_out_cnt_reg_u *value)
+{
+	return hppe_reg_get(
+				dev_id,
+				NSS_PTX_CSR_BASE_ADDR + EPE_DBG_OUT_CNT_REG_ADDRESS,
+				&value->val);
 }
 
 sw_error_t
@@ -3053,6 +3069,7 @@ hppe_epe_dbg_out_cnt_reg_counter_set(
 	ret = hppe_epe_dbg_out_cnt_reg_set(dev_id, &reg_val);
 	return ret;
 }
+#endif
 
 sw_error_t
 hppe_lpi_enable_get(
@@ -3105,6 +3122,7 @@ hppe_lpi_timer_set(
 				index * LPI_PORT_TIMER_INC,
 				value->val);
 }
+#ifndef IN_PORTCONTROL_MINI
 sw_error_t
 hppe_lpi_dbg_addr_get(
 		a_uint32_t dev_id,
@@ -3181,7 +3199,9 @@ hppe_lpi_cnt_set(
 				index * LPI_CNT_INC,
 				value->val);
 }
+#endif
 
+#ifndef IN_MISC_MINI
 sw_error_t
 hppe_drop_cnt_get(
 		a_uint32_t dev_id,
@@ -3417,4 +3437,5 @@ hppe_ipr_byte_high_reg_bytes_set(
 	ret = hppe_ipr_byte_high_reg_set(dev_id, index, &reg_val);
 	return ret;
 }
+#endif
 

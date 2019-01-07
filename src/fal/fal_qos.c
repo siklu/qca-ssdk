@@ -638,6 +638,7 @@ _fal_qos_queue_remark_table_get(a_uint32_t dev_id, fal_port_t port_id,
     rv = p_api->qos_queue_remark_table_get(dev_id, port_id, queue_id, tbl_id, enable);
     return rv;
 }
+#endif
 
 sw_error_t
 _fal_qos_port_pri_precedence_set(a_uint32_t dev_id, fal_port_t port_id,
@@ -973,6 +974,7 @@ _fal_port_scheduler_resource_get(
 	rv = p_api->adpt_port_scheduler_resource_get(dev_id, port_id, cfg);
 	return rv;
 }
+#ifndef IN_QOS_MINI
 /*insert flag for inner fal, don't remove it*/
 
 /**
@@ -1963,8 +1965,6 @@ EXPORT_SYMBOL(fal_queue_scheduler_get);
 EXPORT_SYMBOL(fal_port_queues_get);
 
 EXPORT_SYMBOL(fal_qos_port_pri_precedence_set);
-
-EXPORT_SYMBOL(fal_qos_port_tx_buf_status_get);
 
 EXPORT_SYMBOL(fal_qos_port_pri_precedence_get);
 

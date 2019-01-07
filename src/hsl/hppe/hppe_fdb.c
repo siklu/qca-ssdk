@@ -22,7 +22,7 @@
 #include "hppe_reg_access.h"
 #include "hppe_fdb_reg.h"
 #include "hppe_fdb.h"
-
+#ifndef IN_FDB_MINI
 sw_error_t
 hppe_l2_dbg_addr_get(
 		a_uint32_t dev_id,
@@ -74,7 +74,7 @@ hppe_fdb_tbl_op_get(
 				IPE_L2_BASE_ADDR + FDB_TBL_OP_ADDRESS,
 				&value->val);
 }
-
+#endif
 sw_error_t
 hppe_fdb_tbl_op_set(
 		a_uint32_t dev_id,
@@ -85,7 +85,7 @@ hppe_fdb_tbl_op_set(
 				IPE_L2_BASE_ADDR + FDB_TBL_OP_ADDRESS,
 				value->val);
 }
-
+#ifndef IN_FDB_MINI
 sw_error_t
 hppe_fdb_tbl_rd_op_get(
 		a_uint32_t dev_id,
@@ -96,7 +96,7 @@ hppe_fdb_tbl_rd_op_get(
 				IPE_L2_BASE_ADDR + FDB_TBL_RD_OP_ADDRESS,
 				&value->val);
 }
-
+#endif
 sw_error_t
 hppe_fdb_tbl_rd_op_set(
 		a_uint32_t dev_id,
@@ -118,7 +118,7 @@ hppe_fdb_tbl_op_rslt_get(
 				IPE_L2_BASE_ADDR + FDB_TBL_OP_RSLT_ADDRESS,
 				&value->val);
 }
-
+#ifndef IN_FDB_MINI
 sw_error_t
 hppe_fdb_tbl_op_rslt_set(
 		a_uint32_t dev_id,
@@ -126,7 +126,7 @@ hppe_fdb_tbl_op_rslt_set(
 {
 	return SW_NOT_SUPPORTED;
 }
-
+#endif
 sw_error_t
 hppe_fdb_tbl_rd_op_rslt_get(
 		a_uint32_t dev_id,
@@ -137,7 +137,7 @@ hppe_fdb_tbl_rd_op_rslt_get(
 				IPE_L2_BASE_ADDR + FDB_TBL_RD_OP_RSLT_ADDRESS,
 				&value->val);
 }
-
+#ifndef IN_FDB_MINI
 sw_error_t
 hppe_fdb_tbl_rd_op_rslt_set(
 		a_uint32_t dev_id,
@@ -167,7 +167,7 @@ hppe_age_timer_set(
 				IPE_L2_BASE_ADDR + AGE_TIMER_ADDRESS,
 				value->val);
 }
-
+#endif
 sw_error_t
 hppe_l2_global_conf_get(
 		a_uint32_t dev_id,
@@ -189,7 +189,7 @@ hppe_l2_global_conf_set(
 				IPE_L2_BASE_ADDR + L2_GLOBAL_CONF_ADDRESS,
 				value->val);
 }
-
+#ifndef IN_FDB_MINI
 sw_error_t
 hppe_l2_dbgcnt_cmd_get(
 		a_uint32_t dev_id,
@@ -252,7 +252,7 @@ hppe_l2_dbgcnt_wdata_set(
 				IPE_L2_BASE_ADDR + L2_DBGCNT_WDATA_ADDRESS,
 				value->val);
 }
-
+#endif
 sw_error_t
 hppe_fdb_tbl_rd_op_rslt_data0_get(
 		a_uint32_t dev_id,
@@ -282,7 +282,7 @@ hppe_fdb_tbl_rd_op_rslt_data1_get(
 				IPE_L2_BASE_ADDR + FDB_TBL_RD_OP_RSLT_DATA1_ADDRESS,
 				&value->val);
 }
-
+#ifndef IN_FDB_MINI
 sw_error_t
 hppe_fdb_tbl_rd_op_rslt_data1_set(
 		a_uint32_t dev_id,
@@ -290,7 +290,7 @@ hppe_fdb_tbl_rd_op_rslt_data1_set(
 {
 	return SW_NOT_SUPPORTED;
 }
-
+#endif
 sw_error_t
 hppe_fdb_tbl_rd_op_rslt_data2_get(
 		a_uint32_t dev_id,
@@ -301,7 +301,7 @@ hppe_fdb_tbl_rd_op_rslt_data2_get(
 				IPE_L2_BASE_ADDR + FDB_TBL_RD_OP_RSLT_DATA2_ADDRESS,
 				&value->val);
 }
-
+#ifndef IN_FDB_MINI
 sw_error_t
 hppe_fdb_tbl_rd_op_rslt_data2_set(
 		a_uint32_t dev_id,
@@ -309,7 +309,7 @@ hppe_fdb_tbl_rd_op_rslt_data2_set(
 {
 	return SW_NOT_SUPPORTED;
 }
-
+#endif
 sw_error_t
 hppe_fdb_tbl_op_data0_get(
 		a_uint32_t dev_id,
@@ -469,7 +469,7 @@ hppe_port_bridge_ctrl_set(
 				index * PORT_BRIDGE_CTRL_INC,
 				value->val);
 }
-
+#ifndef IN_FDB_MINI
 sw_error_t
 hppe_port_lrn_limit_ctrl_get(
 		a_uint32_t dev_id,
@@ -521,7 +521,7 @@ hppe_port_lrn_limit_counter_set(
 {
 	return SW_NOT_SUPPORTED;
 }
-
+#endif
 sw_error_t
 hppe_rfdb_tbl_get(
 		a_uint32_t dev_id,
@@ -549,7 +549,7 @@ hppe_rfdb_tbl_set(
 				value->val,
 				2);
 }
-
+#ifndef IN_FDB_MINI
 sw_error_t
 hppe_fdb_tbl_get(
 		a_uint32_t dev_id,
@@ -1541,7 +1541,7 @@ hppe_l2_dbgcnt_wdata_data_set(
 	ret = hppe_l2_dbgcnt_wdata_set(dev_id, &reg_val);
 	return ret;
 }
-
+#endif
 sw_error_t
 hppe_fdb_tbl_rd_op_rslt_data0_data_get(
 		a_uint32_t dev_id,
@@ -1554,7 +1554,7 @@ hppe_fdb_tbl_rd_op_rslt_data0_data_get(
 	*value = reg_val.bf.data;
 	return ret;
 }
-
+#ifndef IN_FDB_MINI
 sw_error_t
 hppe_fdb_tbl_rd_op_rslt_data0_data_set(
 		a_uint32_t dev_id,
@@ -1562,7 +1562,7 @@ hppe_fdb_tbl_rd_op_rslt_data0_data_set(
 {
 	return SW_NOT_SUPPORTED;
 }
-
+#endif
 sw_error_t
 hppe_fdb_tbl_rd_op_rslt_data1_data_get(
 		a_uint32_t dev_id,
@@ -1575,7 +1575,7 @@ hppe_fdb_tbl_rd_op_rslt_data1_data_get(
 	*value = reg_val.bf.data;
 	return ret;
 }
-
+#ifndef IN_FDB_MINI
 sw_error_t
 hppe_fdb_tbl_rd_op_rslt_data1_data_set(
 		a_uint32_t dev_id,
@@ -1583,7 +1583,7 @@ hppe_fdb_tbl_rd_op_rslt_data1_data_set(
 {
 	return SW_NOT_SUPPORTED;
 }
-
+#endif
 sw_error_t
 hppe_fdb_tbl_rd_op_rslt_data2_data_get(
 		a_uint32_t dev_id,
@@ -1596,7 +1596,7 @@ hppe_fdb_tbl_rd_op_rslt_data2_data_get(
 	*value = reg_val.bf.data;
 	return ret;
 }
-
+#ifndef IN_FDB_MINI
 sw_error_t
 hppe_fdb_tbl_rd_op_rslt_data2_data_set(
 		a_uint32_t dev_id,
@@ -1617,7 +1617,7 @@ hppe_fdb_tbl_op_data0_data_get(
 	*value = reg_val.bf.data;
 	return ret;
 }
-
+#endif
 sw_error_t
 hppe_fdb_tbl_op_data0_data_set(
 		a_uint32_t dev_id,
@@ -1633,7 +1633,7 @@ hppe_fdb_tbl_op_data0_data_set(
 	ret = hppe_fdb_tbl_op_data0_set(dev_id, &reg_val);
 	return ret;
 }
-
+#ifndef IN_FDB_MINI
 sw_error_t
 hppe_fdb_tbl_op_data1_data_get(
 		a_uint32_t dev_id,
@@ -1646,7 +1646,7 @@ hppe_fdb_tbl_op_data1_data_get(
 	*value = reg_val.bf.data;
 	return ret;
 }
-
+#endif
 sw_error_t
 hppe_fdb_tbl_op_data1_data_set(
 		a_uint32_t dev_id,
@@ -1662,7 +1662,7 @@ hppe_fdb_tbl_op_data1_data_set(
 	ret = hppe_fdb_tbl_op_data1_set(dev_id, &reg_val);
 	return ret;
 }
-
+#ifndef IN_FDB_MINI
 sw_error_t
 hppe_fdb_tbl_op_data2_data_get(
 		a_uint32_t dev_id,
@@ -1675,7 +1675,7 @@ hppe_fdb_tbl_op_data2_data_get(
 	*value = reg_val.bf.data;
 	return ret;
 }
-
+#endif
 sw_error_t
 hppe_fdb_tbl_op_data2_data_set(
 		a_uint32_t dev_id,
@@ -1691,7 +1691,7 @@ hppe_fdb_tbl_op_data2_data_set(
 	ret = hppe_fdb_tbl_op_data2_set(dev_id, &reg_val);
 	return ret;
 }
-
+#ifndef IN_FDB_MINI
 sw_error_t
 hppe_fdb_tbl_rd_op_data0_data_get(
 		a_uint32_t dev_id,
@@ -1704,7 +1704,7 @@ hppe_fdb_tbl_rd_op_data0_data_get(
 	*value = reg_val.bf.data;
 	return ret;
 }
-
+#endif
 sw_error_t
 hppe_fdb_tbl_rd_op_data0_data_set(
 		a_uint32_t dev_id,
@@ -1720,7 +1720,7 @@ hppe_fdb_tbl_rd_op_data0_data_set(
 	ret = hppe_fdb_tbl_rd_op_data0_set(dev_id, &reg_val);
 	return ret;
 }
-
+#ifndef IN_FDB_MINI
 sw_error_t
 hppe_fdb_tbl_rd_op_data1_data_get(
 		a_uint32_t dev_id,
@@ -1733,7 +1733,7 @@ hppe_fdb_tbl_rd_op_data1_data_get(
 	*value = reg_val.bf.data;
 	return ret;
 }
-
+#endif
 sw_error_t
 hppe_fdb_tbl_rd_op_data1_data_set(
 		a_uint32_t dev_id,
@@ -1749,7 +1749,7 @@ hppe_fdb_tbl_rd_op_data1_data_set(
 	ret = hppe_fdb_tbl_rd_op_data1_set(dev_id, &reg_val);
 	return ret;
 }
-
+#ifndef IN_FDB_MINI
 sw_error_t
 hppe_fdb_tbl_rd_op_data2_data_get(
 		a_uint32_t dev_id,
@@ -1762,7 +1762,7 @@ hppe_fdb_tbl_rd_op_data2_data_get(
 	*value = reg_val.bf.data;
 	return ret;
 }
-
+#endif
 sw_error_t
 hppe_fdb_tbl_rd_op_data2_data_set(
 		a_uint32_t dev_id,
@@ -1778,7 +1778,7 @@ hppe_fdb_tbl_rd_op_data2_data_set(
 	ret = hppe_fdb_tbl_rd_op_data2_set(dev_id, &reg_val);
 	return ret;
 }
-
+#ifndef IN_FDB_MINI
 sw_error_t
 hppe_port_bridge_ctrl_txmac_en_get(
 		a_uint32_t dev_id,
@@ -2111,7 +2111,7 @@ hppe_port_lrn_limit_counter_lrn_cnt_set(
 {
 	return SW_NOT_SUPPORTED;
 }
-
+#endif
 sw_error_t
 hppe_rfdb_tbl_mac_addr_get(
 		a_uint32_t dev_id,
@@ -2144,7 +2144,7 @@ hppe_rfdb_tbl_mac_addr_set(
 	ret = hppe_rfdb_tbl_set(dev_id, index, &reg_val);
 	return ret;
 }
-
+#ifndef IN_FDB_MINI
 sw_error_t
 hppe_rfdb_tbl_valid_get(
 		a_uint32_t dev_id,
@@ -2158,7 +2158,7 @@ hppe_rfdb_tbl_valid_get(
 	*value = reg_val.bf.valid;
 	return ret;
 }
-
+#endif
 sw_error_t
 hppe_rfdb_tbl_valid_set(
 		a_uint32_t dev_id,

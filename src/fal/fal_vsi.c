@@ -58,6 +58,7 @@ _fal_port_vsi_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vsi_id)
     rv = p_api->adpt_port_vsi_set(dev_id, port_id, vsi_id);
     return rv;
 }
+#ifndef IN_VSI_MINI
 sw_error_t
 _fal_port_vsi_get(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t *vsi_id)
 {
@@ -72,6 +73,7 @@ _fal_port_vsi_get(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t *vsi_id)
     rv = p_api->adpt_port_vsi_get(dev_id, port_id, vsi_id);
     return rv;
 }
+#endif
 sw_error_t
 _fal_vsi_stamove_set(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_stamove_t *stamove)
 {
@@ -86,6 +88,7 @@ _fal_vsi_stamove_set(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_stamove_t *st
     rv = p_api->adpt_vsi_stamove_set(dev_id, vsi_id, stamove);
     return rv;
 }
+#ifndef IN_VSI_MINI
 sw_error_t
 _fal_vsi_stamove_get(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_stamove_t *stamove)
 {
@@ -114,6 +117,7 @@ _fal_vsi_newaddr_lrn_get(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_newaddr_l
     rv = p_api->adpt_vsi_newaddr_lrn_get(dev_id, vsi_id, newaddr_lrn);
     return rv;
 }
+#endif
 sw_error_t
 _fal_vsi_newaddr_lrn_set(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_newaddr_lrn_t *newaddr_lrn)
 {
@@ -157,6 +161,7 @@ _fal_vsi_member_get(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_member_t *vsi_
     return rv;
 }
 
+#ifndef IN_VSI_MINI
 sw_error_t
 _fal_vsi_counter_get(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_counter_t *counter)
 {
@@ -186,6 +191,7 @@ _fal_vsi_counter_cleanup(a_uint32_t dev_id, a_uint32_t vsi_id)
     rv = p_api->adpt_vsi_counter_cleanup(dev_id, vsi_id);
     return rv;
 }
+#endif
 
 /*insert flag for inner fal, don't remove it*/
 
@@ -219,6 +225,7 @@ fal_port_vsi_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t vsi_id)
     FAL_API_UNLOCK;
     return rv;
 }
+#ifndef IN_VSI_MINI
 sw_error_t
 fal_port_vsi_get(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t *vsi_id)
 {
@@ -229,6 +236,7 @@ fal_port_vsi_get(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t *vsi_id)
     FAL_API_UNLOCK;
     return rv;
 }
+#endif
 
 sw_error_t
 fal_vsi_stamove_set(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_stamove_t *stamove)
@@ -240,6 +248,7 @@ fal_vsi_stamove_set(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_stamove_t *sta
     FAL_API_UNLOCK;
     return rv;
 }
+#ifndef IN_VSI_MINI
 sw_error_t
 fal_vsi_stamove_get(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_stamove_t *stamove)
 {
@@ -260,6 +269,7 @@ fal_vsi_newaddr_lrn_get(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_newaddr_lr
     FAL_API_UNLOCK;
     return rv;
 }
+#endif
 sw_error_t
 fal_vsi_newaddr_lrn_set(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_newaddr_lrn_t *newaddr_lrn)
 {
@@ -292,6 +302,7 @@ fal_vsi_member_get(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_member_t *vsi_m
     return rv;
 }
 
+#ifndef IN_VSI_MINI
 sw_error_t
 fal_vsi_counter_get(a_uint32_t dev_id, a_uint32_t vsi_id, fal_vsi_counter_t *counter)
 {
@@ -313,18 +324,20 @@ fal_vsi_counter_cleanup(a_uint32_t dev_id, a_uint32_t vsi_id)
     FAL_API_UNLOCK;
     return rv;
 }
+#endif
 /*insert flag for outter fal, don't remove it*/
 
+#ifndef IN_VSI_MINI
+EXPORT_SYMBOL(fal_port_vsi_get);
+EXPORT_SYMBOL(fal_vsi_stamove_get);
+EXPORT_SYMBOL(fal_vsi_newaddr_lrn_get);
+EXPORT_SYMBOL(fal_vsi_counter_get);
+EXPORT_SYMBOL(fal_vsi_counter_cleanup);
+#endif
 EXPORT_SYMBOL(fal_port_vlan_vsi_set);
 EXPORT_SYMBOL(fal_port_vlan_vsi_get);
 EXPORT_SYMBOL(fal_port_vsi_set);
-EXPORT_SYMBOL(fal_port_vsi_get);
 EXPORT_SYMBOL(fal_vsi_stamove_set);
-EXPORT_SYMBOL(fal_vsi_stamove_get);
 EXPORT_SYMBOL(fal_vsi_newaddr_lrn_set);
-EXPORT_SYMBOL(fal_vsi_newaddr_lrn_get);
 EXPORT_SYMBOL(fal_vsi_member_set);
 EXPORT_SYMBOL(fal_vsi_member_get);
-EXPORT_SYMBOL(fal_vsi_counter_get);
-EXPORT_SYMBOL(fal_vsi_counter_cleanup);
-

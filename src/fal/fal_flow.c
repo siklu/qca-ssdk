@@ -22,6 +22,7 @@
 #include "hsl_api.h"
 #include "adpt.h"
 
+#ifndef IN_FLOW_MINI
 sw_error_t
 _fal_flow_host_add(
 		a_uint32_t dev_id,
@@ -104,6 +105,7 @@ _fal_flow_status_get(a_uint32_t dev_id, a_bool_t *enable)
 	rv = p_api->adpt_flow_status_get(dev_id, enable);
 	return rv;
 }
+#endif
 sw_error_t
 _fal_flow_mgmt_set(
 		a_uint32_t dev_id,
@@ -122,6 +124,7 @@ _fal_flow_mgmt_set(
 	rv = p_api->adpt_flow_ctrl_set(dev_id, type, dir, mgmt);
 	return rv;
 }
+#ifndef IN_FLOW_MINI
 sw_error_t
 _fal_flow_age_timer_get(a_uint32_t dev_id, fal_flow_age_timer_t *age_timer)
 {
@@ -184,6 +187,7 @@ _fal_flow_host_del(
 	rv = p_api->adpt_flow_host_del(dev_id, del_mode, flow_host_entry);
 	return rv;
 }
+#endif
 sw_error_t
 _fal_flow_mgmt_get(
 		a_uint32_t dev_id,
@@ -202,6 +206,7 @@ _fal_flow_mgmt_get(
 	rv = p_api->adpt_flow_ctrl_get(dev_id, type, dir, mgmt);
 	return rv;
 }
+#ifndef IN_FLOW_MINI
 sw_error_t
 _fal_flow_age_timer_set(a_uint32_t dev_id, fal_flow_age_timer_t *age_timer)
 {
@@ -331,6 +336,7 @@ fal_flow_status_get(a_uint32_t dev_id, a_bool_t *enable)
 	FAL_API_UNLOCK;
 	return rv;
 }
+#endif
 sw_error_t
 fal_flow_mgmt_set(
 		a_uint32_t dev_id,
@@ -345,6 +351,7 @@ fal_flow_mgmt_set(
 	FAL_API_UNLOCK;
 	return rv;
 }
+#ifndef IN_FLOW_MINI
 sw_error_t
 fal_flow_age_timer_get(a_uint32_t dev_id, fal_flow_age_timer_t *age_timer)
 {
@@ -391,6 +398,7 @@ fal_flow_host_del(
 	FAL_API_UNLOCK;
 	return rv;
 }
+#endif
 sw_error_t
 fal_flow_mgmt_get(
 		a_uint32_t dev_id,
@@ -405,6 +413,7 @@ fal_flow_mgmt_get(
 	FAL_API_UNLOCK;
 	return rv;
 }
+#ifndef IN_FLOW_MINI
 sw_error_t
 fal_flow_age_timer_set(a_uint32_t dev_id, fal_flow_age_timer_t *age_timer)
 {
@@ -454,4 +463,5 @@ fal_flow_global_cfg_set(
 	FAL_API_UNLOCK;
 	return rv;
 }
+#endif
 /*insert flag for outter fal, don't remove it*/

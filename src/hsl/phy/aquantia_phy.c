@@ -58,7 +58,7 @@ aquantia_phy_reg_write(a_uint32_t dev_id, a_uint32_t phy_id, a_uint32_t reg_mmd,
 
 	return rv;
 }
-
+#ifndef IN_PORTCONTROL_MINI
 /******************************************************************************
 *
 * aquantia_phy_get_phy_id - get the phy id
@@ -82,7 +82,7 @@ aquantia_phy_get_phy_id(a_uint32_t dev_id, a_uint32_t phy_id,
 
 	return rv;
 }
-
+#endif
 sw_error_t
 aquantia_phy_get_speed(a_uint32_t dev_id, a_uint32_t phy_id,
 		     fal_port_speed_t * speed)
@@ -160,7 +160,7 @@ aquantia_phy_get_duplex(a_uint32_t dev_id, a_uint32_t phy_id,
 
 	return rv;
 }
-
+#ifndef IN_PORTCONTROL_MINI
 /******************************************************************************
 *
 * aquantia_phy_reset - reset the phy
@@ -686,7 +686,7 @@ aquantia_phy_cdt(a_uint32_t dev_id, a_uint32_t phy_id, a_uint32_t mdi_pair,
 
 	return rv;
 }
-
+#endif
 /******************************************************************************
 *
 * AQUANTIA_autoneg_done
@@ -712,7 +712,7 @@ a_bool_t aquantia_autoneg_done(a_uint32_t dev_id, a_uint32_t phy_id)
 
 	return A_TRUE;
 }
-
+#ifndef IN_PORTCONTROL_MINI
 /******************************************************************************
 *
 * aquantia_phy_get_ability - get the phy ability
@@ -772,7 +772,7 @@ aquantia_phy_get_partner_ability(a_uint32_t dev_id, a_uint32_t phy_id,
 
 	return rv;
 }
-
+#endif
 /******************************************************************************
 *
 * aquantia_phy_status - test to see if the specified phy link is alive
@@ -1010,6 +1010,7 @@ sw_error_t aquantia_phy_enable_autoneg(a_uint32_t dev_id, a_uint32_t phy_id)
 
 	return rv;
 }
+#ifndef IN_PORTCONTROL_MINI
 /******************************************************************************
 *
 * aquantia_phy_set_802.3az
@@ -1081,7 +1082,7 @@ aquantia_phy_get_8023az(a_uint32_t dev_id, a_uint32_t phy_id, a_bool_t * enable)
 
 	return rv;
 }
-
+#endif
 /******************************************************************************
 *
 * aquantia_phy_set_speed - Determines the speed of phy ports associated with the
@@ -1283,7 +1284,7 @@ aquantia_phy_set_duplex(a_uint32_t dev_id, a_uint32_t phy_id,
 
 	return rv;
 }
-
+#ifndef IN_PORTCONTROL_MINI
 /******************************************************************************
 *
 * aquantia_phy_set wol enable or disable
@@ -1416,7 +1417,7 @@ aquantia_phy_get_magic_frame_mac(a_uint32_t dev_id, a_uint32_t phy_id,
 
 	return rv;
 }
-
+#endif
 sw_error_t
 aquantia_phy_interface_set_mode(a_uint32_t dev_id, a_uint32_t phy_id, fal_port_interface_mode_t interface_mode)
 {
@@ -1543,7 +1544,7 @@ aquantia_phy_interface_get_mode_status(a_uint32_t dev_id, a_uint32_t phy_id,
 
 	return rv;
 }
-
+#ifndef IN_PORTCONTROL_MINI
 /******************************************************************************
 *
 * aquantia_phy_intr_mask_set - Set interrupt mask with the
@@ -1616,7 +1617,7 @@ aquantia_phy_intr_mask_get(a_uint32_t dev_id, a_uint32_t phy_id,
 
 	return rv;
 }
-
+#endif
 /******************************************************************************
 *
 * aquantia_phy_off - power off the phy
@@ -1658,7 +1659,7 @@ sw_error_t aquantia_phy_poweron(a_uint32_t dev_id, a_uint32_t phy_id)
 
 	return rv;
 }
-
+#ifndef IN_PORTCONTROL_MINI
 static sw_error_t
 _aquantia_phy_line_side_counter_get(a_uint32_t dev_id, a_uint32_t phy_id,
 			 fal_port_counter_info_t * counter_infor)
@@ -1777,7 +1778,7 @@ aquantia_phy_show_counter(a_uint32_t dev_id, a_uint32_t phy_id,
 
 	return rv;
 }
-
+#endif
 /******************************************************************************
 *
 * aquantia_phy_get_status
@@ -2132,14 +2133,19 @@ static int aquantia_phy_api_ops_init(void)
 	aquantia_phy_api_ops->phy_autoneg_status_get = aquantia_phy_autoneg_status;
 	aquantia_phy_api_ops->phy_autoneg_adv_set = aquantia_phy_set_autoneg_adv;
 	aquantia_phy_api_ops->phy_autoneg_adv_get = aquantia_phy_get_autoneg_adv;
+#ifndef IN_PORTCONTROL_MINI
 	aquantia_phy_api_ops->phy_powersave_set = aquantia_phy_set_powersave;
 	aquantia_phy_api_ops->phy_powersave_get = aquantia_phy_get_powersave;
 	aquantia_phy_api_ops->phy_8023az_set = aquantia_phy_set_8023az;
 	aquantia_phy_api_ops->phy_8023az_get = aquantia_phy_get_8023az;
+#endif
 	aquantia_phy_api_ops->phy_power_on = aquantia_phy_poweron;
 	aquantia_phy_api_ops->phy_power_off = aquantia_phy_poweroff;
+#ifndef IN_PORTCONTROL_MINI
 	aquantia_phy_api_ops->phy_cdt = aquantia_phy_cdt;
+#endif
 	aquantia_phy_api_ops->phy_link_status_get = aquantia_phy_get_link_status;
+#ifndef IN_PORTCONTROL_MINI
 	aquantia_phy_api_ops->phy_mdix_set = aquantia_phy_set_mdix;
 	aquantia_phy_api_ops->phy_mdix_get = aquantia_phy_get_mdix;
 	aquantia_phy_api_ops->phy_mdix_status_get = aquantia_phy_get_mdix_status;
@@ -2155,10 +2161,13 @@ static int aquantia_phy_api_ops_init(void)
 	aquantia_phy_api_ops->phy_intr_mask_set = aquantia_phy_intr_mask_set;
 	aquantia_phy_api_ops->phy_intr_mask_get = aquantia_phy_intr_mask_get;
 	aquantia_phy_api_ops->phy_id_get = aquantia_phy_get_phy_id;
+#endif
 	aquantia_phy_api_ops->phy_interface_mode_set = aquantia_phy_interface_set_mode;
 	aquantia_phy_api_ops->phy_interface_mode_status_get=aquantia_phy_interface_get_mode_status;
 	aquantia_phy_api_ops->phy_get_status = aquantia_phy_get_status;
+#ifndef IN_PORTCONTROL_MINI
 	aquantia_phy_api_ops->phy_counter_show = aquantia_phy_show_counter;
+#endif
 	aquantia_phy_api_ops->phy_eee_adv_set = aquantia_phy_set_eee_adv;
 	aquantia_phy_api_ops->phy_eee_adv_get = aquantia_phy_get_eee_adv;
 	aquantia_phy_api_ops->phy_eee_partner_adv_get = aquantia_phy_get_eee_partner_adv;

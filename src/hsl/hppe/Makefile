@@ -3,25 +3,96 @@ LIB=HSL
 
 include $(PRJ_PATH)/make/config.mk
 
-SRC_LIST=hppe_init.c hppe_reg_access.c hppe_ip.c hppe_flow.c
-SRC_LIST+=hppe_qm.c hppe_qos.c
-SRC_LIST+=hppe_vsi.c hppe_fdb.c hppe_stp.c hppe_portvlan.c
-SRC_LIST+=hppe_sec.c
-SRC_LIST+=hppe_bm.c
-SRC_LIST+=hppe_mib.c
-SRC_LIST+=hppe_acl.c hppe_servcode.c hppe_ctrlpkt.c
-SRC_LIST+=hppe_rss.c
-SRC_LIST+=hppe_pppoe.c
-SRC_LIST+=hppe_portctrl.c
-SRC_LIST+=hppe_mirror.c
-SRC_LIST+=hppe_trunk.c
-SRC_LIST+=hppe_acl.c
-SRC_LIST+=hppe_policer.c
-SRC_LIST+=hppe_shaper.c
-SRC_LIST+=hppe_xgmacmib.c
-SRC_LIST+=hppe_xgportctrl.c
-SRC_LIST+=hppe_global.c
-SRC_LIST+=hppe_uniphy.c
+SRC_LIST=hppe_init.c hppe_reg_access.c hppe_global.c
+
+ifeq (TRUE, $(IN_FLOW))
+	SRC_LIST+=hppe_flow.c
+endif
+
+ifeq (TRUE, $(IN_IP))
+	SRC_LIST+=hppe_ip.c
+endif
+
+ifeq (TRUE, $(IN_QOS))
+	SRC_LIST+=hppe_qos.c
+endif
+
+ifeq (TRUE, $(IN_FDB))
+	SRC_LIST+=hppe_fdb.c
+endif
+
+ifeq (TRUE, $(IN_PORTVLAN))
+	SRC_LIST+=hppe_portvlan.c
+endif
+
+ifeq (TRUE, $(IN_STP))
+	SRC_LIST+=hppe_stp.c
+endif
+
+ifeq (TRUE, $(IN_QM))
+	SRC_LIST+=hppe_qm.c
+endif
+
+ifeq (TRUE, $(IN_VSI))
+	SRC_LIST+=hppe_vsi.c
+endif
+
+ifeq (TRUE, $(IN_SEC))
+	SRC_LIST+=hppe_sec.c
+endif
+
+ifeq (TRUE, $(IN_BM))
+	SRC_LIST+=hppe_bm.c
+endif
+
+ifeq (TRUE, $(IN_MIB))
+	SRC_LIST+=hppe_mib.c hppe_xgmacmib.c
+endif
+
+ifeq (TRUE, $(IN_SERVCODE))
+	SRC_LIST+=hppe_servcode.c
+endif
+
+ifeq (TRUE, $(IN_CTRLPKT))
+	SRC_LIST+=hppe_ctrlpkt.c
+endif
+
+ifeq (TRUE, $(IN_RSS_HASH))
+	SRC_LIST+=hppe_rss.c
+endif
+
+ifeq (TRUE, $(IN_PPPOE))
+	SRC_LIST+=hppe_pppoe.c
+endif
+
+ifeq (TRUE, $(IN_PORTCONTROL))
+	SRC_LIST+=hppe_portctrl.c hppe_xgportctrl.c
+endif
+
+ifeq (TRUE, $(IN_MIRROR))
+	SRC_LIST+=hppe_mirror.c
+endif
+
+ifeq (TRUE, $(IN_TRUNK))
+	SRC_LIST+=hppe_trunk.c
+endif
+
+ifeq (TRUE, $(IN_ACL))
+	SRC_LIST+=hppe_acl.c
+endif
+
+ifeq (TRUE, $(IN_POLICER))
+	SRC_LIST+=hppe_policer.c
+endif
+
+ifeq (TRUE, $(IN_SHAPER))
+	SRC_LIST+=hppe_shaper.c
+endif
+
+ifeq (TRUE, $(IN_UNIPHY))
+	SRC_LIST+=hppe_uniphy.c
+endif
+
 ifeq (, $(findstring HPPE, $(SUPPORT_CHIP)))
   SRC_LIST=
 endif
