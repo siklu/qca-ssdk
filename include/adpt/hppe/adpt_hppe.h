@@ -92,6 +92,10 @@ sw_error_t adpt_hppe_uniphy_init(a_uint32_t dev_id);
 #define HPPE_BM_PORT_NUM 15
 #define HPPE_BM_PHY_PORT_OFFSET 8
 
+#ifdef IN_FDB
+sw_error_t
+adpt_hppe_fdb_del_by_port(a_uint32_t dev_id, a_uint32_t port_id, a_uint32_t flag);
+#endif
 #ifdef __cplusplus
 }
 #endif                          /* __cplusplus */

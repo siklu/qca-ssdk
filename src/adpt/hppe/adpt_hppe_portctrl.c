@@ -37,6 +37,7 @@
 #include "ssdk_init.h"
 #include "ssdk_clk.h"
 #include "sfp_phy.h"
+#include "adpt_hppe.h"
 
 #define PORT4_PCS_SEL_GMII_FROM_PCS0 1
 #define PORT4_PCS_SEL_RGMII 0
@@ -4368,6 +4369,9 @@ qca_hppe_mac_sw_sync_task(struct qca_phy_priv *priv)
 			/* disable rx mac */
 			adpt_hppe_port_rxmac_status_set(priv->device_id, port_id, A_FALSE);
 			priv->port_old_link[port_id - 1] = phy_status.link_status;
+#ifdef IN_FDB
+			adpt_hppe_fdb_del_by_port(priv->device_id, port_id, !(FAL_FDB_DEL_STATIC));
+#endif
 			continue;
 		}
 		/* link status from down to up*/
