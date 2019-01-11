@@ -2098,10 +2098,12 @@ aquantia_phy_hw_init(a_uint32_t dev_id,  a_uint32_t port_bmp)
 				FAL_PHY_ADV_1000T_FD);
 
 			SW_RTN_ON_ERROR(rv);
+#if 0
 			rv = aquantia_phy_set_eee_adv(dev_id, phy_addr, FAL_PHY_EEE_1000BASE_T
 				| FAL_PHY_EEE_2500BASE_T | FAL_PHY_EEE_5000BASE_T |
 				FAL_PHY_EEE_10000BASE_T);
 			SW_RTN_ON_ERROR(rv);
+#endif
 		}
 	}
 
