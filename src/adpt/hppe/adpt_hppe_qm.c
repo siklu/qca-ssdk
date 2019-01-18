@@ -1212,7 +1212,6 @@ adpt_hppe_qm_port_source_profile_get(
 	return hppe_mru_mtu_ctrl_tbl_src_profile_get(dev_id, index,
 				src_profile);
 }
-#endif
 
 sw_error_t
 adpt_ppe_qm_port_source_profile_get(
@@ -1233,6 +1232,7 @@ adpt_ppe_qm_port_source_profile_get(
 
 	return SW_NOT_SUPPORTED;
 }
+#endif
 
 void adpt_hppe_qm_func_bitmap_init(a_uint32_t dev_id)
 {

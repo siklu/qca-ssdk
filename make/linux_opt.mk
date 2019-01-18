@@ -101,6 +101,10 @@ ifeq (TRUE, $(IN_IP))
   MODULE_CFLAG += -DIN_IP
 endif
 
+ifeq (TRUE, $(IN_IP_MINI))
+  MODULE_CFLAG += -DIN_IP_MINI
+endif
+
 ifeq (TRUE, $(IN_NAT))
   MODULE_CFLAG += -DIN_NAT
 endif

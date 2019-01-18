@@ -5600,6 +5600,7 @@ parse_misc_pppoeen(struct switch_val *val)
 #endif
 
 #ifdef IN_IP
+#ifndef IN_IP_MINI
 static int
 parse_ip_hostentry(struct switch_val *val)
 {
@@ -6788,7 +6789,7 @@ parse_ip_globalctrl(struct switch_val *val)
 
 	return rv;
 }
-
+#endif
 #endif
 
 #ifdef IN_NAT
@@ -8487,6 +8488,13 @@ parse_acl_rule(struct switch_val *val)
 			if(tmpdata)
 				FAL_ACTION_FLG_SET(rule.action_flg, FAL_ACL_ACTION_SYN_TOGGLE);
 		}
+#if defined(CPPE)
+		else if(!strcmp(ext_value_p->option_name, "qos_res_prec")) {
+			cmd_data_check_uint8((char*)ext_value_p->option_value,
+				&tmpdata, sizeof(tmpdata));
+			rule.qos_res_prec = tmpdata;
+		}
+#endif
 
 		parameter_length++;
 		switch_ext_p = switch_ext_p->next;
@@ -10918,6 +10926,7 @@ static int
 parse_ip(const char *command_name, struct switch_val *val)
 {
 	int rv = -1;
+#ifndef IN_IP_MINI
 	if(!strcmp(command_name, "Hostentry")) {
 		rv = parse_ip_hostentry(val);
 	} else if(!strcmp(command_name, "Intfentry")) {
@@ -10987,7 +10996,7 @@ parse_ip(const char *command_name, struct switch_val *val)
 	} else if (!strcmp(command_name, "Hostentry")) {
 		rv = parse_ip_hostentry(val);
 	}
-
+#endif
 	return rv;
 }
 #endif

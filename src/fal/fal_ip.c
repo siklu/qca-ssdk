@@ -25,7 +25,7 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 
-
+#ifndef IN_IP_MINI
 static sw_error_t
 _fal_ip_host_add(a_uint32_t dev_id, fal_host_entry_t * host_entry)
 {
@@ -2362,7 +2362,7 @@ fal_ip_global_ctrl_get(a_uint32_t dev_id, fal_ip_global_cfg_t *cfg)
 	FAL_API_UNLOCK;
 	return rv;
 }
-
+#endif
 /*insert flag for outter fal, don't remove it*/
 
 /**

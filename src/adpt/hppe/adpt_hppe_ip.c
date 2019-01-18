@@ -23,6 +23,7 @@
 #include "hppe_ip.h"
 #include "adpt.h"
 
+#ifndef IN_IP_MINI
 sw_error_t
 adpt_hppe_ip_network_route_get(a_uint32_t dev_id,
 			a_uint32_t index, a_uint8_t type,
@@ -1213,7 +1214,7 @@ adpt_hppe_ip_nexthop_set(a_uint32_t dev_id,
 
 	return hppe_in_nexthop_tbl_set(dev_id, index, &in_nexthop_tbl);
 }
-
+#endif
 void adpt_hppe_ip_func_bitmap_init(a_uint32_t dev_id)
 {
 	adpt_api_t *p_adpt_api = NULL;
@@ -1279,7 +1280,7 @@ sw_error_t adpt_hppe_ip_init(a_uint32_t dev_id)
 		return SW_FAIL;
 
 	adpt_hppe_ip_func_unregister(dev_id, p_adpt_api);
-
+#ifndef IN_IP_MINI
 	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_NETWORK_ROUTE_GET))
 		p_adpt_api->adpt_ip_network_route_get = adpt_hppe_ip_network_route_get;
 	if (p_adpt_api->adpt_ip_func_bitmap[0] & (1 << FUNC_IP_HOST_ADD))
@@ -1346,10 +1347,9 @@ sw_error_t adpt_hppe_ip_init(a_uint32_t dev_id)
 		p_adpt_api->adpt_ip_global_ctrl_get = adpt_hppe_ip_global_ctrl_get;
 	if (p_adpt_api->adpt_ip_func_bitmap[1] & (1 << (FUNC_IP_GLOBAL_CTRL_SET % 32)))
 		p_adpt_api->adpt_ip_global_ctrl_set = adpt_hppe_ip_global_ctrl_set;
-
+#endif
 	return SW_OK;
 }
-
 /**
  * @}
  */

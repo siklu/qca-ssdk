@@ -360,169 +360,170 @@ enum {
 	FUNC_IP_GLOBAL_CTRL_SET,
 };
 
-    sw_error_t
-    fal_ip_host_add(a_uint32_t dev_id, fal_host_entry_t * host_entry);
+#ifndef IN_IP_MINI
+sw_error_t
+fal_ip_host_add(a_uint32_t dev_id, fal_host_entry_t * host_entry);
 
-    sw_error_t
-    fal_ip_host_del(a_uint32_t dev_id, a_uint32_t del_mode,
-                    fal_host_entry_t * host_entry);
+sw_error_t
+fal_ip_host_del(a_uint32_t dev_id, a_uint32_t del_mode,
+                fal_host_entry_t * host_entry);
 
-    sw_error_t
-    fal_ip_host_get(a_uint32_t dev_id, a_uint32_t get_mode,
-                    fal_host_entry_t * host_entry);
+sw_error_t
+fal_ip_host_get(a_uint32_t dev_id, a_uint32_t get_mode,
+                fal_host_entry_t * host_entry);
 
-    sw_error_t
-    fal_ip_host_next(a_uint32_t dev_id, a_uint32_t next_mode,
-                     fal_host_entry_t * host_entry);
+sw_error_t
+fal_ip_host_next(a_uint32_t dev_id, a_uint32_t next_mode,
+                 fal_host_entry_t * host_entry);
 
-    sw_error_t
-    fal_ip_host_counter_bind(a_uint32_t dev_id, a_uint32_t entry_id,
-                             a_uint32_t cnt_id, a_bool_t enable);
+sw_error_t
+fal_ip_host_counter_bind(a_uint32_t dev_id, a_uint32_t entry_id,
+                         a_uint32_t cnt_id, a_bool_t enable);
 
-    sw_error_t
-    fal_ip_host_pppoe_bind(a_uint32_t dev_id, a_uint32_t entry_id,
-                           a_uint32_t pppoe_id, a_bool_t enable);
+sw_error_t
+fal_ip_host_pppoe_bind(a_uint32_t dev_id, a_uint32_t entry_id,
+                       a_uint32_t pppoe_id, a_bool_t enable);
 
-    sw_error_t
-    fal_ip_pt_arp_learn_set(a_uint32_t dev_id, fal_port_t port_id,
-                            a_uint32_t flags);
+sw_error_t
+fal_ip_pt_arp_learn_set(a_uint32_t dev_id, fal_port_t port_id,
+                        a_uint32_t flags);
 
-    sw_error_t
-    fal_ip_pt_arp_learn_get(a_uint32_t dev_id, fal_port_t port_id,
-                            a_uint32_t * flags);
+sw_error_t
+fal_ip_pt_arp_learn_get(a_uint32_t dev_id, fal_port_t port_id,
+                        a_uint32_t * flags);
 
-    sw_error_t
-    fal_ip_arp_learn_set(a_uint32_t dev_id, fal_arp_learn_mode_t mode);
+sw_error_t
+fal_ip_arp_learn_set(a_uint32_t dev_id, fal_arp_learn_mode_t mode);
 
-    sw_error_t
-    fal_ip_arp_learn_get(a_uint32_t dev_id, fal_arp_learn_mode_t * mode);
+sw_error_t
+fal_ip_arp_learn_get(a_uint32_t dev_id, fal_arp_learn_mode_t * mode);
 
-    sw_error_t
-    fal_ip_source_guard_set(a_uint32_t dev_id, fal_port_t port_id,
-                            fal_source_guard_mode_t mode);
+sw_error_t
+fal_ip_source_guard_set(a_uint32_t dev_id, fal_port_t port_id,
+                        fal_source_guard_mode_t mode);
 
-    sw_error_t
-    fal_ip_source_guard_get(a_uint32_t dev_id, fal_port_t port_id,
-                            fal_source_guard_mode_t * mode);
+sw_error_t
+fal_ip_source_guard_get(a_uint32_t dev_id, fal_port_t port_id,
+                        fal_source_guard_mode_t * mode);
 
-    sw_error_t
-    fal_ip_arp_guard_set(a_uint32_t dev_id, fal_port_t port_id,
-                         fal_source_guard_mode_t mode);
+sw_error_t
+fal_ip_arp_guard_set(a_uint32_t dev_id, fal_port_t port_id,
+                     fal_source_guard_mode_t mode);
 
-    sw_error_t
-    fal_ip_arp_guard_get(a_uint32_t dev_id, fal_port_t port_id,
-                         fal_source_guard_mode_t * mode);
+sw_error_t
+fal_ip_arp_guard_get(a_uint32_t dev_id, fal_port_t port_id,
+                     fal_source_guard_mode_t * mode);
 
-    sw_error_t
-    fal_ip_route_status_set(a_uint32_t dev_id, a_bool_t enable);
+sw_error_t
+fal_ip_route_status_set(a_uint32_t dev_id, a_bool_t enable);
 
-    sw_error_t
-    fal_ip_route_status_get(a_uint32_t dev_id, a_bool_t * enable);
+sw_error_t
+fal_ip_route_status_get(a_uint32_t dev_id, a_bool_t * enable);
 
-    sw_error_t
-    fal_ip_intf_entry_add(a_uint32_t dev_id, fal_intf_mac_entry_t * entry);
+sw_error_t
+fal_ip_intf_entry_add(a_uint32_t dev_id, fal_intf_mac_entry_t * entry);
 
-    sw_error_t
-    fal_ip_intf_entry_del(a_uint32_t dev_id, a_uint32_t del_mode,
-                          fal_intf_mac_entry_t * entry);
+sw_error_t
+fal_ip_intf_entry_del(a_uint32_t dev_id, a_uint32_t del_mode,
+                      fal_intf_mac_entry_t * entry);
 
-    sw_error_t
-    fal_ip_intf_entry_next(a_uint32_t dev_id, a_uint32_t next_mode,
-                           fal_intf_mac_entry_t * entry);
+sw_error_t
+fal_ip_intf_entry_next(a_uint32_t dev_id, a_uint32_t next_mode,
+                       fal_intf_mac_entry_t * entry);
 
-    sw_error_t
-    fal_ip_unk_source_cmd_set(a_uint32_t dev_id, fal_fwd_cmd_t cmd);
+sw_error_t
+fal_ip_unk_source_cmd_set(a_uint32_t dev_id, fal_fwd_cmd_t cmd);
 
-    sw_error_t
-    fal_ip_unk_source_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd);
+sw_error_t
+fal_ip_unk_source_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd);
 
-    sw_error_t
-    fal_arp_unk_source_cmd_set(a_uint32_t dev_id, fal_fwd_cmd_t cmd);
+sw_error_t
+fal_arp_unk_source_cmd_set(a_uint32_t dev_id, fal_fwd_cmd_t cmd);
 
-    sw_error_t
-    fal_arp_unk_source_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd);
+sw_error_t
+fal_arp_unk_source_cmd_get(a_uint32_t dev_id, fal_fwd_cmd_t * cmd);
 
-    sw_error_t
-    fal_ip_age_time_set(a_uint32_t dev_id, a_uint32_t * time);
+sw_error_t
+fal_ip_age_time_set(a_uint32_t dev_id, a_uint32_t * time);
 
-    sw_error_t
-    fal_ip_age_time_get(a_uint32_t dev_id, a_uint32_t * time);
+sw_error_t
+fal_ip_age_time_get(a_uint32_t dev_id, a_uint32_t * time);
 
-    sw_error_t
-    fal_ip_wcmp_entry_set(a_uint32_t dev_id, a_uint32_t wcmp_id, fal_ip_wcmp_t * wcmp);
+sw_error_t
+fal_ip_wcmp_entry_set(a_uint32_t dev_id, a_uint32_t wcmp_id, fal_ip_wcmp_t * wcmp);
 
-    sw_error_t
-    fal_ip_wcmp_entry_get(a_uint32_t dev_id, a_uint32_t wcmp_id, fal_ip_wcmp_t * wcmp);
+sw_error_t
+fal_ip_wcmp_entry_get(a_uint32_t dev_id, a_uint32_t wcmp_id, fal_ip_wcmp_t * wcmp);
 
-    sw_error_t
-    fal_ip_wcmp_hash_mode_set(a_uint32_t dev_id, a_uint32_t hash_mode);
+sw_error_t
+fal_ip_wcmp_hash_mode_set(a_uint32_t dev_id, a_uint32_t hash_mode);
 
-	sw_error_t
-	fal_ip_rfs_ip4_rule_set(a_uint32_t dev_id, fal_ip4_rfs_t * rfs);
+sw_error_t
+fal_ip_rfs_ip4_rule_set(a_uint32_t dev_id, fal_ip4_rfs_t * rfs);
 
-	sw_error_t
-	fal_ip_rfs_ip6_rule_set(a_uint32_t dev_id, fal_ip6_rfs_t * rfs);
+sw_error_t
+fal_ip_rfs_ip6_rule_set(a_uint32_t dev_id, fal_ip6_rfs_t * rfs);
 
-	sw_error_t
-	fal_ip_rfs_ip4_rule_del(a_uint32_t dev_id, fal_ip4_rfs_t * rfs);
+sw_error_t
+fal_ip_rfs_ip4_rule_del(a_uint32_t dev_id, fal_ip4_rfs_t * rfs);
 
-	sw_error_t
-	fal_ip_rfs_ip6_rule_del(a_uint32_t dev_id, fal_ip6_rfs_t * rfs);
+sw_error_t
+fal_ip_rfs_ip6_rule_del(a_uint32_t dev_id, fal_ip6_rfs_t * rfs);
 
-    sw_error_t
-    fal_ip_wcmp_hash_mode_get(a_uint32_t dev_id, a_uint32_t * hash_mode);
+sw_error_t
+fal_ip_wcmp_hash_mode_get(a_uint32_t dev_id, a_uint32_t * hash_mode);
 
-    sw_error_t
-    fal_ip_vrf_base_addr_set(a_uint32_t dev_id, a_uint32_t vrf_id, fal_ip4_addr_t addr);
+sw_error_t
+fal_ip_vrf_base_addr_set(a_uint32_t dev_id, a_uint32_t vrf_id, fal_ip4_addr_t addr);
 
-    sw_error_t
-    fal_ip_vrf_base_addr_get(a_uint32_t dev_id, a_uint32_t vrf_id, fal_ip4_addr_t * addr);
+sw_error_t
+fal_ip_vrf_base_addr_get(a_uint32_t dev_id, a_uint32_t vrf_id, fal_ip4_addr_t * addr);
 
-    sw_error_t
-    fal_ip_vrf_base_mask_set(a_uint32_t dev_id, a_uint32_t vrf_id, fal_ip4_addr_t addr);
+sw_error_t
+fal_ip_vrf_base_mask_set(a_uint32_t dev_id, a_uint32_t vrf_id, fal_ip4_addr_t addr);
 
-    sw_error_t
-    fal_ip_vrf_base_mask_get(a_uint32_t dev_id, a_uint32_t vrf_id, fal_ip4_addr_t * addr);
+sw_error_t
+fal_ip_vrf_base_mask_get(a_uint32_t dev_id, a_uint32_t vrf_id, fal_ip4_addr_t * addr);
 
-    sw_error_t
-    fal_ip_default_route_set(a_uint32_t dev_id, a_uint32_t droute_id,
-			fal_default_route_t * entry);
+sw_error_t
+fal_ip_default_route_set(a_uint32_t dev_id, a_uint32_t droute_id,
+		fal_default_route_t * entry);
 
-    sw_error_t
-    fal_ip_default_route_get(a_uint32_t dev_id, a_uint32_t droute_id,
-			fal_default_route_t * entry);
+sw_error_t
+fal_ip_default_route_get(a_uint32_t dev_id, a_uint32_t droute_id,
+		fal_default_route_t * entry);
 
-    sw_error_t
-    fal_ip_host_route_set(a_uint32_t dev_id, a_uint32_t hroute_id,
-			fal_host_route_t * entry);
+sw_error_t
+fal_ip_host_route_set(a_uint32_t dev_id, a_uint32_t hroute_id,
+		fal_host_route_t * entry);
 
-    sw_error_t
-    fal_ip_host_route_get(a_uint32_t dev_id, a_uint32_t hroute_id,
-			fal_host_route_t * entry);
+sw_error_t
+fal_ip_host_route_get(a_uint32_t dev_id, a_uint32_t hroute_id,
+		fal_host_route_t * entry);
 
-	sw_error_t
-    fal_ip_wcmp_entry_set(a_uint32_t dev_id, a_uint32_t wcmp_id,
-			fal_ip_wcmp_t * wcmp);
+sw_error_t
+fal_ip_wcmp_entry_set(a_uint32_t dev_id, a_uint32_t wcmp_id,
+		fal_ip_wcmp_t * wcmp);
 
-    sw_error_t
-    fal_ip_wcmp_entry_get(a_uint32_t dev_id, a_uint32_t wcmp_id,
-			fal_ip_wcmp_t * wcmp);
+sw_error_t
+fal_ip_wcmp_entry_get(a_uint32_t dev_id, a_uint32_t wcmp_id,
+		fal_ip_wcmp_t * wcmp);
 
-    sw_error_t
-    fal_default_flow_cmd_set(a_uint32_t dev_id, a_uint32_t vrf_id,
-			fal_flow_type_t type, fal_default_flow_cmd_t cmd);
+sw_error_t
+fal_default_flow_cmd_set(a_uint32_t dev_id, a_uint32_t vrf_id,
+		fal_flow_type_t type, fal_default_flow_cmd_t cmd);
 
-    sw_error_t
-    fal_default_flow_cmd_get(a_uint32_t dev_id, a_uint32_t vrf_id,
-			fal_flow_type_t type, fal_default_flow_cmd_t * cmd);
+sw_error_t
+fal_default_flow_cmd_get(a_uint32_t dev_id, a_uint32_t vrf_id,
+		fal_flow_type_t type, fal_default_flow_cmd_t * cmd);
 
-    sw_error_t
-    fal_default_rt_flow_cmd_set(a_uint32_t dev_id, a_uint32_t vrf_id,
-			fal_flow_type_t type, fal_default_flow_cmd_t cmd);
+sw_error_t
+fal_default_rt_flow_cmd_set(a_uint32_t dev_id, a_uint32_t vrf_id,
+		fal_flow_type_t type, fal_default_flow_cmd_t cmd);
 
-    sw_error_t
-    fal_default_rt_flow_cmd_get(a_uint32_t dev_id, a_uint32_t vrf_id,
-			fal_flow_type_t type, fal_default_flow_cmd_t * cmd);
+sw_error_t
+fal_default_rt_flow_cmd_get(a_uint32_t dev_id, a_uint32_t vrf_id,
+		fal_flow_type_t type, fal_default_flow_cmd_t * cmd);
 
 sw_error_t
 fal_ip_vsi_arp_sg_cfg_get(a_uint32_t dev_id, a_uint32_t vsi,
@@ -634,7 +635,7 @@ fal_ip_global_ctrl_get(a_uint32_t dev_id, fal_ip_global_cfg_t *cfg);
 
 sw_error_t
 fal_ip_global_ctrl_set(a_uint32_t dev_id, fal_ip_global_cfg_t *cfg);
-
+#endif
 
 #ifdef __cplusplus
 }

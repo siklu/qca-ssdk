@@ -590,9 +590,9 @@ void
 qca_ar8327_phy_enable(struct qca_phy_priv *priv)
 {
 	int i = 0;
-	#ifndef BOARD_AR71XX
+#ifndef BOARD_AR71XX
         ssdk_phy_rgmii_set(priv);
-        #endif
+#endif
 	for (i = 0; i < AR8327_NUM_PHYS; i++) {
 		a_uint16_t value = 0;
 
@@ -1220,13 +1220,13 @@ qm_err_check_work_task_polling(struct work_struct *work)
 
 	mutex_unlock(&priv->qm_lock);
 
-	#ifndef SSDK_QM_CHANGE_WQ
+#ifndef SSDK_QM_CHANGE_WQ
 	schedule_delayed_work(&priv->qm_dwork,
 							msecs_to_jiffies(QCA_QM_WORK_DELAY));
-	#else
+#else
 	queue_delayed_work_on(0, system_long_wq, &priv->qm_dwork_polling,
 							msecs_to_jiffies(QCA_QM_WORK_DELAY));
-	#endif
+#endif
 }
 
 static int config_gpio(a_uint32_t  gpio_num)
@@ -1311,13 +1311,13 @@ qm_err_check_work_start(struct qca_phy_priv *priv)
 
 	mutex_init(&priv->qm_lock);
 	INIT_DELAYED_WORK(&priv->qm_dwork_polling, qm_err_check_work_task_polling);
-	#ifndef SSDK_MIB_CHANGE_WQ
+#ifndef SSDK_MIB_CHANGE_WQ
 	schedule_delayed_work(&priv->qm_dwork_polling,
 							msecs_to_jiffies(QCA_QM_WORK_DELAY));
-	#else
+#else
 	queue_delayed_work_on(0, system_long_wq, &priv->qm_dwork_polling,
 							msecs_to_jiffies(QCA_QM_WORK_DELAY));
-	#endif
+#endif
 
 	return 0;
 }
@@ -1522,11 +1522,11 @@ qca_phy_config_init(struct phy_device *pdev)
 #endif
         pdev->supported |= SUPPORTED_1000baseT_Full;
         pdev->advertising |= ADVERTISED_1000baseT_Full;
-		#ifndef BOARD_AR71XX
-		#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+#ifndef BOARD_AR71XX
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 		ssdk_phy_rgmii_set(priv);
-		#endif
-		#endif
+#endif
+#endif
 		return 0;
 	}
 
@@ -1659,8 +1659,8 @@ static int ssdk_switch_register(a_uint32_t dev_id)
 		}
 	}
 
-	#if 0
-	#ifdef DESS
+#if 0
+#ifdef DESS
 	if ((ssdk_dt_global.mac_mode == PORT_WRAPPER_SGMII0_RGMII5)
 		||(ssdk_dt_global.mac_mode == PORT_WRAPPER_SGMII1_RGMII5)
 		||(ssdk_dt_global.mac_mode == PORT_WRAPPER_SGMII0_RGMII4)
@@ -1672,17 +1672,17 @@ static int ssdk_switch_register(a_uint32_t dev_id)
 			return ret;
 		}
 	}
-	#endif
-	#endif
-	#ifdef HPPE
-	#ifdef HAWKEYE_CHIP
+#endif
+#endif
+#ifdef HPPE
+#ifdef HAWKEYE_CHIP
 	ret = qca_mac_sw_sync_work_start(priv);
 	if (ret != 0) {
 			SSDK_ERROR("qca_mac_sw_sync_work_start failed for chip 0x%02x%02x\n", priv->version, priv->revision);
 			return ret;
 	}
-	#endif
-	#endif
+#endif
+#endif
 
 	return 0;
 
@@ -1692,14 +1692,14 @@ static int ssdk_switch_unregister(a_uint32_t dev_id)
 {
 	qca_phy_mib_work_stop(qca_phy_priv_global[dev_id]);
 	qm_err_check_work_stop(qca_phy_priv_global[dev_id]);
-	#ifdef HPPE
-	#ifdef HAWKEYE_CHIP
+#ifdef HPPE
+#ifdef HAWKEYE_CHIP
 	qca_mac_sw_sync_work_stop(qca_phy_priv_global[dev_id]);
-	#endif
-	#endif
-	#if defined(IN_SWCONFIG)
+#endif
+#endif
+#if defined(IN_SWCONFIG)
 	unregister_switch(&qca_phy_priv_global[dev_id]->sw_dev);
-	#endif
+#endif
 	return 0;
 }
 #endif
@@ -2293,7 +2293,7 @@ ssdk_hsl_access_mode_set(a_uint32_t dev_id, hsl_access_mode reg_mode)
 
 void switch_cpuport_setup(a_uint32_t dev_id)
 {
-	#ifdef IN_PORTCONTROL
+#ifdef IN_PORTCONTROL
 	//According to HW suggestion, enable CPU port flow control for Dakota
 	fal_port_flowctrl_forcemode_set(dev_id, 0, A_TRUE);
 	fal_port_flowctrl_set(dev_id, 0, A_TRUE);
@@ -2302,7 +2302,7 @@ void switch_cpuport_setup(a_uint32_t dev_id)
 	udelay(10);
 	fal_port_txmac_status_set(dev_id, 0, A_TRUE);
 	fal_port_rxmac_status_set(dev_id, 0, A_TRUE);
-	#endif
+#endif
 }
 
 #ifdef CONFIG_MDIO
@@ -2461,9 +2461,9 @@ static void ssdk_driver_unregister(a_uint32_t dev_id)
 	if(reg_mode == HSL_REG_MDIO && flag == A_FALSE) {
 		phy_driver_unregister(&qca_phy_driver);
 
-	#if defined(BOARD_AR71XX) && defined(IN_SWCONFIG)
+#if defined(BOARD_AR71XX) && defined(IN_SWCONFIG)
 		ssdk_uci_takeover_exit();
-	#endif
+#endif
 	}
 
 	if (reg_mode == HSL_REG_LOCAL_BUS) {
@@ -2555,9 +2555,11 @@ static int ssdk_flow_default_act_init(a_uint32_t dev_id)
 	{
 		for(type = FAL_FLOW_LAN_TO_LAN; type <= FAL_FLOW_WAN_TO_WAN; type++)
 		{
-			#ifdef IN_IP
+#ifdef IN_IP
+#ifndef IN_IP_MINI
 			fal_default_flow_cmd_set(dev_id, vrf_id, type, FAL_DEFAULT_FLOW_ADMIT_ALL);
-			#endif
+#endif
+#endif
 		}
 	}
 
@@ -2576,12 +2578,12 @@ static int ssdk_dess_led_init(ssdk_init_cfg *cfg)
 			pattern.mode = cfg->led_source_cfg[i].led_pattern.mode;
 			pattern.map = cfg->led_source_cfg[i].led_pattern.map;
 			pattern.freq = cfg->led_source_cfg[i].led_pattern.freq;
-			#ifdef IN_LED
+#ifdef IN_LED
 			fal_led_source_pattern_set(0, led_source_id,&pattern);
-			#endif
+#endif
 			led_num = ((led_source_id-1)/3) + 3;
 			source_id = led_source_id%3;
-		#ifndef BOARD_AR71XX
+#ifndef BOARD_AR71XX
 		#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) && (LINUX_VERSION_CODE <= KERNEL_VERSION(4,0,0))
 			if (source_id == 1) {
 				if (led_source_id == 1) {
@@ -2634,8 +2636,8 @@ static int ssdk_dess_led_init(ssdk_init_cfg *cfg)
 					ipq40xx_led_source_select(led_num, WAN_10_LNK_ACTIVITY);
 				}
 			}
-		#endif
-		#endif
+#endif
+#endif
 		}
 	}
 	return 0;
@@ -2926,7 +2928,9 @@ qca_dess_hw_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 	fal_port_rxhdr_mode_set(dev_id, 0, FAL_ALL_TYPE_FRAME_EN);
 #endif
 #ifdef IN_IP
+#ifndef IN_IP_MINI
 	fal_ip_route_status_set(dev_id, A_TRUE);
+#endif
 #endif
 
 	ssdk_flow_default_act_init(dev_id);
@@ -2937,7 +2941,9 @@ qca_dess_hw_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 	reg_value &= ~2;
 	qca_switch_reg_write(dev_id, 0x0e38, (a_uint8_t *)&reg_value, 4);
 #ifdef IN_IP
+#ifndef IN_IP_MINI
 	fal_ip_vrf_base_addr_set(dev_id, 0, 0);
+#endif
 #endif
 
 	p_api = hsl_api_ptr_get (dev_id);
@@ -3211,19 +3217,19 @@ static void qca_dess_rfs_remove(void)
 {
 	/* ssdk_dt_global->switch_reg_access_mode == HSL_REG_LOCAL_BUS */
 	if(qca_dess_rfs_registered){
-		#if defined (CONFIG_NF_FLOW_COOKIE)
-		#ifdef IN_NAT
-		#ifdef IN_SFE
+#if defined (CONFIG_NF_FLOW_COOKIE)
+#ifdef IN_NAT
+#ifdef IN_SFE
 		sfe_unregister_flow_cookie_cb(ssdk_flow_cookie_set);
-		#endif
-		#endif
-		#endif
-		#ifdef IN_RFS
+#endif
+#endif
+#endif
+#ifdef IN_RFS
 		rfs_ess_device_unregister(&rfs_dev);
 		unregister_inetaddr_notifier(&ssdk_inet_notifier);
-		#if defined(CONFIG_RFS_ACCEL)
-		#endif
-		#endif
+#if defined(CONFIG_RFS_ACCEL)
+#endif
+#endif
 		qca_dess_rfs_registered = false;
 	}
 
@@ -3232,31 +3238,31 @@ static void qca_dess_rfs_remove(void)
 static void qca_dess_rfs_init(void)
 {
 	if (!qca_dess_rfs_registered) {
-		#if defined (CONFIG_NF_FLOW_COOKIE)
-		#ifdef IN_NAT
-		#ifdef IN_SFE
+#if defined (CONFIG_NF_FLOW_COOKIE)
+#ifdef IN_NAT
+#ifdef IN_SFE
 		sfe_register_flow_cookie_cb(ssdk_flow_cookie_set);
-		#endif
-		#endif
-		#endif
+#endif
+#endif
+#endif
 
-		#ifdef IN_RFS
+#ifdef IN_RFS
 		memset(&rfs_dev, 0, sizeof(rfs_dev));
 		rfs_dev.name = NULL;
-		#ifdef IN_FDB
+#ifdef IN_FDB
 		rfs_dev.mac_rule_cb = ssdk_rfs_mac_rule_set;
-		#endif
-		#ifdef IN_IP
+#endif
+#ifdef IN_IP
 		rfs_dev.ip4_rule_cb = ssdk_rfs_ip4_rule_set;
 		rfs_dev.ip6_rule_cb = ssdk_rfs_ip6_rule_set;
-		#endif
+#endif
 		rfs_ess_device_register(&rfs_dev);
-		#if defined(CONFIG_RFS_ACCEL)
-		#endif
+#if defined(CONFIG_RFS_ACCEL)
+#endif
 		ssdk_inet_notifier.notifier_call = ssdk_inet_event;
 		ssdk_inet_notifier.priority = 1;
 		register_inetaddr_notifier(&ssdk_inet_notifier);
-		#endif
+#endif
 		qca_dess_rfs_registered = true;
 	}
 }
@@ -3374,7 +3380,7 @@ static int __init regi_init(void)
 		{
 			case CHIP_ISIS:
 			case CHIP_ISISC:
-			#if defined (ISISC) || defined (ISIS)
+#if defined (ISISC) || defined (ISIS)
 				if (qca_phy_priv_global[dev_id]->ess_switch_flag == A_TRUE) {
 					SSDK_INFO("Initializing ISISC!!\n");
 					rv = ssdk_switch_register(dev_id);
@@ -3382,20 +3388,20 @@ static int __init regi_init(void)
 					rv = qca_ar8327_hw_init(qca_phy_priv_global[dev_id]);
 					SSDK_INFO("Initializing ISISC Done!!\n");
 				}
-			#endif
+#endif
 				break;
 			case CHIP_HPPE:
-			#if defined(HPPE)
+#if defined(HPPE)
 				SSDK_INFO("Initializing HPPE!!\n");
 				qca_hppe_hw_init(&cfg, dev_id);
 				rv = ssdk_switch_register(dev_id);
 				SW_CNTU_ON_ERROR_AND_COND1_OR_GOTO_OUT(rv, -ENODEV);
 				SSDK_INFO("Initializing HPPE Done!!\n");
-			#endif
+#endif
 				break;
 
 			case CHIP_DESS:
-			#if defined(DESS)
+#if defined(DESS)
 				SSDK_INFO("Initializing DESS!!\n");
 
 				qca_dess_hw_init(&cfg, dev_id);
@@ -3406,7 +3412,7 @@ static int __init regi_init(void)
 				rv = ssdk_switch_register(dev_id);
 				SW_CNTU_ON_ERROR_AND_COND1_OR_GOTO_OUT(rv, -ENODEV);
 				SSDK_INFO("Initializing DESS Done!!\n");
-			#endif
+#endif
 				break;
 
 			case CHIP_SHIVA:

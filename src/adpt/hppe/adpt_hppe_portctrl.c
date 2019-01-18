@@ -2419,7 +2419,9 @@ _adpt_hppe_port_mux_set(a_uint32_t dev_id, fal_port_t port_id,
 		if (adpt_hppe_chip_revision_get(dev_id) == HPPE_REVISION) {
 		 	rv = _adpt_hppe_port_mux_mac_set(dev_id, port_id, port_type);
 		} else if (adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) {
+#if defined(CPPE)
 			rv = _adpt_cppe_port_mux_mac_set(dev_id, port_id, port_type);
+#endif
 		}
 	}
 #ifdef HAWKEYE_CHIP
@@ -3256,6 +3258,7 @@ adpt_hppe_port_autoneg_enable(a_uint32_t dev_id, fal_port_t port_id)
 
 }
 
+#ifndef IN_PORTCONTROL_MINI
 sw_error_t
 adpt_ppe_port_mtu_get(a_uint32_t dev_id, fal_port_t port_id,
 		fal_mtu_ctrl_t *ctrl)
@@ -3274,6 +3277,7 @@ adpt_ppe_port_mtu_get(a_uint32_t dev_id, fal_port_t port_id,
 		return adpt_hppe_port_mtu_get(dev_id, port_id, ctrl);
 	}
 }
+#endif
 
 sw_error_t
 adpt_hppe_port_interface_mode_status_get(a_uint32_t dev_id, fal_port_t port_id,

@@ -23,8 +23,8 @@
 #include "hppe_ip_reg.h"
 #include "hppe_ip.h"
 
+#ifndef IN_IP_MINI
 static a_uint32_t host_cmd_id = 0;
-
 sw_error_t
 hppe_rt_interface_cnt_tbl_get(
 		a_uint32_t dev_id,
@@ -249,7 +249,8 @@ hppe_network_route_action_set(
 				index * NETWORK_ROUTE_ACTION_INC,
 				value->val);
 }
-
+#endif
+#if ((!defined IN_IP_MINI) || (!defined IN_FLOW_MINI))
 sw_error_t
 hppe_l3_route_ctrl_get(
 		a_uint32_t dev_id,
@@ -293,7 +294,8 @@ hppe_l3_route_ctrl_ext_set(
 				IPE_L3_BASE_ADDR + L3_ROUTE_CTRL_EXT_ADDRESS,
 				value->val);
 }
-
+#endif
+#ifndef IN_IP_MINI
 sw_error_t
 hppe_host_tbl_op_get(
 		a_uint32_t dev_id,
@@ -315,7 +317,8 @@ hppe_host_tbl_op_set(
 				IPE_L3_BASE_ADDR + HOST_TBL_OP_ADDRESS,
 				value->val);
 }
-
+#endif
+#if ((!defined IN_IP_MINI) || (!defined IN_FLOW_MINI))
 sw_error_t
 hppe_host_tbl_op_data0_get(
 		a_uint32_t dev_id,
@@ -425,7 +428,8 @@ hppe_host_tbl_op_data4_set(
 				IPE_L3_BASE_ADDR + HOST_TBL_OP_DATA4_ADDRESS,
 				value->val);
 }
-
+#endif
+#ifndef IN_IP_MINI
 sw_error_t
 hppe_host_tbl_op_data5_get(
 		a_uint32_t dev_id,
@@ -576,7 +580,8 @@ hppe_host_tbl_rd_op_set(
 				IPE_L3_BASE_ADDR + HOST_TBL_RD_OP_ADDRESS,
 				value->val);
 }
-
+#endif
+#if ((!defined IN_IP_MINI) || (!defined IN_FLOW_MINI))
 sw_error_t
 hppe_host_tbl_rd_op_data0_get(
 		a_uint32_t dev_id,
@@ -686,7 +691,8 @@ hppe_host_tbl_rd_op_data4_set(
 				IPE_L3_BASE_ADDR + HOST_TBL_RD_OP_DATA4_ADDRESS,
 				value->val);
 }
-
+#endif
+#ifndef IN_IP_MINI
 sw_error_t
 hppe_host_tbl_rd_op_data5_get(
 		a_uint32_t dev_id,
@@ -1068,7 +1074,7 @@ hppe_l3_dbg_rd_data_set(
 {
 	return SW_NOT_SUPPORTED;
 }
-
+#endif
 sw_error_t
 hppe_l3_vp_port_tbl_get(
 		a_uint32_t dev_id,
@@ -1096,7 +1102,7 @@ hppe_l3_vp_port_tbl_set(
 				value->val,
 				3);
 }
-
+#if ((!defined IN_IP_MINI) || (defined IN_PPPOE))
 sw_error_t
 hppe_in_l3_if_tbl_get(
 		a_uint32_t dev_id,
@@ -1124,7 +1130,8 @@ hppe_in_l3_if_tbl_set(
 				value->val,
 				2);
 }
-
+#endif
+#ifndef IN_IP_MINI
 sw_error_t
 hppe_host_ipv6_mcast_tbl_get(
 		a_uint32_t dev_id,
@@ -1264,7 +1271,8 @@ hppe_in_nexthop_tbl_set(
 				value->val,
 				4);
 }
-
+#endif
+#if ((!defined IN_IP_MINI) || (defined IN_PPPOE))
 sw_error_t
 hppe_eg_l3_if_tbl_get(
 		a_uint32_t dev_id,
@@ -1292,7 +1300,8 @@ hppe_eg_l3_if_tbl_set(
 				value->val,
 				3);
 }
-
+#endif
+#ifndef IN_IP_MINI
 sw_error_t
 hppe_my_mac_tbl_mac_da_get(
 		a_uint32_t dev_id,
@@ -6880,6 +6889,4 @@ hppe_host_flush_common(a_uint32_t dev_id)
 	
 	
 }
-
-
-
+#endif

@@ -1499,10 +1499,17 @@ _adpt_hppe_acl_action_hw_2_sw(a_uint32_t dev_id,union ipo_action_u *hw_act, fal_
 	{
 		FAL_ACTION_FLG_SET(rule->action_flg, FAL_ACL_ACTION_METADATA_EN);
 	}
+#if defined(CPPE)
+	if(adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION)
+	{
+		rule->qos_res_prec = hw_act->bf.qos_res_prec;
+	}
+#endif
 	return SW_OK;
 }
 sw_error_t
-adpt_hppe_acl_rule_query(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_id, fal_acl_rule_t * rule)
+adpt_hppe_acl_rule_query(a_uint32_t dev_id, a_uint32_t list_id, a_uint32_t rule_id,
+		fal_acl_rule_t * rule)
 {
 	sw_error_t rv = 0;
 	a_uint32_t hw_index = 0, hw_entries = 0;
@@ -2966,6 +2973,12 @@ _adpt_hppe_acl_action_sw_2_hw(a_uint32_t dev_id,fal_acl_rule_t *rule, union ipo_
 	{
 		hw_act->bf.metadata_en = 1;
 	}
+#if defined(CPPE)
+	if(adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION)
+	{
+		hw_act->bf.qos_res_prec = rule->qos_res_prec;
+	}
+#endif
 	return SW_OK;
 }
 

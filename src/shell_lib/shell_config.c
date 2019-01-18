@@ -1051,6 +1051,7 @@ struct sub_cmd_des_t g_misc_des[] =
 #ifdef IN_IP
 struct sub_cmd_des_t g_ip_des[] =
 {
+#ifndef IN_IP_MINI
 	{"hostentry", "set", SW_API_IP_HOST_ADD, NULL},
 	{"hostentry", "add", SW_API_IP_HOST_ADD, NULL},
 	{"hostentry", "del", SW_API_IP_HOST_DEL, NULL},
@@ -1093,6 +1094,7 @@ struct sub_cmd_des_t g_ip_des[] =
 	{"portarpsg", "set",  SW_API_IP_PORT_ARP_SG_SET, NULL},
 	{"mcmode", "set",  SW_API_IP_VSI_MC_MODE_SET, NULL},
 	{"globalctrl", "set",  SW_API_GLOBAL_CTRL_SET, NULL},
+#endif
 	{NULL, NULL,  (int)NULL, NULL},/*end of desc*/
 };
 #endif
