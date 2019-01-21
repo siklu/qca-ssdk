@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2017, 2019, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -790,7 +790,7 @@ hppe_uniphy_mode_ctrl_newaddedfromhere_ch0_psgmii_qsgmii_set(
 }
 
 sw_error_t
-hppe_uniphy_mode_ctrl_newaddedfromhere_ch0_athr_csco_mode_25m_get(
+hppe_uniphy_mode_ctrl_newaddedfromhere_ch0_autoneg_mode_get(
 		a_uint32_t dev_id,
 		a_uint32_t index,
 		a_uint32_t *value)
@@ -799,12 +799,12 @@ hppe_uniphy_mode_ctrl_newaddedfromhere_ch0_athr_csco_mode_25m_get(
 	sw_error_t ret = SW_OK;
 
 	ret = hppe_uniphy_mode_ctrl_get(dev_id, index, &reg_val);
-	*value = reg_val.bf.newaddedfromhere_ch0_athr_csco_mode_25m;
+	*value = reg_val.bf.newaddedfromhere_ch0_autoneg_mode;
 	return ret;
 }
 
 sw_error_t
-hppe_uniphy_mode_ctrl_newaddedfromhere_ch0_athr_csco_mode_25m_set(
+hppe_uniphy_mode_ctrl_newaddedfromhere_ch0_autoneg_mode_set(
 		a_uint32_t dev_id,
 		a_uint32_t index,
 		a_uint32_t value)
@@ -815,7 +815,7 @@ hppe_uniphy_mode_ctrl_newaddedfromhere_ch0_athr_csco_mode_25m_set(
 	ret = hppe_uniphy_mode_ctrl_get(dev_id, index, &reg_val);
 	if (SW_OK != ret)
 		return ret;
-	reg_val.bf.newaddedfromhere_ch0_athr_csco_mode_25m = value;
+	reg_val.bf.newaddedfromhere_ch0_autoneg_mode = value;
 	ret = hppe_uniphy_mode_ctrl_set(dev_id, index, &reg_val);
 	return ret;
 }
@@ -6057,4 +6057,64 @@ hppe_pll_control_vco_related_selection_2_cmn_mmd1_reg_src_cmn_pll_fbclk_div_set(
 	return ret;
 }
 #endif
+
+sw_error_t
+hppe_uniphy_phy_mode_ctrl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union uniphy_misc2_phy_mode_u *value)
+{
+	if (index >= UNIPHY_MISC2_PHY_MODE_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+	return hppe_uniphy_reg_get(
+				dev_id,
+				NSS_UNIPHY_BASE_ADDR + UNIPHY_MISC2_PHY_MODE_ADDRESS,
+				index * UNIPHY_MISC2_PHY_MODE_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_uniphy_phy_mode_ctrl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union uniphy_misc2_phy_mode_u *value)
+{
+	if (index >= UNIPHY_MISC2_PHY_MODE_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+	return hppe_uniphy_reg_set(
+				dev_id,
+				NSS_UNIPHY_BASE_ADDR + UNIPHY_MISC2_PHY_MODE_ADDRESS,
+				index * UNIPHY_MISC2_PHY_MODE_INC,
+				value->val);
+}
+
+sw_error_t
+hppe_uniphy_pll_reset_ctrl_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union pll_power_on_and_reset_u *value)
+{
+	if (index >= UNIPHY_PLL_POWER_ON_AND_RESET_INC_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+	return hppe_uniphy_reg_get(
+				dev_id,
+				NSS_UNIPHY_BASE_ADDR + PLL_POWER_ON_AND_RESET_ADDRESS,
+				index * PLL_POWER_ON_AND_RESET_INC,
+				&value->val);
+}
+
+sw_error_t
+hppe_uniphy_pll_reset_ctrl_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union pll_power_on_and_reset_u *value)
+{
+	if (index >= UNIPHY_PLL_POWER_ON_AND_RESET_INC_MAX_ENTRY)
+		return SW_OUT_OF_RANGE;
+	return hppe_uniphy_reg_set(
+				dev_id,
+				NSS_UNIPHY_BASE_ADDR + PLL_POWER_ON_AND_RESET_ADDRESS,
+				index * PLL_POWER_ON_AND_RESET_INC,
+				value->val);
+}
 

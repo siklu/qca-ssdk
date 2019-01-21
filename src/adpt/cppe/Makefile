@@ -17,6 +17,10 @@ ifeq (TRUE, $(IN_QOS))
   SRC_LIST += adpt_cppe_qos.c
 endif
 
+ifeq (TRUE, $(IN_UNIPHY))
+  SRC_LIST += adpt_cppe_uniphy.c
+endif
+
 ifeq (, $(findstring CPPE, $(SUPPORT_CHIP)))
   SRC_LIST=
 endif

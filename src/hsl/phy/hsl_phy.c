@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2017-2018, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2015, 2017-2019, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -42,6 +42,7 @@
 /*qca808x_start*/
 #include "sw.h"
 #include "ssdk_plat.h"
+#include "hsl_port_prop.h"
 
 phy_info_t *phy_info[SW_MAX_NR_DEV] = {0};
 a_uint32_t port_bmp[SW_MAX_NR_DEV] = {0};
@@ -513,7 +514,7 @@ hsl_port_phy_c45_capability_set(a_uint32_t dev_id, a_uint32_t port_id,
 	return;
 }
 sw_error_t
-hsl_ssdk_phy_serdes_reset(a_uint32_t dev_id)
+hsl_port_phy_serdes_reset(a_uint32_t dev_id)
 {
 	sw_error_t rv;
 	int i = 0;
@@ -533,8 +534,37 @@ hsl_ssdk_phy_serdes_reset(a_uint32_t dev_id)
 
 	return SW_OK;
 }
+
+a_uint32_t
+hsl_port_phyid_get(a_uint32_t dev_id, fal_port_t port_id)
+{
+	sw_error_t rv = SW_OK;
+	a_uint32_t phy_addr, phy_id;
+	hsl_phy_ops_t *phy_drv;
+
+	phy_drv = hsl_phy_api_ops_get (dev_id, port_id);
+	if (phy_drv == NULL) {
+		return INVALID_PHY_ID;
+	}
+	if (NULL == phy_drv->phy_id_get) {
+		return INVALID_PHY_ID;
+	}
+
+	rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_addr);
+	if(rv) {
+		return INVALID_PHY_ID;
+	}
+
+	rv = phy_drv->phy_id_get (dev_id, phy_addr, &phy_id);
+	if(rv) {
+		return INVALID_PHY_ID;
+	}
+
+	return phy_id;
+}
+
 sw_error_t
-hsl_ssdk_phy_mode_set(a_uint32_t dev_id, fal_port_interface_mode_t mode)
+hsl_port_phy_mode_set(a_uint32_t dev_id, fal_port_interface_mode_t mode)
 {
 	sw_error_t rv;
 	a_uint32_t i = 0, phy_addr = 0;

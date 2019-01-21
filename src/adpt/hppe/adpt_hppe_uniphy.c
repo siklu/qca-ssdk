@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2018, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2017-2019, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -26,6 +26,11 @@
 #include "adpt.h"
 #include "hppe_reg_access.h"
 #include "hsl_phy.h"
+#include "adpt_hppe.h"
+#if defined(CPPE)
+#include "adpt_cppe_uniphy.h"
+#include "adpt_cppe_portctrl.h"
+#endif
 
 #ifdef HAWKEYE_CHIP
 
@@ -57,8 +62,8 @@ __adpt_hppe_uniphy_10g_r_linkup(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	return SW_OK;
 }
 
-static sw_error_t
-__adpt_hppe_uniphy_calibration(a_uint32_t dev_id, a_uint32_t uniphy_index)
+sw_error_t
+__adpt_hppe_uniphy_calibrate(a_uint32_t dev_id, a_uint32_t uniphy_index)
 {
 	a_uint32_t reg_value = 0;
 	a_uint32_t retries = 100, calibration_done = 0;
@@ -86,7 +91,7 @@ __adpt_hppe_uniphy_calibration(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	return SW_OK;
 }
 
-static void
+void
 __adpt_hppe_gcc_uniphy_xpcs_reset(a_uint32_t dev_id, a_uint32_t uniphy_index, a_bool_t enable)
 {
 	enum unphy_rst_type rst_type;
@@ -109,7 +114,7 @@ __adpt_hppe_gcc_uniphy_xpcs_reset(a_uint32_t dev_id, a_uint32_t uniphy_index, a_
 	return;
 }
 
-static void
+void
 __adpt_hppe_gcc_uniphy_software_reset(a_uint32_t dev_id, a_uint32_t uniphy_index)
 {
 
@@ -166,11 +171,16 @@ __adpt_hppe_uniphy_usxgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 
 	/* configure uniphy to usxgmii mode */
 	hppe_uniphy_mode_ctrl_get(dev_id, uniphy_index, &uniphy_mode_ctrl);
-	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_psgmii_qsgmii = 0;
-	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_qsgmii_sgmii = 0;
-	uniphy_mode_ctrl.bf.newaddedfromhere_sg_mode = 0;
-	uniphy_mode_ctrl.bf.newaddedfromhere_sgplus_mode = 0;
-	uniphy_mode_ctrl.bf.newaddedfromhere_xpcs_mode = 1;
+	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_psgmii_qsgmii =
+		UNIPHY_CH0_QSGMII_SGMII_MODE;
+	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_qsgmii_sgmii =
+		UNIPHY_CH0_SGMII_MODE;
+	uniphy_mode_ctrl.bf.newaddedfromhere_sg_mode =
+		UNIPHY_SGMII_MODE_DISABLE;
+	uniphy_mode_ctrl.bf.newaddedfromhere_sgplus_mode =
+		UNIPHY_SGMIIPLUS_MODE_DISABLE;
+	uniphy_mode_ctrl.bf.newaddedfromhere_xpcs_mode =
+		UNIPHY_XPCS_MODE_ENABLE;
 	hppe_uniphy_mode_ctrl_set(dev_id, uniphy_index, &uniphy_mode_ctrl);
 
 	/* configure uniphy usxgmii gcc software reset */
@@ -179,7 +189,7 @@ __adpt_hppe_uniphy_usxgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	msleep(100);
 
 	/* wait calibration done to uniphy */
-	__adpt_hppe_uniphy_calibration(dev_id, uniphy_index);
+	__adpt_hppe_uniphy_calibrate(dev_id, uniphy_index);
 
 	/* enable instance clock */
 	qca_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
@@ -240,11 +250,16 @@ __adpt_hppe_uniphy_10g_r_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	/* configure uniphy to 10g_r mode */
 	hppe_uniphy_mode_ctrl_get(dev_id, uniphy_index, &uniphy_mode_ctrl);
 
-	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_psgmii_qsgmii = 0;
-	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_qsgmii_sgmii = 0;
-	uniphy_mode_ctrl.bf.newaddedfromhere_sg_mode = 0;
-	uniphy_mode_ctrl.bf.newaddedfromhere_sgplus_mode = 0;
-	uniphy_mode_ctrl.bf.newaddedfromhere_xpcs_mode = 1;
+	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_psgmii_qsgmii =
+		UNIPHY_CH0_QSGMII_SGMII_MODE;
+	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_qsgmii_sgmii =
+		UNIPHY_CH0_SGMII_MODE;
+	uniphy_mode_ctrl.bf.newaddedfromhere_sg_mode =
+		UNIPHY_SGMII_MODE_DISABLE;
+	uniphy_mode_ctrl.bf.newaddedfromhere_sgplus_mode =
+		UNIPHY_SGMIIPLUS_MODE_DISABLE;
+	uniphy_mode_ctrl.bf.newaddedfromhere_xpcs_mode =
+		UNIPHY_XPCS_MODE_ENABLE;
 
 	hppe_uniphy_mode_ctrl_set(dev_id, uniphy_index, &uniphy_mode_ctrl);
 
@@ -256,7 +271,7 @@ __adpt_hppe_uniphy_10g_r_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	__adpt_hppe_gcc_uniphy_software_reset(dev_id, uniphy_index);
 
 	/* wait uniphy calibration done */
-	rv = __adpt_hppe_uniphy_calibration(dev_id, uniphy_index);
+	rv = __adpt_hppe_uniphy_calibrate(dev_id, uniphy_index);
 
 	/* configure gcc speed clock to 10g r mode*/
 	if (uniphy_index == SSDK_UNIPHY_INSTANCE1)
@@ -285,6 +300,14 @@ __adpt_hppe_uniphy_sgmiiplus_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index
 	memset(&uniphy_mode_ctrl, 0, sizeof(uniphy_mode_ctrl));
 	ADPT_DEV_ID_CHECK(dev_id);
 
+#if defined(CPPE)
+	if ((adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION)
+		&& (uniphy_index == SSDK_UNIPHY_INSTANCE0)) {
+		rv = __adpt_cppe_uniphy_sgmiiplus_mode_set(dev_id, uniphy_index);
+		return rv;
+	}
+#endif
+
 	hppe_uniphy_reg_set(dev_id, UNIPHY_MISC2_REG_OFFSET,
 		uniphy_index, UNIPHY_MISC2_REG_SGMII_PLUS_MODE);
 	/*reset uniphy*/
@@ -305,12 +328,18 @@ __adpt_hppe_uniphy_sgmiiplus_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index
 	/* configure uniphy to Athr mode and sgmiiplus mode */
 	hppe_uniphy_mode_ctrl_get(dev_id, uniphy_index, &uniphy_mode_ctrl);
 
-	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_athr_csco_mode_25m = 0;
-	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_psgmii_qsgmii = 0;
-	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_qsgmii_sgmii = 0;
-	uniphy_mode_ctrl.bf.newaddedfromhere_sg_mode = 0;
-	uniphy_mode_ctrl.bf.newaddedfromhere_sgplus_mode = 1;
-	uniphy_mode_ctrl.bf.newaddedfromhere_xpcs_mode = 0;
+	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_autoneg_mode =
+		UNIPHY_ATHEROS_NEGOTIATION;
+	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_psgmii_qsgmii =
+		UNIPHY_CH0_QSGMII_SGMII_MODE;
+	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_qsgmii_sgmii =
+		UNIPHY_CH0_SGMII_MODE;
+	uniphy_mode_ctrl.bf.newaddedfromhere_sg_mode =
+		UNIPHY_SGMII_MODE_DISABLE;
+	uniphy_mode_ctrl.bf.newaddedfromhere_sgplus_mode =
+		UNIPHY_SGMIIPLUS_MODE_ENABLE;
+	uniphy_mode_ctrl.bf.newaddedfromhere_xpcs_mode =
+		UNIPHY_XPCS_MODE_DISABLE;
 
 	hppe_uniphy_mode_ctrl_set(dev_id, uniphy_index, &uniphy_mode_ctrl);
 
@@ -318,7 +347,7 @@ __adpt_hppe_uniphy_sgmiiplus_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index
 	__adpt_hppe_gcc_uniphy_software_reset(dev_id, uniphy_index);
 
 	/* wait uniphy calibration done */
-	rv = __adpt_hppe_uniphy_calibration(dev_id, uniphy_index);
+	rv = __adpt_hppe_uniphy_calibrate(dev_id, uniphy_index);
 
 	/* enable instance clock */
 	qca_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
@@ -331,11 +360,29 @@ __adpt_hppe_uniphy_sgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index, a_
 {
 	a_uint32_t i, max_port, mode;
 	sw_error_t rv = SW_OK;
+#if defined(CPPE)
+	a_uint32_t phy_type = 0;
+#endif
 
 	union uniphy_mode_ctrl_u uniphy_mode_ctrl;
 
 	memset(&uniphy_mode_ctrl, 0, sizeof(uniphy_mode_ctrl));
 	ADPT_DEV_ID_CHECK(dev_id);
+
+#if defined(CPPE)
+	if ((uniphy_index == SSDK_UNIPHY_INSTANCE0) &&
+		(channel == SSDK_UNIPHY_CHANNEL0)) {
+		if (adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) {
+			phy_type = hsl_port_phyid_get(dev_id,
+				SSDK_PHYSICAL_PORT4);
+			if (phy_type == QCA8081_PHY_V1_1) {
+				rv = __adpt_cppe_uniphy_connection_qca808x_set(dev_id,
+					uniphy_index);
+				return rv;
+			}
+		}
+	}
+#endif
 
 	/*set the PHY mode to SGMII*/
 	hppe_uniphy_reg_set(dev_id, UNIPHY_MISC2_REG_OFFSET,
@@ -363,6 +410,14 @@ __adpt_hppe_uniphy_sgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index, a_
 			i, A_FALSE);
 	}
 
+#if defined(CPPE)
+	if ((adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) &&
+		(uniphy_index == SSDK_UNIPHY_INSTANCE0)) {
+		rv = __adpt_cppe_uniphy_channel_selection_set(dev_id);
+		SW_RTN_ON_ERROR (rv);
+	}
+#endif
+
 	/* configure uniphy to Athr mode and sgmii mode */
 	hppe_uniphy_mode_ctrl_get(dev_id, uniphy_index, &uniphy_mode_ctrl);
 	mode = ssdk_dt_global_get_mac_mode(dev_id, uniphy_index);
@@ -370,33 +425,46 @@ __adpt_hppe_uniphy_sgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index, a_
 	{
 		uniphy_mode_ctrl.bf.newaddedfromhere_ch0_mode_ctrl_25m = 0;
 	}
-	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_athr_csco_mode_25m = 0;
-	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_psgmii_qsgmii = 0;
-	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_qsgmii_sgmii = 0;
-	uniphy_mode_ctrl.bf.newaddedfromhere_sgplus_mode = 0;
-	uniphy_mode_ctrl.bf.newaddedfromhere_xpcs_mode = 0;
+	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_autoneg_mode =
+		UNIPHY_ATHEROS_NEGOTIATION;
+	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_psgmii_qsgmii =
+		UNIPHY_CH0_QSGMII_SGMII_MODE;
+	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_qsgmii_sgmii =
+		UNIPHY_CH0_SGMII_MODE;
+	uniphy_mode_ctrl.bf.newaddedfromhere_sgplus_mode =
+		UNIPHY_SGMIIPLUS_MODE_DISABLE;
+	uniphy_mode_ctrl.bf.newaddedfromhere_xpcs_mode =
+		UNIPHY_XPCS_MODE_DISABLE;
 	if (uniphy_index == SSDK_UNIPHY_INSTANCE0) {
-		uniphy_mode_ctrl.bf.newaddedfromhere_sg_mode = 0;
+		uniphy_mode_ctrl.bf.newaddedfromhere_sg_mode =
+			UNIPHY_SGMII_MODE_DISABLE;
 		/* select channel as a sgmii interface */
-		if (channel == 0)
+		if (channel == SSDK_UNIPHY_CHANNEL0)
 		{
-			uniphy_mode_ctrl.bf.newaddedfromhere_ch1_ch0_sgmii = 0;
-			uniphy_mode_ctrl.bf.newaddedfromhere_ch4_ch1_0_sgmii = 0;
+			uniphy_mode_ctrl.bf.newaddedfromhere_ch1_ch0_sgmii =
+				UNIPHY_SGMII_CHANNEL1_DISABLE;
+			uniphy_mode_ctrl.bf.newaddedfromhere_ch4_ch1_0_sgmii =
+				UNIPHY_SGMII_CHANNEL4_DISABLE;
 		}
-		else if (channel == 1)
+		else if (channel == SSDK_UNIPHY_CHANNEL1)
 		{
-			uniphy_mode_ctrl.bf.newaddedfromhere_ch1_ch0_sgmii = 1;
-			uniphy_mode_ctrl.bf.newaddedfromhere_ch4_ch1_0_sgmii = 0;
+			uniphy_mode_ctrl.bf.newaddedfromhere_ch1_ch0_sgmii =
+				UNIPHY_SGMII_CHANNEL1_ENABLE;
+			uniphy_mode_ctrl.bf.newaddedfromhere_ch4_ch1_0_sgmii =
+				UNIPHY_SGMII_CHANNEL4_DISABLE;
 		}
-		else if (channel == 4)
+		else if (channel == SSDK_UNIPHY_CHANNEL4)
 		{
-			uniphy_mode_ctrl.bf.newaddedfromhere_ch1_ch0_sgmii = 0;
-			uniphy_mode_ctrl.bf.newaddedfromhere_ch4_ch1_0_sgmii = 1;
+			uniphy_mode_ctrl.bf.newaddedfromhere_ch1_ch0_sgmii =
+				UNIPHY_SGMII_CHANNEL1_DISABLE;
+			uniphy_mode_ctrl.bf.newaddedfromhere_ch4_ch1_0_sgmii =
+				UNIPHY_SGMII_CHANNEL4_ENABLE;
 		}
 	}
 	else
 	{
-		uniphy_mode_ctrl.bf.newaddedfromhere_sg_mode = 1;
+		uniphy_mode_ctrl.bf.newaddedfromhere_sg_mode =
+			UNIPHY_SGMII_MODE_ENABLE;
 	}
 
 	hppe_uniphy_mode_ctrl_set(dev_id, uniphy_index, &uniphy_mode_ctrl);
@@ -405,7 +473,7 @@ __adpt_hppe_uniphy_sgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index, a_
 	__adpt_hppe_gcc_uniphy_software_reset(dev_id, uniphy_index);
 
 	/* wait uniphy calibration done */
-	rv = __adpt_hppe_uniphy_calibration(dev_id, uniphy_index);
+	rv = __adpt_hppe_uniphy_calibrate(dev_id, uniphy_index);
 
 	/* enable instance clock */
 	if (uniphy_index == SSDK_UNIPHY_INSTANCE0)
@@ -434,7 +502,8 @@ __adpt_hppe_uniphy_qsgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	ADPT_DEV_ID_CHECK(dev_id);
 
 	/* configure malibu phy to qsgmii mode*/
-	hsl_ssdk_phy_mode_set(dev_id, PORT_QSGMII);
+	rv = hsl_port_phy_mode_set(dev_id, PORT_QSGMII);
+	SW_RTN_ON_ERROR (rv);
 
 	/* keep xpcs to reset status */
 	__adpt_hppe_gcc_uniphy_xpcs_reset(dev_id, uniphy_index, A_TRUE);
@@ -448,21 +517,28 @@ __adpt_hppe_uniphy_qsgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 
 	/* configure uniphy to Athr mode and qsgmii mode */
 	hppe_uniphy_mode_ctrl_get(dev_id, uniphy_index, &uniphy_mode_ctrl);
-	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_athr_csco_mode_25m = 0;
-	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_psgmii_qsgmii = 0;
-	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_qsgmii_sgmii = 1;
-	uniphy_mode_ctrl.bf.newaddedfromhere_sg_mode = 0;
-	uniphy_mode_ctrl.bf.newaddedfromhere_sgplus_mode = 0;
-	uniphy_mode_ctrl.bf.newaddedfromhere_xpcs_mode = 0;
+	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_autoneg_mode =
+		UNIPHY_ATHEROS_NEGOTIATION;
+	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_psgmii_qsgmii =
+		UNIPHY_CH0_QSGMII_SGMII_MODE;
+	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_qsgmii_sgmii =
+		UNIPHY_CH0_QSGMII_MODE;
+	uniphy_mode_ctrl.bf.newaddedfromhere_sg_mode =
+		UNIPHY_SGMII_MODE_DISABLE;
+	uniphy_mode_ctrl.bf.newaddedfromhere_sgplus_mode =
+		UNIPHY_SGMII_MODE_DISABLE;
+	uniphy_mode_ctrl.bf.newaddedfromhere_xpcs_mode =
+		UNIPHY_XPCS_MODE_DISABLE;
 	hppe_uniphy_mode_ctrl_set(dev_id, uniphy_index, &uniphy_mode_ctrl);
 
 	/* configure uniphy gcc software reset */
 	__adpt_hppe_gcc_uniphy_software_reset(dev_id, uniphy_index);
 
 	/* wait uniphy calibration done */
-	rv = __adpt_hppe_uniphy_calibration(dev_id, uniphy_index);
+	rv = __adpt_hppe_uniphy_calibrate(dev_id, uniphy_index);
 
-	hsl_ssdk_phy_serdes_reset(dev_id);
+	rv = hsl_port_phy_serdes_reset(dev_id);
+	SW_RTN_ON_ERROR (rv);
 
 	/* enable instance0 clock */
 	for (i = SSDK_PHYSICAL_PORT1; i < SSDK_PHYSICAL_PORT6; i++)
@@ -479,11 +555,26 @@ __adpt_hppe_uniphy_psgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 {
 	a_uint32_t i;
 	sw_error_t rv = SW_OK;
+#if defined(CPPE)
+	a_uint32_t phy_type = 0;
+#endif
 
 	union uniphy_mode_ctrl_u uniphy_mode_ctrl;
 
 	memset(&uniphy_mode_ctrl, 0, sizeof(uniphy_mode_ctrl));
 	ADPT_DEV_ID_CHECK(dev_id);
+
+#if defined(CPPE)
+	if (adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) {
+		phy_type = hsl_port_phyid_get(dev_id,
+				SSDK_PHYSICAL_PORT3);
+		if (phy_type == MALIBU2PORT_PHY) {
+			rv = __adpt_cppe_uniphy_connection_qca8072_set(dev_id,
+				uniphy_index);
+			return rv;
+		}
+	}
+#endif
 
 	/* keep xpcs to reset status */
 	__adpt_hppe_gcc_uniphy_xpcs_reset(dev_id, uniphy_index, A_TRUE);
@@ -495,23 +586,38 @@ __adpt_hppe_uniphy_psgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 			i, A_FALSE);
 	}
 
+#if defined(CPPE)
+	if ((adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) &&
+		(uniphy_index == SSDK_UNIPHY_INSTANCE0)) {
+		rv = __adpt_cppe_uniphy_channel_selection_set(dev_id);
+		SW_RTN_ON_ERROR (rv);
+	}
+#endif
+
 	/* configure uniphy to Athr mode and psgmii mode */
 	hppe_uniphy_mode_ctrl_get(dev_id, uniphy_index, &uniphy_mode_ctrl);
-	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_athr_csco_mode_25m = 0;
-	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_psgmii_qsgmii = 1;
-	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_qsgmii_sgmii = 0;
-	uniphy_mode_ctrl.bf.newaddedfromhere_sg_mode = 0;
-	uniphy_mode_ctrl.bf.newaddedfromhere_sgplus_mode = 0;
-	uniphy_mode_ctrl.bf.newaddedfromhere_xpcs_mode = 0;
+	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_autoneg_mode =
+		UNIPHY_ATHEROS_NEGOTIATION;
+	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_psgmii_qsgmii =
+		UNIPHY_CH0_PSGMII_MODE;
+	uniphy_mode_ctrl.bf.newaddedfromhere_ch0_qsgmii_sgmii =
+		UNIPHY_CH0_SGMII_MODE;
+	uniphy_mode_ctrl.bf.newaddedfromhere_sg_mode =
+		UNIPHY_SGMII_MODE_DISABLE;
+	uniphy_mode_ctrl.bf.newaddedfromhere_sgplus_mode =
+		UNIPHY_SGMIIPLUS_MODE_DISABLE;
+	uniphy_mode_ctrl.bf.newaddedfromhere_xpcs_mode =
+		UNIPHY_XPCS_MODE_DISABLE;
 	hppe_uniphy_mode_ctrl_set(dev_id, uniphy_index, &uniphy_mode_ctrl);
 
 	/* configure uniphy gcc software reset */
 	__adpt_hppe_gcc_uniphy_software_reset(dev_id, uniphy_index);
 
 	/* wait uniphy calibration done */
-	rv = __adpt_hppe_uniphy_calibration(dev_id, uniphy_index);
+	rv = __adpt_hppe_uniphy_calibrate(dev_id, uniphy_index);
 
-	hsl_ssdk_phy_serdes_reset(dev_id);
+	rv = hsl_port_phy_serdes_reset(dev_id);
+	SW_RTN_ON_ERROR (rv);
 
 	/* enable instance0 clock */
 	for (i = SSDK_PHYSICAL_PORT1; i < SSDK_PHYSICAL_PORT6; i++)
@@ -547,17 +653,20 @@ adpt_hppe_uniphy_mode_set(a_uint32_t dev_id, a_uint32_t index, a_uint32_t mode)
 		case PORT_WRAPPER_SGMII0_RGMII4:
 		case PORT_WRAPPER_SGMII_CHANNEL0:
 		case PORT_WRAPPER_SGMII_FIBER:
-			rv = __adpt_hppe_uniphy_sgmii_mode_set(dev_id, index, 0);
+			rv = __adpt_hppe_uniphy_sgmii_mode_set(dev_id, index,
+				SSDK_UNIPHY_CHANNEL0);
 			break;
 
 		case PORT_WRAPPER_SGMII1_RGMII4:
 		case PORT_WRAPPER_SGMII_CHANNEL1:
-			rv = __adpt_hppe_uniphy_sgmii_mode_set(dev_id, index, 1);
+			rv = __adpt_hppe_uniphy_sgmii_mode_set(dev_id, index,
+				SSDK_UNIPHY_CHANNEL1);
 			break;
 
 		case PORT_WRAPPER_SGMII4_RGMII4:
 		case PORT_WRAPPER_SGMII_CHANNEL4:
-			rv = __adpt_hppe_uniphy_sgmii_mode_set(dev_id, index, 4);
+			rv = __adpt_hppe_uniphy_sgmii_mode_set(dev_id, index,
+				SSDK_UNIPHY_CHANNEL4);
 			break;
 
 		case PORT_WRAPPER_SGMII_PLUS:

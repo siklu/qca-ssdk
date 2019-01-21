@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2018, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2019, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -4044,14 +4044,23 @@ adpt_hppe_uniphy_usxgmii_port_reset(a_uint32_t dev_id, a_uint32_t uniphy_index,
 
 	return;
 }
+
 static void
 adpt_hppe_uniphy_port_adapter_reset(a_uint32_t dev_id, a_uint32_t port_id)
 {
 	a_uint32_t uniphy_index, mode, mode1;
+#if defined(CPPE)
+	a_uint32_t channel_id = 0;
+#endif
 
 	if (port_id < HPPE_MUX_PORT1)
 	{
 		uniphy_index = SSDK_UNIPHY_INSTANCE0;
+#if defined(CPPE)
+		adpt_cppe_port_to_channel_convert(dev_id, port_id,
+				&channel_id);
+		port_id = channel_id;
+#endif
 		adpt_hppe_uniphy_psgmii_port_reset(dev_id, uniphy_index,
 						port_id);
 	}
@@ -4348,6 +4357,15 @@ adpt_hppe_gcc_port_speed_clock_set(a_uint32_t dev_id, a_uint32_t port_id,
 
 	if (port_id < HPPE_MUX_PORT1)
 	{
+#if defined(CPPE)
+		if (port_id == SSDK_PHYSICAL_PORT4) {
+			mode = ssdk_dt_global_get_mac_mode(dev_id, SSDK_UNIPHY_INSTANCE0);
+			if (mode == PORT_WRAPPER_SGMII_PLUS) {
+				adpt_hppe_sgmiiplus_speed_clock_set(dev_id, port_id, phy_speed);
+				return;
+			}
+		}
+#endif
 		adpt_hppe_pqsgmii_speed_clock_set(dev_id, port_id, phy_speed);
 	}
 	else
@@ -4388,10 +4406,18 @@ adpt_hppe_gcc_uniphy_clock_status_set(a_uint32_t dev_id, a_uint32_t port_id,
 				a_bool_t enable)
 {
 	a_uint32_t mode = 0, uniphy_index = 0, mode1 = 0;
+#if defined(CPPE)
+	a_uint32_t channel_id = 0;
+#endif
 
 	if (port_id < HPPE_MUX_PORT1)
 	{
 		uniphy_index = SSDK_UNIPHY_INSTANCE0;
+#if defined(CPPE)
+		adpt_cppe_port_to_channel_convert(dev_id, port_id,
+				&channel_id);
+		port_id = channel_id;
+#endif
 		qca_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
 				port_id, enable);
 	}

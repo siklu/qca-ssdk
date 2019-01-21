@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2018-2019, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -24,14 +24,19 @@
 extern "C" {
 #endif                          /* __cplusplus */
 
-#define CPPE_PORT3_PCS_SEL_PCS0_CHANNEL2 0
-#define CPPE_PORT3_PCS_SEL_PCS0_CHANNEL4 1
-#define CPPE_PORT4_PCS_SEL_PCS0_CHANNEL3 0
-#define CPPE_PORT4_PCS_SEL_PCS0_SGMIIPLUS 1
-#define CPPE_PORT5_PCS_SEL_PCS0_CHANNEL4 0
-#define CPPE_PORT5_PCS_SEL_PCS1_CHANNEL0 1
-#define CPPE_PORT5_GMAC_SEL_GMAC 0
-#define CPPE_PORT5_GMAC_SEL_XGMAC 1
+#define CPPE_PORT3_PCS_SEL_PCS0_CHANNEL2          0x0
+#define CPPE_PORT3_PCS_SEL_PCS0_CHANNEL4          0x1
+#define CPPE_PORT4_PCS_SEL_PCS0_CHANNEL3          0x0
+#define CPPE_PORT4_PCS_SEL_PCS0_SGMIIPLUS         0x1
+#define CPPE_PORT5_PCS_SEL_PCS0_CHANNEL4          0x0
+#define CPPE_PORT5_PCS_SEL_PCS1_CHANNEL0          0x1
+#define CPPE_PORT5_GMAC_SEL_GMAC                  0x0
+#define CPPE_PORT5_GMAC_SEL_XGMAC                 0x1
+#define CPPE_PCS0_CHANNEL4_SEL_PORT5_CLOCK        0x0
+#define CPPE_PCS0_CHANNEL4_SEL_PORT3_CLOCK        0x1
+#define CPPE_PCS0_CHANNEL0_SEL_PSGMII             0x0
+#define CPPE_PCS0_CHANNEL0_SEL_SGMIIPLUS          0x1
+#define CPPE_DETECTION_PHY_FAILURE                0xFFFF
 
 sw_error_t
 _adpt_cppe_port_mux_mac_set(a_uint32_t dev_id, fal_port_t port_id,
@@ -48,6 +53,9 @@ adpt_cppe_port_mtu_set(a_uint32_t dev_id, fal_port_t port_id,
 sw_error_t
 adpt_cppe_port_mtu_get(a_uint32_t dev_id, fal_port_t port_id,
 		fal_mtu_ctrl_t *ctrl);
+sw_error_t
+adpt_cppe_port_to_channel_convert(a_uint32_t dev_id,
+		a_uint32_t port_id, a_uint32_t *channel_id);
 
 #ifdef __cplusplus
 }

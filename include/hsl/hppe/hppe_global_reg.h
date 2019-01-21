@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2017, 2019, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -144,7 +144,9 @@ struct cppe_port_mux_ctrl {
 	a_uint32_t  port4_pcs_sel:2;
 	a_uint32_t  port5_pcs_sel:2;
 	a_uint32_t  port5_gmac_sel:1;
-	a_uint32_t  _reserved0:25;
+	a_uint32_t  pcs0_ch4_sel:1;
+	a_uint32_t  pcs0_ch0_sel:1;
+	a_uint32_t  _reserved0:23;
 };
 
 union cppe_port_mux_ctrl_u {
