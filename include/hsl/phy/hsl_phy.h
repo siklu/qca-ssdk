@@ -544,6 +544,9 @@ typedef struct {
 #define AQUANTIA_PHY_111        0x03a1b610
 #define AQUANTIA_PHY_111B0      0x03a1b612
 #define AQUANTIA_PHY_112        0x03a1b660
+#define AQUANTIA_PHY_113C_A0    0x31c31C10
+#define AQUANTIA_PHY_113C_A1    0x31c31C11
+
 #define PHY_805XV2              0x004DD082
 #define PHY_805XV1              0x004DD081
 /*qca808x_start*/
