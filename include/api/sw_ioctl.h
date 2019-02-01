@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2015-2018, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015-2019, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -151,6 +151,8 @@ extern "C" {
 #define SW_API_PT_SOURCE_FILTER_SET (5 + SW_API_PORT_EXT_OFFSET)
 #define SW_API_PT_FRAME_MAX_SIZE_GET (6 + SW_API_PORT_EXT_OFFSET)
 #define SW_API_PT_FRAME_MAX_SIZE_SET (7 + SW_API_PORT_EXT_OFFSET)
+#define SW_API_PT_SOURCE_FILTER_CONFIG_GET (8 + SW_API_PORT_EXT_OFFSET)
+#define SW_API_PT_SOURCE_FILTER_CONFIG_SET (9 + SW_API_PORT_EXT_OFFSET)
 
 
     /*portvlan*/

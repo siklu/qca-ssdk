@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2018-2019, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -391,3 +391,75 @@ cppe_mru_mtu_ctrl_tbl_src_profile_set(
 	ret = cppe_mru_mtu_ctrl_tbl_set(dev_id, index, &reg_val);
 	return ret;
 }
+
+sw_error_t
+cppe_mru_mtu_ctrl_tbl_source_filter_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union cppe_mru_mtu_ctrl_tbl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = cppe_mru_mtu_ctrl_tbl_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+	{
+		return ret;
+	}
+	reg_val.bf.source_filtering_bypass = value;
+	ret = cppe_mru_mtu_ctrl_tbl_set(dev_id, index, &reg_val);
+
+	return ret;
+}
+
+sw_error_t
+cppe_mru_mtu_ctrl_tbl_source_filter_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union cppe_mru_mtu_ctrl_tbl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = cppe_mru_mtu_ctrl_tbl_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.source_filtering_bypass;
+
+	return ret;
+}
+
+sw_error_t
+cppe_mru_mtu_ctrl_tbl_source_filter_mode_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t value)
+{
+	union cppe_mru_mtu_ctrl_tbl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = cppe_mru_mtu_ctrl_tbl_get(dev_id, index, &reg_val);
+	if (SW_OK != ret)
+	{
+		return ret;
+	}
+	reg_val.bf.source_filtering_mode = value;
+	ret = cppe_mru_mtu_ctrl_tbl_set(dev_id, index, &reg_val);
+
+	return ret;
+}
+
+sw_error_t
+cppe_mru_mtu_ctrl_tbl_source_filter_mode_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		a_uint32_t *value)
+{
+	union cppe_mru_mtu_ctrl_tbl_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = cppe_mru_mtu_ctrl_tbl_get(dev_id, index, &reg_val);
+	*value = reg_val.bf.source_filtering_mode;
+
+	return ret;
+}
+
+

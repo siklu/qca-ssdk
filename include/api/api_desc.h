@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2015-2018, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2015-2019, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -529,6 +529,18 @@ extern "C" {
     SW_PARAM_DEF(SW_API_PT_INTERFACE_EEE_CFG_GET, SW_UINT32, 4, SW_PARAM_IN, "Port ID"), \
     SW_PARAM_DEF(SW_API_PT_INTERFACE_EEE_CFG_GET, SW_PORT_EEE_CONFIG, \
 		sizeof(fal_port_eee_cfg_t), SW_PARAM_PTR|SW_PARAM_OUT, "EEE"),
+
+#define SW_API_PT_SOURCE_FILTER_CONFIG_GET_DESC \
+	SW_PARAM_DEF(SW_API_PT_SOURCE_FILTER_CONFIG_GET, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"),  \
+	SW_PARAM_DEF(SW_API_PT_SOURCE_FILTER_CONFIG_GET, SW_UINT32, 4, SW_PARAM_IN, "Port ID"), \
+	SW_PARAM_DEF(SW_API_PT_SOURCE_FILTER_CONFIG_GET, SW_SRC_FILTER_CONFIG, \
+		sizeof(fal_src_filter_config_t), SW_PARAM_PTR|SW_PARAM_OUT, "srcfilter config"),
+
+#define SW_API_PT_SOURCE_FILTER_CONFIG_SET_DESC \
+	SW_PARAM_DEF(SW_API_PT_SOURCE_FILTER_CONFIG_SET, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"),  \
+	SW_PARAM_DEF(SW_API_PT_SOURCE_FILTER_CONFIG_SET, SW_UINT32, 4, SW_PARAM_IN, "Port ID"), \
+	SW_PARAM_DEF(SW_API_PT_SOURCE_FILTER_CONFIG_SET, SW_SRC_FILTER_CONFIG, \
+		sizeof(fal_src_filter_config_t), SW_PARAM_PTR|SW_PARAM_IN, "srcfilter config"),
 
 #define SW_API_VLAN_ADD_DESC \
     SW_PARAM_DEF(SW_API_VLAN_ADD, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"), \
