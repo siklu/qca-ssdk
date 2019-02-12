@@ -5,6 +5,7 @@ include $(PRJ_PATH)/make/config.mk
 
 ifeq (TRUE, $(IN_PORTCONTROL))
   SRC_LIST+=cppe_portctrl.c
+  SRC_LIST+=cppe_loopback.c
 endif
 
 ifeq (TRUE, $(IN_QOS))
