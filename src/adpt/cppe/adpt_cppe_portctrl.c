@@ -491,6 +491,45 @@ adpt_cppe_switch_port_loopback_flowctrl_get(a_uint32_t dev_id,
 
 	return rv;
 }
+
+sw_error_t
+adpt_cppe_lpbk_max_frame_size_get(a_uint32_t dev_id, fal_port_t port_id,
+	a_uint32_t *max_frame)
+{
+	sw_error_t rv = SW_OK;
+	union lpbk_mac_junmo_size_u lpbk_mac_junmo_size;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(max_frame);
+	port_id = HPPE_TO_GMAC_PORT_ID(port_id);
+	rv = cppe_lpbk_mac_junmo_size_get(dev_id, port_id, &lpbk_mac_junmo_size);
+	SW_RTN_ON_ERROR(rv);
+	*max_frame = lpbk_mac_junmo_size.bf.lpbk_mac_jumbo_size;
+
+	return rv;
+}
+
+sw_error_t
+adpt_cppe_lpbk_max_frame_size_set(a_uint32_t dev_id, fal_port_t port_id,
+	a_uint32_t max_frame)
+{
+	sw_error_t rv = SW_OK;
+	union lpbk_mac_junmo_size_u lpbk_mac_junmo_size;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+	memset(&lpbk_mac_junmo_size, 0, sizeof(lpbk_mac_junmo_size));
+	if (max_frame > SSDK_MAX_FRAME_SIZE)
+	{
+		return SW_BAD_VALUE;
+	}
+	port_id = HPPE_TO_GMAC_PORT_ID(port_id);
+	rv = cppe_lpbk_mac_junmo_size_get(dev_id, port_id, &lpbk_mac_junmo_size);
+	SW_RTN_ON_ERROR(rv);
+	lpbk_mac_junmo_size.bf.lpbk_mac_jumbo_size = max_frame;
+	rv = cppe_lpbk_mac_junmo_size_set(dev_id, port_id, &lpbk_mac_junmo_size);
+
+	return rv;
+}
 /**
  * @}
  */

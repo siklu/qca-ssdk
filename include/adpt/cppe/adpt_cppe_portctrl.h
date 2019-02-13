@@ -88,6 +88,13 @@ sw_error_t
 adpt_cppe_switch_port_loopback_flowctrl_get(a_uint32_t dev_id,
 	fal_port_t port_id, a_bool_t *enable);
 
+sw_error_t
+adpt_cppe_lpbk_max_frame_size_get(a_uint32_t dev_id, fal_port_t port_id,
+	a_uint32_t *max_frame);
+
+sw_error_t
+adpt_cppe_lpbk_max_frame_size_set(a_uint32_t dev_id, fal_port_t port_id,
+	a_uint32_t max_frame);
 #ifdef __cplusplus
 }
 #endif                          /* __cplusplus */

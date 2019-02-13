@@ -193,6 +193,8 @@ qca_hppe_portctrl_hw_init(a_uint32_t dev_id)
 		loopback_cfg.loopback_rate = FAL_DEFAULT_LOOPBACK_RATE;  /* Mpps */
 		fal_switch_port_loopback_set(dev_id, SSDK_PHYSICAL_PORT6,
 				&loopback_cfg);
+		fal_port_max_frame_size_set(dev_id, SSDK_PHYSICAL_PORT6,
+				SSDK_MAX_FRAME_SIZE);
 	}
 #endif
 	return SW_OK;

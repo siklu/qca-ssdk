@@ -1003,6 +1003,21 @@ adpt_hppe_port_max_frame_size_set(a_uint32_t dev_id, fal_port_t port_id,
 
 	return rv;
 }
+
+sw_error_t
+adpt_ppe_port_max_frame_size_set(a_uint32_t dev_id, fal_port_t port_id,
+		a_uint32_t max_frame)
+{
+#ifdef CPPE
+	if (adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION &&
+		port_id == SSDK_PHYSICAL_PORT6)
+	{
+		return adpt_cppe_lpbk_max_frame_size_set(dev_id, port_id, max_frame);
+	}
+#endif
+	return adpt_hppe_port_max_frame_size_set(dev_id, port_id, max_frame);
+}
+
 #ifndef IN_PORTCONTROL_MINI
 sw_error_t
 adpt_hppe_port_8023az_get(a_uint32_t dev_id, fal_port_t port_id,
@@ -1728,6 +1743,21 @@ adpt_hppe_port_max_frame_size_get(a_uint32_t dev_id, fal_port_t port_id,
 	}
 
 	return rv;
+}
+
+sw_error_t
+adpt_ppe_port_max_frame_size_get(a_uint32_t dev_id, fal_port_t port_id,
+		a_uint32_t *max_frame)
+{
+#ifdef CPPE
+	if (adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION &&
+		port_id == SSDK_PHYSICAL_PORT6)
+	{
+		return adpt_cppe_lpbk_max_frame_size_get(dev_id, port_id, max_frame);
+	}
+#endif
+	return adpt_hppe_port_max_frame_size_get(dev_id, port_id, max_frame);
+
 }
 
 #ifndef IN_PORTCONTROL_MINI
@@ -5228,12 +5258,12 @@ sw_error_t adpt_hppe_port_ctrl_init(a_uint32_t dev_id)
 	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] &
 		(1 <<  (FUNC_ADPT_PORT_MAX_FRAME_SIZE_SET % 32)))
 	{
-		p_adpt_api->adpt_port_max_frame_size_set = adpt_hppe_port_max_frame_size_set;
+		p_adpt_api->adpt_port_max_frame_size_set = adpt_ppe_port_max_frame_size_set;
 	}
 	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] &
 		(1 <<  (FUNC_ADPT_PORT_MAX_FRAME_SIZE_GET % 32)))
 	{
-		p_adpt_api->adpt_port_max_frame_size_get = adpt_hppe_port_max_frame_size_get;
+		p_adpt_api->adpt_port_max_frame_size_get = adpt_ppe_port_max_frame_size_get;
 	}
 #ifndef IN_PORTCONTROL_MINI
 	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] &
