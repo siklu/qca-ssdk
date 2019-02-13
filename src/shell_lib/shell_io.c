@@ -129,6 +129,7 @@ static sw_data_type_t sw_data_type[] =
     SW_TYPE_DEF(SW_SPEED, cmd_data_check_speed, NULL),
     SW_TYPE_DEF(SW_CAP, cmd_data_check_capable, NULL),
     SW_TYPE_DEF(SW_PORT_EEE_CONFIG, (param_check_t)cmd_data_check_port_eee_config, NULL),
+    SW_TYPE_DEF(SW_PORT_LOOPBACK_CONFIG, (param_check_t)cmd_data_check_switch_port_loopback_config, NULL),
 #endif
 #ifdef IN_PORTVLAN
     SW_TYPE_DEF(SW_1QMODE, cmd_data_check_1qmode, NULL),
@@ -787,6 +788,86 @@ cmd_data_check_port_eee_config(char *cmd_str, void * val, a_uint32_t size)
     return SW_OK;
 }
 
+sw_error_t
+cmd_data_check_switch_port_loopback_config(char *cmd_str, void * val,
+	a_uint32_t size)
+{
+    char *cmd;
+    sw_error_t rv;
+    fal_loopback_config_t cfg;
+
+    aos_mem_zero(&cfg, sizeof (fal_loopback_config_t));
+
+    do
+    {
+        cmd = get_sub_cmd("loopback_enable", "no");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(cfg.enable),
+                                        sizeof (a_bool_t));
+            SW_RTN_ON_ERROR(rv);
+        }
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    do
+    {
+        cmd = get_sub_cmd("crc_stripped_enable", "no");
+        SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_confirm(cmd, A_FALSE, &(cfg.crc_stripped),
+                                        sizeof (a_bool_t));
+            SW_RTN_ON_ERROR(rv);
+        }
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    do
+    {
+        cmd = get_sub_cmd("loopback_rate", "1-0x12c");
+		SW_RTN_ON_NULL_PARAM(cmd);
+
+        if (!strncasecmp(cmd, "quit", 4))
+        {
+            return SW_BAD_VALUE;
+        }
+        else if (!strncasecmp(cmd, "help", 4))
+        {
+            rv = SW_BAD_VALUE;
+        }
+        else
+        {
+            rv = cmd_data_check_uint32(cmd, &(cfg.loopback_rate), sizeof (a_uint32_t));
+            SW_RTN_ON_ERROR(rv);
+        }
+    }
+    while (talk_mode && (SW_OK != rv));
+
+    *(fal_loopback_config_t *)val = cfg;
+    return SW_OK;
+}
 #ifndef IN_PORTCONTROL_MINI
 
 sw_error_t

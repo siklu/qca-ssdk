@@ -24,10 +24,15 @@
 #include "hppe_portctrl.h"
 #include "cppe_portctrl_reg.h"
 #include "cppe_portctrl.h"
+#include "hppe_fdb_reg.h"
+#include "hppe_fdb.h"
+#include "cppe_loopback_reg.h"
+#include "cppe_loopback.h"
 #include "hsl.h"
 #include "hsl_dev.h"
 #include "hsl_phy.h"
 #include "hsl_port_prop.h"
+#include "hppe_init.h"
 #include "adpt.h"
 #include "adpt_hppe.h"
 #include "adpt_cppe_portctrl.h"
@@ -338,6 +343,151 @@ adpt_cppe_port_source_filter_config_get(a_uint32_t dev_id,
 
 	rv = cppe_mru_mtu_ctrl_tbl_source_filter_mode_get(dev_id,
 			port_id, &(src_filter_config->src_filter_mode));
+
+	return rv;
+}
+
+static a_uint32_t port_loopback_rate[SW_MAX_NR_DEV][CPPE_LOOPBACK_PORT_NUM] = {
+	{14},
+	{14},
+	{14},
+}; /* unit is Mpps*/
+
+sw_error_t
+adpt_cppe_switch_port_loopback_set(a_uint32_t dev_id, fal_port_t port_id,
+	fal_loopback_config_t *loopback_cfg)
+{
+	sw_error_t rv = SW_OK;
+	union lpbk_enable_u loopback_cfg_tbl;
+	union lpbk_pps_ctrl_u loopback_rate_ctrl_tbl;
+	union port_bridge_ctrl_u port_bridge_ctrl;
+	a_uint32_t physical_port = 0;
+
+	if (port_id != SSDK_PHYSICAL_PORT6) {
+		return SW_BAD_PARAM;
+	}
+
+	memset(&loopback_cfg_tbl, 0, sizeof(loopback_cfg_tbl));
+	memset(&loopback_rate_ctrl_tbl, 0, sizeof(loopback_rate_ctrl_tbl));
+	memset(&port_bridge_ctrl, 0, sizeof(port_bridge_ctrl));
+	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(loopback_cfg);
+
+	physical_port = port_id;
+	rv = hppe_port_bridge_ctrl_get(dev_id, physical_port, &port_bridge_ctrl);
+	SW_RTN_ON_ERROR (rv);
+	port_bridge_ctrl.bf.txmac_en = loopback_cfg->enable;
+
+	port_id = HPPE_TO_GMAC_PORT_ID(port_id);
+	rv = cppe_lpbk_pps_ctrl_get(dev_id, port_id, &loopback_rate_ctrl_tbl);
+	SW_RTN_ON_ERROR (rv);
+
+	loopback_rate_ctrl_tbl.bf.lpbk_pps_threshold =
+		CPPE_LOOPBACK_PORT_RATE_FREQUENCY / loopback_cfg->loopback_rate;
+
+	rv = cppe_lpbk_enable_get(dev_id, port_id, &loopback_cfg_tbl);
+	SW_RTN_ON_ERROR (rv);
+	loopback_cfg_tbl.bf.lpbk_en = loopback_cfg->enable;
+	loopback_cfg_tbl.bf.crc_strip_en = loopback_cfg->crc_stripped;
+
+	if (loopback_cfg->enable == A_TRUE) {
+		rv = cppe_lpbk_pps_ctrl_set(dev_id, port_id, &loopback_rate_ctrl_tbl);
+		SW_RTN_ON_ERROR (rv);
+		rv = cppe_lpbk_enable_set(dev_id, port_id, &loopback_cfg_tbl);
+		SW_RTN_ON_ERROR (rv);
+		msleep(100);
+		rv = hppe_port_bridge_ctrl_set(dev_id, physical_port,
+			&port_bridge_ctrl);
+		SW_RTN_ON_ERROR (rv);
+	} else {
+		rv = hppe_port_bridge_ctrl_set(dev_id, physical_port,
+			&port_bridge_ctrl);
+		SW_RTN_ON_ERROR (rv);
+		msleep(100);
+		rv = cppe_lpbk_pps_ctrl_set(dev_id, port_id, &loopback_rate_ctrl_tbl);
+		SW_RTN_ON_ERROR (rv);
+		rv = cppe_lpbk_enable_set(dev_id, port_id, &loopback_cfg_tbl);
+		SW_RTN_ON_ERROR (rv);
+	}
+
+	port_loopback_rate[dev_id][CPPE_LOOPBACK_PORT_NUM - 1] =
+		loopback_cfg->loopback_rate;
+	return rv;
+}
+
+sw_error_t
+adpt_cppe_switch_port_loopback_get(a_uint32_t dev_id, fal_port_t port_id,
+	fal_loopback_config_t *loopback_cfg)
+{
+	sw_error_t rv = SW_OK;
+	union lpbk_enable_u loopback_cfg_tbl;
+	union lpbk_pps_ctrl_u loopback_rate_ctrl_tbl;
+
+	if (port_id != SSDK_PHYSICAL_PORT6) {
+		return SW_BAD_PARAM;
+	}
+
+	memset(&loopback_cfg_tbl, 0, sizeof(loopback_cfg_tbl));
+	memset(&loopback_rate_ctrl_tbl, 0, sizeof(loopback_rate_ctrl_tbl));
+	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(loopback_cfg);
+
+	port_id = HPPE_TO_GMAC_PORT_ID(port_id);
+	rv = cppe_lpbk_enable_get(dev_id, port_id, &loopback_cfg_tbl);
+	SW_RTN_ON_ERROR (rv);
+	rv = cppe_lpbk_pps_ctrl_get(dev_id, port_id, &loopback_rate_ctrl_tbl);
+	SW_RTN_ON_ERROR (rv);
+
+	loopback_cfg->enable = loopback_cfg_tbl.bf.lpbk_en;
+	loopback_cfg->crc_stripped = loopback_cfg_tbl.bf.crc_strip_en;
+	loopback_cfg->loopback_rate =
+		port_loopback_rate[dev_id][CPPE_LOOPBACK_PORT_NUM - 1];
+
+	return rv;
+}
+
+sw_error_t
+adpt_cppe_switch_port_loopback_flowctrl_set(a_uint32_t dev_id,
+	fal_port_t port_id, a_bool_t enable)
+{
+	sw_error_t rv = SW_OK;
+	union lpbk_enable_u loopback_cfg_tbl;
+
+	memset(&loopback_cfg_tbl, 0, sizeof(loopback_cfg_tbl));
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	if (port_id != SSDK_PHYSICAL_PORT6) {
+		return SW_BAD_PARAM;
+	}
+
+	port_id = HPPE_TO_GMAC_PORT_ID(port_id);
+	rv = cppe_lpbk_enable_get(dev_id, port_id, &loopback_cfg_tbl);
+	SW_RTN_ON_ERROR (rv);
+	loopback_cfg_tbl.bf.flowctrl_en = enable;
+	rv = cppe_lpbk_enable_set(dev_id, port_id, &loopback_cfg_tbl);
+
+	return rv;
+}
+
+sw_error_t
+adpt_cppe_switch_port_loopback_flowctrl_get(a_uint32_t dev_id,
+	fal_port_t port_id, a_bool_t *enable)
+{
+	sw_error_t rv = SW_OK;
+	union lpbk_enable_u loopback_cfg_tbl;
+
+	memset(&loopback_cfg_tbl, 0, sizeof(loopback_cfg_tbl));
+	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(enable);
+
+	if (port_id != SSDK_PHYSICAL_PORT6) {
+		return SW_BAD_PARAM;
+	}
+
+	port_id = HPPE_TO_GMAC_PORT_ID(port_id);
+	rv = cppe_lpbk_enable_get(dev_id, port_id, &loopback_cfg_tbl);
+	SW_RTN_ON_ERROR (rv);
+	*enable = loopback_cfg_tbl.bf.flowctrl_en;
 
 	return rv;
 }

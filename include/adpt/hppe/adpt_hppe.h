@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2018, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2019, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -95,9 +95,10 @@ sw_error_t adpt_hppe_uniphy_init(a_uint32_t dev_id);
 void adpt_hppe_ptp_func_bitmap_init(a_uint32_t dev_id);
 sw_error_t adpt_hppe_ptp_init(a_uint32_t dev_id);
 
-#define HPPE_REVISION 0x0
-#define CPPE_REVISION 0x1
-#define UNKNOWN_REVISION 0xff
+#define HPPE_REVISION              0x0
+#define CPPE_REVISION              0x1
+#define UNKNOWN_REVISION           0xff
+
 a_uint32_t adpt_hppe_chip_revision_get(a_uint32_t dev_id);
 
 #ifdef IN_FDB
