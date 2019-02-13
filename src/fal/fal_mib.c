@@ -315,6 +315,11 @@ static void _fal_rx_mib_update(a_uint32_t dev_id, fal_port_t port_id,
 	g_mibcounter[dev_id][port_id].RxOverFlow += mib_Info->RxOverFlow;
 	g_mibcounter[dev_id][port_id].Filtered += mib_Info->Filtered;
 	g_mibcounter[dev_id][port_id].RxUniCast += mib_Info->RxUniCast;
+	g_mibcounter[dev_id][port_id].RxTooLongByte +=
+		(((u64)mib_Info->RxTooLongByte_hi) << 32) | mib_Info->RxTooLongByte_lo;
+	g_mibcounter[dev_id][port_id].RxRuntByte +=
+		(((u64)mib_Info->RxRuntByte_hi) << 32) | mib_Info->RxRuntByte_lo;
+	g_mibcounter[dev_id][port_id].Rx14To63 += mib_Info->Rx14To63;
 
 	return;
 }
@@ -388,47 +393,50 @@ fal_mib_counter_get(a_uint32_t dev_id, fal_port_t port_id,
 	if(rv != SW_OK)
 		return rv;
 
-	mib_counter->RxBroad     = g_mibcounter[dev_id][port_id].RxBroad;
-	mib_counter->RxPause     = g_mibcounter[dev_id][port_id].RxPause;
-	mib_counter->RxMulti     = g_mibcounter[dev_id][port_id].RxMulti;
-	mib_counter->RxFcsErr    = g_mibcounter[dev_id][port_id].RxFcsErr;
-	mib_counter->RxAllignErr = g_mibcounter[dev_id][port_id].RxAllignErr;
-	mib_counter->RxRunt      = g_mibcounter[dev_id][port_id].RxRunt;
-	mib_counter->RxFragment  = g_mibcounter[dev_id][port_id].RxFragment ;
-	mib_counter->Rx64Byte    = g_mibcounter[dev_id][port_id].Rx64Byte ;
-	mib_counter->Rx128Byte   = g_mibcounter[dev_id][port_id].Rx128Byte;
-	mib_counter->Rx256Byte   = g_mibcounter[dev_id][port_id].Rx256Byte;
-	mib_counter->Rx512Byte   = g_mibcounter[dev_id][port_id].Rx512Byte;
-	mib_counter->Rx1024Byte  = g_mibcounter[dev_id][port_id].Rx1024Byte;
-	mib_counter->Rx1518Byte  = g_mibcounter[dev_id][port_id].Rx1518Byte;
-	mib_counter->RxMaxByte   = g_mibcounter[dev_id][port_id].RxMaxByte;
-	mib_counter->RxTooLong   = g_mibcounter[dev_id][port_id].RxTooLong;
-	mib_counter->RxGoodByte  = g_mibcounter[dev_id][port_id].RxGoodByte;
-	mib_counter->RxBadByte   = g_mibcounter[dev_id][port_id].RxBadByte;
-	mib_counter->RxOverFlow  = g_mibcounter[dev_id][port_id].RxOverFlow;
-	mib_counter->Filtered    = g_mibcounter[dev_id][port_id].Filtered;
-	mib_counter->TxBroad     = g_mibcounter[dev_id][port_id].TxBroad;
-	mib_counter->TxPause     = g_mibcounter[dev_id][port_id].TxPause;
-	mib_counter->TxMulti     = g_mibcounter[dev_id][port_id].TxMulti;
-	mib_counter->TxUnderRun  = g_mibcounter[dev_id][port_id].TxUnderRun;
-	mib_counter->Tx64Byte    = g_mibcounter[dev_id][port_id].Tx64Byte;
-	mib_counter->Tx128Byte   = g_mibcounter[dev_id][port_id].Tx128Byte;
-	mib_counter->Tx256Byte   = g_mibcounter[dev_id][port_id].Tx256Byte;
-	mib_counter->Tx512Byte   = g_mibcounter[dev_id][port_id].Tx512Byte;
-	mib_counter->Tx1024Byte  = g_mibcounter[dev_id][port_id].Tx1024Byte;
-	mib_counter->Tx1518Byte  = g_mibcounter[dev_id][port_id].Tx1518Byte;
-	mib_counter->TxMaxByte   = g_mibcounter[dev_id][port_id].TxMaxByte;
-	mib_counter->TxOverSize  = g_mibcounter[dev_id][port_id].TxOverSize;
-	mib_counter->TxByte      = g_mibcounter[dev_id][port_id].TxByte;
-	mib_counter->TxCollision = g_mibcounter[dev_id][port_id].TxCollision;
-	mib_counter->TxAbortCol  = g_mibcounter[dev_id][port_id].TxAbortCol;
-	mib_counter->TxMultiCol  = g_mibcounter[dev_id][port_id].TxMultiCol;
-	mib_counter->TxSingalCol = g_mibcounter[dev_id][port_id].TxSingalCol;
-	mib_counter->TxExcDefer  = g_mibcounter[dev_id][port_id].TxExcDefer;
-	mib_counter->TxDefer     = g_mibcounter[dev_id][port_id].TxDefer;
-	mib_counter->TxLateCol   = g_mibcounter[dev_id][port_id].TxLateCol;
-	mib_counter->RxUniCast   = g_mibcounter[dev_id][port_id].RxUniCast;
-	mib_counter->TxUniCast   = g_mibcounter[dev_id][port_id].TxUniCast;
+	mib_counter->RxBroad        = g_mibcounter[dev_id][port_id].RxBroad;
+	mib_counter->RxPause        = g_mibcounter[dev_id][port_id].RxPause;
+	mib_counter->RxMulti        = g_mibcounter[dev_id][port_id].RxMulti;
+	mib_counter->RxFcsErr       = g_mibcounter[dev_id][port_id].RxFcsErr;
+	mib_counter->RxAllignErr    = g_mibcounter[dev_id][port_id].RxAllignErr;
+	mib_counter->RxRunt         = g_mibcounter[dev_id][port_id].RxRunt;
+	mib_counter->RxFragment     = g_mibcounter[dev_id][port_id].RxFragment ;
+	mib_counter->Rx64Byte       = g_mibcounter[dev_id][port_id].Rx64Byte ;
+	mib_counter->Rx128Byte      = g_mibcounter[dev_id][port_id].Rx128Byte;
+	mib_counter->Rx256Byte      = g_mibcounter[dev_id][port_id].Rx256Byte;
+	mib_counter->Rx512Byte      = g_mibcounter[dev_id][port_id].Rx512Byte;
+	mib_counter->Rx1024Byte     = g_mibcounter[dev_id][port_id].Rx1024Byte;
+	mib_counter->Rx1518Byte     = g_mibcounter[dev_id][port_id].Rx1518Byte;
+	mib_counter->RxMaxByte      = g_mibcounter[dev_id][port_id].RxMaxByte;
+	mib_counter->RxTooLong      = g_mibcounter[dev_id][port_id].RxTooLong;
+	mib_counter->RxGoodByte     = g_mibcounter[dev_id][port_id].RxGoodByte;
+	mib_counter->RxBadByte      = g_mibcounter[dev_id][port_id].RxBadByte;
+	mib_counter->RxOverFlow     = g_mibcounter[dev_id][port_id].RxOverFlow;
+	mib_counter->Filtered       = g_mibcounter[dev_id][port_id].Filtered;
+	mib_counter->TxBroad        = g_mibcounter[dev_id][port_id].TxBroad;
+	mib_counter->TxPause        = g_mibcounter[dev_id][port_id].TxPause;
+	mib_counter->TxMulti        = g_mibcounter[dev_id][port_id].TxMulti;
+	mib_counter->TxUnderRun     = g_mibcounter[dev_id][port_id].TxUnderRun;
+	mib_counter->Tx64Byte       = g_mibcounter[dev_id][port_id].Tx64Byte;
+	mib_counter->Tx128Byte      = g_mibcounter[dev_id][port_id].Tx128Byte;
+	mib_counter->Tx256Byte      = g_mibcounter[dev_id][port_id].Tx256Byte;
+	mib_counter->Tx512Byte      = g_mibcounter[dev_id][port_id].Tx512Byte;
+	mib_counter->Tx1024Byte     = g_mibcounter[dev_id][port_id].Tx1024Byte;
+	mib_counter->Tx1518Byte     = g_mibcounter[dev_id][port_id].Tx1518Byte;
+	mib_counter->TxMaxByte      = g_mibcounter[dev_id][port_id].TxMaxByte;
+	mib_counter->TxOverSize     = g_mibcounter[dev_id][port_id].TxOverSize;
+	mib_counter->TxByte         = g_mibcounter[dev_id][port_id].TxByte;
+	mib_counter->TxCollision    = g_mibcounter[dev_id][port_id].TxCollision;
+	mib_counter->TxAbortCol     = g_mibcounter[dev_id][port_id].TxAbortCol;
+	mib_counter->TxMultiCol     = g_mibcounter[dev_id][port_id].TxMultiCol;
+	mib_counter->TxSingalCol    = g_mibcounter[dev_id][port_id].TxSingalCol;
+	mib_counter->TxExcDefer     = g_mibcounter[dev_id][port_id].TxExcDefer;
+	mib_counter->TxDefer        = g_mibcounter[dev_id][port_id].TxDefer;
+	mib_counter->TxLateCol      = g_mibcounter[dev_id][port_id].TxLateCol;
+	mib_counter->RxUniCast      = g_mibcounter[dev_id][port_id].RxUniCast;
+	mib_counter->TxUniCast      = g_mibcounter[dev_id][port_id].TxUniCast;
+	mib_counter->Rx14To63       = g_mibcounter[dev_id][port_id].Rx14To63;
+	mib_counter->RxTooLongByte  = g_mibcounter[dev_id][port_id].RxTooLongByte;
+	mib_counter->RxRuntByte     = g_mibcounter[dev_id][port_id].RxRuntByte;
 
 	return SW_OK;
 }

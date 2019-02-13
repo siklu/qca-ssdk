@@ -29,6 +29,10 @@ ifeq (TRUE, $(IN_FLOW))
   SRC_LIST += adpt_cppe_flow.c
 endif
 
+ifeq (TRUE, $(IN_MIB))
+  SRC_LIST += adpt_cppe_mib.c
+endif
+
 ifeq (, $(findstring CPPE, $(SUPPORT_CHIP)))
   SRC_LIST=
 endif
