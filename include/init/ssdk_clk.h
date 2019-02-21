@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2017, 2019, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -26,6 +26,13 @@ extern "C" {
 #define UNIPHY1_XPCS_RESET_ID	"uniphy1_xpcs_rst"
 #define UNIPHY2_SOFT_RESET_ID	"uniphy2_soft_rst"
 #define UNIPHY2_XPCS_RESET_ID	"uniphy2_xpcs_rst"
+#define UNIPHY0_PORT1_DISABLE_ID	"uniphy0_port1_dis"
+#define UNIPHY0_PORT2_DISABLE_ID	"uniphy0_port2_dis"
+#define UNIPHY0_PORT3_DISABLE_ID	"uniphy0_port3_dis"
+#define UNIPHY0_PORT4_DISABLE_ID	"uniphy0_port4_dis"
+#define UNIPHY0_PORT5_DISABLE_ID	"uniphy0_port5_dis"
+#define UNIPHY0_PORT_4_5_RESET_ID	"uniphy0_port_4_5_rst"
+#define UNIPHY0_PORT_4_RESET_ID	"uniphy0_port_4_rst"
 
 #define SSDK_PORT1_RESET_ID	"nss_port1_rst"
 #define SSDK_PORT2_RESET_ID	"nss_port2_rst"
@@ -46,6 +53,13 @@ enum unphy_rst_type {
 	UNIPHY1_XPCS_RESET_E,
 	UNIPHY2_SOFT_RESET_E,
 	UNIPHY2_XPCS_RESET_E,
+	UNIPHY0_PORT1_DISABLE_E,
+	UNIPHY0_PORT2_DISABLE_E,
+	UNIPHY0_PORT3_DISABLE_E,
+	UNIPHY0_PORT4_DISABLE_E,
+	UNIPHY0_PORT5_DISABLE_E,
+	UNIPHY0_PORT_4_5_RESET_E,
+	UNIPHY0_PORT_4_RESET_E,
 	UNIPHY_RST_MAX
 };
 
