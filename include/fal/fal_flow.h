@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2018, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2019, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -120,6 +120,7 @@ typedef struct {
 	a_bool_t sync_mismatch_deacclr_en; /*0 for disable and 1 for enable*/
 	a_uint8_t hash_mode_0; /*0 crc10, 1 xor, 2 crc16*/
 	a_uint8_t hash_mode_1; /*0 crc10, 1 xor, 2 crc16*/
+	a_bool_t flow_mismatch_copy_escape_en; /*0 for disable and 1 for enable*/
 } fal_flow_global_cfg_t;
 
 typedef struct {

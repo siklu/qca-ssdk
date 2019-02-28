@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2017, 2019, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -23,7 +23,12 @@
 #include "hppe_ip.h"
 #include "hppe_flow_reg.h"
 #include "hppe_flow.h"
+#include "adpt_hppe.h"
 #include "adpt.h"
+
+#if defined(CPPE)
+#include "adpt_cppe_flow.h"
+#endif
 
 
 #define FLOW_ENTRY_TYPE_IPV4 0
@@ -1353,6 +1358,7 @@ adpt_hppe_flow_ctrl_set(
 
 	return hppe_flow_ctrl1_set(dev_id, type, &flow_ctrl1);;
 }
+
 #ifndef IN_FLOW_MINI
 sw_error_t
 adpt_hppe_flow_age_timer_get(a_uint32_t dev_id, fal_flow_age_timer_t *age_timer)
@@ -1642,6 +1648,10 @@ adpt_hppe_flow_global_cfg_get(
 		fal_flow_global_cfg_t *cfg)
 {
 	sw_error_t rv = SW_OK;
+#if defined(CPPE)
+	a_uint32_t chip_ver = 0;
+	a_bool_t flow_cpy_escape = A_FALSE;
+#endif
 	union flow_ctrl0_u flow_ctrl0;
 	union l3_route_ctrl_u route_ctrl;
 	union l3_route_ctrl_ext_u route_ctrl_ext;
@@ -1662,6 +1672,15 @@ adpt_hppe_flow_global_cfg_get(
 	rv = hppe_l3_route_ctrl_ext_get(dev_id, &route_ctrl_ext);
 	if( rv != SW_OK )
 		return rv;
+
+#if defined(CPPE)
+	chip_ver = adpt_hppe_chip_revision_get(dev_id);
+	if (chip_ver == CPPE_REVISION) {
+		rv = adpt_cppe_flow_copy_escape_get(dev_id, &flow_cpy_escape);
+		SW_RTN_ON_ERROR(rv);
+		cfg->flow_mismatch_copy_escape_en = flow_cpy_escape;
+	}
+#endif
 
 	cfg->src_if_check_action= route_ctrl.bf.flow_src_if_check_cmd;
 	cfg->src_if_check_deacclr_en= route_ctrl.bf.flow_src_if_check_de_acce;
@@ -1683,6 +1702,9 @@ adpt_hppe_flow_global_cfg_set(
 		fal_flow_global_cfg_t *cfg)
 {
 	sw_error_t rv = SW_OK;
+#if defined(CPPE)
+	a_uint32_t chip_ver = 0;
+#endif
 	union flow_ctrl0_u flow_ctrl0;
 	union l3_route_ctrl_u route_ctrl;
 	union l3_route_ctrl_ext_u route_ctrl_ext;
@@ -1695,14 +1717,13 @@ adpt_hppe_flow_global_cfg_set(
 	memset(&route_ctrl_ext, 0, sizeof(route_ctrl_ext));
 
 	rv = hppe_flow_ctrl0_get(dev_id, &flow_ctrl0);
-	if( rv != SW_OK )
-		return rv;
+	SW_RTN_ON_ERROR(rv);
+
 	rv = hppe_l3_route_ctrl_get(dev_id, &route_ctrl);
-	if( rv != SW_OK )
-		return rv;
+	SW_RTN_ON_ERROR(rv);
+
 	rv = hppe_l3_route_ctrl_ext_get(dev_id, &route_ctrl_ext);
-	if( rv != SW_OK )
-		return rv;
+	SW_RTN_ON_ERROR(rv);
 
 	route_ctrl.bf.flow_src_if_check_cmd = cfg->src_if_check_action;
 	route_ctrl.bf.flow_src_if_check_de_acce = cfg->src_if_check_deacclr_en;
@@ -1715,9 +1736,23 @@ adpt_hppe_flow_global_cfg_set(
 	flow_ctrl0.bf.flow_hash_mode_0 = cfg->hash_mode_0;
 	flow_ctrl0.bf.flow_hash_mode_1 = cfg->hash_mode_1;
 
-	hppe_flow_ctrl0_set(dev_id, &flow_ctrl0);
-	hppe_l3_route_ctrl_set(dev_id, &route_ctrl);
-	hppe_l3_route_ctrl_ext_set(dev_id, &route_ctrl_ext);
+	rv = hppe_flow_ctrl0_set(dev_id, &flow_ctrl0);
+	SW_RTN_ON_ERROR(rv);
+
+	rv = hppe_l3_route_ctrl_set(dev_id, &route_ctrl);
+	SW_RTN_ON_ERROR(rv);
+
+	rv = hppe_l3_route_ctrl_ext_set(dev_id, &route_ctrl_ext);
+	SW_RTN_ON_ERROR(rv);
+
+#if defined(CPPE)
+	chip_ver = adpt_hppe_chip_revision_get(dev_id);
+	if (chip_ver == CPPE_REVISION) {
+		rv = adpt_cppe_flow_copy_escape_set(dev_id,
+				cfg->flow_mismatch_copy_escape_en);
+		SW_RTN_ON_ERROR(rv);
+	}
+#endif
 
 	return SW_OK;
 }
