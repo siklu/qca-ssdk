@@ -185,7 +185,13 @@ __adpt_hppe_uniphy_usxgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	hppe_uniphy_mode_ctrl_set(dev_id, uniphy_index, &uniphy_mode_ctrl);
 
 	/* configure uniphy usxgmii gcc software reset */
-	__adpt_hppe_gcc_uniphy_software_reset(dev_id, uniphy_index);
+	if (adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) {
+#if defined(CPPE)
+		__adpt_cppe_gcc_uniphy_software_reset(dev_id, uniphy_index);
+#endif
+	} else {
+		__adpt_hppe_gcc_uniphy_software_reset(dev_id, uniphy_index);
+	}
 
 	msleep(100);
 
@@ -347,7 +353,13 @@ __adpt_hppe_uniphy_sgmiiplus_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index
 	hppe_uniphy_mode_ctrl_set(dev_id, uniphy_index, &uniphy_mode_ctrl);
 
 	/* configure uniphy gcc software reset */
-	__adpt_hppe_gcc_uniphy_software_reset(dev_id, uniphy_index);
+	if (adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) {
+#if defined(CPPE)
+		__adpt_cppe_gcc_uniphy_software_reset(dev_id, uniphy_index);
+#endif
+	} else {
+		__adpt_hppe_gcc_uniphy_software_reset(dev_id, uniphy_index);
+	}
 
 	/* wait uniphy calibration done */
 	rv = __adpt_hppe_uniphy_calibrate(dev_id, uniphy_index);
@@ -472,7 +484,13 @@ __adpt_hppe_uniphy_sgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index, a_
 	hppe_uniphy_mode_ctrl_set(dev_id, uniphy_index, &uniphy_mode_ctrl);
 
 	/* configure uniphy gcc software reset */
-	__adpt_hppe_gcc_uniphy_software_reset(dev_id, uniphy_index);
+	if (adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) {
+#if defined(CPPE)
+		__adpt_cppe_gcc_uniphy_software_reset(dev_id, uniphy_index);
+#endif
+	} else {
+		__adpt_hppe_gcc_uniphy_software_reset(dev_id, uniphy_index);
+	}
 
 	/* wait uniphy calibration done */
 	rv = __adpt_hppe_uniphy_calibrate(dev_id, uniphy_index);
@@ -534,7 +552,13 @@ __adpt_hppe_uniphy_qsgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	hppe_uniphy_mode_ctrl_set(dev_id, uniphy_index, &uniphy_mode_ctrl);
 
 	/* configure uniphy gcc software reset */
-	__adpt_hppe_gcc_uniphy_software_reset(dev_id, uniphy_index);
+	if (adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) {
+#if defined(CPPE)
+		__adpt_cppe_gcc_uniphy_software_reset(dev_id, uniphy_index);
+#endif
+	} else {
+		__adpt_hppe_gcc_uniphy_software_reset(dev_id, uniphy_index);
+	}
 
 	/* wait uniphy calibration done */
 	rv = __adpt_hppe_uniphy_calibrate(dev_id, uniphy_index);
@@ -616,7 +640,14 @@ __adpt_hppe_uniphy_psgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	hppe_uniphy_mode_ctrl_set(dev_id, uniphy_index, &uniphy_mode_ctrl);
 
 	/* configure uniphy gcc software reset */
-	__adpt_hppe_gcc_uniphy_software_reset(dev_id, uniphy_index);
+	if (adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) {
+#if defined(CPPE)
+		__adpt_cppe_gcc_uniphy_software_reset(dev_id, uniphy_index);
+#endif
+	} else {
+
+		__adpt_hppe_gcc_uniphy_software_reset(dev_id, uniphy_index);
+	}
 
 	/* wait uniphy calibration done */
 	rv = __adpt_hppe_uniphy_calibrate(dev_id, uniphy_index);

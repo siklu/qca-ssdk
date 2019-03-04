@@ -40,8 +40,9 @@ __adpt_hppe_gcc_uniphy_xpcs_reset(a_uint32_t dev_id, a_uint32_t uniphy_index,
 		a_bool_t enable);
 sw_error_t
 __adpt_hppe_uniphy_calibrate(a_uint32_t dev_id, a_uint32_t uniphy_index);
+
 void
-__adpt_hppe_gcc_uniphy_software_reset(a_uint32_t dev_id,
+__adpt_cppe_gcc_uniphy_software_reset(a_uint32_t dev_id,
 		a_uint32_t uniphy_index);
 
 #ifdef __cplusplus

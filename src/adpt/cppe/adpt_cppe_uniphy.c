@@ -64,21 +64,67 @@ static sw_error_t
 __adpt_cppe_uniphy_port_disable(a_uint32_t dev_id, a_uint32_t uniphy_index,
 	a_uint32_t port_id)
 {
-	/*disable unused uniphy port, need add it once CoreBSP framework is ready*/
+	enum unphy_rst_type rst_type = 0;
+
+	if (uniphy_index != SSDK_UNIPHY_INSTANCE0) {
+		return SW_BAD_VALUE;
+	}
+
+	switch (port_id) {
+		case SSDK_PHYSICAL_PORT1:
+			rst_type = UNIPHY0_PORT1_DISABLE_E;
+			break;
+		case SSDK_PHYSICAL_PORT2:
+			rst_type = UNIPHY0_PORT2_DISABLE_E;
+			break;
+		case SSDK_PHYSICAL_PORT3:
+			rst_type = UNIPHY0_PORT3_DISABLE_E;
+			break;
+		case SSDK_PHYSICAL_PORT4:
+			rst_type = UNIPHY0_PORT4_DISABLE_E;
+			break;
+		case SSDK_PHYSICAL_PORT5:
+			rst_type = UNIPHY0_PORT5_DISABLE_E;
+			break;
+		default:
+			break;
+	}
+	ssdk_uniphy_reset(dev_id, rst_type, SSDK_RESET_ASSERT);
 
 	return SW_OK;
 }
 
-static sw_error_t
-__adpt_cppe_uniphy_port_software_reset(a_uint32_t dev_id,
-	a_uint32_t uniphy_index, a_uint32_t port_id)
+void
+__adpt_cppe_gcc_uniphy_software_reset(a_uint32_t dev_id,
+	a_uint32_t uniphy_index)
 {
-	/*reset operation should be in one ahb write operatrion */
-	/*need update it again once CoreBSP framework is ready to support*/
+	a_uint32_t phy_type = 0;
+	enum unphy_rst_type rst_type = 0;
 
-	__adpt_hppe_gcc_uniphy_software_reset(dev_id, uniphy_index);
+	if (uniphy_index >= SSDK_UNIPHY_INSTANCE2) {
+		return;
+	}
 
-	return SW_OK;
+	if (uniphy_index == SSDK_UNIPHY_INSTANCE0) {
+		phy_type = hsl_port_phyid_get(dev_id, SSDK_PHYSICAL_PORT4);
+		if (phy_type == MALIBU2PORT_PHY) {
+			rst_type = UNIPHY0_PORT_4_5_RESET_E;
+		} else if (phy_type == QCA8081_PHY_V1_1) {
+			rst_type = UNIPHY0_PORT_4_RESET_E;
+		} else {
+			rst_type = UNIPHY0_SOFT_RESET_E;
+		}
+	} else {
+		rst_type = UNIPHY1_SOFT_RESET_E;
+	}
+
+	ssdk_uniphy_reset(dev_id, rst_type, SSDK_RESET_ASSERT);
+
+	msleep(100);
+
+	ssdk_uniphy_reset(dev_id, rst_type, SSDK_RESET_DEASSERT);
+
+	return;
 }
 
 sw_error_t
@@ -163,10 +209,7 @@ __adpt_cppe_uniphy_connection_qca8072_set(a_uint32_t dev_id,
 	SW_RTN_ON_ERROR (rv);
 
 	/* configure uniphy gcc port 4 and port 5 software reset */
-	for (i = SSDK_PHYSICAL_PORT4; i < SSDK_PHYSICAL_PORT6; i++) {
-		rv = __adpt_cppe_uniphy_port_software_reset(dev_id, uniphy_index, i);
-		SW_RTN_ON_ERROR (rv);
-	}
+	__adpt_cppe_gcc_uniphy_software_reset(dev_id, uniphy_index);
 
 	/* wait uniphy calibration done */
 	rv = __adpt_hppe_uniphy_calibrate(dev_id, uniphy_index);
@@ -266,9 +309,7 @@ __adpt_cppe_uniphy_sgmii_mode_set(a_uint32_t dev_id,
 	SW_RTN_ON_ERROR (rv);
 
 	/* configure uniphy gcc port 4 software reset */
-	rv = __adpt_cppe_uniphy_port_software_reset(dev_id, uniphy_index,
-		SSDK_PHYSICAL_PORT4);
-	SW_RTN_ON_ERROR (rv);
+	__adpt_cppe_gcc_uniphy_software_reset(dev_id, uniphy_index);
 
 	/* wait uniphy calibration done */
 	rv = __adpt_hppe_uniphy_calibrate(dev_id, uniphy_index);
@@ -355,9 +396,7 @@ __adpt_cppe_uniphy_sgmiiplus_mode_set(a_uint32_t dev_id,
 	SW_RTN_ON_ERROR (rv);
 
 	/* configure uniphy gcc port 4 software reset */
-	rv = __adpt_cppe_uniphy_port_software_reset(dev_id, uniphy_index,
-		SSDK_PHYSICAL_PORT4);
-	SW_RTN_ON_ERROR (rv);
+	__adpt_cppe_gcc_uniphy_software_reset(dev_id, uniphy_index);
 
 	/* wait uniphy calibration done */
 	rv = __adpt_hppe_uniphy_calibrate(dev_id, uniphy_index);
