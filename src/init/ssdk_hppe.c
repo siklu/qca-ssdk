@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2014-2018, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2014-2019, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -151,6 +151,9 @@ qca_hppe_portctrl_hw_init(a_uint32_t dev_id)
 {
 	a_uint32_t i = 0;
 	a_uint32_t port_max = SSDK_PHYSICAL_PORT7;
+#if defined(CPPE)
+	fal_loopback_config_t loopback_cfg;
+#endif
 
 	if(adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) {
 		SSDK_INFO("Cypress PPE port initializing\n");
@@ -183,6 +186,17 @@ qca_hppe_portctrl_hw_init(a_uint32_t dev_id)
 		fal_port_max_frame_size_set(dev_id, i, SSDK_MAX_FRAME_SIZE);
 	}
 
+#if defined(CPPE)
+	if (adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) {
+		loopback_cfg.enable = A_TRUE;
+		loopback_cfg.crc_stripped = A_TRUE;
+		loopback_cfg.loopback_rate = FAL_DEFAULT_LOOPBACK_RATE;  /* Mpps */
+		fal_switch_port_loopback_set(dev_id, SSDK_PHYSICAL_PORT6,
+				&loopback_cfg);
+		fal_port_max_frame_size_set(dev_id, SSDK_PHYSICAL_PORT6,
+				SSDK_MAX_FRAME_SIZE);
+	}
+#endif
 	return SW_OK;
 }
 #endif

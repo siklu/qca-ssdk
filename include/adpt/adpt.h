@@ -315,6 +315,10 @@ typedef sw_error_t (*adpt_port_source_filter_config_set_func)(a_uint32_t dev_id,
 			fal_port_t port_id, fal_src_filter_config_t *src_filter_config);
 typedef sw_error_t (*adpt_port_source_filter_config_get_func)(a_uint32_t dev_id,
 			fal_port_t port_id, fal_src_filter_config_t *src_filter_config);
+typedef sw_error_t (*adpt_switch_port_loopback_set_func)(a_uint32_t dev_id,
+			fal_port_t port_id, fal_loopback_config_t *loopback_cfg);
+typedef sw_error_t (*adpt_switch_port_loopback_get_func)(a_uint32_t dev_id,
+			fal_port_t port_id, fal_loopback_config_t *loopback_cfg);
 
 // mirror
 typedef sw_error_t (*adpt_mirr_port_in_set_func)(a_uint32_t dev_id, fal_port_t port_id,
@@ -1140,7 +1144,8 @@ typedef struct
 	adpt_port_interface_eee_cfg_get_func adpt_port_interface_eee_cfg_get;
 	adpt_port_source_filter_config_set_func adpt_port_source_filter_config_set;
 	adpt_port_source_filter_config_get_func adpt_port_source_filter_config_get;
-
+	adpt_switch_port_loopback_set_func adpt_switch_port_loopback_set;
+	adpt_switch_port_loopback_get_func adpt_switch_port_loopback_get;
 // mirror
 	a_uint32_t adpt_mirror_func_bitmap;
 	adpt_mirr_port_in_set_func adpt_mirr_port_in_set;

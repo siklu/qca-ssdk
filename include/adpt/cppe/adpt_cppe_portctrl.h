@@ -37,6 +37,8 @@ extern "C" {
 #define CPPE_PCS0_CHANNEL0_SEL_PSGMII             0x0
 #define CPPE_PCS0_CHANNEL0_SEL_SGMIIPLUS          0x1
 #define CPPE_DETECTION_PHY_FAILURE                0xFFFF
+#define CPPE_LOOPBACK_PORT_RATE_FREQUENCY         300  /* 300MHZ*/
+#define CPPE_LOOPBACK_PORT_NUM                    0x1
 
 sw_error_t
 _adpt_cppe_port_mux_mac_set(a_uint32_t dev_id, fal_port_t port_id,
@@ -70,6 +72,29 @@ sw_error_t
 adpt_cppe_port_source_filter_config_get
 		(a_uint32_t dev_id, fal_port_t port_id,
 		fal_src_filter_config_t* src_filter_config);
+sw_error_t
+adpt_cppe_switch_port_loopback_set(a_uint32_t dev_id,
+	fal_port_t port_id, fal_loopback_config_t *loopback_cfg);
+
+sw_error_t
+adpt_cppe_switch_port_loopback_get(a_uint32_t dev_id,
+	fal_port_t port_id, fal_loopback_config_t *loopback_cfg);
+
+sw_error_t
+adpt_cppe_switch_port_loopback_flowctrl_set(a_uint32_t dev_id,
+	fal_port_t port_id, a_bool_t enable);
+
+sw_error_t
+adpt_cppe_switch_port_loopback_flowctrl_get(a_uint32_t dev_id,
+	fal_port_t port_id, a_bool_t *enable);
+
+sw_error_t
+adpt_cppe_lpbk_max_frame_size_get(a_uint32_t dev_id, fal_port_t port_id,
+	a_uint32_t *max_frame);
+
+sw_error_t
+adpt_cppe_lpbk_max_frame_size_set(a_uint32_t dev_id, fal_port_t port_id,
+	a_uint32_t max_frame);
 #ifdef __cplusplus
 }
 #endif                          /* __cplusplus */

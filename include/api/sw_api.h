@@ -227,6 +227,7 @@ typedef enum
 	SW_PTP_INTERRUPT,
 	SW_PORT_EEE_CONFIG,
 	SW_SRC_FILTER_CONFIG,
+	SW_PORT_LOOPBACK_CONFIG,
 } sw_data_type_e;
 
     typedef struct
