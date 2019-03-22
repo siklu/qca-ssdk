@@ -26,7 +26,9 @@
 
 #include "hppe_init.h"
 #include "adpt_hppe.h"
+#ifdef CPPE
 #include "adpt_cppe_mib.h"
+#endif
 
 sw_error_t
 adpt_hppe_mib_cpukeep_get(a_uint32_t dev_id, a_bool_t *enable)
@@ -264,7 +266,7 @@ adpt_ppe_mib_status_set(a_uint32_t dev_id, a_bool_t enable)
 		hppe_mmc_control_set(dev_id, xg_port_id, &mmc_control);
 	}
 
-	return SW_OK;
+	return rv;
 }
 
 sw_error_t
