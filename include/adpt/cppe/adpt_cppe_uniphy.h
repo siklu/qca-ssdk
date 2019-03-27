@@ -30,7 +30,7 @@ sw_error_t
 __adpt_cppe_uniphy_connection_qca8072_set(a_uint32_t dev_id,
 		a_uint32_t uniphy_index);
 sw_error_t
-__adpt_cppe_uniphy_connection_qca808x_set(a_uint32_t dev_id,
+__adpt_cppe_uniphy_sgmii_mode_set(a_uint32_t dev_id,
 		a_uint32_t uniphy_index);
 sw_error_t
 __adpt_cppe_uniphy_sgmiiplus_mode_set(a_uint32_t dev_id,

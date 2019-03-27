@@ -81,8 +81,8 @@ _adpt_cppe_port_mux_mac_set(a_uint32_t dev_id, fal_port_t port_id,
 				cppe_port_mux_ctrl.bf.port4_pcs_sel =
 					CPPE_PORT4_PCS_SEL_PCS0_SGMIIPLUS;
 			} else if (mode0 ==PORT_WRAPPER_SGMII_CHANNEL0) {
-				if (hsl_port_phyid_get(dev_id,
-					SSDK_PHYSICAL_PORT4) == QCA8081_PHY_V1_1) {
+				if (hsl_port_prop_check(dev_id, SSDK_PHYSICAL_PORT4,
+					HSL_PP_EXCL_CPU) == A_TRUE) {
 					cppe_port_mux_ctrl.bf.port3_pcs_sel =
 						CPPE_PORT3_PCS_SEL_PCS0_CHANNEL2;
 					cppe_port_mux_ctrl.bf.port4_pcs_sel =
