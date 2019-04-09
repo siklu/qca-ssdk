@@ -2523,6 +2523,43 @@ adpt_hppe_port_mux_mac_type_set(a_uint32_t dev_id, fal_port_t port_id,
 		case PORT_WRAPPER_SGMII0_RGMII4:
 		case PORT_WRAPPER_SGMII_CHANNEL0:
 		case PORT_WRAPPER_SGMII_FIBER:
+#ifdef CPPE
+		case PORT_WRAPPER_SGMII_PLUS:
+			if(adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION
+				&& port_id == SSDK_PHYSICAL_PORT4)
+			{
+				qca_hppe_port_mac_type_set(dev_id, port_id,
+					PORT_GMAC_TYPE);
+				if((mode0 == PORT_WRAPPER_SGMII0_RGMII4 ||
+					mode0 == PORT_WRAPPER_SGMII_CHANNEL0))
+				{
+					if(hsl_port_prop_check (dev_id, port_id,
+						HSL_PP_EXCL_CPU))
+					{
+						adpt_hppe_port_interface_mode_set(dev_id, port_id,
+							PHY_SGMII_BASET);
+					}
+					else
+					{
+						SSDK_ERROR("Port bitmap is incorrect when port 4"
+							"support sgmii for CPPE\n");
+						return SW_NOT_SUPPORTED;
+					}
+				}
+				else if(mode0 == PORT_WRAPPER_SGMII_PLUS)
+				{
+					adpt_hppe_port_interface_mode_set(dev_id, port_id,
+						PORT_SGMII_PLUS);
+				}
+				else
+				{
+					SSDK_ERROR("CPPE doesn't support mode0 : %x\n",
+						mode0);
+					return SW_NOT_SUPPORTED;
+				}
+				break;
+			}
+#endif
 			if(port_id == SSDK_PHYSICAL_PORT1)
 			{
 				qca_hppe_port_mac_type_set(dev_id, SSDK_PHYSICAL_PORT1,
@@ -2673,6 +2710,14 @@ _adpt_hppe_instance0_mode_get(a_uint32_t dev_id, a_uint32_t *mode0)
 				case SSDK_PHYSICAL_PORT2:
 					*mode0 = PORT_WRAPPER_SGMII_CHANNEL1;
 					break;
+#ifdef CPPE
+				case SSDK_PHYSICAL_PORT4:
+					if(adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION)
+					{
+						*mode0 = PORT_WRAPPER_SGMII_CHANNEL0;
+					}
+					break;
+#endif
 				case SSDK_PHYSICAL_PORT5:
 					*mode0 = PORT_WRAPPER_SGMII_CHANNEL4;
 					break;
@@ -2684,7 +2729,18 @@ _adpt_hppe_instance0_mode_get(a_uint32_t dev_id, a_uint32_t *mode0)
 				(port_interface_mode[dev_id][port_id] == PORT_SGMII_PLUS ||
 				 port_interface_mode[dev_id][port_id] ==PORT_USXGMII ||
 				 port_interface_mode[dev_id][port_id] == PORT_10GBASE_R))
+		{
+#ifdef CPPE
+			if(port_interface_mode[dev_id][port_id] == PORT_SGMII_PLUS
+				&& adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION
+				&& port_id == SSDK_PHYSICAL_PORT4)
+			{
+				*mode0 = PORT_WRAPPER_SGMII_PLUS;
+				continue;
+			}
+#endif
 			return SW_NOT_SUPPORTED;
+		}
 	}
 
 	return SW_OK;
@@ -2876,6 +2932,16 @@ _adpt_hppe_port_phy_config(a_uint32_t dev_id, a_uint32_t index, a_uint32_t mode)
 				SSDK_PHYSICAL_PORT4, PORT_QSGMII);
 			break;
 		case PORT_WRAPPER_SGMII_CHANNEL0:
+#ifdef CPPE
+			if(index == SSDK_UNIPHY_INSTANCE0 &&
+				adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION &&
+				(hsl_port_prop_check (dev_id, SSDK_PHYSICAL_PORT4,
+					HSL_PP_EXCL_CPU)))
+			{
+					rv = _adpt_hppe_port_interface_mode_phy_config(dev_id,
+						SSDK_PHYSICAL_PORT4, PHY_SGMII_BASET);
+			}
+#endif
 			if(index == SSDK_UNIPHY_INSTANCE1)
 			{
 				rv = _adpt_hppe_port_interface_mode_phy_config(dev_id,
@@ -2900,6 +2966,14 @@ _adpt_hppe_port_phy_config(a_uint32_t dev_id, a_uint32_t index, a_uint32_t mode)
 			}
 			break;
 		case PORT_WRAPPER_SGMII_PLUS:
+#ifdef CPPE
+			if(index == SSDK_UNIPHY_INSTANCE0 &&
+				adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION)
+			{
+				rv = _adpt_hppe_port_interface_mode_phy_config(dev_id,
+					SSDK_PHYSICAL_PORT4, PORT_SGMII_PLUS);
+			}
+#endif
 			if(index == SSDK_UNIPHY_INSTANCE1)
 			{
 				rv = _adpt_hppe_port_interface_mode_phy_config(dev_id,
@@ -2949,6 +3023,24 @@ adpt_hppe_port_mac_uniphy_phy_config(a_uint32_t dev_id, a_uint32_t mode_index,
 			case PORT_WRAPPER_SGMII0_RGMII4:
 			case PORT_WRAPPER_SGMII_CHANNEL0:
 			case PORT_WRAPPER_SGMII_FIBER:
+#ifdef CPPE
+			case PORT_WRAPPER_SGMII_PLUS:
+				if(adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION)
+				{
+					a_uint32_t mode_tmp = 0;
+					mode_tmp = mode[SSDK_UNIPHY_INSTANCE0];
+					if (mode_tmp == PORT_WRAPPER_SGMII_PLUS ||
+						((mode_tmp == PORT_WRAPPER_SGMII0_RGMII4 ||
+						mode_tmp == PORT_WRAPPER_SGMII_CHANNEL0) &&
+						(hsl_port_prop_check (dev_id, SSDK_PHYSICAL_PORT4,
+							HSL_PP_EXCL_CPU))))
+					{
+						port_id_from = SSDK_PHYSICAL_PORT4;
+						port_id_end = SSDK_PHYSICAL_PORT4;
+						break;
+					}
+				}
+#endif
 				port_id_from = SSDK_PHYSICAL_PORT1;
 				port_id_end = SSDK_PHYSICAL_PORT1;
 				break;
