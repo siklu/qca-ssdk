@@ -2668,11 +2668,17 @@ _adpt_hppe_instance0_mode_get(a_uint32_t dev_id, a_uint32_t *mode0)
 		{
 			continue;
 		}
-		SSDK_DEBUG("port_id:%x: %x\n", port_id, port_interface_mode[dev_id][port_id]);
+		SSDK_DEBUG("port_id:%d, port_interface_mode:%d\n", port_id,
+			port_interface_mode[dev_id][port_id]);
 		if(port_interface_mode[dev_id][port_id] == PHY_PSGMII_BASET)
 		{
 			if(*mode0 != PORT_WRAPPER_MAX && *mode0 != PORT_WRAPPER_PSGMII)
+			{
+				SSDK_ERROR("when the port_interface_mode of port %d is %d, "
+					"mode0:%d cannot be supported\n",
+					port_id, port_interface_mode[dev_id][port_id], *mode0);
 				return SW_NOT_SUPPORTED;
+			}
 			*mode0 = PORT_WRAPPER_PSGMII;
 		}
 
@@ -2686,7 +2692,12 @@ _adpt_hppe_instance0_mode_get(a_uint32_t dev_id, a_uint32_t *mode0)
 		{
 			if((*mode0 != PORT_WRAPPER_MAX && *mode0 != PORT_WRAPPER_QSGMII) ||
 				port_id == SSDK_PHYSICAL_PORT5)
+			{
+				SSDK_ERROR("when the port_interface_mode of port %d is %d, "
+					"mode0:%d cannot be supported\n",
+					port_id, port_interface_mode[dev_id][port_id], *mode0);
 				return SW_NOT_SUPPORTED;
+			}
 			*mode0 = PORT_WRAPPER_QSGMII;
 		}
 
@@ -2696,9 +2707,17 @@ _adpt_hppe_instance0_mode_get(a_uint32_t dev_id, a_uint32_t *mode0)
 			if(*mode0 !=PORT_WRAPPER_MAX)
 			{
 				if(port_id != SSDK_PHYSICAL_PORT5)
+				{
+					SSDK_ERROR("when the port_interface_mode of port %d is %d, "
+						"mode0:%d cannot be supported\n",
+						port_id, port_interface_mode[dev_id][port_id],
+						*mode0);
 					return SW_NOT_SUPPORTED;
+				}
 				else
+				{
 					return SW_OK;
+				}
 			}
 			switch(port_id)
 			{
@@ -2727,6 +2746,9 @@ _adpt_hppe_instance0_mode_get(a_uint32_t dev_id, a_uint32_t *mode0)
 					*mode0 = PORT_WRAPPER_SGMII_CHANNEL4;
 					break;
 				default:
+					SSDK_ERROR("port %d doesn't support "
+						"port_interface_mode %d\n",
+						port_id, port_interface_mode[dev_id][port_id]);
 					return SW_NOT_SUPPORTED;
 			}
 		}
@@ -2744,6 +2766,8 @@ _adpt_hppe_instance0_mode_get(a_uint32_t dev_id, a_uint32_t *mode0)
 				continue;
 			}
 #endif
+			SSDK_ERROR("port %d doesn't support port_interface_mode %d\n",
+				port_id, port_interface_mode[dev_id][port_id]);
 			return SW_NOT_SUPPORTED;
 		}
 	}
@@ -2780,6 +2804,8 @@ _adpt_hppe_instance1_mode_get(a_uint32_t dev_id, a_uint32_t port_id,  a_uint32_t
 		case PHY_PSGMII_FIBER:
 			if(port_id == SSDK_PHYSICAL_PORT6)
 			{
+				SSDK_ERROR("port %d doesn't support port_interface_mode %d\n",
+					port_id, port_interface_mode[dev_id][port_id]);
 				return SW_NOT_SUPPORTED;
 			}
 			*mode = PORT_INTERFACE_MODE_MAX;
@@ -2787,6 +2813,8 @@ _adpt_hppe_instance1_mode_get(a_uint32_t dev_id, a_uint32_t port_id,  a_uint32_t
 		case PORT_INTERFACE_MODE_MAX:
 			break;
 		default:
+			SSDK_ERROR("port %d doesn't support port_interface_mode %d\n",
+				port_id, port_interface_mode[dev_id][port_id]);
 			return SW_NOT_SUPPORTED;
 	}
 
@@ -2837,15 +2865,20 @@ _adpt_hppe_port_interface_mode_phy_config(a_uint32_t dev_id, a_uint32_t port_id,
 
 	if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_PHY))
 	{
+		SSDK_ERROR("port %d is not in bitmap\n", port_id);
 		return SW_BAD_PARAM;
 	}
 	SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get (dev_id, port_id));
 	if (NULL == phy_drv->phy_interface_mode_set)
+	{
+		SSDK_ERROR("the phy_interface_mode_set api is null for port %d\n",
+			port_id);
 		return SW_NOT_SUPPORTED;
+	}
 
 	rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_id);
 	SW_RTN_ON_ERROR (rv);
-	SSDK_DEBUG("port_id:%x, phy_id:%x, mode:%x\n", port_id, phy_id, mode);
+	SSDK_DEBUG("port_id:%d, phy_id:%d, mode:%d\n", port_id, phy_id, mode);
 	rv = phy_drv->phy_interface_mode_set (dev_id, phy_id,mode);
 
 	return rv;
