@@ -1003,6 +1003,21 @@ adpt_hppe_port_max_frame_size_set(a_uint32_t dev_id, fal_port_t port_id,
 
 	return rv;
 }
+
+sw_error_t
+adpt_ppe_port_max_frame_size_set(a_uint32_t dev_id, fal_port_t port_id,
+		a_uint32_t max_frame)
+{
+#ifdef CPPE
+	if (adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION &&
+		port_id == SSDK_PHYSICAL_PORT6)
+	{
+		return adpt_cppe_lpbk_max_frame_size_set(dev_id, port_id, max_frame);
+	}
+#endif
+	return adpt_hppe_port_max_frame_size_set(dev_id, port_id, max_frame);
+}
+
 #ifndef IN_PORTCONTROL_MINI
 sw_error_t
 adpt_hppe_port_8023az_get(a_uint32_t dev_id, fal_port_t port_id,
@@ -1730,6 +1745,21 @@ adpt_hppe_port_max_frame_size_get(a_uint32_t dev_id, fal_port_t port_id,
 	return rv;
 }
 
+sw_error_t
+adpt_ppe_port_max_frame_size_get(a_uint32_t dev_id, fal_port_t port_id,
+		a_uint32_t *max_frame)
+{
+#ifdef CPPE
+	if (adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION &&
+		port_id == SSDK_PHYSICAL_PORT6)
+	{
+		return adpt_cppe_lpbk_max_frame_size_get(dev_id, port_id, max_frame);
+	}
+#endif
+	return adpt_hppe_port_max_frame_size_get(dev_id, port_id, max_frame);
+
+}
+
 #ifndef IN_PORTCONTROL_MINI
 sw_error_t
 adpt_hppe_port_combo_prefer_medium_set(a_uint32_t dev_id,
@@ -1994,6 +2024,13 @@ adpt_hppe_port_flowctrl_get(a_uint32_t dev_id, fal_port_t port_id,
 	sw_error_t rv = SW_OK;
 	a_bool_t txfc_enable, rxfc_enable;
 
+#if defined(CPPE)
+	if ((adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) &&
+		(port_id == SSDK_PHYSICAL_PORT6)) {
+		return adpt_cppe_switch_port_loopback_flowctrl_get(dev_id,
+				port_id, enable);
+	}
+#endif
 	rv = adpt_hppe_port_txfc_status_get(dev_id, port_id,  &txfc_enable);
 	rv |= adpt_hppe_port_rxfc_status_get(dev_id, port_id,  &rxfc_enable);
 	if(rv != SW_OK)
@@ -2486,6 +2523,43 @@ adpt_hppe_port_mux_mac_type_set(a_uint32_t dev_id, fal_port_t port_id,
 		case PORT_WRAPPER_SGMII0_RGMII4:
 		case PORT_WRAPPER_SGMII_CHANNEL0:
 		case PORT_WRAPPER_SGMII_FIBER:
+#ifdef CPPE
+		case PORT_WRAPPER_SGMII_PLUS:
+			if(adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION
+				&& port_id == SSDK_PHYSICAL_PORT4)
+			{
+				qca_hppe_port_mac_type_set(dev_id, port_id,
+					PORT_GMAC_TYPE);
+				if((mode0 == PORT_WRAPPER_SGMII0_RGMII4 ||
+					mode0 == PORT_WRAPPER_SGMII_CHANNEL0))
+				{
+					if(hsl_port_prop_check (dev_id, port_id,
+						HSL_PP_EXCL_CPU))
+					{
+						adpt_hppe_port_interface_mode_set(dev_id, port_id,
+							PHY_SGMII_BASET);
+					}
+					else
+					{
+						SSDK_ERROR("Port bitmap is incorrect when port 4"
+							"support sgmii for CPPE\n");
+						return SW_NOT_SUPPORTED;
+					}
+				}
+				else if(mode0 == PORT_WRAPPER_SGMII_PLUS)
+				{
+					adpt_hppe_port_interface_mode_set(dev_id, port_id,
+						PORT_SGMII_PLUS);
+				}
+				else
+				{
+					SSDK_ERROR("CPPE doesn't support mode0 : %x\n",
+						mode0);
+					return SW_NOT_SUPPORTED;
+				}
+				break;
+			}
+#endif
 			if(port_id == SSDK_PHYSICAL_PORT1)
 			{
 				qca_hppe_port_mac_type_set(dev_id, SSDK_PHYSICAL_PORT1,
@@ -2636,6 +2710,14 @@ _adpt_hppe_instance0_mode_get(a_uint32_t dev_id, a_uint32_t *mode0)
 				case SSDK_PHYSICAL_PORT2:
 					*mode0 = PORT_WRAPPER_SGMII_CHANNEL1;
 					break;
+#ifdef CPPE
+				case SSDK_PHYSICAL_PORT4:
+					if(adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION)
+					{
+						*mode0 = PORT_WRAPPER_SGMII_CHANNEL0;
+					}
+					break;
+#endif
 				case SSDK_PHYSICAL_PORT5:
 					*mode0 = PORT_WRAPPER_SGMII_CHANNEL4;
 					break;
@@ -2647,7 +2729,18 @@ _adpt_hppe_instance0_mode_get(a_uint32_t dev_id, a_uint32_t *mode0)
 				(port_interface_mode[dev_id][port_id] == PORT_SGMII_PLUS ||
 				 port_interface_mode[dev_id][port_id] ==PORT_USXGMII ||
 				 port_interface_mode[dev_id][port_id] == PORT_10GBASE_R))
+		{
+#ifdef CPPE
+			if(port_interface_mode[dev_id][port_id] == PORT_SGMII_PLUS
+				&& adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION
+				&& port_id == SSDK_PHYSICAL_PORT4)
+			{
+				*mode0 = PORT_WRAPPER_SGMII_PLUS;
+				continue;
+			}
+#endif
 			return SW_NOT_SUPPORTED;
+		}
 	}
 
 	return SW_OK;
@@ -2839,6 +2932,16 @@ _adpt_hppe_port_phy_config(a_uint32_t dev_id, a_uint32_t index, a_uint32_t mode)
 				SSDK_PHYSICAL_PORT4, PORT_QSGMII);
 			break;
 		case PORT_WRAPPER_SGMII_CHANNEL0:
+#ifdef CPPE
+			if(index == SSDK_UNIPHY_INSTANCE0 &&
+				adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION &&
+				(hsl_port_prop_check (dev_id, SSDK_PHYSICAL_PORT4,
+					HSL_PP_EXCL_CPU)))
+			{
+					rv = _adpt_hppe_port_interface_mode_phy_config(dev_id,
+						SSDK_PHYSICAL_PORT4, PHY_SGMII_BASET);
+			}
+#endif
 			if(index == SSDK_UNIPHY_INSTANCE1)
 			{
 				rv = _adpt_hppe_port_interface_mode_phy_config(dev_id,
@@ -2863,6 +2966,14 @@ _adpt_hppe_port_phy_config(a_uint32_t dev_id, a_uint32_t index, a_uint32_t mode)
 			}
 			break;
 		case PORT_WRAPPER_SGMII_PLUS:
+#ifdef CPPE
+			if(index == SSDK_UNIPHY_INSTANCE0 &&
+				adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION)
+			{
+				rv = _adpt_hppe_port_interface_mode_phy_config(dev_id,
+					SSDK_PHYSICAL_PORT4, PORT_SGMII_PLUS);
+			}
+#endif
 			if(index == SSDK_UNIPHY_INSTANCE1)
 			{
 				rv = _adpt_hppe_port_interface_mode_phy_config(dev_id,
@@ -2912,6 +3023,24 @@ adpt_hppe_port_mac_uniphy_phy_config(a_uint32_t dev_id, a_uint32_t mode_index,
 			case PORT_WRAPPER_SGMII0_RGMII4:
 			case PORT_WRAPPER_SGMII_CHANNEL0:
 			case PORT_WRAPPER_SGMII_FIBER:
+#ifdef CPPE
+			case PORT_WRAPPER_SGMII_PLUS:
+				if(adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION)
+				{
+					a_uint32_t mode_tmp = 0;
+					mode_tmp = mode[SSDK_UNIPHY_INSTANCE0];
+					if (mode_tmp == PORT_WRAPPER_SGMII_PLUS ||
+						((mode_tmp == PORT_WRAPPER_SGMII0_RGMII4 ||
+						mode_tmp == PORT_WRAPPER_SGMII_CHANNEL0) &&
+						(hsl_port_prop_check (dev_id, SSDK_PHYSICAL_PORT4,
+							HSL_PP_EXCL_CPU))))
+					{
+						port_id_from = SSDK_PHYSICAL_PORT4;
+						port_id_end = SSDK_PHYSICAL_PORT4;
+						break;
+					}
+				}
+#endif
 				port_id_from = SSDK_PHYSICAL_PORT1;
 				port_id_end = SSDK_PHYSICAL_PORT1;
 				break;
@@ -3386,7 +3515,13 @@ adpt_hppe_port_flowctrl_set(a_uint32_t dev_id, fal_port_t port_id,
 
 	if ((port_id < SSDK_PHYSICAL_PORT1) || (port_id > SSDK_PHYSICAL_PORT6))
 		return SW_BAD_VALUE;
-
+#if defined(CPPE)
+	if ((adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) &&
+		(port_id == SSDK_PHYSICAL_PORT6)) {
+		return adpt_cppe_switch_port_loopback_flowctrl_set(dev_id,
+				port_id, enable);
+	}
+#endif
 	rv = adpt_hppe_port_txfc_status_set(dev_id, port_id, enable);
 	rv |= adpt_hppe_port_rxfc_status_set(dev_id, port_id, enable);
 
@@ -5215,12 +5350,12 @@ sw_error_t adpt_hppe_port_ctrl_init(a_uint32_t dev_id)
 	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] &
 		(1 <<  (FUNC_ADPT_PORT_MAX_FRAME_SIZE_SET % 32)))
 	{
-		p_adpt_api->adpt_port_max_frame_size_set = adpt_hppe_port_max_frame_size_set;
+		p_adpt_api->adpt_port_max_frame_size_set = adpt_ppe_port_max_frame_size_set;
 	}
 	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] &
 		(1 <<  (FUNC_ADPT_PORT_MAX_FRAME_SIZE_GET % 32)))
 	{
-		p_adpt_api->adpt_port_max_frame_size_get = adpt_hppe_port_max_frame_size_get;
+		p_adpt_api->adpt_port_max_frame_size_get = adpt_ppe_port_max_frame_size_get;
 	}
 #ifndef IN_PORTCONTROL_MINI
 	if(p_adpt_api->adpt_port_ctrl_func_bitmap[1] &
@@ -5287,7 +5422,12 @@ sw_error_t adpt_hppe_port_ctrl_init(a_uint32_t dev_id)
 	p_adpt_api->adpt_port_bridge_txmac_set = adpt_hppe_port_bridge_txmac_set;
 	p_adpt_api->adpt_port_interface_eee_cfg_set = adpt_hppe_port_interface_eee_cfg_set;
 	p_adpt_api->adpt_port_interface_eee_cfg_get = adpt_hppe_port_interface_eee_cfg_get;
-
+#if defined(CPPE)
+	if (adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) {
+		p_adpt_api->adpt_switch_port_loopback_set = adpt_cppe_switch_port_loopback_set;
+		p_adpt_api->adpt_switch_port_loopback_get = adpt_cppe_switch_port_loopback_get;
+	}
+#endif
 	return SW_OK;
 }
 

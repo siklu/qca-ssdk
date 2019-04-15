@@ -184,7 +184,7 @@ __adpt_cppe_uniphy_connection_qca8072_set(a_uint32_t dev_id,
 }
 
 sw_error_t
-__adpt_cppe_uniphy_connection_qca808x_set(a_uint32_t dev_id,
+__adpt_cppe_uniphy_sgmii_mode_set(a_uint32_t dev_id,
 		a_uint32_t uniphy_index)
 {
 	sw_error_t rv = SW_OK;
@@ -220,9 +220,9 @@ __adpt_cppe_uniphy_connection_qca808x_set(a_uint32_t dev_id,
 	/* keep xpcs to reset status */
 	__adpt_hppe_gcc_uniphy_xpcs_reset(dev_id, uniphy_index, A_TRUE);
 
-	/* disable GCC_UNIPHY0_MISC port 1, 2, 3 and 5*/
+	/* disable GCC_UNIPHY0_MISC port 2, 3 and 5*/
 	for (i = SSDK_PHYSICAL_PORT1; i < SSDK_PHYSICAL_PORT6; i++) {
-		if (i == SSDK_PHYSICAL_PORT4) {
+		if ((i == SSDK_PHYSICAL_PORT1) || (i == SSDK_PHYSICAL_PORT4)) {
 			continue;
 		}
 	 	rv = __adpt_cppe_uniphy_port_disable(dev_id, uniphy_index, i);
@@ -308,9 +308,9 @@ __adpt_cppe_uniphy_sgmiiplus_mode_set(a_uint32_t dev_id,
 	/* keep xpcs to reset status */
 	__adpt_hppe_gcc_uniphy_xpcs_reset(dev_id, uniphy_index, A_TRUE);
 
-	/* disable GCC_UNIPHY0_MISC port 1, 2, 3 and 5*/
+	/* disable GCC_UNIPHY0_MISC port 2, 3 and 5*/
 	for (i = SSDK_PHYSICAL_PORT1; i < SSDK_PHYSICAL_PORT6; i++) {
-		if (i == SSDK_PHYSICAL_PORT4) {
+		if ((i == SSDK_PHYSICAL_PORT1) || (i == SSDK_PHYSICAL_PORT4)) {
 			continue;
 		}
 	 	rv = __adpt_cppe_uniphy_port_disable(dev_id, uniphy_index, i);

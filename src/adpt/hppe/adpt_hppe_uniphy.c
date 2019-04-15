@@ -26,6 +26,7 @@
 #include "adpt.h"
 #include "hppe_reg_access.h"
 #include "hsl_phy.h"
+#include "hsl_port_prop.h"
 #include "adpt_hppe.h"
 #if defined(CPPE)
 #include "adpt_cppe_uniphy.h"
@@ -360,9 +361,6 @@ __adpt_hppe_uniphy_sgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index, a_
 {
 	a_uint32_t i, max_port, mode;
 	sw_error_t rv = SW_OK;
-#if defined(CPPE)
-	a_uint32_t phy_type = 0;
-#endif
 
 	union uniphy_mode_ctrl_u uniphy_mode_ctrl;
 
@@ -373,10 +371,9 @@ __adpt_hppe_uniphy_sgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index, a_
 	if ((uniphy_index == SSDK_UNIPHY_INSTANCE0) &&
 		(channel == SSDK_UNIPHY_CHANNEL0)) {
 		if (adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) {
-			phy_type = hsl_port_phyid_get(dev_id,
-				SSDK_PHYSICAL_PORT4);
-			if (phy_type == QCA8081_PHY_V1_1) {
-				rv = __adpt_cppe_uniphy_connection_qca808x_set(dev_id,
+			if (hsl_port_prop_check(dev_id, SSDK_PHYSICAL_PORT4,
+					HSL_PP_EXCL_CPU) == A_TRUE) {
+				rv = __adpt_cppe_uniphy_sgmii_mode_set(dev_id,
 					uniphy_index);
 				return rv;
 			}

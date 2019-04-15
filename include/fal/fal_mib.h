@@ -77,6 +77,11 @@ extern "C" {
         a_uint32_t TxUniCast;
         a_uint32_t RxJumboFcsErr;	/* add for  Hawkeye*/
         a_uint32_t RxJumboAligenErr;		/* add for Hawkeye*/
+        a_uint32_t Rx14To63;	/*add for ipq60xx lpbk port*/
+        a_uint32_t RxTooLongByte_lo;	/*add for ipq60xx lpbk port*/
+        a_uint32_t RxTooLongByte_hi;	/*add for ipq60xx lpbk port*/
+        a_uint32_t RxRuntByte_lo;	/*add for ipq60xx lpbk port*/
+        a_uint32_t RxRuntByte_hi;	/*add for ipq60xx lpbk port*/
     } fal_mib_info_t;
 
 /*define structure for software with 64bit*/
@@ -125,6 +130,9 @@ typedef struct
 	a_uint64_t TxUniCast;
 	a_uint64_t RxJumboFcsErr;	/* add for  Hawkeye*/
 	a_uint64_t RxJumboAligenErr;	/* add for Hawkeye*/
+	a_uint64_t Rx14To63;	/*add for ipq60xx lpbk port*/
+	a_uint64_t RxTooLongByte;	/*add for ipq60xx lpbk port*/
+	a_uint64_t RxRuntByte;	/*add for ipq60xx lpbk port*/
 } fal_mib_counter_t;
 
 enum

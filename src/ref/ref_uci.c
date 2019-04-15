@@ -2633,6 +2633,39 @@ parse_port_srcfilter(struct switch_val *val)
 
 	return rv;
 }
+
+static int
+parse_switch_port_loopback(struct switch_val *val)
+{
+	struct switch_ext *switch_ext_p, *ext_value_p;
+	int rv = 0;
+	switch_ext_p = val->value.ext_val;
+	while(switch_ext_p) {
+		ext_value_p = switch_ext_p;
+
+		if(!strcmp(ext_value_p->option_name, "name")) {
+			switch_ext_p = switch_ext_p->next;
+			continue;
+		} else if(!strcmp(ext_value_p->option_name, "port_id")) {
+			val_ptr[0] = (char*)ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "loopback_en")) {
+			val_ptr[1] = (char*)ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "crc_stripped_en")) {
+			val_ptr[2] = (char*)ext_value_p->option_value;
+		} else if(!strcmp(ext_value_p->option_name, "loopback_rate")) {
+			val_ptr[3] = (char*)ext_value_p->option_value;
+		} else {
+			rv = -1;
+			break;
+		}
+
+		parameter_length++;
+		switch_ext_p = switch_ext_p->next;
+	}
+
+	return rv;
+}
+
 #endif
 #endif
 
@@ -10663,6 +10696,8 @@ parse_port(const char *command_name, struct switch_val *val)
 		rv = parse_port_eeecfg(val);
 	}else if(!strcmp(command_name, "Srcfiltercfg")) {
 		rv = parse_port_srcfiltercfg(val);
+	} else if(!strcmp(command_name, "SwitchPortLoopback")) {
+		rv = parse_switch_port_loopback(val);
 	}
 	#endif
 

@@ -662,6 +662,7 @@ struct sub_cmd_des_t g_port_des[] =
 	{"promiscmode", "set",   SW_API_PT_PROMISC_MODE_SET, NULL},
 	{"eeecfg", "set", SW_API_PT_INTERFACE_EEE_CFG_SET, NULL},
 	{"srcfiltercfg", "set",   SW_API_PT_SOURCE_FILTER_CONFIG_SET, NULL},
+	{"switchportloopback", "set", SW_API_PT_SWITCH_PORT_LOOPBACK_SET, NULL},
 	#endif
 	{NULL, NULL,  0, NULL},/*end of desc*/
 };

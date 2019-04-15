@@ -11,38 +11,40 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
-
 /**
  * @defgroup
  * @{
  */
-#ifndef _ADPT_CPPE_UNIPHYH_
-#define _ADPT_CPPE_UNIPHYH_
+#ifndef _ADPT_CPPE_MIB_H_
+#define _ADPT_CPPE_MIB_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif                          /* __cplusplus */
 
 sw_error_t
-__adpt_cppe_uniphy_channel_selection_set(a_uint32_t dev_id);
+adpt_cppe_lpbk_mib_cpukeep_get(a_uint32_t dev_id, a_uint32_t port_id,
+	a_bool_t *enable);
+
 sw_error_t
-__adpt_cppe_uniphy_connection_qca8072_set(a_uint32_t dev_id,
-		a_uint32_t uniphy_index);
+adpt_cppe_lpbk_mib_cpukeep_set(a_uint32_t dev_id, a_uint32_t port_id,
+	a_bool_t enable);
+
 sw_error_t
-__adpt_cppe_uniphy_sgmii_mode_set(a_uint32_t dev_id,
-		a_uint32_t uniphy_index);
+adpt_hppe_lpbk_mib_status_get(a_uint32_t dev_id, a_uint32_t port_id,
+	a_bool_t *enable);
+
 sw_error_t
-__adpt_cppe_uniphy_sgmiiplus_mode_set(a_uint32_t dev_id,
-		a_uint32_t uniphy_index);
-void
-__adpt_hppe_gcc_uniphy_xpcs_reset(a_uint32_t dev_id, a_uint32_t uniphy_index,
-		a_bool_t enable);
+adpt_cppe_lpbk_mib_status_set(a_uint32_t dev_id, a_uint32_t port_id,
+	a_bool_t enable);
+
 sw_error_t
-__adpt_hppe_uniphy_calibrate(a_uint32_t dev_id, a_uint32_t uniphy_index);
-void
-__adpt_hppe_gcc_uniphy_software_reset(a_uint32_t dev_id,
-		a_uint32_t uniphy_index);
+adpt_cppe_lpbk_mib_flush_counters(a_uint32_t dev_id,
+	fal_port_t port_id);
+
+sw_error_t
+adpt_cppe_lpbk_get_mib_info(a_uint32_t dev_id, fal_port_t port_id,
+	fal_mib_info_t * mib_info );
 
 #ifdef __cplusplus
 }

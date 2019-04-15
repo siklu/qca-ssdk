@@ -65,9 +65,10 @@ struct port_phy_status
 	a_bool_t rx_flowctrl;
 };
 
-#define FAL_ENABLE      1
-#define FAL_DISABLE     0
-#define FAL_MAX_PORT_NUMBER     8
+#define FAL_ENABLE                1
+#define FAL_DISABLE               0
+#define FAL_MAX_PORT_NUMBER       8
+#define FAL_DEFAULT_LOOPBACK_RATE 14
 
 //phy autoneg adv
 #define FAL_PHY_ADV_10T_HD      0x01
@@ -400,6 +401,12 @@ typedef struct {
 	a_bool_t	src_filter_enable;
 	fal_src_filter_mode_t	src_filter_mode;
 } fal_src_filter_config_t;
+
+typedef struct {
+	a_bool_t enable;
+	a_bool_t crc_stripped;
+	a_uint32_t loopback_rate; /*Mpps*/
+}fal_loopback_config_t;
 
 sw_error_t
 fal_port_max_frame_size_set(a_uint32_t dev_id, fal_port_t port_id,
@@ -776,6 +783,12 @@ fal_port_interface_eee_cfg_set(a_uint32_t dev_id, fal_port_t port_id,
 sw_error_t
 fal_port_interface_eee_cfg_get(a_uint32_t dev_id, fal_port_t port_id,
 	fal_port_eee_cfg_t *port_eee_cfg);
+sw_error_t
+fal_switch_port_loopback_set(a_uint32_t dev_id, fal_port_t port_id,
+	fal_loopback_config_t *loopback_cfg);
+sw_error_t
+fal_switch_port_loopback_get(a_uint32_t dev_id, fal_port_t port_id,
+	fal_loopback_config_t *loopback_cfg);
 
 /*qca808x_start*/
 #ifdef __cplusplus
