@@ -116,6 +116,7 @@ __adpt_cppe_uniphy_connection_qca8072_set(a_uint32_t dev_id,
 	ADPT_DEV_ID_CHECK(dev_id);
 
 	if (uniphy_index != SSDK_UNIPHY_INSTANCE0) {
+		SSDK_ERROR("uniphy index is %d\n", uniphy_index);
 		return SW_BAD_VALUE;
 	}
 
@@ -179,6 +180,7 @@ __adpt_cppe_uniphy_connection_qca8072_set(a_uint32_t dev_id,
 		qca_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
 			i, A_TRUE);
 	}
+	SSDK_INFO("cypress uniphy %d psgmii configuration is done!\n", uniphy_index);
 
 	return rv;
 }
@@ -201,6 +203,7 @@ __adpt_cppe_uniphy_sgmii_mode_set(a_uint32_t dev_id,
 	ADPT_DEV_ID_CHECK(dev_id);
 
 	if (uniphy_index != SSDK_UNIPHY_INSTANCE0) {
+		SSDK_ERROR("uniphy index is %d\n", uniphy_index);
 		return SW_BAD_VALUE;
 	}
 
@@ -273,6 +276,7 @@ __adpt_cppe_uniphy_sgmii_mode_set(a_uint32_t dev_id,
 	/* enable instance clock */
 	qca_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
 				SSDK_PHYSICAL_PORT4, A_TRUE);
+	SSDK_INFO("cypress uniphy %d sgmii configuration is done!\n", uniphy_index);
 	return rv;
 }
 
@@ -361,6 +365,7 @@ __adpt_cppe_uniphy_sgmiiplus_mode_set(a_uint32_t dev_id,
 	/* enable instance clock */
 	qca_gcc_uniphy_port_clock_set(dev_id, uniphy_index,
 				SSDK_PHYSICAL_PORT4, A_TRUE);
+	SSDK_INFO("cypress uniphy %d sgmiiplus configuration is done!\n", uniphy_index);
 	return rv;
 }
 

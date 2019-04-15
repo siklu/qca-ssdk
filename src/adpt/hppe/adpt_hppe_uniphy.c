@@ -79,7 +79,7 @@ __adpt_hppe_uniphy_calibrate(a_uint32_t dev_id, a_uint32_t uniphy_index)
 		mdelay(1);
 		if (retries-- == 0)
 		{
-			printk("uniphy callibration time out!\n");
+			SSDK_ERROR("uniphy callibration time out!\n");
 			return SW_TIMEOUT;
 		}
 		reg_value = 0;
@@ -301,9 +301,11 @@ __adpt_hppe_uniphy_sgmiiplus_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index
 	memset(&uniphy_mode_ctrl, 0, sizeof(uniphy_mode_ctrl));
 	ADPT_DEV_ID_CHECK(dev_id);
 
+	SSDK_DEBUG("uniphy %d is sgmiiplus mode\n", uniphy_index);
 #if defined(CPPE)
 	if ((adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION)
 		&& (uniphy_index == SSDK_UNIPHY_INSTANCE0)) {
+		SSDK_INFO("cypress uniphy %d is sgmiiplus mode\n", uniphy_index);
 		rv = __adpt_cppe_uniphy_sgmiiplus_mode_set(dev_id, uniphy_index);
 		return rv;
 	}
@@ -367,12 +369,14 @@ __adpt_hppe_uniphy_sgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index, a_
 	memset(&uniphy_mode_ctrl, 0, sizeof(uniphy_mode_ctrl));
 	ADPT_DEV_ID_CHECK(dev_id);
 
+	SSDK_DEBUG("uniphy %d is sgmii mode\n", uniphy_index);
 #if defined(CPPE)
 	if ((uniphy_index == SSDK_UNIPHY_INSTANCE0) &&
 		(channel == SSDK_UNIPHY_CHANNEL0)) {
 		if (adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) {
 			if (hsl_port_prop_check(dev_id, SSDK_PHYSICAL_PORT4,
 					HSL_PP_EXCL_CPU) == A_TRUE) {
+				SSDK_INFO("cypress uniphy %d is sgmii mode\n", uniphy_index);
 				rv = __adpt_cppe_uniphy_sgmii_mode_set(dev_id,
 					uniphy_index);
 				return rv;
@@ -410,6 +414,7 @@ __adpt_hppe_uniphy_sgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index, a_
 #if defined(CPPE)
 	if ((adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) &&
 		(uniphy_index == SSDK_UNIPHY_INSTANCE0)) {
+		SSDK_INFO("uniphy %d sgmii channel selection\n", uniphy_index);
 		rv = __adpt_cppe_uniphy_channel_selection_set(dev_id);
 		SW_RTN_ON_ERROR (rv);
 	}
@@ -561,11 +566,13 @@ __adpt_hppe_uniphy_psgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	memset(&uniphy_mode_ctrl, 0, sizeof(uniphy_mode_ctrl));
 	ADPT_DEV_ID_CHECK(dev_id);
 
+	SSDK_DEBUG("uniphy %d is psgmii mode\n", uniphy_index);
 #if defined(CPPE)
 	if (adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) {
 		phy_type = hsl_port_phyid_get(dev_id,
 				SSDK_PHYSICAL_PORT3);
 		if (phy_type == MALIBU2PORT_PHY) {
+			SSDK_INFO("cypress uniphy %d is qca8072 psgmii mode\n", uniphy_index);
 			rv = __adpt_cppe_uniphy_connection_qca8072_set(dev_id,
 				uniphy_index);
 			return rv;
@@ -586,6 +593,7 @@ __adpt_hppe_uniphy_psgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 #if defined(CPPE)
 	if ((adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) &&
 		(uniphy_index == SSDK_UNIPHY_INSTANCE0)) {
+		SSDK_INFO("uniphy %d psgmii channel selection\n", uniphy_index);
 		rv = __adpt_cppe_uniphy_channel_selection_set(dev_id);
 		SW_RTN_ON_ERROR (rv);
 	}
