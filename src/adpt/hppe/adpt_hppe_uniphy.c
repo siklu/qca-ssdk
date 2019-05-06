@@ -312,7 +312,8 @@ __adpt_hppe_uniphy_sgmiiplus_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index
 	if ((adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION)
 		&& (uniphy_index == SSDK_UNIPHY_INSTANCE0)) {
 		SSDK_INFO("cypress uniphy %d is sgmiiplus mode\n", uniphy_index);
-		rv = __adpt_cppe_uniphy_sgmiiplus_mode_set(dev_id, uniphy_index);
+		rv = __adpt_cppe_uniphy_mode_set(dev_id, uniphy_index,
+			PORT_WRAPPER_SGMII_PLUS);
 		return rv;
 	}
 #endif
@@ -389,8 +390,8 @@ __adpt_hppe_uniphy_sgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index, a_
 			if (hsl_port_prop_check(dev_id, SSDK_PHYSICAL_PORT4,
 					HSL_PP_EXCL_CPU) == A_TRUE) {
 				SSDK_INFO("cypress uniphy %d is sgmii mode\n", uniphy_index);
-				rv = __adpt_cppe_uniphy_sgmii_mode_set(dev_id,
-					uniphy_index);
+				rv = __adpt_cppe_uniphy_mode_set(dev_id,
+					uniphy_index, PORT_WRAPPER_SGMII_CHANNEL0);
 				return rv;
 			}
 		}
@@ -427,7 +428,9 @@ __adpt_hppe_uniphy_sgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index, a_
 	if ((adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) &&
 		(uniphy_index == SSDK_UNIPHY_INSTANCE0)) {
 		SSDK_INFO("uniphy %d sgmii channel selection\n", uniphy_index);
-		rv = __adpt_cppe_uniphy_channel_selection_set(dev_id);
+		rv = __adpt_cppe_uniphy_channel_selection_set(dev_id,
+			CPPE_PCS0_CHANNEL0_SEL_PSGMII,
+			CPPE_PCS0_CHANNEL4_SEL_PORT5_CLOCK);
 		SW_RTN_ON_ERROR (rv);
 	}
 #endif
@@ -597,8 +600,8 @@ __adpt_hppe_uniphy_psgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 				SSDK_PHYSICAL_PORT3);
 		if (phy_type == MALIBU2PORT_PHY) {
 			SSDK_INFO("cypress uniphy %d is qca8072 psgmii mode\n", uniphy_index);
-			rv = __adpt_cppe_uniphy_connection_qca8072_set(dev_id,
-				uniphy_index);
+			rv = __adpt_cppe_uniphy_mode_set(dev_id, uniphy_index,
+				PORT_WRAPPER_PSGMII);
 			return rv;
 		}
 	}
@@ -618,7 +621,9 @@ __adpt_hppe_uniphy_psgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	if ((adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) &&
 		(uniphy_index == SSDK_UNIPHY_INSTANCE0)) {
 		SSDK_INFO("uniphy %d psgmii channel selection\n", uniphy_index);
-		rv = __adpt_cppe_uniphy_channel_selection_set(dev_id);
+		rv = __adpt_cppe_uniphy_channel_selection_set(dev_id,
+			CPPE_PCS0_CHANNEL0_SEL_PSGMII,
+			CPPE_PCS0_CHANNEL4_SEL_PORT5_CLOCK);
 		SW_RTN_ON_ERROR (rv);
 	}
 #endif
