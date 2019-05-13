@@ -15,7 +15,9 @@
 #include "ssdk_init.h"
 #include "ssdk_plat.h"
 #include "ssdk_clk.h"
+#if defined(HPPE)
 #include "adpt_hppe.h"
+#endif
 #include "fal.h"
 #include <linux/kconfig.h>
 #include <linux/version.h>
