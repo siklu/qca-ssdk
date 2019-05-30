@@ -92,6 +92,7 @@ enum unphy_rst_type {
 #define CRYPTO_PPE_CLK		"gcc_nss_crypto_clk"
 #define NSS_IMEM_CLK		"gcc_nss_imem_clk"
 #define NSS_PTP_REF_CLK	"gcc_nss_ptp_ref_clk"
+#define SNOC_NSSNOC_CLK	"gcc_snoc_nssnoc_clk"
 
 #define NSS_PORT1_RX_CLK	"nss_port1_rx_clk"
 #define NSS_PORT1_TX_CLK	"nss_port1_tx_clk"
@@ -156,6 +157,7 @@ enum unphy_clk_type {
 
 #define UNIPHY_AHB_CLK_RATE	100000000
 #define UNIPHY_SYS_CLK_RATE	19200000
+#define CPPE_UNIPHY_SYS_CLK_RATE	24000000
 #define PPE_CLK_RATE	300000000
 #define MDIO_AHB_RATE	100000000
 #define NSS_NOC_RATE	461500000

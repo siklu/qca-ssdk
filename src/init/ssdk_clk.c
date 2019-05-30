@@ -316,12 +316,12 @@ static char *ppe_clk_ids[UNIPHYT_CLK_MAX] = {
 	PORT5_TX_SRC
 };
 
-static void ssdk_ppe_uniphy_clock_init(void)
+static void ssdk_ppe_uniphy_clock_init(a_uint32_t revision)
 {
 	a_uint32_t i, inst_num;
 	struct clk *clk;
 
-	if (adpt_hppe_chip_revision_get(0) == HPPE_REVISION) {
+	if (revision == HPPE_REVISION) {
 		inst_num = SSDK_MAX_UNIPHY_INSTANCE;
 	} else {
 		inst_num = SSDK_MAX_UNIPHY_INSTANCE - 1;
@@ -342,20 +342,34 @@ static void ssdk_ppe_uniphy_clock_init(void)
 		ssdk_uniphy_clock_enable(0, i, A_TRUE);
 }
 
-static void ssdk_ppe_fixed_clock_init(void)
+static void ssdk_ppe_fixed_clock_init(a_uint32_t revision)
 {
 	/* AHB and sys clk */
 	ssdk_clock_rate_set_and_enable(clock_node, CMN_AHB_CLK, 0);
 	ssdk_clock_rate_set_and_enable(clock_node, CMN_SYS_CLK, 0);
 	ssdk_clock_rate_set_and_enable(clock_node, UNIPHY0_AHB_CLK,
 					UNIPHY_AHB_CLK_RATE);
-	ssdk_clock_rate_set_and_enable(clock_node, UNIPHY0_SYS_CLK,
+	if (revision == HPPE_REVISION) {
+		ssdk_clock_rate_set_and_enable(clock_node,
+					UNIPHY0_SYS_CLK,
 					UNIPHY_SYS_CLK_RATE);
+	} else {
+		ssdk_clock_rate_set_and_enable(clock_node,
+					UNIPHY0_SYS_CLK,
+					CPPE_UNIPHY_SYS_CLK_RATE);
+	}
 	ssdk_clock_rate_set_and_enable(clock_node, UNIPHY1_AHB_CLK,
 					UNIPHY_AHB_CLK_RATE);
-	ssdk_clock_rate_set_and_enable(clock_node, UNIPHY1_SYS_CLK,
+	if (revision == HPPE_REVISION) {
+		ssdk_clock_rate_set_and_enable(clock_node,
+					UNIPHY1_SYS_CLK,
 					UNIPHY_SYS_CLK_RATE);
-	if (adpt_hppe_chip_revision_get(0) == HPPE_REVISION) {
+	} else {
+		ssdk_clock_rate_set_and_enable(clock_node,
+					UNIPHY1_SYS_CLK,
+					CPPE_UNIPHY_SYS_CLK_RATE);
+	}
+	if (revision == HPPE_REVISION) {
 		ssdk_clock_rate_set_and_enable(clock_node,
 					UNIPHY2_AHB_CLK,
 					UNIPHY_AHB_CLK_RATE);
@@ -375,7 +389,7 @@ static void ssdk_ppe_fixed_clock_init(void)
 					PORT4_MAC_CLK, PPE_CLK_RATE);
 	ssdk_clock_rate_set_and_enable(clock_node,
 					PORT5_MAC_CLK, PPE_CLK_RATE);
-	if (adpt_hppe_chip_revision_get(0) == HPPE_REVISION) {
+	if (revision == HPPE_REVISION) {
 		ssdk_clock_rate_set_and_enable(clock_node,
 					PORT6_MAC_CLK, PPE_CLK_RATE);
 	}
@@ -393,13 +407,13 @@ static void ssdk_ppe_fixed_clock_init(void)
 					NSS_EDMA_CFG_CLK, PPE_CLK_RATE);
 	ssdk_clock_rate_set_and_enable(clock_node,
 					NSS_PPE_IPE_CLK, PPE_CLK_RATE);
-	if (adpt_hppe_chip_revision_get(0) == HPPE_REVISION) {
+	if (revision == HPPE_REVISION) {
 		ssdk_clock_rate_set_and_enable(clock_node,
 					NSS_PPE_BTQ_CLK, PPE_CLK_RATE);
 	}
 	ssdk_clock_rate_set_and_enable(clock_node,
 					MDIO_AHB_CLK, MDIO_AHB_RATE);
-	if (adpt_hppe_chip_revision_get(0) == HPPE_REVISION) {
+	if (revision == HPPE_REVISION) {
 		ssdk_clock_rate_set_and_enable(clock_node,
 					NSSNOC_CLK, NSS_NOC_RATE);
 	} else {
@@ -408,18 +422,22 @@ static void ssdk_ppe_fixed_clock_init(void)
 	}
 	ssdk_clock_rate_set_and_enable(clock_node,
 					NSSNOC_SNOC_CLK, NSSNOC_SNOC_RATE);
-	if (adpt_hppe_chip_revision_get(0) == HPPE_REVISION) {
+	if (revision == HPPE_REVISION) {
 		ssdk_clock_rate_set_and_enable(clock_node,
 					MEM_NOC_NSSAXI_CLK, NSS_AXI_RATE);
 	}
 	ssdk_clock_rate_set_and_enable(clock_node,
 					CRYPTO_PPE_CLK, PPE_CLK_RATE);
-	if (adpt_hppe_chip_revision_get(0) == HPPE_REVISION) {
+	if (revision == HPPE_REVISION) {
 		ssdk_clock_rate_set_and_enable(clock_node,
 					NSS_IMEM_CLK, NSS_IMEM_RATE);
 	}
 	ssdk_clock_rate_set_and_enable(clock_node,
 					NSS_PTP_REF_CLK, PTP_REF_RARE);
+	if (revision == CPPE_REVISION) {
+		ssdk_clock_rate_set_and_enable(clock_node,
+					SNOC_NSSNOC_CLK, NSSNOC_SNOC_RATE);
+	}
 }
 
 #define CMN_BLK_ADDR	0x0009B780
@@ -480,12 +498,21 @@ void ssdk_uniphy1_clock_source_set(void)
 void ssdk_ppe_clock_init(void)
 {
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
+	a_uint32_t revision = HPPE_REVISION;
+
 	clock_node = of_find_node_by_name(NULL, "ess-switch");
 
-	ssdk_ppe_fixed_clock_init();
+	if (of_device_is_compatible(clock_node, "qcom,ess-switch-ipq807x")) {
+		revision = HPPE_REVISION;
+	} else if (of_device_is_compatible(clock_node,
+			"qcom,ess-switch-ipq60xx")) {
+		revision = CPPE_REVISION;
+	}
+
+	ssdk_ppe_fixed_clock_init(revision);
 	/*fixme for cmn clock init*/
 	ssdk_ppe_cmnblk_init();
-	ssdk_ppe_uniphy_clock_init();
+	ssdk_ppe_uniphy_clock_init(revision);
 #endif
 	SSDK_INFO("ppe and uniphy clock init successfully!\n");
 }
