@@ -745,6 +745,9 @@ qca_hppe_bm_hw_init(a_uint32_t dev_id)
 {
 	a_uint32_t i = 0;
 	fal_bm_dynamic_cfg_t cfg;
+	a_uint32_t chip_ver = 0;
+
+	chip_ver = adpt_hppe_chip_revision_get(dev_id);
 
 	for (i = 0; i <  HPPE_BM_PORT_NUM; i++) {
 		/* enable fc */
@@ -753,7 +756,11 @@ qca_hppe_bm_hw_init(a_uint32_t dev_id)
 		fal_port_bufgroup_map_set(0, i, 0);
 	}
 
-	fal_bm_bufgroup_buffer_set(dev_id, 0, 1400);
+	if (chip_ver == CPPE_REVISION) {
+		fal_bm_bufgroup_buffer_set(dev_id, 0, 1024);
+	} else {
+		fal_bm_bufgroup_buffer_set(dev_id, 0, 1400);
+	}
 
 	/* set reserved buffer */
 	for (i = 0; i < HPPE_BM_PHY_PORT_OFFSET; i++) {
@@ -762,13 +769,21 @@ qca_hppe_bm_hw_init(a_uint32_t dev_id)
 	for (i = HPPE_BM_PHY_PORT_OFFSET; i < HPPE_BM_PORT_NUM-1; i++) {
 		fal_bm_port_reserved_buffer_set(dev_id, i, 0, 128);
 	}
+	if (chip_ver == CPPE_REVISION) {
+		fal_bm_port_reserved_buffer_set(dev_id, HPPE_BM_PORT_NUM -2,
+					0, 40);
+	}
 	fal_bm_port_reserved_buffer_set(dev_id, HPPE_BM_PORT_NUM-1, 0, 40);
 
 	memset(&cfg, 0, sizeof(cfg));
 	cfg.resume_min_thresh = 0;
 	cfg.resume_off = 36;
 	cfg.weight= 4;
-	cfg.shared_ceiling = 250;
+	if (chip_ver == CPPE_REVISION) {
+		cfg.shared_ceiling = 216;
+	} else {
+		cfg.shared_ceiling = 250;
+	}
 	for (i = 0; i < HPPE_BM_PORT_NUM; i++) {
 		fal_bm_port_dynamic_thresh_set(dev_id, i, &cfg);
 	}
