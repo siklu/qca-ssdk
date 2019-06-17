@@ -40,6 +40,7 @@
 #include "adpt_hppe.h"
 #if defined(CPPE)
 #include "adpt_cppe_portctrl.h"
+#include "cppe_portctrl.h"
 #endif
 #include "sfp_phy.h"
 
@@ -119,9 +120,22 @@ _adpt_phy_status_get_from_ppe(a_uint32_t dev_id, a_uint32_t port_id,
 
 	if (port_id == SSDK_PHYSICAL_PORT5)
 	{
-		rv = hppe_port_phy_status_1_port5_1_phy_status_get(dev_id,
-						&reg_field);
-		SW_RTN_ON_ERROR (rv);
+
+		if (adpt_hppe_chip_revision_get(dev_id)
+			== HPPE_REVISION)
+		{
+			rv = hppe_port_phy_status_1_port5_1_phy_status_get(dev_id,
+							&reg_field);
+			SW_RTN_ON_ERROR (rv);
+		}
+#ifdef CPPE
+		else
+		{
+			rv = cppe_port5_pcs1_phy_status_get(dev_id,
+					&reg_field);
+			SW_RTN_ON_ERROR (rv);
+		}
+#endif
 	}
 	else
 	{

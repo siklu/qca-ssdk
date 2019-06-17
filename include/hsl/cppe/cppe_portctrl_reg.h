@@ -151,4 +151,16 @@ union cppe_mru_mtu_ctrl_tbl_u {
 	struct cppe_mru_mtu_ctrl_tbl bf;
 };
 
+struct cppe_port_phy_status_1 {
+	a_uint32_t  port5_pcs0_phy_status:8;
+	a_uint32_t  port4_pcs0_phy_status:8;
+	a_uint32_t  port5_pcs1_phy_status:8;
+	a_uint32_t  _reserved0:8;
+};
+
+union cppe_port_phy_status_1_u {
+	a_uint32_t val;
+	struct cppe_port_phy_status_1 bf;
+};
+
 #endif

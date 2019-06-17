@@ -20,6 +20,7 @@
 #include "sw.h"
 #include "hsl.h"
 #include "hppe_reg_access.h"
+#include "hppe_global_reg.h"
 #include "cppe_portctrl_reg.h"
 #include "cppe_portctrl.h"
 
@@ -462,4 +463,26 @@ cppe_mru_mtu_ctrl_tbl_source_filter_mode_get(
 	return ret;
 }
 
+sw_error_t
+cppe_port_phy_status_1_get(
+		a_uint32_t dev_id,
+		union cppe_port_phy_status_1_u *value)
+{
+	return hppe_reg_get(
+				dev_id,
+				NSS_GLOBAL_BASE_ADDR + PORT_PHY_STATUS_1_ADDRESS,
+				&value->val);
+}
 
+sw_error_t
+cppe_port5_pcs1_phy_status_get(
+		a_uint32_t dev_id,
+		a_uint32_t *value)
+{
+	union cppe_port_phy_status_1_u reg_val;
+	sw_error_t ret = SW_OK;
+
+	ret = cppe_port_phy_status_1_get(dev_id, &reg_val);
+	*value = reg_val.bf.port5_pcs1_phy_status;
+	return ret;
+}

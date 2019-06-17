@@ -123,12 +123,14 @@ _adpt_cppe_port_mux_mac_set(a_uint32_t dev_id, fal_port_t port_id,
 			}
 			if ((mode1 == PORT_WRAPPER_SGMII_PLUS) ||
 				(mode1 == PORT_WRAPPER_SGMII0_RGMII4) ||
-				(mode1 == PORT_WRAPPER_SGMII_CHANNEL0)) {
+				(mode1 == PORT_WRAPPER_SGMII_CHANNEL0) ||
+				(mode1 == PORT_WRAPPER_SGMII_FIBER)) {
 				cppe_port_mux_ctrl.bf.port5_pcs_sel =
 					CPPE_PORT5_PCS_SEL_PCS1_CHANNEL0;
 				cppe_port_mux_ctrl.bf.port5_gmac_sel =
 					CPPE_PORT5_GMAC_SEL_GMAC;
-			} else if (mode1 == PORT_WRAPPER_USXGMII) {
+			} else if ((mode1 == PORT_WRAPPER_USXGMII) ||
+				(mode1 == PORT_WRAPPER_10GBASE_R)) {
 				cppe_port_mux_ctrl.bf.port5_pcs_sel =
 					CPPE_PORT5_PCS_SEL_PCS1_CHANNEL0;
 				cppe_port_mux_ctrl.bf.port5_gmac_sel =
