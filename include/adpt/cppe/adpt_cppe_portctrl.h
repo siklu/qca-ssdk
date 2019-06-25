@@ -49,15 +49,13 @@ adpt_cppe_port_mru_set(a_uint32_t dev_id, fal_port_t port_id,
 sw_error_t
 adpt_cppe_port_mru_get(a_uint32_t dev_id, fal_port_t port_id,
 		fal_mru_ctrl_t *ctrl);
+#ifndef IN_PORTCONTROL_MINI
 sw_error_t
 adpt_cppe_port_mtu_set(a_uint32_t dev_id, fal_port_t port_id,
 		fal_mtu_ctrl_t *ctrl);
 sw_error_t
 adpt_cppe_port_mtu_get(a_uint32_t dev_id, fal_port_t port_id,
 		fal_mtu_ctrl_t *ctrl);
-sw_error_t
-adpt_cppe_port_to_channel_convert(a_uint32_t dev_id,
-		a_uint32_t port_id, a_uint32_t *channel_id);
 sw_error_t
 adpt_cppe_port_source_filter_set(a_uint32_t dev_id,
 		fal_port_t port_id, a_bool_t enable);
@@ -72,6 +70,10 @@ sw_error_t
 adpt_cppe_port_source_filter_config_get
 		(a_uint32_t dev_id, fal_port_t port_id,
 		fal_src_filter_config_t* src_filter_config);
+#endif
+sw_error_t
+adpt_cppe_port_to_channel_convert(a_uint32_t dev_id,
+		a_uint32_t port_id, a_uint32_t *channel_id);
 sw_error_t
 adpt_cppe_switch_port_loopback_set(a_uint32_t dev_id,
 	fal_port_t port_id, fal_loopback_config_t *loopback_cfg);
