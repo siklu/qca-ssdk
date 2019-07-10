@@ -255,7 +255,9 @@ extern "C" {
     SW_API_DEF(SW_API_PT_POWER_OFF, fal_port_power_off), \
     SW_API_DEF(SW_API_PT_POWER_ON, fal_port_power_on), \
     SW_API_DEF(SW_API_TXFC_STATUS_SET, fal_port_txfc_status_set),   \
-    SW_API_DEF(SW_API_RXFC_STATUS_SET, fal_port_rxfc_status_set),
+    SW_API_DEF(SW_API_RXFC_STATUS_SET, fal_port_rxfc_status_set), \
+    SW_API_DEF(SW_API_PT_SWITCH_PORT_LOOPBACK_SET, fal_switch_port_loopback_set),  \
+    SW_API_DEF(SW_API_PT_SWITCH_PORT_LOOPBACK_GET, fal_switch_port_loopback_get),
 /*end of PORTCONTROL_API*/
 #define PORTCONTROL_API_PARAM \
     SW_API_DESC(SW_API_PT_DUPLEX_SET) \
@@ -272,7 +274,9 @@ extern "C" {
     SW_API_DESC(SW_API_PT_POWER_OFF) \
     SW_API_DESC(SW_API_PT_POWER_ON) \
     SW_API_DESC(SW_API_TXFC_STATUS_SET) \
-    SW_API_DESC(SW_API_RXFC_STATUS_SET)
+    SW_API_DESC(SW_API_RXFC_STATUS_SET) \
+    SW_API_DESC(SW_API_PT_SWITCH_PORT_LOOPBACK_SET)  \
+    SW_API_DESC(SW_API_PT_SWITCH_PORT_LOOPBACK_GET)
 /*end of PORTCONTROL_API_PARAM*/
 #endif
 
