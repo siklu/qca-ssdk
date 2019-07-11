@@ -19,6 +19,7 @@
  */
 #ifndef _CPPE_PORTCTRL_H_
 #define _CPPE_PORTCTRL_H_
+#include "cppe_portctrl_reg.h"
 
 #define CPPE_MRU_MTU_CTRL_TBL_MAX_ENTRY	256
 
@@ -189,5 +190,15 @@ cppe_mru_mtu_ctrl_tbl_set(
 		a_uint32_t dev_id,
 		a_uint32_t index,
 		union cppe_mru_mtu_ctrl_tbl_u *value);
+
+sw_error_t
+cppe_port_phy_status_1_get(
+		a_uint32_t dev_id,
+		union cppe_port_phy_status_1_u *value);
+
+sw_error_t
+cppe_port5_pcs1_phy_status_get(
+		a_uint32_t dev_id,
+		unsigned int *value);
 
 #endif

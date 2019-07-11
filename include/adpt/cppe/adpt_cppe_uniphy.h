@@ -25,16 +25,9 @@ extern "C" {
 #endif                          /* __cplusplus */
 
 sw_error_t
-__adpt_cppe_uniphy_channel_selection_set(a_uint32_t dev_id);
-sw_error_t
-__adpt_cppe_uniphy_connection_qca8072_set(a_uint32_t dev_id,
-		a_uint32_t uniphy_index);
-sw_error_t
-__adpt_cppe_uniphy_sgmii_mode_set(a_uint32_t dev_id,
-		a_uint32_t uniphy_index);
-sw_error_t
-__adpt_cppe_uniphy_sgmiiplus_mode_set(a_uint32_t dev_id,
-		a_uint32_t uniphy_index);
+__adpt_cppe_uniphy_channel_selection_set(a_uint32_t dev_id,
+	a_uint32_t ch0_selection, a_uint32_t ch4_selection);
+
 void
 __adpt_hppe_gcc_uniphy_xpcs_reset(a_uint32_t dev_id, a_uint32_t uniphy_index,
 		a_bool_t enable);
@@ -44,6 +37,9 @@ __adpt_hppe_uniphy_calibrate(a_uint32_t dev_id, a_uint32_t uniphy_index);
 void
 __adpt_cppe_gcc_uniphy_software_reset(a_uint32_t dev_id,
 		a_uint32_t uniphy_index);
+sw_error_t
+__adpt_cppe_uniphy_mode_set(a_uint32_t dev_id,
+		a_uint32_t uniphy_index, a_uint32_t mode);
 
 #ifdef __cplusplus
 }
