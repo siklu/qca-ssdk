@@ -471,6 +471,34 @@ extern "C" {
 
 #else
 #define PORTVLAN_API \
+    SW_API_DEF(SW_API_GLOBAL_QINQ_MODE_SET, fal_global_qinq_mode_set), \
+    SW_API_DEF(SW_API_GLOBAL_QINQ_MODE_GET, fal_global_qinq_mode_get), \
+    SW_API_DEF(SW_API_PORT_QINQ_MODE_SET, fal_port_qinq_mode_set), \
+    SW_API_DEF(SW_API_PORT_QINQ_MODE_GET, fal_port_qinq_mode_get), \
+    SW_API_DEF(SW_API_TPID_SET, fal_ingress_tpid_set), \
+    SW_API_DEF(SW_API_TPID_GET, fal_ingress_tpid_get), \
+    SW_API_DEF(SW_API_EGRESS_TPID_SET, fal_egress_tpid_set), \
+    SW_API_DEF(SW_API_EGRESS_TPID_GET, fal_egress_tpid_get), \
+    SW_API_DEF(SW_API_PT_INGRESS_VLAN_FILTER_SET, fal_port_ingress_vlan_filter_set), \
+    SW_API_DEF(SW_API_PT_INGRESS_VLAN_FILTER_GET, fal_port_ingress_vlan_filter_get), \
+    SW_API_DEF(SW_API_PT_DEFAULT_VLANTAG_SET, fal_port_default_vlantag_set), \
+    SW_API_DEF(SW_API_PT_DEFAULT_VLANTAG_GET, fal_port_default_vlantag_get), \
+    SW_API_DEF(SW_API_PT_TAG_PROPAGATION_SET, fal_port_tag_propagation_set), \
+    SW_API_DEF(SW_API_PT_TAG_PROPAGATION_GET, fal_port_tag_propagation_get), \
+    SW_API_DEF(SW_API_PT_VLANTAG_EGMODE_SET, fal_port_vlantag_egmode_set), \
+    SW_API_DEF(SW_API_PT_VLANTAG_EGMODE_GET, fal_port_vlantag_egmode_get), \
+    SW_API_DEF(SW_API_PT_VLAN_XLT_MISS_CMD_SET, fal_port_vlan_xlt_miss_cmd_set), \
+    SW_API_DEF(SW_API_PT_VLAN_XLT_MISS_CMD_GET, fal_port_vlan_xlt_miss_cmd_get), \
+    SW_API_DEF(SW_API_PT_VSI_EGMODE_SET, fal_port_vsi_egmode_set), \
+    SW_API_DEF(SW_API_PT_VSI_EGMODE_GET, fal_port_vsi_egmode_get), \
+    SW_API_DEF(SW_API_PT_VLANTAG_VSI_EGMODE_EN_SET, fal_port_vlantag_vsi_egmode_enable), \
+    SW_API_DEF(SW_API_PT_VLANTAG_VSI_EGMODE_EN_GET, fal_port_vlantag_vsi_egmode_status_get), \
+    SW_API_DEF(SW_API_PT_VLAN_TRANS_ADV_ADD, fal_port_vlan_trans_adv_add), \
+    SW_API_DEF(SW_API_PT_VLAN_TRANS_ADV_DEL, fal_port_vlan_trans_adv_del), \
+    SW_API_DEF(SW_API_PT_VLAN_TRANS_ADV_GETFIRST, fal_port_vlan_trans_adv_getfirst), \
+    SW_API_DEF(SW_API_PT_VLAN_TRANS_ADV_GETNEXT, fal_port_vlan_trans_adv_getnext), \
+    SW_API_DEF(SW_API_PT_VLAN_COUNTER_GET, fal_port_vlan_counter_get), \
+    SW_API_DEF(SW_API_PT_VLAN_COUNTER_CLEANUP, fal_port_vlan_counter_cleanup), \
     SW_API_DEF(SW_API_PT_ING_MODE_SET, fal_port_1qmode_set), \
     SW_API_DEF(SW_API_PT_EG_MODE_SET, fal_port_egvlanmode_set), \
     SW_API_DEF(SW_API_PT_VLAN_MEM_ADD, fal_portvlan_member_add), \
@@ -486,6 +514,34 @@ extern "C" {
     SW_API_DEF(SW_API_PT_DEF_CVID_SET, fal_port_default_cvid_set),
 
 #define PORTVLAN_API_PARAM \
+    SW_API_DESC(SW_API_GLOBAL_QINQ_MODE_SET)  \
+    SW_API_DESC(SW_API_GLOBAL_QINQ_MODE_GET) \
+    SW_API_DESC(SW_API_PORT_QINQ_MODE_SET)  \
+    SW_API_DESC(SW_API_PORT_QINQ_MODE_GET) \
+    SW_API_DESC(SW_API_TPID_SET)  \
+    SW_API_DESC(SW_API_TPID_GET) \
+    SW_API_DESC(SW_API_EGRESS_TPID_SET)  \
+    SW_API_DESC(SW_API_EGRESS_TPID_GET) \
+    SW_API_DESC(SW_API_PT_INGRESS_VLAN_FILTER_SET)  \
+    SW_API_DESC(SW_API_PT_INGRESS_VLAN_FILTER_GET) \
+    SW_API_DESC(SW_API_PT_DEFAULT_VLANTAG_SET)  \
+    SW_API_DESC(SW_API_PT_DEFAULT_VLANTAG_GET) \
+    SW_API_DESC(SW_API_PT_TAG_PROPAGATION_SET)  \
+    SW_API_DESC(SW_API_PT_TAG_PROPAGATION_GET) \
+    SW_API_DESC(SW_API_PT_VLANTAG_EGMODE_SET)  \
+    SW_API_DESC(SW_API_PT_VLANTAG_EGMODE_GET) \
+    SW_API_DESC(SW_API_PT_VLAN_XLT_MISS_CMD_SET)  \
+    SW_API_DESC(SW_API_PT_VLAN_XLT_MISS_CMD_GET) \
+    SW_API_DESC(SW_API_PT_VSI_EGMODE_SET) \
+    SW_API_DESC(SW_API_PT_VSI_EGMODE_GET) \
+    SW_API_DESC(SW_API_PT_VLANTAG_VSI_EGMODE_EN_SET) \
+    SW_API_DESC(SW_API_PT_VLANTAG_VSI_EGMODE_EN_GET) \
+    SW_API_DESC(SW_API_PT_VLAN_TRANS_ADV_ADD) \
+    SW_API_DESC(SW_API_PT_VLAN_TRANS_ADV_DEL) \
+    SW_API_DESC(SW_API_PT_VLAN_TRANS_ADV_GETFIRST) \
+    SW_API_DESC(SW_API_PT_VLAN_TRANS_ADV_GETNEXT) \
+    SW_API_DESC(SW_API_PT_VLAN_COUNTER_GET) \
+    SW_API_DESC(SW_API_PT_VLAN_COUNTER_CLEANUP) \
     SW_API_DESC(SW_API_PT_ING_MODE_SET) \
     SW_API_DESC(SW_API_PT_EG_MODE_SET) \
     SW_API_DESC(SW_API_PT_VLAN_MEM_ADD) \
