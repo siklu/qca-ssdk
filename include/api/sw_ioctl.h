@@ -932,6 +932,26 @@ extern "C" {
 #define SW_API_PTP_INTERRUPT_SET                  (41  + SW_API_PTP_OFFSET)
 #define SW_API_PTP_INTERRUPT_GET                  (42  + SW_API_PTP_OFFSET)
 
+/* sfp */
+#define SW_API_SFP_OFFSET                         3200
+#define SW_API_SFP_DATA_GET                       (0  + SW_API_SFP_OFFSET)
+#define SW_API_SFP_DATA_SET                       (1  + SW_API_SFP_OFFSET)
+#define SW_API_SFP_DEV_TYPE_GET                   (2  + SW_API_SFP_OFFSET)
+#define SW_API_SFP_TRANSC_CODE_GET                (3  + SW_API_SFP_OFFSET)
+#define SW_API_SFP_RATE_ENCODE_GET                (4  + SW_API_SFP_OFFSET)
+#define SW_API_SFP_LINK_LENGTH_GET                (5  + SW_API_SFP_OFFSET)
+#define SW_API_SFP_VENDOR_INFO_GET                (6  + SW_API_SFP_OFFSET)
+#define SW_API_SFP_LASER_WAVELENGTH_GET           (7  + SW_API_SFP_OFFSET)
+#define SW_API_SFP_OPTION_GET                     (8  + SW_API_SFP_OFFSET)
+#define SW_API_SFP_CTRL_RATE_GET                  (9  + SW_API_SFP_OFFSET)
+#define SW_API_SFP_ENHANCED_CFG_GET               (10  + SW_API_SFP_OFFSET)
+#define SW_API_SFP_DIAG_THRESHOLD_GET             (11  + SW_API_SFP_OFFSET)
+#define SW_API_SFP_DIAG_CAL_CONST_GET             (12  + SW_API_SFP_OFFSET)
+#define SW_API_SFP_DIAG_REALTIME_GET              (13  + SW_API_SFP_OFFSET)
+#define SW_API_SFP_DIAG_CTRL_STATUS_GET           (14  + SW_API_SFP_OFFSET)
+#define SW_API_SFP_DIAG_ALARM_WARN_FLAG_GET       (15  + SW_API_SFP_OFFSET)
+#define SW_API_SFP_CHECKCODE_GET                  (16  + SW_API_SFP_OFFSET)
+
 /*qca808x_start*/
     /*debug*/
 #define SW_API_DEBUG_OFFSET        10000

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2017-2018, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2017-2019, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -58,6 +58,7 @@ extern "C" {
 #include "fal_shaper.h"
 #include "fal_policer.h"
 #include "fal_ptp.h"
+#include "fal_sfp.h"
 
 /*qca808x_start*/
 #ifdef __cplusplus
