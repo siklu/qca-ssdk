@@ -1292,6 +1292,12 @@ struct sub_cmd_des_t g_ctrlpkt_des[] =
 };
 #endif
 
+struct sub_cmd_des_t g_debug_des[] =
+{
+	{"module_func", "set", SW_API_MODULE_FUNC_CTRL_SET, NULL},
+	{NULL, NULL, 0, NULL},/*end of desc*/
+};
+
 struct cmd_des_t gcmd_des[] =
 {
     /*port ctrl*/
@@ -1492,6 +1498,9 @@ struct cmd_des_t gcmd_des[] =
         "ctrlpkt", g_ctrlpkt_des,
     },
 #endif
+    {
+	"debug", g_debug_des,
+    },
 
     {NULL, NULL} /*end of desc*/
 };
