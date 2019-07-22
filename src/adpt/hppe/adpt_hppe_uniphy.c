@@ -308,7 +308,7 @@ __adpt_hppe_uniphy_sgmiiplus_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index
 #if defined(CPPE)
 	if ((adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION)
 		&& (uniphy_index == SSDK_UNIPHY_INSTANCE0)) {
-		SSDK_INFO("cypress uniphy %d is sgmiiplus mode\n", uniphy_index);
+		SSDK_DEBUG("cypress uniphy %d is sgmiiplus mode\n", uniphy_index);
 		rv = __adpt_cppe_uniphy_mode_set(dev_id, uniphy_index,
 			PORT_WRAPPER_SGMII_PLUS);
 		return rv;
@@ -386,7 +386,7 @@ __adpt_hppe_uniphy_sgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index, a_
 		if (adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) {
 			if (hsl_port_prop_check(dev_id, SSDK_PHYSICAL_PORT4,
 					HSL_PP_EXCL_CPU) == A_TRUE) {
-				SSDK_INFO("cypress uniphy %d is sgmii mode\n", uniphy_index);
+				SSDK_DEBUG("cypress uniphy %d is sgmii mode\n", uniphy_index);
 				rv = __adpt_cppe_uniphy_mode_set(dev_id,
 					uniphy_index, PORT_WRAPPER_SGMII_CHANNEL0);
 				return rv;
@@ -424,7 +424,7 @@ __adpt_hppe_uniphy_sgmii_mode_set(a_uint32_t dev_id, a_uint32_t uniphy_index, a_
 #if defined(CPPE)
 	if ((adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) &&
 		(uniphy_index == SSDK_UNIPHY_INSTANCE0)) {
-		SSDK_INFO("uniphy %d sgmii channel selection\n", uniphy_index);
+		SSDK_DEBUG("uniphy %d sgmii channel selection\n", uniphy_index);
 		rv = __adpt_cppe_uniphy_channel_selection_set(dev_id,
 			CPPE_PCS0_CHANNEL0_SEL_PSGMII,
 			CPPE_PCS0_CHANNEL4_SEL_PORT5_CLOCK);
