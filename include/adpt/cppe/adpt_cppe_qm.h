@@ -24,12 +24,14 @@
 extern "C" {
 #endif                          /* __cplusplus */
 
+#ifndef IN_QM_MINI
 sw_error_t
 adpt_cppe_qm_port_source_profile_set(
 		a_uint32_t dev_id, fal_port_t port, a_uint32_t src_profile);
 sw_error_t
 adpt_cppe_qm_port_source_profile_get(
 		a_uint32_t dev_id, fal_port_t port, a_uint32_t *src_profile);
+#endif
 
 #ifdef __cplusplus
 }
