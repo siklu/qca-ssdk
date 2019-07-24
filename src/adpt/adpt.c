@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2018, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2019, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -16,6 +16,9 @@
 #include "ssdk_init.h"
 #if defined(HPPE)
 #include "adpt_hppe.h"
+#endif
+#if defined(IN_SFP)
+#include "adpt_sfp.h"
 #endif
 
 adpt_api_t *g_adpt_api[SW_MAX_NR_DEV] = {NULL};
@@ -155,6 +158,11 @@ static sw_error_t adpt_hppe_module_func_register(a_uint32_t dev_id, a_uint32_t m
 		case FAL_MODULE_PTP:
 #if defined(IN_PTP)
 			rv = adpt_hppe_ptp_init(dev_id);
+#endif
+			break;
+		case FAL_MODULE_SFP:
+#if defined(IN_SFP)
+			rv = adpt_sfp_init(dev_id);
 #endif
 			break;
 		default:
@@ -417,6 +425,9 @@ sw_error_t adpt_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 			SW_RTN_ON_ERROR(rv);
 
 			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_PTP);
+			SW_RTN_ON_ERROR(rv);
+
+			rv = adpt_hppe_module_func_register(dev_id, FAL_MODULE_SFP);
 			SW_RTN_ON_ERROR(rv);
 
 #ifdef HAWKEYE_CHIP
