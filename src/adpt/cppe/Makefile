@@ -22,11 +22,15 @@ ifeq (TRUE, $(IN_UNIPHY))
 endif
 
 ifeq (TRUE, $(IN_MISC))
+ifneq (TRUE, $(IN_MISC_MINI))
   SRC_LIST += adpt_cppe_misc.c
+endif
 endif
 
 ifeq (TRUE, $(IN_FLOW))
+ifneq (TRUE, $(IN_FLOW_MINI))
   SRC_LIST += adpt_cppe_flow.c
+endif
 endif
 
 ifeq (TRUE, $(IN_MIB))
