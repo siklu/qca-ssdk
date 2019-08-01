@@ -27,11 +27,11 @@
 *
 * read data per i2c bus
 */
-static inline a_uint8_t
+static inline a_int16_t
 _qca_i2c_read(a_uint32_t i2c_bus_id, a_uint32_t i2c_slave,
 		a_uint32_t data_addr, a_uint8_t *buf, a_uint32_t count)
 {
-	a_uint8_t ret, i;
+	a_int16_t ret, i;
 	struct i2c_adapter *adapt;
 	a_uint8_t addrbuf[2];
 	struct i2c_msg msg[2];
@@ -75,7 +75,7 @@ _qca_i2c_read(a_uint32_t i2c_bus_id, a_uint32_t i2c_slave,
 		return count;
 	}
 
-	return -ETIMEDOUT;
+	return ret;
 }
 
 /******************************************************************************
@@ -88,12 +88,18 @@ sw_error_t
 qca_i2c_data_get(a_uint32_t dev_id, a_uint32_t i2c_slave,
 		a_uint32_t data_addr, a_uint8_t *buf, a_uint32_t count)
 {
-	a_uint8_t ret = 0, cur = 0;
-	a_uint8_t cnt = count;
+	a_int16_t ret = 0, cur = 0;
+	a_uint16_t cnt = count;
 
 	while (cnt) {
 		cur = _qca_i2c_read(I2C_ADAPTER_DEFAULT_ID,
 				i2c_slave, data_addr, buf, cnt);
+
+		/* No such i2c_slave device */
+		if (cur == -ENXIO) {
+			return SW_NO_RESOURCE;
+		}
+
 		if (cur <= 0) {
 			break;
 		}
@@ -120,11 +126,11 @@ qca_i2c_data_get(a_uint32_t dev_id, a_uint32_t i2c_slave,
 *
 * write data per i2c bus
 */
-static inline a_uint8_t
+static inline a_int16_t
 _qca_i2c_write(a_uint32_t i2c_bus_id, a_uint32_t i2c_slave,
 		a_uint32_t data_addr, a_uint8_t *buf, a_uint32_t count)
 {
-	a_uint8_t ret, i;
+	a_int16_t ret, i;
 	struct i2c_adapter *adapt;
 	struct i2c_msg msg;
 	a_uint8_t i2c_wbuf[I2C_RW_LIMIT+2];
@@ -162,7 +168,7 @@ _qca_i2c_write(a_uint32_t i2c_bus_id, a_uint32_t i2c_slave,
 		return count;
 	}
 
-	return -ETIMEDOUT;
+	return ret;
 }
 
 /******************************************************************************
@@ -175,12 +181,18 @@ sw_error_t
 qca_i2c_data_set(a_uint32_t dev_id, a_uint32_t i2c_slave,
 		a_uint32_t data_addr, a_uint8_t *buf, a_uint32_t count)
 {
-	a_uint8_t ret = 0, cur = 0;
-	a_uint8_t cnt = count;
+	a_int16_t ret = 0, cur = 0;
+	a_uint16_t cnt = count;
 
 	while (cnt) {
 		cur = _qca_i2c_write(I2C_ADAPTER_DEFAULT_ID,
 				i2c_slave, data_addr, buf, cnt);
+
+		/* No such i2c_slave device */
+		if (cur == -ENXIO) {
+			return SW_NO_RESOURCE;
+		}
+
 		if (cur <= 0) {
 			break;
 		}
