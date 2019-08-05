@@ -406,6 +406,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
             MODULE_INC += -I$(SYS_PATH) \
                   -I$(TOOL_PATH)/../lib/gcc/$(TARGET_NAME)/$(GCC_VERSION)/include/ \
                   -I$(SYS_PATH)/include \
+              -I$(SYS_PATH)/source \
               -I$(SYS_PATH)/source/include \
 	      -I$(SYS_PATH)/source/arch/arm64/mach-msm/include \
               -I$(SYS_PATH)/arch/arm64/mach-msm/include \
@@ -430,6 +431,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
               -I$(TOOL_PATH)/../../lib/armv7a-vfp-neon-rdk-linux-gnueabi/gcc/arm-rdk-linux-gnueabi/4.8.4/include/ \
 	      -I$(TOOL_PATH)/../../lib/arm-rdk-linux-musleabi/gcc/arm-rdk-linux-musleabi/6.4.0/include/ \
               -I$(SYS_PATH)/include \
+              -I$(SYS_PATH)/source \
               -I$(SYS_PATH)/source/include \
               -I$(SYS_PATH)/source/arch/arm/mach-msm/include \
               -I$(SYS_PATH)/arch/arm/mach-msm/include \
@@ -453,6 +455,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
             MODULE_INC += -I$(SYS_PATH) \
               -I$(TOOL_PATH)/../lib/gcc/$(TARGET_NAME)/$(GCC_VERSION)/include/ \
               -I$(SYS_PATH)/include \
+              -I$(SYS_PATH)/source \
 	      -I$(SYS_PATH)/source/include \
               -I$(SYS_PATH)/source/arch/mips/mach-msm/include \
 	      -I$(SYS_PATH)/arch/mips/mach-msm/include \
