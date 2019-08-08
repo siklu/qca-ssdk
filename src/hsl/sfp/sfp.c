@@ -153,7 +153,7 @@ sfp_vendor_get(
 	return sfp_data_tbl_get(
 			dev_id, index, SFP_EEPROM_BASE_A0,
 			SFP_BASE_ADDR + SFP_VENDOR_ADDRESS,
-			value->val, 39);
+			value->val, 40);
 }
 
 sw_error_t

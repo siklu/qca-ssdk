@@ -302,7 +302,7 @@ union sfp_link_len_u {
 #define SFP_VENDOR
 #define SFP_VENDOR_ADDRESS 0x14
 #define SFP_VENDOR_NUM     1
-#define SFP_VENDOR_INC     0x27
+#define SFP_VENDOR_INC     0x28
 #define SFP_VENDOR_TYPE    REG_TYPE_RO
 #define SFP_VENDOR_DEFAULT 0x0
 	/*[field] NAME*/
@@ -310,19 +310,24 @@ union sfp_link_len_u {
 	#define SFP_VENDOR_NAME_OFFSET  0
 	#define SFP_VENDOR_NAME_LEN     128
 	#define SFP_VENDOR_NAME_DEFAULT 0x0
+	/*[field] TRANSCODE*/
+	#define SFP_VENDOR_TRANSCODE
+	#define SFP_VENDOR_TRANSCODE_OFFSET  128
+	#define SFP_VENDOR_TRANSCODE_LEN     8
+	#define SFP_VENDOR_TRANSCODE_DEFAULT 0x0
 	/*[field] OUI*/
 	#define SFP_VENDOR_OUI
-	#define SFP_VENDOR_OUI_OFFSET  128
+	#define SFP_VENDOR_OUI_OFFSET  136
 	#define SFP_VENDOR_OUI_LEN     24
 	#define SFP_VENDOR_OUI_DEFAULT 0x0
 	/*[field] PN*/
 	#define SFP_VENDOR_PN
-	#define SFP_VENDOR_PN_OFFSET  152
+	#define SFP_VENDOR_PN_OFFSET  160
 	#define SFP_VENDOR_PN_LEN     128
 	#define SFP_VENDOR_PN_DEFAULT 0x0
 	/*[field] REV*/
 	#define SFP_VENDOR_REV
-	#define SFP_VENDOR_REV_OFFSET  280
+	#define SFP_VENDOR_REV_OFFSET  288
 	#define SFP_VENDOR_REV_LEN     32
 	#define SFP_VENDOR_REV_DEFAULT 0x0
 
@@ -343,6 +348,7 @@ struct sfp_vendor {
 	a_uint8_t  name_13:8;
 	a_uint8_t  name_14:8;
 	a_uint8_t  name_15:8;
+	a_uint8_t  transcode:8;
 	a_uint8_t  oui_0:8;
 	a_uint8_t  oui_1:8;
 	a_uint8_t  oui_2:8;
@@ -369,7 +375,7 @@ struct sfp_vendor {
 };
 
 union sfp_vendor_u {
-	a_uint8_t val[39];
+	a_uint8_t val[40];
 	struct sfp_vendor bf;
 };
 

@@ -416,7 +416,7 @@ adpt_sfp_vendor_info_get(a_uint32_t dev_id, a_uint32_t port_id,
 		fal_sfp_vendor_info_t *vender_info)
 {
 	sw_error_t rv = SW_OK;
-	a_uint32_t index;
+	a_uint32_t index, i;
 	union sfp_vendor_u sfp_vendor;
 	union sfp_vendor_ext_u sfp_vendor_ext;
 
@@ -433,31 +433,33 @@ adpt_sfp_vendor_info_get(a_uint32_t dev_id, a_uint32_t port_id,
 	rv = sfp_vendor_ext_get(dev_id, port_id, &sfp_vendor_ext);
 	SW_RTN_ON_ERROR(rv);
 
-	index = 0;
-	for (; index < sizeof(vender_info->vendor_name); index++) {
-		vender_info->vendor_name[index] = *(sfp_vendor.val + index);
+	/* vendor basic info */
+	for (index = 0, i = 0; i < sizeof(vender_info->vendor_name); index++) {
+		vender_info->vendor_name[i++] = *(sfp_vendor.val + index);
 	}
 
-	for (; index < sizeof(vender_info->vendor_oui); index++) {
-		vender_info->vendor_oui[index] = *(sfp_vendor.val + index);
+	/* skip Transceiver Code for electronic or optical compatibility */
+	index++;
+
+	for (i = 0; i < sizeof(vender_info->vendor_oui); index++) {
+		vender_info->vendor_oui[i++] = *(sfp_vendor.val + index);
 	}
 
-	for (; index < sizeof(vender_info->vendor_pn); index++) {
-		vender_info->vendor_pn[index] = *(sfp_vendor.val + index);
+	for (i = 0; i < sizeof(vender_info->vendor_pn); index++) {
+		vender_info->vendor_pn[i++] = *(sfp_vendor.val + index);
 	}
 
-	for (; index < sizeof(vender_info->vendor_rev); index++) {
-		vender_info->vendor_rev[index] = *(sfp_vendor.val + index);
+	for (i = 0; i < sizeof(vender_info->vendor_rev); index++) {
+		vender_info->vendor_rev[i++] = *(sfp_vendor.val + index);
 	}
 
-	index = 0;
-	for (; index < sizeof(vender_info->vendor_sn); index++) {
-		vender_info->vendor_sn[index] = *(sfp_vendor_ext.val + index);
+	/* vendor extended info */
+	for (index = 0, i = 0; i < sizeof(vender_info->vendor_sn); index++) {
+		vender_info->vendor_sn[i++] = *(sfp_vendor_ext.val + index);
 	}
 
-	for (; index < sizeof(vender_info->vendor_date_code); index++) {
-		vender_info->vendor_date_code[index] =
-			*(sfp_vendor_ext.val + index);
+	for (i = 0; i < sizeof(vender_info->vendor_date_code); index++) {
+		vender_info->vendor_date_code[i++] = *(sfp_vendor_ext.val + index);
 	}
 
 	return SW_OK;
