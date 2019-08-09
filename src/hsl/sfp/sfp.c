@@ -1159,7 +1159,7 @@ sfp_diag_threshold_get(
 		union sfp_diag_threshold_u *value)
 {
 	return sfp_data_tbl_get(
-			dev_id, index, SFP_EEPROM_BASE_A0,
+			dev_id, index, SFP_EEPROM_DIAG_A2,
 			SFP_DIAG_BASE_ADDR + SFP_DIAG_THRESHOLD_ADDRESS,
 			value->val, 40);
 }
