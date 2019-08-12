@@ -51,6 +51,7 @@ extern "C" {
 #include "fal_policer.h"
 #include "fal_misc.h"
 #include "fal_ptp.h"
+#include "fal_sfp.h"
 #include "ssdk_plat.h"
 
 #define ADPT_DEV_ID_CHECK(dev_id) \
@@ -986,6 +987,42 @@ typedef sw_error_t (*adpt_ptp_interrupt_set_func)(a_uint32_t dev_id,
 typedef sw_error_t (*adpt_ptp_interrupt_get_func)(a_uint32_t dev_id,
 		a_uint32_t port_id, fal_ptp_interrupt_t *interrupt);
 
+/* sfp */
+typedef sw_error_t (*adpt_sfp_eeprom_data_get_func)(a_uint32_t dev_id,
+		a_uint32_t port_id, fal_sfp_data_t *entry);
+typedef sw_error_t (*adpt_sfp_eeprom_data_set_func)(a_uint32_t dev_id,
+		a_uint32_t port_id, fal_sfp_data_t *entry);
+typedef sw_error_t (*adpt_sfp_diag_ctrl_status_get_func)(a_uint32_t dev_id,
+		a_uint32_t port_id, fal_sfp_ctrl_status_t *ctrl_status);
+typedef sw_error_t (*adpt_sfp_diag_extenal_calibration_const_get_func)(a_uint32_t dev_id,
+		a_uint32_t port_id, fal_sfp_cal_const_t *cal_const);
+typedef sw_error_t (*adpt_sfp_link_length_get_func)(a_uint32_t dev_id,
+		a_uint32_t port_id, fal_sfp_link_length_t *link_len);
+typedef sw_error_t (*adpt_sfp_diag_internal_threshold_get_func)(a_uint32_t dev_id,
+		a_uint32_t port_id, fal_sfp_internal_threshold_t *threshold);
+typedef sw_error_t (*adpt_sfp_diag_realtime_get_func)(a_uint32_t dev_id,
+		a_uint32_t port_id, fal_sfp_realtime_diag_t *real_diag);
+typedef sw_error_t (*adpt_sfp_laser_wavelength_get_func)(a_uint32_t dev_id,
+		a_uint32_t port_id, fal_sfp_laser_wavelength_t *laser_wavelen);
+typedef sw_error_t (*adpt_sfp_option_get_func)(a_uint32_t dev_id,
+		a_uint32_t port_id, fal_sfp_option_t *option);
+typedef sw_error_t (*adpt_sfp_checkcode_get_func)(a_uint32_t dev_id,
+		a_uint32_t port_id, fal_sfp_cc_type_t cc_type, a_uint8_t *ccode);
+typedef sw_error_t (*adpt_sfp_diag_alarm_warning_flag_get_func)(a_uint32_t dev_id,
+		a_uint32_t port_id, fal_sfp_alarm_warn_flag_t *alarm_warn_flag);
+typedef sw_error_t (*adpt_sfp_device_type_get_func)(a_uint32_t dev_id,
+		a_uint32_t port_id, fal_sfp_dev_type_t *sfp_id);
+typedef sw_error_t (*adpt_sfp_vendor_info_get_func)(a_uint32_t dev_id,
+		a_uint32_t port_id, fal_sfp_vendor_info_t *vender_info);
+typedef sw_error_t (*adpt_sfp_transceiver_code_get_func)(a_uint32_t dev_id,
+		a_uint32_t port_id, fal_sfp_transc_code_t *transc_code);
+typedef sw_error_t (*adpt_sfp_ctrl_rate_get_func)(a_uint32_t dev_id,
+		a_uint32_t port_id, fal_sfp_rate_t *rate_limit);
+typedef sw_error_t (*adpt_sfp_enhanced_cfg_get_func)(a_uint32_t dev_id,
+		a_uint32_t port_id, fal_sfp_enhanced_cfg_t *enhanced_feature);
+typedef sw_error_t (*adpt_sfp_rate_encode_get_func)(a_uint32_t dev_id,
+		a_uint32_t port_id, fal_sfp_rate_encode_t *encode);
+
 typedef struct
 {
 	ssdk_chip_type chip_type;
@@ -1494,6 +1531,26 @@ typedef struct
 	adpt_ptp_capture_get_func adpt_ptp_capture_get;
 	adpt_ptp_interrupt_set_func adpt_ptp_interrupt_set;
 	adpt_ptp_interrupt_get_func adpt_ptp_interrupt_get;
+
+	/* sfp */
+	adpt_sfp_eeprom_data_get_func adpt_sfp_eeprom_data_get;
+	adpt_sfp_eeprom_data_set_func adpt_sfp_eeprom_data_set;
+	adpt_sfp_diag_ctrl_status_get_func adpt_sfp_diag_ctrl_status_get;
+	adpt_sfp_diag_extenal_calibration_const_get_func
+		adpt_sfp_diag_extenal_calibration_const_get;
+	adpt_sfp_link_length_get_func adpt_sfp_link_length_get;
+	adpt_sfp_diag_internal_threshold_get_func adpt_sfp_diag_internal_threshold_get;
+	adpt_sfp_diag_realtime_get_func adpt_sfp_diag_realtime_get;
+	adpt_sfp_laser_wavelength_get_func adpt_sfp_laser_wavelength_get;
+	adpt_sfp_option_get_func adpt_sfp_option_get;
+	adpt_sfp_checkcode_get_func adpt_sfp_checkcode_get;
+	adpt_sfp_diag_alarm_warning_flag_get_func adpt_sfp_diag_alarm_warning_flag_get;
+	adpt_sfp_device_type_get_func adpt_sfp_device_type_get;
+	adpt_sfp_vendor_info_get_func adpt_sfp_vendor_info_get;
+	adpt_sfp_transceiver_code_get_func adpt_sfp_transceiver_code_get;
+	adpt_sfp_ctrl_rate_get_func adpt_sfp_ctrl_rate_get;
+	adpt_sfp_enhanced_cfg_get_func adpt_sfp_enhanced_cfg_get;
+	adpt_sfp_rate_encode_get_func adpt_sfp_rate_encode_get;
 }adpt_api_t;
 
 

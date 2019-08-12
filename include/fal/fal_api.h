@@ -2265,6 +2265,49 @@ extern "C" {
 #define PTP_API_PARAM
 #endif
 
+#ifdef IN_SFP
+#define SFP_API \
+    SW_API_DEF(SW_API_SFP_DATA_GET, fal_sfp_eeprom_data_get), \
+    SW_API_DEF(SW_API_SFP_DATA_SET, fal_sfp_eeprom_data_set), \
+    SW_API_DEF(SW_API_SFP_DEV_TYPE_GET, fal_sfp_device_type_get), \
+    SW_API_DEF(SW_API_SFP_TRANSC_CODE_GET, fal_sfp_transceiver_code_get), \
+    SW_API_DEF(SW_API_SFP_RATE_ENCODE_GET, fal_sfp_rate_encode_get), \
+    SW_API_DEF(SW_API_SFP_LINK_LENGTH_GET, fal_sfp_link_length_get), \
+    SW_API_DEF(SW_API_SFP_VENDOR_INFO_GET, fal_sfp_vendor_info_get), \
+    SW_API_DEF(SW_API_SFP_LASER_WAVELENGTH_GET, fal_sfp_laser_wavelength_get), \
+    SW_API_DEF(SW_API_SFP_OPTION_GET, fal_sfp_option_get), \
+    SW_API_DEF(SW_API_SFP_CTRL_RATE_GET, fal_sfp_ctrl_rate_get), \
+    SW_API_DEF(SW_API_SFP_ENHANCED_CFG_GET, fal_sfp_enhanced_cfg_get), \
+    SW_API_DEF(SW_API_SFP_DIAG_THRESHOLD_GET, fal_sfp_diag_internal_threshold_get), \
+    SW_API_DEF(SW_API_SFP_DIAG_CAL_CONST_GET, fal_sfp_diag_extenal_calibration_const_get), \
+    SW_API_DEF(SW_API_SFP_DIAG_REALTIME_GET, fal_sfp_diag_realtime_get), \
+    SW_API_DEF(SW_API_SFP_DIAG_CTRL_STATUS_GET, fal_sfp_diag_ctrl_status_get), \
+    SW_API_DEF(SW_API_SFP_DIAG_ALARM_WARN_FLAG_GET, fal_sfp_diag_alarm_warning_flag_get), \
+    SW_API_DEF(SW_API_SFP_CHECKCODE_GET, fal_sfp_checkcode_get),
+
+#define SFP_API_PARAM \
+    SW_API_DESC(SW_API_SFP_DATA_GET) \
+    SW_API_DESC(SW_API_SFP_DATA_SET) \
+    SW_API_DESC(SW_API_SFP_DEV_TYPE_GET) \
+    SW_API_DESC(SW_API_SFP_TRANSC_CODE_GET) \
+    SW_API_DESC(SW_API_SFP_RATE_ENCODE_GET) \
+    SW_API_DESC(SW_API_SFP_LINK_LENGTH_GET) \
+    SW_API_DESC(SW_API_SFP_VENDOR_INFO_GET) \
+    SW_API_DESC(SW_API_SFP_LASER_WAVELENGTH_GET) \
+    SW_API_DESC(SW_API_SFP_OPTION_GET) \
+    SW_API_DESC(SW_API_SFP_CTRL_RATE_GET) \
+    SW_API_DESC(SW_API_SFP_ENHANCED_CFG_GET) \
+    SW_API_DESC(SW_API_SFP_DIAG_THRESHOLD_GET) \
+    SW_API_DESC(SW_API_SFP_DIAG_CAL_CONST_GET) \
+    SW_API_DESC(SW_API_SFP_DIAG_REALTIME_GET) \
+    SW_API_DESC(SW_API_SFP_DIAG_CTRL_STATUS_GET) \
+    SW_API_DESC(SW_API_SFP_DIAG_ALARM_WARN_FLAG_GET) \
+    SW_API_DESC(SW_API_SFP_CHECKCODE_GET)
+#else
+#define SFP_API
+#define SFP_API_PARAM
+#endif
+
 /*qca808x_start*/
 #define SSDK_API \
 /*qca808x_end*/\
@@ -2308,6 +2351,7 @@ extern "C" {
     POLICER_API \
     SHAPER_API \
     PTP_API \
+    SFP_API \
 /*qca808x_start*/\
     SW_API_DEF(SW_API_MAX, NULL),
 
@@ -2362,6 +2406,7 @@ extern "C" {
     POLICER_API_PARAM \
     SHAPER_API_PARAM \
     PTP_API_PARAM \
+    SFP_API_PARAM \
 /*qca808x_start*/\
     SW_PARAM_DEF(SW_API_MAX, SW_UINT32, 4, SW_PARAM_IN, "Dev ID"),
 

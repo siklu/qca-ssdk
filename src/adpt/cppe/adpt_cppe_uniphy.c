@@ -291,11 +291,11 @@ __adpt_cppe_uniphy_mode_set(a_uint32_t dev_id,
 				SSDK_PHYSICAL_PORT4, A_TRUE);
 	}
 	if (mode == PORT_WRAPPER_PSGMII) {
-		SSDK_INFO("cypress uniphy %d psgmii configuration is done!\n", uniphy_index);
-	} else if (PORT_WRAPPER_SGMII_CHANNEL0) {
-		SSDK_INFO("cypress uniphy %d sgmii configuration is done!\n", uniphy_index);
+		SSDK_DEBUG("cypress uniphy %d psgmii configuration is done!\n", uniphy_index);
+	} else if (mode == PORT_WRAPPER_SGMII_CHANNEL0) {
+		SSDK_DEBUG("cypress uniphy %d sgmii configuration is done!\n", uniphy_index);
 	} else {
-		SSDK_INFO("cypress uniphy %d sgmiiplus configuration is done!\n", uniphy_index);
+		SSDK_DEBUG("cypress uniphy %d sgmiiplus configuration is done!\n", uniphy_index);
 	}
 
 	return rv;

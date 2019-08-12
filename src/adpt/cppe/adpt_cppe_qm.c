@@ -23,6 +23,7 @@
 #include "cppe_portctrl.h"
 #include "adpt.h"
 
+#ifndef IN_QM_MINI
 sw_error_t
 adpt_cppe_qm_port_source_profile_set(
 		a_uint32_t dev_id, fal_port_t port, a_uint32_t src_profile)
@@ -52,6 +53,7 @@ adpt_cppe_qm_port_source_profile_get(
 	return cppe_mru_mtu_ctrl_tbl_src_profile_get(dev_id, index,
 				src_profile);
 }
+#endif
 
 /**
  * @}

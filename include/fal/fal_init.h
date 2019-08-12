@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2016-2018, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2016-2019, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -50,6 +50,7 @@ enum{
 	FAL_MODULE_POLICER,
 	FAL_MODULE_MISC,
 	FAL_MODULE_PTP,
+	FAL_MODULE_SFP,
 	FAL_MODULE_MAX,
 };
 

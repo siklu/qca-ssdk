@@ -187,6 +187,7 @@ adpt_cppe_port_mru_get(a_uint32_t dev_id, fal_port_t port_id,
 	return SW_OK;
 }
 
+#ifndef IN_PORTCONTROL_MINI
 sw_error_t
 adpt_cppe_port_mtu_set(a_uint32_t dev_id, fal_port_t port_id,
 		fal_mtu_ctrl_t *ctrl)
@@ -236,6 +237,7 @@ adpt_cppe_port_mtu_get(a_uint32_t dev_id, fal_port_t port_id,
 
 	return SW_OK;
 }
+#endif
 
 sw_error_t
 adpt_cppe_port_to_channel_convert(a_uint32_t dev_id, a_uint32_t port_id,
@@ -255,6 +257,7 @@ adpt_cppe_port_to_channel_convert(a_uint32_t dev_id, a_uint32_t port_id,
 	return SW_OK;
 }
 
+#ifndef IN_PORTCONTROL_MINI
 sw_error_t
 adpt_cppe_port_source_filter_set(a_uint32_t dev_id,
 	fal_port_t port_id, a_bool_t enable)
@@ -348,6 +351,7 @@ adpt_cppe_port_source_filter_config_get(a_uint32_t dev_id,
 
 	return rv;
 }
+#endif
 
 static a_uint32_t port_loopback_rate[SW_MAX_NR_DEV][CPPE_LOOPBACK_PORT_NUM] = {
 	{14},

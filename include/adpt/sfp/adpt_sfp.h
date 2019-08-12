@@ -17,20 +17,14 @@
  * @defgroup
  * @{
  */
-#ifndef _ADPT_CPPE_FLOW_
-#define _ADPT_CPPE_FLOW_
+#ifndef _ADPT_SFP_H_
+#define _ADPT_SFP_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif                          /* __cplusplus */
 
-#ifndef IN_FLOW_MINI
-sw_error_t
-adpt_cppe_flow_copy_escape_set(a_uint32_t dev_id, a_bool_t enable);
-
-sw_error_t
-adpt_cppe_flow_copy_escape_get(a_uint32_t dev_id, a_bool_t *enable);
-#endif
+sw_error_t adpt_sfp_init(a_uint32_t dev_id);
 
 #ifdef __cplusplus
 }

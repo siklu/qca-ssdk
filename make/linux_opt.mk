@@ -335,6 +335,12 @@ ifneq (,$(findstring SCOMPHY, $(SUPPORT_CHIP)))
   MODULE_CFLAG += -DSCOMPHY
 endif
 
+ifeq (TRUE, $(IN_SFP))
+  MODULE_INC   += -I$(PRJ_PATH)/include/hsl/sfp
+  MODULE_INC   += -I$(PRJ_PATH)/include/adpt/sfp
+  MODULE_CFLAG += -DIN_SFP
+endif
+
 # check for GCC version
 ifeq (4, $(GCC_VER))
   MODULE_CFLAG += -DGCCV4

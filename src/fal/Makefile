@@ -129,6 +129,10 @@ ifeq (TRUE, $(IN_PTP))
   SRC_LIST += fal_ptp.c
 endif
 
+ifeq (TRUE, $(IN_SFP))
+  SRC_LIST += fal_sfp.c
+endif
+
 include $(PRJ_PATH)/make/components.mk
 include $(PRJ_PATH)/make/defs.mk
 include $(PRJ_PATH)/make/target.mk
