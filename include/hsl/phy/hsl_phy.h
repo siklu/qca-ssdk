@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2017-2018, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2015, 2017-2019, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -335,7 +335,9 @@ typedef struct {
 #define PHY_MDIO_ACCESS 0
 #define PHY_I2C_ACCESS 1
 
-#define INVALID_PHY_ADDR 0xff
+#define INVALID_PHY_ADDR        0xff
+#define MAX_PHY_ADDR            0x1f
+#define QCA8072_PHY_NUM         0x2
 
 sw_error_t
 hsl_phy_api_ops_register(phy_type_t phy_type, hsl_phy_ops_t * phy_api_ops);
