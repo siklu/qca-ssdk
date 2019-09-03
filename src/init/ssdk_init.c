@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2014-2018, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2014-2019, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -80,7 +80,6 @@
 #endif
 #elif defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 #include <linux/of.h>
-#include <drivers/leds/leds-ipq40xx.h>
 #include <linux/of_platform.h>
 #include <linux/of_net.h>
 #include <linux/of_address.h>
@@ -94,6 +93,7 @@
 #include "ssdk_plat.h"
 /*qca808x_end*/
 #include "ssdk_clk.h"
+#include "ssdk_led.h"
 #include "ref_vlan.h"
 #include "ref_fdb.h"
 #include "ref_mib.h"
@@ -2156,13 +2156,12 @@ void ssdk_psgmii_all_phy_testing(a_uint32_t dev_id, a_uint32_t first_phy_addr, a
 		SSDK_INFO("PHY final test result: 0x%x \r\n",phy_t_status);
 
 }
-void ssdk_psgmii_self_test(a_uint32_t dev_id, a_bool_t enable, a_uint32_t times,
-				a_uint32_t *result)
+
+void ssdk_psgmii_get_first_phy_address(a_uint32_t dev_id,
+	a_uint32_t *first_phy_addr)
 {
-	int i = 0;
-	u32 value = 0;
+	a_uint32_t port_id = 0, phy_addr = 0, phy_cnt = 0;
 	a_uint32_t port_bmp[SW_MAX_NR_DEV] = {0};
-	a_uint32_t port_id = 0, first_phy_addr = 0, phy = 0;
 
 	port_bmp[dev_id] = qca_ssdk_phy_type_port_bmp_get(dev_id, MALIBU_PHY_CHIP);
 
@@ -2170,9 +2169,28 @@ void ssdk_psgmii_self_test(a_uint32_t dev_id, a_bool_t enable, a_uint32_t times,
 	{
 		if (port_bmp[dev_id] & (0x1 << port_id))
 		{
-			first_phy_addr = qca_ssdk_port_to_phy_addr(dev_id, port_id);
-				break;
+			phy_cnt ++;
+			phy_addr = qca_ssdk_port_to_phy_addr(dev_id, port_id);
+			if (phy_addr < *first_phy_addr) {
+				*first_phy_addr = phy_addr;
+			}
 		}
+	}
+	if ((phy_cnt == QCA8072_PHY_NUM) && (*first_phy_addr >= 0x3)) {
+		*first_phy_addr = *first_phy_addr - 3;
+	}
+}
+
+void ssdk_psgmii_self_test(a_uint32_t dev_id, a_bool_t enable, a_uint32_t times,
+				a_uint32_t *result)
+{
+	int i = 0;
+	u32 value = 0;
+	a_uint32_t first_phy_addr = MAX_PHY_ADDR + 1, phy = 0;
+
+	ssdk_psgmii_get_first_phy_address(dev_id, &first_phy_addr);
+	if ((first_phy_addr < 0) || (first_phy_addr > MAX_PHY_ADDR)) {
+		return;
 	}
 
 	if (enable == A_FALSE) {
@@ -2239,19 +2257,11 @@ void ssdk_psgmii_self_test(a_uint32_t dev_id, a_bool_t enable, a_uint32_t times,
 void clear_self_test_config(a_uint32_t dev_id)
 {
 	u32 value = 0;
-	a_uint32_t port_bmp[SW_MAX_NR_DEV] = {0};
-	a_uint32_t port_id = 0, first_phy_addr = 0, phy = 0;
+	a_uint32_t first_phy_addr = MAX_PHY_ADDR + 1, phy = 0;
 
-
-	port_bmp[dev_id] = qca_ssdk_phy_type_port_bmp_get(dev_id, MALIBU_PHY_CHIP);
-
-	for (port_id = 0; port_id < SW_MAX_NR_PORT; port_id ++)
-	{
-		if (port_bmp[dev_id] & (0x1 << port_id))
-		{
-			first_phy_addr = qca_ssdk_port_to_phy_addr(dev_id, port_id);
-				break;
-		}
+	ssdk_psgmii_get_first_phy_address(dev_id, &first_phy_addr);
+	if ((first_phy_addr < 0) || (first_phy_addr > MAX_PHY_ADDR)) {
+		return;
 	}
 
 	/* disable EEE */
@@ -2599,84 +2609,6 @@ static int ssdk_flow_default_act_init(a_uint32_t dev_id)
 
 	return 0;
 }
-
-static int ssdk_dess_led_init(ssdk_init_cfg *cfg)
-{
-	a_uint32_t i,led_num, led_source_id,source_id;
-	led_ctrl_pattern_t  pattern;
-
-	if(cfg->led_source_num != 0) {
-		for (i = 0; i < cfg->led_source_num; i++) {
-
-			led_source_id = cfg->led_source_cfg[i].led_source_id;
-			pattern.mode = cfg->led_source_cfg[i].led_pattern.mode;
-			pattern.map = cfg->led_source_cfg[i].led_pattern.map;
-			pattern.freq = cfg->led_source_cfg[i].led_pattern.freq;
-#ifdef IN_LED
-			fal_led_source_pattern_set(0, led_source_id,&pattern);
-#endif
-			led_num = ((led_source_id-1)/3) + 3;
-			source_id = led_source_id%3;
-#ifndef BOARD_AR71XX
-		#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) && (LINUX_VERSION_CODE <= KERNEL_VERSION(4,0,0))
-			if (source_id == 1) {
-				if (led_source_id == 1) {
-					ipq40xx_led_source_select(led_num, LAN0_1000_LNK_ACTIVITY);
-				}
-				if (led_source_id == 4) {
-					ipq40xx_led_source_select(led_num, LAN1_1000_LNK_ACTIVITY);
-				}
-				if (led_source_id == 7) {
-					ipq40xx_led_source_select(led_num, LAN2_1000_LNK_ACTIVITY);
-				}
-				if (led_source_id == 10) {
-					ipq40xx_led_source_select(led_num, LAN3_1000_LNK_ACTIVITY);
-				}
-				if (led_source_id == 13) {
-					ipq40xx_led_source_select(led_num, WAN_1000_LNK_ACTIVITY);
-				}
-			}
-			if (source_id == 2) {
-				if (led_source_id == 2) {
-					ipq40xx_led_source_select(led_num, LAN0_100_LNK_ACTIVITY);
-				}
-				if (led_source_id == 5) {
-					ipq40xx_led_source_select(led_num, LAN1_100_LNK_ACTIVITY);
-				}
-				if (led_source_id == 8) {
-					ipq40xx_led_source_select(led_num, LAN2_100_LNK_ACTIVITY);
-				}
-				if (led_source_id == 11) {
-					ipq40xx_led_source_select(led_num, LAN3_100_LNK_ACTIVITY);
-				}
-				if (led_source_id == 14) {
-					ipq40xx_led_source_select(led_num, WAN_100_LNK_ACTIVITY);
-				}
-			}
-			if (source_id == 0) {
-				if (led_source_id == 3) {
-					ipq40xx_led_source_select(led_num, LAN0_10_LNK_ACTIVITY);
-				}
-				if (led_source_id == 6) {
-					ipq40xx_led_source_select(led_num, LAN1_10_LNK_ACTIVITY);
-				}
-				if (led_source_id == 9) {
-					ipq40xx_led_source_select(led_num, LAN2_10_LNK_ACTIVITY);
-				}
-				if (led_source_id == 12) {
-					ipq40xx_led_source_select(led_num, LAN3_10_LNK_ACTIVITY);
-				}
-				if (led_source_id == 15) {
-					ipq40xx_led_source_select(led_num, WAN_10_LNK_ACTIVITY);
-				}
-			}
-#endif
-#endif
-		}
-	}
-	return 0;
-}
-
 static int ssdk_dess_mac_mode_init(a_uint32_t dev_id, a_uint32_t mac_mode)
 {
 	a_uint32_t reg_value;
