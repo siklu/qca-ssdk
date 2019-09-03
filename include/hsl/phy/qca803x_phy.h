@@ -329,6 +329,15 @@ extern "C"
 #define QCA803X_INTR_WOL             0x0001
 #define QCA803X_INTR_POE             0x0002
 
+/*QCA803X phy counter*/
+#define QCA803X_PHY_MMD7_FRAME_CTRL        0x8020
+#define QCA803X_PHY_MMD7_FRAME_DATA        0x8021
+
+#define QCA803X_PHY_MMD7_FRAME_CHECK       0x2000
+#define QCA803X_PHY_MMD7_FRAME_DIR         0x4000
+#define QCA803X_PHY_FRAME_CNT              0x00FF
+#define QCA803X_PHY_FRAME_ERROR            0xFF00
+
   /** phy chip config */
   typedef enum {
 	  QCA803X_PHY_RGMII_BASET = 0,
