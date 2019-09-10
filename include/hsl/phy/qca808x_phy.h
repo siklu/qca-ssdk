@@ -236,11 +236,11 @@ extern "C"
   /* 10T   Full Duplex Capable */
 #define QCA808X_STATUS_10T_FD_CAPS               0x1000
 
-  /* 100X  Half Duplex Capable */
-#define QCA808X_STATUS_100X_HD_CAPS              0x2000
+  /* 100TX  Half Duplex Capable */
+#define QCA808X_STATUS_100TX_HD_CAPS              0x2000
 
-  /* 100X  Full Duplex Capable */
-#define QCA808X_STATUS_100X_FD_CAPS              0x4000
+  /* 100TX  Full Duplex Capable */
+#define QCA808X_STATUS_100TX_FD_CAPS              0x4000
 
   /* 100T4 Capable */
 #define QCA808X_STATUS_100T4_CAPS                0x8000

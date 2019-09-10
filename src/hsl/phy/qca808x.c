@@ -67,10 +67,10 @@ static sw_error_t qca808x_phy_config_init(struct phy_device *phydev)
 	if (phy_data & QCA808X_STATUS_AUTONEG_CAPS) {
 		features |= SUPPORTED_Autoneg;
 	}
-	if (phy_data & QCA808X_STATUS_100X_FD_CAPS) {
+	if (phy_data & QCA808X_STATUS_100TX_FD_CAPS) {
 		features |= SUPPORTED_100baseT_Full;
 	}
-	if (phy_data & QCA808X_STATUS_100X_HD_CAPS) {
+	if (phy_data & QCA808X_STATUS_100TX_HD_CAPS) {
 		features |= SUPPORTED_100baseT_Half;
 	}
 	if (phy_data & QCA808X_STATUS_10T_FD_CAPS) {
