@@ -2811,9 +2811,7 @@ static int malibu_phy_api_ops_init(void)
 #endif
 	malibu_phy_api_ops->phy_power_off = malibu_phy_poweroff;
 	malibu_phy_api_ops->phy_power_on = 	malibu_phy_poweron;
-#ifndef IN_PORTCONTROL_MINI
 	malibu_phy_api_ops->phy_id_get = malibu_phy_get_phy_id;
-#endif
 	malibu_phy_api_ops->phy_reg_write = malibu_phy_reg_write;
 	malibu_phy_api_ops->phy_reg_read = malibu_phy_reg_read;
 	malibu_phy_api_ops->phy_debug_write = malibu_phy_debug_write;
