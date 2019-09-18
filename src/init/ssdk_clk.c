@@ -442,7 +442,7 @@ static void ssdk_ppe_fixed_clock_init(a_uint32_t revision)
 
 #define CMN_BLK_ADDR	0x0009B780
 #define CMN_BLK_SIZE	0x100
-static void ssdk_ppe_cmnblk_init(void)
+static void ssdk_ppe_cmnblk_init(enum cmnblk_clk_type mode)
 {
 	void __iomem *gcc_pll_base = NULL;
 	a_uint32_t reg_val;
@@ -453,7 +453,30 @@ static void ssdk_ppe_cmnblk_init(void)
 		return;
 	}
 	reg_val = readl(gcc_pll_base + 4);
-	reg_val = (reg_val & 0xfffffff0) | 0x7;
+
+	switch (mode) {
+		case INTERNAL_48MHZ:
+			reg_val = (reg_val & FREQUENCY_MASK) | INTERNAL_48MHZ_CLOCK;
+			break;
+		case EXTERNAL_50MHZ:
+			reg_val = (reg_val & FREQUENCY_MASK) | EXTERNAL_50MHZ_CLOCK;
+			break;
+		case EXTERNAL_25MHZ:
+			reg_val = (reg_val & FREQUENCY_MASK) | EXTERNAL_25MHZ_CLOCK;
+			break;
+		case EXTERNAL_31250KHZ:
+			reg_val = (reg_val & FREQUENCY_MASK) | EXTERNAL_31250KHZ_CLOCK;
+			break;
+		case EXTERNAL_40MHZ:
+			reg_val = (reg_val & FREQUENCY_MASK) | EXTERNAL_40MHZ_CLOCK;
+			break;
+		case EXTERNAL_48MHZ:
+			reg_val = (reg_val & FREQUENCY_MASK) | EXTERNAL_48MHZ_CLOCK;
+			break;
+		default:
+			return;
+	}
+
 	writel(reg_val, gcc_pll_base + 0x4);
 	reg_val = readl(gcc_pll_base);
 	reg_val = reg_val | 0x40;
@@ -497,6 +520,8 @@ void ssdk_uniphy1_clock_source_set(void)
 
 void ssdk_ppe_clock_init(void)
 {
+	enum cmnblk_clk_type cmnblk_clk_mode = INTERNAL_48MHZ;
+	a_uint8_t *mode = NULL;
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
 	a_uint32_t revision = HPPE_REVISION;
 
@@ -509,9 +534,26 @@ void ssdk_ppe_clock_init(void)
 		revision = CPPE_REVISION;
 	}
 
+	if (of_property_read_string(clock_node, "cmnblk_clk",
+				    (const char **)&mode)) {
+		cmnblk_clk_mode = INTERNAL_48MHZ;
+	} else {
+		if (!strcmp(mode, "external_50MHz")) {
+			cmnblk_clk_mode = EXTERNAL_50MHZ;
+		} else if (!strcmp(mode, "external_25MHz")) {
+			cmnblk_clk_mode = EXTERNAL_25MHZ;
+		} else if (!strcmp(mode, "external_31250KHz")) {
+			cmnblk_clk_mode = EXTERNAL_31250KHZ;
+		} else if (!strcmp(mode, "external_40MHz")) {
+			cmnblk_clk_mode = EXTERNAL_40MHZ;
+		} else if (!strcmp(mode, "external_48MHz")) {
+			cmnblk_clk_mode = EXTERNAL_48MHZ;
+		}
+	}
+
 	ssdk_ppe_fixed_clock_init(revision);
 	/*fixme for cmn clock init*/
-	ssdk_ppe_cmnblk_init();
+	ssdk_ppe_cmnblk_init(cmnblk_clk_mode);
 	ssdk_ppe_uniphy_clock_init(revision);
 #endif
 	SSDK_INFO("ppe and uniphy clock init successfully!\n");
