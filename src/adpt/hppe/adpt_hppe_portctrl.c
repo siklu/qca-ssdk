@@ -929,6 +929,8 @@ adpt_ppe_port_mru_set(a_uint32_t dev_id, fal_port_t port_id,
 	} else {
 		return adpt_hppe_port_mru_set(dev_id, port_id, ctrl);
 	}
+
+	return SW_NOT_SUPPORTED;
 }
 
 sw_error_t
@@ -972,6 +974,8 @@ adpt_ppe_port_mtu_set(a_uint32_t dev_id, fal_port_t port_id,
 	} else {
 		return adpt_hppe_port_mtu_set(dev_id, port_id, ctrl);
 	}
+
+	return SW_NOT_SUPPORTED;
 }
 #endif
 
@@ -1380,6 +1384,8 @@ adpt_ppe_port_mru_get(a_uint32_t dev_id, fal_port_t port_id,
 	} else {
 		return adpt_hppe_port_mru_get(dev_id, port_id, ctrl);
 	}
+
+	return SW_NOT_SUPPORTED;
 }
 #endif
 
@@ -3405,6 +3411,8 @@ adpt_ppe_port_mtu_get(a_uint32_t dev_id, fal_port_t port_id,
 	} else {
 		return adpt_hppe_port_mtu_get(dev_id, port_id, ctrl);
 	}
+
+	return SW_NOT_SUPPORTED;
 }
 #endif
 
