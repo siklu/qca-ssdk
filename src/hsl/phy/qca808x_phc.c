@@ -300,8 +300,8 @@ sw_error_t qca808x_ptp_config_init(struct phy_device *phydev)
 	rx_ts_mode = FAL_RX_TS_EMBED;
 	ret |= qca808x_phy_ptp_rx_timestamp_mode_set(dev_id, phy_id, rx_ts_mode);
 
-	/* enable SYNCE clock output */
-	ret |= qca808x_ptp_clock_synce_clock_enable(dev_id, phy_id, A_TRUE);
+	/* disable SYNCE clock output */
+	ret |= qca808x_ptp_clock_synce_clock_enable(dev_id, phy_id, A_FALSE);
 
 	if (ret != SW_OK) {
 		SSDK_ERROR("%s failed\n", __func__);
