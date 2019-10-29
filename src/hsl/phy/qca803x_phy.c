@@ -1892,17 +1892,34 @@ sw_error_t
 qca803x_phy_get_status(a_uint32_t dev_id, a_uint32_t phy_id,
 		struct port_phy_status *phy_status)
 {
-	a_uint16_t phy_data;
+	a_uint16_t phy_data, phy_data1;
 
 	phy_data = qca803x_phy_reg_read(dev_id, phy_id, QCA803X_PHY_SPEC_STATUS);
 	PHY_RTN_ON_READ_ERROR(phy_data);
+	phy_data1 = qca803x_phy_debug_read(dev_id, phy_id,
+		QCA803X_DEBUG_MSE_THRESH);
+	PHY_RTN_ON_READ_ERROR(phy_data1);
 
 	/*get phy link status*/
 	if (phy_data & QCA803X_STATUS_LINK_PASS) {
 		phy_status->link_status = A_TRUE;
+		if((phy_data1 & QCA803X_PHY_MSE_THRESH_MASK) !=
+			QCA803X_PHY_MSE_THRESH_LINK_UP) {
+			phy_data1 &= ~QCA803X_PHY_MSE_THRESH_MASK;
+			SW_RTN_ON_ERROR(qca803x_phy_debug_write(dev_id,
+				phy_id, QCA803X_DEBUG_MSE_THRESH,
+				phy_data1 | QCA803X_PHY_MSE_THRESH_LINK_UP));
+		}
 	}
 	else {
 		phy_status->link_status = A_FALSE;
+		if((phy_data1 & QCA803X_PHY_MSE_THRESH_MASK) !=
+			QCA803X_PHY_MSE_THRESH_LINK_DOWN) {
+			phy_data1 &= ~QCA803X_PHY_MSE_THRESH_MASK;
+			SW_RTN_ON_ERROR(qca803x_phy_debug_write(dev_id,
+				phy_id, QCA803X_DEBUG_MSE_THRESH,
+				phy_data1 | QCA803X_PHY_MSE_THRESH_LINK_DOWN));
+		}
 		return SW_OK;
 	}
 
@@ -2264,6 +2281,7 @@ qca803x_phy_hw_init(a_uint32_t dev_id, a_uint32_t port_bmp)
 {
 	sw_error_t  ret = SW_OK;
 	a_uint32_t port_id = 0, phy_addr = 0, mac_mode = 0;
+	a_uint16_t phy_data= 0;
 
 	for (port_id = 0; port_id < SW_MAX_NR_PORT; port_id ++)
 	{
@@ -2291,6 +2309,14 @@ qca803x_phy_hw_init(a_uint32_t dev_id, a_uint32_t port_bmp)
 				g_qca803x_phy.combo_phy_bmp |= (0x1 << phy_addr);
 				qca803x_phy_interface_set_mode(dev_id, phy_addr, PORT_RGMII_AMDET);
 			}
+			/*config the times that MSE is over threshold as max*/
+			phy_data = qca803x_phy_debug_read(dev_id, phy_addr,
+				QCA803X_DEBUG_MSE_OVER_THRESH_TIMES);
+			PHY_RTN_ON_READ_ERROR(phy_data);
+			ret = qca803x_phy_debug_write(dev_id, phy_addr,
+				QCA803X_DEBUG_MSE_OVER_THRESH_TIMES, phy_data |
+				QCA803X_PHY_MSE_OVER_THRESH_TIMES_MAX);
+			SW_RTN_ON_ERROR(ret);
 		}
 	}
 
