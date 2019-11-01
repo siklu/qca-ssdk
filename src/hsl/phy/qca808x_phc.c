@@ -986,6 +986,8 @@ void qca808x_ptp_change_notify(struct phy_device *phydev)
 int qca808x_hwtstamp(struct phy_device *phydev, struct ifreq *ifr)
 {
 	struct hwtstamp_config cfg;
+	a_uint32_t gm_mode = 0;
+	fal_ptp_reference_clock_t ref_clock = FAL_REF_CLOCK_LOCAL;
 	sw_error_t ret = SW_OK;
 	fal_ptp_config_t ptp_config = {0};
 	qca808x_priv *priv = phydev->priv;
@@ -1052,6 +1054,37 @@ int qca808x_hwtstamp(struct phy_device *phydev, struct ifreq *ifr)
 	mutex_unlock(&clock->tsreg_lock);
 	if (ret != SW_OK) {
 		return -EFAULT;
+	}
+
+	/*
+	 * disable SYNCE clock output by default,
+	 * only enabling the clock output under the
+	 * BC mode && not in external reference mode
+	 */
+	qca808x_ptp_clock_synce_clock_enable(pdata->dev_id, pdata->phy_addr, A_FALSE);
+
+	if (pdata->clock_mode == FAL_BC_CLOCK_MODE) {
+		ret = qca808x_ptp_gm_conf0_reg_grandmaster_mode_get(pdata->dev_id,
+				pdata->phy_addr, &gm_mode);
+		/* The grandmaster mode should be configured to sync RTC */
+		if (ret == SW_OK && gm_mode != PTP_REG_BIT_TRUE) {
+			ret = qca808x_phy_ptp_reference_clock_get(pdata->dev_id,
+					pdata->phy_addr, &ref_clock);
+			/*
+			 * The PHC should be with below PINs connected for clock synchronized
+			 * so NAPA1 should be configured as sync or local reference clock,
+			 * and NAPA2 is configured as FAL_REF_CLOCK_EXTERNAL & grandmaster mode.
+			 *
+			 * Napa1 ToD out  --- >  Napa2 ToD in.
+			 * Napa1 PPS out  --- >  Napa2 PPS in.
+			 * Napa1 sync clock out --- > Napa2 reference clock in.
+			 */
+			if (ret == SW_OK && ref_clock != FAL_REF_CLOCK_EXTERNAL) {
+				/* enable SYNCE clock output */
+				qca808x_ptp_clock_synce_clock_enable(pdata->dev_id,
+						pdata->phy_addr, A_TRUE);
+			}
+		}
 	}
 
 	pdata->step_mode = ptp_config.step_mode;
