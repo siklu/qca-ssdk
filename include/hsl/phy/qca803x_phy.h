@@ -46,7 +46,14 @@ extern "C"
 #define QCA803X_PHY_CDT_STATUS                   28
 #define QCA803X_DEBUG_PORT_ADDRESS               29
 #define QCA803X_DEBUG_PORT_DATA                  30
-#define QCA803X_PHY_CHIP_CONFIG          	 31	/* Chip Configuration Register  */
+#define QCA803X_PHY_CHIP_CONFIG                  31 /* Chip Configuration Register  */
+#define QCA803X_DEBUG_MSE_THRESH                 27
+#define QCA803X_DEBUG_MSE_OVER_THRESH_TIMES      28
+
+#define QCA803X_PHY_MSE_THRESH_MASK              0x3f8
+#define QCA803X_PHY_MSE_THRESH_LINK_DOWN         0x170
+#define QCA803X_PHY_MSE_THRESH_LINK_UP           0x2e8
+#define QCA803X_PHY_MSE_OVER_THRESH_TIMES_MAX    0x7000
 
 #define QCA803X_PHY_FIBER_MODE_1000BX	0x100
 
