@@ -10,6 +10,14 @@ ifneq (,$(findstring HPPE, $(SUPPORT_CHIP)))
 	SRC_LIST += ssdk_hppe.c
 endif
 
+ifneq (,$(findstring SCOMPHY, $(SUPPORT_CHIP)))
+	SRC_LIST += ssdk_scomphy.c
+endif
+
+ifneq (,$(findstring MP, $(SUPPORT_CHIP)))
+	SRC_LIST += ssdk_mp.c
+endif
+
 ifeq (TRUE, $(SWCONFIG))
 	SRC_LIST += ssdk_uci.c
 endif
