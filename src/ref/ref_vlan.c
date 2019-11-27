@@ -53,6 +53,7 @@
 
 extern ssdk_chip_type SSDK_CURRENT_CHIP_TYPE;
 
+#if !defined(IN_VLAN_MINI)
 sw_error_t
 qca_lan_wan_cfg_set(a_uint32_t dev_id, qca_lan_wan_cfg_t *lan_wan_cfg)
 {
@@ -244,6 +245,7 @@ qca_lan_wan_cfg_get(a_uint32_t dev_id, qca_lan_wan_cfg_t *lan_wan_cfg)
 #endif
 	return SW_OK;
 }
+#endif
 
 int
 qca_ar8327_sw_enable_vlan0(a_uint32_t dev_id, a_bool_t enable, a_uint8_t portmap)
