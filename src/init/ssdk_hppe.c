@@ -44,11 +44,7 @@ static sw_error_t qca_hppe_fdb_hw_init(a_uint32_t dev_id)
 		if (port == SSDK_PHYSICAL_PORT0 || port == SSDK_PHYSICAL_PORT7) {
 			p_api->adpt_port_bridge_txmac_set(dev_id, port, A_TRUE);
 		} else {
-#ifdef HAWKEYE_CHIP
 			p_api->adpt_port_bridge_txmac_set(dev_id, port, A_FALSE);
-#else
-			p_api->adpt_port_bridge_txmac_set(dev_id, port, A_TRUE);
-#endif
 		}
 		fal_port_promisc_mode_set(dev_id, port, A_TRUE);
 	}
@@ -92,59 +88,6 @@ static sw_error_t qca_hppe_ctlpkt_hw_init(a_uint32_t dev_id)
 }
 #endif
 
-#ifndef HAWKEYE_CHIP
-static sw_error_t
-qca_hppe_fpga_xgmac_gpio_enable(a_uint32_t dev_id)
-{
-	a_uint32_t val;
-	void __iomem *ppe_gpio_base;
-
-	ppe_gpio_base = ioremap_nocache(0x01008000, 0x100);
-	if (!ppe_gpio_base) {
-		printk("can't get gpio address!\n");
-		return -1;
-	}
-	/* RUMI specific GPIO configuration for enabling XGMAC */
-	writel(0x201, ppe_gpio_base + 0);
-	writel(0x2, ppe_gpio_base + 4);
-	iounmap(ppe_gpio_base);
-	printk("set gpio to enable XGMAC successfully!\n");
-
-	msleep(100);
-
-	val = 0;
-	qca_switch_reg_write(dev_id, 0x000008, (a_uint8_t *)&val, 4);
-
-	return SW_OK;
-}
-static sw_error_t
-qca_hppe_fpga_ports_enable(a_uint32_t dev_id)
-{
-	a_uint32_t i = 0;
-	a_uint32_t val, addr = 0x4000;
-	a_uint32_t port_max = SSDK_PHYSICAL_PORT7;
-	a_uint32_t xgmac_max = 2;
-
-	if(adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) {
-		port_max = SSDK_PHYSICAL_PORT6;
-		xgmac_max = 1;
-	}
-
-	for(i = SSDK_PHYSICAL_PORT1; i < port_max; i++) {
-		fal_port_rxfc_status_set(dev_id, i, A_TRUE);
-		fal_port_txfc_status_set(dev_id, i, A_TRUE);
-		fal_port_txmac_status_set (dev_id, i, A_TRUE);
-		fal_port_rxmac_status_set (dev_id, i, A_TRUE);
-	}
-	for (i = 0; i < xgmac_max; i ++) {
-		val = 0x00000081;
-		qca_switch_reg_write(dev_id, 0x00003008 + (addr * i), (a_uint8_t *)&val, 4);
-	}
-
-	return SW_OK;
-}
-#endif
-
 #if defined(IN_PORTCONTROL)
 static sw_error_t
 qca_hppe_portctrl_hw_init(a_uint32_t dev_id)
@@ -158,15 +101,9 @@ qca_hppe_portctrl_hw_init(a_uint32_t dev_id)
 	if(adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) {
 		SSDK_INFO("Cypress PPE port initializing\n");
 		port_max = SSDK_PHYSICAL_PORT6;
-#ifndef HAWKEYE_CHIP
-		qca_cppe_fpga_xgmac_clock_enable(dev_id);
-#endif
 	} else {
 		SSDK_INFO("Hawkeye PPE port initializing\n");
 		port_max = SSDK_PHYSICAL_PORT7;
-#ifndef HAWKEYE_CHIP
-		qca_hppe_fpga_xgmac_gpio_enable(dev_id);
-#endif
 	}
 	for(i = SSDK_PHYSICAL_PORT1; i < port_max; i++) {
 		qca_hppe_port_mac_type_set(dev_id, i, PORT_GMAC_TYPE);
@@ -1203,7 +1140,6 @@ qca_hppe_interface_mode_init(a_uint32_t dev_id, a_uint32_t mode0, a_uint32_t mod
 
 	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
 	SW_RTN_ON_NULL(p_api->adpt_port_mux_mac_type_set);
-#ifdef HAWKEYE_CHIP
 	SW_RTN_ON_NULL(p_api->adpt_uniphy_mode_set);
 
 
@@ -1218,7 +1154,6 @@ qca_hppe_interface_mode_init(a_uint32_t dev_id, a_uint32_t mode0, a_uint32_t mod
 			SSDK_UNIPHY_INSTANCE2, mode2);
 		SW_RTN_ON_ERROR(rv);
 	}
-#endif
 
 	if(adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) {
 		port_max = SSDK_PHYSICAL_PORT6;
@@ -1263,10 +1198,10 @@ qca_hppe_flow_hw_init(a_uint32_t dev_id)
 sw_error_t qca_hppe_hw_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 {
 	sw_error_t rv = SW_OK;
-#ifdef HAWKEYE_CHIP
+
 	/* reset ppe */
 	ssdk_ppe_reset_init();
-#endif
+
 	rv = qca_switch_init(dev_id);
 	SW_RTN_ON_ERROR(rv);
 
@@ -1328,9 +1263,6 @@ sw_error_t qca_hppe_hw_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 #if defined(IN_CTRLPKT)
 	rv = qca_hppe_ctlpkt_hw_init(dev_id);
 	SW_RTN_ON_ERROR(rv);
-#endif
-#ifndef HAWKEYE_CHIP
-	rv = qca_hppe_fpga_ports_enable(dev_id);
 #endif
 
 	return rv;

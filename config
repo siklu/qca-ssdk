@@ -299,8 +299,3 @@ endif
 ifneq ($(HK_CHIP), enable)
 CHIP_TYPE=NONHK_CHIP
 endif
-ifeq ($(RUMI_FEATURE), enable)
-HAWKEYE_CHIP=FALSE
-else
-HAWKEYE_CHIP=TRUE
-endif

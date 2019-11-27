@@ -2353,7 +2353,7 @@ _adpt_hppe_port_mux_mac_set(a_uint32_t dev_id, fal_port_t port_id, a_uint32_t po
 
 	return rv;
 }
-#ifdef HAWKEYE_CHIP
+
 static sw_error_t
 adpt_hppe_port_xgmac_promiscuous_mode_set(a_uint32_t dev_id,
 	a_uint32_t port_id)
@@ -2442,7 +2442,7 @@ adpt_hppe_port_interface_mode_switch_mac_reset(a_uint32_t dev_id,
 	}
 	return rv;
 }
-#endif
+
 sw_error_t
 adpt_hppe_port_mac_speed_set(a_uint32_t dev_id, a_uint32_t port_id,
 				fal_port_speed_t speed)
@@ -2507,7 +2507,7 @@ _adpt_hppe_port_mux_set(a_uint32_t dev_id, fal_port_t port_id,
 #endif
 		}
 	}
-#ifdef HAWKEYE_CHIP
+
 	if (port_id >= HPPE_MUX_PORT1) {
 		if (port_type == PORT_GMAC_TYPE) {
 			rv = _adpt_xgmac_port_txfc_status_set( dev_id, port_id, A_FALSE);
@@ -2524,7 +2524,7 @@ _adpt_hppe_port_mux_set(a_uint32_t dev_id, fal_port_t port_id,
 		}
 		rv = adpt_hppe_port_interface_mode_switch_mac_reset(dev_id, port_id);
 	}
-#endif
+
 	return rv;
 }
 
@@ -3163,12 +3163,10 @@ adpt_hppe_port_mac_uniphy_phy_config(a_uint32_t dev_id, a_uint32_t mode_index,
 	}
 
 	/*configure the uniphy*/
-#ifdef HAWKEYE_CHIP
 	rv = adpt_hppe_uniphy_mode_set(dev_id, mode_index, mode[mode_index]);
 	SSDK_DEBUG("configure uniphy mode_index:%x, mode:%x, rv:%x\n",
 		mode_index, mode[mode_index], rv);
 	SW_RTN_ON_ERROR(rv);
-#endif
 
 	/*configure the mac*/
 	for(port_id = port_id_from; port_id <= port_id_end; port_id++)
@@ -4198,7 +4196,6 @@ adpt_hppe_port_interface_eee_cfg_get(a_uint32_t dev_id, fal_port_t port_id,
 	return rv;
 }
 
-#ifdef HAWKEYE_CHIP
 static sw_error_t
 adpt_hppe_port_phy_status_get(a_uint32_t dev_id, a_uint32_t port_id,
 				struct port_phy_status *phy_status)
@@ -4962,7 +4959,6 @@ qca_hppe_mac_sw_sync_task(struct qca_phy_priv *priv)
 	}
 	return 0;
 }
-#endif
 
 void adpt_hppe_port_ctrl_func_bitmap_init(a_uint32_t dev_id)
 {
@@ -5502,9 +5498,7 @@ sw_error_t adpt_hppe_port_ctrl_init(a_uint32_t dev_id)
 	p_adpt_api->adpt_port_mux_mac_type_set = adpt_hppe_port_mux_mac_type_set;
 	p_adpt_api->adpt_port_mac_speed_set = adpt_hppe_port_mac_speed_set;
 	p_adpt_api->adpt_port_mac_duplex_set = adpt_hppe_port_mac_duplex_set;
-#ifdef HAWKEYE_CHIP
 	p_adpt_api->adpt_port_polling_sw_sync_set = qca_hppe_mac_sw_sync_task;
-#endif
 	p_adpt_api->adpt_port_bridge_txmac_set = adpt_hppe_port_bridge_txmac_set;
 	p_adpt_api->adpt_port_interface_eee_cfg_set = adpt_hppe_port_interface_eee_cfg_set;
 	p_adpt_api->adpt_port_interface_eee_cfg_get = adpt_hppe_port_interface_eee_cfg_get;

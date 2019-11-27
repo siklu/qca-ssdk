@@ -537,7 +537,7 @@ qca_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t uniphy_index,
 #endif
 	return 0;
 }
-#ifdef HAWKEYE_CHIP
+
 #ifndef BOARD_AR71XX
 /*qca808x_start*/
 static int miibus_get(a_uint32_t dev_id)
@@ -687,7 +687,6 @@ static int miibus_get(a_uint32_t dev_id)
 
 	return 0;
 }
-#endif
 #endif
 
 struct mii_bus *ssdk_miibus_get_by_device(a_uint32_t dev_id)
@@ -1279,12 +1278,10 @@ ssdk_plat_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 /*qca808x_end*/
 	mutex_init(&switch_mdio_lock);
 
-#ifdef HAWKEYE_CHIP
 /*qca808x_start*/
 	if(miibus_get(dev_id))
 		return -ENODEV;
 /*qca808x_end*/
-#endif
 
 	reg_mode = ssdk_uniphy_reg_access_mode_get(dev_id);
 	if(reg_mode == HSL_REG_LOCAL_BUS) {
@@ -1317,9 +1314,7 @@ ssdk_plat_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 			clk_prepare_enable(ess_clk);
 		} else if (!IS_ERR(cmn_clk)) {
 #if defined(HPPE)
-#ifdef HAWKEYE_CHIP
 			ssdk_ppe_clock_init();
-#endif
 #endif
 			return 0;
 		}
