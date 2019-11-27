@@ -299,3 +299,8 @@ endif
 ifneq ($(HK_CHIP), enable)
 CHIP_TYPE=NONHK_CHIP
 endif
+ifeq ($(RUMI_FEATURE), enable)
+RUMI_EMULATION=TRUE
+else
+RUMI_EMULATION=FALSE
+endif
