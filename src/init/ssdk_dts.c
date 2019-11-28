@@ -943,6 +943,9 @@ sw_error_t ssdk_dt_parse(ssdk_init_cfg *cfg, a_uint32_t num, a_uint32_t *dev_id)
 		if (!of_property_read_u32(switch_node, "tm_tick_mode", &mode))
 			ssdk_dt_priv->tm_tick_mode = mode;
 	}
+	else if (of_device_is_compatible(switch_node, "qcom,ess-switch-ipq50xx")) {
+		ssdk_dt_parse_uniphy(*dev_id);
+	}
 	else if (of_device_is_compatible(switch_node, "qcom,ess-switch-qca83xx")) {
 		/* s17/s17c chip */
 		SSDK_INFO("switch node is qca83xx!\n");

@@ -132,7 +132,9 @@
 #ifdef HPPE
 #include "ssdk_hppe.h"
 #endif
-
+#ifdef SCOMPHY
+#include "ssdk_scomphy.h"
+#endif
 
 #ifdef IN_RFS
 struct rfs_device rfs_dev;
@@ -2297,9 +2299,11 @@ ssdk_init(a_uint32_t dev_id, ssdk_init_cfg * cfg)
 	if (rv != SW_OK)
 		SSDK_ERROR("ssdk fal init failed: %d. \r\n", rv);
 
+#ifndef RUMI_EMULATION
 	rv = ssdk_phy_driver_init(dev_id, cfg);
 	if (rv != SW_OK)
 		SSDK_ERROR("ssdk phy init failed: %d. \r\n", rv);
+#endif
 
 	return rv;
 }
@@ -2516,15 +2520,21 @@ static int chip_is_scomphy(a_uint32_t dev_id, ssdk_init_cfg* cfg)
 	a_uint32_t port_bmp = qca_ssdk_port_bmp_get(dev_id);
 	while (port_bmp) {
 		if (port_bmp & 0x1) {
+#ifndef RUMI_EMULATION
 			phy_id = hsl_phyid_get(dev_id, port_id, cfg);
+#else
+			phy_id = MP_GEPHY;
+#endif
 			switch (phy_id) {
 /*qca808x_end*/
 				case QCA8030_PHY:
 				case QCA8033_PHY:
 				case QCA8035_PHY:
+				case MP_GEPHY:
 /*qca808x_start*/
 				case QCA8081_PHY_V1_1:
 					cfg->chip_type = CHIP_SCOMPHY;
+					cfg->phy_id = phy_id;
 					rv = SW_OK;
 					break;
 				default:
@@ -3371,7 +3381,14 @@ static int __init regi_init(void)
 			case CHIP_GARUDA:
 			case CHIP_HORUS:
 			case CHIP_UNSPECIFIED:
+				break;
 			case CHIP_SCOMPHY:
+#if defined(SCOMPHY)
+					SSDK_INFO("Initializing SCOMPHY!\n");
+					rv = qca_scomphy_hw_init(&cfg, dev_id);
+					SW_CNTU_ON_ERROR_AND_COND1_OR_GOTO_OUT(rv, -ENODEV);
+					SSDK_INFO("Initializing SCOMPHY Done!!\n");
+#endif
 				break;
 		}
 
