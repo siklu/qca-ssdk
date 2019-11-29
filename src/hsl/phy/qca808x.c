@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2018-2019, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -401,8 +401,8 @@ static void qca808x_phy_remove(struct phy_device *phydev)
 }
 
 struct phy_driver qca808x_phy_driver = {
-	.phy_id		= QCA8081_PHY,
-	.phy_id_mask    = 0xfffffff0,
+	.phy_id		= QCA8081_PHY_V1_1,
+	.phy_id_mask    = 0xffffffff,
 	.name		= "QCA808X ethernet",
 	.features	= PHY_GBIT_FEATURES,
 	.flags		= PHY_HAS_INTERRUPT,
