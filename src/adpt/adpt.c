@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2020, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -20,6 +20,10 @@
 #if defined(IN_SFP)
 #include "adpt_sfp.h"
 #endif
+#if defined(MP)
+#include "adpt_mp.h"
+#endif
+#include "hsl_phy.h"
 
 adpt_api_t *g_adpt_api[SW_MAX_NR_DEV] = {NULL};
 
@@ -445,6 +449,21 @@ sw_error_t adpt_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 		case CHIP_SCOMPHY:
 			g_chip_ver[dev_id].chip_type = cfg->chip_type;
 			g_chip_ver[dev_id].chip_revision = cfg->phy_id;
+#if defined (MP)
+			if(cfg->phy_id == MP_GEPHY)
+			{
+				g_adpt_api[dev_id] = aos_mem_alloc(sizeof(adpt_api_t));
+				if(g_adpt_api[dev_id] == NULL)
+				{
+					SSDK_ERROR("malloc fail for adpt api\n");
+					return SW_FAIL;
+				}
+#if defined (IN_MIB)
+				rv = adpt_mp_mib_init(dev_id);
+				SW_RTN_ON_ERROR(rv);
+#endif
+			}
+#endif
 			break;
 #endif
 		default:
