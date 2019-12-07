@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2014-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2014-2020, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -1306,14 +1306,13 @@ static int qca_link_polling_select(struct qca_phy_priv *priv)
 int
 qm_err_check_work_start(struct qca_phy_priv *priv)
 {
-	if (priv->version == QCA_VER_HPPE)
-		return 0;
-
 	/*Only valid for S17c chip*/
 	if (priv->version != QCA_VER_AR8337 &&
 		priv->version != QCA_VER_AR8327 &&
 		priv->version != QCA_VER_DESS)
-		return -1;
+	{
+		return 0;
+	}
 
 	mutex_init(&priv->qm_lock);
 	INIT_DELAYED_WORK(&priv->qm_dwork_polling, qm_err_check_work_task_polling);
@@ -1507,6 +1506,16 @@ static int qca_switchdev_register(struct qca_phy_priv *priv)
 			sw_dev->name = "QCA HPPE";
 			sw_dev->alias = "QCA HPPE";
 			break;
+		case QCA_VER_SCOMPHY:
+#ifdef MP
+			if(adapt_scomphy_revision_get(priv->device_id)
+				== MP_GEPHY)
+			{
+				sw_dev->name = "QCA MP";
+				sw_dev->alias = "QCA MP";
+			}
+#endif
+			break;
 		default:
 			sw_dev->name = "unknown switch";
 			sw_dev->alias = "unknown switch";
@@ -1628,8 +1637,8 @@ qca_phy_config_init(struct phy_device *pdev)
 	return ret;
 }
 
-#if defined(DESS) || defined(HPPE) || defined (ISISC) || defined (ISIS)
-static int ssdk_switch_register(a_uint32_t dev_id)
+#if defined(DESS) || defined(HPPE) || defined (ISISC) || defined (ISIS) || defined(MP)
+static int ssdk_switch_register(a_uint32_t dev_id, ssdk_chip_type  chip_type)
 {
 	struct qca_phy_priv *priv;
 	int ret = 0;
@@ -1644,11 +1653,20 @@ static int ssdk_switch_register(a_uint32_t dev_id)
 	priv->phy_dbg_read = qca_ar8327_phy_dbg_read;
 	priv->phy_mmd_write = qca_ar8327_mmd_write;
 	priv->ports = SSDK_MAX_PORT_NUM;
-
-	if (fal_reg_get(dev_id, 0, (a_uint8_t *)&chip_id, 4) == SW_OK) {
-		priv->version = ((chip_id >> 8) & 0xff);
-		priv->revision = (chip_id & 0xff);
-		SSDK_INFO("Chip version 0x%02x%02x\n", priv->version, priv->revision);
+#ifdef MP
+	if(chip_type == CHIP_SCOMPHY)
+	{
+		priv->version = QCA_VER_SCOMPHY;
+		SSDK_INFO("Chip version 0x%02x\n", priv->version);
+	}
+	else
+#endif
+	{
+		if (fal_reg_get(dev_id, 0, (a_uint8_t *)&chip_id, 4) == SW_OK) {
+			priv->version = ((chip_id >> 8) & 0xff);
+			priv->revision = (chip_id & 0xff);
+			SSDK_INFO("Chip version 0x%02x%02x\n", priv->version, priv->revision);
+		}
 	}
 
 	mutex_init(&priv->reg_mutex);
@@ -3385,7 +3403,7 @@ static int __init regi_init(void)
 #if defined (ISISC) || defined (ISIS)
 				if (qca_phy_priv_global[dev_id]->ess_switch_flag == A_TRUE) {
 					SSDK_INFO("Initializing ISISC!!\n");
-					rv = ssdk_switch_register(dev_id);
+					rv = ssdk_switch_register(dev_id, cfg.chip_type);
 					SW_CNTU_ON_ERROR_AND_COND1_OR_GOTO_OUT(rv, -ENODEV);
 					rv = qca_ar8327_hw_init(qca_phy_priv_global[dev_id]);
 					SSDK_INFO("Initializing ISISC Done!!\n");
@@ -3396,7 +3414,7 @@ static int __init regi_init(void)
 #if defined(HPPE)
 				SSDK_INFO("Initializing HPPE!!\n");
 				qca_hppe_hw_init(&cfg, dev_id);
-				rv = ssdk_switch_register(dev_id);
+				rv = ssdk_switch_register(dev_id, cfg.chip_type);
 				SW_CNTU_ON_ERROR_AND_COND1_OR_GOTO_OUT(rv, -ENODEV);
 				SSDK_INFO("Initializing HPPE Done!!\n");
 #endif
@@ -3411,7 +3429,7 @@ static int __init regi_init(void)
 
 				/* Setup Cpu port for Dakota platform. */
 				switch_cpuport_setup(dev_id);
-				rv = ssdk_switch_register(dev_id);
+				rv = ssdk_switch_register(dev_id, cfg.chip_type);
 				SW_CNTU_ON_ERROR_AND_COND1_OR_GOTO_OUT(rv, -ENODEV);
 				SSDK_INFO("Initializing DESS Done!!\n");
 #endif
@@ -3428,6 +3446,13 @@ static int __init regi_init(void)
 					SSDK_INFO("Initializing SCOMPHY!\n");
 					rv = qca_scomphy_hw_init(&cfg, dev_id);
 					SW_CNTU_ON_ERROR_AND_COND1_OR_GOTO_OUT(rv, -ENODEV);
+#if defined(MP)
+					if(cfg.phy_id == MP_GEPHY)
+					{
+						rv = ssdk_switch_register(dev_id, cfg.chip_type);
+						SW_CNTU_ON_ERROR_AND_COND1_OR_GOTO_OUT(rv, -ENODEV);
+					}
+#endif
 					SSDK_INFO("Initializing SCOMPHY Done!!\n");
 #endif
 				break;
@@ -3474,7 +3499,7 @@ regi_exit(void)
 	dev_num = ssdk_switch_device_num_get();
 	for (dev_id = 0; dev_id < dev_num; dev_id++) {
 		ssdk_driver_unregister(dev_id);
-#if defined(DESS) || defined(HPPE) || defined(ISISC) || defined(ISIS)
+#if defined(DESS) || defined(HPPE) || defined(ISISC) || defined(ISIS) || defined(MP)
 		if (qca_phy_priv_global[dev_id]->qca_ssdk_sw_dev_registered == A_TRUE)
 			ssdk_switch_unregister(dev_id);
 #endif
