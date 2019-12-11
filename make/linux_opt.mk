@@ -324,6 +324,7 @@ ifneq (,$(findstring HPPE, $(SUPPORT_CHIP)))
 endif
 
 ifneq (,$(findstring MP, $(SUPPORT_CHIP)))
+  MODULE_INC   += -I$(PRJ_PATH)/include/hsl/hppe
   MODULE_CFLAG += -DMP
 endif
 
