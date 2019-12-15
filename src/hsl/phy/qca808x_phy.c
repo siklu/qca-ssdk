@@ -2030,6 +2030,19 @@ qca808x_phy_fast_retrain_cfg(a_uint32_t dev_id, a_uint32_t phy_id)
 	return rv;
 }
 
+void qca808x_phy_lock_init(void)
+{
+	static a_bool_t is_init = A_FALSE;
+
+	if(!is_init)
+	{
+		QCA808X_LOCKER_INIT;
+		is_init = A_TRUE;
+	}
+
+	return;
+}
+
 static sw_error_t
 qca808x_phy_hw_init(a_uint32_t dev_id,  a_uint32_t port_bmp)
 {
@@ -2174,7 +2187,7 @@ int qca808x_phy_init(a_uint32_t dev_id, a_uint32_t port_bmp)
 
 	if(phy_ops_flag == A_FALSE &&
 			qca808x_phy_api_ops_init() == SW_OK) {
-		QCA808X_LOCKER_INIT;
+		qca808x_phy_lock_init();
 		phy_ops_flag = A_TRUE;
 	}
 	qca808x_phy_hw_init(dev_id, port_bmp);

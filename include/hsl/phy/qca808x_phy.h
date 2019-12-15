@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2018, 2020, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -533,7 +533,75 @@ qca808x_phy_set_force_speed(a_uint32_t dev_id, a_uint32_t phy_id,
 		     fal_port_speed_t speed);
 sw_error_t qca808x_phy_poweroff(a_uint32_t dev_id, a_uint32_t phy_id);
 sw_error_t qca808x_phy_poweron(a_uint32_t dev_id, a_uint32_t phy_id);
-
+#ifndef IN_PORTCONTROL_MINI
+sw_error_t
+qca808x_phy_set_hibernate(a_uint32_t dev_id, a_uint32_t phy_id, a_bool_t enable);
+sw_error_t
+qca808x_phy_get_hibernate(a_uint32_t dev_id, a_uint32_t phy_id,
+	a_bool_t * enable);
+sw_error_t
+qca808x_phy_cdt(a_uint32_t dev_id, a_uint32_t phy_id, a_uint32_t mdi_pair,
+	fal_cable_status_t * cable_status, a_uint32_t * cable_len);
+sw_error_t
+qca808x_phy_set_local_loopback(a_uint32_t dev_id, a_uint32_t phy_id,
+	a_bool_t enable);
+sw_error_t
+qca808x_phy_get_local_loopback(a_uint32_t dev_id, a_uint32_t phy_id,
+	a_bool_t * enable);
+sw_error_t
+qca808x_phy_set_remote_loopback(a_uint32_t dev_id, a_uint32_t phy_id,
+	a_bool_t enable);
+sw_error_t
+qca808x_phy_get_remote_loopback(a_uint32_t dev_id, a_uint32_t phy_id,
+	a_bool_t * enable);
+sw_error_t
+qca808x_phy_set_wol_status(a_uint32_t dev_id, a_uint32_t phy_id, a_bool_t enable);
+sw_error_t
+qca808x_phy_get_wol_status(a_uint32_t dev_id, a_uint32_t phy_id, a_bool_t * enable);
+sw_error_t
+qca808x_phy_set_magic_frame_mac(a_uint32_t dev_id, a_uint32_t phy_id,
+	fal_mac_addr_t * mac);
+sw_error_t
+qca808x_phy_get_magic_frame_mac(a_uint32_t dev_id, a_uint32_t phy_id,
+	fal_mac_addr_t * mac);
+sw_error_t
+qca808x_phy_set_counter(a_uint32_t dev_id, a_uint32_t phy_id, a_bool_t enable);
+sw_error_t
+qca808x_phy_get_counter(a_uint32_t dev_id, a_uint32_t phy_id,
+	a_bool_t * enable);
+sw_error_t
+qca808x_phy_show_counter(a_uint32_t dev_id, a_uint32_t phy_id,
+	fal_port_counter_info_t * counter_infor);
+sw_error_t
+qca808x_phy_set_intr_mask(a_uint32_t dev_id, a_uint32_t phy_id,
+	a_uint32_t intr_mask_flag);
+sw_error_t
+qca808x_phy_get_intr_mask(a_uint32_t dev_id, a_uint32_t phy_id,
+	a_uint32_t * intr_mask_flag);
+sw_error_t
+qca808x_phy_get_intr_status(a_uint32_t dev_id, a_uint32_t phy_id,
+	a_uint32_t * intr_status_flag);
+sw_error_t
+qca808x_phy_set_8023az(a_uint32_t dev_id, a_uint32_t phy_id, a_bool_t enable);
+sw_error_t
+qca808x_phy_get_8023az(a_uint32_t dev_id, a_uint32_t phy_id, a_bool_t * enable);
+#endif
+sw_error_t
+qca808x_phy_set_eee_adv(a_uint32_t dev_id, a_uint32_t phy_id,
+	a_uint32_t adv);
+sw_error_t
+qca808x_phy_get_eee_adv(a_uint32_t dev_id, a_uint32_t phy_id,
+	a_uint32_t *adv);
+sw_error_t
+qca808x_phy_get_eee_partner_adv(a_uint32_t dev_id, a_uint32_t phy_id,
+	a_uint32_t *adv);
+sw_error_t
+qca808x_phy_get_eee_cap(a_uint32_t dev_id, a_uint32_t phy_id,
+	a_uint32_t *cap);
+sw_error_t
+qca808x_phy_get_eee_status(a_uint32_t dev_id, a_uint32_t phy_id,
+	a_uint32_t *status);
+void qca808x_phy_lock_init(void);
 int qca808x_phy_init(a_uint32_t dev_id, a_uint32_t port_bmp);
 
 void qca808x_phy_exit(a_uint32_t dev_id, a_uint32_t port_id);

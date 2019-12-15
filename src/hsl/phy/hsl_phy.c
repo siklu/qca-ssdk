@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2017-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2015, 2017-2020, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -21,6 +21,9 @@
 #endif
 #if defined(ATHENA) ||defined(SHIVA) ||defined(HORUS)
 #include <f2_phy.h>
+#endif
+#ifdef MP
+#include "mpge_phy.h"
 #endif
 #ifdef IN_MALIBU_PHY
 #include <malibu_phy.h>
@@ -80,6 +83,11 @@ phy_driver_instance_t ssdk_phy_driver[] =
 	{SFP_PHY_CHIP, {0}, NULL, sfp_phy_init, sfp_phy_exit},
 	#else
 	{SFP_PHY_CHIP, {0}, NULL, NULL, NULL},
+	#endif
+	#ifdef MP
+	{MPGE_PHY_CHIP, {0}, NULL, mpge_phy_init, NULL},
+	#else
+	{MPGE_PHY_CHIP, {0}, NULL, NULL, NULL},
 	#endif
 	#ifdef IN_QCA808X_PHY
 /*qca808x_start*/
@@ -224,6 +232,9 @@ phy_type_t hsl_phytype_get_by_phyid(a_uint32_t dev_id, a_uint32_t phy_id)
 			break;
 		case SFP_PHY:
 			phytype = SFP_PHY_CHIP;
+			break;
+		case MP_GEPHY:
+			phytype = MPGE_PHY_CHIP;
 			break;
 /*qca808x_start*/
 		case QCA8081_PHY_V1_1:

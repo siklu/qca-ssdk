@@ -20,6 +20,10 @@ extern "C" {
 #endif				/* __cplusplus */
 
 #include "fal.h"
+	/** Phy function reset type */
+	typedef enum {
+		PHY_FIFO_RESET = 0,	/**< Phy fifo reset */
+	} hsl_phy_function_reset_t;
 
 	typedef sw_error_t(*hsl_phy_init) (a_uint32_t dev_id,
 					   a_uint32_t phy_id);
@@ -120,6 +124,10 @@ extern "C" {
 							   a_uint32_t phy_id,
 							   fal_port_fiber_mode_t
 							   * fiber_mode);
+	typedef sw_error_t (*hsl_phy_function_reset) (a_uint32_t dev_id,
+							   a_uint32_t phy_id,
+							   hsl_phy_function_reset_t
+							   phy_reset_type);
 /*qca808x_start*/
 	typedef sw_error_t(*hsl_phy_reset) (a_uint32_t dev_id,
 					    a_uint32_t phy_id);
@@ -451,6 +459,7 @@ extern "C" {
 		hsl_phy_combo_medium_status_get phy_combo_medium_status_get;
 		hsl_phy_combo_fiber_mode_set phy_combo_fiber_mode_set;
 		hsl_phy_combo_fiber_mode_get phy_combo_fiber_mode_get;
+		hsl_phy_function_reset phy_function_reset;
 /*qca808x_start*/
 		hsl_phy_reset phy_reset;
 		hsl_phy_power_off phy_power_off;
@@ -505,6 +514,7 @@ typedef enum
 	AQUANTIA_PHY_CHIP,
 	QCA803X_PHY_CHIP,
 	SFP_PHY_CHIP,
+	MPGE_PHY_CHIP,
 /*qca808x_start*/
 	QCA808X_PHY_CHIP,
 	MAX_PHY_CHIP,
