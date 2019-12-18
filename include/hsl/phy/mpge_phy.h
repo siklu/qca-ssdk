@@ -23,11 +23,18 @@ extern "C"
 {
 #endif				/* __cplusplus */
 /*MII register*/
+#define MPGE_PHY_CONTROL                          0x0
 #define MPGE_PHY_FIFO_CONTROL                     0x19
 #define MPGE_PHY_INTR_MASK                        0x12
 #define MPGE_PHY_INTR_STATUS                      0x13
 
     /*MII register field*/
+#define MPGE_CTRL_AUTONEGOTIATION_ENABLE          0x1000
+#define MPGE_CTRL_RESTART_AUTONEGOTIATION         0x0200
+#define MPGE_CTRL_FULL_DUPLEX                     0x0100
+#define MPGE_CONTROL_SPEED_MASK                   0x2040
+#define MPGE_CONTROL_100M                         0x2000
+#define MPGE_CONTROL_10M                          0x0
 #define MPGE_PHY_FIFO_RESET                       0x3
 #define MPGE_INTR_SPEED_CHANGE                    0x4000
 #define MPGE_INTR_DUPLEX_CHANGE                   0x2000

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2018, 2020, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -264,6 +264,22 @@ qca808x_phy_ms_seed_enable(a_uint32_t dev_id, a_uint32_t phy_id,
 	return rv;
 }
 
+static a_bool_t
+_qca808x_phy_2500caps(a_uint32_t dev_id, a_uint32_t phy_id)
+{
+	a_uint16_t phy_data;
+
+	phy_data = qca808x_phy_mmd_read(dev_id, phy_id, QCA808X_PHY_MMD1_NUM,
+							QCA808X_MMD1_PMA_CAP_REG);
+
+	if (phy_data & QCA808X_STATUS_2500T_FD_CAPS) {
+		return A_TRUE;
+	}
+
+	return A_FALSE;
+
+}
+
 /******************************************************************************
 *
 * qca808x_phy_get status
@@ -285,17 +301,19 @@ qca808x_phy_get_status(a_uint32_t dev_id, a_uint32_t phy_id,
 	}
 	else {
 		phy_status->link_status = A_FALSE;
-		SW_RTN_ON_ERROR(
-			qca808x_phy_ms_random_seed_set (dev_id, phy_id));
-		/*protect logic, if MASTER_SLAVE_CONFIG_FAULT is 1,
-			then disable this logic*/
-		phy_data = qca808x_phy_reg_read(dev_id, phy_id,
-			QCA808X_1000BASET_STATUS);
-		if((phy_data & QCA808X_MASTER_SLAVE_CONFIG_FAULT) >> 15)
-		{
+		if (_qca808x_phy_2500caps(dev_id, phy_id) == A_TRUE) {
 			SW_RTN_ON_ERROR(
-				qca808x_phy_ms_seed_enable (dev_id, phy_id, A_FALSE));
-			SSDK_INFO("master_slave_config_fault was set\n");
+				qca808x_phy_ms_random_seed_set (dev_id, phy_id));
+			/*protect logic, if MASTER_SLAVE_CONFIG_FAULT is 1,
+				then disable this logic*/
+			phy_data = qca808x_phy_reg_read(dev_id, phy_id,
+				QCA808X_1000BASET_STATUS);
+			if ((phy_data & QCA808X_MASTER_SLAVE_CONFIG_FAULT) >> 15)
+			{
+				SW_RTN_ON_ERROR(
+					qca808x_phy_ms_seed_enable (dev_id, phy_id, A_FALSE));
+				SSDK_INFO("master_slave_config_fault was set\n");
+			}
 		}
 
 		return SW_OK;
@@ -1017,7 +1035,9 @@ qca808x_phy_set_autoneg_adv(a_uint32_t dev_id, a_uint32_t phy_id,
 			phy_data);
 	PHY_RTN_ON_ERROR(rv);
 
-	rv = _qca808x_phy_set_autoneg_adv_ext(dev_id, phy_id, autoneg);
+	if (_qca808x_phy_2500caps(dev_id, phy_id) == A_TRUE) {
+		rv = _qca808x_phy_set_autoneg_adv_ext(dev_id, phy_id, autoneg);
+	}
 
 	return rv;
 }
@@ -1081,11 +1101,12 @@ qca808x_phy_get_autoneg_adv(a_uint32_t dev_id, a_uint32_t phy_id,
 		*autoneg |= FAL_PHY_ADV_1000T_FD;
 	}
 
-	rv = _qca808x_phy_get_autoneg_adv_ext(dev_id, phy_id, &phy_data);
-
-	if ((rv == SW_OK) &&
-			(phy_data & QCA808X_ADVERTISE_2500FULL)) {
-		*autoneg |= FAL_PHY_ADV_2500T_FD;
+	if (_qca808x_phy_2500caps(dev_id, phy_id) == A_TRUE) {
+		rv = _qca808x_phy_get_autoneg_adv_ext(dev_id, phy_id, &phy_data);
+		if ((rv == SW_OK) &&
+				(phy_data & QCA808X_ADVERTISE_2500FULL)) {
+			*autoneg |= FAL_PHY_ADV_2500T_FD;
+		}
 	}
 
 	return rv;
@@ -1093,9 +1114,8 @@ qca808x_phy_get_autoneg_adv(a_uint32_t dev_id, a_uint32_t phy_id,
 
 /******************************************************************************
 *
-* qca808x_phy_autoneg_status
+* qca808x_phy_autoneg_status - get the phy autoneg status
 *
-* Power off the phy
 */
 a_bool_t qca808x_phy_autoneg_status(a_uint32_t dev_id, a_uint32_t phy_id)
 {

@@ -106,6 +106,238 @@ mpge_phy_mmd_write(a_uint32_t dev_id, a_uint32_t phy_id,
 
 /******************************************************************************
 *
+* mpge_phy_get_status - get the phy status
+*
+*/
+static sw_error_t
+mpge_phy_get_status(a_uint32_t dev_id, a_uint32_t phy_id,
+		struct port_phy_status *phy_status)
+{
+	return qca808x_phy_get_status(dev_id, phy_id, phy_status);
+}
+
+/******************************************************************************
+*
+* mpge_set_autoneg_adv - set the phy autoneg Advertisement
+*
+*/
+static sw_error_t
+mpge_phy_set_autoneg_adv(a_uint32_t dev_id, a_uint32_t phy_id,
+			   a_uint32_t autoneg)
+{
+	if (autoneg & (~FAL_PHY_GE_ADV_ALL))
+	{
+		SSDK_ERROR("autoneg adv caps 0x%x is not support for MP\n", autoneg);
+		return SW_BAD_PARAM;
+	}
+	return qca808x_phy_set_autoneg_adv(dev_id, phy_id, autoneg);
+}
+
+/******************************************************************************
+*
+* mpge_get_autoneg_adv - get the phy autoneg Advertisement
+*
+*/
+static sw_error_t
+mpge_phy_get_autoneg_adv(a_uint32_t dev_id, a_uint32_t phy_id,
+			   a_uint32_t * autoneg)
+{
+	return qca808x_phy_get_autoneg_adv(dev_id, phy_id, autoneg);
+}
+
+/******************************************************************************
+*
+* mpge_phy_get_speed - Determines the speed of phy ports associated with the
+* specified device.
+*/
+
+static sw_error_t
+mpge_phy_get_speed(a_uint32_t dev_id, a_uint32_t phy_id,
+		     fal_port_speed_t * speed)
+{
+	return qca808x_phy_get_speed(dev_id, phy_id, speed);
+}
+
+/******************************************************************************
+*
+* mpge_phy_get_duplex - Determines the duplex of phy ports associated with the
+* specified device.
+*/
+static sw_error_t
+mpge_phy_get_duplex(a_uint32_t dev_id, a_uint32_t phy_id,
+		      fal_port_duplex_t * duplex)
+{
+	return qca808x_phy_get_duplex(dev_id, phy_id, duplex);
+}
+
+/******************************************************************************
+*
+* mpge_phy_set_speed - Set the speed of phy ports associated with the
+* specified device.
+*/
+static sw_error_t
+mpge_phy_set_speed(a_uint32_t dev_id, a_uint32_t phy_id,
+		     fal_port_speed_t speed)
+{
+	a_uint16_t phy_data = 0;
+	a_uint32_t autoneg = 0;
+	fal_port_duplex_t old_duplex = MPGE_CTRL_FULL_DUPLEX;
+	sw_error_t rv = SW_OK;
+
+	phy_data = mpge_phy_reg_read(dev_id, phy_id, MPGE_PHY_CONTROL);
+	PHY_RTN_ON_READ_ERROR(phy_data);
+
+	switch(speed)
+	{
+		case FAL_SPEED_1000:
+			rv = mpge_phy_get_autoneg_adv(dev_id, phy_id, &autoneg);
+			PHY_RTN_ON_ERROR(rv);
+			if (!(autoneg & FAL_PHY_ADV_1000T_FD)) {
+				rv = mpge_phy_set_autoneg_adv(dev_id, phy_id,
+						autoneg | FAL_PHY_ADV_1000T_FD);
+				PHY_RTN_ON_ERROR(rv);
+			}
+			phy_data |= MPGE_CTRL_FULL_DUPLEX;
+			phy_data |= MPGE_CTRL_AUTONEGOTIATION_ENABLE;
+			phy_data |= MPGE_CTRL_RESTART_AUTONEGOTIATION;
+			break;
+		case FAL_SPEED_100:
+		case FAL_SPEED_10:
+			phy_data &= ~MPGE_CONTROL_SPEED_MASK;
+			if (speed == FAL_SPEED_100) {
+				phy_data |= MPGE_CONTROL_100M;
+			} else {
+				phy_data |= MPGE_CONTROL_10M;
+			}
+			rv = mpge_phy_get_duplex(dev_id, phy_id, &old_duplex);
+			PHY_RTN_ON_ERROR(rv);
+
+			if (old_duplex == FAL_FULL_DUPLEX) {
+				phy_data |= MPGE_CTRL_FULL_DUPLEX;
+			}
+			else if (old_duplex == FAL_HALF_DUPLEX) {
+				phy_data &= ~MPGE_CTRL_FULL_DUPLEX;
+			}
+			phy_data &= ~MPGE_CTRL_AUTONEGOTIATION_ENABLE;
+			break;
+		default:
+			return SW_BAD_PARAM;
+	}
+	rv = mpge_phy_reg_write(dev_id, phy_id, MPGE_PHY_CONTROL, phy_data);
+
+	return rv;
+}
+
+/******************************************************************************
+*
+* mpge_phy_set_duplex - Set the duplex of phy ports associated with the
+* specified device.
+*/
+static sw_error_t
+mpge_phy_set_duplex(a_uint32_t dev_id, a_uint32_t phy_id,
+		      fal_port_duplex_t duplex)
+{
+
+	a_uint16_t phy_data = 0;
+	a_uint32_t autoneg = 0;
+	fal_port_speed_t old_speed;
+	sw_error_t rv = SW_OK;
+
+	phy_data = mpge_phy_reg_read(dev_id, phy_id, MPGE_PHY_CONTROL);
+	PHY_RTN_ON_READ_ERROR(phy_data);
+
+	rv = mpge_phy_get_speed(dev_id, phy_id, &old_speed);
+	PHY_RTN_ON_ERROR(rv);
+
+	switch(old_speed)
+	{
+		case FAL_SPEED_1000:
+			if (duplex == FAL_FULL_DUPLEX) {
+				phy_data |= MPGE_CTRL_FULL_DUPLEX;
+			} else {
+				return SW_NOT_SUPPORTED;
+			}
+			phy_data |= MPGE_CTRL_AUTONEGOTIATION_ENABLE;
+			rv = mpge_phy_get_autoneg_adv(dev_id, phy_id, &autoneg);
+			PHY_RTN_ON_ERROR(rv);
+			if (!(autoneg & FAL_PHY_ADV_1000T_FD)) {
+				rv = mpge_phy_set_autoneg_adv(dev_id, phy_id,
+						autoneg | FAL_PHY_ADV_1000T_FD);
+				PHY_RTN_ON_ERROR(rv);
+			}
+			break;
+		case FAL_SPEED_100:
+		case FAL_SPEED_10:
+			phy_data &= ~MPGE_CONTROL_SPEED_MASK;
+			if (old_speed == FAL_SPEED_100) {
+				phy_data |= MPGE_CONTROL_100M;
+			} else {
+				phy_data |= MPGE_CONTROL_10M;
+			}
+			phy_data &= ~MPGE_CTRL_AUTONEGOTIATION_ENABLE;
+			if (duplex == FAL_FULL_DUPLEX) {
+				phy_data |= MPGE_CTRL_FULL_DUPLEX;
+			} else {
+				phy_data &= ~MPGE_CTRL_FULL_DUPLEX;
+			}
+			break;
+		default:
+			return SW_FAIL;
+	}
+	rv = mpge_phy_reg_write(dev_id, phy_id, MPGE_PHY_CONTROL, phy_data);
+
+	return rv;
+}
+
+/******************************************************************************
+*
+* mpge_phy_enable_autoneg - enable the phy autoneg
+*
+*/
+static sw_error_t
+mpge_phy_enable_autoneg(a_uint32_t dev_id, a_uint32_t phy_id)
+{
+	return qca808x_phy_enable_autoneg(dev_id, phy_id);
+}
+
+/******************************************************************************
+*
+* mpge_restart_autoneg - restart the phy autoneg
+*
+*/
+static sw_error_t
+mpge_phy_restart_autoneg(a_uint32_t dev_id, a_uint32_t phy_id)
+{
+	return qca808x_phy_restart_autoneg(dev_id, phy_id);
+}
+
+/******************************************************************************
+*
+* mpge_phy_autoneg_status - get the phy autoneg status
+*
+*/
+static a_bool_t
+mpge_phy_autoneg_status(a_uint32_t dev_id, a_uint32_t phy_id)
+{
+	return qca808x_phy_autoneg_status(dev_id, phy_id);
+}
+
+/******************************************************************************
+*
+* mpge_phy_status - get the phy link status
+*
+* RETURNS:
+*    A_TRUE  --> link is alive
+*    A_FALSE --> link is down
+*/
+static a_bool_t
+mpge_phy_get_link_status(a_uint32_t dev_id, a_uint32_t phy_id)
+{
+	return qca808x_phy_get_link_status(dev_id, phy_id);
+}
+
+/******************************************************************************
+*
 * mpge_phy_reset - reset the phy
 *
 */
@@ -185,6 +417,42 @@ mpge_phy_cdt(a_uint32_t dev_id, a_uint32_t phy_id, a_uint32_t mdi_pair,
 {
 	return qca808x_phy_cdt (dev_id, phy_id, mdi_pair,
 		cable_status, cable_len);
+}
+
+/******************************************************************************
+*
+* mpge_phy_set_mdix - set phy mdix configuration
+*
+*/
+static sw_error_t
+mpge_phy_set_mdix(a_uint32_t dev_id, a_uint32_t phy_id,
+		    fal_port_mdix_mode_t mode)
+{
+	return qca808x_phy_set_mdix(dev_id, phy_id, mode);
+}
+
+/******************************************************************************
+*
+* mpge_phy_get_mdix - get phy mdix configuration
+*
+*/
+static sw_error_t
+mpge_phy_get_mdix(a_uint32_t dev_id, a_uint32_t phy_id,
+		    fal_port_mdix_mode_t * mode)
+{
+	return qca808x_phy_get_mdix(dev_id, phy_id, mode);
+}
+
+/******************************************************************************
+*
+* mpge_phy_get_mdix_status - get phy mdix status
+*
+*/
+static sw_error_t
+mpge_phy_get_mdix_status(a_uint32_t dev_id, a_uint32_t phy_id,
+			   fal_port_mdix_status_t * mode)
+{
+	return qca808x_phy_get_mdix_status(dev_id, phy_id, mode);
 }
 
 /******************************************************************************
@@ -786,12 +1054,26 @@ static sw_error_t mpge_phy_api_ops_init(void)
 	mpge_phy_api_ops->phy_debug_read = mpge_phy_debug_read;
 	mpge_phy_api_ops->phy_mmd_write = mpge_phy_mmd_write;
 	mpge_phy_api_ops->phy_mmd_read = mpge_phy_mmd_read;
+	mpge_phy_api_ops->phy_get_status = mpge_phy_get_status;
+	mpge_phy_api_ops->phy_speed_get = mpge_phy_get_speed;
+	mpge_phy_api_ops->phy_speed_set = mpge_phy_set_speed;
+	mpge_phy_api_ops->phy_duplex_get = mpge_phy_get_duplex;
+	mpge_phy_api_ops->phy_duplex_set = mpge_phy_set_duplex;
+	mpge_phy_api_ops->phy_autoneg_enable_set = mpge_phy_enable_autoneg;
+	mpge_phy_api_ops->phy_restart_autoneg = mpge_phy_restart_autoneg;
+	mpge_phy_api_ops->phy_autoneg_status_get = mpge_phy_autoneg_status;
+	mpge_phy_api_ops->phy_autoneg_adv_set = mpge_phy_set_autoneg_adv;
+	mpge_phy_api_ops->phy_autoneg_adv_get = mpge_phy_get_autoneg_adv;
+	mpge_phy_api_ops->phy_link_status_get = mpge_phy_get_link_status;
 	mpge_phy_api_ops->phy_reset = mpge_phy_reset;
 	mpge_phy_api_ops->phy_id_get = mpge_phy_get_phy_id;
 	mpge_phy_api_ops->phy_power_off = mpge_phy_poweroff;
 	mpge_phy_api_ops->phy_power_on = mpge_phy_poweron;
 #ifndef IN_PORTCONTROL_MINI
 	mpge_phy_api_ops->phy_cdt = mpge_phy_cdt;
+	mpge_phy_api_ops->phy_mdix_set = mpge_phy_set_mdix;
+	mpge_phy_api_ops->phy_mdix_get = mpge_phy_get_mdix;
+	mpge_phy_api_ops->phy_mdix_status_get = mpge_phy_get_mdix_status;
 	mpge_phy_api_ops->phy_local_loopback_set = mpge_phy_set_local_loopback;
 	mpge_phy_api_ops->phy_local_loopback_get = mpge_phy_get_local_loopback;
 	mpge_phy_api_ops->phy_remote_loopback_set = mpge_phy_set_remote_loopback;

@@ -543,6 +543,15 @@ sw_error_t
 qca808x_phy_cdt(a_uint32_t dev_id, a_uint32_t phy_id, a_uint32_t mdi_pair,
 	fal_cable_status_t * cable_status, a_uint32_t * cable_len);
 sw_error_t
+qca808x_phy_set_mdix(a_uint32_t dev_id, a_uint32_t phy_id,
+	fal_port_mdix_mode_t mode);
+sw_error_t
+qca808x_phy_get_mdix(a_uint32_t dev_id, a_uint32_t phy_id,
+	fal_port_mdix_mode_t * mode);
+sw_error_t
+qca808x_phy_get_mdix_status(a_uint32_t dev_id, a_uint32_t phy_id,
+	fal_port_mdix_status_t * mode);
+sw_error_t
 qca808x_phy_set_local_loopback(a_uint32_t dev_id, a_uint32_t phy_id,
 	a_bool_t enable);
 sw_error_t
