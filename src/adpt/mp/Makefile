@@ -3,7 +3,7 @@ LIB=ADPT
 
 include $(PRJ_PATH)/make/config.mk
 
-SRC_LIST=
+SRC_LIST=adpt_mp_interrupt.c
 
 ifeq (TRUE, $(IN_MIB))
   SRC_LIST += adpt_mp_mib.c
