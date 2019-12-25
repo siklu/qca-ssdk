@@ -14,29 +14,29 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef _ADPT_MP_H_
-#define _ADPT_MP_H_
+
+/**
+ * @defgroup
+ * @{
+ */
+#ifndef _ADPT_MP_UNIPHY_H_
+#define _ADPT_MP_UNIPHY_H_
 
 #ifdef __cplusplus
 extern "C" {
-#endif                          /* __cplusplus */
+#endif                         /* __cplusplus */
 
-#define MP_PORT_TO_GMAC_ID(port_id) (port_id -1)
-#define MP_MAX_PORT 2
-#define MP_GMAC0 0
-#define MP_GMAC1 1
-#define MP_PORT_ID_CHECK(port_id) \
-do { \
-    if (port_id > MP_MAX_PORT) \
-        return SW_OUT_OF_RANGE; \
-} while (0)
+void
+adpt_mp_gcc_uniphy_port_reset(a_uint32_t dev_id, a_uint32_t port_id);
 
-sw_error_t adpt_mp_intr_init(a_uint32_t dev_id);
-sw_error_t adpt_mp_mib_init(a_uint32_t dev_id);
-sw_error_t adpt_mp_portctrl_init(a_uint32_t dev_id);
-sw_error_t adpt_mp_uniphy_init(a_uint32_t dev_id);
+sw_error_t
+adpt_mp_gcc_uniphy_port_clock_set(a_uint32_t dev_id, a_uint32_t port_id,
+	a_bool_t enable);
+
+sw_error_t
+adpt_mp_uniphy_adapter_port_reset(a_uint32_t dev_id, a_uint32_t port_id);
 
 #ifdef __cplusplus
 }
-#endif                          /* __cplusplus */
+#endif                         /* __cplusplus */
 #endif

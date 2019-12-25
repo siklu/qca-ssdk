@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017, 2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2017, 2019-2020, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -71,7 +71,7 @@ extern "C" {
 #define UNIPHY_SGMII_CHANNEL1_ENABLE    0x1
 #define UNIPHY_SGMII_CHANNEL4_DISABLE   0x0
 #define UNIPHY_SGMII_CHANNEL4_ENABLE    0x1
-
+#define UNIPHY_FORCE_SPEED_ENABLE       0x1
 
 #define SGMII_1000M_SOURCE1_CLOCK1 0x101
 #define SGMII_100M_SOURCE1_CLOCK1 0x109
