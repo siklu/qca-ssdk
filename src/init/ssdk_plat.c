@@ -1317,8 +1317,8 @@ ssdk_plat_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 			SSDK_INFO("Enable ess clk\n");
 			clk_prepare_enable(ess_clk);
 		} else if (!IS_ERR(cmn_clk)) {
-#if defined(HPPE)
-			ssdk_ppe_clock_init();
+#if defined(HPPE) || defined(MP)
+			ssdk_gcc_clock_init();
 #endif
 			return 0;
 		}

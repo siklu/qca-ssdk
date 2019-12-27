@@ -220,7 +220,7 @@ void ssdk_port_reset(
 	a_uint32_t port_id,
 	a_uint32_t action);
 
-#if defined(HPPE)
+#if defined(HPPE) || defined(MP)
 void
 qca_gcc_mac_port_clock_set(a_uint32_t dev_id, a_uint32_t port_id,
                                 a_bool_t enable);
@@ -228,7 +228,7 @@ qca_gcc_mac_port_clock_set(a_uint32_t dev_id, a_uint32_t port_id,
 void
 qca_gcc_uniphy_port_clock_set(a_uint32_t dev_id, a_uint32_t uniphy_index,
                                 a_uint32_t port_id, a_bool_t enable);
-void ssdk_ppe_clock_init(void);
+void ssdk_gcc_clock_init(void);
 void ssdk_uniphy_raw_clock_reset(a_uint8_t uniphy_index);
 void ssdk_uniphy_raw_clock_set(
 	a_uint8_t uniphy_index,
@@ -239,11 +239,13 @@ ssdk_port_speed_clock_set(
 	a_uint32_t dev_id,
 	a_uint32_t port_id,
 	a_uint32_t rate);
-
-void ssdk_ppe_reset_init(void);
 void ssdk_port_mac_clock_reset(
 	a_uint32_t dev_id,
 	a_uint32_t port_id);
+#endif
+
+#if defined(HPPE)
+void ssdk_ppe_reset_init(void);
 #endif
 
 #ifdef __cplusplus
