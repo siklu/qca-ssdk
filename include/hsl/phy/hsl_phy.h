@@ -552,6 +552,7 @@ typedef struct {
 /*qca808x_start*/
 #define SFP_PHY                 0xaaaabbbb
 /*qca808x_end*/
+#define MP_GEPHY                0x004DD0C0
 #define SFP_PHY_MASK            0xffffffff
 
 #define CABLE_PAIR_A            0

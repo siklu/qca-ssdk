@@ -32,7 +32,12 @@ adpt_api_t *adpt_api_ptr_get(a_uint32_t dev_id)
 
 	return g_adpt_api[dev_id];
 }
-
+#if defined (SCOMPHY)
+a_uint32_t adapt_scomphy_revision_get(a_uint32_t dev_id)
+{
+	return g_chip_ver[dev_id].chip_revision;
+}
+#endif
 #if defined(HPPE)
 a_uint32_t adpt_hppe_chip_revision_get(a_uint32_t dev_id)
 {
@@ -319,7 +324,7 @@ sw_error_t adpt_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 
 	switch (cfg->chip_type)
 	{
-		#if defined(HPPE)
+#if defined(HPPE)
 		case CHIP_HPPE:
 			g_adpt_api[dev_id] = aos_mem_alloc(sizeof(adpt_api_t));
 			if(g_adpt_api[dev_id] == NULL)
@@ -435,7 +440,13 @@ sw_error_t adpt_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 			SW_RTN_ON_ERROR(rv);
 
 			break;
-			#endif
+#endif
+#if defined (SCOMPHY)
+		case CHIP_SCOMPHY:
+			g_chip_ver[dev_id].chip_type = cfg->chip_type;
+			g_chip_ver[dev_id].chip_revision = cfg->phy_id;
+			break;
+#endif
 		default:
 			break;
 	}
