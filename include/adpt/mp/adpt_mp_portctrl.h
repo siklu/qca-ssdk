@@ -14,27 +14,22 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef _ADPT_MP_H_
-#define _ADPT_MP_H_
+#ifndef _ADPT_PORTCTRL_H_
+#define _ADPT_PORTCTRL_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif                          /* __cplusplus */
 
-#define MP_PORT_TO_GMAC_ID(port_id) (port_id -1)
-#define MP_MAX_PORT 2
-#define MP_GMAC0 0
-#define MP_GMAC1 1
-#define MP_PORT_ID_CHECK(port_id) \
-do { \
-    if (port_id > MP_MAX_PORT) \
-        return SW_OUT_OF_RANGE; \
-} while (0)
+#define GMAC_SPEED_10M                   0x0
+#define GMAC_SPEED_100M                  0x1
+#define GMAC_SPEED_1000M                 0x0
+#define GMAC_FULL_DUPLEX                 0x1
+#define GMAC_HALF_DUPLEX                 0x0
+#define GMAC_PAUSE_TIME                  0xffff
+#define GMAC_JD_ENABLE                   0x1
+#define GMAC_WD_DISABLE                  0x0
+#define GMAC_FRAME_BURST_ENABLE          0x1
+#define GMAC_JUMBO_FRAME_ENABLE          0x1
+#define GMAC_MAX_FRAME_CTRL_ENABLE       0x1
+#define GMAC_LPI_LINK_UP                 0x1
+#define GMAC_LPI_AUTO_MODE               0x1
 
-sw_error_t adpt_mp_mib_init(a_uint32_t dev_id);
-sw_error_t adpt_mp_portctrl_init(a_uint32_t dev_id);
-
-#ifdef __cplusplus
-}
-#endif                          /* __cplusplus */
 #endif

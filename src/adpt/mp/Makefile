@@ -9,6 +9,10 @@ ifeq (TRUE, $(IN_MIB))
   SRC_LIST += adpt_mp_mib.c
 endif
 
+ifeq (TRUE, $(IN_PORTCONTROL))
+  SRC_LIST += adpt_mp_portctrl.c
+endif
+
 ifeq (, $(findstring MP, $(SUPPORT_CHIP)))
   SRC_LIST=
 endif
