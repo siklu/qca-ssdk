@@ -31,5 +31,11 @@
 #define GMAC_MAX_FRAME_CTRL_ENABLE       0x1
 #define GMAC_LPI_LINK_UP                 0x1
 #define GMAC_LPI_AUTO_MODE               0x1
+#define GMAC_TX_STORE_FORWAD_ENABLE      0x1
+#define GMAC_RX_STORE_FORWAD_ENABLE      0x1
+#define GMAC_FORWARD_ERROR_FRAME_DISABLE 0x0
+#define GMAC_DROP_GAINT_FRAME_DISABLE    0x0
+#define GMAC_HW_FLOWCTRL_ENABLE          0x1
+#define GMAC_HW_FLOWCTRL_DISABLE         0x0
 
 #endif

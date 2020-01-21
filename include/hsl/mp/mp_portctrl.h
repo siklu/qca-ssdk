@@ -23,6 +23,7 @@
 #define MAC_LPI_CTRL_STATUS_MAX_ENTRY        2
 #define MAC_LPI_TIMER_CTRL_MAX_ENTRY         2
 #define MAC_MAX_FRAME_CTRL_MAX_ENTRY         2
+#define MAC_OPERATION_MODE_CTRL_MAX_ENTRY    2
 
 sw_error_t
 mp_mac_configuration_get(
@@ -96,5 +97,17 @@ mp_mac_max_frame_ctrl_set(
 		 a_uint32_t dev_id,
 		 a_uint32_t index,
 		 union mac_max_frame_ctrl_u *value);
+
+sw_error_t
+mp_mac_operation_mode_ctrl_get(
+		 a_uint32_t dev_id,
+		 a_uint32_t index,
+		 union mac_operation_mode_ctrl_u *value);
+
+sw_error_t
+mp_mac_operation_mode_ctrl_set(
+		 a_uint32_t dev_id,
+		 a_uint32_t index,
+		 union mac_operation_mode_ctrl_u *value);
 #endif
 

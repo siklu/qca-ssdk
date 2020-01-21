@@ -26,19 +26,20 @@ extern "C" {
 /*qca808x_end*/
 #include "fal/fal_led.h"
 /*qca808x_start*/
-#define SSDK_MAX_PORT_NUM		8
+#define SSDK_MAX_PORT_NUM               8
 /*qca808x_end*/
-#define SSDK_MAX_VIRTUAL_PORT_NUM	256
-#define SSDK_MAX_SERVICE_CODE_NUM	256
-#define SSDK_MAX_CPU_CODE_NUM		256
-#define SSDK_L0SCHEDULER_CFG_MAX	300
-#define SSDK_L0SCHEDULER_UCASTQ_CFG_MAX	256
-#define SSDK_L1SCHEDULER_CFG_MAX	64
-#define SSDK_SP_MAX_PRIORITY		8
-#define SSDK_MAX_FRAME_SIZE	0x3000
+#define SSDK_MAX_VIRTUAL_PORT_NUM       256
+#define SSDK_MAX_SERVICE_CODE_NUM       256
+#define SSDK_MAX_CPU_CODE_NUM           256
+#define SSDK_L0SCHEDULER_CFG_MAX        300
+#define SSDK_L0SCHEDULER_UCASTQ_CFG_MAX 256
+#define SSDK_L1SCHEDULER_CFG_MAX        64
+#define SSDK_SP_MAX_PRIORITY            8
+#define SSDK_MAX_FRAME_SIZE             0x3000
 
-#define PORT_GMAC_TYPE	1
-#define PORT_XGMAC_TYPE	2
+#define PORT_GMAC_TYPE                  1
+#define PORT_XGMAC_TYPE                 2
+
 /*qca808x_start*/
     typedef enum {
         HSL_MDIO = 1,

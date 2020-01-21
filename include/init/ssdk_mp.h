@@ -24,6 +24,8 @@ extern "C" {
 
 #include "sw.h"
 
+#define MP_LPI_WAKEUP_TIMER             0x46
+
 sw_error_t qca_mp_hw_init(a_uint32_t dev_id);
 
 #ifdef __cplusplus

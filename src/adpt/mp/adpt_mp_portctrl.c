@@ -20,9 +20,56 @@
 #include "adpt.h"
 #include "adpt_mp.h"
 #include "adpt_mp_portctrl.h"
+#include "adpt_mp_uniphy.h"
 #include "hsl_port_prop.h"
 #include "hsl_phy.h"
+#include "ssdk_dts.h"
+#include "ssdk_clk.h"
 
+#ifndef RUMI_EMULATION
+static sw_error_t
+_adpt_mp_gcc_mac_clock_set(a_uint32_t dev_id,
+	a_uint32_t port_id, a_bool_t enable)
+{
+	sw_error_t rv = 0;
+
+	qca_gcc_mac_port_clock_set(dev_id, port_id, enable);
+
+	return rv;
+}
+
+static sw_error_t
+_adpt_mp_port_gcc_speed_clock_set(
+	a_uint32_t dev_id,
+	a_uint32_t port_id,
+	fal_port_speed_t phy_speed)
+{
+	sw_error_t rv = 0;
+
+	switch (phy_speed) {
+		case FAL_SPEED_10:
+			ssdk_port_speed_clock_set(dev_id,
+					port_id, SGMII_SPEED_10M_CLK);
+			break;
+		case FAL_SPEED_100:
+			ssdk_port_speed_clock_set(dev_id,
+					port_id, SGMII_SPEED_100M_CLK);
+			break;
+		case FAL_SPEED_1000:
+			ssdk_port_speed_clock_set(dev_id,
+					port_id, SGMII_SPEED_1000M_CLK);
+			break;
+		case FAL_SPEED_2500:
+			ssdk_port_speed_clock_set(dev_id,
+					port_id, SGMII_PLUS_SPEED_2500M_CLK);
+			break;
+		default:
+			break;
+               }
+
+	return rv;
+}
+#endif
 static sw_error_t
 adpt_mp_port_txmac_status_set(a_uint32_t dev_id, fal_port_t port_id,
 		a_bool_t enable)
@@ -123,25 +170,40 @@ adpt_mp_port_txfc_status_set(a_uint32_t dev_id, fal_port_t port_id,
 	a_uint32_t gmac_id = 0;
 	union mac_flow_ctrl_u mac_flow_ctrl;
 	struct qca_phy_priv *priv = ssdk_phy_priv_data_get(dev_id);
+	union mac_operation_mode_ctrl_u mac_operation_mode_ctrl;
 
 	ADPT_DEV_ID_CHECK(dev_id);
 	MP_PORT_ID_CHECK(port_id);
 	ADPT_NULL_POINT_CHECK(priv);
 
 	memset(&mac_flow_ctrl, 0, sizeof(mac_flow_ctrl));
+	memset(&mac_operation_mode_ctrl, 0, sizeof(mac_operation_mode_ctrl));
 	gmac_id = MP_PORT_TO_GMAC_ID(port_id);
 
 	rv = mp_mac_flowctrl_get(dev_id, gmac_id, &mac_flow_ctrl);
 	SW_RTN_ON_ERROR(rv);
 
+	rv = mp_mac_operation_mode_ctrl_get(dev_id, gmac_id,
+			&mac_operation_mode_ctrl);
+	SW_RTN_ON_ERROR(rv);
+
 	if (A_TRUE == enable) {
 		mac_flow_ctrl.bf.flowctrl_tx_enable = 1;
 		mac_flow_ctrl.bf.pause_time = GMAC_PAUSE_TIME;
+		mac_operation_mode_ctrl.bf.enable_hw_flowctrl =
+			GMAC_HW_FLOWCTRL_ENABLE;
 	} else {
 		mac_flow_ctrl.bf.flowctrl_tx_enable = 0;
+		mac_operation_mode_ctrl.bf.enable_hw_flowctrl =
+			GMAC_HW_FLOWCTRL_DISABLE;
 	}
 
+	rv = mp_mac_operation_mode_ctrl_set(dev_id, gmac_id,
+			&mac_operation_mode_ctrl);
+	SW_RTN_ON_ERROR(rv);
+
 	rv = mp_mac_flowctrl_set(dev_id, gmac_id, &mac_flow_ctrl);
+	SW_RTN_ON_ERROR(rv);
 
 	priv->port_old_tx_flowctrl[port_id - 1] = enable;
 
@@ -321,6 +383,9 @@ adpt_mp_port_mac_speed_set(a_uint32_t dev_id, a_uint32_t port_id,
 	sw_error_t rv = SW_OK;
 	a_uint32_t gmac_id = 0;
 	union mac_configuration_u configuration;
+#ifndef RUMI_EMULATION
+	a_bool_t force_port;
+#endif
 
 	ADPT_DEV_ID_CHECK(dev_id);
 	MP_PORT_ID_CHECK(port_id);
@@ -331,8 +396,7 @@ adpt_mp_port_mac_speed_set(a_uint32_t dev_id, a_uint32_t port_id,
 	rv = mp_mac_configuration_get(dev_id, gmac_id, &configuration);
 	SW_RTN_ON_ERROR(rv);
 
-
-	if (FAL_SPEED_1000 == speed) {
+	if ((FAL_SPEED_1000 == speed) || (FAL_SPEED_2500 == speed)) {
 		 configuration.bf.port_select = GMAC_SPEED_1000M;
 	} else if (FAL_SPEED_100 == speed) {
 		configuration.bf.port_select = (~GMAC_SPEED_1000M) & 0x1;
@@ -343,7 +407,23 @@ adpt_mp_port_mac_speed_set(a_uint32_t dev_id, a_uint32_t port_id,
 	}
 
 	rv = mp_mac_configuration_set(dev_id, gmac_id, &configuration);
+	SW_RTN_ON_ERROR(rv);
 
+#ifndef RUMI_EMULATION
+	force_port = ssdk_port_feature_get(dev_id, port_id, PHY_F_FORCE);
+	/* enable force port configuration */
+	if (force_port == A_TRUE) {
+		rv = _adpt_mp_port_gcc_speed_clock_set(dev_id,
+			port_id, speed);
+		SW_RTN_ON_ERROR(rv);
+		rv = adpt_mp_gcc_uniphy_port_clock_set(dev_id,
+			port_id, A_TRUE);
+		SW_RTN_ON_ERROR(rv);
+		rv = _adpt_mp_gcc_mac_clock_set(dev_id,
+			port_id, A_TRUE);
+		SW_RTN_ON_ERROR(rv);
+	}
+#endif
 	return rv;
 
 }
@@ -431,12 +511,14 @@ adpt_mp_port_max_frame_size_set(a_uint32_t dev_id, fal_port_t port_id,
 	a_uint32_t gmac_id = 0;
 	union mac_max_frame_ctrl_u mac_max_frame_ctrl;
 	union mac_configuration_u configuration;
+	union mac_operation_mode_ctrl_u mac_operation_mode_ctrl;
 
 	ADPT_DEV_ID_CHECK(dev_id);
 	MP_PORT_ID_CHECK(port_id);
 
 	memset(&configuration, 0, sizeof(configuration));
 	memset(&mac_max_frame_ctrl, 0, sizeof(mac_max_frame_ctrl));
+	memset(&mac_operation_mode_ctrl, 0, sizeof(mac_operation_mode_ctrl));
 	gmac_id = MP_PORT_TO_GMAC_ID(port_id);
 
 	rv = mp_mac_max_frame_ctrl_get(dev_id, gmac_id, &mac_max_frame_ctrl);
@@ -454,6 +536,19 @@ adpt_mp_port_max_frame_size_set(a_uint32_t dev_id, fal_port_t port_id,
 	mac_max_frame_ctrl.bf.max_frame_ctrl_enable = GMAC_MAX_FRAME_CTRL_ENABLE;
 	mac_max_frame_ctrl.bf.max_frame_ctrl = max_frame;
 	rv = mp_mac_max_frame_ctrl_set(dev_id, gmac_id, &mac_max_frame_ctrl);
+
+	rv = mp_mac_operation_mode_ctrl_get(dev_id, gmac_id,
+			&mac_operation_mode_ctrl);
+	mac_operation_mode_ctrl.bf.receive_store_and_foward =
+		GMAC_RX_STORE_FORWAD_ENABLE;
+	mac_operation_mode_ctrl.bf.transmit_store_and_foward =
+		GMAC_TX_STORE_FORWAD_ENABLE;
+	mac_operation_mode_ctrl.bf.forward_error_frame =
+		GMAC_FORWARD_ERROR_FRAME_DISABLE;
+	mac_operation_mode_ctrl.bf.drop_gaint_frame =
+		GMAC_DROP_GAINT_FRAME_DISABLE;
+	rv = mp_mac_operation_mode_ctrl_set(dev_id, gmac_id,
+			&mac_operation_mode_ctrl);
 
 	return rv;
 }
@@ -598,15 +693,15 @@ adpt_mp_port_interface_eee_cfg_get(a_uint32_t dev_id, fal_port_t port_id,
 	memset(port_eee_cfg, 0, sizeof(*port_eee_cfg));
 	gmac_id = MP_PORT_TO_GMAC_ID(port_id);
 
-	SW_RTN_ON_NULL (phy_drv =hsl_phy_api_ops_get (dev_id, port_id));
-	if ((NULL == phy_drv->phy_eee_adv_get) || (NULL == phy_drv->phy_eee_partner_adv_get) ||
-		(NULL == phy_drv->phy_eee_cap_get) || (NULL == phy_drv->phy_eee_status_get)) {
+	SW_RTN_ON_NULL(phy_drv =hsl_phy_api_ops_get (dev_id, port_id));
+	if ((NULL == phy_drv->phy_eee_adv_get) ||
+		(NULL == phy_drv->phy_eee_partner_adv_get) ||
+		(NULL == phy_drv->phy_eee_cap_get) ||
+		(NULL == phy_drv->phy_eee_status_get)) {
 		return SW_NOT_SUPPORTED;
 	}
-
 	rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
 	SW_RTN_ON_ERROR (rv);
-
 	rv = phy_drv->phy_eee_adv_get(dev_id, phy_id, &adv);
 	SW_RTN_ON_ERROR (rv);
 	port_eee_cfg->advertisement = adv;
