@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2017-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2015, 2017-2020, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -554,6 +554,11 @@ typedef struct {
 /*qca808x_end*/
 #define MP_GEPHY                0x004DD0C0
 #define SFP_PHY_MASK            0xffffffff
+#define SFP_PHY_FEATURES        (SUPPORTED_FIBRE | \
+                                SUPPORTED_1000baseT_Full | \
+                                SUPPORTED_10000baseT_Full | \
+                                SUPPORTED_Pause | \
+                                SUPPORTED_Asym_Pause)
 
 #define CABLE_PAIR_A            0
 #define CABLE_PAIR_B            1
