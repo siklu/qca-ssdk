@@ -101,7 +101,7 @@ static struct phy_driver sfp_phy_driver = {
 	.config_aneg	= sfp_phy_config_aneg,
 	.aneg_done	= sfp_phy_aneg_done,
 	.read_status	= sfp_read_status,
-	.features	= SFP_PHY_FEATURES,
+	.features	= PHY_BASIC_FEATURES,
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,9,0))
 	.mdiodrv.driver	= { .owner = THIS_MODULE },
 #else
@@ -159,7 +159,12 @@ void sfp_phy_device_remove(a_uint32_t dev_id, a_uint32_t port)
 	}
 
 	if (addr < PHY_MAX_ADDR)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 0))
+		if (bus->mdio_map[addr])
+			phydev = to_phy_device(&bus->mdio_map[addr]->dev);
+#else
 		phydev = bus->phy_map[addr];
+#endif
 	if (phydev)
 		phy_device_remove(phydev);
 #endif
