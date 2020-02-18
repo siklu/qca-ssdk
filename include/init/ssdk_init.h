@@ -380,6 +380,7 @@ struct qca_phy_priv* ssdk_phy_priv_data_get(a_uint32_t dev_id);
 sw_error_t qca_switch_init(a_uint32_t dev_id);
 void qca_mac_sw_sync_work_stop(struct qca_phy_priv *priv);
 void qca_mac_sw_sync_work_resume(struct qca_phy_priv *priv);
+int qca_mac_sw_sync_work_start(struct qca_phy_priv *priv);
 /*qca808x_start*/
 #ifdef __cplusplus
 }

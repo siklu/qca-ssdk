@@ -38,5 +38,8 @@
 #define GMAC_DROP_GAINT_FRAME_DISABLE    0x0
 #define GMAC_HW_FLOWCTRL_ENABLE          0x1
 #define GMAC_HW_FLOWCTRL_DISABLE         0x0
+#define PORT_LPI_ENABLE_STATUS           0x3
+#define PORT_LPI_TASK_RUNNING            0x10000
+#define PORT_LPI_TASK_START              0x20000
 
 #endif

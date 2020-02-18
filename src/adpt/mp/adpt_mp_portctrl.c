@@ -26,6 +26,8 @@
 #include "ssdk_dts.h"
 #include "ssdk_clk.h"
 
+static a_uint32_t port_lpi_status[SW_MAX_NR_DEV] = {0};
+
 #ifndef RUMI_EMULATION
 static sw_error_t
 _adpt_mp_gcc_mac_clock_set(a_uint32_t dev_id,
@@ -70,6 +72,7 @@ _adpt_mp_port_gcc_speed_clock_set(
 	return rv;
 }
 #endif
+
 static sw_error_t
 adpt_mp_port_txmac_status_set(a_uint32_t dev_id, fal_port_t port_id,
 		a_bool_t enable)
@@ -635,6 +638,7 @@ adpt_mp_port_interface_eee_cfg_set(a_uint32_t dev_id, fal_port_t port_id,
 	a_uint32_t phy_addr = 0, gmac_id = 0;
 	a_uint32_t adv;
 	hsl_phy_ops_t *phy_drv;
+	struct qca_phy_priv *priv;
 
 	ADPT_DEV_ID_CHECK(dev_id);
 	MP_PORT_ID_CHECK(port_id);
@@ -643,10 +647,19 @@ adpt_mp_port_interface_eee_cfg_set(a_uint32_t dev_id, fal_port_t port_id,
 	memset(&mac_lpi_ctrl_status, 0, sizeof(mac_lpi_ctrl_status));
 	gmac_id = MP_PORT_TO_GMAC_ID(port_id);
 
+	priv = ssdk_phy_priv_data_get(dev_id);
+	SW_RTN_ON_NULL(priv);
+
 	if (port_eee_cfg->enable) {
 		adv = port_eee_cfg->advertisement;
 	} else {
 		adv = 0;
+	}
+
+	if (port_eee_cfg->lpi_tx_enable) {
+		port_lpi_status[dev_id] |= BIT(port_id-1);
+	} else {
+		port_lpi_status[dev_id] &= ~BIT(port_id-1);
 	}
 
 	SW_RTN_ON_NULL(phy_drv = hsl_phy_api_ops_get(dev_id, port_id));
@@ -672,6 +685,22 @@ adpt_mp_port_interface_eee_cfg_set(a_uint32_t dev_id, fal_port_t port_id,
 	mac_lpi_ctrl_status.bf.link_status = GMAC_LPI_LINK_UP;
 	mac_lpi_ctrl_status.bf.lpi_enable = port_eee_cfg->lpi_tx_enable;
 	rv = mp_mac_lpi_ctrl_status_set(dev_id, gmac_id, &mac_lpi_ctrl_status);
+	SW_RTN_ON_ERROR (rv);
+
+	if (port_lpi_status[dev_id] & PORT_LPI_ENABLE_STATUS) {
+		if (!(port_lpi_status[dev_id] & PORT_LPI_TASK_RUNNING)) {
+			if (!(port_lpi_status[dev_id] & PORT_LPI_TASK_START)) {
+				qca_mac_sw_sync_work_start(priv);
+				port_lpi_status[dev_id] |= PORT_LPI_TASK_START;
+			} else {
+				qca_mac_sw_sync_work_resume(priv);
+			}
+			port_lpi_status[dev_id] |= PORT_LPI_TASK_RUNNING;
+		}
+	} else {
+		qca_mac_sw_sync_work_stop(priv);
+		port_lpi_status[dev_id] &= ~PORT_LPI_TASK_RUNNING;
+	}
 
 	return rv;
 }
@@ -1061,6 +1090,28 @@ adpt_mp_port_netdev_change_notify(struct qca_phy_priv *priv,
 }
 #endif
 
+static sw_error_t
+adpt_mp_port_lpi_polling_task(struct qca_phy_priv *priv)
+{
+	a_uint32_t port_id;
+	a_uint32_t portbmp[SW_MAX_NR_DEV] = {0};
+	sw_error_t rv = SW_OK;
+
+	portbmp[priv->device_id] = qca_ssdk_port_bmp_get(priv->device_id);
+
+	for (port_id = SSDK_PHYSICAL_PORT1; port_id < SW_MAX_NR_PORT; port_id ++) {
+
+		if(!(portbmp[priv->device_id] & BIT(port_id)))
+			continue;
+		if (port_lpi_status[priv->device_id] & BIT(port_id-1)) {
+			rv = adpt_mp_port_mac_eee_enable_set(priv->device_id,
+				port_id, A_TRUE);
+			SW_RTN_ON_ERROR(rv);
+		}
+	}
+	return SW_OK;
+}
+
 sw_error_t adpt_mp_portctrl_init(a_uint32_t dev_id)
 {
 	adpt_api_t *p_adpt_api = NULL;
@@ -1098,6 +1149,7 @@ sw_error_t adpt_mp_portctrl_init(a_uint32_t dev_id)
 #ifndef RUMI_EMULATION
 	p_adpt_api->adpt_port_netdev_notify_set = adpt_mp_port_netdev_change_notify;
 #endif
+	p_adpt_api->adpt_port_polling_sw_sync_set = adpt_mp_port_lpi_polling_task;
 
 	return SW_OK;
 }

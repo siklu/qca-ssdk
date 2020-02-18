@@ -1419,10 +1419,12 @@ qca_mac_sw_sync_work_task(struct work_struct *work)
 int
 qca_mac_sw_sync_work_start(struct qca_phy_priv *priv)
 {
-	if (priv->version != QCA_VER_HPPE)
+	if ((priv->version != QCA_VER_HPPE) && (priv->version != QCA_VER_SCOMPHY))
 		return 0;
 
-	qca_mac_sw_sync_port_status_init(priv->device_id);
+	if (priv->version == QCA_VER_HPPE) {
+		qca_mac_sw_sync_port_status_init(priv->device_id);
+	}
 
 	mutex_init(&priv->mac_sw_sync_lock);
 
@@ -1437,17 +1439,16 @@ qca_mac_sw_sync_work_start(struct qca_phy_priv *priv)
 void
 qca_mac_sw_sync_work_stop(struct qca_phy_priv *priv)
 {
-	if (priv->version != QCA_VER_HPPE)
+	if ((priv->version != QCA_VER_HPPE) && (priv->version != QCA_VER_SCOMPHY)) {
 		return;
-
+	}
 	cancel_delayed_work_sync(&priv->mac_sw_sync_dwork);
 }
 
 void
 qca_mac_sw_sync_work_resume(struct qca_phy_priv *priv)
 {
-	if (priv->version != QCA_VER_HPPE)
-	{
+	if ((priv->version != QCA_VER_HPPE) && (priv->version != QCA_VER_SCOMPHY)) {
 		return;
 	}
 
@@ -1727,10 +1728,13 @@ static int ssdk_switch_register(a_uint32_t dev_id, ssdk_chip_type  chip_type)
 #endif
 #endif
 #ifdef HPPE
-	ret = qca_mac_sw_sync_work_start(priv);
-	if (ret != 0) {
-			SSDK_ERROR("qca_mac_sw_sync_work_start failed for chip 0x%02x%02x\n", priv->version, priv->revision);
+	if (priv->version == QCA_VER_HPPE) {
+		ret = qca_mac_sw_sync_work_start(priv);
+		if (ret != 0) {
+			SSDK_ERROR("qca_mac_sw_sync_work_start failed for chip 0x%02x%02x\n",
+				priv->version, priv->revision);
 			return ret;
+		}
 	}
 #endif
 
