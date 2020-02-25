@@ -162,13 +162,14 @@ _adpt_phy_status_get_from_ppe(a_uint32_t dev_id, a_uint32_t port_id,
 				phy_status->speed = FAL_SPEED_BUTT;
 				break;
 		}
+		phy_status->duplex = FAL_FULL_DUPLEX;
 	}
 	else
 	{
 		phy_status->link_status = PORT_LINK_DOWN;
+		phy_status->speed = FAL_SPEED_BUTT;
+		phy_status->duplex = FAL_DUPLEX_BUTT;
 	}
-
-	phy_status->duplex = FAL_FULL_DUPLEX;
 
 	return rv;
 }
