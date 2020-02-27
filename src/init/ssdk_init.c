@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2014-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2014-2020, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -3174,12 +3174,25 @@ static int ssdk_dev_event(struct notifier_block *this, unsigned long event, void
 {
 	int rv = 0;
 	ssdk_init_cfg cfg;
+#ifdef MP
+#ifndef RUMI_EMULATION
+	a_uint32_t port_id = 0, dev_id = 0;
+	struct qca_phy_priv *priv = ssdk_phy_priv_data_get(dev_id);
+	adpt_api_t *p_api = adpt_api_ptr_get(dev_id);
+#endif
+#endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 	struct net_device *dev = netdev_notifier_info_to_dev(ptr);
 #else
 	struct net_device *dev = (struct net_device *)ptr;
 #endif
+
+	rv = chip_ver_get(0, &cfg);
+	if (rv) {
+		SSDK_ERROR("chip verfion get failed\n");
+		return NOTIFY_DONE;
+	}
 	switch (event) {
 #ifdef IN_RFS
 #if defined(CONFIG_RFS_ACCEL)
@@ -3196,10 +3209,6 @@ static int ssdk_dev_event(struct notifier_block *this, unsigned long event, void
 		case NETDEV_CHANGEMTU:
 			if(dev->type == ARPHRD_ETHER) {
 				if (strstr(dev->name, "eth")) {
-					rv = chip_ver_get(0, &cfg);
-					if (rv) {
-						return rv;
-					}
 					if (cfg.chip_type == CHIP_DESS ||
 					   cfg.chip_type == CHIP_ISIS ||
 					   cfg.chip_type == CHIP_ISISC) {
@@ -3209,6 +3218,35 @@ static int ssdk_dev_event(struct notifier_block *this, unsigned long event, void
 				}
 			}
 			break;
+#ifdef MP
+#ifndef RUMI_EMULATION
+		case NETDEV_CHANGE:
+			if ((cfg.chip_type == CHIP_SCOMPHY) &&
+				(cfg.phy_id == MP_GEPHY)) {
+				if ((p_api == NULL) || (p_api->adpt_port_netdev_notify_set == NULL)
+					|| (priv == NULL)) {
+					SSDK_ERROR("Failed to get pointer\n");
+					return NOTIFY_DONE;
+				}
+				if (dev->phydev != NULL) {
+					int addr;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,9,0))
+					addr = dev->phydev->mdio.addr;
+#else
+					addr = dev->phydev->addr;
+#endif
+					port_id = qca_ssdk_phy_addr_to_port(priv->device_id,
+						addr);
+					rv = p_api->adpt_port_netdev_notify_set(priv, port_id);
+					if (rv) {
+						SSDK_ERROR("netdev change notify failed\n");
+						return NOTIFY_DONE;
+					}
+				}
+			}
+			break;
+#endif
+#endif
 	}
 
 	return NOTIFY_DONE;
