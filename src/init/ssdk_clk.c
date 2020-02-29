@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2017-2020, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -521,56 +521,6 @@ void ssdk_uniphy1_clock_source_set(void)
 			uniphy_raw_clks[3]->clk);
 #endif
 }
-static
-void ssdk_gcc_ppe_clock_init(a_uint32_t revision, enum cmnblk_clk_type mode)
-{
-#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
-	ssdk_ppe_fixed_clock_init(revision);
-	/*fixme for cmn clock init*/
-	ssdk_cmnblk_init(mode);
-	ssdk_ppe_uniphy_clock_init(revision);
-#endif
-}
-#endif
-
-#if defined(HPPE) || defined(MP)
-void ssdk_gcc_clock_init(void)
-{
-#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
-	enum cmnblk_clk_type cmnblk_clk_mode = INTERNAL_48MHZ;
-	a_uint8_t *mode = NULL;
-
-	clock_node = of_find_node_by_name(NULL, "ess-switch");
-	if (of_property_read_string(clock_node, "cmnblk_clk",
-				    (const char **)&mode)) {
-		cmnblk_clk_mode = INTERNAL_48MHZ;
-	} else {
-		if (!strcmp(mode, "external_50MHz")) {
-			cmnblk_clk_mode = EXTERNAL_50MHZ;
-		} else if (!strcmp(mode, "external_25MHz")) {
-			cmnblk_clk_mode = EXTERNAL_25MHZ;
-		} else if (!strcmp(mode, "external_31250KHz")) {
-			cmnblk_clk_mode = EXTERNAL_31250KHZ;
-		} else if (!strcmp(mode, "external_40MHz")) {
-			cmnblk_clk_mode = EXTERNAL_40MHZ;
-		} else if (!strcmp(mode, "external_48MHz")) {
-			cmnblk_clk_mode = EXTERNAL_48MHZ;
-		}
-	}
-
-	if (of_device_is_compatible(clock_node, "qcom,ess-switch-ipq807x")) {
-#if defined(HPPE)
-		ssdk_gcc_ppe_clock_init(HPPE_REVISION, cmnblk_clk_mode);
-#endif
-	} else if (of_device_is_compatible(clock_node,
-			"qcom,ess-switch-ipq60xx")) {
-#if defined(HPPE)
-		ssdk_gcc_ppe_clock_init(CPPE_REVISION, cmnblk_clk_mode);
-#endif
-	}
-#endif
-	SSDK_INFO("SSDK gcc clock init successfully!\n");
-}
 
 void ssdk_uniphy_raw_clock_reset(a_uint8_t uniphy_index)
 {
@@ -626,6 +576,57 @@ void ssdk_uniphy_raw_clock_set(
 			SSDK_ERROR("set parent fail!\n");
 	}
 #endif
+}
+
+static
+void ssdk_gcc_ppe_clock_init(a_uint32_t revision, enum cmnblk_clk_type mode)
+{
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
+	ssdk_ppe_fixed_clock_init(revision);
+	/*fixme for cmn clock init*/
+	ssdk_cmnblk_init(mode);
+	ssdk_ppe_uniphy_clock_init(revision);
+#endif
+}
+#endif
+
+#if defined(HPPE) || defined(MP)
+void ssdk_gcc_clock_init(void)
+{
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
+	enum cmnblk_clk_type cmnblk_clk_mode = INTERNAL_48MHZ;
+	a_uint8_t *mode = NULL;
+
+	clock_node = of_find_node_by_name(NULL, "ess-switch");
+	if (of_property_read_string(clock_node, "cmnblk_clk",
+				    (const char **)&mode)) {
+		cmnblk_clk_mode = INTERNAL_48MHZ;
+	} else {
+		if (!strcmp(mode, "external_50MHz")) {
+			cmnblk_clk_mode = EXTERNAL_50MHZ;
+		} else if (!strcmp(mode, "external_25MHz")) {
+			cmnblk_clk_mode = EXTERNAL_25MHZ;
+		} else if (!strcmp(mode, "external_31250KHz")) {
+			cmnblk_clk_mode = EXTERNAL_31250KHZ;
+		} else if (!strcmp(mode, "external_40MHz")) {
+			cmnblk_clk_mode = EXTERNAL_40MHZ;
+		} else if (!strcmp(mode, "external_48MHz")) {
+			cmnblk_clk_mode = EXTERNAL_48MHZ;
+		}
+	}
+
+	if (of_device_is_compatible(clock_node, "qcom,ess-switch-ipq807x")) {
+#if defined(HPPE)
+		ssdk_gcc_ppe_clock_init(HPPE_REVISION, cmnblk_clk_mode);
+#endif
+	} else if (of_device_is_compatible(clock_node,
+			"qcom,ess-switch-ipq60xx")) {
+#if defined(HPPE)
+		ssdk_gcc_ppe_clock_init(CPPE_REVISION, cmnblk_clk_mode);
+#endif
+	}
+#endif
+	SSDK_INFO("SSDK gcc clock init successfully!\n");
 }
 
 void
@@ -759,7 +760,9 @@ ssdk_port_speed_clock_set(
 	a_uint32_t port_id,
 	a_uint32_t rate)
 {
+#if defined(HPPE)
 	a_uint32_t mode = 0;
+#endif
 
                switch (port_id ) {
 		case SSDK_PHYSICAL_PORT1:
@@ -774,6 +777,7 @@ ssdk_port_speed_clock_set(
 			ssdk_uniphy_clock_rate_set(dev_id,
 					NSS_PORT2_TX_CLK_E, rate);
 			break;
+#if defined(HPPE)
 		case SSDK_PHYSICAL_PORT3:
 			ssdk_uniphy_clock_rate_set(dev_id,
 					NSS_PORT3_RX_CLK_E, rate);
@@ -801,6 +805,7 @@ ssdk_port_speed_clock_set(
 			ssdk_uniphy_clock_rate_set(dev_id,
 					NSS_PORT6_TX_CLK_E, rate);
 			break;
+#endif
 		default:
 			break;
 	}
