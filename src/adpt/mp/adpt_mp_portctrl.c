@@ -733,6 +733,65 @@ adpt_mp_port_interface_eee_cfg_get(a_uint32_t dev_id, fal_port_t port_id,
 
 #ifndef RUMI_EMULATION
 static sw_error_t
+adpt_mp_port_interface_mode_status_get(a_uint32_t dev_id,
+	a_uint32_t port_id, fal_port_interface_mode_t * mode)
+{
+	sw_error_t rv = SW_OK;
+	a_uint32_t phy_id = 0;
+	hsl_phy_ops_t *phy_drv;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+	ADPT_NULL_POINT_CHECK(mode);
+
+	SW_RTN_ON_NULL(phy_drv = hsl_phy_api_ops_get(dev_id, port_id));
+	SW_RTN_ON_NULL(phy_drv->phy_interface_mode_status_get);
+
+	rv = hsl_port_prop_get_phyid(dev_id, port_id, &phy_id);
+	SW_RTN_ON_ERROR (rv);
+
+	rv = phy_drv->phy_interface_mode_status_get(dev_id, phy_id,mode);
+
+	return rv;
+}
+
+static sw_error_t
+adpt_mp_port_interface_mode_switch(a_uint32_t dev_id, a_uint32_t port_id)
+{
+	sw_error_t rv = SW_OK;
+	fal_port_interface_mode_t port_mode_new = PORT_INTERFACE_MODE_MAX;
+	a_uint32_t uniphy_mode_old = PORT_WRAPPER_MAX;
+	a_uint32_t uniphy_mode_new = PORT_WRAPPER_MAX;
+	a_bool_t force_port;
+
+	force_port = ssdk_port_feature_get(dev_id, port_id, PHY_F_FORCE);
+	if ((port_id == SSDK_PHYSICAL_PORT1) || (force_port == A_TRUE)) {
+		return SW_OK;
+	}
+	rv = adpt_mp_port_interface_mode_status_get(dev_id,
+		port_id, &port_mode_new);
+	SW_RTN_ON_ERROR(rv);
+
+	if (port_mode_new == PHY_SGMII_BASET) {
+		uniphy_mode_new = PORT_WRAPPER_SGMII_CHANNEL0;
+	} else if (port_mode_new == PORT_SGMII_PLUS) {
+		uniphy_mode_new = PORT_WRAPPER_SGMII_PLUS;
+	} else {
+		return SW_NOT_SUPPORTED;
+	}
+	uniphy_mode_old = ssdk_dt_global_get_mac_mode(dev_id,
+		SSDK_UNIPHY_INSTANCE0);
+	if (uniphy_mode_new != uniphy_mode_old) {
+		rv = adpt_mp_uniphy_mode_set(dev_id,
+			SSDK_UNIPHY_INSTANCE0, uniphy_mode_new);
+		SW_RTN_ON_ERROR(rv);
+		ssdk_dt_global_set_mac_mode(dev_id,
+			SSDK_UNIPHY_INSTANCE0, uniphy_mode_new);
+	}
+
+	return rv;
+}
+
+static sw_error_t
 _adpt_mp_port_phy_status_get(a_uint32_t dev_id, a_uint32_t port_id,
 	struct port_phy_status *phy_status)
 {
@@ -769,7 +828,10 @@ _adpt_mp_port_link_down_update(struct qca_phy_priv *priv,
 	SW_RTN_ON_ERROR (rv);
 
 	/* switch interface mode if necessary under link down*/
-
+	rv = adpt_mp_port_interface_mode_switch(priv->device_id, port_id);
+	SW_RTN_ON_ERROR (rv);
+	SSDK_DEBUG("MP port %d interface mode switch under link down!\n",
+			port_id);
 	return rv;
 }
 
@@ -812,22 +874,6 @@ adpt_mp_port_reset_set(a_uint32_t dev_id, a_uint32_t port_id)
 	} else {
 		return SW_NOT_SUPPORTED;
 	}
-
-	return rv;
-}
-
-static sw_error_t
-adpt_mp_port_interface_switch(struct qca_phy_priv *priv,
-	a_uint32_t port_id)
-{
-	sw_error_t rv = 0;
-
-	/* disable tx mac*/
-	rv = adpt_mp_port_txmac_status_set(priv->device_id, port_id,
-				A_FALSE);
-	SW_RTN_ON_ERROR (rv);
-
-	/* switch interface mode if necessary under link up */
 
 	return rv;
 }
@@ -921,9 +967,16 @@ adpt_mp_port_link_up_update(struct qca_phy_priv *priv,
 	/* port phy status change check*/
 	change = _adpt_mp_port_status_change(priv, port_id,
 			phy_status);
-	/* interface mode switch*/
-	rv = adpt_mp_port_interface_switch(priv, port_id);
+
+	rv = adpt_mp_port_txmac_status_set(priv->device_id, port_id,
+				A_FALSE);
 	SW_RTN_ON_ERROR (rv);
+
+	/* switch interface mode if necessary under link up */
+	rv = adpt_mp_port_interface_mode_switch(priv->device_id, port_id);
+	SW_RTN_ON_ERROR (rv);
+	SSDK_DEBUG("MP port %d interface mode switch under link up!\n",
+			port_id);
 	/* link up status change*/
 	if (change == A_TRUE) {
 		rv = adpt_mp_port_link_up_change_update(priv,
