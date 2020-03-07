@@ -14,7 +14,7 @@ ifneq (,$(findstring SCOMPHY, $(SUPPORT_CHIP)))
 	SRC_LIST += ssdk_scomphy.c
 endif
 
-ifneq (,$(findstring MP, $(SUPPORT_CHIP)))
+ifneq (,$(filter MP, $(SUPPORT_CHIP)))
 	SRC_LIST += ssdk_mp.c
 endif
 
