@@ -924,7 +924,8 @@ static const a_int8_t *qca_phy_feature_str[QCA_PHY_FEATURE_MAX] = {
 	"PHY_QGMAC",
 	"PHY_XGMAC",
 	"PHY_I2C",
-	"PHY_INIT"
+	"PHY_INIT",
+	"PHY_FORCE"
 };
 
 void ssdk_dts_phyinfo_dump(a_uint32_t dev_id)
@@ -941,8 +942,14 @@ void ssdk_dts_phyinfo_dump(a_uint32_t dev_id)
 			printk("%6d%13d%*s", port_phyinfo->port_id,
 					port_phyinfo->phy_addr, 5, "");
 			for (j = 0; j < QCA_PHY_FEATURE_MAX; j++) {
-				if (port_phyinfo->phy_features & BIT(j)) {
+				if (port_phyinfo->phy_features & BIT(j) && BIT(j) != PHY_F_INIT) {
 					printk("%s ", qca_phy_feature_str[j]);
+					if (BIT(j) == PHY_F_FORCE) {
+						printk("(speed: %d, duplex: %s) ",
+								port_phyinfo->port_speed,
+								port_phyinfo->port_duplex > 0 ?
+								"full" : "half");
+					}
 				}
 			}
 			printk("\n");
@@ -1316,8 +1323,8 @@ ssdk_plat_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 			SSDK_INFO("Enable ess clk\n");
 			clk_prepare_enable(ess_clk);
 		} else if (!IS_ERR(cmn_clk)) {
-#if defined(HPPE)
-			ssdk_ppe_clock_init();
+#if defined(HPPE) || defined(MP)
+			ssdk_gcc_clock_init();
 #endif
 			return 0;
 		}

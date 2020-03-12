@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2018, 2020, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -34,6 +34,7 @@
 static int
 sfp_phy_probe(struct phy_device *pdev)
 {
+	pdev->autoneg = AUTONEG_DISABLE;
 	SSDK_INFO("sfp phy is probed!\n");
 	return 0;
 }
@@ -68,6 +69,9 @@ sfp_read_status(struct phy_device *pdev)
 	fal_port_speed_t speed = FAL_SPEED_BUTT;
 	struct qca_phy_priv *priv = pdev->priv;
 
+	pdev->speed = SPEED_UNKNOWN;
+	pdev->duplex = DUPLEX_UNKNOWN;
+
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,9,0))
 	addr = pdev->mdio.addr;
 #else
@@ -97,7 +101,7 @@ static struct phy_driver sfp_phy_driver = {
 	.config_aneg	= sfp_phy_config_aneg,
 	.aneg_done	= sfp_phy_aneg_done,
 	.read_status	= sfp_read_status,
-	.features	= PHY_BASIC_FEATURES,
+	.features	= SFP_PHY_FEATURES,
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,9,0))
 	.mdiodrv.driver	= { .owner = THIS_MODULE },
 #else

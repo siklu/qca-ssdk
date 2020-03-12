@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2020, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -162,13 +162,14 @@ _adpt_phy_status_get_from_ppe(a_uint32_t dev_id, a_uint32_t port_id,
 				phy_status->speed = FAL_SPEED_BUTT;
 				break;
 		}
+		phy_status->duplex = FAL_FULL_DUPLEX;
 	}
 	else
 	{
 		phy_status->link_status = PORT_LINK_DOWN;
+		phy_status->speed = FAL_SPEED_BUTT;
+		phy_status->duplex = FAL_DUPLEX_BUTT;
 	}
-
-	phy_status->duplex = FAL_FULL_DUPLEX;
 
 	return rv;
 }
@@ -2121,18 +2122,37 @@ adpt_hppe_port_counter_get(a_uint32_t dev_id, fal_port_t port_id,
 
 }
 #endif
-sw_error_t
-adpt_hppe_port_interface_mode_set(a_uint32_t dev_id, fal_port_t port_id,
+
+static sw_error_t
+_adpt_hppe_port_interface_mode_set(a_uint32_t dev_id, fal_port_t port_id,
 			      fal_port_interface_mode_t mode)
 {
 	sw_error_t rv = SW_OK;
+
 	ADPT_DEV_ID_CHECK(dev_id);
 	if (A_TRUE != hsl_port_prop_check (dev_id, port_id, HSL_PP_EXCL_CPU) &&
 		mode != PORT_INTERFACE_MODE_MAX)
 	{
 		return SW_BAD_PARAM;
 	}
+
 	port_interface_mode[dev_id][port_id] = mode;
+
+	return rv;
+}
+
+sw_error_t
+adpt_hppe_port_interface_mode_set(a_uint32_t dev_id, fal_port_t port_id,
+			      fal_port_interface_mode_t mode)
+{
+	sw_error_t rv = SW_OK;
+	struct qca_phy_priv *priv;
+
+	priv = ssdk_phy_priv_data_get(dev_id);
+	SW_RTN_ON_NULL(priv);
+	qca_mac_sw_sync_work_stop(priv);
+
+	rv = _adpt_hppe_port_interface_mode_set(dev_id, port_id, mode);
 
 	return rv;
 }
@@ -2534,10 +2554,9 @@ adpt_hppe_port_mux_mac_type_set(a_uint32_t dev_id, fal_port_t port_id,
 {
 	sw_error_t rv = SW_OK;
 	a_uint32_t mode_tmp;
-	ssdk_port_phyinfo *phyinfo = NULL;
 
 	/*init the port interface mode before set it according to three mac modes*/
-	rv = adpt_hppe_port_interface_mode_set(dev_id, port_id, PORT_INTERFACE_MODE_MAX);
+	rv = _adpt_hppe_port_interface_mode_set(dev_id, port_id, PORT_INTERFACE_MODE_MAX);
 	SW_RTN_ON_ERROR(rv);
 
 	switch (mode0) {
@@ -2546,10 +2565,10 @@ adpt_hppe_port_mux_mac_type_set(a_uint32_t dev_id, fal_port_t port_id,
 			{
 				qca_hppe_port_mac_type_set(dev_id, port_id, PORT_GMAC_TYPE);
 				if (port_id == SSDK_PHYSICAL_PORT5) {
-					adpt_hppe_port_interface_mode_set(dev_id,
+					_adpt_hppe_port_interface_mode_set(dev_id,
 							SSDK_PHYSICAL_PORT5, PHY_PSGMII_FIBER);
 				} else {
-					adpt_hppe_port_interface_mode_set(dev_id,
+					_adpt_hppe_port_interface_mode_set(dev_id,
 							port_id, PHY_PSGMII_BASET);
 				}
 			}
@@ -2560,14 +2579,14 @@ adpt_hppe_port_mux_mac_type_set(a_uint32_t dev_id, fal_port_t port_id,
 					 mode1 == PORT_WRAPPER_MAX))
 			{
 				qca_hppe_port_mac_type_set(dev_id, port_id, PORT_GMAC_TYPE);
-				adpt_hppe_port_interface_mode_set(dev_id, port_id, PHY_PSGMII_BASET);
+				_adpt_hppe_port_interface_mode_set(dev_id, port_id, PHY_PSGMII_BASET);
 			}
 			break;
 		case PORT_WRAPPER_QSGMII:
 			if(port_id >= SSDK_PHYSICAL_PORT1 && port_id <= SSDK_PHYSICAL_PORT4)
 			{
 				qca_hppe_port_mac_type_set(dev_id, port_id, PORT_GMAC_TYPE);
-				adpt_hppe_port_interface_mode_set(dev_id, port_id, PORT_QSGMII);
+				_adpt_hppe_port_interface_mode_set(dev_id, port_id, PORT_QSGMII);
 			}
 			break;
 		case PORT_WRAPPER_SGMII0_RGMII4:
@@ -2586,7 +2605,7 @@ adpt_hppe_port_mux_mac_type_set(a_uint32_t dev_id, fal_port_t port_id,
 					if(hsl_port_prop_check (dev_id, port_id,
 						HSL_PP_EXCL_CPU))
 					{
-						adpt_hppe_port_interface_mode_set(dev_id, port_id,
+						_adpt_hppe_port_interface_mode_set(dev_id, port_id,
 							PHY_SGMII_BASET);
 					}
 					else
@@ -2598,7 +2617,7 @@ adpt_hppe_port_mux_mac_type_set(a_uint32_t dev_id, fal_port_t port_id,
 				}
 				else if(mode0 == PORT_WRAPPER_SGMII_PLUS)
 				{
-					adpt_hppe_port_interface_mode_set(dev_id, port_id,
+					_adpt_hppe_port_interface_mode_set(dev_id, port_id,
 						PORT_SGMII_PLUS);
 				}
 				else
@@ -2616,12 +2635,12 @@ adpt_hppe_port_mux_mac_type_set(a_uint32_t dev_id, fal_port_t port_id,
 						PORT_GMAC_TYPE);
 				if(mode0 == PORT_WRAPPER_SGMII_FIBER)
 				{
-					adpt_hppe_port_interface_mode_set(dev_id,
+					_adpt_hppe_port_interface_mode_set(dev_id,
 							SSDK_PHYSICAL_PORT1, PORT_SGMII_FIBER);
 				}
 				else
 				{
-					adpt_hppe_port_interface_mode_set(dev_id,
+					_adpt_hppe_port_interface_mode_set(dev_id,
 							SSDK_PHYSICAL_PORT1, PHY_SGMII_BASET);
 				}
 			}
@@ -2632,7 +2651,7 @@ adpt_hppe_port_mux_mac_type_set(a_uint32_t dev_id, fal_port_t port_id,
 			{
 				qca_hppe_port_mac_type_set(dev_id, SSDK_PHYSICAL_PORT2,
 						PORT_GMAC_TYPE);
-				adpt_hppe_port_interface_mode_set(dev_id,
+				_adpt_hppe_port_interface_mode_set(dev_id,
 						SSDK_PHYSICAL_PORT2, PHY_SGMII_BASET);
 			}
 			break;
@@ -2642,7 +2661,7 @@ adpt_hppe_port_mux_mac_type_set(a_uint32_t dev_id, fal_port_t port_id,
 			{
 				qca_hppe_port_mac_type_set(dev_id, SSDK_PHYSICAL_PORT5,
 						PORT_GMAC_TYPE);
-				adpt_hppe_port_interface_mode_set(dev_id,
+				_adpt_hppe_port_interface_mode_set(dev_id,
 						SSDK_PHYSICAL_PORT5, PHY_SGMII_BASET);
 			}
 			break;
@@ -2664,33 +2683,32 @@ adpt_hppe_port_mux_mac_type_set(a_uint32_t dev_id, fal_port_t port_id,
 				qca_hppe_port_mac_type_set(dev_id, port_id, PORT_GMAC_TYPE);
 				if(mode_tmp == PORT_WRAPPER_SGMII_FIBER)
 				{
-					adpt_hppe_port_interface_mode_set(dev_id, port_id,
+					_adpt_hppe_port_interface_mode_set(dev_id, port_id,
 						PORT_SGMII_FIBER);
 				}
 				else
 				{
-					adpt_hppe_port_interface_mode_set(dev_id, port_id,
+					_adpt_hppe_port_interface_mode_set(dev_id, port_id,
 						PHY_SGMII_BASET);
 				}
 				break;
 			case PORT_WRAPPER_SGMII_PLUS:
-				phyinfo = ssdk_port_phyinfo_get(dev_id, port_id);
-				if (phyinfo && (phyinfo->phy_features & PHY_F_QGMAC)) {
+				if (ssdk_port_feature_get(dev_id, port_id, PHY_F_QGMAC)) {
 					qca_hppe_port_mac_type_set(dev_id, port_id,
 							PORT_GMAC_TYPE);
 				} else {
 					qca_hppe_port_mac_type_set(dev_id, port_id,
 							PORT_XGMAC_TYPE);
 				}
-				adpt_hppe_port_interface_mode_set(dev_id, port_id, PORT_SGMII_PLUS);
+				_adpt_hppe_port_interface_mode_set(dev_id, port_id, PORT_SGMII_PLUS);
 				break;
 			case PORT_WRAPPER_USXGMII:
 				qca_hppe_port_mac_type_set(dev_id, port_id, PORT_XGMAC_TYPE);
-				adpt_hppe_port_interface_mode_set(dev_id, port_id, PORT_USXGMII);
+				_adpt_hppe_port_interface_mode_set(dev_id, port_id, PORT_USXGMII);
 				break;
 			case PORT_WRAPPER_10GBASE_R:
 				qca_hppe_port_mac_type_set(dev_id, port_id, PORT_XGMAC_TYPE);
-				adpt_hppe_port_interface_mode_set(dev_id, port_id, PORT_10GBASE_R);
+				_adpt_hppe_port_interface_mode_set(dev_id, port_id, PORT_10GBASE_R);
 				break;
 			default:
 				break;
@@ -2956,8 +2974,14 @@ _adpt_hppe_port_phyaddr_update(a_uint32_t dev_id, a_uint32_t port_id,
 	if(mode == PORT_WRAPPER_10GBASE_R)
 	{
 		port_phyinfo = ssdk_port_phyinfo_get(dev_id, port_id);
+		if (!port_phyinfo)
+		{
+			SSDK_ERROR("port_phyinfo of port%d is null\n", port_id);
+			return SW_FAIL;
+		}
 		phy_addr = port_phyinfo->phy_addr;
 		qca_ssdk_phy_address_set(dev_id, port_id, phy_addr);
+		hsl_port_phy_access_type_set(dev_id, port_id, PHY_I2C_ACCESS);
 		SSDK_DEBUG("port %x phy_addr is %x\n", port_id, phy_addr);
 	}
 	else
@@ -2970,6 +2994,7 @@ _adpt_hppe_port_phyaddr_update(a_uint32_t dev_id, a_uint32_t port_id,
 			SW_RTN_ON_ERROR (rv);
 			phy_addr++;
 			qca_ssdk_phy_address_set(dev_id, port_id, phy_addr);
+			hsl_port_phy_access_type_set(dev_id, port_id, PHY_MDIO_ACCESS);
 			SSDK_DEBUG("port %x phy_addr is %x\n", port_id, phy_addr);
 		}
 	}
@@ -3267,6 +3292,9 @@ adpt_hppe_port_interface_mode_apply(a_uint32_t dev_id)
 	mutex_lock(&priv->mac_sw_sync_lock);
 	rv = _adpt_hppe_port_interface_mode_apply(dev_id, A_TRUE);
 	mutex_unlock(&priv->mac_sw_sync_lock);
+
+	qca_mac_sw_sync_work_resume(priv);
+
 	return rv;
 }
 
@@ -4742,7 +4770,7 @@ adpt_hppe_sfp_interface_mode_switch(a_uint32_t dev_id,
 		{
 			SSDK_DEBUG("Port %d change interface mode to %d from %d\n", port_id,
 				port_mode_new, port_mode_old);
-			rv = adpt_hppe_port_interface_mode_set(dev_id, port_id, port_mode_new);
+			rv = _adpt_hppe_port_interface_mode_set(dev_id, port_id, port_mode_new);
 			SW_RTN_ON_ERROR(rv);
 			rv = _adpt_hppe_port_interface_mode_apply(dev_id, A_FALSE);
 			SW_RTN_ON_ERROR(rv);
@@ -4767,7 +4795,7 @@ adpt_hppe_port_interface_mode_switch(a_uint32_t dev_id, a_uint32_t port_id)
 	SW_RTN_ON_ERROR(rv);
 
 	if (port_mode_new != port_mode_old) {
-		rv = adpt_hppe_port_interface_mode_set(dev_id,
+		rv = _adpt_hppe_port_interface_mode_set(dev_id,
 			port_id, port_mode_new);
 		SW_RTN_ON_ERROR(rv);
 		rv = _adpt_hppe_port_interface_mode_apply(dev_id, A_FALSE);
