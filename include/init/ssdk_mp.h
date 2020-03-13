@@ -22,7 +22,7 @@
 extern "C" {
 #endif                          /* __cplusplus */
 
-#include "ssdk_init.h"
+#include "sw.h"
 
 sw_error_t qca_mp_hw_init(a_uint32_t dev_id);
 

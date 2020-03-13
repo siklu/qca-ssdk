@@ -14,6 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "ssdk_init.h"
+
 #ifdef MP
 #include "ssdk_mp.h"
 #endif

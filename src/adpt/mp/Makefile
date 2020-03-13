@@ -13,7 +13,7 @@ ifeq (TRUE, $(IN_PORTCONTROL))
   SRC_LIST += adpt_mp_portctrl.c
 endif
 
-ifeq (, $(findstring MP, $(SUPPORT_CHIP)))
+ifeq (, $(filter MP, $(SUPPORT_CHIP)))
   SRC_LIST=
 endif
 
