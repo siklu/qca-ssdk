@@ -980,6 +980,8 @@ sw_error_t ssdk_dt_parse(ssdk_init_cfg *cfg, a_uint32_t num, a_uint32_t *dev_id)
 	}
 	else if (of_device_is_compatible(switch_node, "qcom,ess-switch-ipq50xx")) {
 		ssdk_dt_parse_uniphy(*dev_id);
+
+		ssdk_dt_priv->cmnblk_clk = of_clk_get_by_name(switch_node, "cmn_ahb_clk");
 	}
 	else if (of_device_is_compatible(switch_node, "qcom,ess-switch-qca83xx")) {
 		/* s17/s17c chip */
