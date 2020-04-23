@@ -20,7 +20,9 @@
 
 #if defined(CONFIG_OF)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,1,0))
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,5,0))
 #include <drivers/leds/leds-ipq.h>
+#endif
 #else
 #include <drivers/leds/leds-ipq40xx.h>
 #endif
@@ -28,6 +30,7 @@
 
 
 #ifdef DESS
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,5,0))
 static int ssdk_dess_led_source_select(int led_num, enum led_source src_type)
 {
 #if defined(CONFIG_OF)
@@ -39,9 +42,11 @@ static int ssdk_dess_led_source_select(int led_num, enum led_source src_type)
 #endif
 	return 0;
 }
+#endif
 
 int ssdk_dess_led_init(ssdk_init_cfg *cfg)
 {
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,5,0))
 	a_uint32_t i,led_num, led_source_id,source_id;
 	led_ctrl_pattern_t  pattern;
 
@@ -125,6 +130,7 @@ int ssdk_dess_led_init(ssdk_init_cfg *cfg)
 			}
 		}
 	}
+#endif
 	return 0;
 }
 #endif

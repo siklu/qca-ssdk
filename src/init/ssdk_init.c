@@ -1038,6 +1038,7 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 
 #if defined(IN_SWCONFIG)
 #ifndef BOARD_AR71XX
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 0, 0))
 static int
 qca_ar8327_sw_get_reg_val(struct switch_dev *dev,
                                     int reg, int *val)
@@ -1051,6 +1052,7 @@ qca_ar8327_sw_set_reg_val(struct switch_dev *dev,
 {
 	return 0;
 }
+#endif
 #endif
 static struct switch_attr qca_ar8327_globals[] = {
 	{
@@ -1142,8 +1144,10 @@ const struct switch_dev_ops qca_ar8327_sw_ops = {
 	.reset_switch = qca_ar8327_sw_reset_switch,
 	.get_port_link = qca_ar8327_sw_get_port_link,
 #ifndef BOARD_AR71XX
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 0, 0))
 	.get_reg_val = qca_ar8327_sw_get_reg_val,
 	.set_reg_val = qca_ar8327_sw_set_reg_val,
+#endif
 #endif
 };
 #endif
@@ -1534,8 +1538,17 @@ qca_phy_config_init(struct phy_device *pdev)
 #else
 	if (pdev->addr != 0) {
 #endif
-        pdev->supported |= SUPPORTED_1000baseT_Full;
-        pdev->advertising |= ADVERTISED_1000baseT_Full;
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 0, 0))
+	pdev->supported |= SUPPORTED_1000baseT_Full;
+	pdev->advertising |= ADVERTISED_1000baseT_Full;
+#else
+	linkmode_set_bit(ETHTOOL_LINK_MODE_1000baseT_Full_BIT,
+			pdev->supported);
+	linkmode_set_bit(ETHTOOL_LINK_MODE_1000baseT_Full_BIT,
+			pdev->advertising);
+#endif
+
 #ifndef BOARD_AR71XX
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 		ssdk_phy_rgmii_set(priv);
@@ -1566,8 +1579,15 @@ qca_phy_config_init(struct phy_device *pdev)
 	if(ret)
 		priv->link_polling_required = 1;
 	pdev->priv = priv;
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 0, 0))
 	pdev->supported |= SUPPORTED_1000baseT_Full;
 	pdev->advertising |= ADVERTISED_1000baseT_Full;
+#else
+	linkmode_set_bit(ETHTOOL_LINK_MODE_1000baseT_Full_BIT,
+			pdev->supported);
+	linkmode_set_bit(ETHTOOL_LINK_MODE_1000baseT_Full_BIT,
+			pdev->advertising);
+#endif
 
 #if defined(IN_SWCONFIG)
 	ret = qca_switchdev_register(priv);
@@ -1793,7 +1813,11 @@ qca_phy_config_aneg(struct phy_device *pdev)
 
 int qca_phy_suspend(struct phy_device *phydev)
 {
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,9,0))
+	struct mii_bus *bus = phydev->mdio.bus;
+#else
 	struct mii_bus *bus = phydev->bus;
+#endif
 	int val = 0;
 	int addr;
 
@@ -1809,7 +1833,11 @@ int qca_phy_suspend(struct phy_device *phydev)
 
 int qca_phy_resume(struct phy_device *phydev)
 {
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,9,0))
+	struct mii_bus *bus = phydev->mdio.bus;
+#else
 	struct mii_bus *bus = phydev->bus;
+#endif
 	int val = 0;
 	int addr;
 
