@@ -5533,6 +5533,7 @@ sw_error_t adpt_hppe_port_ctrl_init(a_uint32_t dev_id)
 	p_adpt_api->adpt_port_bridge_txmac_set = adpt_hppe_port_bridge_txmac_set;
 	p_adpt_api->adpt_port_interface_eee_cfg_set = adpt_hppe_port_interface_eee_cfg_set;
 	p_adpt_api->adpt_port_interface_eee_cfg_get = adpt_hppe_port_interface_eee_cfg_get;
+	p_adpt_api->adpt_port_phy_status_get = adpt_hppe_port_phy_status_get;
 #if defined(CPPE)
 	if (adpt_hppe_chip_revision_get(dev_id) == CPPE_REVISION) {
 		p_adpt_api->adpt_switch_port_loopback_set = adpt_cppe_switch_port_loopback_set;

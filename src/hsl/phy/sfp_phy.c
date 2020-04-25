@@ -14,6 +14,7 @@
 
 #include "sw.h"
 #include "fal_port_ctrl.h"
+#include "adpt.h"
 #include "hsl_api.h"
 #include "hsl.h"
 #include "sfp_phy.h"
@@ -73,14 +74,11 @@ static int
 sfp_read_status(struct phy_device *pdev)
 {
 	sw_error_t rv;
-	a_bool_t status;
 	fal_port_t port;
 	a_uint32_t addr;
-	fal_port_speed_t speed = FAL_SPEED_BUTT;
 	struct qca_phy_priv *priv = pdev->priv;
-
-	pdev->speed = SPEED_UNKNOWN;
-	pdev->duplex = DUPLEX_UNKNOWN;
+	struct port_phy_status phy_status;
+	adpt_api_t *p_api;
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,9,0))
 	addr = pdev->mdio.addr;
@@ -88,16 +86,11 @@ sfp_read_status(struct phy_device *pdev)
 	addr = pdev->addr;
 #endif
 	port = qca_ssdk_phy_addr_to_port(priv->device_id, addr);
-	rv = fal_port_link_status_get(priv->device_id, port, &status);
-	if (!rv) {
-		pdev->link = status;
-		if (pdev->link) {
-			rv = fal_port_speed_get(priv->device_id, port, &speed);
-			SW_RTN_ON_ERROR(rv);
-			pdev->speed = speed;
-			pdev->duplex = DUPLEX_FULL;
-		}
-	}
+	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(priv->device_id));
+	rv = p_api->adpt_port_phy_status_get(priv->device_id, port, &phy_status);
+	pdev->link = phy_status.link_status;
+	pdev->speed = phy_status.speed;
+	pdev->duplex = phy_status.duplex;
 
 	return rv;
 }

@@ -321,8 +321,9 @@ typedef sw_error_t (*adpt_switch_port_loopback_set_func)(a_uint32_t dev_id,
 typedef sw_error_t (*adpt_switch_port_loopback_get_func)(a_uint32_t dev_id,
 			fal_port_t port_id, fal_loopback_config_t *loopback_cfg);
 typedef sw_error_t (*adpt_port_netdev_notify_func)(struct qca_phy_priv *priv,
-		a_uint32_t port_id);
-
+			a_uint32_t port_id);
+typedef sw_error_t (*adpt_port_phy_status_get_func)(a_uint32_t dev_id,
+			fal_port_t port_id, struct port_phy_status *phy_status);
 // mirror
 typedef sw_error_t (*adpt_mirr_port_in_set_func)(a_uint32_t dev_id, fal_port_t port_id,
                          a_bool_t enable);
@@ -1192,6 +1193,7 @@ typedef struct
 	adpt_port_source_filter_config_get_func adpt_port_source_filter_config_get;
 	adpt_switch_port_loopback_set_func adpt_switch_port_loopback_set;
 	adpt_switch_port_loopback_get_func adpt_switch_port_loopback_get;
+	adpt_port_phy_status_get_func adpt_port_phy_status_get;
 // mirror
 	a_uint32_t adpt_mirror_func_bitmap;
 	adpt_mirr_port_in_set_func adpt_mirr_port_in_set;
