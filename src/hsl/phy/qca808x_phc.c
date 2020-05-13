@@ -42,10 +42,6 @@
 #define PTP_HDR_CORRECTIONFIELD_OFFSET	8
 #define PTP_HDR_RESERVED2_OFFSET	16
 
-#ifndef SUPPORTED_PTP
-#define SUPPORTED_PTP               (1 << 31)
-#endif
-
 #define SKB_TIMESTAMP_TIMEOUT        1 /* jiffies */
 #define GPS_WORK_TIMEOUT             HZ
 
@@ -1088,17 +1084,6 @@ int qca808x_hwtstamp(struct phy_device *phydev, struct ifreq *ifr)
 	}
 
 	pdata->step_mode = ptp_config.step_mode;
-	if (ptp_info->hwts_rx_type != PTP_CLASS_NONE) {
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 0, 0))
-		phydev->supported |= SUPPORTED_PTP;
-		phydev->advertising |= SUPPORTED_PTP;
-#endif
-	} else {
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 0, 0))
-		phydev->supported &= ~SUPPORTED_PTP;
-		phydev->advertising &= ~SUPPORTED_PTP;
-#endif
-	}
 
 	return copy_to_user(ifr->ifr_data, &cfg, sizeof(cfg)) ? -EFAULT : 0;
 }
