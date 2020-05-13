@@ -31,6 +31,7 @@ do { \
         return SW_OUT_OF_RANGE; \
 } while (0)
 
+sw_error_t adpt_mp_intr_init(a_uint32_t dev_id);
 sw_error_t adpt_mp_mib_init(a_uint32_t dev_id);
 sw_error_t adpt_mp_portctrl_init(a_uint32_t dev_id);
 
