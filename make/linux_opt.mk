@@ -300,11 +300,9 @@ ifneq (,$(findstring HORUS, $(SUPPORT_CHIP)))
   MODULE_CFLAG += -DHORUS
 endif
 
-ifneq (,$(findstring ISIS, $(SUPPORT_CHIP)))
-  ifneq (ISISC, $(SUPPORT_CHIP))
+ifneq (,$(filter ISIS, $(SUPPORT_CHIP)))
      MODULE_INC   += -I$(PRJ_PATH)/include/hsl/isis
      MODULE_CFLAG += -DISIS
-  endif
 endif
 
 ifneq (,$(findstring ISISC, $(SUPPORT_CHIP)))
