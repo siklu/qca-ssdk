@@ -3214,6 +3214,7 @@ static int ssdk_dev_event(struct notifier_block *this, unsigned long event, void
 	struct net_device *dev = (struct net_device *)ptr;
 #endif
 
+	ssdk_cfg_default_init(&cfg);
 	rv = chip_ver_get(0, &cfg);
 	if (rv) {
 		SSDK_ERROR("chip verfion get failed\n");
