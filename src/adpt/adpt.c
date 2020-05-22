@@ -458,6 +458,7 @@ sw_error_t adpt_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 					SSDK_ERROR("malloc fail for adpt api\n");
 					return SW_FAIL;
 				}
+				aos_mem_zero(g_adpt_api[dev_id], sizeof(adpt_api_t));
 				rv = adpt_mp_intr_init(dev_id);
 				SW_RTN_ON_ERROR(rv);
 #if defined (IN_MIB)
