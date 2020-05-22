@@ -97,17 +97,6 @@ extern "C"
 #define MPGE_PHY_MMD7_MODE2_PIN1_CTRL             0x20
 #define MPGE_PHY_MMD7_MODE2_PIN2_CTRL             0x8670
 
-/*DEBUG register*/
-#define AFE50_ADC_2_DP                            0x21
-#define AFE50_ADC_4_DP                            0x23
-#define AFE50_ADC_7_DP                            0x26
-#define AFE50_ADC_14_DP                           0x2d
-    /*DEBUG register field*/
-#define AFE50_ADC_2_DP_VAL                        0xf0
-#define AFE50_ADC_4_DP_VAL                        0
-#define AFE50_ADC_7_DP_VAL                        0xffff
-#define AFE50_ADC_14_DP_VAL                       0xffff
-
 int mpge_phy_init(a_uint32_t dev_id, a_uint32_t port_bmp);
 
 #ifdef __cplusplus
