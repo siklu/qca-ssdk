@@ -50,6 +50,7 @@ qca_mp_fpga_ports_enable(a_uint32_t dev_id)
 	return rv;
 }
 #else
+#ifdef IN_PORTCONTROL
 sw_error_t
 qca_mp_portctrl_hw_init(a_uint32_t dev_id)
 {
@@ -86,7 +87,7 @@ qca_mp_portctrl_hw_init(a_uint32_t dev_id)
 	}
 	return rv;
 }
-
+#endif
 sw_error_t
 qca_mp_interface_mode_init(a_uint32_t dev_id)
 {
@@ -134,8 +135,14 @@ qca_mp_hw_init(a_uint32_t dev_id)
 #ifdef RUMI_EMULATION
 	rv = qca_mp_fpga_ports_enable(dev_id);
 #else
+#ifdef IN_PORTCONTROL
 	rv = qca_mp_portctrl_hw_init(dev_id);
 	SW_RTN_ON_ERROR(rv);
+#endif
+#ifdef IN_MIB
+	rv = fal_mib_cpukeep_set(dev_id, A_FALSE);
+	SW_RTN_ON_ERROR(rv);
+#endif
 	rv = qca_mp_interface_mode_init(dev_id);
 	SW_RTN_ON_ERROR(rv)
 #endif
