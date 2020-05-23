@@ -1000,6 +1000,22 @@ static void ssdk_mp_clock_enable(void)
 	writel(reg_val, gcc_gmac_base+0x324);
 	SSDK_INFO("GCC_GMAC1_CFG_CBCR(1868324):%x\n",
 		readl(gcc_gmac_base+0x324));
+
+	reg_val = readl(gcc_gmac_base+0x240);
+        reg_val |= 0x1;
+        writel(reg_val, gcc_gmac_base+0x240);
+
+        reg_val = readl(gcc_gmac_base+0x244);
+        reg_val |= 0x1;
+        writel(reg_val, gcc_gmac_base+0x244);
+
+	reg_val = readl(gcc_gmac_base+0x248);
+        reg_val |= 0x1;
+        writel(reg_val, gcc_gmac_base+0x248);
+
+        reg_val = readl(gcc_gmac_base+0x24c);
+        reg_val |= 0x1;
+        writel(reg_val, gcc_gmac_base+0x24c);
 }
 
 static void ssdk_mp_clock_source_init(void)
