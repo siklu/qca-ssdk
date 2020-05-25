@@ -947,6 +947,7 @@ static void ssdk_mp_clock_enable(void)
 {
 	a_uint32_t reg_val;
 	void __iomem *gcc_mdio_base = NULL;
+	void __iomem *snoc_gmac = NULL;
 
 	gcc_mdio_base = ioremap_nocache(0x1858000, 0x20);
 	if (!gcc_mdio_base) {
@@ -1016,6 +1017,21 @@ static void ssdk_mp_clock_enable(void)
         reg_val = readl(gcc_gmac_base+0x24c);
         reg_val |= 0x1;
         writel(reg_val, gcc_gmac_base+0x24c);
+
+	snoc_gmac = ioremap_nocache(0x18260a0, 0x20);
+        if (!snoc_gmac) {
+                SSDK_ERROR("Failed to map snoc_gmac address!\n");
+                return;
+        }
+        reg_val = readl(snoc_gmac);
+        reg_val |= 0x1;
+        writel(reg_val, snoc_gmac);
+
+        reg_val = readl(snoc_gmac + 4);
+        reg_val |= 0x1;
+        writel(reg_val, snoc_gmac + 4);
+
+        iounmap(snoc_gmac);
 }
 
 static void ssdk_mp_clock_source_init(void)
