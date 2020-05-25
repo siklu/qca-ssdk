@@ -836,35 +836,46 @@ mpge_phy_led_set(a_uint32_t dev_id, a_uint32_t phy_id,
 	a_uint32_t led_mode)
 {
 	sw_error_t rv = SW_OK;
-	a_uint32_t mpge_phy_pin0_ctrl =0, mpge_phy_pin1_ctrl = 0,
-		mpge_phy_pin2_ctrl = 0;
+	a_uint32_t mpge_phy_pin0_val =0, mpge_phy_pin1_val = 0,
+		mpge_phy_pin2_val = 0;
+	a_uint16_t phy_data = 0;
+
+	/*set active high for LED*/
+	phy_data = mpge_phy_mmd_read(dev_id, phy_id, MPGE_PHY_MMD7_NUM,
+		MPGE_PHY_MMD7_LED_ACTIVE_STATUS_CTRL);
+	PHY_RTN_ON_READ_ERROR(phy_data);
+	rv = mpge_phy_mmd_write(dev_id, phy_id, MPGE_PHY_MMD7_NUM,
+		MPGE_PHY_MMD7_LED_ACTIVE_STATUS_CTRL,
+		phy_data | MPGE_PHY_MMD7_LED_ACTIVE_STATUS_HIGH);
+	SW_RTN_ON_ERROR(rv);
+
 	/*MPGE_PHY_ONE_LED_MODE use only one pin for one LED
 		MPGE_PHY_TWO_LEDS_MODE use three pins for two LEDs*/
 	if(led_mode == MPGE_PHY_ONE_LED_MODE)
 	{
-		mpge_phy_pin0_ctrl = MPGE_PHY_MMD7_MODE1_PIN0_CTRL;
-		mpge_phy_pin1_ctrl = MPGE_PHY_MMD7_MODE1_PIN1_CTRL;
-		mpge_phy_pin2_ctrl = MPGE_PHY_MMD7_MODE1_PIN2_CTRL;
+		mpge_phy_pin0_val = MPGE_PHY_MMD7_MODE1_PIN0_VAL;
+		mpge_phy_pin1_val = MPGE_PHY_MMD7_MODE1_PIN1_VAL;
+		mpge_phy_pin2_val = MPGE_PHY_MMD7_MODE1_PIN2_VAL;
 	}
 	else
 	{
-		mpge_phy_pin0_ctrl = MPGE_PHY_MMD7_MODE2_PIN0_CTRL;
-		mpge_phy_pin1_ctrl = MPGE_PHY_MMD7_MODE2_PIN1_CTRL;
-		mpge_phy_pin2_ctrl = MPGE_PHY_MMD7_MODE2_PIN2_CTRL;
+		mpge_phy_pin0_val = MPGE_PHY_MMD7_MODE2_PIN0_VAL;
+		mpge_phy_pin1_val = MPGE_PHY_MMD7_MODE2_PIN1_VAL;
+		mpge_phy_pin2_val = MPGE_PHY_MMD7_MODE2_PIN2_VAL;
 	}
 	rv = mpge_phy_mmd_write(dev_id, phy_id, MPGE_PHY_MMD7_NUM,
 		MPGE_PHY_MMD7_LED0_CTRL,
-		mpge_phy_pin0_ctrl);
+		mpge_phy_pin0_val);
 	SW_RTN_ON_ERROR(rv);
 
 	rv = mpge_phy_mmd_write(dev_id, phy_id, MPGE_PHY_MMD7_NUM,
 		MPGE_PHY_MMD7_LED1_CTRL,
-		mpge_phy_pin1_ctrl);
+		mpge_phy_pin1_val);
 	SW_RTN_ON_ERROR(rv);
 
 	rv = mpge_phy_mmd_write(dev_id, phy_id, MPGE_PHY_MMD7_NUM,
 		MPGE_PHY_MMD7_LED2_CTRL,
-		mpge_phy_pin2_ctrl);
+		mpge_phy_pin2_val);
 
 	return rv;
 }
