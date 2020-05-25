@@ -923,6 +923,10 @@ mpge_phy_cdt_thresh_init(a_uint32_t dev_id, a_uint32_t phy_id)
 	rv = mpge_phy_mmd_write(dev_id, phy_id, MPGE_PHY_MMD3_NUM,
 		MPGE_PHY_MMD3_CDT_THRESH_CTRL13,
 		MPGE_PHY_MMD3_CDT_THRESH_CTRL13_VAL);
+	SW_RTN_ON_ERROR(rv);
+	rv = mpge_phy_mmd_write(dev_id, phy_id, MPGE_PHY_MMD3_NUM,
+		MPGE_PHY_MMD3_CDT_THRESH_CTRL14,
+		MPGE_PHY_MMD3_NEAR_ECHO_THRESH_VAL);
 
 	return rv;
 }
