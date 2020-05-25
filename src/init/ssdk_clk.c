@@ -641,6 +641,7 @@ void ssdk_gcc_ppe_clock_init(a_uint32_t revision, enum cmnblk_clk_type mode)
 #define GCC_GMAC0_TX_CBCR_OFFSET           0x244
 #define GCC_GMAC1_RX_CBCR_OFFSET           0x248
 #define GCC_GMAC1_TX_CBCR_OFFSET           0x24c
+#define GCC_GMAC_CFG_RCGR_OFFSET           0x84
 
 #define GCC_GMAC_CFG_RCGR_SRC_SEL_MASK     0x700
 #define GCC_GMAC0_RX_SRC_SEL_GEPHY_TX      0x200
@@ -941,6 +942,65 @@ static void ssdk_mp_clock_disable(void)
 		readl(gcc_gmac_base+GCC_GMAC1_TX_CBCR_OFFSET));
 }
 
+static void ssdk_mp_clock_enable(void)
+{
+	a_uint32_t reg_val;
+	void __iomem *gcc_mdio_base = NULL;
+
+	gcc_mdio_base = ioremap_nocache(0x1858000, 0x20);
+	if (!gcc_mdio_base) {
+		SSDK_ERROR("Failed to map gcc_mdio_base address!\n");
+		return;
+	}
+	reg_val = readl(gcc_mdio_base+0x4);
+	reg_val |= 0x1;
+	writel(reg_val, gcc_mdio_base+0x4);
+	SSDK_INFO("GCC_MDIO0_AHB_CBCR(1858004):%x\n",
+		readl(gcc_mdio_base+0x4));
+
+	reg_val = readl(gcc_mdio_base+0x14);
+	reg_val |= 0x1;
+	writel(reg_val, gcc_mdio_base+0x14);
+	SSDK_INFO("GCC_MDIO1_AHB_CBCR(1858014):%x\n",
+		readl(gcc_mdio_base+0x14));
+
+	reg_val = readl(gcc_gmac_base+0x190);
+	reg_val |= 0x1;
+	writel(reg_val, gcc_gmac_base+0x190);
+	SSDK_INFO("GCC_GMAC0_SYS_CBCR(1868190):%x\n",
+		readl(gcc_gmac_base+0x190));
+
+	reg_val = readl(gcc_gmac_base+0x300);
+	reg_val |= 0x1;
+	writel(reg_val, gcc_gmac_base+0x300);
+	SSDK_INFO("GCC_GMAC0_PTP_CBCR(1868300):%x\n",
+		readl(gcc_gmac_base+0x300));
+
+	reg_val = readl(gcc_gmac_base+0x304);
+	reg_val |= 0x1;
+	writel(reg_val, gcc_gmac_base+0x304);
+	SSDK_INFO("GCC_GMAC0_CFG_CBCR(1868304):%x\n",
+		readl(gcc_gmac_base+0x304));
+
+	reg_val = readl(gcc_gmac_base+0x310);
+	reg_val |= 0x1;
+	writel(reg_val, gcc_gmac_base+0x310);
+	SSDK_INFO("GCC_GMAC1_SYS_CBCR(1868310):%x\n",
+		readl(gcc_gmac_base+0x310));
+
+	reg_val = readl(gcc_gmac_base+0x320);
+	reg_val |= 0x1;
+	writel(reg_val, gcc_gmac_base+0x320);
+	SSDK_INFO("GCC_GMAC1_PTP_CBCR(1868320):%x\n",
+		readl(gcc_gmac_base+0x320));
+
+	reg_val = readl(gcc_gmac_base+0x324);
+	reg_val |= 0x1;
+	writel(reg_val, gcc_gmac_base+0x324);
+	SSDK_INFO("GCC_GMAC1_CFG_CBCR(1868324):%x\n",
+		readl(gcc_gmac_base+0x324));
+}
+
 static void ssdk_mp_clock_source_init(void)
 {
 	a_uint32_t reg_val;
@@ -973,6 +1033,12 @@ static void ssdk_mp_clock_source_init(void)
 	writel(reg_val, gcc_gmac_base+GCC_GMAC1_TX_CFG_RCGR_OFFSET);
 	SSDK_INFO("GCC_GMAC1_TX_CFG_RCGR_OFFSET(186803c):%x\n",
 		readl(gcc_gmac_base+GCC_GMAC1_TX_CFG_RCGR_OFFSET));
+
+	reg_val = readl(gcc_gmac_base+GCC_GMAC_CFG_RCGR_OFFSET);
+	reg_val = 0x209;
+	writel(reg_val, gcc_gmac_base+GCC_GMAC_CFG_RCGR_OFFSET);
+	SSDK_INFO("GCC_GMAC_CFG_RCGR_OFFSET(1868084):%x\n",
+		readl(gcc_gmac_base+GCC_GMAC_CFG_RCGR_OFFSET));
 }
 
 static void ssdk_mp_gephy_reset(void)
@@ -1071,6 +1137,7 @@ static void ssdk_gcc_mp_clock_init(enum cmnblk_clk_type mode)
 		return;
 	}
 	ssdk_mp_reset();
+	ssdk_mp_clock_enable();
 #endif
 }
 #endif
