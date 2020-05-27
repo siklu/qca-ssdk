@@ -39,6 +39,8 @@ extern "C" {
 
 #define PORT_GMAC_TYPE                  1
 #define PORT_XGMAC_TYPE                 2
+#define PORT_LINK_UP                    1
+#define PORT_LINK_DOWN                  0
 
 /*qca808x_start*/
     typedef enum {
