@@ -125,6 +125,10 @@ hsl_phy_ops_t *hsl_phy_api_ops_get(a_uint32_t dev_id, a_uint32_t port_id)
 		return NULL;
 
 	phytype = phy_info[dev_id]->phy_type[port_id];
+	if(phytype == MAX_PHY_CHIP)
+	{
+		return NULL;
+	}
 
 	return ssdk_phy_driver[phytype].phy_ops;
 
@@ -369,6 +373,7 @@ int qca_ssdk_phy_info_init(a_uint32_t dev_id)
 
 	for (j = SSDK_PHYSICAL_PORT0; j < SW_MAX_NR_PORT; j ++)
 	{
+		phy_info[dev_id]->phy_type[j] = MAX_PHY_CHIP;
 		if(j == SSDK_PHYSICAL_PORT0)
 		{
 			phy_info[dev_id]->phy_address[j] = INVALID_PHY_ADDR;

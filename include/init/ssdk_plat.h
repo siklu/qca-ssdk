@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2014-2015, 2017-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2014-2015, 2017-2020, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -179,7 +179,8 @@ enum {
 	QCA_VER_AR8327 = 0x12,
 	QCA_VER_AR8337 = 0x13,
 	QCA_VER_DESS = 0x14,
-	QCA_VER_HPPE = 0x15
+	QCA_VER_HPPE = 0x15,
+	QCA_VER_SCOMPHY = 0xEE
 };
 /*qca808x_end*/
 /*poll mib per 120secs*/
