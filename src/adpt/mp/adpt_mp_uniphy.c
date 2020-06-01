@@ -26,6 +26,9 @@
 #include "ssdk_clk.h"
 #include "ssdk_dts.h"
 #include "adpt.h"
+#include "mp_uniphy_reg.h"
+#include "mp_uniphy.h"
+#include "hsl_phy.h"
 
 static sw_error_t
 _adpt_mp_uniphy_calibrate(a_uint32_t dev_id, a_uint32_t uniphy_index)
@@ -216,6 +219,58 @@ adpt_mp_uniphy_mode_ctrl_set(a_uint32_t dev_id,
 	return rv;
 }
 
+static sw_error_t
+_adpt_mp_uniphy_clk_output_ctrl_set(a_uint32_t dev_id, a_uint32_t index,
+	a_uint32_t clk_rate)
+{
+	sw_error_t rv = SW_OK;
+	union uniphy_clock_output_control_u clock_output;
+
+	memset(&clock_output, 0, sizeof(union uniphy_clock_output_control_u));
+	clock_output.bf.ref_clk_output_drv = UNIPHY_CLK_DRV_1;
+	clock_output.bf.ref_clk_output_en = A_TRUE;
+	SSDK_INFO("uniphy will output clock as %dHz\n", clk_rate);
+	if(clk_rate == UNIPHY_CLK_RATE_25M)
+	{
+		clock_output.bf.ref_clk_output_div = UNIPHY_CLK_DIV_25M;
+	}
+	else if(clk_rate == UNIPHY_CLK_RATE_50M)
+	{
+		clock_output.bf.ref_clk_output_div = UNIPHY_CLK_DIV_50M;
+	}
+	else
+	{
+		return SW_NOT_SUPPORTED;
+	}
+	rv = mp_uniphy_clock_output_control_set(dev_id, index,
+			&clock_output);
+
+	return rv;
+}
+
+static void
+_adpt_mp_uniphy_clk_output_set(a_uint32_t dev_id, a_uint32_t index)
+{
+	a_uint32_t phy_id =0;
+	a_bool_t force_port = A_FALSE;
+
+	/*when MP connect s17c or qca803x, need to reconfigure reference clock
+	as 25M for port 2*/
+	force_port = ssdk_port_feature_get(dev_id, SSDK_PHYSICAL_PORT2, PHY_F_FORCE);
+	if(force_port)
+	{
+		_adpt_mp_uniphy_clk_output_ctrl_set(dev_id, index, UNIPHY_CLK_RATE_25M);
+	}
+	phy_id = hsl_port_phyid_get(dev_id, SSDK_PHYSICAL_PORT2);
+	if(phy_id == QCA8030_PHY || phy_id == QCA8033_PHY || phy_id == QCA8035_PHY)
+	{
+		_adpt_mp_uniphy_clk_output_ctrl_set(dev_id, index, UNIPHY_CLK_RATE_25M);
+		hsl_port_phy_gpio_reset(dev_id, SSDK_PHYSICAL_PORT2);
+	}
+
+	return;
+}
+
 sw_error_t
 adpt_mp_uniphy_mode_set(a_uint32_t dev_id, a_uint32_t index, a_uint32_t mode)
 {
@@ -296,6 +351,7 @@ adpt_mp_uniphy_mode_set(a_uint32_t dev_id, a_uint32_t index, a_uint32_t mode)
 	} else {
 		SSDK_DEBUG("mp uniphy %d sgmiiplus configuration is done!\n", index);
 	}
+	_adpt_mp_uniphy_clk_output_set(dev_id, index);
 
 	return rv;
 }
