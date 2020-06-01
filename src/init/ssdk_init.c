@@ -46,6 +46,7 @@
 #include <linux/delay.h>
 #include <linux/string.h>
 #include <linux/gpio.h>
+#include <linux/of_gpio.h>
 
 #if defined(IN_SWCONFIG)
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
@@ -3389,6 +3390,52 @@ static int ssdk_alloc_priv(a_uint32_t dev_num)
 #ifndef SSDK_STR
 #define SSDK_STR "ssdk"
 #endif
+#if defined (ISISC) || defined (ISIS)
+static void qca_ar8327_gpio_reset(struct qca_phy_priv *priv)
+{
+	struct device_node *mdio_node = NULL, *np = NULL;
+	int gpio_num = 0, ret = 0;
+
+	if (priv->ess_switch_flag == A_TRUE)
+		np = priv->of_node;
+	else
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,9,0))
+		np = priv->phy->mdio.dev.of_node;
+#else
+		np = priv->phy->dev.of_node;
+#endif
+	if(!np)
+		return;
+
+	mdio_node = of_parse_phandle(np, "mdio-bus", 0);
+	if(!mdio_node)
+	{
+		SSDK_INFO("mdio node doesn't exist\n");
+		return;
+	}
+	gpio_num = of_get_named_gpio(mdio_node, "phy-reset-gpio",
+					SSDK_PHY_RESET_GPIO_INDEX);
+	if(gpio_num <= 0)
+	{
+		SSDK_INFO("reset gpio doesn't exist\n ");
+		return;
+	}
+	ret = gpio_request(gpio_num, "phy-reset-gpio");
+	if(ret)
+	{
+		SSDK_ERROR("gpio%d request failed, ret:%d\n", gpio_num, ret);
+		return;
+	}
+	gpio_direction_output(gpio_num, SSDK_GPIO_RESET);
+	msleep(200);
+	gpio_set_value(gpio_num, SSDK_GPIO_RELEASE);
+	SSDK_INFO("GPIO%d reset switch done\n", gpio_num);
+
+	gpio_free(gpio_num);
+
+	return;
+}
+#endif
 static int __init regi_init(void)
 {
 	a_uint32_t num = 0, dev_id = 0, dev_num = 1;
@@ -3449,6 +3496,7 @@ static int __init regi_init(void)
 #if defined (ISISC) || defined (ISIS)
 				if (qca_phy_priv_global[dev_id]->ess_switch_flag == A_TRUE) {
 					SSDK_INFO("Initializing ISISC!!\n");
+					qca_ar8327_gpio_reset(qca_phy_priv_global[dev_id]);
 					rv = ssdk_switch_register(dev_id, cfg.chip_type);
 					SW_CNTU_ON_ERROR_AND_COND1_OR_GOTO_OUT(rv, -ENODEV);
 					rv = qca_ar8327_hw_init(qca_phy_priv_global[dev_id]);
