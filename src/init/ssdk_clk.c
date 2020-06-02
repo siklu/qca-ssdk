@@ -642,6 +642,7 @@ void ssdk_gcc_ppe_clock_init(a_uint32_t revision, enum cmnblk_clk_type mode)
 #define GCC_GMAC1_RX_CBCR_OFFSET           0x248
 #define GCC_GMAC1_TX_CBCR_OFFSET           0x24c
 #define GCC_GMAC_CFG_RCGR_OFFSET           0x84
+#define GCC_GMAC_CFG_RCGR_UPDATE_OFFSET           0x80
 
 #define GCC_GMAC_CFG_RCGR_SRC_SEL_MASK     0x700
 #define GCC_GMAC0_RX_SRC_SEL_GEPHY_TX      0x200
@@ -1039,6 +1040,10 @@ static void ssdk_mp_clock_source_init(void)
 	writel(reg_val, gcc_gmac_base+GCC_GMAC_CFG_RCGR_OFFSET);
 	SSDK_INFO("GCC_GMAC_CFG_RCGR_OFFSET(1868084):%x\n",
 		readl(gcc_gmac_base+GCC_GMAC_CFG_RCGR_OFFSET));
+
+	reg_val = readl(gcc_gmac_base+GCC_GMAC_CFG_RCGR_UPDATE_OFFSET);
+	reg_val |= 0x3;
+	writel(reg_val, gcc_gmac_base+GCC_GMAC_CFG_RCGR_UPDATE_OFFSET);
 }
 
 static void ssdk_mp_gephy_reset(void)
