@@ -190,6 +190,8 @@ adpt_mp_port_txfc_status_set(a_uint32_t dev_id, fal_port_t port_id,
 	if (A_TRUE == enable) {
 		mac_flow_ctrl.bf.flowctrl_tx_enable = 1;
 		mac_flow_ctrl.bf.pause_time = GMAC_PAUSE_TIME;
+		mac_flow_ctrl.bf.disable_zero_quanta_pause =
+			GMAC_PAUSE_QUANTA_ENABLE;
 		mac_operation_mode_ctrl.bf.enable_hw_flowctrl =
 			GMAC_HW_FLOWCTRL_ENABLE;
 	} else {
