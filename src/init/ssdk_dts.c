@@ -955,6 +955,10 @@ sw_error_t ssdk_dt_parse(ssdk_init_cfg *cfg, a_uint32_t num, a_uint32_t *dev_id)
 	ssdk_dt_priv->ess_clk= ERR_PTR(-ENOENT);
 	ssdk_dt_priv->cmnblk_clk = ERR_PTR(-ENOENT);
 
+	if(of_property_read_bool(switch_node,"qcom,emulation")){
+		ssdk_dt_priv->is_emulation = A_TRUE;
+		SSDK_INFO("RUMI emulation\n");
+	}
 	/* parse common dts info */
 	rv = ssdk_dt_parse_access_mode(switch_node, ssdk_dt_priv);
 	SW_RTN_ON_ERROR(rv);
@@ -983,6 +987,7 @@ sw_error_t ssdk_dt_parse(ssdk_init_cfg *cfg, a_uint32_t num, a_uint32_t *dev_id)
 			ssdk_dt_priv->tm_tick_mode = mode;
 	}
 	else if (of_device_is_compatible(switch_node, "qcom,ess-switch-ipq50xx")) {
+		ssdk_dt_priv->emu_chip_ver = MP_GEPHY;
 		ssdk_dt_parse_uniphy(*dev_id);
 
 		ssdk_dt_priv->cmnblk_clk = of_clk_get_by_name(switch_node, "cmn_ahb_clk");
@@ -1117,5 +1122,14 @@ void ssdk_switch_device_num_exit(void)
 a_uint32_t ssdk_switch_device_num_get(void)
 {
 	return ssdk_dt_global.num_devices;
+}
+
+a_bool_t ssdk_is_emulation(a_uint32_t dev_id)
+{
+	return ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->is_emulation;
+}
+a_uint32_t ssdk_emu_chip_ver_get(a_uint32_t dev_id)
+{
+	return ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->emu_chip_ver;
 }
 

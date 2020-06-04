@@ -20,36 +20,6 @@
 #include "ssdk_mp.h"
 #include "adpt.h"
 
-#ifdef RUMI_EMULATION
-sw_error_t
-qca_mp_fpga_ports_enable(a_uint32_t dev_id)
-{
-	sw_error_t rv = SW_OK;
-	a_uint32_t i = 0;
-	adpt_api_t *p_api;
-
-	SW_RTN_ON_NULL(p_api = adpt_api_ptr_get(dev_id));
-
-	SW_RTN_ON_NULL(p_api->adpt_port_mac_speed_set);
-	SW_RTN_ON_NULL(p_api->adpt_port_mac_duplex_set);
-
-	for (i = SSDK_PHYSICAL_PORT1; i <= SSDK_PHYSICAL_PORT2; i ++) {
-		rv = p_api->adpt_port_mac_speed_set(dev_id, i, FAL_SPEED_1000);
-		SW_RTN_ON_ERROR(rv);
-		rv = p_api->adpt_port_mac_duplex_set(dev_id, i, FAL_FULL_DUPLEX);
-		SW_RTN_ON_ERROR(rv);
-		fal_port_txmac_status_set (dev_id, i, A_TRUE);
-		fal_port_rxmac_status_set (dev_id, i, A_TRUE);
-		fal_port_rxfc_status_set(dev_id, i, A_TRUE);
-		fal_port_txfc_status_set(dev_id, i, A_TRUE);
-		fal_port_max_frame_size_set(dev_id, i,
-			FAL_DEFAULT_MAX_FRAME_SIZE);
-		fal_port_promisc_mode_set(dev_id, i, A_TRUE);
-	}
-
-	return rv;
-}
-#else
 #ifdef IN_PORTCONTROL
 sw_error_t
 qca_mp_portctrl_hw_init(a_uint32_t dev_id)
@@ -124,16 +94,12 @@ qca_mp_interface_mode_init(a_uint32_t dev_id)
 
 	return rv;
 }
-#endif
 
 sw_error_t
 qca_mp_hw_init(a_uint32_t dev_id)
 {
 	sw_error_t rv = SW_OK;
 
-#ifdef RUMI_EMULATION
-	rv = qca_mp_fpga_ports_enable(dev_id);
-#else
 #ifdef IN_PORTCONTROL
 	rv = qca_mp_portctrl_hw_init(dev_id);
 	SW_RTN_ON_ERROR(rv);
@@ -144,7 +110,6 @@ qca_mp_hw_init(a_uint32_t dev_id)
 #endif
 	rv = qca_mp_interface_mode_init(dev_id);
 	SW_RTN_ON_ERROR(rv)
-#endif
 
 	return rv;
 }
