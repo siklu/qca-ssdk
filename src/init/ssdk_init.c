@@ -2592,9 +2592,13 @@ static int chip_is_scomphy(a_uint32_t dev_id, ssdk_init_cfg* cfg)
 				case MP_GEPHY:
 /*qca808x_start*/
 				case QCA8081_PHY_V1_1:
-					cfg->chip_type = CHIP_SCOMPHY;
-					cfg->phy_id = phy_id;
-					rv = SW_OK;
+						cfg->chip_type = CHIP_SCOMPHY;
+						/*MP GEPHY is always the first port*/
+						if(cfg->phy_id == 0)
+						{
+							cfg->phy_id = phy_id;
+						}
+						rv = SW_OK;
 					break;
 				default:
 					break;
