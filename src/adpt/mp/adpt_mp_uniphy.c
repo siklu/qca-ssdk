@@ -220,9 +220,8 @@ sw_error_t
 adpt_mp_uniphy_mode_set(a_uint32_t dev_id, a_uint32_t index, a_uint32_t mode)
 {
 	sw_error_t rv = SW_OK;
-#if 0
 	a_uint32_t clock = UNIPHY_CLK_RATE_125M;
-#endif
+
 	union uniphy_misc2_phy_mode_u uniphy_misc2_phy_mode;
 
 	memset(&uniphy_misc2_phy_mode, 0, sizeof(uniphy_misc2_phy_mode));
@@ -253,9 +252,11 @@ adpt_mp_uniphy_mode_set(a_uint32_t dev_id, a_uint32_t index, a_uint32_t mode)
 	if (mode == PORT_WRAPPER_SGMII_CHANNEL0) {
 		uniphy_misc2_phy_mode.bf.phy_mode =
 			UNIPHY_PHY_SGMII_MODE;
+		clock = UNIPHY_CLK_RATE_125M;
 	} else {
 		uniphy_misc2_phy_mode.bf.phy_mode =
 			UNIPHY_PHY_SGMIIPLUS_MODE;
+		clock = UNIPHY_CLK_RATE_312M;
 	}
 	rv = hppe_uniphy_phy_mode_ctrl_set(dev_id, index,
 		&uniphy_misc2_phy_mode);
@@ -284,12 +285,10 @@ adpt_mp_uniphy_mode_set(a_uint32_t dev_id, a_uint32_t index, a_uint32_t mode)
 		A_TRUE);
 	SW_RTN_ON_ERROR (rv);
 
-#if 0
 	if (SW_OK == rv) {
 		ssdk_mp_raw_clock_set(index, UNIPHY_RX, clock);
 		ssdk_mp_raw_clock_set(index, UNIPHY_TX, clock);
 	}
-#endif
 
 	if (mode == PORT_WRAPPER_SGMII_CHANNEL0) {
 		SSDK_DEBUG("mp uniphy %d sgmii configuration is done!\n", index);
