@@ -69,6 +69,7 @@ extern "C"
 #define MPGE_PHY_MMD3_CDT_THRESH_CTRL7            0x8078
 #define MPGE_PHY_MMD3_CDT_THRESH_CTRL9            0x807a
 #define MPGE_PHY_MMD3_CDT_THRESH_CTRL13           0x807e
+#define MPGE_PHY_MMD3_CDT_THRESH_CTRL14           0x807f
 
     /*MMD3 register field*/
 #define MPGE_PHY_MMD3_AZ_CTRL1_VAL                0x4080
@@ -77,9 +78,10 @@ extern "C"
 #define MPGE_PHY_MMD3_CDT_THRESH_CTRL4_VAL        0xa060
 #define MPGE_PHY_MMD3_CDT_THRESH_CTRL5_VAL        0xc040
 #define MPGE_PHY_MMD3_CDT_THRESH_CTRL6_VAL        0xa060
-#define MPGE_PHY_MMD3_CDT_THRESH_CTRL7_VAL        0xc050
+#define MPGE_PHY_MMD3_CDT_THRESH_CTRL7_VAL        0xc24c
 #define MPGE_PHY_MMD3_CDT_THRESH_CTRL9_VAL        0xc060
 #define MPGE_PHY_MMD3_CDT_THRESH_CTRL13_VAL       0xb060
+#define MPGE_PHY_MMD3_NEAR_ECHO_THRESH_VAL        0x90b0
 
 /**MMD7*/
 #define MPGE_PHY_MMD7_NUM                         0x7
