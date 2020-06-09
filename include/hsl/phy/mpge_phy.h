@@ -72,7 +72,7 @@ extern "C"
 #define MPGE_PHY_MMD3_CDT_THRESH_CTRL14           0x807f
 
     /*MMD3 register field*/
-#define MPGE_PHY_MMD3_AZ_CTRL1_VAL                0x4080
+#define MPGE_PHY_MMD3_AZ_CTRL1_VAL                0x7880
 #define MPGE_PHY_MMD3_AZ_CTRL2_VAL                0xc8
 #define MPGE_PHY_MMD3_CDT_THRESH_CTRL3_VAL        0xc040
 #define MPGE_PHY_MMD3_CDT_THRESH_CTRL4_VAL        0xa060
