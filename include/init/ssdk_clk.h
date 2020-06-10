@@ -94,6 +94,21 @@ enum unphy_rst_type {
 #define NSS_PTP_REF_CLK	"gcc_nss_ptp_ref_clk"
 #define SNOC_NSSNOC_CLK	"gcc_snoc_nssnoc_clk"
 
+#define UNIPHY_AHB_CLK	"uniphy_ahb_clk"
+#define UNIPHY_SYS_CLK	"uniphy_sys_clk"
+#define MP_UNIPHY_SYS_CLK_RATE	24000000
+#define MDIO0_AHB_CLK		"gcc_mdio0_ahb_clk"
+#define MDIO1_AHB_CLK		"gcc_mdio1_ahb_clk"
+#define GMAC0_CFG_CLK		"gcc_gmac0_cfg_clk"
+#define GMAC0_SYS_CLK		"gcc_gmac0_sys_clk"
+#define GMAC1_CFG_CLK		"gcc_gmac1_cfg_clk"
+#define GMAC1_SYS_CLK		"gcc_gmac1_sys_clk"
+#define SNOC_GMAC0_AHB_CLK		"gcc_snoc_gmac0_ahb_clk"
+#define SNOC_GMAC1_AHB_CLK		"gcc_snoc_gmac1_ahb_clk"
+#define GMAC0_PTP_CLK		"gcc_gmac0_ptp_clk"
+#define GMAC1_PTP_CLK		"gcc_gmac1_ptp_clk"
+#define GMAC_CLK_RATE		240000000
+
 #define NSS_PORT1_RX_CLK	"nss_port1_rx_clk"
 #define NSS_PORT1_TX_CLK	"nss_port1_tx_clk"
 #define NSS_PORT2_RX_CLK	"nss_port2_rx_clk"
@@ -163,6 +178,21 @@ enum cmnblk_clk_type {
 	EXTERNAL_48MHZ,
 	EXTERNAL_50MHZ,
 };
+
+enum mp_bcr_rst_type {
+	GEPHY_BCR_RESET_E = 0,
+	UNIPHY_BCR_RESET_E,
+	GMAC0_BCR_RESET_E,
+	GMAC1_BCR_RESET_E,
+	GEPHY_MISC_RESET_E,
+	MP_BCR_RST_MAX
+};
+
+#define GEHPY_BCR_RESET_ID	"gephy_bcr_rst"
+#define UNIPHY_BCR_RESET_ID	"uniphy_bcr_rst"
+#define GMAC0_BCR_RESET_ID	"gmac0_bcr_rst"
+#define GMAC1_BCR_RESET_ID	"gmac1_bcr_rst"
+#define GEPHY_MISC_RESET_ID	"gephy_misc_rst"
 
 #define FREQUENCY_MASK          0xfffffdf0
 #define INTERNAL_48MHZ_CLOCK    0x7
@@ -243,6 +273,13 @@ void ssdk_port_mac_clock_reset(
 void ssdk_ppe_reset_init(void);
 void ssdk_uniphy_raw_clock_reset(a_uint8_t uniphy_index);
 void ssdk_uniphy_raw_clock_set(
+	a_uint8_t uniphy_index,
+	a_uint8_t direction,
+	a_uint32_t clock);
+#endif
+
+#if defined(MP)
+void ssdk_mp_raw_clock_set(
 	a_uint8_t uniphy_index,
 	a_uint8_t direction,
 	a_uint32_t clock);
