@@ -43,6 +43,7 @@
 #include <qca808x_phy.h>
 /*qca808x_end*/
 #endif
+#include <linux/of_gpio.h>
 /*qca808x_start*/
 #include "sw.h"
 #include "ssdk_plat.h"
@@ -618,6 +619,53 @@ phy_type_t hsl_phy_type_get(a_uint32_t dev_id, a_uint32_t port_id)
 
 	return phy_info[dev_id]->phy_type[port_id];
 }
+
+a_uint32_t hsl_port_phy_reset_gpio_get(a_uint32_t dev_id, a_uint32_t port_id)
+{
+	return phy_info[dev_id]->phy_reset_gpio[port_id];
+}
+
+void hsl_port_phy_reset_gpio_set(a_uint32_t dev_id, a_uint32_t port_id,
+	a_uint32_t phy_reset_gpio)
+{
+	phy_info[dev_id]->phy_reset_gpio[port_id] = phy_reset_gpio;
+
+	return;
+}
+
+void hsl_port_phy_gpio_reset(a_uint32_t dev_id, a_uint32_t port_id)
+
+{
+	a_uint32_t gpio_num, ret = 0;
+
+	gpio_num = hsl_port_phy_reset_gpio_get(dev_id, port_id);
+
+	if(gpio_num == SSDK_INVALID_GPIO)
+	{
+		return;
+	}
+	ret = gpio_request(gpio_num, "phy_reset_gpio");
+	if(ret)
+	{
+		SSDK_ERROR("gpio request failed, ret:%d\n", ret);
+		return;
+	}
+	ret = gpio_direction_output(gpio_num, SSDK_GPIO_RESET);
+	if(ret)
+	{
+		SSDK_ERROR("when reset, gpio set failed, ret:%d\n",
+			ret);
+		return;
+	}
+	msleep(200);
+	gpio_set_value(gpio_num, SSDK_GPIO_RELEASE);
+	SSDK_INFO("GPIO%d reset PHY done\n", gpio_num);
+
+	gpio_free(gpio_num);
+
+	return;
+}
+
 /*qca808x_start*/
 sw_error_t ssdk_phy_driver_cleanup(void)
 {

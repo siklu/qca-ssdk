@@ -108,6 +108,7 @@ typedef struct
 } ssdk_dt_cfg;
 
 #define SSDK_MAX_NR_ETH 6
+#define SSDK_PHY_RESET_GPIO_INDEX 0
 
 typedef struct
 {
