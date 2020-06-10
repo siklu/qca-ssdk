@@ -2365,11 +2365,9 @@ ssdk_init(a_uint32_t dev_id, ssdk_init_cfg * cfg)
 	if (rv != SW_OK)
 		SSDK_ERROR("ssdk fal init failed: %d. \r\n", rv);
 
-#ifndef RUMI_EMULATION
 	rv = ssdk_phy_driver_init(dev_id, cfg);
 	if (rv != SW_OK)
 		SSDK_ERROR("ssdk phy init failed: %d. \r\n", rv);
-#endif
 
 	return rv;
 }
@@ -2584,11 +2582,7 @@ static int chip_is_scomphy(a_uint32_t dev_id, ssdk_init_cfg* cfg)
 	a_uint32_t port_bmp = qca_ssdk_port_bmp_get(dev_id);
 	while (port_bmp) {
 		if (port_bmp & 0x1) {
-#ifndef RUMI_EMULATION
 			phy_id = hsl_phyid_get(dev_id, port_id, cfg);
-#else
-			phy_id = MP_GEPHY;
-#endif
 			switch (phy_id) {
 /*qca808x_end*/
 				case QCA8030_PHY:
@@ -3202,11 +3196,9 @@ static int ssdk_dev_event(struct notifier_block *this, unsigned long event, void
 	int rv = 0;
 	ssdk_init_cfg cfg;
 #ifdef MP
-#ifndef RUMI_EMULATION
 	a_uint32_t port_id = 0, dev_id = 0;
 	struct qca_phy_priv *priv = ssdk_phy_priv_data_get(dev_id);
 	adpt_api_t *p_api = adpt_api_ptr_get(dev_id);
-#endif
 #endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
@@ -3247,7 +3239,6 @@ static int ssdk_dev_event(struct notifier_block *this, unsigned long event, void
 			}
 			break;
 #ifdef MP
-#ifndef RUMI_EMULATION
 		case NETDEV_CHANGE:
 			if ((cfg.chip_type == CHIP_SCOMPHY) &&
 				(cfg.phy_id == MP_GEPHY)) {
@@ -3273,7 +3264,6 @@ static int ssdk_dev_event(struct notifier_block *this, unsigned long event, void
 				}
 			}
 			break;
-#endif
 #endif
 	}
 

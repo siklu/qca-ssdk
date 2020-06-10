@@ -170,11 +170,18 @@ a_uint32_t hsl_phyid_get(a_uint32_t dev_id,
 	a_uint16_t org_id = 0, rev_id = 0;
 	a_uint32_t reg_pad = 0, phy_id = 0;
 
-	if (hsl_port_is_sfp(dev_id, port_id, cfg))
+/*qca808x_end*/
+	if(ssdk_is_emulation(dev_id) && ssdk_emu_chip_ver_get(dev_id) == MP_GEPHY){
+		return MP_GEPHY;
+	}
+/*qca808x_start*/
+	if (hsl_port_is_sfp(dev_id, port_id, cfg)){
 		return SFP_PHY;
+	}
 
-	if (phy_info[dev_id]->phy_c45[port_id] == A_TRUE)
+	if (phy_info[dev_id]->phy_c45[port_id] == A_TRUE){
 		reg_pad = BIT(30) | BIT(16);
+	}
 
 #if defined(IN_PHY_I2C_MODE)
 	if (hsl_port_phy_access_type_get(dev_id, port_id) == PHY_I2C_ACCESS) {

@@ -28,7 +28,6 @@
 
 static a_uint32_t port_lpi_status[SW_MAX_NR_DEV] = {0};
 
-#ifndef RUMI_EMULATION
 static sw_error_t
 _adpt_mp_gcc_mac_clock_set(a_uint32_t dev_id,
 	a_uint32_t port_id, a_bool_t enable)
@@ -71,7 +70,6 @@ _adpt_mp_port_gcc_speed_clock_set(
 
 	return rv;
 }
-#endif
 
 static sw_error_t
 adpt_mp_port_txmac_status_set(a_uint32_t dev_id, fal_port_t port_id,
@@ -388,9 +386,7 @@ adpt_mp_port_mac_speed_set(a_uint32_t dev_id, a_uint32_t port_id,
 	sw_error_t rv = SW_OK;
 	a_uint32_t gmac_id = 0;
 	union mac_configuration_u configuration;
-#ifndef RUMI_EMULATION
 	a_bool_t force_port;
-#endif
 
 	ADPT_DEV_ID_CHECK(dev_id);
 	MP_PORT_ID_CHECK(port_id);
@@ -414,7 +410,6 @@ adpt_mp_port_mac_speed_set(a_uint32_t dev_id, a_uint32_t port_id,
 	rv = mp_mac_configuration_set(dev_id, gmac_id, &configuration);
 	SW_RTN_ON_ERROR(rv);
 
-#ifndef RUMI_EMULATION
 	force_port = ssdk_port_feature_get(dev_id, port_id, PHY_F_FORCE);
 	/* enable force port configuration */
 	if (force_port == A_TRUE) {
@@ -428,7 +423,6 @@ adpt_mp_port_mac_speed_set(a_uint32_t dev_id, a_uint32_t port_id,
 			port_id, A_TRUE);
 		SW_RTN_ON_ERROR(rv);
 	}
-#endif
 	return rv;
 
 }
@@ -762,7 +756,6 @@ adpt_mp_port_interface_eee_cfg_get(a_uint32_t dev_id, fal_port_t port_id,
 	return rv;
 }
 
-#ifndef RUMI_EMULATION
 static sw_error_t
 adpt_mp_port_interface_mode_status_get(a_uint32_t dev_id,
 	a_uint32_t port_id, fal_port_interface_mode_t * mode)
@@ -1088,7 +1081,6 @@ adpt_mp_port_netdev_change_notify(struct qca_phy_priv *priv,
 
 	return rv;
 }
-#endif
 
 static sw_error_t
 adpt_mp_port_lpi_polling_task(struct qca_phy_priv *priv)
@@ -1146,9 +1138,7 @@ sw_error_t adpt_mp_portctrl_init(a_uint32_t dev_id)
 	p_adpt_api->adpt_port_interface_3az_status_get = adpt_mp_port_mac_eee_enable_get;
 	p_adpt_api->adpt_port_interface_eee_cfg_set = adpt_mp_port_interface_eee_cfg_set;
 	p_adpt_api->adpt_port_interface_eee_cfg_get = adpt_mp_port_interface_eee_cfg_get;
-#ifndef RUMI_EMULATION
 	p_adpt_api->adpt_port_netdev_notify_set = adpt_mp_port_netdev_change_notify;
-#endif
 	p_adpt_api->adpt_port_polling_sw_sync_set = adpt_mp_port_lpi_polling_task;
 
 	return SW_OK;
