@@ -11,6 +11,10 @@ ifeq (TRUE, $(IN_PORTCONTROL))
 	SRC_LIST+=mp_portctrl.c
 endif
 
+ifeq (TRUE, $(IN_UNIPHY))
+	SRC_LIST+=mp_uniphy.c
+endif
+
 ifeq (, $(filter MP, $(SUPPORT_CHIP)))
   SRC_LIST=
 endif
