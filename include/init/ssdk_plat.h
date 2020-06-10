@@ -233,8 +233,8 @@ extern a_uint32_t ssdk_log_level;
 #define __SSDK_LOG_FUN(lev, fmt, ...) \
 	do { \
 		if (SSDK_LOG_LEVEL_##lev <= ssdk_log_level) { \
-			printk("%s[%u]:"#lev":", __FUNCTION__, __LINE__); \
-			printk(fmt, ##__VA_ARGS__); \
+			printk("%s[%u]:"#lev":"fmt, \
+				 __FUNCTION__, __LINE__, ##__VA_ARGS__); \
 		} \
 	} while(0)
 #define SSDK_DUMP_BUF(lev, buf, len) \
