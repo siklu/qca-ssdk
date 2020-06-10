@@ -21,7 +21,7 @@
 #include "ssdk_init.h"
 /*qca808x_end*/
 #include "ssdk_dts.h"
-#ifdef HPPE
+#if (defined(HPPE) || defined(MP))
 #include "hppe_init.h"
 #endif
 #include <linux/kconfig.h>
@@ -457,7 +457,7 @@ sw_error_t
 qca_uniphy_reg_read(a_uint32_t dev_id, a_uint32_t uniphy_index,
 				a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
 {
-#ifdef HPPE
+#if (defined(HPPE) || defined(MP))
 	uint32_t reg_val = 0;
 	void __iomem *hppe_uniphy_base = NULL;
 	a_uint32_t reg_addr1, reg_addr2;
@@ -500,7 +500,7 @@ sw_error_t
 qca_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t uniphy_index,
 				a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
 {
-#ifdef HPPE
+#if (defined(HPPE) || defined(MP))
 	void __iomem *hppe_uniphy_base = NULL;
 	a_uint32_t reg_addr1, reg_addr2;
 	uint32_t reg_val = 0;

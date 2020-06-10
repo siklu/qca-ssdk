@@ -42,12 +42,12 @@ scomphy_reg_set(a_uint32_t dev_id, a_uint32_t reg_addr,
 		a_uint8_t *val, a_uint32_t len);
 
 sw_error_t
-scomphy_uniphy_reg_get(a_uint32_t dev_id, a_uint32_t reg_addr,
-		a_uint32_t index, a_uint8_t *val, a_uint32_t len);
+scomphy_uniphy_reg_get(a_uint32_t dev_id, a_uint32_t index,
+		a_uint32_t reg_addr, a_uint8_t *val, a_uint32_t len);
 
 sw_error_t
-scomphy_uniphy_reg_set(a_uint32_t dev_id, a_uint32_t reg_addr,
-		a_uint32_t index, a_uint8_t *val, a_uint32_t len);
+scomphy_uniphy_reg_set(a_uint32_t dev_id, a_uint32_t index,
+		a_uint32_t reg_addr, a_uint8_t *val, a_uint32_t len);
 
 /*qca808x_start*/
 sw_error_t
