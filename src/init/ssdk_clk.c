@@ -15,6 +15,7 @@
 #include "ssdk_init.h"
 #include "ssdk_plat.h"
 #include "ssdk_clk.h"
+#include "ssdk_dts.h"
 #if defined(HPPE)
 #include "adpt_hppe.h"
 #endif
@@ -45,6 +46,11 @@ void ssdk_clock_rate_set_and_enable(
 {
 	struct clk *clk;
 
+	if(ssdk_is_emulation(0)){
+		SSDK_INFO("clock_id %s rate %d on emulation platform\n",clock_id, rate);
+		return;
+	}
+
 	clk = of_clk_get_by_name(node, clock_id);
 	if (!IS_ERR(clk)) {
 		if (rate)
@@ -56,6 +62,11 @@ void ssdk_clock_rate_set_and_enable(
 
 void ssdk_gcc_reset(struct reset_control *rst, a_uint32_t action)
 {
+	if(ssdk_is_emulation(0)){
+		SSDK_INFO("action %d on emulation platform\n",action);
+		return;
+	}
+
 	if (action == SSDK_RESET_ASSERT)
 		reset_control_assert(rst);
 	else
@@ -113,6 +124,12 @@ void ssdk_uniphy_clock_rate_set(
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
 	struct clk *uniphy_clk;
 
+	if(ssdk_is_emulation(dev_id)){
+		SSDK_INFO("clock_type %d rate %d on emulation platform\n",
+					clock_type, rate);
+		return;
+	}
+
 	uniphy_clk = uniphy_port_clks[clock_type];
 	if (!IS_ERR(uniphy_clk)) {
 		if (rate)
@@ -131,6 +148,12 @@ void ssdk_uniphy_clock_enable(
 {
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
 	struct clk *uniphy_clk;
+
+	if(ssdk_is_emulation(dev_id)){
+		SSDK_INFO("clock_type %d enable %d on emulation platform\n",
+					clock_type, enable);
+		return;
+	}
 
 	uniphy_clk = uniphy_port_clks[clock_type];
 	if (!IS_ERR(uniphy_clk)) {
@@ -849,6 +872,12 @@ void ssdk_mp_raw_clock_set(
 	     (clock != UNIPHY_CLK_RATE_125M &&
 	      clock != UNIPHY_CLK_RATE_312M))
 		return;
+
+	if(ssdk_is_emulation(0)){
+		SSDK_INFO("uniphy_index %d direction %d clock %d on emulation platform\n",
+					uniphy_index, direction, clock);
+		return;
+	}
 
 	id = uniphy_index*2 + direction;
 	old_clock = clk_get_rate(mp_raw_clks[id]->clk);

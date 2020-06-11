@@ -40,6 +40,10 @@ _adpt_mp_uniphy_calibrate(a_uint32_t dev_id, a_uint32_t uniphy_index)
 	memset(&uniphy_offset_calib_4, 0, sizeof(uniphy_offset_calib_4));
 	ADPT_DEV_ID_CHECK(dev_id);
 
+	if(ssdk_is_emulation(dev_id)){
+		SSDK_INFO("uniphy_index %d on emulation platform\n", uniphy_index);
+		return SW_OK;
+	}
 	/*wait calibration done to uniphy*/
 	while (calibration_done != UNIPHY_CALIBRATION_DONE) {
 		mdelay(1);
