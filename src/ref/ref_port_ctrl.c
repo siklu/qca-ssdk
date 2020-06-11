@@ -583,7 +583,9 @@ qca_ar8327_sw_mac_polling_task(struct qca_phy_priv *priv)
 				}
 				priv->port_link_down[i]=0;
 				ssdk_port_link_notify(i, 0, 0, 0);
+#ifdef IN_FDB
 				fal_fdb_del_by_port(dev_id, i, 0);/*flush all dynamic fdb of this port*/
+#endif
 				if(priv->version != 0x14){
 					/* Check queue buffer */
 					a_uint16_t value = 0;

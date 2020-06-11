@@ -1066,6 +1066,7 @@ static struct switch_attr qca_ar8327_globals[] = {
 		.max = 1
 	},
 #endif
+#if defined(IN_MISC)
 	{
 		.name = "max_frame_size",
 		.description = "Set Max frame Size Of Mac",
@@ -1074,12 +1075,16 @@ static struct switch_attr qca_ar8327_globals[] = {
 		.get = qca_ar8327_sw_get_max_frame_size,
 		.max = 9018
 	},
+#endif
+#if defined(IN_MIB)
 	{
 		.name = "reset_mibs",
 		.description = "Reset All MIB Counters",
 		.type = SWITCH_TYPE_NOVAL,
 		.set = qca_ar8327_sw_set_reset_mibs,
 	},
+#endif
+#ifdef IN_FDB
 	{
 		.name = "flush_arl",
 		.description = "Flush All ARL table",
@@ -1092,6 +1097,7 @@ static struct switch_attr qca_ar8327_globals[] = {
 		.type = SWITCH_TYPE_STRING,
 		.get = qca_ar8327_sw_atu_dump,
 	},
+#endif
 	{
 		.name = "switch_ext",
 		.description = "Switch extended configuration",
@@ -1100,6 +1106,7 @@ static struct switch_attr qca_ar8327_globals[] = {
 	},
 };
 
+#if defined(IN_MIB)
 static struct switch_attr qca_ar8327_port[] = {
 	{
 		.name = "reset_mib",
@@ -1115,6 +1122,7 @@ static struct switch_attr qca_ar8327_port[] = {
 		.get = qca_ar8327_sw_get_port_mib,
 	},
 };
+#endif
 
 #if defined(IN_VLAN)
 static struct switch_attr qca_ar8327_vlan[] = {
@@ -1134,10 +1142,12 @@ const struct switch_dev_ops qca_ar8327_sw_ops = {
 		.attr = qca_ar8327_globals,
 		.n_attr = ARRAY_SIZE(qca_ar8327_globals),
 	},
+#if defined(IN_MIB)
 	.attr_port = {
 		.attr = qca_ar8327_port,
 		.n_attr = ARRAY_SIZE(qca_ar8327_port),
 	},
+#endif
 #if defined(IN_VLAN)
 	.attr_vlan = {
 		.attr = qca_ar8327_vlan,
@@ -1149,8 +1159,12 @@ const struct switch_dev_ops qca_ar8327_sw_ops = {
 	.set_vlan_ports = qca_ar8327_sw_set_ports,
 	.apply_config = qca_ar8327_sw_hw_apply,
 #endif
+#if defined(IN_MISC)
 	.reset_switch = qca_ar8327_sw_reset_switch,
+#endif
+#if defined(IN_PORTCONTROL)
 	.get_port_link = qca_ar8327_sw_get_port_link,
+#endif
 #ifndef BOARD_AR71XX
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 0, 0))
 	.get_reg_val = qca_ar8327_sw_get_reg_val,
@@ -3239,8 +3253,10 @@ static int ssdk_dev_event(struct notifier_block *this, unsigned long event, void
 					if (cfg.chip_type == CHIP_DESS ||
 					   cfg.chip_type == CHIP_ISIS ||
 					   cfg.chip_type == CHIP_ISISC) {
+#ifdef IN_MISC
 						fal_frame_max_size_set(0,
 							dev->mtu + 18);
+#endif
 					}
 				}
 			}
