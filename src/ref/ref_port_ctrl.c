@@ -284,6 +284,7 @@ qca_switch_get_mac_link(struct qca_phy_priv *priv, a_uint32_t port_id, a_uint32_
 static a_uint32_t phy_current_speed = 2;
 static a_uint32_t phy_current_duplex = 1;
 
+#if defined(IN_VLAN)
 int qca_ar8327_sw_enable_vlan0(a_uint32_t dev_id, a_bool_t enable, a_uint8_t portmap);
 int qca_ar8327_vlan_recovery(struct qca_phy_priv *priv)
 {
@@ -318,7 +319,9 @@ int qca_ar8327_vlan_recovery(struct qca_phy_priv *priv)
 					mask = (1 << i);
 					if (mask & priv->vlan_table[j])
 					{
-						val |= ((mask & priv->vlan_tagged[j])? FAL_EG_TAGGED : FAL_EG_UNTAGGED) << ((i << 1) + 4);
+						val |= ((mask & priv->vlan_tagged[j]) ?
+								FAL_EG_TAGGED :
+								FAL_EG_UNTAGGED) << ((i<<1) + 4);
 					}
 					else
 						val |= (0x3) << ((i << 1) + 4);	// not member.
@@ -350,6 +353,7 @@ int qca_ar8327_vlan_recovery(struct qca_phy_priv *priv)
 		}
 	}
 
+#if defined(IN_PORTVLAN)
 	/* update the port destination mask registers and tag settings */
 	for (i = 0; i < priv->ports; i++) {
 		int pvid;
@@ -385,11 +389,13 @@ int qca_ar8327_vlan_recovery(struct qca_phy_priv *priv)
 		fal_port_default_cvid_set(priv->device_id, i, pvid);
 		fal_portvlan_member_update(priv->device_id, i, portmask[i]);
 	}
+#endif
 
 	mutex_unlock(&priv->reg_mutex);
 
 	return 0;
 }
+#endif
 
 int qca_qm_error_check(struct qca_phy_priv *priv)
 {
@@ -439,7 +445,9 @@ int qca_qm_err_recovery(struct qca_phy_priv *priv)
 
 	qca_ar8327_hw_init(priv);
 
+#if defined(IN_VLAN)
 	qca_ar8327_vlan_recovery(priv);
+#endif
 
 	/*To add customerized recovery codes*/
 

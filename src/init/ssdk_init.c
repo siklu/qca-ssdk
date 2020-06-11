@@ -1056,6 +1056,7 @@ qca_ar8327_sw_set_reg_val(struct switch_dev *dev,
 #endif
 #endif
 static struct switch_attr qca_ar8327_globals[] = {
+#if defined(IN_VLAN)
 	{
 		.name = "enable_vlan",
 		.description = "Enable 8021q VLAN",
@@ -1063,7 +1064,9 @@ static struct switch_attr qca_ar8327_globals[] = {
 		.set = qca_ar8327_sw_set_vlan,
 		.get = qca_ar8327_sw_get_vlan,
 		.max = 1
-	},{
+	},
+#endif
+	{
 		.name = "max_frame_size",
 		.description = "Set Max frame Size Of Mac",
 		.type = SWITCH_TYPE_INT,
@@ -1113,6 +1116,7 @@ static struct switch_attr qca_ar8327_port[] = {
 	},
 };
 
+#if defined(IN_VLAN)
 static struct switch_attr qca_ar8327_vlan[] = {
 	{
 		.name = "vid",
@@ -1123,6 +1127,7 @@ static struct switch_attr qca_ar8327_vlan[] = {
 		.max = 4094,
 	},
 };
+#endif
 
 const struct switch_dev_ops qca_ar8327_sw_ops = {
 	.attr_global = {
@@ -1133,6 +1138,7 @@ const struct switch_dev_ops qca_ar8327_sw_ops = {
 		.attr = qca_ar8327_port,
 		.n_attr = ARRAY_SIZE(qca_ar8327_port),
 	},
+#if defined(IN_VLAN)
 	.attr_vlan = {
 		.attr = qca_ar8327_vlan,
 		.n_attr = ARRAY_SIZE(qca_ar8327_vlan),
@@ -1142,6 +1148,7 @@ const struct switch_dev_ops qca_ar8327_sw_ops = {
 	.get_vlan_ports = qca_ar8327_sw_get_ports,
 	.set_vlan_ports = qca_ar8327_sw_set_ports,
 	.apply_config = qca_ar8327_sw_hw_apply,
+#endif
 	.reset_switch = qca_ar8327_sw_reset_switch,
 	.get_port_link = qca_ar8327_sw_get_port_link,
 #ifndef BOARD_AR71XX
