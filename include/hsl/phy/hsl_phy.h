@@ -667,6 +667,9 @@ hsl_phydriver_update(a_uint32_t dev_id, a_uint32_t port_id,
 void
 qca_ssdk_phy_address_set(a_uint32_t dev_id, a_uint32_t port_id,
 	a_uint32_t phy_addr);
+
+sw_error_t
+hsl_port_phy_hw_init(a_uint32_t dev_id, a_uint32_t port_id);
 /*qca808x_start*/
 #ifdef __cplusplus
 }

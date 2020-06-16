@@ -270,6 +270,7 @@ _adpt_mp_uniphy_clk_output_set(a_uint32_t dev_id, a_uint32_t index)
 	{
 		_adpt_mp_uniphy_clk_output_ctrl_set(dev_id, index, UNIPHY_CLK_RATE_25M);
 		hsl_port_phy_gpio_reset(dev_id, SSDK_PHYSICAL_PORT2);
+		hsl_port_phy_hw_init(dev_id, SSDK_PHYSICAL_PORT2);
 	}
 
 	return;
