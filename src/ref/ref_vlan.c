@@ -483,10 +483,10 @@ qca_ar8327_sw_hw_apply(struct switch_dev *dev)
         SSDK_ERROR("%s: portmask malloc failed. \n", __func__);
         return -1;
     }
+    memset(portmask, 0, sizeof(fal_pbmp_t) * dev->ports);
 
     mutex_lock(&priv->reg_mutex);
 
-    memset(portmask, 0, sizeof(*portmask));
     if (!priv->init) {
         /*Handle VLAN 0 entry*/
         if (priv->vlan_id[0] == 0 && priv->vlan_table[0] == 0) {
@@ -523,15 +523,8 @@ qca_ar8327_sw_hw_apply(struct switch_dev *dev)
         }
 
     } else {
-        /* vlan disabled:
-         * isolate all ports, but connect them to the cpu port */
-        for (i = 0; i < dev->ports; i++) {
-            if (i == AR8327_PORT_CPU)
-                continue;
-
-            portmask[i] = 1 << AR8327_PORT_CPU;
-            portmask[AR8327_PORT_CPU] |= (1 << i);
-        }
+	    /* vlan disabled: port based vlan used */
+	    ssdk_portvlan_init(priv->device_id);
     }
 
     /* update the port destination mask registers and tag settings */
@@ -552,7 +545,9 @@ qca_ar8327_sw_hw_apply(struct switch_dev *dev)
         fal_port_1qmode_set(priv->device_id, i, ingressMode);
         fal_port_egvlanmode_set(priv->device_id, i, egressMode);
         fal_port_default_cvid_set(priv->device_id, i, pvid);
-        fal_portvlan_member_update(priv->device_id, i, portmask[i]);
+	if (!priv->init && priv->vlan) {
+		fal_portvlan_member_update(priv->device_id, i, portmask[i]);
+	}
     }
 
     aos_mem_free(portmask);
