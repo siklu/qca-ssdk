@@ -20,6 +20,8 @@ extern "C" {
 #endif				/* __cplusplus */
 
 #include "fal.h"
+#include <linux/version.h>
+
 	/** Phy function reset type */
 	typedef enum {
 		PHY_FIFO_RESET = 0,	/**< Phy fifo reset */
@@ -670,6 +672,12 @@ qca_ssdk_phy_address_set(a_uint32_t dev_id, a_uint32_t port_id,
 
 sw_error_t
 hsl_port_phy_hw_init(a_uint32_t dev_id, a_uint32_t port_id);
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 0, 0))
+sw_error_t
+hsl_port_phydev_adv_update(a_uint32_t dev_id, a_uint32_t port_id,
+	a_uint32_t autoadv);
+#endif
 /*qca808x_start*/
 #ifdef __cplusplus
 }
