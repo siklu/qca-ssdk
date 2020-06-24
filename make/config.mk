@@ -68,6 +68,10 @@ else
      SUPPORT_CHIP = SCOMPHY MP
   endif
 
+  ifeq ($(ISISC_ENABLE), enable)
+      SUPPORT_CHIP += ISISC
+  endif
+
   ifeq (ALL_CHIP, $(CHIP_TYPE))
      ifneq (TRUE, $(FAL))
          $(error FAL must be TRUE when CHIP_TYPE is defined as ALL_CHIP!)

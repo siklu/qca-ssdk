@@ -16,6 +16,7 @@
 #include "hsl_phy.h"
 #include "hsl.h"
 /*qca808x_end*/
+#include "ssdk_dts.h"
 #if defined(ISIS) ||defined(ISISC) ||defined(GARUDA)
 #include <f1_phy.h>
 #endif
@@ -42,6 +43,7 @@
 #include <qca808x_phy.h>
 /*qca808x_end*/
 #endif
+#include <linux/of_gpio.h>
 /*qca808x_start*/
 #include "sw.h"
 #include "ssdk_plat.h"
@@ -125,6 +127,10 @@ hsl_phy_ops_t *hsl_phy_api_ops_get(a_uint32_t dev_id, a_uint32_t port_id)
 		return NULL;
 
 	phytype = phy_info[dev_id]->phy_type[port_id];
+	if(phytype == MAX_PHY_CHIP)
+	{
+		return NULL;
+	}
 
 	return ssdk_phy_driver[phytype].phy_ops;
 
@@ -164,11 +170,18 @@ a_uint32_t hsl_phyid_get(a_uint32_t dev_id,
 	a_uint16_t org_id = 0, rev_id = 0;
 	a_uint32_t reg_pad = 0, phy_id = 0;
 
-	if (hsl_port_is_sfp(dev_id, port_id, cfg))
+/*qca808x_end*/
+	if(ssdk_is_emulation(dev_id) && ssdk_emu_chip_ver_get(dev_id) == MP_GEPHY){
+		return MP_GEPHY;
+	}
+/*qca808x_start*/
+	if (hsl_port_is_sfp(dev_id, port_id, cfg)){
 		return SFP_PHY;
+	}
 
-	if (phy_info[dev_id]->phy_c45[port_id] == A_TRUE)
+	if (phy_info[dev_id]->phy_c45[port_id] == A_TRUE){
 		reg_pad = BIT(30) | BIT(16);
+	}
 
 #if defined(IN_PHY_I2C_MODE)
 	if (hsl_port_phy_access_type_get(dev_id, port_id) == PHY_I2C_ACCESS) {
@@ -299,6 +312,11 @@ int ssdk_phy_driver_init(a_uint32_t dev_id, ssdk_init_cfg *cfg)
 	{
 		if (port_bmp[dev_id] & (0x1 << i))
 		{
+/*qca808x_end*/
+			if(ssdk_port_feature_get(dev_id, i, PHY_F_FORCE)) {
+				continue;
+			}
+/*qca808x_start*/
 			phy_id = hsl_phyid_get(dev_id, i, cfg);
 			phytype = hsl_phytype_get_by_phyid(dev_id, phy_id);
 			if (MAX_PHY_CHIP != phytype) {
@@ -369,6 +387,7 @@ int qca_ssdk_phy_info_init(a_uint32_t dev_id)
 
 	for (j = SSDK_PHYSICAL_PORT0; j < SW_MAX_NR_PORT; j ++)
 	{
+		phy_info[dev_id]->phy_type[j] = MAX_PHY_CHIP;
 		if(j == SSDK_PHYSICAL_PORT0)
 		{
 			phy_info[dev_id]->phy_address[j] = INVALID_PHY_ADDR;
@@ -548,6 +567,18 @@ hsl_port_phy_serdes_reset(a_uint32_t dev_id)
 	return SW_OK;
 }
 
+sw_error_t hsl_port_phy_hw_init(a_uint32_t dev_id, a_uint32_t port_id)
+{
+	phy_type_t phytype;
+
+	phytype = hsl_phy_type_get(dev_id, port_id);
+
+	ssdk_phy_driver[phytype].init(dev_id,
+		ssdk_phy_driver[phytype].port_bmp[dev_id]);
+
+	return SW_OK;
+}
+
 a_uint32_t
 hsl_port_phyid_get(a_uint32_t dev_id, fal_port_t port_id)
 {
@@ -607,6 +638,53 @@ phy_type_t hsl_phy_type_get(a_uint32_t dev_id, a_uint32_t port_id)
 
 	return phy_info[dev_id]->phy_type[port_id];
 }
+
+a_uint32_t hsl_port_phy_reset_gpio_get(a_uint32_t dev_id, a_uint32_t port_id)
+{
+	return phy_info[dev_id]->phy_reset_gpio[port_id];
+}
+
+void hsl_port_phy_reset_gpio_set(a_uint32_t dev_id, a_uint32_t port_id,
+	a_uint32_t phy_reset_gpio)
+{
+	phy_info[dev_id]->phy_reset_gpio[port_id] = phy_reset_gpio;
+
+	return;
+}
+
+void hsl_port_phy_gpio_reset(a_uint32_t dev_id, a_uint32_t port_id)
+
+{
+	a_uint32_t gpio_num, ret = 0;
+
+	gpio_num = hsl_port_phy_reset_gpio_get(dev_id, port_id);
+
+	if(gpio_num == SSDK_INVALID_GPIO)
+	{
+		return;
+	}
+	ret = gpio_request(gpio_num, "phy_reset_gpio");
+	if(ret)
+	{
+		SSDK_ERROR("gpio request failed, ret:%d\n", ret);
+		return;
+	}
+	ret = gpio_direction_output(gpio_num, SSDK_GPIO_RESET);
+	if(ret)
+	{
+		SSDK_ERROR("when reset, gpio set failed, ret:%d\n",
+			ret);
+		return;
+	}
+	msleep(200);
+	gpio_set_value(gpio_num, SSDK_GPIO_RELEASE);
+	SSDK_INFO("GPIO%d reset PHY done\n", gpio_num);
+
+	gpio_free(gpio_num);
+
+	return;
+}
+
 /*qca808x_start*/
 sw_error_t ssdk_phy_driver_cleanup(void)
 {

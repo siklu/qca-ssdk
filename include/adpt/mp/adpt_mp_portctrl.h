@@ -24,6 +24,7 @@
 #define GMAC_FULL_DUPLEX                 0x1
 #define GMAC_HALF_DUPLEX                 0x0
 #define GMAC_PAUSE_TIME                  0xffff
+#define GMAC_PAUSE_QUANTA_ENABLE         0x1
 #define GMAC_JD_ENABLE                   0x1
 #define GMAC_WD_DISABLE                  0x0
 #define GMAC_FRAME_BURST_ENABLE          0x1
@@ -31,5 +32,14 @@
 #define GMAC_MAX_FRAME_CTRL_ENABLE       0x1
 #define GMAC_LPI_LINK_UP                 0x1
 #define GMAC_LPI_AUTO_MODE               0x1
+#define GMAC_TX_STORE_FORWAD_ENABLE      0x1
+#define GMAC_RX_STORE_FORWAD_ENABLE      0x1
+#define GMAC_FORWARD_ERROR_FRAME_DISABLE 0x0
+#define GMAC_DROP_GAINT_FRAME_DISABLE    0x0
+#define GMAC_HW_FLOWCTRL_ENABLE          0x1
+#define GMAC_HW_FLOWCTRL_DISABLE         0x0
+#define PORT_LPI_ENABLE_STATUS           0x3
+#define PORT_LPI_TASK_RUNNING            0x10000
+#define PORT_LPI_TASK_START              0x20000
 
 #endif

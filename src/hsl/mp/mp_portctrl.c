@@ -199,3 +199,33 @@ mp_mac_max_frame_ctrl_set(
 				(a_uint8_t *)&value->val, 4);
 }
 
+sw_error_t
+mp_mac_operation_mode_ctrl_get(
+		 a_uint32_t dev_id,
+		 a_uint32_t index,
+		 union mac_operation_mode_ctrl_u *value)
+{
+	 if (index >= MAC_OPERATION_MODE_CTRL_MAX_ENTRY)
+		 return SW_OUT_OF_RANGE;
+	 return scomphy_reg_get(
+				dev_id,
+				MAC_OPERATION_MODE_CTRL_ADDRESS + \
+				index * MAC_OPERATION_MODE_CTRL_INC,
+				(a_uint8_t *)&value->val, 4);
+}
+
+sw_error_t
+mp_mac_operation_mode_ctrl_set(
+		 a_uint32_t dev_id,
+		 a_uint32_t index,
+		 union mac_operation_mode_ctrl_u *value)
+{
+	 if (index >= MAC_OPERATION_MODE_CTRL_MAX_ENTRY)
+		 return SW_OUT_OF_RANGE;
+	 return scomphy_reg_set(
+				dev_id,
+				MAC_OPERATION_MODE_CTRL_ADDRESS + \
+				index * MAC_OPERATION_MODE_CTRL_INC,
+				(a_uint8_t *)&value->val, 4);
+}
+

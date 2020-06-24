@@ -179,5 +179,41 @@ union mac_max_frame_ctrl_u {
 	struct mac_max_frame_ctrl bf;
 };
 
+/*[register] OPERATION_MODE*/
+#define MAC_OPERATION_MODE_CTRL
+#define MAC_OPERATION_MODE_CTRL_ADDRESS 0x01018
+#define MAC_OPERATION_MODE_CTRL_NUM     2
+#define MAC_OPERATION_MODE_CTRL_INC     0x100000
+#define MAC_OPERATION_MODE_CTRL_DEFAULT 0x0
+
+struct mac_operation_mode_ctrl {
+	a_uint32_t  reserved_0:1;
+	a_uint32_t  stop_receive:1;
+	a_uint32_t  second_frame:1;
+	a_uint32_t  receive_threshold_ctrl:2;
+	a_uint32_t  drop_gaint_frame:1;
+	a_uint32_t  forwad_good_undersize_frame:1;
+	a_uint32_t  forward_error_frame:1;
+	a_uint32_t  enable_hw_flowctrl:1;
+	a_uint32_t  threshold_of_activating:2;
+	a_uint32_t  threshold_of_deactivating:2;
+	a_uint32_t  stop_transmission_command:1;
+	a_uint32_t  transmit_threshold_ctrl:3;
+	a_uint32_t  reserved_1:3;
+	a_uint32_t  flush_transmit_fifo:1;
+	a_uint32_t  transmit_store_and_foward:1;
+	a_uint32_t  msb_threshold_of_deactivating:1;
+	a_uint32_t  msb_threshold_of_activating:1;
+	a_uint32_t  disable_flushing_receiving_frame:1;
+	a_uint32_t  receive_store_and_foward:1;
+	a_uint32_t  disable_dropping_checking_error_frame:1;
+	a_uint32_t  reserved_2:5;
+};
+
+union mac_operation_mode_ctrl_u {
+	a_uint32_t val;
+	struct mac_operation_mode_ctrl bf;
+};
+
 #endif
 

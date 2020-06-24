@@ -105,9 +105,12 @@ typedef struct
 	a_bool_t ess_switch_flag;
 	a_uint32_t device_id;
 	struct device_node *of_node;
+	a_bool_t is_emulation;
+	a_uint32_t emu_chip_ver; /*only valid when is_emulation is true*/
 } ssdk_dt_cfg;
 
 #define SSDK_MAX_NR_ETH 6
+#define SSDK_PHY_RESET_GPIO_INDEX 0
 
 typedef struct
 {
@@ -158,6 +161,8 @@ struct clk *ssdk_dts_cmnclk_get(a_uint32_t dev_id);
 int ssdk_switch_device_num_init(void);
 void ssdk_switch_device_num_exit(void);
 a_uint32_t ssdk_switch_device_num_get(void);
+a_bool_t ssdk_is_emulation(a_uint32_t dev_id);
+a_uint32_t ssdk_emu_chip_ver_get(a_uint32_t dev_id);
 
 #ifndef BOARD_AR71XX
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))

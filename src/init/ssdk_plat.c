@@ -21,7 +21,7 @@
 #include "ssdk_init.h"
 /*qca808x_end*/
 #include "ssdk_dts.h"
-#ifdef HPPE
+#if (defined(HPPE) || defined(MP))
 #include "hppe_init.h"
 #endif
 #include <linux/kconfig.h>
@@ -457,7 +457,7 @@ sw_error_t
 qca_uniphy_reg_read(a_uint32_t dev_id, a_uint32_t uniphy_index,
 				a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
 {
-#ifdef HPPE
+#if (defined(HPPE) || defined(MP))
 	uint32_t reg_val = 0;
 	void __iomem *hppe_uniphy_base = NULL;
 	a_uint32_t reg_addr1, reg_addr2;
@@ -500,7 +500,7 @@ sw_error_t
 qca_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t uniphy_index,
 				a_uint32_t reg_addr, a_uint8_t * reg_data, a_uint32_t len)
 {
-#ifdef HPPE
+#if (defined(HPPE) || defined(MP))
 	void __iomem *hppe_uniphy_base = NULL;
 	a_uint32_t reg_addr1, reg_addr2;
 	uint32_t reg_val = 0;
@@ -537,7 +537,6 @@ qca_uniphy_reg_write(a_uint32_t dev_id, a_uint32_t uniphy_index,
 #endif
 	return 0;
 }
-#ifndef RUMI_EMULATION
 #ifndef BOARD_AR71XX
 /*qca808x_start*/
 static int miibus_get(a_uint32_t dev_id)
@@ -687,7 +686,6 @@ static int miibus_get(a_uint32_t dev_id)
 
 	return 0;
 }
-#endif
 #endif
 
 struct mii_bus *ssdk_miibus_get_by_device(a_uint32_t dev_id)
@@ -1286,12 +1284,12 @@ ssdk_plat_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 /*qca808x_end*/
 	mutex_init(&switch_mdio_lock);
 
-#ifndef RUMI_EMULATION
+	if(!ssdk_is_emulation(dev_id)){
 /*qca808x_start*/
-	if(miibus_get(dev_id))
-		return -ENODEV;
+		if(miibus_get(dev_id))
+			return -ENODEV;
 /*qca808x_end*/
-#endif
+	}
 
 	reg_mode = ssdk_uniphy_reg_access_mode_get(dev_id);
 	if(reg_mode == HSL_REG_LOCAL_BUS) {

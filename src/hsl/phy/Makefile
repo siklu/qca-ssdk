@@ -23,12 +23,12 @@ ifeq (ISIS, $(CHIP_TYPE))
   SRC_LIST = f1_phy.c
 endif
 
-ifeq (ISISC, $(CHIP_TYPE))
-  SRC_LIST = f1_phy.c
-endif
-
 ifeq (MP, $(CHIP_TYPE))
   SRC_LIST = mpge_phy.c
+endif
+
+ifneq (,$(filter ISISC, $(SUPPORT_CHIP)))
+  SRC_LIST += f1_phy.c
 endif
 
 ifeq (TRUE, $(IN_MALIBU_PHY))

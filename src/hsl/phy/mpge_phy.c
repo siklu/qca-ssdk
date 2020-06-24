@@ -923,32 +923,10 @@ mpge_phy_cdt_thresh_init(a_uint32_t dev_id, a_uint32_t phy_id)
 	rv = mpge_phy_mmd_write(dev_id, phy_id, MPGE_PHY_MMD3_NUM,
 		MPGE_PHY_MMD3_CDT_THRESH_CTRL13,
 		MPGE_PHY_MMD3_CDT_THRESH_CTRL13_VAL);
-
-	return rv;
-}
-
-/******************************************************************************
-*
-* mpge_phy_adc_set - set ADC metastability
-*
-* set ADC metastability
-*/
-static sw_error_t
-mpge_phy_adc_init(a_uint32_t dev_id, a_uint32_t phy_id)
-{
-	sw_error_t rv = SW_OK;
-
-	rv = mpge_phy_debug_write(dev_id, phy_id, AFE50_ADC_2_DP,
-		AFE50_ADC_2_DP_VAL);
 	SW_RTN_ON_ERROR(rv);
-	rv = mpge_phy_debug_write(dev_id, phy_id, AFE50_ADC_4_DP,
-		AFE50_ADC_4_DP_VAL);
-	SW_RTN_ON_ERROR(rv);
-	rv = mpge_phy_debug_write(dev_id, phy_id, AFE50_ADC_7_DP,
-		AFE50_ADC_7_DP_VAL);
-	SW_RTN_ON_ERROR(rv);
-	rv = mpge_phy_debug_write(dev_id, phy_id, AFE50_ADC_14_DP,
-		AFE50_ADC_14_DP_VAL);
+	rv = mpge_phy_mmd_write(dev_id, phy_id, MPGE_PHY_MMD3_NUM,
+		MPGE_PHY_MMD3_CDT_THRESH_CTRL14,
+		MPGE_PHY_MMD3_NEAR_ECHO_THRESH_VAL);
 
 	return rv;
 }
@@ -1010,9 +988,6 @@ mpge_phy_hw_init(a_uint32_t dev_id,  a_uint32_t port_bmp)
 			SW_RTN_ON_ERROR(rv);
 			/*configure the CDT threshold*/
 			rv = mpge_phy_cdt_thresh_init (dev_id, phy_addr);
-			SW_RTN_ON_ERROR(rv);
-			/*ADC metastability*/
-			rv = mpge_phy_adc_init (dev_id, phy_addr);
 			SW_RTN_ON_ERROR(rv);
 			/*special configuration for AZ*/
 			rv = mpge_phy_mmd_write(dev_id, phy_addr, MPGE_PHY_MMD3_NUM,

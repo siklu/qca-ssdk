@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2020, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -320,6 +320,8 @@ typedef sw_error_t (*adpt_switch_port_loopback_set_func)(a_uint32_t dev_id,
 			fal_port_t port_id, fal_loopback_config_t *loopback_cfg);
 typedef sw_error_t (*adpt_switch_port_loopback_get_func)(a_uint32_t dev_id,
 			fal_port_t port_id, fal_loopback_config_t *loopback_cfg);
+typedef sw_error_t (*adpt_port_netdev_notify_func)(struct qca_phy_priv *priv,
+		a_uint32_t port_id);
 
 // mirror
 typedef sw_error_t (*adpt_mirr_port_in_set_func)(a_uint32_t dev_id, fal_port_t port_id,
@@ -892,6 +894,12 @@ typedef sw_error_t (*adpt_debug_port_counter_status_get_func)(a_uint32_t dev_id,
 			fal_port_t port_id, fal_counter_en_t * cnt_en);
 typedef sw_error_t (*adpt_debug_counter_get_func)(a_bool_t show_type);
 typedef sw_error_t (*adpt_debug_counter_set_func)(void);
+typedef sw_error_t (*adpt_intr_port_link_mask_set_func) (a_uint32_t dev_id,
+			fal_port_t port_id, a_uint32_t intr_mask);
+typedef sw_error_t (*adpt_intr_port_link_mask_get_func) (a_uint32_t dev_id,
+			fal_port_t port_id, a_uint32_t * intr_mask);
+typedef sw_error_t (*adpt_intr_port_link_status_get_func)(a_uint32_t dev_id,
+			fal_port_t port_id, a_uint32_t * intr_status);
 
 /* uniphy */
 typedef sw_error_t (*adpt_uniphy_mode_set_func)(a_uint32_t dev_id, a_uint32_t index, a_uint32_t mode);
@@ -1166,6 +1174,7 @@ typedef struct
 	adpt_port_mux_mac_type_set_func adpt_port_mux_mac_type_set;
 	adpt_port_mac_speed_set_func adpt_port_mac_speed_set;
 	adpt_port_mac_duplex_set_func adpt_port_mac_duplex_set;
+	adpt_port_netdev_notify_func adpt_port_netdev_notify_set;
 	adpt_port_polling_sw_sync_func adpt_port_polling_sw_sync_set;
 
 	adpt_port_bridge_txmac_set_func adpt_port_bridge_txmac_set;
@@ -1482,6 +1491,9 @@ typedef struct
 	adpt_debug_port_counter_status_get_func adpt_debug_port_counter_status_get;
 	adpt_debug_counter_set_func adpt_debug_counter_set;
 	adpt_debug_counter_get_func adpt_debug_counter_get;
+	adpt_intr_port_link_mask_set_func adpt_intr_port_link_mask_set;
+	adpt_intr_port_link_mask_get_func adpt_intr_port_link_mask_get;
+	adpt_intr_port_link_status_get_func adpt_intr_port_link_status_get;
 
 	/* uniphy */
 	adpt_uniphy_mode_set_func adpt_uniphy_mode_set;

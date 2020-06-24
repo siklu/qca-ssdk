@@ -15,6 +15,7 @@
 #include "ssdk_init.h"
 #include "ssdk_plat.h"
 #include "ssdk_clk.h"
+#include "ssdk_dts.h"
 #if defined(HPPE)
 #include "adpt_hppe.h"
 #endif
@@ -29,9 +30,6 @@
 #include <linux/clk.h>
 #include <linux/clk-provider.h>
 #include <linux/clkdev.h>
-#endif
-#if defined(MP)
-#include "ssdk_dts.h"
 #endif
 
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
@@ -48,6 +46,11 @@ void ssdk_clock_rate_set_and_enable(
 {
 	struct clk *clk;
 
+	if(ssdk_is_emulation(0)){
+		SSDK_INFO("clock_id %s rate %d on emulation platform\n",clock_id, rate);
+		return;
+	}
+
 	clk = of_clk_get_by_name(node, clock_id);
 	if (!IS_ERR(clk)) {
 		if (rate)
@@ -59,6 +62,11 @@ void ssdk_clock_rate_set_and_enable(
 
 void ssdk_gcc_reset(struct reset_control *rst, a_uint32_t action)
 {
+	if(ssdk_is_emulation(0)){
+		SSDK_INFO("action %d on emulation platform\n",action);
+		return;
+	}
+
 	if (action == SSDK_RESET_ASSERT)
 		reset_control_assert(rst);
 	else
@@ -116,6 +124,12 @@ void ssdk_uniphy_clock_rate_set(
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
 	struct clk *uniphy_clk;
 
+	if(ssdk_is_emulation(dev_id)){
+		SSDK_INFO("clock_type %d rate %d on emulation platform\n",
+					clock_type, rate);
+		return;
+	}
+
 	uniphy_clk = uniphy_port_clks[clock_type];
 	if (!IS_ERR(uniphy_clk)) {
 		if (rate)
@@ -134,6 +148,12 @@ void ssdk_uniphy_clock_enable(
 {
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
 	struct clk *uniphy_clk;
+
+	if(ssdk_is_emulation(dev_id)){
+		SSDK_INFO("clock_type %d enable %d on emulation platform\n",
+					clock_type, enable);
+		return;
+	}
 
 	uniphy_clk = uniphy_port_clks[clock_type];
 	if (!IS_ERR(uniphy_clk)) {
@@ -443,6 +463,234 @@ static void ssdk_ppe_fixed_clock_init(a_uint32_t revision)
 	}
 }
 #endif
+
+#if defined(MP)
+#define TCSR_ETH_ADDR		0x19475C4
+#define TCSR_ETH_SIZE		4
+#define ETH_LDO_RDY		  0x1
+#define CMN_PLL_LOCKED_ADDR	         0x9B064
+#define CMN_PLL_LOCKED_SIZE	         4
+#define CMN_PLL_LOCKED		4
+#define MP_RAW_CLOCK_INSTANCE	       2
+
+static char *mp_rst_ids[MP_BCR_RST_MAX] = {
+	GEHPY_BCR_RESET_ID,
+	UNIPHY_BCR_RESET_ID,
+	GMAC0_BCR_RESET_ID,
+	GMAC1_BCR_RESET_ID,
+	GEPHY_MISC_RESET_ID
+};
+
+static struct clk_uniphy gephy_gcc_rx_clk = {
+	.hw.init = &(struct clk_init_data){
+	.name = "gephy_gcc_rx",
+	.ops = &clk_uniphy_ops,
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,9,0))
+	.flags = CLK_IS_ROOT,
+#endif
+	},
+	.uniphy_index = 0,
+	.dir = UNIPHY_RX,
+	.rate = UNIPHY_DEFAULT_RATE,
+};
+
+static struct clk_uniphy gephy_gcc_tx_clk = {
+	.hw.init = &(struct clk_init_data){
+	.name = "gephy_gcc_tx",
+	.ops = &clk_uniphy_ops,
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,9,0))
+	.flags = CLK_IS_ROOT,
+#endif
+	},
+	.uniphy_index = 0,
+	.dir = UNIPHY_TX,
+	.rate = UNIPHY_DEFAULT_RATE,
+};
+
+static struct clk_uniphy uniphy_gcc_rx_clk = {
+	.hw.init = &(struct clk_init_data){
+	.name = "uniphy_gcc_rx",
+	.ops = &clk_uniphy_ops,
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,9,0))
+	.flags = CLK_IS_ROOT,
+#endif
+	},
+	.uniphy_index = 1,
+	.dir = UNIPHY_RX,
+	.rate = UNIPHY_DEFAULT_RATE,
+};
+
+static struct clk_uniphy uniphy_gcc_tx_clk = {
+	.hw.init = &(struct clk_init_data){
+	.name = "uniphy_gcc_tx",
+	.ops = &clk_uniphy_ops,
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,9,0))
+	.flags = CLK_IS_ROOT,
+#endif
+	},
+	.uniphy_index = 1,
+	.dir = UNIPHY_TX,
+	.rate = UNIPHY_DEFAULT_RATE,
+};
+
+static struct clk_hw *mp_raw_clks[MP_RAW_CLOCK_INSTANCE * 2] = {
+	&gephy_gcc_rx_clk.hw, &gephy_gcc_tx_clk.hw,
+	&uniphy_gcc_rx_clk.hw, &uniphy_gcc_tx_clk.hw,
+};
+
+static void ssdk_mp_fixed_clock_init(void)
+{
+	ssdk_clock_rate_set_and_enable(clock_node, CMN_AHB_CLK, 0);
+	ssdk_clock_rate_set_and_enable(clock_node, CMN_SYS_CLK, 0);
+	ssdk_clock_rate_set_and_enable(clock_node, UNIPHY_AHB_CLK,
+				UNIPHY_AHB_CLK_RATE);
+	ssdk_clock_rate_set_and_enable(clock_node,
+				UNIPHY_SYS_CLK,
+				MP_UNIPHY_SYS_CLK_RATE);
+	ssdk_clock_rate_set_and_enable(clock_node,
+				MDIO0_AHB_CLK, MDIO_AHB_RATE);
+	ssdk_clock_rate_set_and_enable(clock_node,
+				MDIO1_AHB_CLK, MDIO_AHB_RATE);
+	ssdk_clock_rate_set_and_enable(clock_node,
+				GMAC0_CFG_CLK, GMAC_CLK_RATE);
+	ssdk_clock_rate_set_and_enable(clock_node,
+				GMAC0_SYS_CLK, GMAC_CLK_RATE);
+	ssdk_clock_rate_set_and_enable(clock_node,
+				GMAC1_CFG_CLK, GMAC_CLK_RATE);
+	ssdk_clock_rate_set_and_enable(clock_node,
+				GMAC1_SYS_CLK, GMAC_CLK_RATE);
+	ssdk_clock_rate_set_and_enable(clock_node,
+				GMAC0_PTP_CLK, GMAC_CLK_RATE);
+	ssdk_clock_rate_set_and_enable(clock_node,
+				GMAC1_PTP_CLK, GMAC_CLK_RATE);
+	ssdk_clock_rate_set_and_enable(clock_node,
+				SNOC_GMAC0_AHB_CLK, GMAC_CLK_RATE);
+	ssdk_clock_rate_set_and_enable(clock_node,
+				SNOC_GMAC1_AHB_CLK, GMAC_CLK_RATE);
+}
+
+static void ssdk_mp_uniphy_clock_init(void)
+{
+	a_uint32_t i, inst_num;
+	struct clk *clk;
+	struct clk **ports;
+
+	inst_num = sizeof(mp_raw_clks) / sizeof(struct clk_hw *);
+
+	for (i = 0; i < inst_num; i++) {
+		clk = clk_register(NULL, mp_raw_clks[i]);
+		if (IS_ERR(clk))
+			SSDK_ERROR("Clk register %d fail!\n", i);
+	}
+
+	ports = uniphy_port_clks;
+	ports[NSS_PORT1_RX_CLK_E] = of_clk_get_by_name(clock_node,
+					NSS_PORT1_RX_CLK);
+	ports[NSS_PORT1_TX_CLK_E] = of_clk_get_by_name(clock_node,
+					NSS_PORT1_TX_CLK);
+	ports[NSS_PORT2_RX_CLK_E] = of_clk_get_by_name(clock_node,
+					NSS_PORT2_RX_CLK);
+	ports[NSS_PORT2_TX_CLK_E] = of_clk_get_by_name(clock_node,
+					NSS_PORT2_TX_CLK);
+	ports[UNIPHY0_PORT1_RX_CLK_E] = of_clk_get_by_name(clock_node,
+					UNIPHY0_PORT1_RX_CLK);
+	ports[UNIPHY0_PORT1_TX_CLK_E] = of_clk_get_by_name(clock_node,
+					UNIPHY0_PORT1_TX_CLK);
+	ports[UNIPHY1_PORT5_RX_CLK_E] = of_clk_get_by_name(clock_node,
+					UNIPHY1_PORT5_RX_CLK);
+	ports[UNIPHY1_PORT5_TX_CLK_E] = of_clk_get_by_name(clock_node,
+					UNIPHY1_PORT5_TX_CLK);
+}
+
+static void ssdk_mp_uniphy_clock_enable(void)
+{
+	ssdk_uniphy_clock_enable(0, NSS_PORT1_RX_CLK_E, A_TRUE);
+	ssdk_uniphy_clock_enable(0, NSS_PORT1_TX_CLK_E, A_TRUE);
+	ssdk_uniphy_clock_enable(0, NSS_PORT2_RX_CLK_E, A_TRUE);
+	ssdk_uniphy_clock_enable(0, NSS_PORT2_TX_CLK_E, A_TRUE);
+	ssdk_uniphy_clock_enable(0, UNIPHY0_PORT1_RX_CLK_E, A_TRUE);
+	ssdk_uniphy_clock_enable(0, UNIPHY0_PORT1_TX_CLK_E, A_TRUE);
+	ssdk_uniphy_clock_enable(0, UNIPHY1_PORT5_RX_CLK_E, A_TRUE);
+	ssdk_uniphy_clock_enable(0, UNIPHY1_PORT5_TX_CLK_E, A_TRUE);
+}
+
+static void
+ssdk_mp_cmnblk_enable(void)
+{
+	void __iomem *tcsr_eth = NULL;
+	a_uint32_t reg_val;
+
+	tcsr_eth = ioremap_nocache(TCSR_ETH_ADDR, TCSR_ETH_SIZE);
+	if (!tcsr_eth) {
+		SSDK_ERROR("Failed to map tcsr eth address!\n");
+		return;
+	}
+
+	reg_val = readl(tcsr_eth);
+	reg_val |= ETH_LDO_RDY;
+	writel(reg_val, tcsr_eth);
+
+	iounmap(tcsr_eth);
+}
+
+static a_bool_t
+ssdk_mp_cmnblk_stable_check(void)
+{
+	void __iomem *pll_lock = NULL;
+	a_uint32_t reg_val;
+	int i, loops = 20;
+
+	pll_lock = ioremap_nocache(CMN_PLL_LOCKED_ADDR, CMN_PLL_LOCKED_SIZE);
+	if (!pll_lock) {
+		SSDK_ERROR("Failed to map CMN PLL LOCK register!\n");
+		return A_FALSE;
+	}
+
+	for (i = 0; i < loops; i++) {
+		reg_val = readl(pll_lock);
+		if (reg_val & CMN_PLL_LOCKED) {
+			break;
+		}
+		msleep(10);
+	}
+
+	iounmap(pll_lock);
+
+	if (i >= loops) {
+		return A_FALSE;
+	} else {
+		return A_TRUE;
+	}
+}
+
+static void
+ssdk_mp_reset_init(void)
+{
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
+	struct reset_control *rst;
+	a_uint32_t i;
+
+	rst_node = of_find_node_by_name(NULL, "ess-switch");
+
+	for (i = 0; i < MP_BCR_RST_MAX; i++) {
+		rst = of_reset_control_get(rst_node, mp_rst_ids[i]);
+		if (IS_ERR(rst)) {
+			SSDK_ERROR("%s not exist!\n", mp_rst_ids[i]);
+			return;
+		}
+		ssdk_gcc_reset(rst, SSDK_RESET_ASSERT);
+		msleep(200);
+		ssdk_gcc_reset(rst, SSDK_RESET_DEASSERT);
+		msleep(200);
+	}
+
+	i = UNIPHY1_SOFT_RESET_E;
+	uniphy_rsts[i] = of_reset_control_get(rst_node, UNIPHY1_SOFT_RESET_ID);
+
+	SSDK_INFO("MP reset successfully!1\n");
+#endif
+}
+#endif
 #endif
 
 #if defined(HPPE) || defined(MP)
@@ -594,485 +842,53 @@ void ssdk_gcc_ppe_clock_init(a_uint32_t revision, enum cmnblk_clk_type mode)
 #endif
 
 #if defined(MP)
-#define CMN_PLL_PLL_LOCKED_REG             0x9B064
-#define CMN_PLL_PLL_LOCKED_SIZE            0x4
-#define CMN_PLL_LOCKED                     0x4
-
-#define TCSR_ETH_LDO_RDY_REG               0x19475C4
-#define TCSR_ETH_LDO_RDY_SIZE              0x4
-#define ETH_LDO_RDY                        0x1
-
-#define GCC_GEPHY                          0x1856000
-#define GCC_GEPHY_SIZE                     0x14
-#define GCC_GEPHY_BCR_OFFSET               0x0
-#define GCC_GEPHY_MISC_OFFSET              0x4
-#define GCC_GEPHY_RX_CBCR_OFFSET           0x10
-#define GCC_GEPHY_TX_CBCR_OFFSET           0x14
-#define GCC_GEPHY_BCR_BLK_ARES             0x1
-#define GCC_GEPHY_MISC_ARES                0xf
-
-#define GCC_UNIPHY                         0x1856100
-#define GCC_UNIPHY_SIZE                    0x14
-#define GCC_UNIPHY_BCR_OFFSET              0x0
-#define GCC_UNIPHY_MISC_OFFSET             0x4
-#define GCC_UNIPHY_AHB_CBCR_OFFSET         0x8
-#define GCC_UNIPHY_SYS_CBCR_OFFSET         0xc
-#define GCC_UNIPHY_RX_CBCR_OFFSET          0x10
-#define GCC_UNIPHY_TX_CBCR_OFFSET          0x14
-#define GCC_UNIPHY_BCR_BLK_ARES            0x1
-#define GCC_UNIPHY_AHB_CBCR_CLK_ENABLE     0x1
-#define GCC_UNIPHY_SYS_CBCR_CLK_ENABLE     0x1
-#define GCC_UNIPHY_MISC_ARES               0x32
-
-#define GCC_GMAC_BCR                       0x1819000
-#define GCC_GMAC_BCR_SIZE                  0x100
-#define GCC_GMAC0_BCR_OFFSET               0x0
-#define GCC_GMAC1_BCR_OFFSET               0x100
-#define GCC_GMAC0_BCR_BLK_ARES             0x1
-#define GCC_GMAC1_BCR_BLK_ARES             0x1
-
-#define GCC_GMAC                           0x1868000
-#define GCC_GMAC_SIZE                      0x438
-#define GCC_GMAC0_RX_CFG_RCGR_OFFSET       0x24
-#define GCC_GMAC0_TX_CFG_RCGR_OFFSET       0x2c
-#define GCC_GMAC1_RX_CFG_RCGR_OFFSET       0x34
-#define GCC_GMAC1_TX_CFG_RCGR_OFFSET       0x3c
-#define GCC_GMAC0_RX_CBCR_OFFSET           0x240
-#define GCC_GMAC0_TX_CBCR_OFFSET           0x244
-#define GCC_GMAC1_RX_CBCR_OFFSET           0x248
-#define GCC_GMAC1_TX_CBCR_OFFSET           0x24c
-
-#define GCC_GMAC_CFG_RCGR_SRC_SEL_MASK     0x700
-#define GCC_GMAC0_RX_SRC_SEL_GEPHY_TX      0x200
-#define GCC_GMAC0_TX_SRC_SEL_GEPHY_TX      0x100
-#define GCC_GMAC1_RX_SRC_SEL_UNIPHY_RX     0x100
-#define GCC_GMAC1_TX_SRC_SEL_UNIPHY_TX     0x100
-
-#define GCC_CMN_BLK                        0x1856300
-#define GCC_CMN_BLK_SIZE                   0xc
-#define GCC_CMN_BLK_AHB_CBCR_OFFSET        0x8
-#define GCC_CMN_BLK_SYS_CBCR_OFFSET        0xc
-#define GCC_CMN_BLK_AHB_CBCR_CLK_ENABLE    0x1
-#define GCC_CMN_BLK_SYS_CBCR_CLK_ENABLE    0x1
-
-#define GCC_CBCR_CLK_ENABLE                0x1
-
-void __iomem *gcc_gephy_base = NULL;
-void __iomem *gcc_uniphy_base = NULL;
-void __iomem *gcc_gmac_base = NULL;
-
-static void ssdk_mp_reg_base_remap(void)
-{
-	gcc_gephy_base = ioremap_nocache(GCC_GEPHY, GCC_GEPHY_SIZE);
-	if (!gcc_gephy_base) {
-		SSDK_ERROR("Failed to map gephy address!\n");
-		return;
-	}
-	gcc_uniphy_base = ioremap_nocache(GCC_UNIPHY, GCC_UNIPHY_SIZE);
-	if (!gcc_uniphy_base) {
-		SSDK_ERROR("Failed to map uniphy address!\n");
-		return;
-	}
-	gcc_gmac_base = ioremap_nocache(GCC_GMAC, GCC_GMAC_SIZE);
-	if (!gcc_gmac_base) {
-		SSDK_ERROR("Failed to map gmac address!\n");
-		return;
-	}
-}
-
-static void ssdk_mp_fixed_clock_init(void)
-{
-	void __iomem *reg_addr = NULL;
-	a_uint32_t reg_val;
-
-	/* enable AHB and SYS clk of cmn */
-	reg_addr = ioremap_nocache(GCC_CMN_BLK, GCC_CMN_BLK_SIZE);
-	if (!reg_addr) {
-		SSDK_ERROR("Failed to map GCC CMN BLK address!\n");
-		return;
-	}
-	reg_val = readl(reg_addr+GCC_CMN_BLK_AHB_CBCR_OFFSET);
-	writel(reg_val | GCC_CMN_BLK_AHB_CBCR_CLK_ENABLE,
-		reg_addr+GCC_CMN_BLK_AHB_CBCR_OFFSET);
-	SSDK_INFO("GCC_CMN_BLK_AHB_CBCR_OFFSET(1856308):%x\n",
-		readl(reg_addr+GCC_CMN_BLK_AHB_CBCR_OFFSET));
-
-	reg_val = readl(reg_addr+GCC_CMN_BLK_SYS_CBCR_OFFSET);
-	writel(reg_val | GCC_CMN_BLK_SYS_CBCR_CLK_ENABLE,
-		reg_addr+GCC_CMN_BLK_SYS_CBCR_OFFSET);
-	SSDK_INFO("GCC_CMN_BLK_SYS_CBCR_OFFSET(185630c):%x\n",
-		readl(reg_addr+GCC_CMN_BLK_SYS_CBCR_OFFSET));
-	iounmap(reg_addr);
-
-	/* enable AHB and SYS clk of uniphy */
-	reg_val = readl(gcc_uniphy_base+GCC_UNIPHY_AHB_CBCR_OFFSET);
-	writel(reg_val | GCC_UNIPHY_AHB_CBCR_CLK_ENABLE,
-		gcc_uniphy_base+GCC_UNIPHY_AHB_CBCR_OFFSET);
-	SSDK_INFO("GCC_UNIPHY_AHB_CBCR_OFFSET(1856108):%x\n",
-		readl(gcc_uniphy_base+GCC_UNIPHY_AHB_CBCR_OFFSET));
-
-	reg_val = readl(gcc_uniphy_base+GCC_UNIPHY_SYS_CBCR_OFFSET);
-	writel(reg_val | GCC_UNIPHY_SYS_CBCR_CLK_ENABLE,
-		gcc_uniphy_base+GCC_UNIPHY_SYS_CBCR_OFFSET);
-	SSDK_INFO("GCC_UNIPHY_SYS_CBCR_OFFSET(185610c):%x\n",
-		readl(gcc_uniphy_base+GCC_UNIPHY_SYS_CBCR_OFFSET));
-}
-
-static void ssdk_mp_cmnblk_enable(void)
-{
-	/*enable cmbblk by TCSR when LDO of gephy is ready*/
-	void __iomem *tcsr_eth_ldo_rdy = NULL;
-	a_uint32_t reg_val;
-
-	tcsr_eth_ldo_rdy = ioremap_nocache(TCSR_ETH_LDO_RDY_REG,
-		TCSR_ETH_LDO_RDY_SIZE);
-	if (!tcsr_eth_ldo_rdy) {
-		SSDK_ERROR("Failed to map tcsr_eth_ldo_rdy address!\n");
-		return;
-	}
-	reg_val = readl(tcsr_eth_ldo_rdy);
-	reg_val |= ETH_LDO_RDY;
-	writel(reg_val, tcsr_eth_ldo_rdy);
-	SSDK_INFO("TCSR_ETH_LDO_RDY_REG(0x18475c4):%x\n",
-		readl(tcsr_eth_ldo_rdy));
-
-	iounmap(tcsr_eth_ldo_rdy);
-}
-
-static a_bool_t ssdk_mp_cmnblk_stable_check(void)
-{
-	void __iomem *cmb_pll_locked_reg = NULL;
-	a_uint32_t reg_val, times = 20;
-	a_bool_t is_stable = A_FALSE;
-
-	cmb_pll_locked_reg = ioremap_nocache(CMN_PLL_PLL_LOCKED_REG,
-		CMN_PLL_PLL_LOCKED_SIZE);
-	if (!cmb_pll_locked_reg) {
-		SSDK_ERROR("Failed to map cmb_pll_locked_reg address!\n");
-		return A_FALSE;
-	}
-	while(times--)
-	{
-		reg_val = readl(cmb_pll_locked_reg);
-		if(reg_val & CMN_PLL_LOCKED) {
-			SSDK_INFO("cmbblk is stable, CMN_PLL_PLL_LOCKED_REG(9b064):%x\n",
-				reg_val);
-			is_stable = A_TRUE;
-			break;
-		}
-		msleep(10);
-	}
-	if(!times) {
-		SSDK_INFO("200ms have been over, CMN_PLL_PLL_LOCKED_REG(9b064):%x\n",
-			readl(cmb_pll_locked_reg));
-	}
-	iounmap(cmb_pll_locked_reg);
-
-	return is_stable;
-}
-
-static void ssdk_mp_uniphy_port_clock_set(a_uint32_t dev_id,
-	a_uint32_t port_id, a_bool_t enable)
-{
-	a_uint32_t reg_val, offset = 0;
-	void __iomem *gcc_base = NULL;
-
-	if(port_id == SSDK_PHYSICAL_PORT1)
-	{
-		gcc_base = gcc_gephy_base+GCC_GEPHY_RX_CBCR_OFFSET;
-	}
-	else
-	{
-		gcc_base = gcc_uniphy_base+GCC_UNIPHY_RX_CBCR_OFFSET;
-	}
-	for(offset = 0; offset <= 1; offset++)
-	{
-		reg_val = readl(gcc_base + offset * 4);
-		if(enable == A_TRUE)
-		{
-			reg_val |= GCC_CBCR_CLK_ENABLE;
-		}
-		else
-		{
-			reg_val &= ~GCC_CBCR_CLK_ENABLE;
-		}
-		writel(reg_val, gcc_base + offset * 4);
-	}
-
-	if(port_id == SSDK_PHYSICAL_PORT1)
-	{
-		SSDK_DEBUG("GCC_GEPHY_RX_CBCR_OFFSET(1856010):%x\n",
-			readl(gcc_gephy_base+GCC_GEPHY_RX_CBCR_OFFSET));
-		SSDK_DEBUG("GCC_GEPHY_TX_CBCR_OFFSET(1856014):%x\n",
-			readl(gcc_gephy_base+GCC_GEPHY_TX_CBCR_OFFSET));
-	}
-
-	if(port_id == SSDK_PHYSICAL_PORT2)
-	{
-		SSDK_DEBUG("GCC_UNIPHY_RX_CBCR_OFFSET(1856110):%x\n",
-			readl(gcc_uniphy_base+GCC_UNIPHY_RX_CBCR_OFFSET));
-		SSDK_DEBUG("GCC_UNIPHY_TX_CBCR_OFFSET(1856114):%x\n",
-			readl(gcc_uniphy_base+GCC_UNIPHY_TX_CBCR_OFFSET));
-	}
-}
-
-static void ssdk_mp_uniphy_port_set(a_uint32_t dev_id,
-	a_uint32_t port_id, a_bool_t enable)
-{
-	a_uint32_t reg_val;
-	void __iomem *gcc_base = NULL;
-
-	if(port_id == SSDK_PHYSICAL_PORT1)
-	{
-		gcc_base = gcc_gephy_base+GCC_GEPHY_MISC_OFFSET;
-	}
-	else
-	{
-		gcc_base = gcc_uniphy_base+GCC_UNIPHY_MISC_OFFSET;
-	}
-	reg_val = readl(gcc_base);
-	if(enable == A_TRUE)
-	{
-		if(port_id == SSDK_PHYSICAL_PORT1)
-		{
-			reg_val &= ~GCC_GEPHY_MISC_ARES;
-		}
-		else
-		{
-			reg_val &= ~GCC_UNIPHY_MISC_ARES;
-		}
-	}
-	else
-	{
-		if(port_id == SSDK_PHYSICAL_PORT1)
-		{
-			reg_val |= GCC_GEPHY_MISC_ARES;
-		}
-		else
-		{
-			reg_val |= GCC_UNIPHY_MISC_ARES;
-		}
-	}
-	writel(reg_val, gcc_base);
-	if(port_id == SSDK_PHYSICAL_PORT1)
-	{
-		SSDK_DEBUG("GCC_GEPHY_MISC_OFFSET(1856004):%x\n",
-			readl(gcc_gephy_base+GCC_GEPHY_MISC_OFFSET));
-	}
-	if(port_id == SSDK_PHYSICAL_PORT2)
-	{
-		SSDK_DEBUG("GCC_UNIPHY_MISC_OFFSET(1856104):%x\n",
-			readl(gcc_uniphy_base+GCC_UNIPHY_MISC_OFFSET));
-	}
-}
-
-static void ssdk_mp_mac_port_clock_set(a_uint32_t dev_id,
-	a_uint32_t port_id, a_bool_t enable)
-{
-	a_uint32_t reg_val, offset = 0;
-	void __iomem *gcc_base = NULL;
-
-	if(port_id == SSDK_PHYSICAL_PORT1)
-	{
-		gcc_base = gcc_gmac_base+GCC_GMAC0_RX_CBCR_OFFSET;
-	}
-	else
-	{
-		gcc_base = gcc_gmac_base+GCC_GMAC1_RX_CBCR_OFFSET;
-	}
-	for(offset = 0; offset <= 1; offset++)
-	{
-		reg_val = readl(gcc_base + offset * 4);
-		if(enable == A_TRUE)
-		{
-			reg_val |= GCC_CBCR_CLK_ENABLE;
-		}
-		else
-		{
-			reg_val &= ~GCC_CBCR_CLK_ENABLE;
-		}
-		writel(reg_val, gcc_base + offset * 4);
-	}
-	if(port_id == SSDK_PHYSICAL_PORT1)
-	{
-		SSDK_DEBUG("GCC_GMAC0_RX_CBCR_OFFSET(1868240):%x\n",
-			readl(gcc_gmac_base+GCC_GMAC0_RX_CBCR_OFFSET));
-		SSDK_DEBUG("GCC_GMAC0_TX_CBCR_OFFSET(1868244):%x\n",
-			readl(gcc_gmac_base+GCC_GMAC0_TX_CBCR_OFFSET));
-	}
-	if(port_id == SSDK_PHYSICAL_PORT2)
-	{
-		SSDK_DEBUG("GCC_GMAC1_RX_CBCR_OFFSET(1868248):%x\n",
-			readl(gcc_gmac_base+GCC_GMAC1_RX_CBCR_OFFSET));
-		SSDK_DEBUG("GCC_GMAC1_TX_CBCR_OFFSET(186824c):%x\n",
-			readl(gcc_gmac_base+GCC_GMAC1_TX_CBCR_OFFSET));
-	}
-}
-
-static void ssdk_mp_clock_disable(void)
-{
-	a_uint32_t port_id, dev_id = 0;
-
-	for(port_id = SSDK_PHYSICAL_PORT1; port_id <= SSDK_PHYSICAL_PORT2;
-		port_id++)
-	{
-		ssdk_mp_uniphy_port_clock_set(dev_id, port_id, A_FALSE);
-		ssdk_mp_mac_port_clock_set(dev_id, port_id, A_FALSE);
-	}
-	SSDK_INFO("GCC_GEPHY_RX_CBCR_OFFSET(1856010):%x\n",
-		readl(gcc_gephy_base+GCC_GEPHY_RX_CBCR_OFFSET));
-	SSDK_INFO("GCC_GEPHY_TX_CBCR_OFFSET(1856014):%x\n",
-		readl(gcc_gephy_base+GCC_GEPHY_TX_CBCR_OFFSET));
-
-	SSDK_INFO("GCC_UNIPHY_RX_CBCR_OFFSET(1856110):%x\n",
-		readl(gcc_uniphy_base+GCC_UNIPHY_RX_CBCR_OFFSET));
-	SSDK_INFO("GCC_UNIPHY_TX_CBCR_OFFSET(1856114):%x\n",
-		readl(gcc_uniphy_base+GCC_UNIPHY_TX_CBCR_OFFSET));
-
-
-	SSDK_INFO("GCC_GMAC0_RX_CBCR_OFFSET(1868240):%x\n",
-		readl(gcc_gmac_base+GCC_GMAC0_RX_CBCR_OFFSET));
-	SSDK_INFO("GCC_GMAC0_TX_CBCR_OFFSET(1868244):%x\n",
-		readl(gcc_gmac_base+GCC_GMAC0_TX_CBCR_OFFSET));
-
-	SSDK_INFO("GCC_GMAC1_RX_CBCR_OFFSET(1868248):%x\n",
-		readl(gcc_gmac_base+GCC_GMAC1_RX_CBCR_OFFSET));
-	SSDK_INFO("GCC_GMAC1_TX_CBCR_OFFSET(186824c):%x\n",
-		readl(gcc_gmac_base+GCC_GMAC1_TX_CBCR_OFFSET));
-}
-
-static void ssdk_mp_clock_source_init(void)
-{
-	a_uint32_t reg_val;
-
-	/*select source of GMAC*/
-	reg_val = readl(gcc_gmac_base+GCC_GMAC0_RX_CFG_RCGR_OFFSET);
-	reg_val &= ~GCC_GMAC_CFG_RCGR_SRC_SEL_MASK;
-	reg_val |= GCC_GMAC0_RX_SRC_SEL_GEPHY_TX;
-	writel(reg_val, gcc_gmac_base+GCC_GMAC0_RX_CFG_RCGR_OFFSET);
-	SSDK_INFO("GCC_GMAC0_RX_CFG_RCGR_OFFSET(1868024):%x\n",
-		readl(gcc_gmac_base+GCC_GMAC0_RX_CFG_RCGR_OFFSET));
-
-	reg_val = readl(gcc_gmac_base+GCC_GMAC0_TX_CFG_RCGR_OFFSET);
-	reg_val &= ~GCC_GMAC_CFG_RCGR_SRC_SEL_MASK;
-	reg_val |= GCC_GMAC0_TX_SRC_SEL_GEPHY_TX;
-	writel(reg_val, gcc_gmac_base+GCC_GMAC0_TX_CFG_RCGR_OFFSET);
-	SSDK_INFO("GCC_GMAC0_TX_CFG_RCGR_OFFSET(186802c):%x\n",
-		readl(gcc_gmac_base+GCC_GMAC0_TX_CFG_RCGR_OFFSET));
-
-	reg_val = readl(gcc_gmac_base+GCC_GMAC1_RX_CFG_RCGR_OFFSET);
-	reg_val &= ~GCC_GMAC_CFG_RCGR_SRC_SEL_MASK;
-	reg_val |= GCC_GMAC1_RX_SRC_SEL_UNIPHY_RX;
-	writel(reg_val, gcc_gmac_base+GCC_GMAC1_RX_CFG_RCGR_OFFSET);
-	SSDK_INFO("GCC_GMAC1_RX_CFG_RCGR_OFFSET(1868034):%x\n",
-		readl(gcc_gmac_base+GCC_GMAC1_RX_CFG_RCGR_OFFSET));
-
-	reg_val = readl(gcc_gmac_base+GCC_GMAC1_TX_CFG_RCGR_OFFSET);
-	reg_val &= ~GCC_GMAC_CFG_RCGR_SRC_SEL_MASK;
-	reg_val |= GCC_GMAC1_TX_SRC_SEL_UNIPHY_TX;
-	writel(reg_val, gcc_gmac_base+GCC_GMAC1_TX_CFG_RCGR_OFFSET);
-	SSDK_INFO("GCC_GMAC1_TX_CFG_RCGR_OFFSET(186803c):%x\n",
-		readl(gcc_gmac_base+GCC_GMAC1_TX_CFG_RCGR_OFFSET));
-}
-
-static void ssdk_mp_gephy_reset(void)
-{
-	a_uint32_t reg_val, dev_id = 0;
-
-	reg_val = readl(gcc_gephy_base+GCC_GEPHY_BCR_OFFSET);
-	writel(reg_val | (GCC_GEPHY_BCR_BLK_ARES),
-		gcc_gephy_base+GCC_GEPHY_BCR_OFFSET);
-	SSDK_INFO("GCC_GEPHY_BCR_OFFSET(1856000) reset:%x\n",
-		readl(gcc_gephy_base+GCC_GEPHY_BCR_OFFSET));
-	msleep(200);
-	writel(reg_val & (~GCC_GEPHY_BCR_BLK_ARES),
-		gcc_gephy_base+GCC_GEPHY_BCR_OFFSET);
-	SSDK_INFO("GCC_GEPHY_BCR_OFFSET(1856000) release:%x\n",
-		readl(gcc_gephy_base+GCC_GEPHY_BCR_OFFSET));
-
-	ssdk_mp_uniphy_port_set(dev_id, SSDK_PHYSICAL_PORT1, A_FALSE);
-	SSDK_INFO("GCC_GEPHY_MISC_OFFSET(1856004) reset:%x\n",
-		readl(gcc_gephy_base+GCC_GEPHY_MISC_OFFSET));
-	msleep(200);
-	ssdk_mp_uniphy_port_set(dev_id, SSDK_PHYSICAL_PORT1, A_TRUE);
-	SSDK_INFO("GCC_GEPHY_MISC_OFFSET(1856004) release:%x\n",
-		readl(gcc_gephy_base+GCC_GEPHY_MISC_OFFSET));
-}
-
-static void ssdk_mp_uniphy_reset(void)
-{
-	a_uint32_t reg_val;
-
-	reg_val = readl(gcc_uniphy_base+GCC_UNIPHY_BCR_OFFSET);
-	writel(reg_val | (GCC_UNIPHY_BCR_BLK_ARES),
-		gcc_uniphy_base+GCC_UNIPHY_BCR_OFFSET);
-	SSDK_INFO("GCC_UNIPHY_BCR_OFFSET(1856100) reset:%x\n",
-		readl(gcc_uniphy_base+GCC_UNIPHY_BCR_OFFSET));
-	msleep(200);
-	writel(reg_val & (~GCC_UNIPHY_BCR_BLK_ARES),
-		gcc_uniphy_base+GCC_UNIPHY_BCR_OFFSET);
-	SSDK_INFO("GCC_UNIPHY_BCR_OFFSET(1856100) release:%x\n",
-		readl(gcc_uniphy_base+GCC_UNIPHY_BCR_OFFSET));
-}
-
-static void ssdk_mp_gmac_reset(void)
-{
-	a_uint32_t reg_val;
-	void __iomem *gmac_bcr_reg = NULL;
-
-	gmac_bcr_reg = ioremap_nocache(GCC_GMAC_BCR,
-		GCC_GMAC_BCR_SIZE);
-	reg_val = readl(gmac_bcr_reg+GCC_GMAC0_BCR_OFFSET);
-	writel(reg_val | (GCC_GMAC0_BCR_BLK_ARES),
-		gmac_bcr_reg+GCC_GMAC0_BCR_OFFSET);
-	SSDK_INFO("GCC_GMAC0_BCR_OFFSET(1819000) reset:%x\n",
-		readl(gmac_bcr_reg+GCC_GMAC0_BCR_OFFSET));
-	msleep(200);
-	writel(reg_val & (~GCC_GMAC0_BCR_BLK_ARES),
-		gmac_bcr_reg+GCC_GMAC0_BCR_OFFSET);
-	SSDK_INFO("GCC_GMAC0_BCR_OFFSET(1819000) release:%x\n",
-		readl(gmac_bcr_reg+GCC_GMAC0_BCR_OFFSET));
-
-	reg_val = readl(gmac_bcr_reg+GCC_GMAC1_BCR_OFFSET);
-	writel(reg_val | (GCC_GMAC1_BCR_BLK_ARES),
-		gmac_bcr_reg+GCC_GMAC1_BCR_OFFSET);
-	SSDK_INFO("GCC_GMAC1_BCR_OFFSET(1819100) reset:%x\n",
-		readl(gmac_bcr_reg+GCC_GMAC1_BCR_OFFSET));
-	msleep(200);
-	writel(reg_val & (~GCC_GMAC1_BCR_BLK_ARES),
-		gmac_bcr_reg+GCC_GMAC1_BCR_OFFSET);
-	SSDK_INFO("GCC_GMAC1_BCR_OFFSET(1819100) release:%x\n",
-		readl(gmac_bcr_reg+GCC_GMAC1_BCR_OFFSET));
-}
-
-static void ssdk_mp_reset(void)
-{
-	/*reset gephy*/
-	ssdk_mp_gephy_reset();
-	/*reset uniphy*/
-	ssdk_mp_uniphy_reset();
-	/*reset GMACs*/
-	ssdk_mp_gmac_reset();
-}
-
-static void ssdk_gcc_mp_clock_init(enum cmnblk_clk_type mode)
+void ssdk_gcc_mp_clock_init(enum cmnblk_clk_type mode)
 {
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
-	ssdk_mp_reg_base_remap();
 	ssdk_mp_fixed_clock_init();
-	ssdk_mp_clock_disable();
-	ssdk_mp_clock_source_init();
+	ssdk_mp_uniphy_clock_init();
 	ssdk_cmnblk_init(mode);
 	msleep(200);
 	ssdk_mp_cmnblk_enable();
-	if (!ssdk_mp_cmnblk_stable_check())
-	{
-		SSDK_ERROR("mp cmb blk stable check failed\n");
-		return;
+	if (ssdk_mp_cmnblk_stable_check()) {
+		ssdk_mp_reset_init();
+		ssdk_mp_uniphy_clock_enable();
+	} else {
+		SSDK_ERROR("Cmnblock is still not stable!\n");
 	}
-	ssdk_mp_reset();
 #endif
 }
+
+void ssdk_mp_raw_clock_set(
+	a_uint8_t uniphy_index,
+	a_uint8_t direction,
+	a_uint32_t clock)
+{
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
+	a_uint32_t old_clock, id;
+
+	if ((uniphy_index >= MP_RAW_CLOCK_INSTANCE) ||
+	     (direction > UNIPHY_TX) ||
+	     (clock != UNIPHY_CLK_RATE_125M &&
+	      clock != UNIPHY_CLK_RATE_312M))
+		return;
+
+	if(ssdk_is_emulation(0)){
+		SSDK_INFO("uniphy_index %d direction %d clock %d on emulation platform\n",
+					uniphy_index, direction, clock);
+		return;
+	}
+
+	id = uniphy_index*2 + direction;
+	old_clock = clk_get_rate(mp_raw_clks[id]->clk);
+
+	if (clock != old_clock) {
+		if (clk_set_rate(mp_raw_clks[id]->clk, clock))
+			SSDK_ERROR("set rate: %d fail!\n", clock);
+	}
+#endif
+}
+
 #endif
 
 #if defined(HPPE) || defined(MP)

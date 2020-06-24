@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2020, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2020, The Linux Foundation. All rights reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,27 +14,32 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "ssdk_init.h"
 
-#ifdef MP
-#include "ssdk_mp.h"
-#include "hsl_phy.h"
-#endif
+/**
+ * @defgroup
+ * @{
+ */
+#ifndef _ADPT_MP_UNIPHY_H_
+#define _ADPT_MP_UNIPHY_H_
 
-sw_error_t qca_scomphy_hw_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
-{
-	sw_error_t rv = SW_OK;
+#ifdef __cplusplus
+extern "C" {
+#endif                         /* __cplusplus */
 
-	switch (cfg->phy_id) {
-#ifdef MP
-		case MP_GEPHY:
-			rv = qca_mp_hw_init(dev_id);
-			SW_RTN_ON_ERROR(rv);
-			break;
-#endif
-		default:
-			break;
-	}
-	return rv;
+void
+adpt_mp_gcc_uniphy_port_reset(a_uint32_t dev_id, a_uint32_t port_id);
+
+sw_error_t
+adpt_mp_gcc_uniphy_port_clock_set(a_uint32_t dev_id, a_uint32_t port_id,
+	a_bool_t enable);
+
+sw_error_t
+adpt_mp_uniphy_adapter_port_reset(a_uint32_t dev_id, a_uint32_t port_id);
+
+sw_error_t
+adpt_mp_uniphy_mode_set(a_uint32_t dev_id, a_uint32_t index, a_uint32_t mode);
+
+#ifdef __cplusplus
 }
-
+#endif                         /* __cplusplus */
+#endif

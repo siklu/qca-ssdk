@@ -51,7 +51,9 @@
 #include "ref_port_ctrl.h"
 
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+#ifdef DESS
 extern struct reset_control *ess_mac_clock_disable[5];
+#endif
 #endif
 
 #if defined(IN_SWCONFIG)
@@ -199,6 +201,7 @@ static int qca_switch_force_mac_status(struct qca_phy_priv *priv, a_uint32_t por
 	if (priv->version == 0x14)
 	{
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+#ifdef DESS
 		/*disable mac clock*/
 		reset_control_assert(ess_mac_clock_disable[port_id -1]);
 		udelay(10);
@@ -209,6 +212,7 @@ static int qca_switch_force_mac_status(struct qca_phy_priv *priv, a_uint32_t por
 		qca_switch_reg_write(priv->device_id,reg,(a_uint8_t*)&value,4);
 		/*enable mac clock*/
 		reset_control_deassert(ess_mac_clock_disable[port_id -1]);
+#endif
 #endif
 	}
 	if (priv->version == QCA_VER_AR8337 ||
@@ -280,6 +284,7 @@ qca_switch_get_mac_link(struct qca_phy_priv *priv, a_uint32_t port_id, a_uint32_
 static a_uint32_t phy_current_speed = 2;
 static a_uint32_t phy_current_duplex = 1;
 
+#if defined(IN_VLAN)
 int qca_ar8327_sw_enable_vlan0(a_uint32_t dev_id, a_bool_t enable, a_uint8_t portmap);
 int qca_ar8327_vlan_recovery(struct qca_phy_priv *priv)
 {
@@ -314,7 +319,9 @@ int qca_ar8327_vlan_recovery(struct qca_phy_priv *priv)
 					mask = (1 << i);
 					if (mask & priv->vlan_table[j])
 					{
-						val |= ((mask & priv->vlan_tagged[j])? FAL_EG_TAGGED : FAL_EG_UNTAGGED) << ((i << 1) + 4);
+						val |= ((mask & priv->vlan_tagged[j]) ?
+								FAL_EG_TAGGED :
+								FAL_EG_UNTAGGED) << ((i<<1) + 4);
 					}
 					else
 						val |= (0x3) << ((i << 1) + 4);	// not member.
@@ -346,6 +353,7 @@ int qca_ar8327_vlan_recovery(struct qca_phy_priv *priv)
 		}
 	}
 
+#if defined(IN_PORTVLAN)
 	/* update the port destination mask registers and tag settings */
 	for (i = 0; i < priv->ports; i++) {
 		int pvid;
@@ -381,11 +389,13 @@ int qca_ar8327_vlan_recovery(struct qca_phy_priv *priv)
 		fal_port_default_cvid_set(priv->device_id, i, pvid);
 		fal_portvlan_member_update(priv->device_id, i, portmask[i]);
 	}
+#endif
 
 	mutex_unlock(&priv->reg_mutex);
 
 	return 0;
 }
+#endif
 
 int qca_qm_error_check(struct qca_phy_priv *priv)
 {
@@ -435,7 +445,9 @@ int qca_qm_err_recovery(struct qca_phy_priv *priv)
 
 	qca_ar8327_hw_init(priv);
 
+#if defined(IN_VLAN)
 	qca_ar8327_vlan_recovery(priv);
+#endif
 
 	/*To add customerized recovery codes*/
 
@@ -571,7 +583,9 @@ qca_ar8327_sw_mac_polling_task(struct qca_phy_priv *priv)
 				}
 				priv->port_link_down[i]=0;
 				ssdk_port_link_notify(i, 0, 0, 0);
+#ifdef IN_FDB
 				fal_fdb_del_by_port(dev_id, i, 0);/*flush all dynamic fdb of this port*/
+#endif
 				if(priv->version != 0x14){
 					/* Check queue buffer */
 					a_uint16_t value = 0;

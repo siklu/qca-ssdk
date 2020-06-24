@@ -94,6 +94,21 @@ enum unphy_rst_type {
 #define NSS_PTP_REF_CLK	"gcc_nss_ptp_ref_clk"
 #define SNOC_NSSNOC_CLK	"gcc_snoc_nssnoc_clk"
 
+#define UNIPHY_AHB_CLK	"uniphy_ahb_clk"
+#define UNIPHY_SYS_CLK	"uniphy_sys_clk"
+#define MP_UNIPHY_SYS_CLK_RATE	24000000
+#define MDIO0_AHB_CLK		"gcc_mdio0_ahb_clk"
+#define MDIO1_AHB_CLK		"gcc_mdio1_ahb_clk"
+#define GMAC0_CFG_CLK		"gcc_gmac0_cfg_clk"
+#define GMAC0_SYS_CLK		"gcc_gmac0_sys_clk"
+#define GMAC1_CFG_CLK		"gcc_gmac1_cfg_clk"
+#define GMAC1_SYS_CLK		"gcc_gmac1_sys_clk"
+#define SNOC_GMAC0_AHB_CLK		"gcc_snoc_gmac0_ahb_clk"
+#define SNOC_GMAC1_AHB_CLK		"gcc_snoc_gmac1_ahb_clk"
+#define GMAC0_PTP_CLK		"gcc_gmac0_ptp_clk"
+#define GMAC1_PTP_CLK		"gcc_gmac1_ptp_clk"
+#define GMAC_CLK_RATE		240000000
+
 #define NSS_PORT1_RX_CLK	"nss_port1_rx_clk"
 #define NSS_PORT1_TX_CLK	"nss_port1_tx_clk"
 #define NSS_PORT2_RX_CLK	"nss_port2_rx_clk"
@@ -164,46 +179,63 @@ enum cmnblk_clk_type {
 	EXTERNAL_50MHZ,
 };
 
-#define FREQUENCY_MASK          0xfffffdf0
-#define INTERNAL_48MHZ_CLOCK    0x7
-#define EXTERNAL_25MHZ_CLOCK    0x203
-#define EXTERNAL_31250KHZ_CLOCK 0x204
-#define EXTERNAL_40MHZ_CLOCK    0x206
-#define EXTERNAL_48MHZ_CLOCK    0x207
-#define EXTERNAL_50MHZ_CLOCK    0x208
-#define UNIPHY_AHB_CLK_RATE	100000000
-#define UNIPHY_SYS_CLK_RATE	19200000
-#define CPPE_UNIPHY_SYS_CLK_RATE	24000000
-#define PPE_CLK_RATE	300000000
-#define MDIO_AHB_RATE	100000000
-#define NSS_NOC_RATE	461500000
-#define NSSNOC_SNOC_RATE	266670000
-#define NSS_IMEM_RATE	400000000
-#define PTP_REF_RARE	150000000
-#define NSS_AXI_RATE	461500000
-#define NSS_PORT5_DFLT_RATE 19200000
+enum mp_bcr_rst_type {
+	GEPHY_BCR_RESET_E = 0,
+	UNIPHY_BCR_RESET_E,
+	GMAC0_BCR_RESET_E,
+	GMAC1_BCR_RESET_E,
+	GEPHY_MISC_RESET_E,
+	MP_BCR_RST_MAX
+};
 
-#define UNIPHY_CLK_RATE_125M		125000000
-#define UNIPHY_CLK_RATE_312M		312500000
-#define UNIPHY_DEFAULT_RATE		UNIPHY_CLK_RATE_125M
+#define GEHPY_BCR_RESET_ID	"gephy_bcr_rst"
+#define UNIPHY_BCR_RESET_ID	"uniphy_bcr_rst"
+#define GMAC0_BCR_RESET_ID	"gmac0_bcr_rst"
+#define GMAC1_BCR_RESET_ID	"gmac1_bcr_rst"
+#define GEPHY_MISC_RESET_ID	"gephy_misc_rst"
 
-#define PQSGMII_SPEED_10M_CLK		2500000
-#define PQSGMII_SPEED_100M_CLK	25000000
-#define PQSGMII_SPEED_1000M_CLK	125000000
-#define USXGMII_SPEED_10M_CLK		1250000
-#define USXGMII_SPEED_100M_CLK	12500000
-#define USXGMII_SPEED_1000M_CLK	125000000
-#define USXGMII_SPEED_2500M_CLK	78125000
-#define USXGMII_SPEED_5000M_CLK	156250000
-#define USXGMII_SPEED_10000M_CLK	312500000
-#define SGMII_PLUS_SPEED_2500M_CLK	312500000
-#define SGMII_SPEED_10M_CLK	2500000
-#define SGMII_SPEED_100M_CLK	25000000
-#define SGMII_SPEED_1000M_CLK	125000000
+#define FREQUENCY_MASK              0xfffffdf0
+#define INTERNAL_48MHZ_CLOCK        0x7
+#define EXTERNAL_25MHZ_CLOCK        0x203
+#define EXTERNAL_31250KHZ_CLOCK     0x204
+#define EXTERNAL_40MHZ_CLOCK        0x206
+#define EXTERNAL_48MHZ_CLOCK        0x207
+#define EXTERNAL_50MHZ_CLOCK        0x208
+#define UNIPHY_AHB_CLK_RATE         100000000
+#define UNIPHY_SYS_CLK_RATE         19200000
+#define CPPE_UNIPHY_SYS_CLK_RATE    24000000
+#define PPE_CLK_RATE                300000000
+#define MDIO_AHB_RATE               100000000
+#define NSS_NOC_RATE                461500000
+#define NSSNOC_SNOC_RATE            266670000
+#define NSS_IMEM_RATE               400000000
+#define PTP_REF_RARE                150000000
+#define NSS_AXI_RATE                461500000
+#define NSS_PORT5_DFLT_RATE         19200000
 
-#define CPPE_XGMAC_CLK_REG	0x0194900c
-#define CPPE_XGMAC_CLK_SIZE	0x10
-#define CPPE_XGMAC_CLK_ENABLE	0x20
+#define UNIPHY_CLK_RATE_25M         25000000
+#define UNIPHY_CLK_RATE_50M         50000000
+#define UNIPHY_CLK_RATE_125M        125000000
+#define UNIPHY_CLK_RATE_312M        312500000
+#define UNIPHY_DEFAULT_RATE         UNIPHY_CLK_RATE_125M
+
+#define PQSGMII_SPEED_10M_CLK       2500000
+#define PQSGMII_SPEED_100M_CLK      25000000
+#define PQSGMII_SPEED_1000M_CLK     125000000
+#define USXGMII_SPEED_10M_CLK       1250000
+#define USXGMII_SPEED_100M_CLK      12500000
+#define USXGMII_SPEED_1000M_CLK     125000000
+#define USXGMII_SPEED_2500M_CLK     78125000
+#define USXGMII_SPEED_5000M_CLK     156250000
+#define USXGMII_SPEED_10000M_CLK    312500000
+#define SGMII_PLUS_SPEED_2500M_CLK  312500000
+#define SGMII_SPEED_10M_CLK         2500000
+#define SGMII_SPEED_100M_CLK        25000000
+#define SGMII_SPEED_1000M_CLK       125000000
+
+#define CPPE_XGMAC_CLK_REG          0x0194900c
+#define CPPE_XGMAC_CLK_SIZE         0x10
+#define CPPE_XGMAC_CLK_ENABLE       0x20
 
 enum {
 	UNIPHY_RX = 0,
@@ -243,6 +275,13 @@ void ssdk_port_mac_clock_reset(
 void ssdk_ppe_reset_init(void);
 void ssdk_uniphy_raw_clock_reset(a_uint8_t uniphy_index);
 void ssdk_uniphy_raw_clock_set(
+	a_uint8_t uniphy_index,
+	a_uint8_t direction,
+	a_uint32_t clock);
+#endif
+
+#if defined(MP)
+void ssdk_mp_raw_clock_set(
 	a_uint8_t uniphy_index,
 	a_uint8_t direction,
 	a_uint32_t clock);

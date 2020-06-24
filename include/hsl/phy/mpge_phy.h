@@ -69,6 +69,7 @@ extern "C"
 #define MPGE_PHY_MMD3_CDT_THRESH_CTRL7            0x8078
 #define MPGE_PHY_MMD3_CDT_THRESH_CTRL9            0x807a
 #define MPGE_PHY_MMD3_CDT_THRESH_CTRL13           0x807e
+#define MPGE_PHY_MMD3_CDT_THRESH_CTRL14           0x807f
 
     /*MMD3 register field*/
 #define MPGE_PHY_MMD3_AZ_CTRL1_VAL                0x4080
@@ -77,9 +78,10 @@ extern "C"
 #define MPGE_PHY_MMD3_CDT_THRESH_CTRL4_VAL        0xa060
 #define MPGE_PHY_MMD3_CDT_THRESH_CTRL5_VAL        0xc040
 #define MPGE_PHY_MMD3_CDT_THRESH_CTRL6_VAL        0xa060
-#define MPGE_PHY_MMD3_CDT_THRESH_CTRL7_VAL        0xc050
+#define MPGE_PHY_MMD3_CDT_THRESH_CTRL7_VAL        0xc24c
 #define MPGE_PHY_MMD3_CDT_THRESH_CTRL9_VAL        0xc060
 #define MPGE_PHY_MMD3_CDT_THRESH_CTRL13_VAL       0xb060
+#define MPGE_PHY_MMD3_NEAR_ECHO_THRESH_VAL        0x90b0
 
 /**MMD7*/
 #define MPGE_PHY_MMD7_NUM                         0x7
@@ -94,17 +96,6 @@ extern "C"
 #define MPGE_PHY_MMD7_MODE2_PIN0_CTRL             0x8040
 #define MPGE_PHY_MMD7_MODE2_PIN1_CTRL             0x20
 #define MPGE_PHY_MMD7_MODE2_PIN2_CTRL             0x8670
-
-/*DEBUG register*/
-#define AFE50_ADC_2_DP                            0x21
-#define AFE50_ADC_4_DP                            0x23
-#define AFE50_ADC_7_DP                            0x26
-#define AFE50_ADC_14_DP                           0x2d
-    /*DEBUG register field*/
-#define AFE50_ADC_2_DP_VAL                        0xf0
-#define AFE50_ADC_4_DP_VAL                        0
-#define AFE50_ADC_7_DP_VAL                        0xffff
-#define AFE50_ADC_14_DP_VAL                       0xffff
 
 int mpge_phy_init(a_uint32_t dev_id, a_uint32_t port_bmp);
 

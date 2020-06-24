@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2020, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2020, The Linux Foundation. All rights reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,27 +14,27 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "ssdk_init.h"
+/**
+ * @defgroup
+ * @{
+ */
 
-#ifdef MP
-#include "ssdk_mp.h"
-#include "hsl_phy.h"
+#ifndef _MP_UNIPHY_H_
+#define _MP_UNIPHY_H_
+
+#define UNIPHY_CLK_DIV_25M                              1
+#define UNIPHY_CLK_DIV_50M                              0
+#define UNIPHY_CLK_DRV_1                                1
+
+sw_error_t
+mp_uniphy_clock_output_control_get(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union uniphy_clock_output_control_u *value);
+sw_error_t
+mp_uniphy_clock_output_control_set(
+		a_uint32_t dev_id,
+		a_uint32_t index,
+		union uniphy_clock_output_control_u *value);
 #endif
-
-sw_error_t qca_scomphy_hw_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
-{
-	sw_error_t rv = SW_OK;
-
-	switch (cfg->phy_id) {
-#ifdef MP
-		case MP_GEPHY:
-			rv = qca_mp_hw_init(dev_id);
-			SW_RTN_ON_ERROR(rv);
-			break;
-#endif
-		default:
-			break;
-	}
-	return rv;
-}
 

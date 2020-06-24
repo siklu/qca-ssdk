@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2014-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2014-2020, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -46,6 +46,7 @@
 #include <linux/delay.h>
 #include <linux/string.h>
 #include <linux/gpio.h>
+#include <linux/of_gpio.h>
 
 #if defined(IN_SWCONFIG)
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
@@ -1055,6 +1056,7 @@ qca_ar8327_sw_set_reg_val(struct switch_dev *dev,
 #endif
 #endif
 static struct switch_attr qca_ar8327_globals[] = {
+#if defined(IN_VLAN)
 	{
 		.name = "enable_vlan",
 		.description = "Enable 8021q VLAN",
@@ -1062,7 +1064,10 @@ static struct switch_attr qca_ar8327_globals[] = {
 		.set = qca_ar8327_sw_set_vlan,
 		.get = qca_ar8327_sw_get_vlan,
 		.max = 1
-	},{
+	},
+#endif
+#if defined(IN_MISC)
+	{
 		.name = "max_frame_size",
 		.description = "Set Max frame Size Of Mac",
 		.type = SWITCH_TYPE_INT,
@@ -1070,12 +1075,16 @@ static struct switch_attr qca_ar8327_globals[] = {
 		.get = qca_ar8327_sw_get_max_frame_size,
 		.max = 9018
 	},
+#endif
+#if defined(IN_MIB)
 	{
 		.name = "reset_mibs",
 		.description = "Reset All MIB Counters",
 		.type = SWITCH_TYPE_NOVAL,
 		.set = qca_ar8327_sw_set_reset_mibs,
 	},
+#endif
+#ifdef IN_FDB
 	{
 		.name = "flush_arl",
 		.description = "Flush All ARL table",
@@ -1088,6 +1097,7 @@ static struct switch_attr qca_ar8327_globals[] = {
 		.type = SWITCH_TYPE_STRING,
 		.get = qca_ar8327_sw_atu_dump,
 	},
+#endif
 	{
 		.name = "switch_ext",
 		.description = "Switch extended configuration",
@@ -1096,6 +1106,7 @@ static struct switch_attr qca_ar8327_globals[] = {
 	},
 };
 
+#if defined(IN_MIB)
 static struct switch_attr qca_ar8327_port[] = {
 	{
 		.name = "reset_mib",
@@ -1111,7 +1122,9 @@ static struct switch_attr qca_ar8327_port[] = {
 		.get = qca_ar8327_sw_get_port_mib,
 	},
 };
+#endif
 
+#if defined(IN_VLAN)
 static struct switch_attr qca_ar8327_vlan[] = {
 	{
 		.name = "vid",
@@ -1122,16 +1135,20 @@ static struct switch_attr qca_ar8327_vlan[] = {
 		.max = 4094,
 	},
 };
+#endif
 
 const struct switch_dev_ops qca_ar8327_sw_ops = {
 	.attr_global = {
 		.attr = qca_ar8327_globals,
 		.n_attr = ARRAY_SIZE(qca_ar8327_globals),
 	},
+#if defined(IN_MIB)
 	.attr_port = {
 		.attr = qca_ar8327_port,
 		.n_attr = ARRAY_SIZE(qca_ar8327_port),
 	},
+#endif
+#if defined(IN_VLAN)
 	.attr_vlan = {
 		.attr = qca_ar8327_vlan,
 		.n_attr = ARRAY_SIZE(qca_ar8327_vlan),
@@ -1141,8 +1158,13 @@ const struct switch_dev_ops qca_ar8327_sw_ops = {
 	.get_vlan_ports = qca_ar8327_sw_get_ports,
 	.set_vlan_ports = qca_ar8327_sw_set_ports,
 	.apply_config = qca_ar8327_sw_hw_apply,
+#endif
+#if defined(IN_MISC)
 	.reset_switch = qca_ar8327_sw_reset_switch,
+#endif
+#if defined(IN_PORTCONTROL)
 	.get_port_link = qca_ar8327_sw_get_port_link,
+#endif
 #ifndef BOARD_AR71XX
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 0, 0))
 	.get_reg_val = qca_ar8327_sw_get_reg_val,
@@ -1306,14 +1328,13 @@ static int qca_link_polling_select(struct qca_phy_priv *priv)
 int
 qm_err_check_work_start(struct qca_phy_priv *priv)
 {
-	if (priv->version == QCA_VER_HPPE)
-		return 0;
-
 	/*Only valid for S17c chip*/
 	if (priv->version != QCA_VER_AR8337 &&
 		priv->version != QCA_VER_AR8327 &&
 		priv->version != QCA_VER_DESS)
-		return -1;
+	{
+		return 0;
+	}
 
 	mutex_init(&priv->qm_lock);
 	INIT_DELAYED_WORK(&priv->qm_dwork_polling, qm_err_check_work_task_polling);
@@ -1420,10 +1441,12 @@ qca_mac_sw_sync_work_task(struct work_struct *work)
 int
 qca_mac_sw_sync_work_start(struct qca_phy_priv *priv)
 {
-	if (priv->version != QCA_VER_HPPE)
+	if ((priv->version != QCA_VER_HPPE) && (priv->version != QCA_VER_SCOMPHY))
 		return 0;
 
-	qca_mac_sw_sync_port_status_init(priv->device_id);
+	if (priv->version == QCA_VER_HPPE) {
+		qca_mac_sw_sync_port_status_init(priv->device_id);
+	}
 
 	mutex_init(&priv->mac_sw_sync_lock);
 
@@ -1438,17 +1461,16 @@ qca_mac_sw_sync_work_start(struct qca_phy_priv *priv)
 void
 qca_mac_sw_sync_work_stop(struct qca_phy_priv *priv)
 {
-	if (priv->version != QCA_VER_HPPE)
+	if ((priv->version != QCA_VER_HPPE) && (priv->version != QCA_VER_SCOMPHY)) {
 		return;
-
+	}
 	cancel_delayed_work_sync(&priv->mac_sw_sync_dwork);
 }
 
 void
 qca_mac_sw_sync_work_resume(struct qca_phy_priv *priv)
 {
-	if (priv->version != QCA_VER_HPPE)
-	{
+	if ((priv->version != QCA_VER_HPPE) && (priv->version != QCA_VER_SCOMPHY)) {
 		return;
 	}
 
@@ -1506,6 +1528,16 @@ static int qca_switchdev_register(struct qca_phy_priv *priv)
 		case QCA_VER_HPPE:
 			sw_dev->name = "QCA HPPE";
 			sw_dev->alias = "QCA HPPE";
+			break;
+		case QCA_VER_SCOMPHY:
+#ifdef MP
+			if(adapt_scomphy_revision_get(priv->device_id)
+				== MP_GEPHY)
+			{
+				sw_dev->name = "QCA MP";
+				sw_dev->alias = "QCA MP";
+			}
+#endif
 			break;
 		default:
 			sw_dev->name = "unknown switch";
@@ -1628,8 +1660,8 @@ qca_phy_config_init(struct phy_device *pdev)
 	return ret;
 }
 
-#if defined(DESS) || defined(HPPE) || defined (ISISC) || defined (ISIS)
-static int ssdk_switch_register(a_uint32_t dev_id)
+#if defined(DESS) || defined(HPPE) || defined (ISISC) || defined (ISIS) || defined(MP)
+static int ssdk_switch_register(a_uint32_t dev_id, ssdk_chip_type  chip_type)
 {
 	struct qca_phy_priv *priv;
 	int ret = 0;
@@ -1644,11 +1676,20 @@ static int ssdk_switch_register(a_uint32_t dev_id)
 	priv->phy_dbg_read = qca_ar8327_phy_dbg_read;
 	priv->phy_mmd_write = qca_ar8327_mmd_write;
 	priv->ports = SSDK_MAX_PORT_NUM;
-
-	if (fal_reg_get(dev_id, 0, (a_uint8_t *)&chip_id, 4) == SW_OK) {
-		priv->version = ((chip_id >> 8) & 0xff);
-		priv->revision = (chip_id & 0xff);
-		SSDK_INFO("Chip version 0x%02x%02x\n", priv->version, priv->revision);
+#ifdef MP
+	if(chip_type == CHIP_SCOMPHY)
+	{
+		priv->version = QCA_VER_SCOMPHY;
+		SSDK_INFO("Chip version 0x%02x\n", priv->version);
+	}
+	else
+#endif
+	{
+		if (fal_reg_get(dev_id, 0, (a_uint8_t *)&chip_id, 4) == SW_OK) {
+			priv->version = ((chip_id >> 8) & 0xff);
+			priv->revision = (chip_id & 0xff);
+			SSDK_INFO("Chip version 0x%02x%02x\n", priv->version, priv->revision);
+		}
 	}
 
 	mutex_init(&priv->reg_mutex);
@@ -1709,10 +1750,13 @@ static int ssdk_switch_register(a_uint32_t dev_id)
 #endif
 #endif
 #ifdef HPPE
-	ret = qca_mac_sw_sync_work_start(priv);
-	if (ret != 0) {
-			SSDK_ERROR("qca_mac_sw_sync_work_start failed for chip 0x%02x%02x\n", priv->version, priv->revision);
+	if (priv->version == QCA_VER_HPPE) {
+		ret = qca_mac_sw_sync_work_start(priv);
+		if (ret != 0) {
+			SSDK_ERROR("qca_mac_sw_sync_work_start failed for chip 0x%02x%02x\n",
+				priv->version, priv->revision);
 			return ret;
+		}
 	}
 #endif
 
@@ -1916,6 +1960,7 @@ static struct phy_driver qca_phy_driver = {
 
 #ifndef BOARD_AR71XX
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+#ifdef DESS
 struct reset_control *ess_rst = NULL;
 struct reset_control *ess_mac_clock_disable[5] = {NULL,NULL,NULL,NULL,NULL};
 
@@ -1928,6 +1973,7 @@ void ssdk_ess_reset(void)
 	reset_control_deassert(ess_rst);
 	mdelay(100);
 }
+#endif
 
 char ssdk_driver_name[] = "ess_ssdk";
 
@@ -1939,6 +1985,7 @@ static int ssdk_probe(struct platform_device *pdev)
 	if (of_device_is_compatible(np, "qcom,ess-instance"))
 		return of_platform_populate(np, NULL, NULL, &pdev->dev);
 
+#ifdef DESS
 	ess_rst = devm_reset_control_get(&pdev->dev, "ess_rst");
 	ess_mac_clock_disable[0] = devm_reset_control_get(&pdev->dev, "ess_mac1_clk_dis");
 	ess_mac_clock_disable[1] = devm_reset_control_get(&pdev->dev, "ess_mac2_clk_dis");
@@ -1970,7 +2017,7 @@ static int ssdk_probe(struct platform_device *pdev)
 		SSDK_ERROR("ess_mac5_clock_disable fail!\n");
 		return -1;
 	}
-
+#endif
 	return 0;
 }
 
@@ -2339,11 +2386,9 @@ ssdk_init(a_uint32_t dev_id, ssdk_init_cfg * cfg)
 	if (rv != SW_OK)
 		SSDK_ERROR("ssdk fal init failed: %d. \r\n", rv);
 
-#ifndef RUMI_EMULATION
 	rv = ssdk_phy_driver_init(dev_id, cfg);
 	if (rv != SW_OK)
 		SSDK_ERROR("ssdk phy init failed: %d. \r\n", rv);
-#endif
 
 	return rv;
 }
@@ -2492,7 +2537,6 @@ static void ssdk_driver_register(a_uint32_t dev_id)
 
 	reg_mode = ssdk_switch_reg_access_mode_get(dev_id);
 
-#ifdef DESS
 	if(reg_mode == HSL_REG_LOCAL_BUS) {
 #ifndef BOARD_AR71XX
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
@@ -2500,7 +2544,6 @@ static void ssdk_driver_register(a_uint32_t dev_id)
 #endif
 #endif
 	}
-#endif
 
 	flag = ssdk_ess_switch_flag_get(dev_id);
 	if(reg_mode == HSL_REG_MDIO && flag == A_FALSE) {
@@ -2560,11 +2603,7 @@ static int chip_is_scomphy(a_uint32_t dev_id, ssdk_init_cfg* cfg)
 	a_uint32_t port_bmp = qca_ssdk_port_bmp_get(dev_id);
 	while (port_bmp) {
 		if (port_bmp & 0x1) {
-#ifndef RUMI_EMULATION
 			phy_id = hsl_phyid_get(dev_id, port_id, cfg);
-#else
-			phy_id = MP_GEPHY;
-#endif
 			switch (phy_id) {
 /*qca808x_end*/
 				case QCA8030_PHY:
@@ -2573,9 +2612,13 @@ static int chip_is_scomphy(a_uint32_t dev_id, ssdk_init_cfg* cfg)
 				case MP_GEPHY:
 /*qca808x_start*/
 				case QCA8081_PHY_V1_1:
-					cfg->chip_type = CHIP_SCOMPHY;
-					cfg->phy_id = phy_id;
-					rv = SW_OK;
+						cfg->chip_type = CHIP_SCOMPHY;
+						/*MP GEPHY is always the first port*/
+						if(cfg->phy_id == 0)
+						{
+							cfg->phy_id = phy_id;
+						}
+						rv = SW_OK;
 					break;
 				default:
 					break;
@@ -3173,12 +3216,24 @@ static int ssdk_dev_event(struct notifier_block *this, unsigned long event, void
 {
 	int rv = 0;
 	ssdk_init_cfg cfg;
+#ifdef MP
+	a_uint32_t port_id = 0, dev_id = 0;
+	struct qca_phy_priv *priv = ssdk_phy_priv_data_get(dev_id);
+	adpt_api_t *p_api = adpt_api_ptr_get(dev_id);
+#endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 	struct net_device *dev = netdev_notifier_info_to_dev(ptr);
 #else
 	struct net_device *dev = (struct net_device *)ptr;
 #endif
+
+	ssdk_cfg_default_init(&cfg);
+	rv = chip_ver_get(0, &cfg);
+	if (rv) {
+		SSDK_ERROR("chip verfion get failed\n");
+		return NOTIFY_DONE;
+	}
 	switch (event) {
 #ifdef IN_RFS
 #if defined(CONFIG_RFS_ACCEL)
@@ -3195,19 +3250,44 @@ static int ssdk_dev_event(struct notifier_block *this, unsigned long event, void
 		case NETDEV_CHANGEMTU:
 			if(dev->type == ARPHRD_ETHER) {
 				if (strstr(dev->name, "eth")) {
-					rv = chip_ver_get(0, &cfg);
-					if (rv) {
-						return rv;
-					}
 					if (cfg.chip_type == CHIP_DESS ||
 					   cfg.chip_type == CHIP_ISIS ||
 					   cfg.chip_type == CHIP_ISISC) {
+#ifdef IN_MISC
 						fal_frame_max_size_set(0,
 							dev->mtu + 18);
+#endif
 					}
 				}
 			}
 			break;
+#ifdef MP
+		case NETDEV_CHANGE:
+			if ((cfg.chip_type == CHIP_SCOMPHY) &&
+				(cfg.phy_id == MP_GEPHY)) {
+				if ((p_api == NULL) || (p_api->adpt_port_netdev_notify_set == NULL)
+					|| (priv == NULL)) {
+					SSDK_ERROR("Failed to get pointer\n");
+					return NOTIFY_DONE;
+				}
+				if (dev->phydev != NULL) {
+					int addr;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,9,0))
+					addr = dev->phydev->mdio.addr;
+#else
+					addr = dev->phydev->addr;
+#endif
+					port_id = qca_ssdk_phy_addr_to_port(priv->device_id,
+						addr);
+					rv = p_api->adpt_port_netdev_notify_set(priv, port_id);
+					if (rv) {
+						SSDK_ERROR("netdev change notify failed\n");
+						return NOTIFY_DONE;
+					}
+				}
+			}
+			break;
+#endif
 	}
 
 	return NOTIFY_DONE;
@@ -3324,6 +3404,52 @@ static int ssdk_alloc_priv(a_uint32_t dev_num)
 #ifndef SSDK_STR
 #define SSDK_STR "ssdk"
 #endif
+#if defined (ISISC) || defined (ISIS)
+static void qca_ar8327_gpio_reset(struct qca_phy_priv *priv)
+{
+	struct device_node *mdio_node = NULL, *np = NULL;
+	int gpio_num = 0, ret = 0;
+
+	if (priv->ess_switch_flag == A_TRUE)
+		np = priv->of_node;
+	else
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,9,0))
+		np = priv->phy->mdio.dev.of_node;
+#else
+		np = priv->phy->dev.of_node;
+#endif
+	if(!np)
+		return;
+
+	mdio_node = of_parse_phandle(np, "mdio-bus", 0);
+	if(!mdio_node)
+	{
+		SSDK_INFO("mdio node doesn't exist\n");
+		return;
+	}
+	gpio_num = of_get_named_gpio(mdio_node, "phy-reset-gpio",
+					SSDK_PHY_RESET_GPIO_INDEX);
+	if(gpio_num <= 0)
+	{
+		SSDK_INFO("reset gpio doesn't exist\n ");
+		return;
+	}
+	ret = gpio_request(gpio_num, "phy-reset-gpio");
+	if(ret)
+	{
+		SSDK_ERROR("gpio%d request failed, ret:%d\n", gpio_num, ret);
+		return;
+	}
+	gpio_direction_output(gpio_num, SSDK_GPIO_RESET);
+	msleep(200);
+	gpio_set_value(gpio_num, SSDK_GPIO_RELEASE);
+	SSDK_INFO("GPIO%d reset switch done\n", gpio_num);
+
+	gpio_free(gpio_num);
+
+	return;
+}
+#endif
 static int __init regi_init(void)
 {
 	a_uint32_t num = 0, dev_id = 0, dev_num = 1;
@@ -3384,7 +3510,8 @@ static int __init regi_init(void)
 #if defined (ISISC) || defined (ISIS)
 				if (qca_phy_priv_global[dev_id]->ess_switch_flag == A_TRUE) {
 					SSDK_INFO("Initializing ISISC!!\n");
-					rv = ssdk_switch_register(dev_id);
+					qca_ar8327_gpio_reset(qca_phy_priv_global[dev_id]);
+					rv = ssdk_switch_register(dev_id, cfg.chip_type);
 					SW_CNTU_ON_ERROR_AND_COND1_OR_GOTO_OUT(rv, -ENODEV);
 					rv = qca_ar8327_hw_init(qca_phy_priv_global[dev_id]);
 					SSDK_INFO("Initializing ISISC Done!!\n");
@@ -3395,7 +3522,7 @@ static int __init regi_init(void)
 #if defined(HPPE)
 				SSDK_INFO("Initializing HPPE!!\n");
 				qca_hppe_hw_init(&cfg, dev_id);
-				rv = ssdk_switch_register(dev_id);
+				rv = ssdk_switch_register(dev_id, cfg.chip_type);
 				SW_CNTU_ON_ERROR_AND_COND1_OR_GOTO_OUT(rv, -ENODEV);
 				SSDK_INFO("Initializing HPPE Done!!\n");
 #endif
@@ -3410,7 +3537,7 @@ static int __init regi_init(void)
 
 				/* Setup Cpu port for Dakota platform. */
 				switch_cpuport_setup(dev_id);
-				rv = ssdk_switch_register(dev_id);
+				rv = ssdk_switch_register(dev_id, cfg.chip_type);
 				SW_CNTU_ON_ERROR_AND_COND1_OR_GOTO_OUT(rv, -ENODEV);
 				SSDK_INFO("Initializing DESS Done!!\n");
 #endif
@@ -3427,6 +3554,13 @@ static int __init regi_init(void)
 					SSDK_INFO("Initializing SCOMPHY!\n");
 					rv = qca_scomphy_hw_init(&cfg, dev_id);
 					SW_CNTU_ON_ERROR_AND_COND1_OR_GOTO_OUT(rv, -ENODEV);
+#if defined(MP)
+					if(cfg.phy_id == MP_GEPHY)
+					{
+						rv = ssdk_switch_register(dev_id, cfg.chip_type);
+						SW_CNTU_ON_ERROR_AND_COND1_OR_GOTO_OUT(rv, -ENODEV);
+					}
+#endif
 					SSDK_INFO("Initializing SCOMPHY Done!!\n");
 #endif
 				break;
@@ -3440,10 +3574,12 @@ static int __init regi_init(void)
 
 	ssdk_sysfs_init();
 
-	/* register the notifier later should be ok */
-	ssdk_dev_notifier.notifier_call = ssdk_dev_event;
-	ssdk_dev_notifier.priority = 1;
-	register_netdevice_notifier(&ssdk_dev_notifier);
+	if (rv == 0){
+		/* register the notifier later should be ok */
+		ssdk_dev_notifier.notifier_call = ssdk_dev_event;
+		ssdk_dev_notifier.priority = 1;
+		register_netdevice_notifier(&ssdk_dev_notifier);
+	}
 /*qca808x_start*/
 
 out:
@@ -3473,7 +3609,7 @@ regi_exit(void)
 	dev_num = ssdk_switch_device_num_get();
 	for (dev_id = 0; dev_id < dev_num; dev_id++) {
 		ssdk_driver_unregister(dev_id);
-#if defined(DESS) || defined(HPPE) || defined(ISISC) || defined(ISIS)
+#if defined(DESS) || defined(HPPE) || defined(ISISC) || defined(ISIS) || defined(MP)
 		if (qca_phy_priv_global[dev_id]->qca_ssdk_sw_dev_registered == A_TRUE)
 			ssdk_switch_unregister(dev_id);
 #endif

@@ -17,6 +17,7 @@
 #include <linux/of.h>
 #include <linux/of_net.h>
 #include <linux/of_mdio.h>
+#include <linux/of_gpio.h>
 #endif
 #include <linux/etherdevice.h>
 #include <linux/clk.h>
@@ -558,6 +559,7 @@ static sw_error_t ssdk_dt_parse_phy_info(struct device_node *switch_node, a_uint
 	const char *mac_type = NULL;
 	sw_error_t rv = SW_OK;
 	struct device_node *mdio_node;
+	int phy_reset_gpio = 0;
 
 	phy_info_node = of_get_child_by_name(switch_node, "qcom,port_phyinfo");
 	if (!phy_info_node) {
@@ -648,7 +650,18 @@ static sw_error_t ssdk_dt_parse_phy_info(struct device_node *switch_node, a_uint
 			port_phyinfo->phy_features |= PHY_F_INIT;
 
 			if (mdio_node)
+			{
 				port_phyinfo->miibus = of_mdio_find_bus(mdio_node);
+				phy_reset_gpio = of_get_named_gpio(mdio_node, "phy-reset-gpio",
+					SSDK_PHY_RESET_GPIO_INDEX);
+				if(phy_reset_gpio > 0)
+				{
+					SSDK_INFO("port%d's phy-reset-gpio is GPIO%d\n", port_id,
+						phy_reset_gpio);
+					hsl_port_phy_reset_gpio_set(dev_id, port_id,
+						(a_uint32_t)phy_reset_gpio);
+				}
+			}
 		}
 	}
 
@@ -955,6 +968,10 @@ sw_error_t ssdk_dt_parse(ssdk_init_cfg *cfg, a_uint32_t num, a_uint32_t *dev_id)
 	ssdk_dt_priv->ess_clk= ERR_PTR(-ENOENT);
 	ssdk_dt_priv->cmnblk_clk = ERR_PTR(-ENOENT);
 
+	if(of_property_read_bool(switch_node,"qcom,emulation")){
+		ssdk_dt_priv->is_emulation = A_TRUE;
+		SSDK_INFO("RUMI emulation\n");
+	}
 	/* parse common dts info */
 	rv = ssdk_dt_parse_access_mode(switch_node, ssdk_dt_priv);
 	SW_RTN_ON_ERROR(rv);
@@ -983,6 +1000,7 @@ sw_error_t ssdk_dt_parse(ssdk_init_cfg *cfg, a_uint32_t num, a_uint32_t *dev_id)
 			ssdk_dt_priv->tm_tick_mode = mode;
 	}
 	else if (of_device_is_compatible(switch_node, "qcom,ess-switch-ipq50xx")) {
+		ssdk_dt_priv->emu_chip_ver = MP_GEPHY;
 		ssdk_dt_parse_uniphy(*dev_id);
 
 		ssdk_dt_priv->cmnblk_clk = of_clk_get_by_name(switch_node, "cmn_ahb_clk");
@@ -1117,5 +1135,14 @@ void ssdk_switch_device_num_exit(void)
 a_uint32_t ssdk_switch_device_num_get(void)
 {
 	return ssdk_dt_global.num_devices;
+}
+
+a_bool_t ssdk_is_emulation(a_uint32_t dev_id)
+{
+	return ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->is_emulation;
+}
+a_uint32_t ssdk_emu_chip_ver_get(a_uint32_t dev_id)
+{
+	return ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->emu_chip_ver;
 }
 
