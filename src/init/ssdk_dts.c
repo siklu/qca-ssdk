@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2018-2020, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -867,7 +867,7 @@ static sw_error_t ssdk_dt_parse_access_mode(struct device_node *switch_node,
 	return SW_OK;
 
 }
-#ifdef DESS
+#if (defined(DESS) || defined(MP))
 #ifdef IN_LED
 static void ssdk_dt_parse_led(struct device_node *switch_node,
 		ssdk_init_cfg *cfg)
@@ -880,8 +880,10 @@ static void ssdk_dt_parse_led(struct device_node *switch_node,
 	for_each_available_child_of_node(switch_node, child) {
 
 		led_source = of_get_property(child, "source", &len);
-		if (led_source)
-			cfg->led_source_cfg[i].led_source_id = be32_to_cpup(led_source);
+		if (!led_source) {
+			continue;
+		}
+		cfg->led_source_cfg[i].led_source_id = be32_to_cpup(led_source);
 		led_number = of_get_property(child, "led", &len);
 		if (led_number)
 			cfg->led_source_cfg[i].led_num = be32_to_cpup(led_number);
@@ -900,8 +902,10 @@ static void ssdk_dt_parse_led(struct device_node *switch_node,
 			cfg->led_source_cfg[i].led_pattern.map = LED_MAP_10M_SPEED;
 			if (!strcmp(led_str, "100M"))
 			cfg->led_source_cfg[i].led_pattern.map = LED_MAP_100M_SPEED;
-			if (!strcmp(led_str, "100M"))
+			if (!strcmp(led_str, "1000M"))
 			cfg->led_source_cfg[i].led_pattern.map = LED_MAP_1000M_SPEED;
+			if (!strcmp(led_str, "2500M"))
+			cfg->led_source_cfg[i].led_pattern.map = LED_MAP_2500M_SPEED;
 			if (!strcmp(led_str, "all"))
 			cfg->led_source_cfg[i].led_pattern.map = LED_MAP_ALL_SPEED;
 		}
@@ -914,6 +918,15 @@ static void ssdk_dt_parse_led(struct device_node *switch_node,
 			cfg->led_source_cfg[i].led_pattern.freq = LED_BLINK_8HZ;
 			if (!strcmp(led_str, "auto"))
 			cfg->led_source_cfg[i].led_pattern.freq = LED_BLINK_TXRX;
+		}
+		if (!of_property_read_string(child, "active", (const char **)&led_str)) {
+			if (!strcmp(led_str, "high"))
+			cfg->led_source_cfg[i].led_pattern.map |= BIT(LED_ACTIVE_HIGH);
+		}
+		if (!of_property_read_string(child, "blink_en", (const char **)&led_str)) {
+			if (!strcmp(led_str, "disable"))
+			cfg->led_source_cfg[i].led_pattern.map &= ~(BIT(RX_TRAFFIC_BLINK_EN)|
+				BIT(TX_TRAFFIC_BLINK_EN));
 		}
 		i++;
 	}
@@ -1027,6 +1040,9 @@ sw_error_t ssdk_dt_parse(ssdk_init_cfg *cfg, a_uint32_t num, a_uint32_t *dev_id)
 		ssdk_dt_priv->emu_chip_ver = MP_GEPHY;
 #ifdef IN_UNIPHY
 		ssdk_dt_parse_uniphy(*dev_id);
+#endif
+#ifdef IN_LED
+		ssdk_dt_parse_led(switch_node, cfg);
 #endif
 		ssdk_dt_priv->cmnblk_clk = of_clk_get_by_name(switch_node, "cmn_ahb_clk");
 #endif
