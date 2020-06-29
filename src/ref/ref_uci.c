@@ -7829,7 +7829,7 @@ parse_mib_cpukeep(struct switch_val *val)
 
 #ifdef IN_ACL
 static int
-parse_acl_rule(struct switch_val *val)
+parse_acl_rule(struct switch_val *val, a_uint32_t dev_id)
 {
 	a_uint32_t prio = 0;
 	a_uint32_t i;
@@ -8578,26 +8578,26 @@ parse_acl_rule(struct switch_val *val)
 	SSDK_DEBUG("uci set acl list %d, rule %d\n", list_id, rule_id);
 	SSDK_DEBUG("uci set acl portbitmap 0x%x, obj_type %d, obj_value %d\n",
 			portmap, obj_type, obj_value);
-	fal_acl_list_creat(0, list_id, prio);
-	fal_acl_rule_add(0, list_id, rule_id, 1, &rule);
+	fal_acl_list_creat(dev_id, list_id, prio);
+	fal_acl_rule_add(dev_id, list_id, rule_id, 1, &rule);
 	/*bind to port bitmap*/
 	if( portmap != 0 ) {
 		for (i = 0; i < AR8327_NUM_PORTS; i++) {
-			fal_acl_list_unbind(0, list_id, 0, 0, i);
+			fal_acl_list_unbind(dev_id, list_id, 0, 0, i);
 			if (portmap & (0x1 << i)) {
-				rv = fal_acl_list_bind(0, list_id, 0, 0, i);
+				rv = fal_acl_list_bind(dev_id, list_id, 0, 0, i);
 				if(rv != SW_OK){
 					SSDK_ERROR("uci set acl fail %d\n", rv);
 				}
 			}
 		}
 	} else {
-		rv = fal_acl_list_bind(0, list_id, 0, obj_type, obj_value);
+		rv = fal_acl_list_bind(dev_id, list_id, 0, obj_type, obj_value);
 		if(rv != SW_OK){
 			SSDK_ERROR("uci set acl fail %d\n", rv);
 		}
 	}
-	fal_acl_status_set(0, A_TRUE);
+	fal_acl_status_set(dev_id, A_TRUE);
 
 	return rv;
 }
@@ -11201,11 +11201,11 @@ parse_mib(const char *command_name, struct switch_val *val)
 
 #ifdef IN_ACL
 static int
-parse_acl(const char *command_name, struct switch_val *val)
+parse_acl(const char *command_name, struct switch_val *val, a_uint32_t dev_id)
 {
 	int rv = -1;
 	if(!strcmp(command_name, "Rule")) {
-		rv = parse_acl_rule(val);
+		rv = parse_acl_rule(val, dev_id);
 	} else if(!strcmp(command_name, "Udfprofile")) {
 		rv = parse_acl_udfprofile(val);
 	} else if(!strcmp(command_name, "Udf")) {
@@ -11734,7 +11734,7 @@ qca_ar8327_sw_switch_ext(struct switch_dev *dev,
 #endif
 	} else if(!strcmp(module_name, "Acl")) {
 #ifdef IN_ACL
-		rv = parse_acl(command_name, val);
+		rv = parse_acl(command_name, val, priv->device_id);
 #endif
 	} else if(!strcmp(module_name, "Flow")) {
 #ifdef IN_FLOW
