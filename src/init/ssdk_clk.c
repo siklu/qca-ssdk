@@ -795,7 +795,7 @@ void ssdk_uniphy_raw_clock_set(
 	a_uint32_t clock)
 {
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
-	a_uint32_t old_clock, id;
+	a_uint32_t old_clock, id, mode;
 
 	if ((uniphy_index >= SSDK_MAX_UNIPHY_INSTANCE) ||
 	     (direction > UNIPHY_TX) ||
@@ -821,7 +821,10 @@ void ssdk_uniphy_raw_clock_set(
 			SSDK_ERROR("set rate: %d fail!\n", clock);
 	}
 
-	if (uniphy_index == SSDK_UNIPHY_INSTANCE1) {
+	mode = ssdk_dt_global_get_mac_mode(0, SSDK_UNIPHY_INSTANCE1);
+	if (((uniphy_index == SSDK_UNIPHY_INSTANCE0) &&
+	     (mode == PORT_INTERFACE_MODE_MAX)) ||
+	    (uniphy_index == SSDK_UNIPHY_INSTANCE1)) {
 		if (clk_set_parent(uniphy_port_clks[PORT5_RX_SRC_E + direction],
 				uniphy_raw_clks[id]->clk))
 			SSDK_ERROR("set parent fail!\n");
