@@ -381,6 +381,18 @@ ifeq (KSLIB, $(MODULE_TYPE))
   KASAN_OPTION=-fsanitize=kernel-address -fasan-shadow-offset=$(SHADOW_OFFSET) \
                --param asan-stack=1 --param asan-globals=1 \
                --param asan-instrumentation-with-call-threshold=$(CALL_THRESHOLD)
+
+  ifeq ($(CONFIG_KASAN_SW_TAGS), y)
+      KASAN_SHADOW_SCALE_SHIFT := 4
+  else
+      KASAN_SHADOW_SCALE_SHIFT := 3
+  endif
+
+  ifeq (5_4, $(OS_VER))
+      ifeq ($(ARCH), arm64)
+          KASAN_OPTION += -DKASAN_SHADOW_SCALE_SHIFT=$(KASAN_SHADOW_SCALE_SHIFT)
+       endif
+  endif
   ifeq ($(CONFIG_KASAN),y)
       MODULE_CFLAG += $(KASAN_OPTION)
   endif
