@@ -964,7 +964,7 @@ a_bool_t qca803x_phy_speed_duplex_resolved(a_uint32_t dev_id, a_uint32_t phy_id)
 
 	return A_TRUE;
 }
-
+#endif
 /******************************************************************************
 *
 * qca803x_phy_get_phy_id - get the phy id
@@ -983,7 +983,7 @@ qca803x_phy_get_phy_id(a_uint32_t dev_id, a_uint32_t phy_id,
 
 	return SW_OK;
 }
-#endif
+
 /******************************************************************************
 *
 * qca803x_phy_off - power off the phy
@@ -2136,9 +2136,7 @@ static sw_error_t qca803x_phy_api_ops_init(void)
 	qca803x_phy_api_ops->phy_debug_read = qca803x_phy_debug_read;
 	qca803x_phy_api_ops->phy_mmd_write = qca803x_phy_mmd_write;
 	qca803x_phy_api_ops->phy_mmd_read = qca803x_phy_mmd_read;
-#ifndef IN_PORTCONTROL_MINI
 	qca803x_phy_api_ops->phy_id_get = qca803x_phy_get_phy_id;
-#endif
 	qca803x_phy_api_ops->phy_power_off = qca803x_phy_poweroff;
 	qca803x_phy_api_ops->phy_power_on = qca803x_phy_poweron;
 #ifndef IN_PORTCONTROL_MINI
