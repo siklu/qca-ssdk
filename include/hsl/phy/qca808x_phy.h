@@ -614,6 +614,8 @@ void qca808x_phy_lock_init(void);
 int qca808x_phy_init(a_uint32_t dev_id, a_uint32_t port_bmp);
 
 void qca808x_phy_exit(a_uint32_t dev_id, a_uint32_t port_id);
+a_bool_t
+qca808x_phy_2500caps(a_uint32_t dev_id, a_uint32_t phy_id);
 
 #ifdef __cplusplus
 }

@@ -22,17 +22,9 @@
 #include "ssdk_plat.h"
 #include "qca808x_phy.h"
 #include "mpge_phy.h"
-
-#define PHY_INVALID_DATA 0xffff
-#define PHY_RTN_ON_READ_ERROR(phy_data) \
-    do { if (phy_data == PHY_INVALID_DATA) return(SW_READ_ERROR); } while(0);
-
-#define PHY_RTN_ON_ERROR(rv) \
-    do { if (rv != SW_OK) return(rv); } while(0);
-
-#define MPGE_PHY_ONE_LED_MODE  1
-#define MPGE_PHY_TWO_LEDS_MODE 2
-
+#ifdef IN_LED
+#include "mpge_led.h"
+#endif
 /******************************************************************************
 *
 * mpge_phy_mii_read - mii register read
@@ -824,78 +816,6 @@ mpge_phy_get_eee_status(a_uint32_t dev_id, a_uint32_t phy_id,
 {
 	return qca808x_phy_get_eee_status (dev_id, phy_id, status);
 }
-
-/******************************************************************************
-*
-* mpge_phy_led_set - set led behavior
-*
-* set led behavior
-*/
-static sw_error_t
-mpge_phy_led_set(a_uint32_t dev_id, a_uint32_t phy_id,
-	a_uint32_t led_mode)
-{
-	sw_error_t rv = SW_OK;
-	a_uint32_t mpge_phy_pin0_val =0, mpge_phy_pin1_val = 0,
-		mpge_phy_pin2_val = 0;
-	a_uint16_t phy_data = 0;
-
-	/*set active high for LED*/
-	phy_data = mpge_phy_mmd_read(dev_id, phy_id, MPGE_PHY_MMD7_NUM,
-		MPGE_PHY_MMD7_LED_ACTIVE_STATUS_CTRL);
-	PHY_RTN_ON_READ_ERROR(phy_data);
-	rv = mpge_phy_mmd_write(dev_id, phy_id, MPGE_PHY_MMD7_NUM,
-		MPGE_PHY_MMD7_LED_ACTIVE_STATUS_CTRL,
-		phy_data | MPGE_PHY_MMD7_LED_ACTIVE_STATUS_HIGH);
-	SW_RTN_ON_ERROR(rv);
-
-	/*MPGE_PHY_ONE_LED_MODE use only one pin for one LED
-		MPGE_PHY_TWO_LEDS_MODE use three pins for two LEDs*/
-	if(led_mode == MPGE_PHY_ONE_LED_MODE)
-	{
-		mpge_phy_pin0_val = MPGE_PHY_MMD7_MODE1_PIN0_VAL;
-		mpge_phy_pin1_val = MPGE_PHY_MMD7_MODE1_PIN1_VAL;
-		mpge_phy_pin2_val = MPGE_PHY_MMD7_MODE1_PIN2_VAL;
-	}
-	else
-	{
-		mpge_phy_pin0_val = MPGE_PHY_MMD7_MODE2_PIN0_VAL;
-		mpge_phy_pin1_val = MPGE_PHY_MMD7_MODE2_PIN1_VAL;
-		mpge_phy_pin2_val = MPGE_PHY_MMD7_MODE2_PIN2_VAL;
-	}
-	rv = mpge_phy_mmd_write(dev_id, phy_id, MPGE_PHY_MMD7_NUM,
-		MPGE_PHY_MMD7_LED0_CTRL,
-		mpge_phy_pin0_val);
-	SW_RTN_ON_ERROR(rv);
-
-	rv = mpge_phy_mmd_write(dev_id, phy_id, MPGE_PHY_MMD7_NUM,
-		MPGE_PHY_MMD7_LED1_CTRL,
-		mpge_phy_pin1_val);
-	SW_RTN_ON_ERROR(rv);
-
-	rv = mpge_phy_mmd_write(dev_id, phy_id, MPGE_PHY_MMD7_NUM,
-		MPGE_PHY_MMD7_LED2_CTRL,
-		mpge_phy_pin2_val);
-
-	return rv;
-}
-
-/******************************************************************************
-*
-* mpge_phy_led_init - init led mode
-*
-* set led mode
-*/
-static sw_error_t
-mpge_phy_led_init(a_uint32_t dev_id, a_uint32_t phy_id)
-{
-	sw_error_t rv = SW_OK;
-
-	rv = mpge_phy_led_set(dev_id, phy_id, MPGE_PHY_ONE_LED_MODE);
-
-	return rv;
-}
-
 /******************************************************************************
 *
 * mpge_phy_cdt_thresh_set - set CDT threshold
@@ -994,8 +914,6 @@ mpge_phy_hw_init(a_uint32_t dev_id,  a_uint32_t port_bmp)
 		if (port_bmp & (0x1 << port_id))
 		{
 			phy_addr = qca_ssdk_port_to_phy_addr(dev_id, port_id);
-			/*configure LED mode*/
-			rv = mpge_phy_led_init(dev_id, phy_addr);
 			SW_RTN_ON_ERROR(rv);
 			/*configure the CDT threshold*/
 			rv = mpge_phy_cdt_thresh_init (dev_id, phy_addr);
@@ -1085,6 +1003,9 @@ static sw_error_t mpge_phy_api_ops_init(void)
 	mpge_phy_api_ops->phy_eee_cap_get = mpge_phy_get_eee_cap;
 	mpge_phy_api_ops->phy_eee_status_get = mpge_phy_get_eee_status;
 	mpge_phy_api_ops->phy_function_reset = mpge_phy_function_reset;
+#ifdef IN_LED
+	mpge_phy_led_api_ops_init(mpge_phy_api_ops);
+#endif
 	ret = hsl_phy_api_ops_register(MPGE_PHY_CHIP, mpge_phy_api_ops);
 
 	if (ret == SW_OK)

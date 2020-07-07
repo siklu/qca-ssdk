@@ -24,15 +24,10 @@
 #include "qca808x_ptp.h"
 #endif
 #include "qca808x.h"
+#ifdef IN_LED
+#include "qca808x_led.h"
+#endif
 /*qca808x_start*/
-
-#define PHY_INVALID_DATA 0xffff
-#define PHY_RTN_ON_READ_ERROR(phy_data) \
-    do { if (phy_data == PHY_INVALID_DATA) return(SW_READ_ERROR); } while(0);
-
-#define PHY_RTN_ON_ERROR(rv) \
-    do { if (rv != SW_OK) return(rv); } while(0);
-
 static a_bool_t phy_ops_flag = A_FALSE;
 
 static struct mutex qca808x_reg_lock;
@@ -264,8 +259,8 @@ qca808x_phy_ms_seed_enable(a_uint32_t dev_id, a_uint32_t phy_id,
 	return rv;
 }
 
-static a_bool_t
-_qca808x_phy_2500caps(a_uint32_t dev_id, a_uint32_t phy_id)
+a_bool_t
+qca808x_phy_2500caps(a_uint32_t dev_id, a_uint32_t phy_id)
 {
 	a_uint16_t phy_data;
 
@@ -301,7 +296,7 @@ qca808x_phy_get_status(a_uint32_t dev_id, a_uint32_t phy_id,
 	}
 	else {
 		phy_status->link_status = A_FALSE;
-		if (_qca808x_phy_2500caps(dev_id, phy_id) == A_TRUE) {
+		if (qca808x_phy_2500caps(dev_id, phy_id) == A_TRUE) {
 			SW_RTN_ON_ERROR(
 				qca808x_phy_ms_random_seed_set (dev_id, phy_id));
 			/*protect logic, if MASTER_SLAVE_CONFIG_FAULT is 1,
@@ -1035,7 +1030,7 @@ qca808x_phy_set_autoneg_adv(a_uint32_t dev_id, a_uint32_t phy_id,
 			phy_data);
 	PHY_RTN_ON_ERROR(rv);
 
-	if (_qca808x_phy_2500caps(dev_id, phy_id) == A_TRUE) {
+	if (qca808x_phy_2500caps(dev_id, phy_id) == A_TRUE) {
 		rv = _qca808x_phy_set_autoneg_adv_ext(dev_id, phy_id, autoneg);
 	}
 
@@ -1101,7 +1096,7 @@ qca808x_phy_get_autoneg_adv(a_uint32_t dev_id, a_uint32_t phy_id,
 		*autoneg |= FAL_PHY_ADV_1000T_FD;
 	}
 
-	if (_qca808x_phy_2500caps(dev_id, phy_id) == A_TRUE) {
+	if (qca808x_phy_2500caps(dev_id, phy_id) == A_TRUE) {
 		rv = _qca808x_phy_get_autoneg_adv_ext(dev_id, phy_id, &phy_data);
 		if ((rv == SW_OK) &&
 				(phy_data & QCA808X_ADVERTISE_2500FULL)) {
@@ -2176,7 +2171,9 @@ static sw_error_t qca808x_phy_api_ops_init(void)
 	qca808x_phy_api_ops->phy_eee_partner_adv_get = qca808x_phy_get_eee_partner_adv;
 	qca808x_phy_api_ops->phy_eee_cap_get = qca808x_phy_get_eee_cap;
 	qca808x_phy_api_ops->phy_eee_status_get = qca808x_phy_get_eee_status;
-
+#ifdef IN_LED
+	qca808x_phy_led_api_ops_init(qca808x_phy_api_ops);
+#endif
 /*qca808x_end*/
 #if defined(IN_PTP)
 	qca808x_phy_ptp_api_ops_init(&qca808x_phy_api_ops->phy_ptp_ops);
