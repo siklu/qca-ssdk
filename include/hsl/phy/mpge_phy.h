@@ -88,14 +88,17 @@ extern "C"
 #define MPGE_PHY_MMD7_LED0_CTRL                   0x8078
 #define MPGE_PHY_MMD7_LED1_CTRL                   0x8074
 #define MPGE_PHY_MMD7_LED2_CTRL                   0x8076
-    /*MMD7 register field*/
-#define MPGE_PHY_MMD7_MODE1_PIN0_CTRL             0x8670
-#define MPGE_PHY_MMD7_MODE1_PIN1_CTRL             0
-#define MPGE_PHY_MMD7_MODE1_PIN2_CTRL             0
+#define MPGE_PHY_MMD7_LED_ACTIVE_STATUS_CTRL      0x901a
+/*MMD7 register field*/
+#define MPGE_PHY_MMD7_MODE1_PIN0_VAL              0x670
+#define MPGE_PHY_MMD7_MODE1_PIN1_VAL              0
+#define MPGE_PHY_MMD7_MODE1_PIN2_VAL              0
 
-#define MPGE_PHY_MMD7_MODE2_PIN0_CTRL             0x8040
-#define MPGE_PHY_MMD7_MODE2_PIN1_CTRL             0x20
-#define MPGE_PHY_MMD7_MODE2_PIN2_CTRL             0x8670
+#define MPGE_PHY_MMD7_MODE2_PIN0_VAL              0x40
+#define MPGE_PHY_MMD7_MODE2_PIN1_VAL              0x20
+#define MPGE_PHY_MMD7_MODE2_PIN2_VAL              0x670
+
+#define MPGE_PHY_MMD7_LED_ACTIVE_STATUS_HIGH      0x40
 
 int mpge_phy_init(a_uint32_t dev_id, a_uint32_t port_bmp);
 
