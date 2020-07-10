@@ -3407,7 +3407,9 @@ static int ssdk_alloc_priv(a_uint32_t dev_num)
 #if defined (ISISC) || defined (ISIS)
 static void qca_ar8327_gpio_reset(struct qca_phy_priv *priv)
 {
-	struct device_node *mdio_node = NULL, *np = NULL;
+	struct device_node *np = NULL;
+	const __be32 *reset_gpio;
+	a_int32_t len;
 	int gpio_num = 0, ret = 0;
 
 	if (priv->ess_switch_flag == A_TRUE)
@@ -3421,20 +3423,20 @@ static void qca_ar8327_gpio_reset(struct qca_phy_priv *priv)
 	if(!np)
 		return;
 
-	mdio_node = of_parse_phandle(np, "mdio-bus", 0);
-	if(!mdio_node)
+	reset_gpio = of_get_property(np, "reset_gpio", &len);
+	if (!reset_gpio )
 	{
-		SSDK_INFO("mdio node doesn't exist\n");
+		SSDK_INFO("reset_gpio node does not exist\n");
 		return;
 	}
-	gpio_num = of_get_named_gpio(mdio_node, "phy-reset-gpio",
-					SSDK_PHY_RESET_GPIO_INDEX);
+
+	gpio_num = be32_to_cpup(reset_gpio);
 	if(gpio_num <= 0)
 	{
 		SSDK_INFO("reset gpio doesn't exist\n ");
 		return;
 	}
-	ret = gpio_request(gpio_num, "phy-reset-gpio");
+	ret = gpio_request(gpio_num, "reset_gpio");
 	if(ret)
 	{
 		SSDK_ERROR("gpio%d request failed, ret:%d\n", gpio_num, ret);
