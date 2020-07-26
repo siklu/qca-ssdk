@@ -273,7 +273,9 @@ IN_BM=TRUE
 IN_SHAPER=TRUE
 IN_POLICER=TRUE
 endif
+ifneq (, $(filter HPPE CPPE MP ALL_CHIP, $(CHIP_TYPE)))
 IN_UNIPHY=TRUE
+endif
 #MINI SSDK enabled
 ifeq ($(MINI_SSDK), enable)
 IN_FDB_MINI=TRUE

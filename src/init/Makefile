@@ -3,7 +3,11 @@ LIB=INIT
 
 include $(PRJ_PATH)/make/config.mk
 
-SRC_LIST=ssdk_init.c ssdk_plat.c ssdk_interrupt.c ssdk_clk.c ssdk_dts.c
+SRC_LIST=ssdk_init.c ssdk_plat.c ssdk_interrupt.c ssdk_dts.c
+
+ifneq (ISISC, $(CHIP_TYPE))
+	SRC_LIST += ssdk_clk.c
+endif
 
 ifeq (TRUE, $(IN_LED))
 	SRC_LIST += ssdk_led.c
