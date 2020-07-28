@@ -54,7 +54,8 @@ extern "C"
 #define MPGE_PHY_MMD1_NUM                         0x1
 #define MPGE_PHY_MMD1_MSE_THRESH1                 0x1000
 #define MPGE_PHY_MMD1_MSE_THRESH2                 0x1001
-    /*MMD1 register field*/
+#define MPGE_PHY_MMD1_DAC                         0x8100
+/*MMD1 register field*/
 #define MPGE_PHY_MMD1_MSE_THRESH1_VAL             0xf1
 #define MPGE_PHY_MMD1_MSE_THRESH2_VAL             0x1f6
 
@@ -82,6 +83,9 @@ extern "C"
 #define MPGE_PHY_MMD3_CDT_THRESH_CTRL9_VAL        0xc060
 #define MPGE_PHY_MMD3_CDT_THRESH_CTRL13_VAL       0xb060
 #define MPGE_PHY_MMD3_NEAR_ECHO_THRESH_VAL        0x90b0
+
+/*debug register*/
+#define MPGE_PHY_DEBUG_EDAC                       0x4380
 
 int mpge_phy_init(a_uint32_t dev_id, a_uint32_t port_bmp);
 

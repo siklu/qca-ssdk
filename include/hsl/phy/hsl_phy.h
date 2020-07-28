@@ -535,6 +535,13 @@ typedef enum
 	MAX_PHY_CHIP,
 } phy_type_t;
 
+#define PHY_INVALID_DAC        0
+
+typedef struct {
+	a_uint8_t mdac;
+	a_uint8_t edac;
+} phy_dac_t;
+
 typedef struct {
 	a_uint32_t phy_address[SW_MAX_NR_PORT];
 	a_uint32_t phy_type[SW_MAX_NR_PORT];
@@ -546,6 +553,7 @@ typedef struct {
 	a_bool_t phy_c45[SW_MAX_NR_PORT];
 	a_bool_t phy_combo[SW_MAX_NR_PORT];
 	a_uint32_t phy_reset_gpio[SW_MAX_NR_PORT];
+	phy_dac_t phy_dac[SW_MAX_NR_PORT];
 } phy_info_t;
 /*qca808x_end*/
 #define MALIBU5PORT_PHY         0x004DD0B1
@@ -680,6 +688,13 @@ void hsl_port_phy_reset_gpio_set(a_uint32_t dev_id, a_uint32_t port_id,
 
 void hsl_port_phy_gpio_reset(a_uint32_t dev_id, a_uint32_t port_id);
 
+void
+hsl_port_phy_dac_get(a_uint32_t dev_id, a_uint32_t port_id,
+	phy_dac_t *phy_dac);
+
+void
+hsl_port_phy_dac_set(a_uint32_t dev_id, a_uint32_t port_id,
+	phy_dac_t phy_dac);
 /*qca808x_start*/
 sw_error_t ssdk_phy_driver_cleanup(void);
 /*qca808x_end*/

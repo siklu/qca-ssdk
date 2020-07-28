@@ -25,6 +25,9 @@
 #ifdef IN_LED
 #include "mpge_led.h"
 #endif
+
+#define PHY_DAC(val) (val<<8)
+
 /******************************************************************************
 *
 * mpge_phy_mii_read - mii register read
@@ -904,6 +907,51 @@ mpge_phy_lock_init(void)
 }
 
 static sw_error_t
+mpge_phy_dac_set(a_uint32_t dev_id, a_uint32_t phy_id, phy_dac_t phy_dac)
+{
+	a_uint16_t phy_data = 0;
+	sw_error_t rv = SW_OK;
+
+	if(phy_dac.mdac != PHY_INVALID_DAC)
+	{
+		SSDK_INFO("phy mdac is set as 0x%x\n", phy_dac.mdac);
+		/*set mdac value*/
+		phy_data = mpge_phy_mmd_read(dev_id, phy_id, MPGE_PHY_MMD1_NUM,
+			MPGE_PHY_MMD1_DAC);
+		PHY_RTN_ON_READ_ERROR(phy_data);
+		phy_data &= ~(BITS(8,8));
+		rv = mpge_phy_mmd_write(dev_id, phy_id, MPGE_PHY_MMD1_NUM,
+			MPGE_PHY_MMD1_DAC, phy_data | PHY_DAC(phy_dac.mdac));
+		SW_RTN_ON_ERROR(rv);
+	}
+	if(phy_dac.edac != PHY_INVALID_DAC)
+	{
+		SSDK_INFO("phy edac is set as 0x%x\n", phy_dac.edac);
+		/*set edac value*/
+		phy_data = mpge_phy_debug_read(dev_id, phy_id, MPGE_PHY_DEBUG_EDAC);
+		PHY_RTN_ON_READ_ERROR(phy_data);
+		phy_data &= ~(BITS(8,8));
+		rv = mpge_phy_debug_write(dev_id, phy_id, MPGE_PHY_DEBUG_EDAC,
+			phy_data | PHY_DAC(phy_dac.edac));
+		SW_RTN_ON_ERROR(rv);
+	}
+
+	return rv;
+}
+
+static void
+mpge_phy_dac_init(a_uint32_t dev_id, a_uint32_t phy_id,
+	a_uint32_t port_id)
+{
+	phy_dac_t  phy_dac;
+
+	hsl_port_phy_dac_get(dev_id, port_id, &phy_dac);
+	mpge_phy_dac_set(dev_id, phy_id, phy_dac);
+
+	return;
+}
+
+static sw_error_t
 mpge_phy_hw_init(a_uint32_t dev_id,  a_uint32_t port_bmp)
 {
 	a_uint32_t port_id = 0, phy_addr = 0;
@@ -932,6 +980,7 @@ mpge_phy_hw_init(a_uint32_t dev_id,  a_uint32_t port_bmp)
 			rv = mpge_phy_mmd_write(dev_id, phy_addr, MPGE_PHY_MMD1_NUM,
 				MPGE_PHY_MMD1_MSE_THRESH2, MPGE_PHY_MMD1_MSE_THRESH2_VAL);
 			SW_RTN_ON_ERROR(rv);
+			mpge_phy_dac_init(dev_id, phy_addr, port_id);
 		}
 	}
 
