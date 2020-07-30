@@ -111,6 +111,7 @@ adpt_mp_port_txmac_status_set(a_uint32_t dev_id, fal_port_t port_id,
 	return rv;
 }
 
+#ifndef IN_PORTCONTROL_MINI
 static sw_error_t
 adpt_mp_port_txmac_status_get(a_uint32_t dev_id, fal_port_t port_id,
 		a_bool_t *enable)
@@ -133,6 +134,7 @@ adpt_mp_port_txmac_status_get(a_uint32_t dev_id, fal_port_t port_id,
 
 	return rv;
 }
+#endif
 
 static sw_error_t
 adpt_mp_port_rxmac_status_set(a_uint32_t dev_id, fal_port_t port_id,
@@ -157,6 +159,7 @@ adpt_mp_port_rxmac_status_set(a_uint32_t dev_id, fal_port_t port_id,
 	return rv;
 }
 
+#ifndef IN_PORTCONTROL_MINI
 static sw_error_t
 adpt_mp_port_rxmac_status_get(a_uint32_t dev_id, fal_port_t port_id,
 		a_bool_t *enable)
@@ -179,6 +182,7 @@ adpt_mp_port_rxmac_status_get(a_uint32_t dev_id, fal_port_t port_id,
 
 	return rv;
 }
+#endif
 
 static sw_error_t
 adpt_mp_port_txfc_status_set(a_uint32_t dev_id, fal_port_t port_id,
@@ -230,6 +234,7 @@ adpt_mp_port_txfc_status_set(a_uint32_t dev_id, fal_port_t port_id,
 	return rv;
 }
 
+#ifndef IN_PORTCONTROL_MINI
 static sw_error_t
 adpt_mp_port_txfc_status_get(a_uint32_t dev_id, fal_port_t port_id,
 	a_bool_t * enable)
@@ -256,6 +261,7 @@ adpt_mp_port_txfc_status_get(a_uint32_t dev_id, fal_port_t port_id,
 
 	return rv;
 }
+#endif
 
 static sw_error_t
 adpt_mp_port_rxfc_status_set(a_uint32_t dev_id, fal_port_t port_id,
@@ -289,6 +295,7 @@ adpt_mp_port_rxfc_status_set(a_uint32_t dev_id, fal_port_t port_id,
 	return rv;
 }
 
+#ifndef IN_PORTCONTROL_MINI
 static sw_error_t
 adpt_mp_port_rxfc_status_get(a_uint32_t dev_id, fal_port_t port_id,
 	a_bool_t * enable)
@@ -315,6 +322,7 @@ adpt_mp_port_rxfc_status_get(a_uint32_t dev_id, fal_port_t port_id,
 
 	return rv;
 }
+#endif
 
 static sw_error_t
 adpt_mp_port_flowctrl_set(a_uint32_t dev_id, fal_port_t port_id,
@@ -339,6 +347,7 @@ adpt_mp_port_flowctrl_set(a_uint32_t dev_id, fal_port_t port_id,
 	return rv;
 }
 
+#ifndef IN_PORTCONTROL_MINI
 static sw_error_t
 adpt_mp_port_flowctrl_get(a_uint32_t dev_id, fal_port_t port_id,
 	a_bool_t * enable)
@@ -359,6 +368,7 @@ adpt_mp_port_flowctrl_get(a_uint32_t dev_id, fal_port_t port_id,
 
 	return rv;
 }
+#endif
 
 static sw_error_t
 adpt_mp_port_flowctrl_forcemode_set(a_uint32_t dev_id,
@@ -377,6 +387,7 @@ adpt_mp_port_flowctrl_forcemode_set(a_uint32_t dev_id,
 	return rv;
 }
 
+#ifndef IN_PORTCONTROL_MINI
 static sw_error_t
 adpt_mp_port_flowctrl_forcemode_get(a_uint32_t dev_id,
 	fal_port_t port_id, a_bool_t *enable)
@@ -395,6 +406,7 @@ adpt_mp_port_flowctrl_forcemode_get(a_uint32_t dev_id,
 
 	return rv;
 }
+#endif
 
 static sw_error_t
 adpt_mp_port_mac_status_get(a_uint32_t dev_id, a_uint32_t port_id,
@@ -534,6 +546,7 @@ adpt_mp_port_promisc_mode_set(a_uint32_t dev_id, fal_port_t port_id,
 	return rv;
 }
 
+#ifndef IN_PORTCONTROL_MINI
 static sw_error_t
 adpt_mp_port_promisc_mode_get(a_uint32_t dev_id, fal_port_t port_id,
 	a_bool_t *enable)
@@ -556,6 +569,7 @@ adpt_mp_port_promisc_mode_get(a_uint32_t dev_id, fal_port_t port_id,
 
 	return rv;
 }
+#endif
 
 static sw_error_t
 adpt_mp_port_max_frame_size_set(a_uint32_t dev_id, fal_port_t port_id,
@@ -652,6 +666,8 @@ adpt_mp_port_mac_eee_enable_set(a_uint32_t dev_id, fal_port_t port_id,
 
 	return rv;
 }
+
+#ifndef IN_PORTCONTROL_MINI
 static sw_error_t
 adpt_mp_port_mac_eee_enable_get(a_uint32_t dev_id, fal_port_t port_id,
 	a_bool_t *enable)
@@ -675,6 +691,7 @@ adpt_mp_port_mac_eee_enable_get(a_uint32_t dev_id, fal_port_t port_id,
 	return rv;
 
 }
+#endif
 
 static sw_error_t
 adpt_mp_port_interface_eee_cfg_set(a_uint32_t dev_id, fal_port_t port_id,
@@ -1268,7 +1285,8 @@ adpt_mp_port_link_status_get(a_uint32_t dev_id, fal_port_t port_id,
 
 }
 
-sw_error_t adpt_mp_portctrl_init(a_uint32_t dev_id)
+sw_error_t 
+adpt_mp_portctrl_init(a_uint32_t dev_id)
 {
 	adpt_api_t *p_adpt_api = NULL;
 
@@ -1278,31 +1296,33 @@ sw_error_t adpt_mp_portctrl_init(a_uint32_t dev_id)
 	{
 		return SW_FAIL;
 	}
+#ifndef IN_PORTCONTROL_MINI
 	p_adpt_api->adpt_port_txmac_status_get = adpt_mp_port_txmac_status_get;
-	p_adpt_api->adpt_port_txmac_status_set = adpt_mp_port_txmac_status_set;
 	p_adpt_api->adpt_port_rxmac_status_get = adpt_mp_port_rxmac_status_get;
-	p_adpt_api->adpt_port_rxmac_status_set = adpt_mp_port_rxmac_status_set;
 	p_adpt_api->adpt_port_rxfc_status_get = adpt_mp_port_rxfc_status_get;
-	p_adpt_api->adpt_port_rxfc_status_set = adpt_mp_port_rxfc_status_set;
 	p_adpt_api->adpt_port_txfc_status_get = adpt_mp_port_txfc_status_get;
-	p_adpt_api->adpt_port_txfc_status_set = adpt_mp_port_txfc_status_set;
-	p_adpt_api->adpt_port_flowctrl_set = adpt_mp_port_flowctrl_set;
 	p_adpt_api->adpt_port_flowctrl_get = adpt_mp_port_flowctrl_get;
-	p_adpt_api->adpt_port_flowctrl_forcemode_set =
-		adpt_mp_port_flowctrl_forcemode_set;
 	p_adpt_api->adpt_port_flowctrl_forcemode_get =
 		adpt_mp_port_flowctrl_forcemode_get;
+	p_adpt_api->adpt_port_promisc_mode_get = adpt_mp_port_promisc_mode_get;
+	p_adpt_api->adpt_port_interface_3az_status_get = adpt_mp_port_mac_eee_enable_get;
+#endif
+	p_adpt_api->adpt_port_txmac_status_set = adpt_mp_port_txmac_status_set;
+	p_adpt_api->adpt_port_rxmac_status_set = adpt_mp_port_rxmac_status_set;
+	p_adpt_api->adpt_port_rxfc_status_set = adpt_mp_port_rxfc_status_set;
+	p_adpt_api->adpt_port_txfc_status_set = adpt_mp_port_txfc_status_set;
+	p_adpt_api->adpt_port_flowctrl_set = adpt_mp_port_flowctrl_set;
+	p_adpt_api->adpt_port_flowctrl_forcemode_set =
+		adpt_mp_port_flowctrl_forcemode_set;
 	p_adpt_api->adpt_port_max_frame_size_set = adpt_mp_port_max_frame_size_set;
 	p_adpt_api->adpt_port_max_frame_size_get = adpt_mp_port_max_frame_size_get;
 	p_adpt_api->adpt_port_promisc_mode_set = adpt_mp_port_promisc_mode_set;
-	p_adpt_api->adpt_port_promisc_mode_get = adpt_mp_port_promisc_mode_get;
 	p_adpt_api->adpt_port_mac_speed_set = adpt_mp_port_mac_speed_set;
 	p_adpt_api->adpt_port_speed_get = adpt_mp_port_speed_get;
 	p_adpt_api->adpt_port_mac_duplex_set = adpt_mp_port_mac_duplex_set;
 	p_adpt_api->adpt_port_duplex_get = adpt_mp_port_duplex_get;
 	p_adpt_api->adpt_port_link_status_get = adpt_mp_port_link_status_get;
 	p_adpt_api->adpt_port_interface_3az_status_set = adpt_mp_port_mac_eee_enable_set;
-	p_adpt_api->adpt_port_interface_3az_status_get = adpt_mp_port_mac_eee_enable_get;
 	p_adpt_api->adpt_port_interface_eee_cfg_set = adpt_mp_port_interface_eee_cfg_set;
 	p_adpt_api->adpt_port_interface_eee_cfg_get = adpt_mp_port_interface_eee_cfg_get;
 	p_adpt_api->adpt_port_netdev_notify_set = adpt_mp_port_netdev_change_notify;
