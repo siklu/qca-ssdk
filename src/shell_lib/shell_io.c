@@ -5249,6 +5249,7 @@ cmd_data_check_port_vlan_translation_adv_action(char *info, void *val, a_uint32_
 
 	return SW_OK;
 }
+#endif
 
 sw_error_t
 cmd_data_check_vlan_propagation(char *cmd_str, a_uint32_t * arg_val, a_uint32_t size)
@@ -5275,7 +5276,6 @@ cmd_data_check_vlan_propagation(char *cmd_str, a_uint32_t * arg_val, a_uint32_t 
 
     return SW_OK;
 }
-#endif
 
 #ifndef IN_PORTVLAN_MINI
 sw_error_t
