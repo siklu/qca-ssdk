@@ -257,16 +257,19 @@ _adpt_mp_uniphy_clk_output_set(a_uint32_t dev_id, a_uint32_t index)
 {
 	a_uint32_t phy_id =0;
 	a_bool_t force_port = A_FALSE;
+	a_uint32_t force_speed = 0;
 
 	/*when MP connect s17c or qca803x, need to reconfigure reference clock
 	as 25M for port 2*/
 	force_port = ssdk_port_feature_get(dev_id, SSDK_PHYSICAL_PORT2, PHY_F_FORCE);
-	if(force_port)
+	force_speed = ssdk_port_force_speed_get(dev_id, SSDK_PHYSICAL_PORT2);
+
+	if ((force_port) && (force_speed == FAL_SPEED_1000))
 	{
 		_adpt_mp_uniphy_clk_output_ctrl_set(dev_id, index, UNIPHY_CLK_RATE_25M);
 	}
 	phy_id = hsl_port_phyid_get(dev_id, SSDK_PHYSICAL_PORT2);
-	if(phy_id == QCA8030_PHY || phy_id == QCA8033_PHY || phy_id == QCA8035_PHY)
+	if (phy_id == QCA8030_PHY || phy_id == QCA8033_PHY || phy_id == QCA8035_PHY)
 	{
 		_adpt_mp_uniphy_clk_output_ctrl_set(dev_id, index, UNIPHY_CLK_RATE_25M);
 		hsl_port_phy_gpio_reset(dev_id, SSDK_PHYSICAL_PORT2);
@@ -346,8 +349,9 @@ adpt_mp_uniphy_mode_set(a_uint32_t dev_id, a_uint32_t index, a_uint32_t mode)
 	SW_RTN_ON_ERROR (rv);
 
 	if (SW_OK == rv) {
-		ssdk_mp_raw_clock_set(index, UNIPHY_RX, clock);
-		ssdk_mp_raw_clock_set(index, UNIPHY_TX, clock);
+		/* index + 1 point to mp uniphy clock */
+		ssdk_mp_raw_clock_set(index + 1, UNIPHY_RX, clock);
+		ssdk_mp_raw_clock_set(index + 1, UNIPHY_TX, clock);
 	}
 
 	if (mode == PORT_WRAPPER_SGMII_CHANNEL0) {
