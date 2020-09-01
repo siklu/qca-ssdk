@@ -465,13 +465,17 @@ static void ssdk_ppe_fixed_clock_init(a_uint32_t revision)
 #endif
 
 #if defined(MP)
-#define TCSR_ETH_ADDR		0x19475C4
-#define TCSR_ETH_SIZE		4
-#define ETH_LDO_RDY		  0x1
-#define CMN_PLL_LOCKED_ADDR	         0x9B064
-#define CMN_PLL_LOCKED_SIZE	         4
-#define CMN_PLL_LOCKED		4
-#define MP_RAW_CLOCK_INSTANCE	       2
+#define TCSR_ETH_ADDR               0x19475C0
+#define TCSR_ETH_SIZE               0x4
+#define TCSR_GEPHY_LDO_BIAS_EN      0
+#define TCSR_ETH_LDO_RDY            0x4
+
+#define GEPHY_LDO_BIAS_EN           0x1
+#define ETH_LDO_RDY                 0x1
+#define CMN_PLL_LOCKED_ADDR         0x9B064
+#define CMN_PLL_LOCKED_SIZE         0x4
+#define CMN_PLL_LOCKED              0x4
+#define MP_RAW_CLOCK_INSTANCE       0x2
 
 static char *mp_rst_ids[MP_BCR_RST_MAX] = {
 	GEHPY_BCR_RESET_ID,
@@ -615,22 +619,66 @@ static void ssdk_mp_uniphy_clock_enable(void)
 }
 
 static void
-ssdk_mp_cmnblk_enable(void)
+ssdk_mp_tcsr_get(a_uint32_t tcsr_offset, a_uint32_t *tcsr_val)
 {
-	void __iomem *tcsr_eth = NULL;
-	a_uint32_t reg_val;
+	void __iomem *tcsr_base = NULL;
 
-	tcsr_eth = ioremap_nocache(TCSR_ETH_ADDR, TCSR_ETH_SIZE);
-	if (!tcsr_eth) {
+	tcsr_base = ioremap_nocache(TCSR_ETH_ADDR, TCSR_ETH_SIZE);
+	if (!tcsr_base)
+	{
 		SSDK_ERROR("Failed to map tcsr eth address!\n");
 		return;
 	}
+	*tcsr_val = readl(tcsr_base + tcsr_offset);
+	iounmap(tcsr_base);
 
-	reg_val = readl(tcsr_eth);
+	return;
+}
+
+static void
+ssdk_mp_tcsr_set(a_uint32_t tcsr_offset, a_uint32_t tcsr_val)
+{
+	void __iomem *tcsr_base = NULL;
+
+	tcsr_base = ioremap_nocache(TCSR_ETH_ADDR, TCSR_ETH_SIZE);
+	if (!tcsr_base)
+	{
+		SSDK_ERROR("Failed to map tcsr eth address!\n");
+		return;
+	}
+	writel(tcsr_val, tcsr_base + tcsr_offset);
+	iounmap(tcsr_base);
+
+	return;
+}
+
+static void
+ssdk_mp_cmnblk_enable(void)
+{
+	a_uint32_t reg_val;
+
+	ssdk_mp_tcsr_get(TCSR_ETH_LDO_RDY, &reg_val);
 	reg_val |= ETH_LDO_RDY;
-	writel(reg_val, tcsr_eth);
+	ssdk_mp_tcsr_set(TCSR_ETH_LDO_RDY, reg_val);
 
-	iounmap(tcsr_eth);
+	return;
+}
+
+void
+ssdk_mp_gephy_icc_efuse_load_enable(a_bool_t enable)
+{
+	a_uint32_t reg_val;
+
+	ssdk_mp_tcsr_get(TCSR_GEPHY_LDO_BIAS_EN, &reg_val);
+	if(!enable)
+	{
+		reg_val |= GEPHY_LDO_BIAS_EN;
+	}
+	else
+	{
+		reg_val &= ~GEPHY_LDO_BIAS_EN;
+	}
+	ssdk_mp_tcsr_set(TCSR_GEPHY_LDO_BIAS_EN, reg_val);
 }
 
 static a_bool_t

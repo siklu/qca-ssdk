@@ -298,6 +298,9 @@ void ssdk_mp_raw_clock_set(
 	a_uint8_t uniphy_index,
 	a_uint8_t direction,
 	a_uint32_t clock);
+void ssdk_mp_gephy_icc_efuse_load_enable(
+	a_bool_t enable);
+
 #endif
 
 #ifdef __cplusplus
