@@ -27,6 +27,8 @@
 #ifdef IN_LED
 #include "qca808x_led.h"
 #endif
+
+static a_bool_t phy_dev_drv_init_flag = A_FALSE;
 /*qca808x_start*/
 static a_bool_t phy_ops_flag = A_FALSE;
 
@@ -2210,14 +2212,17 @@ int qca808x_phy_init(a_uint32_t dev_id, a_uint32_t port_bmp)
 	qca808x_phy_hw_init(dev_id, port_bmp);
 
 /*qca808x_end*/
-	for (port_id = 0; port_id < SW_MAX_NR_PORT; port_id ++)
+	if(phy_dev_drv_init_flag == A_FALSE)
 	{
-		if (port_bmp & (0x1 << port_id)) {
-			qca808x_phydev_init(dev_id, port_id);
+		for (port_id = 0; port_id < SW_MAX_NR_PORT; port_id ++)
+		{
+			if (port_bmp & (0x1 << port_id)) {
+				qca808x_phydev_init(dev_id, port_id);
+			}
 		}
+		ret = qca808x_phy_driver_register();
+		phy_dev_drv_init_flag = A_TRUE;
 	}
-	ret = qca808x_phy_driver_register();
-
 /*qca808x_start*/
 	return ret;
 }

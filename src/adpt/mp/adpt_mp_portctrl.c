@@ -877,7 +877,7 @@ adpt_mp_port_interface_mode_switch(a_uint32_t dev_id, a_uint32_t port_id)
 	uniphy_mode_old = ssdk_dt_global_get_mac_mode(dev_id,
 		SSDK_UNIPHY_INSTANCE0);
 	if (uniphy_mode_new != uniphy_mode_old) {
-		rv = adpt_mp_uniphy_mode_set(dev_id,
+		rv = adpt_mp_uniphy_mode_configure(dev_id,
 			SSDK_UNIPHY_INSTANCE0, uniphy_mode_new);
 		SW_RTN_ON_ERROR(rv);
 		ssdk_dt_global_set_mac_mode(dev_id,
