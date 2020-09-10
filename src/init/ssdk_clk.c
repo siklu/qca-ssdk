@@ -682,6 +682,7 @@ ssdk_mp_reset_init(void)
 		msleep(200);
 		ssdk_gcc_reset(rst, SSDK_RESET_DEASSERT);
 		msleep(200);
+		reset_control_put(rst);
 	}
 
 	i = UNIPHY1_SOFT_RESET_E;
@@ -1190,6 +1191,7 @@ void ssdk_ppe_reset_init(void)
 	msleep(100);
 	ssdk_gcc_reset(rst, SSDK_RESET_DEASSERT);
 	msleep(100);
+	reset_control_put(rst);
 	SSDK_INFO("ppe reset successfully!\n");
 
 	for (i = UNIPHY0_SOFT_RESET_E; i < UNIPHY_RST_MAX; i++)
