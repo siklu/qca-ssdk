@@ -28,7 +28,7 @@ sw_error_t qca_scomphy_hw_init(ssdk_init_cfg *cfg, a_uint32_t dev_id)
 	switch (cfg->phy_id) {
 #ifdef MP
 		case MP_GEPHY:
-			rv = qca_mp_hw_init(dev_id);
+			rv = qca_mp_hw_init(dev_id, cfg);
 			SW_RTN_ON_ERROR(rv);
 			break;
 #endif
