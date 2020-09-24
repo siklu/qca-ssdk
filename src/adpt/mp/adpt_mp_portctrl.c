@@ -89,6 +89,34 @@ _adpt_mp_port_gcc_speed_clock_set(
 }
 
 static sw_error_t
+adpt_mp_port_reset_set(a_uint32_t dev_id, a_uint32_t port_id)
+{
+	sw_error_t rv = 0;
+	a_uint32_t phy_addr;
+	hsl_phy_ops_t *phy_drv;
+
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	if (port_id == SSDK_PHYSICAL_PORT1) {
+		/*internal gephy reset*/
+		SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get(dev_id,
+				port_id));
+		if (NULL == phy_drv->phy_function_reset)
+			return SW_NOT_SUPPORTED;
+		rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_addr);
+		SW_RTN_ON_ERROR (rv);
+		rv = phy_drv->phy_function_reset(dev_id, phy_addr, PHY_FIFO_RESET);
+		SW_RTN_ON_ERROR (rv);
+	} else if (port_id == SSDK_PHYSICAL_PORT2) {
+		rv = adpt_mp_uniphy_adapter_port_reset(dev_id, port_id);
+	} else {
+		return SW_NOT_SUPPORTED;
+	}
+
+	return rv;
+}
+
+static sw_error_t
 adpt_mp_port_txmac_status_set(a_uint32_t dev_id, fal_port_t port_id,
 		a_bool_t enable)
 {
@@ -488,6 +516,8 @@ adpt_mp_port_mac_speed_set(a_uint32_t dev_id, a_uint32_t port_id,
 		SW_RTN_ON_ERROR(rv);
 		rv = _adpt_mp_gcc_mac_clock_set(dev_id,
 			port_id, A_TRUE);
+		SW_RTN_ON_ERROR(rv);
+		rv = adpt_mp_port_reset_set(dev_id, port_id);
 		SW_RTN_ON_ERROR(rv);
 	}
 	return rv;
@@ -944,34 +974,6 @@ _adpt_mp_port_status_change(struct qca_phy_priv *priv, a_uint32_t port_id,
 	if (phy_status.rx_flowctrl != priv->port_old_rx_flowctrl[port_id - 1])
 		return A_TRUE;
 	return A_FALSE;
-}
-
-static sw_error_t
-adpt_mp_port_reset_set(a_uint32_t dev_id, a_uint32_t port_id)
-{
-	sw_error_t rv = 0;
-	a_uint32_t phy_addr;
-	hsl_phy_ops_t *phy_drv;
-
-	ADPT_DEV_ID_CHECK(dev_id);
-
-	if (port_id == SSDK_PHYSICAL_PORT1) {
-		/*internal gephy reset*/
-		SW_RTN_ON_NULL (phy_drv = hsl_phy_api_ops_get(dev_id,
-				port_id));
-		if (NULL == phy_drv->phy_function_reset)
-			return SW_NOT_SUPPORTED;
-		rv = hsl_port_prop_get_phyid (dev_id, port_id, &phy_addr);
-		SW_RTN_ON_ERROR (rv);
-		rv = phy_drv->phy_function_reset(dev_id, phy_addr, PHY_FIFO_RESET);
-		SW_RTN_ON_ERROR (rv);
-	} else if (port_id == SSDK_PHYSICAL_PORT2) {
-		rv = adpt_mp_uniphy_adapter_port_reset(dev_id, port_id);
-	} else {
-		return SW_NOT_SUPPORTED;
-	}
-
-	return rv;
 }
 
 sw_error_t
