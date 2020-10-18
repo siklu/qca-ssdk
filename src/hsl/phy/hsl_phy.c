@@ -573,8 +573,12 @@ sw_error_t hsl_port_phy_hw_init(a_uint32_t dev_id, a_uint32_t port_id)
 
 	phytype = hsl_phy_type_get(dev_id, port_id);
 
-	ssdk_phy_driver[phytype].init(dev_id,
-		ssdk_phy_driver[phytype].port_bmp[dev_id]);
+	if(ssdk_phy_driver[phytype].port_bmp[dev_id] != 0 &&
+			ssdk_phy_driver[phytype].init != NULL)
+	{
+		ssdk_phy_driver[phytype].init(dev_id,
+			ssdk_phy_driver[phytype].port_bmp[dev_id]);
+	}
 
 	return SW_OK;
 }
