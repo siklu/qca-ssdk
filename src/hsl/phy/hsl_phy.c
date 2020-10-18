@@ -685,6 +685,26 @@ void hsl_port_phy_gpio_reset(a_uint32_t dev_id, a_uint32_t port_id)
 	return;
 }
 
+void
+hsl_port_phy_dac_get(a_uint32_t dev_id, a_uint32_t port_id,
+	phy_dac_t *phy_dac)
+{
+	phy_dac->mdac = phy_info[dev_id]->phy_dac[port_id].mdac;
+	phy_dac->edac = phy_info[dev_id]->phy_dac[port_id].edac;
+
+	return;
+}
+
+void
+hsl_port_phy_dac_set(a_uint32_t dev_id, a_uint32_t port_id,
+	phy_dac_t phy_dac)
+{
+	phy_info[dev_id]->phy_dac[port_id].mdac = phy_dac.mdac;
+	phy_info[dev_id]->phy_dac[port_id].edac = phy_dac.edac;
+
+	return;
+}
+
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 0, 0))
 static sw_error_t
 hsl_phy_adv_to_linkmode_adv(a_uint32_t autoadv, a_ulong_t *advertising)

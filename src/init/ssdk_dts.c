@@ -563,12 +563,14 @@ static sw_error_t ssdk_dt_parse_phy_info(struct device_node *switch_node, a_uint
 
 	ssdk_port_phyinfo *port_phyinfo;
 	a_uint8_t forced_duplex;
-	a_uint32_t port_id, phy_addr, phy_i2c_addr, forced_speed;
+	a_uint32_t port_id, phy_addr, phy_i2c_addr, forced_speed, len;
+	const __be32 *paddr;
 	a_bool_t phy_c45, phy_combo, phy_i2c, phy_forced;
 	const char *mac_type = NULL;
 	sw_error_t rv = SW_OK;
 	struct device_node *mdio_node;
 	int phy_reset_gpio = 0;
+	phy_dac_t phy_dac = {0};
 
 	phy_info_node = of_get_child_by_name(switch_node, "qcom,port_phyinfo");
 	if (!phy_info_node) {
@@ -595,6 +597,13 @@ static sw_error_t ssdk_dt_parse_phy_info(struct device_node *switch_node, a_uint
 			phy_forced = A_TRUE;
 		} else {
 			phy_forced = A_FALSE;
+		}
+		paddr = of_get_property(port_node, "phy_dac", &len);
+		if(paddr)
+		{
+			phy_dac.mdac = be32_to_cpup(paddr);
+			phy_dac.edac = be32_to_cpup(paddr+1);
+			hsl_port_phy_dac_set(dev_id, port_id, phy_dac);
 		}
 
 		phy_c45 = of_property_read_bool(port_node,
