@@ -2061,6 +2061,23 @@ void qca808x_phy_lock_init(void)
 }
 
 static sw_error_t
+qca808x_phy_adc_threshold_set(a_uint32_t dev_id, a_uint32_t phy_id,
+	a_uint32_t adc_thresold)
+{
+	sw_error_t rv = SW_OK;
+	a_uint16_t phy_data = 0;
+
+	phy_data = qca808x_phy_debug_read(dev_id, phy_id,
+		QCA808X_PHY_ADC_THRESHOLD);
+	PHY_RTN_ON_READ_ERROR(phy_data);
+	phy_data &= ~(BITS(0, 8));
+	rv = qca808x_phy_debug_write (dev_id, phy_id,
+		QCA808X_PHY_ADC_THRESHOLD, phy_data | adc_thresold);
+
+	return rv;
+}
+
+static sw_error_t
 qca808x_phy_hw_init(a_uint32_t dev_id,  a_uint32_t port_bmp)
 {
 	a_uint16_t phy_data = 0;
@@ -2096,6 +2113,10 @@ qca808x_phy_hw_init(a_uint32_t dev_id,  a_uint32_t port_bmp)
 			rv = qca808x_phy_ms_seed_enable(dev_id, phy_addr, A_TRUE);
 			SW_RTN_ON_ERROR(rv);
 			rv = qca808x_phy_ms_random_seed_set(dev_id, phy_addr);
+			SW_RTN_ON_ERROR(rv);
+			/*set adc threshold as 100mv for 10M*/
+			rv = qca808x_phy_adc_threshold_set(dev_id, phy_addr,
+				QCA808X_PHY_ADC_THRESHOLD_100MV);
 			SW_RTN_ON_ERROR(rv);
 		}
 	}
