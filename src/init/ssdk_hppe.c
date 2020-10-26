@@ -755,10 +755,10 @@ qca_hppe_qm_hw_init(a_uint32_t dev_id)
 	fal_ucast_queue_base_profile_set(dev_id, &queue_dst, 8, 0);
 
 	queue_dst.service_code = 3;
-	fal_ucast_queue_base_profile_set(dev_id, &queue_dst, 128, 0);
+	fal_ucast_queue_base_profile_set(dev_id, &queue_dst, 128, 8);
 
 	queue_dst.service_code = 4;
-	fal_ucast_queue_base_profile_set(dev_id, &queue_dst, 128, 0);
+	fal_ucast_queue_base_profile_set(dev_id, &queue_dst, 128, 8);
 
 	queue_dst.service_code = 5;
 	fal_ucast_queue_base_profile_set(dev_id, &queue_dst, 0, 0);
@@ -793,7 +793,7 @@ qca_hppe_qm_hw_init(a_uint32_t dev_id)
 		if (i == 2 || i == 6) {
 			fal_ucast_queue_base_profile_set(dev_id, &queue_dst, 8, 0);
 		} else if (i == 3 || i == 4) {
-			fal_ucast_queue_base_profile_set(dev_id, &queue_dst, 128, 0);
+			fal_ucast_queue_base_profile_set(dev_id, &queue_dst, 128, 8);
 		} else {
 			fal_ucast_queue_base_profile_set(dev_id, &queue_dst, 4, 0);
 		}
