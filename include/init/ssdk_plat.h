@@ -189,7 +189,8 @@ enum {
 /*qca808x_end*/
 /*poll mib per 120secs*/
 #define QCA_PHY_MIB_WORK_DELAY	120000
-#define QCA_MIB_ITEM_NUMBER	41
+#define QCA_MIB_ITEM_NUMBER \
+	(sizeof(fal_mib_counter_t)/sizeof(a_uint64_t))
 
 #define SSDK_MAX_UNIPHY_INSTANCE        3
 #define SSDK_UNIPHY_INSTANCE0           0
