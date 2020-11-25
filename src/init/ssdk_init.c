@@ -3422,19 +3422,21 @@ static void qca_ar8327_gpio_reset(struct qca_phy_priv *priv)
 #endif
 	if(!np)
 		return;
-
-	reset_gpio = of_get_property(np, "reset_gpio", &len);
-	if (!reset_gpio )
+	gpio_num = of_get_named_gpio(np, "reset_gpio", 0);
+	if(gpio_num < 0)
 	{
-		SSDK_INFO("reset_gpio node does not exist\n");
-		return;
-	}
-
-	gpio_num = be32_to_cpup(reset_gpio);
-	if(gpio_num <= 0)
-	{
-		SSDK_INFO("reset gpio doesn't exist\n ");
-		return;
+		reset_gpio = of_get_property(np, "reset_gpio", &len);
+		if (!reset_gpio )
+		{
+			SSDK_INFO("reset_gpio node does not exist\n");
+			return;
+		}
+		gpio_num = be32_to_cpup(reset_gpio);
+		if(gpio_num <= 0)
+		{
+			SSDK_INFO("reset gpio doesn't exist\n ");
+			return;
+		}
 	}
 	ret = gpio_request(gpio_num, "reset_gpio");
 	if(ret)
