@@ -159,7 +159,7 @@ ref_fdb_get_port_by_mac(unsigned int vid, const char * addr)
 	}
 	if(rv != SW_OK)
 	{
-		SSDK_DEBUG("the entry cannot be found\n");
+		SSDK_INFO("the entry cannot be found\n");
 		return 0xffffffff;
 	}
 
