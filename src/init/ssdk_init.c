@@ -1106,8 +1106,8 @@ static struct switch_attr qca_ar8327_globals[] = {
 	},
 };
 
-#if defined(IN_MIB)
 static struct switch_attr qca_ar8327_port[] = {
+#if defined(IN_MIB)
 	{
 		.name = "reset_mib",
 		.description = "Reset Mib Counters",
@@ -1121,8 +1121,18 @@ static struct switch_attr qca_ar8327_port[] = {
 		.set = NULL,
 		.get = qca_ar8327_sw_get_port_mib,
 	},
-};
 #endif
+#if defined(IN_PORTCONTROL)
+	{
+		.type = SWITCH_TYPE_INT,
+		.name = "enable_eee",
+		.description = "Enable EEE",
+		.set = qca_ar8327_sw_set_eee,
+		.get = qca_ar8327_sw_get_eee,
+		.max = 1,
+	},
+#endif
+};
 
 #if defined(IN_VLAN)
 static struct switch_attr qca_ar8327_vlan[] = {
@@ -1142,12 +1152,10 @@ const struct switch_dev_ops qca_ar8327_sw_ops = {
 		.attr = qca_ar8327_globals,
 		.n_attr = ARRAY_SIZE(qca_ar8327_globals),
 	},
-#if defined(IN_MIB)
 	.attr_port = {
 		.attr = qca_ar8327_port,
 		.n_attr = ARRAY_SIZE(qca_ar8327_port),
 	},
-#endif
 #if defined(IN_VLAN)
 	.attr_vlan = {
 		.attr = qca_ar8327_vlan,
@@ -1547,7 +1555,7 @@ static int qca_switchdev_register(struct qca_phy_priv *priv)
 
 	sw_dev->ops = &qca_ar8327_sw_ops;
 	sw_dev->vlans = AR8327_MAX_VLANS;
-	sw_dev->ports = SSDK_MAX_PORT_NUM;
+	sw_dev->ports = priv->ports;
 
 	ret = register_switch(sw_dev, NULL);
 	if (ret != SW_OK) {

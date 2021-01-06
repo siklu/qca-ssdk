@@ -723,3 +723,53 @@ dess_rgmii_sw_mac_polling_task(struct qca_phy_priv *priv)
 	return;
 }
 
+#ifdef IN_SWCONFIG
+int qca_ar8327_sw_set_eee(struct switch_dev *dev,
+	const struct switch_attr *attr, struct switch_val *val)
+{
+	sw_error_t rv = SW_OK;
+	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
+	fal_port_eee_cfg_t port_eee_cfg;
+
+	SSDK_DEBUG("configure EEE for dev_id: %d, port %d as %d\n",
+		priv->device_id, val->port_vlan, val->value.i);
+	rv = fal_port_interface_eee_cfg_get(priv->device_id, val->port_vlan, &port_eee_cfg);
+	if(rv != SW_OK)
+	{
+		return -1;
+	}
+	port_eee_cfg.enable = val->value.i;
+	port_eee_cfg.lpi_tx_enable = val->value.i;
+
+	if(port_eee_cfg.enable)
+	{
+		port_eee_cfg.advertisement = FAL_PHY_EEE_100BASE_T | FAL_PHY_EEE_1000BASE_T;
+	}
+	rv = fal_port_interface_eee_cfg_set(priv->device_id, val->port_vlan, &port_eee_cfg);
+	if(rv != SW_OK)
+	{
+		return -1;
+	}
+
+	return 0;
+}
+
+int qca_ar8327_sw_get_eee(struct switch_dev *dev,
+	const struct switch_attr *attr, struct switch_val *val)
+{
+	sw_error_t rv = SW_OK;
+	struct qca_phy_priv *priv = qca_phy_priv_get(dev);
+	fal_port_eee_cfg_t port_eee_cfg;
+
+	SSDK_DEBUG("get EEE for dev_id: %d, port %d\n",
+		priv->device_id, val->port_vlan);
+	rv = fal_port_interface_eee_cfg_get(priv->device_id, val->port_vlan, &port_eee_cfg);
+	if(rv != SW_OK)
+	{
+		return -1;
+	}
+	val->value.i = port_eee_cfg.enable;
+
+	return 0;
+}
+#endif
