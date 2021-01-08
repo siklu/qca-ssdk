@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2014-2020, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2014-2021, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -1675,7 +1675,21 @@ static int ssdk_switch_register(a_uint32_t dev_id, ssdk_chip_type  chip_type)
 	priv->phy_dbg_write = qca_ar8327_phy_dbg_write;
 	priv->phy_dbg_read = qca_ar8327_phy_dbg_read;
 	priv->phy_mmd_write = qca_ar8327_mmd_write;
-	priv->ports = SSDK_MAX_PORT_NUM;
+
+	if (chip_type == CHIP_DESS) {
+		priv->ports = 6;
+	} else if ((chip_type == CHIP_ISIS) || (chip_type == CHIP_ISISC)) {
+		priv->ports = 7;
+	} else if (chip_type == CHIP_SCOMPHY) {
+#ifdef MP
+		if(adapt_scomphy_revision_get(priv->device_id) == MP_GEPHY) {
+			priv->ports = 2;
+		}
+#endif
+	} else {
+		priv->ports = SSDK_MAX_PORT_NUM;
+	}
+
 #ifdef MP
 	if(chip_type == CHIP_SCOMPHY)
 	{
