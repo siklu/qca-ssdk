@@ -415,17 +415,23 @@ enum {
     fal_port_vlan_propagation_set(a_uint32_t dev_id, fal_port_t port_id,
                                   fal_vlan_propagation_mode_t mode);
 
+    sw_error_t
+    fal_port_qinq_role_set(a_uint32_t dev_id, fal_port_t port_id, fal_qinq_port_role_t role);
+
+
+    sw_error_t
+    fal_qinq_mode_set(a_uint32_t dev_id, fal_qinq_mode_t mode);
+
+    sw_error_t
+    fal_port_vlan_trans_add(a_uint32_t dev_id, fal_port_t port_id, fal_vlan_trans_entry_t *entry);
+
+
 #ifndef IN_PORTVLAN_MINI
-    
 
 
     sw_error_t
     fal_port_vlan_propagation_get(a_uint32_t dev_id, fal_port_t port_id,
                                   fal_vlan_propagation_mode_t * mode);
-
-
-    sw_error_t
-    fal_port_vlan_trans_add(a_uint32_t dev_id, fal_port_t port_id, fal_vlan_trans_entry_t *entry);
 
 
     sw_error_t
@@ -437,15 +443,7 @@ enum {
 
 
     sw_error_t
-    fal_qinq_mode_set(a_uint32_t dev_id, fal_qinq_mode_t mode);
-
-
-    sw_error_t
     fal_qinq_mode_get(a_uint32_t dev_id, fal_qinq_mode_t * mode);
-
-
-    sw_error_t
-    fal_port_qinq_role_set(a_uint32_t dev_id, fal_port_t port_id, fal_qinq_port_role_t role);
 
 
     sw_error_t
