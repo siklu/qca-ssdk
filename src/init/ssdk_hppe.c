@@ -1025,8 +1025,8 @@ sw_error_t qca_hppe_acl_remark_ptp_servcode(a_uint32_t dev_id) {
 			LIST_PRI_TAG_SERVICE_CODE_PTP);
 	SW_RTN_ON_ERROR(ret);
 
-	/* Set up UDF0 profile */
-	ret = fal_acl_udf_profile_set(dev_id, FAL_ACL_UDF_NON_IP, 0, FAL_ACL_UDF_TYPE_L3, 0);
+	/* Set up UDF2 profile */
+	ret = fal_acl_udf_profile_set(dev_id, FAL_ACL_UDF_NON_IP, 2, FAL_ACL_UDF_TYPE_L3, 0);
 	SW_RTN_ON_ERROR(ret);
 
 	/* Tag service code for PTP packet */
@@ -1044,11 +1044,10 @@ sw_error_t qca_hppe_acl_remark_ptp_servcode(a_uint32_t dev_id) {
 	FAL_FIELD_FLG_SET(entry.field_flg, FAL_ACL_FIELD_MAC_ETHTYPE);
 
 	for (msg_type = PTP_MSG_SYNC; msg_type <= PTP_MSG_PRESP; msg_type++) {
-		/* L2 UDF0 for msg type */
-		entry.udf0_op = FAL_ACL_FIELD_MASK;
-		entry.udf0_val = (msg_type << 0x8);
-		entry.udf0_mask = 0x0f00;
-		FAL_FIELD_FLG_SET(entry.field_flg, FAL_ACL_FIELD_UDF0);
+		/* L2 UDF2 for msg type */
+		entry.udf2_val = (msg_type << 0x8);
+		entry.udf2_mask = 0x0f00;
+		FAL_FIELD_FLG_SET(entry.field_flg, FAL_ACL_FIELD_UDF2);
 
 		/* Add PTP L2 rule to ACL list */
 		ret = fal_acl_rule_add(dev_id, LIST_ID_L2_TAG_SERVICE_CODE_PTP,
@@ -1058,7 +1057,7 @@ sw_error_t qca_hppe_acl_remark_ptp_servcode(a_uint32_t dev_id) {
 
 	/* Unset L2 PTP ethernet type 0x88f7 */
 	index = 0;
-	FAL_FIELD_FLG_CLR(entry.field_flg, FAL_ACL_FIELD_UDF0);
+	FAL_FIELD_FLG_CLR(entry.field_flg, FAL_ACL_FIELD_UDF2);
 	FAL_FIELD_FLG_CLR(entry.field_flg, FAL_ACL_FIELD_MAC_ETHTYPE);
 
 	/* Create PTP ACL L4 list */
