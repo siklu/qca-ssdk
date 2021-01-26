@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2014-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, 2014-2019, 2021, The Linux Foundation. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -143,12 +143,17 @@ static sw_error_t
 qca_hppe_policer_hw_init(a_uint32_t dev_id)
 {
 	a_uint32_t i = 0;
+	fal_policer_frame_type_t frame_type;
 
 	fal_policer_timeslot_set(dev_id, HPPE_POLICER_TIMESLOT_DFT);
 
 	for (i = SSDK_PHYSICAL_PORT0; i <= SSDK_PHYSICAL_PORT7; i++) {
 		fal_port_policer_compensation_byte_set(dev_id, i, 4);
 	}
+
+	/* bypass policer for dropped frame */
+	frame_type = FAL_FRAME_DROPPED;
+	fal_policer_bypass_en_set(dev_id, frame_type, A_TRUE);
 
 	return SW_OK;
 }
