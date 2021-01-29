@@ -1900,6 +1900,39 @@ adpt_hppe_port_txfc_status_set(a_uint32_t dev_id, fal_port_t port_id,
 
 	return rv;
 }
+
+sw_error_t
+adpt_hppe_port_rxfc_status_set(a_uint32_t dev_id, fal_port_t port_id,
+				     a_bool_t enable)
+{
+	sw_error_t rv = SW_OK;
+	a_uint32_t port_mac_type;
+	struct qca_phy_priv *priv = ssdk_phy_priv_data_get(dev_id);
+
+	ADPT_DEV_ID_CHECK(dev_id);
+
+	if (!priv)
+		return SW_FAIL;
+
+	if ((port_id < SSDK_PHYSICAL_PORT1) || (port_id > SSDK_PHYSICAL_PORT6))
+		return SW_BAD_VALUE;
+
+	port_mac_type =qca_hppe_port_mac_type_get(dev_id, port_id);
+	if(port_mac_type == PORT_XGMAC_TYPE)
+		rv = _adpt_xgmac_port_rxfc_status_set( dev_id, port_id, enable);
+	else if (port_mac_type == PORT_GMAC_TYPE)
+		rv = _adpt_gmac_port_rxfc_status_set( dev_id, port_id, enable);
+	else
+		return SW_BAD_VALUE;
+
+	if (rv != SW_OK)
+		return rv;
+
+	priv->port_old_rx_flowctrl[port_id - 1] = enable;
+
+	return SW_OK;
+}
+
 #ifndef IN_PORTCONTROL_MINI
 sw_error_t
 adpt_hppe_port_counter_set(a_uint32_t dev_id, fal_port_t port_id,
@@ -3231,6 +3264,8 @@ adpt_hppe_port_mac_uniphy_phy_config(a_uint32_t dev_id, a_uint32_t mode_index,
 	/*init port status for special ports to triger polling*/
 	for(port_id = port_id_from; port_id <= port_id_end; port_id++)
 	{
+		adpt_hppe_port_txfc_status_set(dev_id, port_id, A_FALSE);
+		adpt_hppe_port_rxfc_status_set(dev_id, port_id, A_FALSE);
 		qca_mac_port_status_init(dev_id, port_id);
 	}
 
@@ -3599,37 +3634,7 @@ adpt_hppe_port_reset(a_uint32_t dev_id, fal_port_t port_id)
 
 }
 #endif
-sw_error_t
-adpt_hppe_port_rxfc_status_set(a_uint32_t dev_id, fal_port_t port_id,
-				     a_bool_t enable)
-{
-	sw_error_t rv = SW_OK;
-	a_uint32_t port_mac_type;
-	struct qca_phy_priv *priv = ssdk_phy_priv_data_get(dev_id);
 
-	ADPT_DEV_ID_CHECK(dev_id);
-
-	if (!priv)
-		return SW_FAIL;
-
-	if ((port_id < SSDK_PHYSICAL_PORT1) || (port_id > SSDK_PHYSICAL_PORT6))
-		return SW_BAD_VALUE;
-
-	port_mac_type =qca_hppe_port_mac_type_get(dev_id, port_id);
-	if(port_mac_type == PORT_XGMAC_TYPE)
-		rv = _adpt_xgmac_port_rxfc_status_set( dev_id, port_id, enable);
-	else if (port_mac_type == PORT_GMAC_TYPE)
-		rv = _adpt_gmac_port_rxfc_status_set( dev_id, port_id, enable);
-	else
-		return SW_BAD_VALUE;
-
-	if (rv != SW_OK)
-		return rv;
-
-	priv->port_old_rx_flowctrl[port_id - 1] = enable;
-
-	return SW_OK;
-}
 sw_error_t
 adpt_hppe_port_flowctrl_set(a_uint32_t dev_id, fal_port_t port_id,
 				  a_bool_t enable)
